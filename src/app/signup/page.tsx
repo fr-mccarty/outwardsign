@@ -8,7 +8,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import Link from 'next/link'
-import { Church, CheckCircle } from 'lucide-react'
+import { Flower, CheckCircle } from 'lucide-react'
+import {APP_NAME} from "@/lib/constants";
 
 function SignupForm() {
   const [email, setEmail] = useState('')
@@ -18,19 +19,19 @@ function SignupForm() {
   const [message, setMessage] = useState('')
   const [invitationToken, setInvitationToken] = useState<string | null>(null)
   const [parishName, setParishName] = useState<string>('')
-  
+
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const invitation = searchParams.get('invitation')
     const emailParam = searchParams.get('email')
-    
+
     if (invitation) {
       setInvitationToken(invitation)
       fetchInvitationDetails(invitation)
     }
-    
+
     if (emailParam) {
       setEmail(decodeURIComponent(emailParam))
     }
@@ -40,7 +41,7 @@ function SignupForm() {
     try {
       const response = await fetch(`/api/invitations/${token}`)
       const data = await response.json()
-      
+
       if (response.ok) {
         setParishName(data.invitation.parish_name)
       }
@@ -56,7 +57,7 @@ function SignupForm() {
     setMessage('')
 
     const supabase = createClient()
-    
+
     try {
       // First try to sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -96,7 +97,7 @@ function SignupForm() {
         } else {
           setMessage('Account created successfully! Redirecting to dashboard...')
         }
-        
+
         // Wait a bit longer to ensure session is fully established
         setTimeout(() => {
           router.replace('/dashboard')
@@ -107,7 +108,7 @@ function SignupForm() {
           email,
           password,
         })
-        
+
         if (signInError) {
           setError('Account created but failed to sign in. Please try logging in manually.')
           setTimeout(() => router.push('/login'), 2000)
@@ -117,7 +118,7 @@ function SignupForm() {
           } else {
             setMessage('Account created successfully! Redirecting to dashboard...')
           }
-          
+
           // Wait longer to ensure session is established in cookies
           setTimeout(() => {
             window.location.href = '/dashboard'
@@ -137,9 +138,9 @@ function SignupForm() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center justify-center space-x-4 hover:opacity-80 transition-opacity">
             <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Church className="size-7" />
+              <Flower className="size-7" />
             </div>
-            <div className="font-semibold text-2xl text-gray-900">Liturgy.Faith</div>
+            <div className="font-semibold text-2xl text-gray-900">{APP_NAME}</div>
           </Link>
         </div>
 
@@ -148,7 +149,7 @@ function SignupForm() {
           <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>
-              You're joining <strong>{parishName}</strong>! Create your account below to get started.
+              You&#39;re joining <strong>{parishName}</strong>! Create your account below to get started.
             </AlertDescription>
           </Alert>
         )}
@@ -156,7 +157,7 @@ function SignupForm() {
         <Card className="w-full">
         <CardHeader>
           <CardTitle>
-            {invitationToken ? `Join ${parishName}` : 'Sign up for Liturgy.Faith'}
+            {invitationToken ? `Join ${parishName}` : `Sign up for ${APP_NAME}`}
           </CardTitle>
         </CardHeader>
         <CardContent>
