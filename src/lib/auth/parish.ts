@@ -193,62 +193,41 @@ export async function createParishWithSuperAdmin(parishData: {
 }): Promise<{ success: boolean; parishId?: string; error?: string }> {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // Check authentication
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
   if (!user) {
     return { success: false, error: 'User not authenticated' }
   }
 
   try {
-    // Step 1: Create the parish
-    const { data: parish, error: parishError } = await supabase
-      .from('parishes')
-      .insert({
-        name: parishData.name,
-        city: parishData.city,
-        state: parishData.state
-      })
-      .select()
-      .single()
+    // Call the database function to create parish with super admin
+    // This uses SECURITY DEFINER to bypass RLS issues with Server Actions
+    const { data, error } = await supabase.rpc('create_parish_with_super_admin', {
+      p_user_id: user.id,
+      p_name: parishData.name,
+      p_city: parishData.city,
+      p_state: parishData.state
+    })
 
-    if (parishError || !parish) {
-      console.error('Error creating parish:', parishError)
-      return { success: false, error: parishError?.message || 'Failed to create parish' }
+    if (error) {
+      console.error('Error calling create_parish_with_super_admin:', error)
+      return { success: false, error: error.message }
     }
 
-    console.log('Parish created:', parish.id)
-
-    // Step 2: Create parish_users record with super-admin role
-    const { error: parishUserError } = await supabase
-      .from('parish_users')
-      .insert({
-        user_id: user.id,
-        parish_id: parish.id,
-        roles: ['super-admin', 'admin']
-      })
-
-    if (parishUserError) {
-      console.error('Error creating parish_users:', parishUserError)
-      // Try to clean up the parish if parish_users creation failed
-      await supabase.from('parishes').delete().eq('id', parish.id)
-      return { success: false, error: parishUserError.message }
+    if (!data || data.length === 0) {
+      console.error('No data returned from create_parish_with_super_admin')
+      return { success: false, error: 'Failed to create parish' }
     }
 
-    console.log('Parish user created with super-admin role')
+    const result = data[0]
 
-    // Step 3: Set the parish as the user's selected parish
-    const { error: settingsError } = await supabase
-      .from('user_settings')
-      .update({ selected_parish_id: parish.id })
-      .eq('user_id', user.id)
-
-    if (settingsError) {
-      console.error('Error updating user settings:', settingsError)
-      // Don't fail the whole operation if this fails, user can select later
+    if (!result.success) {
+      console.error('Function returned error:', result.error_message)
+      return { success: false, error: result.error_message || 'Failed to create parish' }
     }
 
-    console.log('User settings updated with selected parish')
-
-    // Step 4: Revalidate cache
+    // Revalidate cache
     try {
       const { revalidatePath } = await import('next/cache')
       revalidatePath('/dashboard')
@@ -257,7 +236,7 @@ export async function createParishWithSuperAdmin(parishData: {
       console.log('Could not revalidate path:', error)
     }
 
-    return { success: true, parishId: parish.id }
+    return { success: true, parishId: result.parish_id }
   } catch (error) {
     console.error('Unexpected error creating parish:', error)
     return { success: false, error: 'An unexpected error occurred' }

@@ -11,6 +11,11 @@ CREATE TABLE parish_settings (
 -- Enable RLS
 ALTER TABLE parish_settings ENABLE ROW LEVEL SECURITY;
 
+-- Grant access to authenticated users and anon role (used with JWT)
+GRANT ALL ON parish_settings TO anon;
+GRANT ALL ON parish_settings TO authenticated;
+GRANT ALL ON parish_settings TO service_role;
+
 -- Add index
 CREATE INDEX idx_parish_settings_parish_id ON parish_settings(parish_id);
 
@@ -19,6 +24,7 @@ CREATE INDEX idx_parish_settings_parish_id ON parish_settings(parish_id);
 CREATE POLICY "Parish members can read parish settings"
   ON parish_settings
   FOR SELECT
+  TO anon, authenticated
   USING (
     parish_id IN (
       SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
@@ -26,15 +32,18 @@ CREATE POLICY "Parish members can read parish settings"
   );
 
 -- Anyone can insert parish_settings (for auto-creation trigger)
+-- No role restriction needed since trigger uses SECURITY DEFINER
 CREATE POLICY "Auto-create parish settings"
   ON parish_settings
   FOR INSERT
+  TO anon, authenticated
   WITH CHECK (true);
 
 -- Admins and super-admins can update parish settings
 CREATE POLICY "Admins can update parish settings"
   ON parish_settings
   FOR UPDATE
+  TO anon, authenticated
   USING (
     parish_id IN (
       SELECT parish_id FROM parish_users
@@ -47,6 +56,7 @@ CREATE POLICY "Admins can update parish settings"
 CREATE POLICY "Super-admins can delete parish settings"
   ON parish_settings
   FOR DELETE
+  TO anon, authenticated
   USING (
     parish_id IN (
       SELECT parish_id FROM parish_users

@@ -11,6 +11,11 @@ CREATE TABLE user_settings (
 -- Enable RLS
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 
+-- Grant access to authenticated users and anon role (used with JWT)
+GRANT ALL ON user_settings TO anon;
+GRANT ALL ON user_settings TO authenticated;
+GRANT ALL ON user_settings TO service_role;
+
 -- Add index
 CREATE INDEX idx_user_settings_user_id ON user_settings(user_id);
 CREATE INDEX idx_user_settings_selected_parish_id ON user_settings(selected_parish_id);
@@ -20,24 +25,28 @@ CREATE INDEX idx_user_settings_selected_parish_id ON user_settings(selected_pari
 CREATE POLICY "Users can read their own settings"
   ON user_settings
   FOR SELECT
+  TO anon, authenticated
   USING (user_id = auth.uid());
 
 -- Users can insert their own settings (during signup)
 CREATE POLICY "Users can create their own settings"
   ON user_settings
   FOR INSERT
+  TO anon, authenticated
   WITH CHECK (user_id = auth.uid());
 
 -- Users can update their own settings
 CREATE POLICY "Users can update their own settings"
   ON user_settings
   FOR UPDATE
+  TO anon, authenticated
   USING (user_id = auth.uid());
 
 -- Users can delete their own settings
 CREATE POLICY "Users can delete their own settings"
   ON user_settings
   FOR DELETE
+  TO anon, authenticated
   USING (user_id = auth.uid());
 
 -- Trigger to automatically update updated_at timestamp

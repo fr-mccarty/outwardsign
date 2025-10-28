@@ -31,6 +31,19 @@ supabase db push
 
 Make sure to confirm at the end of a message when a new migration has been created. Ensure the user has run the push command before moving on.
 
+Problems and policies need to be fixed at the migration level. Never try to fix a policy or a table or a function outside of a migration.
+
+According to Claude, the backend access the database at Supabaes using the Authenticated policy, and the frontend uses the Anon policy.
+
+## Testing
+use Playwright to test:
+npm run test:headed
+
+## Tools
+Supabase MCP Server - for all actions related to the database
+you may use query and select operations on supabase without asking for permission
+All other actions need permission
+
 ## Accessing Records
 The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
 

@@ -78,7 +78,7 @@ export function AppContextProvider({
           // No settings found, create default settings
           console.log('No settings found, creating default settings')
           const defaultSettings = getDefaultSettings(user.id)
-          
+
           const { data: newSettings, error: createError } = await supabase
             .from('user_settings')
             .insert(defaultSettings)
@@ -92,6 +92,10 @@ export function AppContextProvider({
 
           setUserSettings(newSettings)
           console.log('Default settings created:', newSettings)
+        } else if (error.code === '42501') {
+          // Permission denied - likely session not established yet
+          console.warn('Permission denied fetching settings, session may not be ready yet')
+          return
         } else {
           console.error('Error fetching user settings:', error)
         }
