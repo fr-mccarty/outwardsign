@@ -16,25 +16,25 @@ export const dynamic = 'force-dynamic'
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }
-  
-  const recentPetitions = await getPetitions()
-  const ministers = await getMinisters()
-  const liturgyPlans = await getLiturgyPlans()
-  const upcomingEvents = await getUpcomingEvents(5)
-  const readings = await getReadings()
-  
-  const recentPetitionsCount = recentPetitions.slice(0, 3)
-  const activeMinisters = ministers.filter(m => m.is_active)
-  const recentLiturgyPlans = liturgyPlans.slice(0, 3)
-  const userReadings = readings
+
+  // const recentPetitions = await getPetitions()
+  // const ministers = await getMinisters()
+  // const liturgyPlans = await getLiturgyPlans()
+  // const upcomingEvents = await getUpcomingEvents(5)
+  // const readings = await getReadings()
+  //
+  // const recentPetitionsCount = recentPetitions.slice(0, 3)
+  // const activeMinisters = ministers.filter(m => m.is_active)
+  // const recentLiturgyPlans = liturgyPlans.slice(0, 3)
+  // const userReadings = readings
 
   return (
-    <PageContainer 
-      title="Dashboard" 
+    <PageContainer
+      title="Dashboard"
       description="Welcome back! Here's an overview of your liturgical management platform."
       maxWidth="7xl"
     >
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recentPetitions.length}</div>
+            <div className="text-2xl font-bold">12</div>
             <p className="text-xs text-muted-foreground">
               Lifetime petitions created
             </p>
@@ -60,12 +60,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {recentPetitions.filter(p => {
-                const petitionDate = new Date(p.created_at)
-                const now = new Date()
-                return petitionDate.getMonth() === now.getMonth() && 
-                       petitionDate.getFullYear() === now.getFullYear()
-              }).length}
+              7
             </div>
             <p className="text-xs text-muted-foreground">
               Petitions this month
@@ -79,7 +74,7 @@ export default async function DashboardPage() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeMinisters.length}</div>
+            <div className="text-2xl font-bold">22</div>
             <p className="text-xs text-muted-foreground">
               Ready to serve
             </p>
@@ -92,7 +87,7 @@ export default async function DashboardPage() {
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{liturgyPlans.length}</div>
+            <div className="text-2xl font-bold">100</div>
             <p className="text-xs text-muted-foreground">
               Total celebrations planned
             </p>
@@ -105,7 +100,7 @@ export default async function DashboardPage() {
             <Library className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userReadings.length}</div>
+            <div className="text-2xl font-bold">89</div>
             <p className="text-xs text-muted-foreground">
               Personal collections created
             </p>
@@ -161,30 +156,30 @@ export default async function DashboardPage() {
             <CardTitle>Upcoming Events</CardTitle>
           </CardHeader>
           <CardContent>
-            {upcomingEvents.length > 0 ? (
-              <div className="space-y-3">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium text-sm line-clamp-1">{event.title}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(event.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/calendar/${event.id}`}>
-                        View
-                      </Link>
-                    </Button>
-                  </div>
-                ))}
-                <Button asChild variant="outline" className="w-full" size="sm">
-                  <Link href="/calendar">
-                    View Full Calendar
-                  </Link>
-                </Button>
-              </div>
-            ) : (
+            {/*{upcomingEvents.length > 0 ? (*/}
+            {/*  <div className="space-y-3">*/}
+            {/*    {upcomingEvents.map((event) => (*/}
+            {/*      <div key={event.id} className="flex items-center justify-between p-2 border rounded-lg">*/}
+            {/*        <div>*/}
+            {/*          <h4 className="font-medium text-sm line-clamp-1">{event.title}</h4>*/}
+            {/*          <p className="text-xs text-muted-foreground">*/}
+            {/*            {new Date(event.date).toLocaleDateString()}*/}
+            {/*          </p>*/}
+            {/*        </div>*/}
+            {/*        <Button asChild variant="ghost" size="sm">*/}
+            {/*          <Link href={`/calendar/${event.id}`}>*/}
+            {/*            View*/}
+            {/*          </Link>*/}
+            {/*        </Button>*/}
+            {/*      </div>*/}
+            {/*    ))}*/}
+            {/*    <Button asChild variant="outline" className="w-full" size="sm">*/}
+            {/*      <Link href="/calendar">*/}
+            {/*        View Full Calendar*/}
+            {/*      </Link>*/}
+            {/*    </Button>*/}
+            {/*  </div>*/}
+            {/*) : (*/}
               <div className="text-center py-4">
                 <CalendarIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground mb-3">
@@ -197,7 +192,7 @@ export default async function DashboardPage() {
                   </Link>
                 </Button>
               </div>
-            )}
+            {/*)}*/}
           </CardContent>
         </Card>
 
@@ -207,66 +202,66 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentPetitionsCount.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Recent Petitions</h4>
-                  <div className="space-y-2">
-                    {recentPetitionsCount.map((petition) => (
-                      <div key={petition.id} className="flex items-center justify-between p-2 border rounded">
-                        <div>
-                          <p className="font-medium text-sm line-clamp-1">{petition.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(petition.date).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/petitions/${petition.id}`}>
-                            View
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {recentLiturgyPlans.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Recent Liturgy Plans</h4>
-                  <div className="space-y-2">
-                    {recentLiturgyPlans.map((plan) => (
-                      <div key={plan.id} className="flex items-center justify-between p-2 border rounded">
-                        <div>
-                          <p className="font-medium text-sm line-clamp-1">{plan.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(plan.date).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/liturgy-planning/${plan.id}`}>
-                            View
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {recentPetitionsCount.length === 0 && recentLiturgyPlans.length === 0 && (
-                <div className="text-center py-6">
-                  <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">
-                    No recent activity
-                  </p>
-                  <Button asChild size="sm">
-                    <Link href="/petitions/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Get Started
-                    </Link>
-                  </Button>
-                </div>
-              )}
+              {/*{recentPetitionsCount.length > 0 && (*/}
+              {/*  <div>*/}
+              {/*    <h4 className="text-sm font-medium mb-2">Recent Petitions</h4>*/}
+              {/*    <div className="space-y-2">*/}
+              {/*      {recentPetitionsCount.map((petition) => (*/}
+              {/*        <div key={petition.id} className="flex items-center justify-between p-2 border rounded">*/}
+              {/*          <div>*/}
+              {/*            <p className="font-medium text-sm line-clamp-1">{petition.title}</p>*/}
+              {/*            <p className="text-xs text-muted-foreground">*/}
+              {/*              {new Date(petition.date).toLocaleDateString()}*/}
+              {/*            </p>*/}
+              {/*          </div>*/}
+              {/*          <Button asChild variant="ghost" size="sm">*/}
+              {/*            <Link href={`/petitions/${petition.id}`}>*/}
+              {/*              View*/}
+              {/*            </Link>*/}
+              {/*          </Button>*/}
+              {/*        </div>*/}
+              {/*      ))}*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*)}*/}
+
+              {/*{recentLiturgyPlans.length > 0 && (*/}
+              {/*  <div>*/}
+              {/*    <h4 className="text-sm font-medium mb-2">Recent Liturgy Plans</h4>*/}
+              {/*    <div className="space-y-2">*/}
+              {/*      {recentLiturgyPlans.map((plan) => (*/}
+              {/*        <div key={plan.id} className="flex items-center justify-between p-2 border rounded">*/}
+              {/*          <div>*/}
+              {/*            <p className="font-medium text-sm line-clamp-1">{plan.title}</p>*/}
+              {/*            <p className="text-xs text-muted-foreground">*/}
+              {/*              {new Date(plan.date).toLocaleDateString()}*/}
+              {/*            </p>*/}
+              {/*          </div>*/}
+              {/*          <Button asChild variant="ghost" size="sm">*/}
+              {/*            <Link href={`/liturgy-planning/${plan.id}`}>*/}
+              {/*              View*/}
+              {/*            </Link>*/}
+              {/*          </Button>*/}
+              {/*        </div>*/}
+              {/*      ))}*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*)}*/}
+
+              {/*{recentPetitionsCount.length === 0 && recentLiturgyPlans.length === 0 && (*/}
+              {/*  <div className="text-center py-6">*/}
+              {/*    <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-2" />*/}
+              {/*    <p className="text-sm text-muted-foreground mb-3">*/}
+              {/*      No recent activity*/}
+              {/*    </p>*/}
+              {/*    <Button asChild size="sm">*/}
+              {/*      <Link href="/petitions/create">*/}
+              {/*        <Plus className="h-4 w-4 mr-2" />*/}
+              {/*        Get Started*/}
+              {/*      </Link>*/}
+              {/*    </Button>*/}
+              {/*  </div>*/}
+              {/*)}*/}
             </div>
           </CardContent>
         </Card>
