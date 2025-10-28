@@ -7,7 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Church } from 'lucide-react'
+import { Flower } from 'lucide-react'
+import {APP_NAME} from "@/lib/constants";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -42,9 +43,9 @@ export default function LoginPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center justify-center space-x-4 hover:opacity-80 transition-opacity">
             <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Church className="size-7" />
+              <Flower className="size-7" />
             </div>
-            <div className="font-semibold text-2xl text-gray-900">Liturgy.Faith</div>
+            <div className="font-semibold text-2xl text-gray-900">{APP_NAME}</div>
           </Link>
         </div>
         <Card className="w-full">

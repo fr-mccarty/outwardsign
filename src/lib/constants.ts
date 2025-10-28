@@ -1,6 +1,4 @@
-// Default petition context constants
-
-export const APP_NAME = 'Outward Sign'
+export const APP_NAME = 'OutwardSign'
 
 export const DEFAULT_PETITION_CONTEXT_SUNDAY_ENGLISH = `For our Holy Father, Pope Leo, our Bishop, and all the clergy.
 For our nation's leaders and all who serve in public office.

@@ -2,11 +2,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { 
-  Plus, 
-  FileText, 
+import {
+  Plus,
+  FileText,
   Sparkles,
   Church,
+  Flower,
   Heart,
   BookOpen,
   Menu,
@@ -15,6 +16,7 @@ import {
   ClipboardList,
   Printer
 } from "lucide-react"
+import {APP_NAME} from "@/lib/constants";
 
 export default function Home() {
   return (
@@ -25,11 +27,11 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <Church className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold">Liturgy.Faith</span>
+                <Flower className="h-8 w-8 text-primary" />
+                <span className="text-xl font-bold">{APP_NAME}</span>
               </Link>
             </div>
-            
+
             <div className="hidden md:flex items-center space-x-8">
               <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
                 Features
@@ -69,7 +71,7 @@ export default function Home() {
           <span className="text-primary block">Management Platform</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          Everything you need for liturgical planning, worship aids, ministry coordination, and 
+          Everything you need for liturgical planning, worship aids, ministry coordination, and
           community support - all in one sacred space designed for Catholic parishes.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -93,7 +95,7 @@ export default function Home() {
         <div className="text-center space-y-4">
           <h2 className="text-3xl font-bold">Complete Liturgical Management Suite</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            From petitions to musical planning, ministry coordination to worship aids - 
+            From petitions to musical planning, ministry coordination to worship aids -
             everything your parish needs for seamless liturgical celebrations.
           </p>
         </div>
@@ -110,7 +112,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Input your community context and watch as traditional Catholic petitions 
+                Input your community context and watch as traditional Catholic petitions
                 are automatically generated with proper liturgical language and structure.
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
@@ -133,7 +135,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Serve diverse communities with petitions in multiple languages, 
+                Serve diverse communities with petitions in multiple languages,
                 each maintaining authentic liturgical traditions and proper formatting.
               </p>
               <div className="flex flex-wrap gap-2">
@@ -156,7 +158,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Plan complete liturgical celebrations with prayer selection, 
+                Plan complete liturgical celebrations with prayer selection,
                 preface choices, and reading coordination all in one place.
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
@@ -179,7 +181,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Generate complete worship aids and follow-along guides for your 
+                Generate complete worship aids and follow-along guides for your
                 community, including newcomer-friendly explanations.
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
@@ -202,7 +204,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Coordinate musical selections and communicate with musicians 
+                Coordinate musical selections and communicate with musicians
                 for seamless liturgical celebrations.
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
@@ -225,7 +227,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Integrated liturgical calendar with feast days, special readings, 
+                Integrated liturgical calendar with feast days, special readings,
                 and planning tools for the entire church year.
               </p>
               <ul className="text-sm space-y-1 text-muted-foreground">
@@ -251,7 +253,7 @@ export default function Home() {
                 <h3 className="text-2xl font-bold">Professional Print Layouts</h3>
               </div>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Create beautiful, print-ready documents for your liturgical celebrations. 
+                Create beautiful, print-ready documents for your liturgical celebrations.
                 Our specialized print layouts ensure professional typography and proper liturgical formatting.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -273,7 +275,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border">
                 <div className="text-center space-y-3">
@@ -294,7 +296,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="text-center">
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <Link href="/signup">
@@ -313,7 +315,7 @@ export default function Home() {
         <div className="text-center space-y-4">
           <h2 className="text-3xl font-bold">Streamlined Liturgical Management</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            From initial planning to final execution, our platform guides you 
+            From initial planning to final execution, our platform guides you
             through every aspect of liturgical preparation and community coordination.
           </p>
         </div>
@@ -326,12 +328,12 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-semibold mb-2">Plan & Coordinate</h3>
               <p className="text-muted-foreground">
-                Access all liturgical tools in one place - from petitions and readings 
+                Access all liturgical tools in one place - from petitions and readings
                 to musical selections and minister coordination.
               </p>
             </div>
           </div>
-          
+
           <div className="text-center space-y-4">
             <div className="bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto">
               2
@@ -339,12 +341,12 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-semibold mb-2">Generate & Customize</h3>
               <p className="text-muted-foreground">
-                Create worship aids, follow-along guides, and all liturgical content 
+                Create worship aids, follow-along guides, and all liturgical content
                 with intelligent tools that understand Catholic traditions.
               </p>
             </div>
           </div>
-          
+
           <div className="text-center space-y-4">
             <div className="bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto">
               3
@@ -352,7 +354,7 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-semibold mb-2">Execute Seamlessly</h3>
               <p className="text-muted-foreground">
-                Use integrated calendar and communication tools to ensure every 
+                Use integrated calendar and communication tools to ensure every
                 liturgical celebration runs smoothly from start to finish.
               </p>
             </div>
@@ -415,7 +417,7 @@ export default function Home() {
         <div className="space-y-4">
           <h2 className="text-3xl font-bold">Ready to Transform Your Liturgical Management?</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join parishes worldwide who are creating more meaningful liturgical experiences 
+            Join parishes worldwide who are creating more meaningful liturgical experiences
             with our comprehensive liturgical management platform.
           </p>
         </div>
