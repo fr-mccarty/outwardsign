@@ -36,22 +36,10 @@ export async function getSelectedParishId(): Promise<string | null> {
 
   console.log('Fetching selected parish ID for user:', user.id)
 
-  // First, let's try to get all user_settings records to see if the table exists
-  const { data: allData, error: allError } = await supabase
-    .from('user_settings')
-    .select('*')
-    .limit(5)
-
-  console.log('All user_settings (first 5):', allData)
-  if (allError) {
-    console.error('Error fetching all user_settings:', allError)
-  }
-
-  // Now try the specific query - use limit(1) to get the first record
+  // Query user_settings - RLS automatically filters to current user
   const { data, error } = await supabase
     .from('user_settings')
     .select('selected_parish_id')
-    .eq('user_id', user.id)
     .limit(1)
 
   console.log('Query result - data:', data, 'error:', error)
@@ -80,7 +68,7 @@ export async function getUserParishAssociations(): Promise<ParishUser[]> {
   }
 
   const { data, error } = await supabase
-    .from('parish_user')
+    .from('parish_users')
     .select('*')
     .eq('user_id', user.id)
 
@@ -127,7 +115,7 @@ export async function setSelectedParish(parishId: string): Promise<void> {
 
   // Verify user has access to this parish
   const { data: parishUser, error: parishError } = await supabase
-    .from('parish_user')
+    .from('parish_users')
     .select('parish_id')
     .eq('user_id', user.id)
     .eq('parish_id', parishId)
@@ -196,4 +184,82 @@ export async function requireSelectedParish(): Promise<string> {
     redirect('/select-parish') // Will need to create this page
   }
   return selectedParishId
+}
+
+export async function createParishWithSuperAdmin(parishData: {
+  name: string
+  city: string
+  state: string
+}): Promise<{ success: boolean; parishId?: string; error?: string }> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false, error: 'User not authenticated' }
+  }
+
+  try {
+    // Step 1: Create the parish
+    const { data: parish, error: parishError } = await supabase
+      .from('parishes')
+      .insert({
+        name: parishData.name,
+        city: parishData.city,
+        state: parishData.state
+      })
+      .select()
+      .single()
+
+    if (parishError || !parish) {
+      console.error('Error creating parish:', parishError)
+      return { success: false, error: parishError?.message || 'Failed to create parish' }
+    }
+
+    console.log('Parish created:', parish.id)
+
+    // Step 2: Create parish_users record with super-admin role
+    const { error: parishUserError } = await supabase
+      .from('parish_users')
+      .insert({
+        user_id: user.id,
+        parish_id: parish.id,
+        roles: ['super-admin', 'admin']
+      })
+
+    if (parishUserError) {
+      console.error('Error creating parish_users:', parishUserError)
+      // Try to clean up the parish if parish_users creation failed
+      await supabase.from('parishes').delete().eq('id', parish.id)
+      return { success: false, error: parishUserError.message }
+    }
+
+    console.log('Parish user created with super-admin role')
+
+    // Step 3: Set the parish as the user's selected parish
+    const { error: settingsError } = await supabase
+      .from('user_settings')
+      .update({ selected_parish_id: parish.id })
+      .eq('user_id', user.id)
+
+    if (settingsError) {
+      console.error('Error updating user settings:', settingsError)
+      // Don't fail the whole operation if this fails, user can select later
+    }
+
+    console.log('User settings updated with selected parish')
+
+    // Step 4: Revalidate cache
+    try {
+      const { revalidatePath } = await import('next/cache')
+      revalidatePath('/dashboard')
+      revalidatePath('/onboarding')
+    } catch (error) {
+      console.log('Could not revalidate path:', error)
+    }
+
+    return { success: true, parishId: parish.id }
+  } catch (error) {
+    console.error('Unexpected error creating parish:', error)
+    return { success: false, error: 'An unexpected error occurred' }
+  }
 }

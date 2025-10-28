@@ -22,6 +22,24 @@ Plan, Communicate, and Celebrate Sacraments and Sacramentals in a Catholic Paris
 
 **Examples:** Wedding Liturgies, Quinceanera, Baptisms, Presentations (Latino), Funerals
 
+## Database
+For making database changes, a migration file should first be created.
+Claude Code should NEVER use the supabase mcp server to make database changes.
+
+When ready, tell the user to push to remote using this command
+supabase db push
+
+Make sure to confirm at the end of a message when a new migration has been created. Ensure the user has run the push command before moving on.
+
+## Accessing Records
+The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
+
+## Role Permissions
+- super-admin: Billing settings, parish ownership
+- admin: Parish settings, parish management
+- staff: Read parish information
+- parishioner: Read only their own records
+
 ## Tech Stack
 **Frontend:** Next.js 13+ with App Router  
 **Database:** Supabase (PostgreSQL)  

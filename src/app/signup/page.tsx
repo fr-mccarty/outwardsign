@@ -94,14 +94,15 @@ function SignupForm() {
       if (signUpData.session) {
         if (invitationToken) {
           setMessage(`Account created successfully! You've joined ${parishName}. Redirecting to dashboard...`)
+          setTimeout(() => {
+            window.location.href = '/dashboard'
+          }, 2000)
         } else {
-          setMessage('Account created successfully! Redirecting to dashboard...')
+          setMessage('Account created successfully! Let\'s set up your parish...')
+          setTimeout(() => {
+            window.location.href = '/onboarding'
+          }, 1500)
         }
-
-        // Wait a bit longer to ensure session is fully established
-        setTimeout(() => {
-          router.replace('/dashboard')
-        }, 2000)
       } else {
         // Try to sign in manually (fallback)
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -115,14 +116,15 @@ function SignupForm() {
         } else {
           if (invitationToken) {
             setMessage(`Account created successfully! You've joined ${parishName}. Redirecting to dashboard...`)
+            setTimeout(() => {
+              window.location.href = '/dashboard'
+            }, 2000)
           } else {
-            setMessage('Account created successfully! Redirecting to dashboard...')
+            setMessage('Account created successfully! Let\'s set up your parish...')
+            setTimeout(() => {
+              window.location.href = '/onboarding'
+            }, 1500)
           }
-
-          // Wait longer to ensure session is established in cookies
-          setTimeout(() => {
-            window.location.href = '/dashboard'
-          }, 2000)
         }
       }
     } catch {

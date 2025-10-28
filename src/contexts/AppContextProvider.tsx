@@ -58,11 +58,19 @@ export function AppContextProvider({
 
     try {
       console.log('Refreshing settings for user:', user.id)
-      
+
+      // Check if we have a valid session
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Current session:', session ? 'exists' : 'null')
+
+      if (!session) {
+        console.error('No active session found!')
+        return
+      }
+
       const { data: settings, error } = await supabase
         .from('user_settings')
         .select('*')
-        .eq('user_id', user.id)
         .single()
 
       if (error) {
@@ -134,10 +142,15 @@ export function AppContextProvider({
       if (session?.user) {
         setUser(session.user)
         setIsLoading(false)
-        
-        // Don't refresh settings if we already have initial settings
-        if (!initialSettings) {
+
+        // Skip fetching settings on onboarding page (user just signed up)
+        const isOnboarding = typeof window !== 'undefined' && window.location.pathname === '/onboarding'
+
+        // Don't refresh settings if we already have initial settings or on onboarding
+        if (!initialSettings && !isOnboarding) {
           await refreshSettings()
+        } else if (isOnboarding) {
+          console.log('Skipping settings fetch on onboarding page')
         }
       } else {
         setUser(null)
@@ -153,7 +166,8 @@ export function AppContextProvider({
 
   // If we have initial user but haven't loaded settings yet, load them
   useEffect(() => {
-    if (user && !userSettings && !initialSettings) {
+    const isOnboarding = typeof window !== 'undefined' && window.location.pathname === '/onboarding'
+    if (user && !userSettings && !initialSettings && !isOnboarding) {
       refreshSettings()
     }
   }, [user, userSettings, initialSettings]) // eslint-disable-line react-hooks/exhaustive-deps
