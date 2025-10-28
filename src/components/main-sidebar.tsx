@@ -17,13 +17,10 @@ import {
   Home,
   FileText,
   BookOpen,
-  UserCheck,
-  ClipboardList,
+  Flower,
   Calendar,
   Settings,
   Sparkles,
-  Users,
-  User,
   Church,
   Megaphone,
   Heart
@@ -31,7 +28,7 @@ import {
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
-import {APP_NAME} from "@/lib/constants";
+import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
 
 export function MainSidebar() {
   const { isMobile, setOpenMobile } = useSidebar()
@@ -50,11 +47,11 @@ export function MainSidebar() {
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard" onClick={handleLinkClick}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Church className="size-4" />
+                  <Flower className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{APP_NAME}</span>
-                  <span className="truncate text-xs">Liturgical Tools</span>
+                  <span className="truncate text-xs">{APP_TAGLINE}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
