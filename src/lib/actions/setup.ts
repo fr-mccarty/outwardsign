@@ -5,56 +5,41 @@ import { redirect } from 'next/navigation'
 
 export async function createTestParish() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
   }
 
   try {
-    // Create a test parish
-    const { data: parish, error: parishError } = await supabase
-      .from('parishes')
-      .insert([
-        {
-          name: 'Test Parish',
-          city: 'Test City',
-          state: 'TS'
-        }
-      ])
-      .select()
+    // Use the database function to create parish with super admin
+    // This bypasses RLS policies using SECURITY DEFINER
+    const { data: result, error: functionError } = await supabase
+      .rpc('create_parish_with_super_admin', {
+        p_user_id: user.id,
+        p_name: 'Test Parish',
+        p_city: 'Test City',
+        p_state: 'TS'
+      })
       .single()
 
-    if (parishError) {
-      throw new Error(`Failed to create parish: ${parishError.message}`)
+    if (functionError) {
+      throw new Error(`Failed to create parish: ${functionError.message}`)
     }
 
-    // Associate user with the parish
-    const { error: associationError } = await supabase
-      .from('parish_user')
-      .insert([
-        {
-          user_id: user.id,
-          parish_id: parish.id,
-          roles: ['admin']
-        }
-      ])
-
-    if (associationError) {
-      throw new Error(`Failed to associate user with parish: ${associationError.message}`)
+    if (!result.success) {
+      throw new Error(`Failed to create parish: ${result.error_message}`)
     }
 
-    // Set the parish as selected in user settings
-    const { error: settingsError } = await supabase
-      .from('user_settings')
-      .upsert({
-        user_id: user.id,
-        selected_parish_id: parish.id,
-        language: 'en'
-      })
+    // Fetch the created parish to return it
+    const { data: parish, error: fetchError } = await supabase
+      .from('parishes')
+      .select()
+      .eq('id', result.parish_id)
+      .single()
 
-    if (settingsError) {
-      throw new Error(`Failed to update user settings: ${settingsError.message}`)
+    if (fetchError) {
+      throw new Error(`Parish created but failed to fetch: ${fetchError.message}`)
     }
 
     return { success: true, parish }
@@ -70,43 +55,41 @@ export async function createParish(data: {
   state: string
 }) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
   }
 
   try {
-    // Create the parish
-    const { data: parish, error: parishError } = await supabase
-      .from('parishes')
-      .insert([
-        {
-          name: data.name.trim(),
-          city: data.city.trim(),
-          state: data.state.trim()
-        }
-      ])
-      .select()
+    // Use the database function to create parish with super admin
+    // This bypasses RLS policies using SECURITY DEFINER
+    const { data: result, error: functionError } = await supabase
+      .rpc('create_parish_with_super_admin', {
+        p_user_id: user.id,
+        p_name: data.name.trim(),
+        p_city: data.city.trim(),
+        p_state: data.state.trim()
+      })
       .single()
 
-    if (parishError) {
-      throw new Error(`Failed to create parish: ${parishError.message}`)
+    if (functionError) {
+      throw new Error(`Failed to create parish: ${functionError.message}`)
     }
 
-    // Associate user with the parish as admin
-    const { error: associationError } = await supabase
-      .from('parish_user')
-      .insert([
-        {
-          user_id: user.id,
-          parish_id: parish.id,
-          roles: ['admin']
-        }
-      ])
+    if (!result.success) {
+      throw new Error(`Failed to create parish: ${result.error_message}`)
+    }
 
-    if (associationError) {
-      throw new Error(`Failed to associate user with parish: ${associationError.message}`)
+    // Fetch the created parish to return it
+    const { data: parish, error: fetchError } = await supabase
+      .from('parishes')
+      .select()
+      .eq('id', result.parish_id)
+      .single()
+
+    if (fetchError) {
+      throw new Error(`Parish created but failed to fetch: ${fetchError.message}`)
     }
 
     return { success: true, parish }
@@ -131,7 +114,7 @@ export async function updateParish(parishId: string, data: {
   try {
     // Check if user has admin rights for this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -175,7 +158,7 @@ export async function getParishSettings(parishId: string) {
   try {
     // Check if user has access to this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -244,7 +227,7 @@ export async function updateParishSettings(parishId: string, data: {
   try {
     // Check if user has admin rights for this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -297,7 +280,7 @@ export async function getParishMembers(parishId: string) {
   try {
     // Check if user has access to this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -360,7 +343,7 @@ export async function inviteParishMember(parishId: string, email: string, roles:
   try {
     // Check if user has admin rights for this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -473,7 +456,7 @@ export async function removeParishMember(parishId: string, userId: string) {
   try {
     // Check if user has admin rights for this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -490,7 +473,7 @@ export async function removeParishMember(parishId: string, userId: string) {
 
     // Remove the user from the parish
     const { error: removeError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .delete()
       .eq('user_id', userId)
       .eq('parish_id', parishId)
@@ -517,7 +500,7 @@ export async function updateMemberRole(parishId: string, userId: string, roles: 
   try {
     // Check if user has admin rights for this parish
     const { data: userParish, error: userParishError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .select('roles')
       .eq('user_id', user.id)
       .eq('parish_id', parishId)
@@ -534,7 +517,7 @@ export async function updateMemberRole(parishId: string, userId: string, roles: 
 
     // Update the member's roles
     const { error: updateError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .update({ roles })
       .eq('user_id', userId)
       .eq('parish_id', parishId)

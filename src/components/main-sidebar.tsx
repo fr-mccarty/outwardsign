@@ -13,7 +13,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { 
+import {
   Home,
   FileText,
   BookOpen,
@@ -31,6 +31,7 @@ import {
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
+import {APP_NAME} from "@/lib/constants";
 
 export function MainSidebar() {
   const { isMobile, setOpenMobile } = useSidebar()
@@ -52,7 +53,7 @@ export function MainSidebar() {
                   <Church className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Liturgy.Faith</span>
+                  <span className="truncate font-semibold">{APP_NAME}</span>
                   <span className="truncate text-xs">Liturgical Tools</span>
                 </div>
               </Link>
@@ -259,7 +260,7 @@ export function MainSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         {/* Settings section at the bottom */}
         <SidebarGroup>
           <SidebarGroupLabel>Settings</SidebarGroupLabel>

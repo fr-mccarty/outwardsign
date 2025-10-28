@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditPetitionTemplatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();

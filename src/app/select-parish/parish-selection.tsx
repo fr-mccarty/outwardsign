@@ -32,7 +32,7 @@ export function ParishSelection() {
       
       // Get user's parish associations with parish details
       const { data: userParishes, error } = await supabase
-        .from('parish_user')
+        .from('parish_users')
         .select(`
           user_id,
           parish_id,
