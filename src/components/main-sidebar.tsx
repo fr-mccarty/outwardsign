@@ -101,6 +101,29 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
+                name="Mass"
+                icon={ClipboardList}
+                items={[
+                  {
+                    title: "Liturgy Planning",
+                    url: "/liturgy-planning",
+                    icon: ClipboardList,
+                  },
+                  {
+                    title: "Create Liturgy",
+                    url: "/liturgy/wizard",
+                    icon: Sparkles,
+                  },
+                  {
+                    title: "Liturgical Calendar",
+                    url: "/calendar",
+                    icon: Calendar,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
                 name="Marriage"
                 icon={BookOpen}
                 items={[
@@ -217,8 +240,21 @@ export function MainSidebar() {
                 icon={Megaphone}
                 items={[
                   {
-                    title: "Our Announcements",
-                    url: "/announcements",
+                    title: "Our Baptisms",
+                    url: "/baptisms",
+                    icon: Megaphone,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
+                name="Presentations"
+                icon={Megaphone}
+                items={[
+                  {
+                    title: "Our Presentations",
+                    url: "/presentations",
                     icon: Megaphone,
                   },
                 ]}
@@ -227,6 +263,8 @@ export function MainSidebar() {
 
             </SidebarMenu>
           </SidebarGroupContent>
+
+
         </SidebarGroup>
 
         {/* Settings section at the bottom */}
