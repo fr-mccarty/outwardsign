@@ -213,57 +213,6 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Petitions"
-                icon={FileText}
-                items={[
-                  {
-                    title: "Our Petitions",
-                    url: "/petitions",
-                    icon: FileText,
-                  },
-                  {
-                    title: "Create Petition",
-                    url: "/petitions/create",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Calendar View",
-                    url: "/petitions/calendar",
-                    icon: Calendar,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <CollapsibleNavSection
-                name="Announcements"
-                icon={Megaphone}
-                items={[
-                  {
-                    title: "Our Announcements",
-                    url: "/announcements",
-                    icon: Megaphone,
-                  },
-                  {
-                    title: "Create Announcement",
-                    url: "/announcements/create",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Calendar View",
-                    url: "/announcements/calendar",
-                    icon: Calendar,
-                  },
-                  {
-                    title: "Templates",
-                    url: "/announcements/templates",
-                    icon: FileText,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <CollapsibleNavSection
                 name="Baptisms"
                 icon={Megaphone}
                 items={[
@@ -281,37 +230,27 @@ export function MainSidebar() {
         </SidebarGroup>
 
         {/* Settings section at the bottom */}
-        {/*<SidebarGroup>*/}
-        {/*  <SidebarGroupLabel>Settings</SidebarGroupLabel>*/}
-        {/*  <SidebarGroupContent>*/}
-        {/*    <SidebarMenu>*/}
+        <SidebarGroup>
+          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
 
-        {/*      <CollapsibleNavSection*/}
-        {/*        name="Settings"*/}
-        {/*        icon={Settings}*/}
-        {/*        items={[*/}
-        {/*          {*/}
-        {/*            title: "Parish Settings",*/}
-        {/*            url: "/settings/parish",*/}
-        {/*            icon: Church,*/}
-        {/*          },*/}
-        {/*          {*/}
-        {/*            title: "Readings",*/}
-        {/*            url: "/settings/readings",*/}
-        {/*            icon: BookOpen,*/}
-        {/*          },*/}
-        {/*          {*/}
-        {/*            title: "Categories",*/}
-        {/*            url: "/settings/categories",*/}
-        {/*            icon: FileText,*/}
-        {/*          },*/}
-        {/*        ]}*/}
-        {/*        defaultOpen={false}*/}
-        {/*      />*/}
+              <CollapsibleNavSection
+                name="Settings"
+                icon={Settings}
+                items={[
+                  {
+                    title: "Parish Settings",
+                    url: "/settings/parish",
+                    icon: Church,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
-        {/*    </SidebarMenu>*/}
-        {/*  </SidebarGroupContent>*/}
-        {/*</SidebarGroup>*/}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t p-2">
         <ParishUserMenu />

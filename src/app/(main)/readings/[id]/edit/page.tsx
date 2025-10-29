@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { PageContainer } from "@/components/page-container"
 import { Loading } from '@/components/loading'
 import Link from "next/link"
-import { Save, Plus, X } from "lucide-react"
+import { Save } from "lucide-react"
 import { getReading, updateReading, type CreateReadingData } from "@/lib/actions/readings"
+import { READING_CATEGORIES, READING_CATEGORY_LABELS } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { toast } from 'sonner'
@@ -23,7 +24,6 @@ export default function EditReadingPage({ params }: PageProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
-  const [newCategory, setNewCategory] = useState("")
   const [readingId, setReadingId] = useState<string>('')
   const [formData, setFormData] = useState<CreateReadingData>({
     pericope: "",
@@ -92,28 +92,16 @@ export default function EditReadingPage({ params }: PageProps) {
     }
   }
 
-  const addCategory = () => {
-    if (newCategory.trim() && !formData.categories?.includes(newCategory.trim())) {
-      setFormData({
-        ...formData,
-        categories: [...(formData.categories || []), newCategory.trim()]
-      })
-      setNewCategory("")
-    }
-  }
+  const handleCategoryToggle = (category: string) => {
+    const currentCategories = formData.categories || []
+    const newCategories = currentCategories.includes(category)
+      ? currentCategories.filter(c => c !== category)
+      : [...currentCategories, category]
 
-  const removeCategory = (categoryToRemove: string) => {
     setFormData({
       ...formData,
-      categories: formData.categories?.filter(cat => cat !== categoryToRemove) || []
+      categories: newCategories
     })
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addCategory()
-    }
   }
 
   if (pageLoading) {
@@ -220,45 +208,28 @@ export default function EditReadingPage({ params }: PageProps) {
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Label>Categories</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Add a category (e.g., Gospel, Psalm, Wedding)"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addCategory}
-                  disabled={!newCategory.trim()}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {formData.categories && formData.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {formData.categories.map((category) => (
-                    <Badge key={category} variant="secondary" className="flex items-center gap-1">
-                      {category}
-                      <button
-                        type="button"
-                        onClick={() => removeCategory(category)}
-                        className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Categories help organize and filter your readings
+              <p className="text-sm text-muted-foreground mb-2">
+                Select one or more categories for this reading
               </p>
+              <div className="space-y-2">
+                {READING_CATEGORIES.map((category) => (
+                  <div key={category} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`category-${category}`}
+                      checked={formData.categories?.includes(category) || false}
+                      onCheckedChange={() => handleCategoryToggle(category)}
+                    />
+                    <label
+                      htmlFor={`category-${category}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {READING_CATEGORY_LABELS[category]?.en || category}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="bg-muted/50 p-4 rounded-lg">

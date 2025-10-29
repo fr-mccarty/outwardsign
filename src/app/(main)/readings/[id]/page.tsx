@@ -106,12 +106,12 @@ export default function ReadingDetailPage({ params }: PageProps) {
   }
 
   return (
-    <PageContainer 
+    <PageContainer
       title={reading.pericope || 'Reading'}
       description={reading.lectionary_id || 'Scripture reading details'}
       maxWidth="4xl"
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Title and badges */}
         <div>
           <h1 className="text-3xl font-bold">{reading.pericope || 'Untitled Reading'}</h1>
@@ -132,9 +132,9 @@ export default function ReadingDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           <Button variant="outline" onClick={handleCopyText}>
             <Copy className="h-4 w-4 mr-2" />
             Copy Text
@@ -145,8 +145,8 @@ export default function ReadingDetailPage({ params }: PageProps) {
               Edit
             </Link>
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
           >
@@ -154,31 +154,26 @@ export default function ReadingDetailPage({ params }: PageProps) {
             {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        {/* Categories */}
-        {reading.categories && reading.categories.length > 0 && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-wrap gap-2">
-                {reading.categories.map(category => (
-                  <Badge key={category} className={getCategoryColor(category)}>
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+        <div className="space-y-6">
         {/* Reading Text */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Reading Text
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Reading Text
+              </CardTitle>
+              {reading.categories && reading.categories.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {reading.categories.map(category => (
+                    <Badge key={category} className={getCategoryColor(category)}>
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="bg-muted/30 p-6 rounded-lg">
@@ -234,7 +229,7 @@ export default function ReadingDetailPage({ params }: PageProps) {
             </div>
           </CardContent>
         </Card>
-
+        </div>
       </div>
     </PageContainer>
   )
