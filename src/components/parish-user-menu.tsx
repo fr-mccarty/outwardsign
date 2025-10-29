@@ -68,7 +68,7 @@ export function ParishUserMenu() {
 
         // Get user's parish associations with parish details
         const { data: userParishes, error } = await supabase
-          .from('parish_user')
+          .from('parish_users')
           .select(`
             user_id,
             parish_id,
@@ -84,7 +84,7 @@ export function ParishUserMenu() {
           .eq('user_id', user.id)
 
         if (error) {
-          console.error('Error loading parishes:', error)
+          toast.error('Failed to load parishes')
           return
         }
 
@@ -98,7 +98,7 @@ export function ParishUserMenu() {
         setParishes(parishesWithDetails)
       }
     } catch (error) {
-      console.error('Error loading data:', error)
+      toast.error('Failed to load user data')
     } finally {
       setLoading(false)
     }
@@ -118,7 +118,6 @@ export function ParishUserMenu() {
       // Refresh the page to update all data
       window.location.reload()
     } catch (error) {
-      console.error('Error switching parish:', error)
       toast.error('Failed to switch parish')
     } finally {
       setSwitching(null)
