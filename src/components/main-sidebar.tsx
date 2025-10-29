@@ -23,7 +23,7 @@ import {
   Sparkles,
   Church,
   Megaphone,
-  Heart
+  Heart, ClipboardList, UserCheck, User, Users
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -73,6 +73,15 @@ export function MainSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
+              <SidebarMenuItem key="Calendar">
+                <SidebarMenuButton asChild>
+                  <Link href="/calendar" onClick={handleLinkClick}>
+                    <Calendar />
+                    <span>Calendar</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               <CollapsibleNavSection
                 name="Readings"
                 icon={BookOpen}
@@ -92,7 +101,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Liturgical Readings"
+                name="Marriage"
                 icon={BookOpen}
                 items={[
                   {
@@ -114,8 +123,8 @@ export function MainSidebar() {
                 defaultOpen={false}
               />
 
-              {/* <CollapsibleNavSection
-                name="Liturgy"
+              <CollapsibleNavSection
+                name="Funeral"
                 icon={ClipboardList}
                 items={[
                   {
@@ -135,10 +144,10 @@ export function MainSidebar() {
                   },
                 ]}
                 defaultOpen={false}
-              /> */}
+              />
 
-              {/* <CollapsibleNavSection
-                name="Ministry"
+              <CollapsibleNavSection
+                name="People"
                 icon={UserCheck}
                 items={[
                   {
@@ -168,7 +177,7 @@ export function MainSidebar() {
                   },
                 ]}
                 defaultOpen={false}
-              /> */}
+              />
 
               <CollapsibleNavSection
                 name="Mass Intentions"
@@ -254,34 +263,14 @@ export function MainSidebar() {
                 defaultOpen={false}
               />
 
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Settings section at the bottom */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-
               <CollapsibleNavSection
-                name="Settings"
-                icon={Settings}
+                name="Baptisms"
+                icon={Megaphone}
                 items={[
                   {
-                    title: "Parish Settings",
-                    url: "/settings/parish",
-                    icon: Church,
-                  },
-                  {
-                    title: "Readings",
-                    url: "/settings/readings",
-                    icon: BookOpen,
-                  },
-                  {
-                    title: "Categories",
-                    url: "/settings/categories",
-                    icon: FileText,
+                    title: "Our Announcements",
+                    url: "/announcements",
+                    icon: Megaphone,
                   },
                 ]}
                 defaultOpen={false}
@@ -290,6 +279,39 @@ export function MainSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Settings section at the bottom */}
+        {/*<SidebarGroup>*/}
+        {/*  <SidebarGroupLabel>Settings</SidebarGroupLabel>*/}
+        {/*  <SidebarGroupContent>*/}
+        {/*    <SidebarMenu>*/}
+
+        {/*      <CollapsibleNavSection*/}
+        {/*        name="Settings"*/}
+        {/*        icon={Settings}*/}
+        {/*        items={[*/}
+        {/*          {*/}
+        {/*            title: "Parish Settings",*/}
+        {/*            url: "/settings/parish",*/}
+        {/*            icon: Church,*/}
+        {/*          },*/}
+        {/*          {*/}
+        {/*            title: "Readings",*/}
+        {/*            url: "/settings/readings",*/}
+        {/*            icon: BookOpen,*/}
+        {/*          },*/}
+        {/*          {*/}
+        {/*            title: "Categories",*/}
+        {/*            url: "/settings/categories",*/}
+        {/*            icon: FileText,*/}
+        {/*          },*/}
+        {/*        ]}*/}
+        {/*        defaultOpen={false}*/}
+        {/*      />*/}
+
+        {/*    </SidebarMenu>*/}
+        {/*  </SidebarGroupContent>*/}
+        {/*</SidebarGroup>*/}
       </SidebarContent>
       <SidebarFooter className="border-t p-2">
         <ParishUserMenu />
