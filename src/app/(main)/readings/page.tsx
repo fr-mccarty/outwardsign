@@ -13,7 +13,7 @@ import { getReadings } from "@/lib/actions/readings"
 import { READING_CATEGORY_LABELS } from "@/lib/constants"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { Input } from "@/components/ui/input"
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -58,16 +58,16 @@ export default function ReadingsPage() {
 
   // Filter readings based on search and filters
   const filteredReadings = readings.filter(reading => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       reading.pericope?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reading.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reading.lectionary_id?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesLanguage = selectedLanguage === 'all' || reading.language === selectedLanguage
-    
-    const matchesCategory = selectedCategory === 'all' || 
+
+    const matchesCategory = selectedCategory === 'all' ||
       (reading.categories && reading.categories.includes(selectedCategory))
-    
+
     return matchesSearch && matchesLanguage && matchesCategory
   })
 
@@ -84,20 +84,19 @@ export default function ReadingsPage() {
   }
 
   return (
-    <PageContainer 
+    <PageContainer
       title="Our Readings"
       description="Manage your collection of scripture readings and liturgical texts."
       maxWidth="7xl"
-    >
-      <div className="flex justify-end mb-6">
+      actions={
         <Button asChild>
           <Link href="/readings/create">
             <Plus className="h-4 w-4 mr-2" />
             New Reading
           </Link>
         </Button>
-      </div>
-
+      }
+    >
       <div className="space-y-6">
         {/* Search and Filters */}
         <Card>
@@ -192,13 +191,13 @@ export default function ReadingsPage() {
                     ))}
                   </div>
                 )}
-                
+
                 {reading.text && (
                   <p className="text-sm text-muted-foreground line-clamp-3">
                     {reading.text}
                   </p>
                 )}
-                
+
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-xs text-muted-foreground">
                     Added {new Date(reading.created_at).toLocaleDateString()}
