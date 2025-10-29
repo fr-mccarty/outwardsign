@@ -19,7 +19,7 @@ import { PageContainer } from '@/components/page-container'
 import { Save, Church, RefreshCw, Users, Mail, MoreVertical, Trash2, UserCog, Settings, Plus, DollarSign } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getCurrentParish } from '@/lib/auth/parish'
-import { updateParish, getParishMembers, inviteParishMember, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
+import { updateParish, getParishMembers, inviteStaff, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
 import { Parish, ParishSettings } from '@/lib/types'
 import { toast } from 'sonner'
 
@@ -49,7 +49,7 @@ export default function ParishSettingsPage() {
   ])
   const [members, setMembers] = useState<ParishMember[]>([])
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState('member')
+  const [inviteRole, setInviteRole] = useState('staff')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [inviting, setInviting] = useState(false)
@@ -196,12 +196,12 @@ export default function ParishSettingsPage() {
 
     setInviting(true)
     try {
-      const result = await inviteParishMember(currentParish.id, inviteEmail, [inviteRole])
+      const result = await inviteStaff(currentParish.id, inviteEmail, [inviteRole])
       toast.success(result.message)
-      
+
       // Clear form and reload members if user was added
       setInviteEmail('')
-      setInviteRole('member')
+      setInviteRole('staff')
       if (result.userExists) {
         await loadMembers(currentParish.id)
       }
@@ -534,12 +534,12 @@ export default function ParishSettingsPage() {
                             <UserCog className="h-4 w-4 mr-2" />
                             Make Admin
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleUpdateRole(member.user_id, ['member'])}
-                            disabled={member.roles.length === 1 && member.roles.includes('member')}
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateRole(member.user_id, ['staff'])}
+                            disabled={member.roles.length === 1 && member.roles.includes('staff')}
                           >
                             <UserCog className="h-4 w-4 mr-2" />
-                            Make Member
+                            Make Staff
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleRemoveMember(member.user_id, member.users?.email || 'Unknown')}
@@ -588,7 +588,7 @@ export default function ParishSettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value="staff">Staff</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="minister">Minister</SelectItem>
                     <SelectItem value="lector">Lector</SelectItem>

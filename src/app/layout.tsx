@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppContextProvider } from "@/contexts/AppContextProvider";
 import { Toaster } from "@/components/ui/sonner";
+import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Liturgy.Faith",
-  description: "Liturgical tools for the modern church",
+  title: `${APP_NAME}`,
+  description: `${APP_TAGLINE}`,
 };
 
 export default function RootLayout({

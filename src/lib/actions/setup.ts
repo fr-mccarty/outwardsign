@@ -332,7 +332,7 @@ export async function getParishMembers(parishId: string) {
   }
 }
 
-export async function inviteParishMember(parishId: string, email: string, roles: string[] = ['member']) {
+export async function inviteStaff(parishId: string, email: string, roles: string[] = ['staff']) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -491,7 +491,7 @@ export async function removeParishMember(parishId: string, userId: string) {
 
 export async function updateMemberRole(parishId: string, userId: string, roles: string[]) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
@@ -529,6 +529,99 @@ export async function updateMemberRole(parishId: string, userId: string, roles: 
     return { success: true }
   } catch (error) {
     console.error('Error updating member role:', error)
+    throw error
+  }
+}
+
+export async function populateInitialParishData(parishId: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  try {
+    // Create initial categories
+    const categoriesData = [
+      {
+        parish_id: parishId,
+        name: 'Wedding',
+        description: 'Readings suitable for wedding ceremonies',
+        sort_order: 0
+      },
+      {
+        parish_id: parishId,
+        name: 'Funeral',
+        description: 'Readings for funeral liturgies and memorial services',
+        sort_order: 1
+      },
+      {
+        parish_id: parishId,
+        name: 'Baptism',
+        description: 'Scripture readings for baptism celebrations',
+        sort_order: 2
+      }
+    ]
+
+    const { data: categories, error: categoriesError } = await supabase
+      .from('categories')
+      .insert(categoriesData)
+      .select()
+
+    if (categoriesError) {
+      console.error('Error creating categories:', categoriesError)
+      throw new Error(`Failed to create categories: ${categoriesError.message}`)
+    }
+
+    // Create initial readings
+    const readingsData = [
+      {
+        parish_id: parishId,
+        pericope: '1 Corinthians 13:4-13',
+        text: 'Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs. Love does not delight in evil but rejoices with the truth. It always protects, always trusts, always hopes, always perseveres.\n\nLove never fails. But where there are prophecies, they will cease; where there are tongues, they will be stilled; where there is knowledge, it will pass away. For we know in part and we prophesy in part, but when completeness comes, what is in part disappears.\n\nWhen I was a child, I talked like a child, I thought like a child, I reasoned like a child. When I became a man, I put the ways of childhood behind me. For now we see only a reflection as in a mirror; then we shall see face to face. Now I know in part; then I shall know fully, even as I am fully known.\n\nAnd now these three remain: faith, hope and love. But the greatest of these is love.',
+        introduction: 'A reading from the first Letter of Saint Paul to the Corinthians.',
+        conclusion: 'The word of the Lord.',
+        language: 'English',
+        categories: ['Wedding']
+      },
+      {
+        parish_id: parishId,
+        pericope: 'John 14:1-6',
+        text: '"Do not let your hearts be troubled. You believe in God; believe also in me. My Father\'s house has many rooms; if that were not so, would I have told you that I am going there to prepare a place for you? And if I go and prepare a place for you, I will come back and take you to be with me that you also may be where I am. You know the way to the place where I am going."\n\nThomas said to him, "Lord, we don\'t know where you are going, so how can we know the way?"\n\nJesus answered, "I am the way and the truth and the life. No one comes to the Father except through me."',
+        introduction: 'A reading from the holy Gospel according to John.',
+        conclusion: 'The Gospel of the Lord.',
+        language: 'English',
+        categories: ['Funeral']
+      },
+      {
+        parish_id: parishId,
+        pericope: 'Matthew 28:18-20',
+        text: 'Then Jesus came to them and said, "All authority in heaven and on earth has been given to me. Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, and teaching them to obey everything I have commanded you. And surely I am with you always, to the very end of the age."',
+        introduction: 'A reading from the holy Gospel according to Matthew.',
+        conclusion: 'The Gospel of the Lord.',
+        language: 'English',
+        categories: ['Baptism']
+      }
+    ]
+
+    const { data: readings, error: readingsError } = await supabase
+      .from('readings')
+      .insert(readingsData)
+      .select()
+
+    if (readingsError) {
+      console.error('Error creating readings:', readingsError)
+      throw new Error(`Failed to create readings: ${readingsError.message}`)
+    }
+
+    return {
+      success: true,
+      categories: categories || [],
+      readings: readings || []
+    }
+  } catch (error) {
+    console.error('Error populating initial parish data:', error)
     throw error
   }
 }

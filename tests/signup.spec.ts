@@ -9,10 +9,10 @@ test.describe('Signup Flow', () => {
 
     // 1. Go to home page
     await page.goto('/');
-    await expect(page).toHaveTitle(/Liturgy/);
+    await expect(page).toHaveTitle(/Outward Sign/);
 
-    // 2. Click on Sign up link
-    await page.click('a[href="/signup"]');
+    // 2. Click on Sign up link (use first() since there are multiple)
+    await page.locator('a[href="/signup"]').first().click();
     await expect(page).toHaveURL('/signup');
 
     // 3. Fill in the signup form
@@ -39,9 +39,23 @@ test.describe('Signup Flow', () => {
 
     await page.click('button[type="submit"]');
 
-    // Should redirect to dashboard after creating parish
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    // Wait for preparing screen
+    await expect(page.locator('text=/One minute while we get your parish ready for you/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/Creating categories and sample readings/i')).toBeVisible();
+
+    // Should redirect to dashboard after creating parish and populating data
+    await page.waitForURL('/dashboard', { timeout: 15000 });
     await expect(page).toHaveURL('/dashboard');
+
+    // Navigate to readings module to verify initial readings were populated
+    // The readings link is in a collapsible section, so let's navigate directly
+    await page.goto('/readings');
+    await expect(page).toHaveURL('/readings');
+
+    // Verify that the 3 initial readings were created
+    await expect(page.locator('text=/1 Corinthians 13:4-13/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/John 14:1-6/i')).toBeVisible();
+    await expect(page.locator('text=/Matthew 28:18-20/i')).toBeVisible();
   });
 
   test('should show error for invalid credentials', async ({ page }) => {
@@ -61,13 +75,13 @@ test.describe('Signup Flow', () => {
   test('should navigate from home to signup', async ({ page }) => {
     await page.goto('/');
 
-    // Find and click the signup link
-    const signupLink = page.locator('a[href="/signup"]');
+    // Find and click the first signup link (there are multiple on the page)
+    const signupLink = page.locator('a[href="/signup"]').first();
     await expect(signupLink).toBeVisible();
     await signupLink.click();
 
     // Should be on signup page
     await expect(page).toHaveURL('/signup');
-    await expect(page.locator('text=Sign up')).toBeVisible();
+    await expect(page.locator('text=Sign up').first()).toBeVisible();
   });
 });

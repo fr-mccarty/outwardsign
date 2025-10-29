@@ -7,15 +7,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Flower } from 'lucide-react'
+import { Flower, Loader2 } from 'lucide-react'
 import { APP_NAME } from '@/lib/constants'
 import { createParishWithSuperAdmin } from '@/lib/auth/parish'
+import { populateInitialParishData } from '@/lib/actions/setup'
 
 export default function OnboardingPage() {
   const [parishName, setParishName] = useState('')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [loading, setLoading] = useState(false)
+  const [preparing, setPreparing] = useState(false)
   const [error, setError] = useState('')
   const [checking, setChecking] = useState(true)
 
@@ -58,22 +60,33 @@ export default function OnboardingPage() {
     setError('')
 
     try {
+      // Step 1: Create the parish
       const result = await createParishWithSuperAdmin({
         name: parishName,
         city,
         state
       })
 
-      if (result.success) {
-        router.push('/dashboard')
-      } else {
+      if (!result.success || !result.parishId) {
         setError(result.error || 'Failed to create parish')
+        setLoading(false)
+        return
       }
+
+      // Step 2: Show preparing screen
+      setLoading(false)
+      setPreparing(true)
+
+      // Step 3: Populate initial data (categories and readings)
+      await populateInitialParishData(result.parishId)
+
+      // Step 4: Redirect to dashboard
+      router.push('/dashboard')
     } catch (err) {
       console.error('Onboarding error:', err)
       setError('An unexpected error occurred')
-    } finally {
       setLoading(false)
+      setPreparing(false)
     }
   }
 
@@ -84,6 +97,38 @@ export default function OnboardingPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (preparing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-6">
+              <div className="inline-flex items-center justify-center">
+                <div className="flex aspect-square size-16 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <Flower className="size-8" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Setting up your parish
+                </h2>
+                <p className="text-gray-600">
+                  One minute while we get your parish ready for you.
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+              <div className="text-sm text-gray-500">
+                Creating categories and sample readings...
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

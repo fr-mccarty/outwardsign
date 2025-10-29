@@ -50,7 +50,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 ## Role Permissions
 - super-admin: Billing settings, parish ownership
 - admin: Parish settings, parish management
-- staff: Read parish information
+- staff: Read parish information (default role), they can create, read, update, and delete all other tables.
 - parishioner: Read only their own records
 
 ## Tech Stack
