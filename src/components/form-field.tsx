@@ -21,6 +21,7 @@ interface InputFieldProps extends BaseFormFieldProps {
   min?: string
   max?: string
   step?: string
+  maxLength?: number
 }
 
 interface TextareaFieldProps extends BaseFormFieldProps {
@@ -89,6 +90,7 @@ export function FormField(props: FormFieldProps) {
             min={(props as InputFieldProps).min}
             max={(props as InputFieldProps).max}
             step={(props as InputFieldProps).step}
+            maxLength={(props as InputFieldProps).maxLength}
             required={required}
           />
         )

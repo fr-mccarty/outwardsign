@@ -27,15 +27,21 @@ export async function createTestParish() {
       throw new Error(`Failed to create parish: ${functionError.message}`)
     }
 
-    if (!result.success) {
-      throw new Error(`Failed to create parish: ${result.error_message}`)
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response from create_parish_with_super_admin')
+    }
+
+    const typedResult = result as { success: boolean; error_message?: string; parish_id?: string }
+
+    if (!typedResult.success) {
+      throw new Error(`Failed to create parish: ${typedResult.error_message}`)
     }
 
     // Fetch the created parish to return it
     const { data: parish, error: fetchError } = await supabase
       .from('parishes')
       .select()
-      .eq('id', result.parish_id)
+      .eq('id', typedResult.parish_id)
       .single()
 
     if (fetchError) {
@@ -77,15 +83,21 @@ export async function createParish(data: {
       throw new Error(`Failed to create parish: ${functionError.message}`)
     }
 
-    if (!result.success) {
-      throw new Error(`Failed to create parish: ${result.error_message}`)
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response from create_parish_with_super_admin')
+    }
+
+    const typedResult = result as { success: boolean; error_message?: string; parish_id?: string }
+
+    if (!typedResult.success) {
+      throw new Error(`Failed to create parish: ${typedResult.error_message}`)
     }
 
     // Fetch the created parish to return it
     const { data: parish, error: fetchError } = await supabase
       .from('parishes')
       .select()
-      .eq('id', result.parish_id)
+      .eq('id', typedResult.parish_id)
       .single()
 
     if (fetchError) {
