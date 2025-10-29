@@ -10,6 +10,7 @@ import { Loading } from '@/components/loading'
 import Link from "next/link"
 import { Plus, BookOpen, Eye, Calendar, Search, Filter } from "lucide-react"
 import { getReadings } from "@/lib/actions/readings"
+import { READING_CATEGORY_LABELS } from "@/lib/constants"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { Input } from "@/components/ui/input"
 import { 
@@ -130,7 +131,9 @@ export default function ReadingsPage() {
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {allCategories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat}>
+                        {READING_CATEGORY_LABELS[cat]?.en || cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -184,7 +187,7 @@ export default function ReadingsPage() {
                   <div className="flex flex-wrap gap-1">
                     {reading.categories.map(category => (
                       <Badge key={category} className={getCategoryColor(category) + " text-xs"}>
-                        {category}
+                        {READING_CATEGORY_LABELS[category]?.en || category}
                       </Badge>
                     ))}
                   </div>

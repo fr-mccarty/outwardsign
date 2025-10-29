@@ -41,7 +41,7 @@ test.describe('Signup Flow', () => {
 
     // Wait for preparing screen
     await expect(page.locator('text=/One minute while we get your parish ready for you/i')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=/Creating categories and sample readings/i')).toBeVisible();
+    await expect(page.locator('text=/Creating sample readings/i')).toBeVisible();
 
     // Should redirect to dashboard after creating parish and populating data
     await page.waitForURL('/dashboard', { timeout: 15000 });

@@ -542,38 +542,6 @@ export async function populateInitialParishData(parishId: string) {
   }
 
   try {
-    // Create initial categories
-    const categoriesData = [
-      {
-        parish_id: parishId,
-        name: 'Wedding',
-        description: 'Readings suitable for wedding ceremonies',
-        sort_order: 0
-      },
-      {
-        parish_id: parishId,
-        name: 'Funeral',
-        description: 'Readings for funeral liturgies and memorial services',
-        sort_order: 1
-      },
-      {
-        parish_id: parishId,
-        name: 'Baptism',
-        description: 'Scripture readings for baptism celebrations',
-        sort_order: 2
-      }
-    ]
-
-    const { data: categories, error: categoriesError } = await supabase
-      .from('categories')
-      .insert(categoriesData)
-      .select()
-
-    if (categoriesError) {
-      console.error('Error creating categories:', categoriesError)
-      throw new Error(`Failed to create categories: ${categoriesError.message}`)
-    }
-
     // Create initial readings
     const readingsData = [
       {
@@ -583,7 +551,7 @@ export async function populateInitialParishData(parishId: string) {
         introduction: 'A reading from the first Letter of Saint Paul to the Corinthians.',
         conclusion: 'The word of the Lord.',
         language: 'English',
-        categories: ['Wedding']
+        categories: ['WEDDING']
       },
       {
         parish_id: parishId,
@@ -592,7 +560,7 @@ export async function populateInitialParishData(parishId: string) {
         introduction: 'A reading from the holy Gospel according to John.',
         conclusion: 'The Gospel of the Lord.',
         language: 'English',
-        categories: ['Funeral']
+        categories: ['FUNERAL']
       },
       {
         parish_id: parishId,
@@ -601,7 +569,7 @@ export async function populateInitialParishData(parishId: string) {
         introduction: 'A reading from the holy Gospel according to Matthew.',
         conclusion: 'The Gospel of the Lord.',
         language: 'English',
-        categories: ['Baptism']
+        categories: ['BAPTISM']
       }
     ]
 
@@ -617,7 +585,6 @@ export async function populateInitialParishData(parishId: string) {
 
     return {
       success: true,
-      categories: categories || [],
       readings: readings || []
     }
   } catch (error) {

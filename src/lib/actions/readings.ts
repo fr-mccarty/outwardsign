@@ -19,8 +19,7 @@ export interface Reading {
 }
 
 export interface CreateReadingData {
-  categories?: string[] // Legacy support - will be converted to category IDs
-  categoryIds?: string[] // New normalized category IDs
+  categories?: string[]
   conclusion?: string
   introduction?: string
   language?: string
@@ -31,17 +30,16 @@ export interface CreateReadingData {
 
 export async function createReading(data: CreateReadingData): Promise<Reading> {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  // Create the reading first
   const { data: reading, error } = await supabase
     .from('readings')
     .insert([
       {
         parish_id: selectedParishId,
-        categories: data.categories || null, // Keep legacy support
+        categories: data.categories || null,
         conclusion: data.conclusion || null,
         introduction: data.introduction || null,
         language: data.language || null,
@@ -55,23 +53,6 @@ export async function createReading(data: CreateReadingData): Promise<Reading> {
 
   if (error) {
     throw new Error('Failed to create reading')
-  }
-
-  // If we have new normalized category IDs, create the associations
-  if (data.categoryIds && data.categoryIds.length > 0) {
-    const categoryAssociations = data.categoryIds.map(categoryId => ({
-      reading_id: reading.id,
-      category_id: categoryId
-    }))
-
-    const { error: categoryError } = await supabase
-      .from('reading_categories')
-      .insert(categoryAssociations)
-
-    if (categoryError) {
-      console.error('Failed to create category associations:', categoryError)
-      // Don't fail the whole operation, just log the error
-    }
   }
 
   return reading

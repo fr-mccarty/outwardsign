@@ -416,8 +416,7 @@ export interface Reading {
   conclusion?: string
   language?: string
   lectionary_id?: string
-  categories?: Record<string, unknown>
-  reading_category_ids?: string[]
+  categories?: string[]
   created_at: string
   updated_at: string
 }

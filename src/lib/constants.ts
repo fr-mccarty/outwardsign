@@ -87,3 +87,24 @@ Por todos los que están enfermos y se acercan a la muerte.
 Roguemos al Señor.
 Por nosotros mismos, para que estemos preparados para nuestro propio viaje a la vida eterna.
 Roguemos al Señor.`
+
+// Reading Categories
+// Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database
+// Display localized labels using READING_CATEGORY_LABELS[category][lang]
+// TODO: When implementing language selection, use: READING_CATEGORY_LABELS[category][selectedLanguage]
+export const READING_CATEGORIES = ['WEDDING', 'FUNERAL', 'BAPTISM'] as const
+
+export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }> = {
+  WEDDING: {
+    en: 'Wedding',
+    es: 'Boda'
+  },
+  FUNERAL: {
+    en: 'Funeral',
+    es: 'Funeral'
+  },
+  BAPTISM: {
+    en: 'Baptism',
+    es: 'Bautismo'
+  }
+}

@@ -77,7 +77,7 @@ export default function OnboardingPage() {
       setLoading(false)
       setPreparing(true)
 
-      // Step 3: Populate initial data (categories and readings)
+      // Step 3: Populate initial data (sample readings)
       await populateInitialParishData(result.parishId)
 
       // Step 4: Redirect to dashboard
@@ -124,7 +124,7 @@ export default function OnboardingPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
               <div className="text-sm text-gray-500">
-                Creating categories and sample readings...
+                Creating sample readings...
               </div>
             </div>
           </CardContent>
