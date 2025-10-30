@@ -374,12 +374,12 @@ export default function ParishSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Parish ID</Label>
+                <Label className="text-muted-foreground">Parish ID</Label>
                 <p className="mt-1 text-sm font-mono text-muted-foreground">{currentParish.id}</p>
               </div>
-              
+
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Created</Label>
+                <Label className="text-muted-foreground">Created</Label>
                 <p className="mt-1 text-sm">{new Date(currentParish.created_at).toLocaleDateString()}</p>
               </div>
             </CardContent>
@@ -412,7 +412,7 @@ export default function ParishSettingsPage() {
                   <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
                     <div className="flex-1 grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor={`amount-${index}`} className="text-sm font-medium">
+                        <Label htmlFor={`amount-${index}`}>
                           Amount (cents)
                         </Label>
                         <Input
@@ -429,7 +429,7 @@ export default function ParishSettingsPage() {
                         </p>
                       </div>
                       <div>
-                        <Label htmlFor={`label-${index}`} className="text-sm font-medium">
+                        <Label htmlFor={`label-${index}`}>
                           Display Label
                         </Label>
                         <Input
@@ -580,7 +580,7 @@ export default function ParishSettingsPage() {
               </div>
 
               <div>
-                <Label htmlFor="invite-role" className="text-sm font-medium">
+                <Label htmlFor="invite-role">
                   Initial Role
                 </Label>
                 <Select value={inviteRole} onValueChange={setInviteRole}>

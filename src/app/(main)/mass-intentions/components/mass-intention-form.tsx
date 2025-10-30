@@ -316,7 +316,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Mass Offered For */}
             <div className="space-y-2">
-              <Label htmlFor="mass_offered_for" className="text-sm font-medium">
+              <Label htmlFor="mass_offered_for">
                 Mass Offered For *
               </Label>
               <Textarea
@@ -331,7 +331,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
 
             {/* Donor */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Donor/Requestor
               </Label>
@@ -374,7 +374,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
 
             {/* Date Requested */}
             <div className="space-y-2">
-              <Label htmlFor="date_requested" className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor="date_requested" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Date Requested
               </Label>
@@ -388,7 +388,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
 
             {/* Liturgical Event */}
             <div className="space-y-2">
-              <Label htmlFor="liturgical_event_id" className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor="liturgical_event_id" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Scheduled Mass
               </Label>
@@ -415,7 +415,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
 
             {/* Celebrant */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">
+              <Label>
                 Celebrant
               </Label>
               <div className="flex items-center gap-2">
@@ -469,7 +469,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
 
             {/* Note */}
             <div className="space-y-2">
-              <Label htmlFor="note" className="text-sm font-medium">
+              <Label htmlFor="note">
                 Additional Notes
               </Label>
               <Textarea
@@ -483,7 +483,7 @@ export function MassIntentionForm({ intentionId }: MassIntentionFormProps) {
 
             {/* Status (read-only display) */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Status</Label>
+              <Label>Status</Label>
               <div className="flex items-center gap-2">
                 {formData.status === 'scheduled' && (
                   <Badge className="bg-green-500">Scheduled</Badge>

@@ -120,7 +120,7 @@ export default function CalendarDetailPage({ params }: PageProps) {
           <CardContent className="space-y-4">
             {entry.liturgical_rank && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Rank</label>
+                <label className="text-muted-foreground">Rank</label>
                 <div className="mt-1">
                   <Badge className={getRankBadge(entry.liturgical_rank)}>
                     {entry.liturgical_rank.replace('_', ' ')}
@@ -128,10 +128,10 @@ export default function CalendarDetailPage({ params }: PageProps) {
                 </div>
               </div>
             )}
-            
+
             {entry.liturgical_season && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Season</label>
+                <label className="text-muted-foreground">Season</label>
                 <div className="mt-1">
                   <Badge variant="outline">
                     {entry.liturgical_season}
@@ -139,10 +139,10 @@ export default function CalendarDetailPage({ params }: PageProps) {
                 </div>
               </div>
             )}
-            
+
             {entry.color && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Color</label>
+                <label className="text-muted-foreground">Color</label>
                 <div className="mt-1">
                   <Badge className={getLiturgicalColor(entry.color)}>
                     {entry.color}
@@ -152,7 +152,7 @@ export default function CalendarDetailPage({ params }: PageProps) {
             )}
 
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Type</label>
+              <label className="text-muted-foreground">Type</label>
               <div className="mt-1">
                 <Badge variant={entry.is_custom ? "default" : "secondary"}>
                   {entry.is_custom ? "Custom" : "Universal"}

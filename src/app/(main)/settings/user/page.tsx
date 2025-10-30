@@ -134,7 +134,7 @@ export default function UserSettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label className="text-sm font-medium">Full Name</Label>
+                  <Label>Full Name</Label>
                   <Input
                     className="mt-1"
                     placeholder="Enter your full name"
@@ -144,7 +144,7 @@ export default function UserSettingsPage() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium">Preferred Language</Label>
+                  <Label>Preferred Language</Label>
                   <Select 
                     value={formData.language} 
                     onValueChange={(value: 'en' | 'es' | 'fr' | 'la') => 
@@ -249,28 +249,28 @@ export default function UserSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
+                <Label className="text-muted-foreground">Full Name</Label>
                 <p className="mt-1 font-medium">{userSettings?.full_name || 'Not set'}</p>
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                <Label className="text-muted-foreground">Email</Label>
                 <p className="mt-1 font-medium">{user.email}</p>
               </div>
-              
+
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">User ID</Label>
+                <Label className="text-muted-foreground">User ID</Label>
                 <p className="mt-1 text-sm font-mono text-muted-foreground">{user.id}</p>
               </div>
-              
+
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Account Created</Label>
+                <Label className="text-muted-foreground">Account Created</Label>
                 <p className="mt-1 text-sm">{new Date(user.created_at).toLocaleDateString()}</p>
               </div>
 
               {userSettings && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Settings Last Updated</Label>
+                  <Label className="text-muted-foreground">Settings Last Updated</Label>
                   <p className="mt-1 text-sm">{new Date(userSettings.updated_at).toLocaleDateString()}</p>
                 </div>
               )}

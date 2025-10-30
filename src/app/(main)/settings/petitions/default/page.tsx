@@ -112,7 +112,7 @@ export default function DefaultPetitionsPage() {
 
             <div className="flex justify-between items-center">
               <div>
-                <label className="text-sm font-medium">Petition Text</label>
+                <label>Petition Text</label>
                 <p className="text-xs text-muted-foreground">Enter each petition on a new line</p>
               </div>
               <Button
