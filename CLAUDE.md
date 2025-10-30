@@ -103,6 +103,46 @@ src/app/(main)/petitions/           # Module directory (plural name)
 - Automatic redirection for unauthenticated users
 - Using Server Actions (Next.js pattern) for data mutations
 
+## Page Structure
+### Create Page
+- PageContainer (title, description, actions: "New [Entity]" button)
+  - Form (onSubmit)
+    - FormField - text inputs
+    - FormField (inputType="textarea") - longer content
+    - FormField (inputType="select") - dropdowns
+    - Checkbox groups - for multi-select categories
+    - Card - optional guidelines/help text (optional)
+    - Button group (Submit, Cancel Link)
+
+### Edit Page
+- PageContainer (title, description, actions: action buttons)
+  - Loading component (conditional, while fetching)
+  - Form (onSubmit)
+    - FormField - pre-populated text inputs
+    - FormField (inputType="textarea") - pre-populated content
+    - FormField (inputType="select") - pre-selected options
+    - Checkbox groups - pre-selected categories
+    - Button group (Save, Cancel Link)
+
+### List Page
+- PageContainer (title, description, actions: "Create New" button)
+  - Card - Search/Filters
+    - Input (search - exception: not a form field)
+    - Select dropdowns (filters - exception)
+  - Loading component (conditional)
+  - Grid of Card components (data items)
+    - CardHeader (title, Badge metadata)
+    - CardContent (preview, date)
+    - Button links (View, Edit)
+  - Card - Empty state (conditional)
+    - Icon, heading, description
+    - Button "Create First [Entity]"
+  - Card - Stats/Overview (optional)
+
+## Breadcrumbs
+Breadcrumbs are set in a useEffect hook by calling setBreadcrumbs() from the useBreadcrumbs()
+context hook with an array of breadcrumb objects containing label and optional href properties.
+
 ## Code Conventions
 
 ### General
