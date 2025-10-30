@@ -199,7 +199,7 @@ export default function ReadingsPrintoutPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Content Type</label>
+                <label>Content Type</label>
                 <Select value={printMode} onValueChange={(value: 'readings-only' | 'readings-and-petitions') => setPrintMode(value)}>
                   <SelectTrigger className="mt-1">
                     <SelectValue />
@@ -219,7 +219,7 @@ export default function ReadingsPrintoutPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">From Collection (Optional)</label>
+                <label>From Collection (Optional)</label>
                 <Select value={selectedCollection} onValueChange={(value) => {
                   setSelectedCollection(value)
                   setSelectedReadings([]) // Clear individual selections when collection is chosen
@@ -240,7 +240,7 @@ export default function ReadingsPrintoutPage() {
 
               {!selectedCollection && (
                 <div>
-                  <label className="text-sm font-medium">Individual Readings</label>
+                  <label>Individual Readings</label>
                   <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
                     {individualReadings.map((reading) => (
                       <div key={reading.id} className="flex items-center space-x-2">

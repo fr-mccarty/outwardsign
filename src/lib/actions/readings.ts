@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 
@@ -26,6 +27,12 @@ export interface CreateReadingData {
   lectionary_id?: string
   pericope: string
   text: string
+}
+
+export interface ReadingFilterParams {
+  search?: string
+  language?: string
+  category?: string
 }
 
 export async function createReading(data: CreateReadingData): Promise<Reading> {
@@ -55,19 +62,38 @@ export async function createReading(data: CreateReadingData): Promise<Reading> {
     throw new Error('Failed to create reading')
   }
 
+  revalidatePath('/readings')
+
   return reading
 }
 
-export async function getReadings(): Promise<Reading[]> {
+export async function getReadings(filters?: ReadingFilterParams): Promise<Reading[]> {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('readings')
     .select('*')
-    .order('created_at', { ascending: false })
+
+  // Apply filters
+  if (filters?.language && filters.language !== 'all') {
+    query = query.eq('language', filters.language)
+  }
+
+  if (filters?.category && filters.category !== 'all') {
+    query = query.contains('categories', [filters.category])
+  }
+
+  if (filters?.search) {
+    // Use OR condition for search across multiple fields
+    query = query.or(`pericope.ilike.%${filters.search}%,text.ilike.%${filters.search}%,lectionary_id.ilike.%${filters.search}%`)
+  }
+
+  query = query.order('created_at', { ascending: false })
+
+  const { data, error } = await query
 
   if (error) {
     throw new Error('Failed to fetch readings')
@@ -120,6 +146,9 @@ export async function updateReading(id: string, data: CreateReadingData): Promis
     throw new Error('Failed to update reading')
   }
 
+  revalidatePath('/readings')
+  revalidatePath(`/readings/${id}`)
+
   return reading
 }
 
@@ -137,6 +166,8 @@ export async function deleteReading(id: string): Promise<void> {
   if (error) {
     throw new Error('Failed to delete reading')
   }
+
+  revalidatePath('/readings')
 }
 
 export async function getReadingsByCategory(category: string): Promise<Reading[]> {

@@ -76,72 +76,132 @@ The ideal way that we want to access the records is by using the RLS feature on 
 - Database tables: plural form (e.g., `petitions`, `baptisms`)
 - TypeScript interfaces: singular form (e.g., `Petition`, `Baptism`)
 
-### Module Structure Pattern
-When creating new modules, follow this consistent structure:
+## Styling
+Ensure that: All form fields use standardized, basic styling with no specialized text formatting!
+For views that are within a print folder, allow those views to set their style however they wish.
 
-```
-src/app/(main)/petitions/           # Module directory (plural name)
-├── page.tsx                        # Main list page
-├── petition-form.tsx               # Form component (singular-form.tsx)
-├── petition-list.tsx               # List component (singular-list.tsx)
+### Module Structure (7 Files)
+
+1. List Page (Server) - page.tsx
+- Auth check → fetch entities with filters from searchParams → compute stats server-side → define breadcrumbs
+- PageContainer → BreadcrumbSetter → [Entity]ListClient initialData={entities} stats={stats}
+- Example: `async function Page({ searchParams }: { searchParams: { search?: string; type?: string } })`
+
+2. List Client - [entity]-list-client.tsx
+- Uses URL search params for shareable, linkable state (search, filters, pagination)
+- Updates URL via router.push() when filters change - NO client-side filtering of data
+- Card (Search/Filters: Input, Select) → Grid of Cards → Empty state Card → Stats Card
+
+3. Create Page (Server) - create/page.tsx
+- Auth check → define breadcrumbs
+- PageContainer → BreadcrumbSetter → [Entity]Form (no prop)
+
+4. View Page (Server) - [id]/page.tsx
+- Auth check → fetch entity server-side → define breadcrumbs
+- PageContainer → BreadcrumbSetter → [Entity]FormActions entity={entity} → Display Cards
+
+5. Edit Page (Server) - [id]/edit/page.tsx
+- Auth check → fetch entity server-side → define breadcrumbs
+- PageContainer → BreadcrumbSetter → [Entity]Form entity={entity}
+
+6. Unified Form (Client) - [entity]-form.tsx
+Detects mode: entity prop = edit, no prop = create
+- FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel)
+- Calls createEntity() or updateEntity() Server Action
+
+7. Form Actions (Client) - [id]/[entity]-form-actions.tsx
+- Interactive Buttons: Copy (clipboard), Edit (link), Delete (confirmation + toast)
+- Router navigation post-action
+
+Additional Module Essentials
+
+File Naming Conventions
+
+- Server pages: page.tsx (async function, no 'use client')
+- Client components: [entity]-[purpose].tsx (e.g., reading-form.tsx, reading-list-client.tsx,
+  reading-form-actions.tsx)
+- Server Actions: lib/actions/[entity].ts or [entities].ts
+- Types: Defined in Server Action files, exported for reuse
+
+Directory Structure
+
+[entity-plural]/
+├── page.tsx                    # List (Server)
+├── loading.tsx                 # Suspense fallback (imports reusable component)
+├── error.tsx                   # Error boundary (imports reusable component)
+├── [entity]-list-client.tsx    # List interactivity (Client)
+├── [entity]-form.tsx           # Unified create/edit form (Client)
 ├── create/
-│   └── page.tsx                    # Create page
+│   └── page.tsx               # Create (Server)
 └── [id]/
-    └── page.tsx                    # Edit page
-```
+    ├── page.tsx               # View (Server)
+    ├── loading.tsx            # Suspense fallback (imports reusable component)
+    ├── error.tsx              # Error boundary (imports reusable component)
+    ├── [entity]-form-actions.tsx  # View actions (Client)
+    └── edit/
+        └── page.tsx           # Edit (Server)
 
-**Key naming conventions:**
-- **Module directory:** Use plural form (e.g., `petitions`, `contacts`, `users`)
-- **Form component:** Use singular form with `-form` suffix (e.g., `petition-form.tsx`, `contact-form.tsx`)
-- **List component:** Use singular form with `-list` suffix (e.g., `petition-list.tsx`, `contact-list.tsx`)
-- **Dynamic routes:** Use `[id]` for edit pages
-- **Static routes:** Use `create` directory for creation pages
+Data Flow Pattern
 
-### Authentication Pattern
-- Server-side session management using Supabase Auth
-- Authentication checks in Server Components
-- Automatic redirection for unauthenticated users
-- Using Server Actions (Next.js pattern) for data mutations
+Server → Client: Pass serializable data as props
+- List: initialData={entities}
+- Form: entity={entity} (edit) or no prop (create)
+- Actions: entity={entity}
 
-## Page Structure
-### Create Page
-- PageContainer (title, description, actions: "New [Entity]" button)
-  - Form (onSubmit)
-    - FormField - text inputs
-    - FormField (inputType="textarea") - longer content
-    - FormField (inputType="select") - dropdowns
-    - Checkbox groups - for multi-select categories
-    - Card - optional guidelines/help text (optional)
-    - Button group (Submit, Cancel Link)
+Server Actions (lib/actions/[entity].ts)
 
-### Edit Page
-- PageContainer (title, description, actions: action buttons)
-  - Loading component (conditional, while fetching)
-  - Form (onSubmit)
-    - FormField - pre-populated text inputs
-    - FormField (inputType="textarea") - pre-populated content
-    - FormField (inputType="select") - pre-selected options
-    - Checkbox groups - pre-selected categories
-    - Button group (Save, Cancel Link)
+Required exports:
+- get[Entities](filters?: FilterParams) - Fetch list with optional server-side filtering
+- get[Entity](id) - Fetch single
+- create[Entity](data) - Create
+- update[Entity](id, data) - Update
+- delete[Entity](id) - Delete
+- Types: [Entity], Create[Entity]Data
 
-### List Page
-- PageContainer (title, description, actions: "Create New" button)
-  - Card - Search/Filters
-    - Input (search - exception: not a form field)
-    - Select dropdowns (filters - exception)
-  - Loading component (conditional)
-  - Grid of Card components (data items)
-    - CardHeader (title, Badge metadata)
-    - CardContent (preview, date)
-    - Button links (View, Edit)
-  - Card - Empty state (conditional)
-    - Icon, heading, description
-    - Button "Create First [Entity]"
-  - Card - Stats/Overview (optional)
+**Cache revalidation:** After mutations (create/update/delete), use revalidatePath() to invalidate Next.js cache for affected routes. Always revalidate both list pages and detail pages.
+
+Authentication Pattern
+
+Every server page starts with:
+const supabase = await createClient()
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) redirect('/login')
+
+Error Handling
+
+- Not found: notFound() when entity doesn't exist
+- Client errors: toast.error() + try/catch
+- Server redirects: redirect('/path')
+
+Component Communication
+
+- Server to Client: Props only (serializable data)
+- Client to Server: Server Actions via 'use server'
+- Client state: useState for form fields, temporary UI state
+- URL search params: Filters, pagination, search (shareable state)
+- Context: UI state only (theme, breadcrumbs, modals) - NEVER for data fetching
+- No prop drilling: Use Server Actions for data operations
+
+### Performance Patterns
+
+**Server-side filtering:** List pages accept searchParams prop. Pass these to get[Entities]() functions to filter on the server, not the client.
+
+**Parallel data fetching:** Use Promise.all() when fetching multiple independent data sources in server components.
+
+**URL state management:** Client components should update URL search params via router.push() instead of maintaining local filter state. This makes state shareable and linkable.
+
+### Loading and Error States
+
+**Pattern:** Create reusable skeleton and error components in components/ directory. Route-level loading.tsx and error.tsx files import and render these reusable components. This ensures consistent UX across modules.
+
+### Validation
+
+**Dual validation with Zod:** Define schemas in Server Action files. Client forms use .safeParse() for instant feedback. Server Actions use .parse() as security boundary. Export schema types with z.infer<>.
 
 ## Breadcrumbs
-Breadcrumbs are set in a useEffect hook by calling setBreadcrumbs() from the useBreadcrumbs()
-context hook with an array of breadcrumb objects containing label and optional href properties.
+Client Component (BreadcrumbSetter):
+- Sets breadcrumbs in context via useBreadcrumbs() hook
+- Returns null (invisible component)
 
 ## Code Conventions
 
@@ -161,159 +221,6 @@ context hook with an array of breadcrumb objects containing label and optional h
 - **Maintain responsive design** across all new components
 - **Integrate with Supabase Auth** for user-facing features
 - **Use consistent design patterns** from existing component library
-
-## Custom Components
-
-### Layout Components
-
-#### MainSidebar Component
-**SOURCE:** /examples/components/main-sidebar.tsx  
-**DESCRIPTION:** Main application sidebar with navigation and user profile. Provides organized navigation groups for application features with company branding, collapsible sections, and user profile integration.  
-**USAGE:** Main navigation component for authenticated application. Requires /Lolek-logo.png in public folder.
-
-#### MainHeader Component
-**SOURCE:** /examples/components/main-header.tsx  
-**DESCRIPTION:** Main application header with sidebar trigger and breadcrumb navigation. Provides consistent header layout for authenticated application pages with optional sidebar toggle and dynamic breadcrumbs.  
-**USAGE:** Place at top of authenticated pages. Pass breadcrumbs array for navigation context.  
-**DEPENDENCIES:** shadcn/ui Breadcrumb and Sidebar components
-
-#### PublicHeader Component
-**SOURCE:** /examples/components/PublicHeader.jsx  
-**DESCRIPTION:** Navigation header for public pages with responsive mobile menu, logo, navigation links, and login button. Handles mobile menu state and provides consistent public page navigation.  
-**USAGE:** Place at the top of public layout components. Requires /Lolek-logo.png in public folder.
-
-#### PublicFooter Component
-**SOURCE:** /examples/components/PublicFooter.jsx  
-**DESCRIPTION:** Simple footer component for public-facing pages with company branding and copyright information. Provides consistent footer layout across all public pages.  
-**USAGE:** Place at the bottom of public layout components. No props required.
-
-#### Layout Implementation Notes
-**Important:** In actual Next.js implementation, layout files are named `layout.tsx` and placed in specific route groups:
-- `app-layout.tsx` → `app/layout.tsx` (root layout)
-- `main-layout.jsx` → `app/(main)/layout.tsx` (authenticated layout)  
-- `public-layout.jsx` → `app/(public)/layout.tsx` (public layout)
-
-### Container Components
-
-#### PageContainer Component
-**SOURCE:** /examples/components/page-container.tsx  
-**DESCRIPTION:** Page layout container with optional card wrapper for consistent page layouts. Provides page title, description, and optional card wrapping for form-like content with customizable max-width.  
-**USAGE:** Wrap all page content with PageContainer for consistent layout and spacing. Use `useCard={true}` for form pages.
-
-#### CenteredFormCard Component
-**SOURCE:** /examples/components/centered-form-card.tsx  
-**LANGUAGE:** tsx  
-**DESCRIPTION:** Reusable centered card container for forms and content. Provides consistent centered layout with customizable max-width and card styling using shadcn/ui components.  
-**USAGE:** Wrap forms or content that need centered card layout. Customize maxWidth for different content sizes.
-
-### Form Components
-
-#### FormField Component
-**SOURCE:** /examples/components/form-field.tsx  
-**LANGUAGE:** tsx  
-**DESCRIPTION:** **MANDATORY** form input component that provides consistent styling, labeling, and behavior for all form inputs. Supports text inputs, textareas, and select dropdowns with built-in label, description, and required field handling.  
-**USAGE:** **CRITICAL: Use FormField for ALL form inputs unless you have a specific exception that requires direct input usage (such as search bars, filters, or specialized input patterns). You MUST request permission before using direct Input/Textarea/Select components instead of FormField.**  
-**Examples:**
-- Text input: `<FormField id="name" label="Full Name" value={name} onChange={setName} required />`
-- Textarea: `<FormField id="bio" label="Biography" inputType="textarea" value={bio} onChange={setBio} />`
-- Select: `<FormField id="role" label="Role" inputType="select" value={role} onChange={setRole} options={[{value: 'admin', label: 'Administrator'}]} />`
-
-#### Form Example Page
-**SOURCE:** /examples/pages/form-example-page.tsx  
-**LANGUAGE:** tsx  
-**DESCRIPTION:** Comprehensive example demonstrating mandatory FormField component usage for all form inputs. Shows proper patterns for text inputs, selects, textareas, and exception request guidelines.  
-**USAGE:** **MANDATORY** reference for all form implementations. Always use FormField for standard form inputs. Copy the state management pattern and form structure. Use the exception request format when FormField doesn't meet specific requirements.
-
-### Navigation Components
-
-#### CollapsibleNavSection Component
-**SOURCE:** /examples/components/collapsible-nav-section.tsx  
-**LANGUAGE:** tsx  
-**DESCRIPTION:** Collapsible navigation section for sidebar menus with expand/collapse animation. Integrates with sidebar context for mobile behavior and supports custom icons and navigation items.  
-**USAGE:** Create collapsible navigation sections in sidebars. Pass array of NavItem objects with title, url, and icon.
-
-### Utility Components
-
-#### Loading Component
-**SOURCE:** /examples/components/loading.tsx  
-**DESCRIPTION:** Flexible loading component with multiple display variants including spinner, skeleton cards, and skeleton lists. Provides consistent loading states throughout the application with customizable size, centering, and styling options.  
-**USAGE:** Use for loading states throughout the application. Choose variant based on content type: 'spinner' for general loading, 'skeleton-cards' for card layouts, 'skeleton-list' for list layouts. **CRITICAL: Always place Loading components WITHIN PageContainer, not as a replacement for it.** Use `centered={false}` when inside PageContainer to avoid double-centering. Example: `<PageContainer title="Page Title"><Loading variant="skeleton-cards" centered={false} /></PageContainer>`
-
-#### Loading Example Page
-**SOURCE:** /examples/pages/loading-example-page.tsx  
-**DESCRIPTION:** Complete example page demonstrating correct usage of Loading components within PageContainer. Shows all three loading variants with interactive switching and proper layout integration.  
-**USAGE:** Reference this example when implementing loading states in your pages. Always follow the pattern of Loading components inside PageContainer with proper configuration. Copy the conditional rendering pattern for loading/loaded states.  
-
-#### CopyButton Component
-**SOURCE:** /examples/components/copy-button.tsx  
-**DESCRIPTION:** Button component for copying text to clipboard with visual feedback. Shows "Copied!" state for 2 seconds after successful copy operation with error handling for clipboard failures.  
-**USAGE:** Add copy functionality to any text content. Provide content prop with text to copy.
-
-### EditForm Component
-**FILE:** `EditForm.tsx`  
-**PURPOSE:** Reusable form component for creating and editing entities  
-**USAGE:** Handles both create and update operations with unified interface
-
-**Usage Notes:**
-- Pass existing entity for edit mode, omit for create mode
-- Follows redirect-to-index pattern after successful creation
-- Uses shadcn/ui form components (Button, Input, Textarea, Label)
-- Integrates with Server Actions for data operations
-- TypeScript interfaces ensure type safety
-
-### ListTable Component
-**FILE:** `ListTable.jsx`  
-**PURPOSE:** Comprehensive data table with search, filtering, and actions  
-**USAGE:** Display lists of entities with CRUD operations
-
-**Features:**
-- **Search Functionality:** Real-time search across entity content
-- **Responsive Grid:** Card-based layout that adapts to screen size
-- **Action Buttons:** Delete operations with confirmation dialogs
-- **Empty States:** Helpful messaging when no data exists
-- **Toast Integration:** Success/error notifications using toast utilities
-- **Date Formatting:** Relative date display (Today, Yesterday, etc.)
-
-**Usage Notes:**
-- Requires toast utilities from examples/lib/toast-utils
-- Uses shadcn/ui Dialog for confirmation dialogs
-- Accepts onUpdate callback for custom refresh logic
-- Implements responsive card grid instead of traditional table
-- Search functionality with debounced filtering
-
-### Create Page Template
-**FILE:** `create-page.tsx`  
-**PURPOSE:** Complete page template for entity creation  
-**USAGE:** Server component with authentication and proper layout structure
-
-**Usage Notes:**
-- Server component with async authentication
-- Uses Supabase auth with automatic redirection
-- Integrates MainHeader and PageContainer components
-- Customizable maxWidth for different content types
-
-### Edit Page Template
-**FILE:** `edit-page.jsx`  
-**PURPOSE:** Complete page template for entity editing  
-**USAGE:** Server component with data fetching and error handling
-
-**Usage Notes:**
-- Dynamic route parameter handling with params.noteId
-- Error boundaries with notFound() for missing data
-- Same form component used for both create and edit
-- Proper breadcrumb navigation showing context
-
-### List Page Template
-**FILE:** `list-page.jsx`  
-**PURPOSE:** Complete page template for entity listing  
-**USAGE:** Server component with data loading and table integration
-
-**Usage Notes:**
-- Graceful error handling with fallback empty arrays
-- Suspense boundaries for loading states
-- Wider maxWidth (5xl) for table layouts
-- Server component pattern with data fetching
-
 
 ## Known Issues
 (Document any existing bugs or performance concerns here)

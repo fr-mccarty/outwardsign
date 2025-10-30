@@ -1,97 +1,40 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PageContainer } from '@/components/page-container'
-import { Loading } from '@/components/loading'
-import Link from "next/link"
-import { ArrowLeft, Edit, Copy, BookOpen, Trash2, Calendar } from "lucide-react"
-import { getReading, deleteReading, type Reading } from "@/lib/actions/readings"
-import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { useRouter } from 'next/navigation'
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { BookOpen, Calendar } from "lucide-react"
+import { getReading } from "@/lib/actions/readings"
+import { createClient } from '@/lib/supabase/server'
+import { redirect, notFound } from 'next/navigation'
+import { ReadingFormActions } from './reading-form-actions'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default function ReadingDetailPage({ params }: PageProps) {
-  const [reading, setReading] = useState<Reading | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [readingId, setReadingId] = useState<string>('')
-  const [isDeleting, setIsDeleting] = useState(false)
-  const { setBreadcrumbs } = useBreadcrumbs()
-  const router = useRouter()
+export default async function ReadingDetailPage({ params }: PageProps) {
+  const supabase = await createClient()
 
-  useEffect(() => {
-    const loadReading = async () => {
-      try {
-        const { id } = await params
-        setReadingId(id)
-        const readingData = await getReading(id)
-        
-        if (!readingData) {
-          router.push('/readings')
-          return
-        }
-
-        setReading(readingData)
-        setBreadcrumbs([
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "My Readings", href: "/readings" },
-          { label: readingData.pericope || 'Reading' }
-        ])
-      } catch (error) {
-        console.error('Failed to load reading:', error)
-        router.push('/readings')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadReading()
-  }, [params, setBreadcrumbs, router])
-
-  const handleDelete = async () => {
-    if (!reading || !window.confirm('Are you sure you want to delete this reading? This action cannot be undone.')) {
-      return
-    }
-
-    setIsDeleting(true)
-    try {
-      await deleteReading(reading.id)
-      router.push('/readings')
-    } catch (error) {
-      console.error('Failed to delete reading:', error)
-      alert('Failed to delete reading. Please try again.')
-    } finally {
-      setIsDeleting(false)
-    }
+  // Check authentication server-side
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
   }
 
-  const handleCopyText = () => {
-    if (reading) {
-      const fullText = `${reading.pericope}\n\n${reading.text}`
-      navigator.clipboard.writeText(fullText)
-    }
-  }
+  const { id } = await params
 
-  if (loading) {
-    return (
-      <PageContainer 
-        title="Reading Details"
-        description="Loading reading information..."
-        maxWidth="4xl"
-      >
-        <Loading />
-      </PageContainer>
-    )
-  }
+  // Fetch reading server-side
+  const reading = await getReading(id)
 
   if (!reading) {
-    return null
+    notFound()
   }
+
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "My Readings", href: "/readings" },
+    { label: reading.pericope || 'Reading' }
+  ]
 
   const getCategoryColor = (category: string) => {
     const colors = [
@@ -111,6 +54,7 @@ export default function ReadingDetailPage({ params }: PageProps) {
       description={reading.lectionary_id || 'Scripture reading details'}
       maxWidth="4xl"
     >
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-6">
         {/* Title and badges */}
         <div>
@@ -134,101 +78,82 @@ export default function ReadingDetailPage({ params }: PageProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={handleCopyText}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copy Text
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={`/readings/${readingId}/edit`}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Link>
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </Button>
-        </div>
+        <ReadingFormActions reading={reading} />
 
         <div className="space-y-6">
-        {/* Reading Text */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Reading Text
-              </CardTitle>
-              {reading.categories && reading.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {reading.categories.map(category => (
-                    <Badge key={category} className={getCategoryColor(category)}>
-                      {category}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted/30 p-6 rounded-lg">
-              <div className="space-y-4">
-                {reading.pericope && (
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-primary">
-                      {reading.pericope}
-                    </h3>
+          {/* Reading Text */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Reading Text
+                </CardTitle>
+                {reading.categories && reading.categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {reading.categories.map(category => (
+                      <Badge key={category} className={getCategoryColor(category)}>
+                        {category}
+                      </Badge>
+                    ))}
                   </div>
                 )}
-                <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap leading-relaxed text-foreground">
-                    {reading.text}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted/30 p-6 rounded-lg">
+                <div className="space-y-4">
+                  {reading.pericope && (
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-primary">
+                        {reading.pericope}
+                      </h3>
+                    </div>
+                  )}
+                  <div className="prose prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap leading-relaxed text-foreground">
+                      {reading.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reading Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Reading Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
+                    Word Count
+                  </h4>
+                  <p className="text-sm">
+                    {reading.text ? reading.text.split(' ').length : 0} words
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
+                    Character Count
+                  </h4>
+                  <p className="text-sm">
+                    {reading.text ? reading.text.length : 0} characters
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
+                    Reading ID
+                  </h4>
+                  <p className="text-xs font-mono text-muted-foreground">
+                    {reading.id}
                   </p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Reading Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Reading Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                  Word Count
-                </h4>
-                <p className="text-sm">
-                  {reading.text ? reading.text.split(' ').length : 0} words
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                  Character Count
-                </h4>
-                <p className="text-sm">
-                  {reading.text ? reading.text.length : 0} characters
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                  Reading ID
-                </h4>
-                <p className="text-xs font-mono text-muted-foreground">
-                  {reading.id}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </PageContainer>
