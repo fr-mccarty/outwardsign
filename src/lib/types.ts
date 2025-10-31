@@ -362,8 +362,12 @@ export interface Person {
   parish_id: string
   first_name: string
   last_name: string
+  phone_number?: string
   email?: string
-  phone?: string
+  street?: string
+  city?: string
+  state?: string
+  zipcode?: string
   notes?: string
   created_at: string
   updated_at: string
@@ -417,6 +421,40 @@ export interface Reading {
   language?: string
   lectionary_id?: string
   categories?: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface Presentation {
+  id: string
+  parish_id: string
+  child_name: string
+  child_sex: 'Male' | 'Female'
+  mother_name: string
+  father_name: string
+  godparents_names?: string
+  is_baptized: boolean
+  language: 'English' | 'Spanish'
+  event_id: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Event {
+  id: string
+  parish_id: string
+  name: string
+  description?: string
+  responsible_party_id: string
+  event_type: string
+  start_date?: string
+  start_time?: string
+  end_date?: string
+  end_time?: string
+  location?: string
+  language?: string
+  notes?: string
   created_at: string
   updated_at: string
 }

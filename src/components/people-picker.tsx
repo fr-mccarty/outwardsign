@@ -32,7 +32,8 @@ import {
   Phone, 
   Save
 } from 'lucide-react'
-import { searchPeople, createPerson, type Person } from '@/lib/actions/people'
+import { getPeople, createPerson } from '@/lib/actions/people'
+import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -81,7 +82,7 @@ export function PeoplePicker({
     first_name: '',
     last_name: '',
     email: '',
-    phone: '',
+    phone_number: '',
     notes: ''
   })
 
@@ -91,7 +92,7 @@ export function PeoplePicker({
   const searchPeopleCallback = useCallback(async (query: string) => {
     try {
       setLoading(true)
-      const results = await searchPeople(query)
+      const results = await getPeople(query ? { search: query } : undefined)
       setPeople(results)
     } catch (error) {
       console.error('Error searching people:', error)
@@ -144,9 +145,8 @@ export function PeoplePicker({
         first_name: newPersonForm.first_name,
         last_name: newPersonForm.last_name,
         email: newPersonForm.email || undefined,
-        phone: newPersonForm.phone || undefined,
-        notes: newPersonForm.notes || undefined,
-        is_active: true
+        phone_number: newPersonForm.phone_number || undefined,
+        notes: newPersonForm.notes || undefined
       })
       
       toast.success('Person created successfully')
@@ -159,7 +159,7 @@ export function PeoplePicker({
         first_name: '',
         last_name: '',
         email: '',
-        phone: '',
+        phone_number: '',
         notes: ''
       })
       setShowAddForm(false)
@@ -177,7 +177,7 @@ export function PeoplePicker({
       first_name: '',
       last_name: '',
       email: '',
-      phone: '',
+      phone_number: '',
       notes: ''
     })
   }
@@ -276,10 +276,10 @@ export function PeoplePicker({
                             <span className="truncate">{person.email}</span>
                           </div>
                         )}
-                        {person.phone && (
+                        {person.phone_number && (
                           <div className="flex items-center gap-1">
                             <Phone className="h-3 w-3" />
-                            <span>{person.phone}</span>
+                            <span>{person.phone_number}</span>
                           </div>
                         )}
                       </div>
@@ -356,14 +356,14 @@ export function PeoplePicker({
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">
+              <Label htmlFor="phone_number" className="text-right">
                 Phone
               </Label>
               <Input
-                id="phone"
+                id="phone_number"
                 type="tel"
-                value={newPersonForm.phone}
-                onChange={(e) => handleNewPersonFormChange('phone', e.target.value)}
+                value={newPersonForm.phone_number}
+                onChange={(e) => handleNewPersonFormChange('phone_number', e.target.value)}
                 className="col-span-3"
                 placeholder="(555) 123-4567"
               />

@@ -21,7 +21,7 @@ import {
   Calendar,
   Settings,
   Church,
-  Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars
+  Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -81,6 +81,24 @@ export function MainSidebar() {
               </SidebarMenuItem>
 
               <CollapsibleNavSection
+                name="Events"
+                icon={Calendar}
+                items={[
+                  {
+                    title: "Our Events",
+                    url: "/events",
+                    icon: Calendar,
+                  },
+                  {
+                    title: "Create Event",
+                    url: "/events/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
                 name="Reading"
                 icon={BookOpen}
                 items={[
@@ -136,12 +154,12 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="Funeral"
-                icon={ClipboardList}
+                icon={Cross}
                 items={[
                   {
                     title: "Our Funerals",
                     url: "/funerals",
-                    icon: ClipboardList,
+                    icon: Cross,
                   },
                   {
                     title: "New Funeral",
@@ -190,12 +208,12 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="Mass Intention"
-                icon={Heart}
+                icon={List}
                 items={[
                   {
                     title: "Our Mass Intentions",
                     url: "/mass-intentions",
-                    icon: Heart,
+                    icon: List,
                   },
                   {
                     title: "Create Mass Intention",
@@ -213,12 +231,12 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="Baptism"
-                icon={Waves}
+                icon={Droplet}
                 items={[
                   {
                     title: "Our Baptisms",
                     url: "/baptisms",
-                    icon: Waves,
+                    icon: Droplet,
                   },
                   {
                     title: "New Baptisms",

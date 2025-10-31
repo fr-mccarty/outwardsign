@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { UserPlus, User, Trash2, Save, X, Users } from "lucide-react"
 import { getGroup, addGroupMember, removeGroupMember, updateGroupMemberRole, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
-import { getPeople, type Person } from '@/lib/actions/people'
+import { getPeople } from '@/lib/actions/people'
+import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -69,8 +70,8 @@ export default function GroupDetailPage({ params }: PageProps) {
     loadData()
   }, [params, setBreadcrumbs, router])
 
-  const availablePeople = people.filter(person => 
-    person.is_active && !group?.members.some(member => member.person_id === person.id)
+  const availablePeople = people.filter(person =>
+    !group?.members.some(member => member.person_id === person.id)
   )
 
   const handleAddMember = async () => {
