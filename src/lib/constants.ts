@@ -92,7 +92,7 @@ Roguemos al Señor.`
 // Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database
 // Display localized labels using READING_CATEGORY_LABELS[category][lang]
 // TODO: When implementing language selection, use: READING_CATEGORY_LABELS[category][selectedLanguage]
-export const READING_CATEGORIES = ['WEDDING', 'FUNERAL', 'BAPTISM'] as const
+export const READING_CATEGORIES = ['WEDDING', 'FUNERAL', 'BAPTISM', 'FIRST_READING', 'SECOND_READING', 'PSALM', 'GOSPEL'] as const
 
 export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }> = {
   WEDDING: {
@@ -106,5 +106,21 @@ export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }>
   BAPTISM: {
     en: 'Baptism',
     es: 'Bautismo'
+  },
+  FIRST_READING: {
+    en: 'First Reading',
+    es: 'Primera Lectura'
+  },
+  SECOND_READING: {
+    en: 'Second Reading',
+    es: 'Segunda Lectura'
+  },
+  PSALM: {
+    en: 'Psalm',
+    es: 'Salmo'
+  },
+  GOSPEL: {
+    en: 'Gospel',
+    es: 'Evangelio'
   }
 }
