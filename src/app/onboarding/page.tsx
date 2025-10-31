@@ -124,7 +124,7 @@ export default function OnboardingPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
               <div className="text-sm text-gray-500">
-                Creating sample readings...
+                Seeding parish readings...
               </div>
             </div>
           </CardContent>

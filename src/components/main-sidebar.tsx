@@ -20,10 +20,8 @@ import {
   Flower,
   Calendar,
   Settings,
-  Sparkles,
   Church,
-  Megaphone,
-  Heart, ClipboardList, UserCheck, User, Users
+  Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -83,7 +81,7 @@ export function MainSidebar() {
               </SidebarMenuItem>
 
               <CollapsibleNavSection
-                name="Readings"
+                name="Reading"
                 icon={BookOpen}
                 items={[
                   {
@@ -94,7 +92,7 @@ export function MainSidebar() {
                   {
                     title: "Create Reading",
                     url: "/readings/create",
-                    icon: Sparkles,
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
@@ -102,45 +100,35 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="Mass"
-                icon={ClipboardList}
+                icon={CirclePlus}
                 items={[
                   {
-                    title: "Liturgy Planning",
-                    url: "/liturgy-planning",
-                    icon: ClipboardList,
+                    title: "Our Masses",
+                    url: "/masses",
+                    icon: CirclePlus,
                   },
                   {
-                    title: "Create Liturgy",
-                    url: "/liturgy/wizard",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Liturgical Calendar",
-                    url: "/calendar",
-                    icon: Calendar,
+                    title: "New Mass",
+                    url: "/masses/create",
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
               />
 
               <CollapsibleNavSection
-                name="Marriage"
-                icon={BookOpen}
+                name="Wedding"
+                icon={VenusAndMars}
                 items={[
                   {
-                    title: "Our Liturgical Readings",
-                    url: "/liturgical-readings",
-                    icon: BookOpen,
+                    title: "Our Weddings",
+                    url: "/weddings",
+                    icon: VenusAndMars,
                   },
                   {
-                    title: "Create Liturgical Reading",
-                    url: "/liturgical-readings/create",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Calendar View",
-                    url: "/liturgical-readings/calendar",
-                    icon: Calendar,
+                    title: "New Wedding",
+                    url: "/weddings/create",
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
@@ -151,19 +139,14 @@ export function MainSidebar() {
                 icon={ClipboardList}
                 items={[
                   {
-                    title: "Liturgy Planning",
-                    url: "/liturgy-planning",
+                    title: "Our Funerals",
+                    url: "/funerals",
                     icon: ClipboardList,
                   },
                   {
-                    title: "Create Liturgy",
-                    url: "/liturgy/wizard",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Liturgical Calendar",
-                    url: "/calendar",
-                    icon: Calendar,
+                    title: "New Funeral",
+                    url: "/funerals/create",
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
@@ -171,60 +154,53 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="People"
-                icon={UserCheck}
+                icon={User}
                 items={[
                   {
-                    title: "Ministers Directory",
-                    url: "/ministers",
-                    icon: UserCheck,
-                  },
-                  {
-                    title: "People",
+                    title: "Our People",
                     url: "/people",
                     icon: User,
                   },
                   {
-                    title: "Groups",
-                    url: "/groups",
-                    icon: Users,
-                  },
-                  {
-                    title: "Ministries",
-                    url: "/ministries",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Event Templates",
-                    url: "/liturgical-event-templates",
-                    icon: FileText,
+                    title: "Create Person",
+                    url: "/people/create",
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
               />
 
               <CollapsibleNavSection
-                name="Mass Intentions"
+                name="Groups"
+                icon={Users}
+                items={[
+                  {
+                    title: "Our Groups",
+                    url: "/groups",
+                    icon: Users,
+                  },
+                  {
+                    title: "New Group",
+                    url: "/groups",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
+                name="Mass Intention"
                 icon={Heart}
                 items={[
                   {
-                    title: "All Mass Intentions",
+                    title: "Our Mass Intentions",
                     url: "/mass-intentions",
                     icon: Heart,
                   },
                   {
                     title: "Create Mass Intention",
                     url: "/mass-intentions/create",
-                    icon: Sparkles,
-                  },
-                  {
-                    title: "Calendar View",
-                    url: "/mass-intentions/calendar",
-                    icon: Calendar,
-                  },
-                  {
-                    title: "Admin View",
-                    url: "/mass-intentions/admin",
-                    icon: Settings,
+                    icon: Plus,
                   },
                   {
                     title: "Print Report",
@@ -236,13 +212,36 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Baptisms"
-                icon={Megaphone}
+                name="Baptism"
+                icon={Waves}
                 items={[
                   {
                     title: "Our Baptisms",
                     url: "/baptisms",
-                    icon: Megaphone,
+                    icon: Waves,
+                  },
+                  {
+                    title: "New Baptisms",
+                    url: "/baptisms/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
+                name="Confirmation"
+                icon={Flame}
+                items={[
+                  {
+                    title: "Our Confirmations",
+                    url: "/confirmations",
+                    icon: Flame,
+                  },
+                  {
+                    title: "New Confirmation",
+                    url: "/confirmations",
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
@@ -250,12 +249,17 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="Presentations"
-                icon={Megaphone}
+                icon={HandHeartIcon}
                 items={[
                   {
                     title: "Our Presentations",
                     url: "/presentations",
-                    icon: Megaphone,
+                    icon: HandHeartIcon,
+                  },
+                  {
+                    title: "New Presentation",
+                    url: "/presentations/create",
+                    icon: Plus,
                   },
                 ]}
                 defaultOpen={false}

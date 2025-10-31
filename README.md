@@ -102,6 +102,11 @@ If you wish to just develop locally and not deploy to Vercel, [follow the steps 
 
 Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
 
+## Repository Guides
+
+- `CLAUDE.md` documents architecture, data patterns, and workflow expectations tailored for AI coding assistants.
+- `AGENTS.md` provides contributor guidelines summarizing project structure, commands, testing, and review practices.
+
 ## More Supabase examples
 
 - [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
