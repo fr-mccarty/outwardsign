@@ -81,7 +81,6 @@ Ensure that: All form fields use standardized, basic styling with no specialized
 For views that are within a print folder, allow those views to set their style however they wish.
 
 ### Module Structure (7 Files)
-
 1. List Page (Server) - page.tsx
 - Auth check → fetch entities with filters from searchParams → compute stats server-side → define breadcrumbs
 - PageContainer → BreadcrumbSetter → [Entity]ListClient initialData={entities} stats={stats}
@@ -113,18 +112,16 @@ Detects mode: entity prop = edit, no prop = create
 - Interactive Buttons: Copy (clipboard), Edit (link), Delete (confirmation + toast)
 - Router navigation post-action
 
-Additional Module Essentials
+## Additional Module Essentials
 
-File Naming Conventions
-
+### File Naming Conventions
 - Server pages: page.tsx (async function, no 'use client')
 - Client components: [entity]-[purpose].tsx (e.g., reading-form.tsx, reading-list-client.tsx,
   reading-form-actions.tsx)
 - Server Actions: lib/actions/[entity].ts or [entities].ts
 - Types: Defined in Server Action files, exported for reuse
 
-Directory Structure
-
+### Directory Structure
 [entity-plural]/
 ├── page.tsx                    # List (Server)
 ├── loading.tsx                 # Suspense fallback (imports reusable component)
@@ -141,15 +138,13 @@ Directory Structure
     └── edit/
         └── page.tsx           # Edit (Server)
 
-Data Flow Pattern
-
+## Data Flow Pattern
 Server → Client: Pass serializable data as props
 - List: initialData={entities}
 - Form: entity={entity} (edit) or no prop (create)
 - Actions: entity={entity}
 
-Server Actions (lib/actions/[entity].ts)
-
+### Server Actions (lib/actions/[entity].ts)
 Required exports:
 - get[Entities](filters?: FilterParams) - Fetch list with optional server-side filtering
 - get[Entity](id) - Fetch single
@@ -160,21 +155,18 @@ Required exports:
 
 **Cache revalidation:** After mutations (create/update/delete), use revalidatePath() to invalidate Next.js cache for affected routes. Always revalidate both list pages and detail pages.
 
-Authentication Pattern
-
+### Authentication Pattern
 Every server page starts with:
 const supabase = await createClient()
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) redirect('/login')
 
-Error Handling
-
+### Error Handling
 - Not found: notFound() when entity doesn't exist
 - Client errors: toast.error() + try/catch
 - Server redirects: redirect('/path')
 
-Component Communication
-
+### Component Communication
 - Server to Client: Props only (serializable data)
 - Client to Server: Server Actions via 'use server'
 - Client state: useState for form fields, temporary UI state
@@ -183,19 +175,14 @@ Component Communication
 - No prop drilling: Use Server Actions for data operations
 
 ### Performance Patterns
-
 **Server-side filtering:** List pages accept searchParams prop. Pass these to get[Entities]() functions to filter on the server, not the client.
-
 **Parallel data fetching:** Use Promise.all() when fetching multiple independent data sources in server components.
-
 **URL state management:** Client components should update URL search params via router.push() instead of maintaining local filter state. This makes state shareable and linkable.
 
 ### Loading and Error States
-
 **Pattern:** Create reusable skeleton and error components in components/ directory. Route-level loading.tsx and error.tsx files import and render these reusable components. This ensures consistent UX across modules.
 
 ### Validation
-
 **Dual validation with Zod:** Define schemas in Server Action files. Client forms use .safeParse() for instant feedback. Server Actions use .parse() as security boundary. Export schema types with z.infer<>.
 
 ## Breadcrumbs
@@ -217,6 +204,8 @@ Client Component (BreadcrumbSetter):
 
 ### Development Guidelines
 - **Always use custom components** before falling back to shadcn/ui components
+- **Always use shadcn/ui components** before falling back to creating something completely new or even creating a new component
+- You may create new components, but always ask before doing it.
 - **Follow TypeScript patterns** established in existing components
 - **Maintain responsive design** across all new components
 - **Integrate with Supabase Auth** for user-facing features
