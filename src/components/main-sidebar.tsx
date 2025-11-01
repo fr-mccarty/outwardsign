@@ -21,7 +21,8 @@ import {
   Calendar,
   Settings,
   Church,
-  Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross
+  Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
+  BookHeart, CalendarDays
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -82,12 +83,12 @@ export function MainSidebar() {
 
               <CollapsibleNavSection
                 name="Events"
-                icon={Calendar}
+                icon={CalendarDays}
                 items={[
                   {
                     title: "Our Events",
                     url: "/events",
-                    icon: Calendar,
+                    icon: CalendarDays,
                   },
                   {
                     title: "Create Event",
@@ -99,7 +100,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Reading"
+                name="Readings"
                 icon={BookOpen}
                 items={[
                   {
@@ -117,7 +118,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Mass"
+                name="Masses"
                 icon={CirclePlus}
                 items={[
                   {
@@ -135,7 +136,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Wedding"
+                name="Weddings"
                 icon={VenusAndMars}
                 items={[
                   {
@@ -153,7 +154,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Funeral"
+                name="Funerals"
                 icon={Cross}
                 items={[
                   {
@@ -207,7 +208,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Mass Intention"
+                name="Mass Intentions"
                 icon={List}
                 items={[
                   {
@@ -230,7 +231,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Baptism"
+                name="Baptisms"
                 icon={Droplet}
                 items={[
                   {
@@ -248,7 +249,7 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
-                name="Confirmation"
+                name="Confirmations"
                 icon={Flame}
                 items={[
                   {
@@ -277,6 +278,24 @@ export function MainSidebar() {
                   {
                     title: "New Presentation",
                     url: "/presentations/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
+                name="Quinceañeras"
+                icon={BookHeart}
+                items={[
+                  {
+                    title: "Our Quinceañeras",
+                    url: "/quinceaneras",
+                    icon: BookHeart,
+                  },
+                  {
+                    title: "New Quinceañera",
+                    url: "/quinceaneras/create",
                     icon: Plus,
                   },
                 ]}
