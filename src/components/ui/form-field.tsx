@@ -50,14 +50,15 @@ export function FormField(props: FormFieldProps) {
   const renderInput = () => {
     switch (props.inputType) {
       case 'textarea':
+        const rows = (props as TextareaFieldProps).rows || 12
         return (
           <Textarea
             id={id}
             value={props.value}
             onChange={(e) => props.onChange(e.target.value)}
             placeholder={(props as TextareaFieldProps).placeholder}
-            rows={(props as TextareaFieldProps).rows || 12}
-            className={`min-h-[200px] ${(props as TextareaFieldProps).resize ? 'resize-y' : 'resize-none'}`}
+            rows={rows}
+            className={`${(props as TextareaFieldProps).resize ? 'resize-y' : 'resize-none'}`}
             required={required}
             disabled={disabled}
           />

@@ -458,3 +458,38 @@ export interface Event {
   created_at: string
   updated_at: string
 }
+
+export interface Wedding {
+  id: string
+  parish_id: string
+  wedding_event_id?: string
+  bride_id?: string
+  groom_id?: string
+  coordinator_id?: string
+  presider_id?: string
+  homilist_id?: string
+  lead_musician_id?: string
+  cantor_id?: string
+  reception_event_id?: string
+  rehearsal_event_id?: string
+  rehearsal_dinner_event_id?: string
+  witness_1_id?: string
+  witness_2_id?: string
+  status?: string
+  first_reading_id?: string
+  psalm_id?: string
+  psalm_reader_id?: string
+  psalm_is_sung?: boolean
+  second_reading_id?: string
+  gospel_reading_id?: string
+  gospel_reader_id?: string
+  first_reader_id?: string
+  second_reader_id?: string
+  petitions_read_by_second_reader?: boolean
+  petition_reader_id?: string
+  petitions?: string
+  announcements?: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}

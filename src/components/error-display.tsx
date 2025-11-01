@@ -12,7 +12,7 @@ interface ErrorDisplayProps {
 export function ErrorDisplay({ error, reset }: ErrorDisplayProps) {
   return (
     <Card className="border-destructive">
-      <CardContent className="pt-6">
+      <CardContent className="p-6">
         <div className="flex flex-col items-center text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-destructive" />
           <div>
