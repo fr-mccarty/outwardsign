@@ -10,6 +10,7 @@ CREATE TABLE events (
   start_time TIME,
   end_date DATE,
   end_time TIME,
+  timezone TEXT NOT NULL DEFAULT 'UTC',
   location TEXT,
   language TEXT,
   notes TEXT,
