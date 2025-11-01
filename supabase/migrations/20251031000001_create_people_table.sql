@@ -10,7 +10,7 @@ CREATE TABLE people (
   city TEXT,
   state TEXT,
   zipcode TEXT,
-  notes TEXT,
+  note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

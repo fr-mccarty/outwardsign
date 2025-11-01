@@ -10,7 +10,7 @@ CREATE TABLE presentations (
   is_baptized BOOLEAN NOT NULL DEFAULT false,
   language TEXT NOT NULL CHECK (language IN ('English', 'Spanish')),
   event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  notes TEXT,
+  note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
