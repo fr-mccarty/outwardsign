@@ -76,6 +76,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --liturgy-red: oklch(0.577 0.245 27.325);
 }
 
 .dark {
@@ -118,5 +119,90 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Liturgical Styles */
+@layer components {
+  /* Event/Sacrament Headers */
+  .liturgy-event-title {
+    @apply text-3xl font-semibold text-center;
+  }
+
+  .liturgy-event-datetime {
+    @apply text-xl text-center;
+  }
+
+  /* Reading Headers */
+  .liturgy-reading-title {
+    @apply text-right text-xl font-semibold;
+    color: var(--liturgy-red);
+  }
+
+  .liturgy-pericope {
+    @apply text-right text-xl font-semibold italic;
+    color: var(--liturgy-red);
+  }
+
+  .liturgy-reader-name {
+    @apply text-right text-xl font-bold;
+    color: var(--liturgy-red);
+  }
+
+  /* Reading Content */
+  .liturgy-introduction {
+    @apply mt-3 font-semibold;
+  }
+
+  .liturgy-text {
+    @apply mt-3 whitespace-pre-line;
+  }
+
+  .liturgy-conclusion {
+    @apply mt-3 font-semibold;
+  }
+
+  /* Liturgical Responses */
+  .liturgy-response {
+    @apply mt-3 italic;
+  }
+
+  .liturgy-response-label {
+    @apply font-semibold;
+  }
+
+  .liturgy-priest-dialogue {
+    @apply mt-3;
+  }
+
+  /* Petitions */
+  .liturgy-petition-reader {
+    @apply font-bold;
+  }
+
+  .liturgy-petition-text {
+    @apply font-semibold;
+  }
+
+  .liturgy-petition-pause {
+    @apply font-bold;
+    color: var(--liturgy-red);
+  }
+
+  /* Summary/Info Grid */
+  .liturgy-info-grid {
+    @apply grid grid-cols-[200px_1fr] gap-2;
+  }
+
+  .liturgy-info-label {
+    @apply font-medium;
+  }
+
+  .liturgy-section-title {
+    @apply text-xl font-semibold;
+  }
+
+  .liturgy-section {
+    @apply space-y-3;
   }
 }

@@ -35,191 +35,389 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
     ? `${wedding.petition_reader.first_name} ${wedding.petition_reader.last_name}`
     : ''
 
+  // Helper function to format person name
+  const formatPersonName = (person?: { first_name: string; last_name: string } | null) => {
+    return person ? `${person.first_name} ${person.last_name}` : ''
+  }
+
+  // Helper function to format person with phone
+  const formatPersonWithPhone = (person?: { first_name: string; last_name: string; phone_number?: string } | null) => {
+    if (!person) return ''
+    const name = `${person.first_name} ${person.last_name}`
+    return person.phone_number ? `${name} (${person.phone_number})` : name
+  }
+
+  // Helper function to format event datetime
+  const formatEventDateTimeString = (event?: { start_date?: string; start_time?: string } | null) => {
+    if (!event?.start_date) return ''
+    const date = new Date(event.start_date).toLocaleDateString()
+    return event.start_time ? `${date} at ${event.start_time}` : date
+  }
+
   return (
     <div className="flex gap-6">
       {/* Main Content */}
-      <div className="flex-1 space-y-6">
-        {/* Page 1: First Reading */}
-        <div className="p-6 bg-white rounded-lg shadow print:shadow-none print:break-after-page">
-          <div className="text-2xl font-bold text-center">{weddingTitle}</div>
-          <div className="text-xl text-center">{eventDateTime}</div>
-
-          <div className="text-right text-xl text-red-500 font-semibold mt-6">FIRST READING</div>
-          {wedding.first_reading ? (
-            <>
-              <div className="text-right text-xl text-red-500 font-semibold italic">
-                {wedding.first_reading.pericope || 'No pericope'}
+      <div className="flex-1">
+        <Card>
+          <CardContent className="p-6 space-y-6">
+            {/* Summary Section */}
+            <div className="liturgy-section print:break-after-page">
+              <div className="text-center">
+                <div className="liturgy-event-title">{weddingTitle}</div>
+                <div className="liturgy-event-datetime">{eventDateTime}</div>
               </div>
-              {wedding.first_reader && (
-                <div className="text-right text-xl text-red-500 font-bold">
-                  {wedding.first_reader.first_name} {wedding.first_reader.last_name}
+
+              {(wedding.rehearsal_event || wedding.rehearsal_dinner_event) && (
+                <div>
+                  <div className="liturgy-section-title">Rehearsal</div>
+                  {wedding.rehearsal_event && (
+                    <>
+                      {wedding.rehearsal_event.start_date && (
+                        <div className="liturgy-info-grid">
+                          <div className="liturgy-info-label">Rehearsal Date & Time:</div>
+                          <div>{formatEventDateTimeString(wedding.rehearsal_event)}</div>
+                        </div>
+                      )}
+                      {wedding.rehearsal_event.location && (
+                        <div className="liturgy-info-grid">
+                          <div className="liturgy-info-label">Rehearsal Location:</div>
+                          <div>{wedding.rehearsal_event.location}</div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {wedding.rehearsal_dinner_event?.location && (
+                    <div className="liturgy-info-grid">
+                      <div className="liturgy-info-label">Rehearsal Dinner Location:</div>
+                      <div>{wedding.rehearsal_dinner_event.location}</div>
+                    </div>
+                  )}
                 </div>
               )}
-              {wedding.first_reading.introduction && (
-                <div className="mt-3 font-semibold">{wedding.first_reading.introduction}</div>
-              )}
-              <div className="mt-3 whitespace-pre-line">
-                {wedding.first_reading.text || 'No reading text'}
-              </div>
-              {wedding.first_reading.conclusion && (
-                <div className="mt-3 font-semibold">{wedding.first_reading.conclusion}</div>
-              )}
-              <div className="mt-3 italic">
-                <span className="font-semibold">People:</span> Thanks be to God.
-              </div>
-            </>
-          ) : (
-            <div>None Selected</div>
-          )}
-        </div>
 
-        {/* Page 2: Psalm */}
-        <div className="p-6 bg-white rounded-lg shadow print:shadow-none print:break-after-page">
-          <div className="text-right text-xl text-red-500 font-semibold">Psalm</div>
-          {wedding.psalm ? (
-            <>
-              <div className="text-right text-xl text-red-500 font-semibold italic">
-                {wedding.psalm.pericope || 'No pericope'}
+              <div>
+                <div className="liturgy-section-title">Wedding</div>
+                {wedding.bride && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Bride:</div>
+                    <div>{formatPersonWithPhone(wedding.bride)}</div>
+                  </div>
+                )}
+                {wedding.groom && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Groom:</div>
+                    <div>{formatPersonWithPhone(wedding.groom)}</div>
+                  </div>
+                )}
+                {wedding.coordinator && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Coordinator:</div>
+                    <div>{formatPersonName(wedding.coordinator)}</div>
+                  </div>
+                )}
+                {wedding.presider && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Presider:</div>
+                    <div>{formatPersonName(wedding.presider)}</div>
+                  </div>
+                )}
+                {wedding.lead_musician && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Lead Musician:</div>
+                    <div>{formatPersonName(wedding.lead_musician)}</div>
+                  </div>
+                )}
+                {wedding.wedding_event?.location && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Wedding Location:</div>
+                    <div>{wedding.wedding_event.location}</div>
+                  </div>
+                )}
+                {wedding.reception_event?.location && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Reception Location:</div>
+                    <div>{wedding.reception_event.location}</div>
+                  </div>
+                )}
+                {wedding.witness_1 && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Best Man:</div>
+                    <div>{formatPersonName(wedding.witness_1)}</div>
+                  </div>
+                )}
+                {wedding.witness_2 && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Maid/Matron of Honor:</div>
+                    <div>{formatPersonName(wedding.witness_2)}</div>
+                  </div>
+                )}
+                {wedding.notes && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Wedding Note:</div>
+                    <div>{wedding.notes}</div>
+                  </div>
+                )}
               </div>
-              {!wedding.psalm_is_sung && wedding.psalm_reader && (
-                <div className="text-right text-xl text-red-500 font-bold">
-                  {wedding.psalm_reader.first_name} {wedding.psalm_reader.last_name}
+
+              <div>
+                <div className="liturgy-section-title">Sacred Liturgy</div>
+                {wedding.first_reading && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">First Reading:</div>
+                    <div>{wedding.first_reading.pericope}</div>
+                  </div>
+                )}
+                {wedding.first_reader && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">First Reading Lector:</div>
+                    <div>{formatPersonName(wedding.first_reader)}</div>
+                  </div>
+                )}
+                {wedding.psalm && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Psalm:</div>
+                    <div>{wedding.psalm.pericope}</div>
+                  </div>
+                )}
+                {wedding.psalm_is_sung && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Psalm Choice:</div>
+                    <div>Sung</div>
+                  </div>
+                )}
+                {wedding.psalm_reader && !wedding.psalm_is_sung && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Psalm Lector:</div>
+                    <div>{formatPersonName(wedding.psalm_reader)}</div>
+                  </div>
+                )}
+                {wedding.second_reading && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Second Reading:</div>
+                    <div>{wedding.second_reading.pericope}</div>
+                  </div>
+                )}
+                {wedding.second_reader && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Second Reading Lector:</div>
+                    <div>{formatPersonName(wedding.second_reader)}</div>
+                  </div>
+                )}
+                {wedding.gospel_reading && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Gospel Reading:</div>
+                    <div>{wedding.gospel_reading.pericope}</div>
+                  </div>
+                )}
+                {petitionsReader && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Petitions Read By:</div>
+                    <div>{petitionsReader}</div>
+                  </div>
+                )}
+                {wedding.petitions && (
+                  <div className="liturgy-info-grid">
+                    <div className="liturgy-info-label">Additional Petitions:</div>
+                    <div className="whitespace-pre-line">{wedding.petitions}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Readings Section */}
+            <div className="space-y-6 print:break-after-page">
+              {/* First Reading */}
+              <div>
+                <div className="liturgy-event-title">{weddingTitle}</div>
+                <div className="liturgy-event-datetime">{eventDateTime}</div>
+
+                <div className="liturgy-reading-title mt-6">FIRST READING</div>
+                {wedding.first_reading ? (
+                  <>
+                    <div className="liturgy-pericope">
+                      {wedding.first_reading.pericope || 'No pericope'}
+                    </div>
+                    {wedding.first_reader && (
+                      <div className="liturgy-reader-name">
+                        {wedding.first_reader.first_name} {wedding.first_reader.last_name}
+                      </div>
+                    )}
+                    {wedding.first_reading.introduction && (
+                      <div className="liturgy-introduction">{wedding.first_reading.introduction}</div>
+                    )}
+                    <div className="liturgy-text">
+                      {wedding.first_reading.text || 'No reading text'}
+                    </div>
+                    {wedding.first_reading.conclusion && (
+                      <div className="liturgy-conclusion">{wedding.first_reading.conclusion}</div>
+                    )}
+                    <div className="liturgy-response">
+                      <span className="liturgy-response-label">People:</span> Thanks be to God.
+                    </div>
+                  </>
+                ) : (
+                  <div>None Selected</div>
+                )}
+              </div>
+
+              {/* Psalm */}
+              <div>
+                <div className="liturgy-reading-title">Psalm</div>
+                {wedding.psalm ? (
+                  <>
+                    <div className="liturgy-pericope">
+                      {wedding.psalm.pericope || 'No pericope'}
+                    </div>
+                    {!wedding.psalm_is_sung && wedding.psalm_reader && (
+                      <div className="liturgy-reader-name">
+                        {wedding.psalm_reader.first_name} {wedding.psalm_reader.last_name}
+                      </div>
+                    )}
+                    {wedding.psalm_is_sung && (
+                      <div className="liturgy-reader-name">Sung</div>
+                    )}
+                    {wedding.psalm.introduction && (
+                      <div className="liturgy-introduction">{wedding.psalm.introduction}</div>
+                    )}
+                    <div className="liturgy-text space-y-2">
+                      {wedding.psalm.text || 'No psalm text'}
+                    </div>
+                    {wedding.psalm.conclusion && (
+                      <div className="liturgy-conclusion">{wedding.psalm.conclusion}</div>
+                    )}
+                  </>
+                ) : (
+                  <div>None Selected</div>
+                )}
+              </div>
+
+              {/* Second Reading */}
+              <div>
+                <div className="liturgy-reading-title">Second Reading</div>
+                {wedding.second_reading ? (
+                  <>
+                    <div className="liturgy-pericope">
+                      {wedding.second_reading.pericope || 'No pericope'}
+                    </div>
+                    {wedding.second_reader && (
+                      <div className="liturgy-reader-name">
+                        {wedding.second_reader.first_name} {wedding.second_reader.last_name}
+                      </div>
+                    )}
+                    {wedding.second_reading.introduction && (
+                      <div className="liturgy-introduction">{wedding.second_reading.introduction}</div>
+                    )}
+                    <div className="liturgy-text">
+                      {wedding.second_reading.text || 'No reading text'}
+                    </div>
+                    {wedding.second_reading.conclusion && (
+                      <div className="liturgy-conclusion">{wedding.second_reading.conclusion}</div>
+                    )}
+                    <div className="liturgy-response">
+                      <span className="liturgy-response-label">People:</span> Thanks be to God.
+                    </div>
+                  </>
+                ) : (
+                  <div>None Selected</div>
+                )}
+              </div>
+
+              {/* Gospel */}
+              <div>
+                <div className="liturgy-reading-title">Gospel</div>
+                {wedding.gospel_reading ? (
+                  <>
+                    <div className="liturgy-pericope">
+                      {wedding.gospel_reading.pericope || 'No pericope'}
+                    </div>
+                    <div className="liturgy-priest-dialogue">
+                      <span className="liturgy-response-label">Priest:</span> The Lord be with you.
+                    </div>
+                    <div className="liturgy-response">
+                      <span className="liturgy-response-label">People:</span> And with your spirit.
+                    </div>
+                    {wedding.gospel_reading.introduction && (
+                      <div className="liturgy-introduction">{wedding.gospel_reading.introduction}</div>
+                    )}
+                    <div className="liturgy-text">
+                      {wedding.gospel_reading.text || 'No gospel text'}
+                    </div>
+                    {wedding.gospel_reading.conclusion && (
+                      <div className="liturgy-conclusion">{wedding.gospel_reading.conclusion}</div>
+                    )}
+                    <div className="liturgy-response">
+                      <span className="liturgy-response-label">People:</span> Praise to you, Lord Jesus Christ.
+                    </div>
+                  </>
+                ) : (
+                  <div>None Selected</div>
+                )}
+              </div>
+            </div>
+
+            {/* Petitions Section */}
+            <div className="print:break-after-page">
+              <div className="liturgy-reading-title">Petitions</div>
+              {petitionsReader && (
+                <div className="liturgy-reader-name">{petitionsReader}</div>
+              )}
+
+              <div className="space-y-2 mt-4">
+                <div className="liturgy-petition-text">
+                  <span className="liturgy-petition-reader">Reader:</span> The response is "Lord, hear our prayer."{' '}
+                  <span className="liturgy-petition-pause">[Pause]</span>
+                  <br />
+                  For {brideName} and {groomName}, joined now in marriage, that their love will grow and
+                  their commitment will deepen every day, let us pray to the Lord.
                 </div>
-              )}
-              {wedding.psalm_is_sung && (
-                <div className="text-right text-xl text-red-500 font-bold">Sung</div>
-              )}
-              {wedding.psalm.introduction && (
-                <div className="mt-3 font-semibold">{wedding.psalm.introduction}</div>
-              )}
-              <div className="mt-3 whitespace-pre-line space-y-2">
-                {wedding.psalm.text || 'No psalm text'}
-              </div>
-              {wedding.psalm.conclusion && (
-                <div className="mt-3 font-semibold">{wedding.psalm.conclusion}</div>
-              )}
-            </>
-          ) : (
-            <div>None Selected</div>
-          )}
-        </div>
 
-        {/* Page 3: Second Reading */}
-        <div className="p-6 bg-white rounded-lg shadow print:shadow-none print:break-after-page">
-          <div className="text-right text-xl text-red-500 font-semibold">Second Reading</div>
-          {wedding.second_reading ? (
-            <>
-              <div className="text-right text-xl text-red-500 font-semibold italic">
-                {wedding.second_reading.pericope || 'No pericope'}
-              </div>
-              {wedding.second_reader && (
-                <div className="text-right text-xl text-red-500 font-bold">
-                  {wedding.second_reader.first_name} {wedding.second_reader.last_name}
-                </div>
-              )}
-              {wedding.second_reading.introduction && (
-                <div className="mt-3 font-semibold">{wedding.second_reading.introduction}</div>
-              )}
-              <div className="mt-3 whitespace-pre-line">
-                {wedding.second_reading.text || 'No reading text'}
-              </div>
-              {wedding.second_reading.conclusion && (
-                <div className="mt-3 font-semibold">{wedding.second_reading.conclusion}</div>
-              )}
-              <div className="mt-3 italic">
-                <span className="font-semibold">People:</span> Thanks be to God.
-              </div>
-            </>
-          ) : (
-            <div>None Selected</div>
-          )}
-        </div>
-
-        {/* Page 4: Gospel */}
-        <div className="p-6 bg-white rounded-lg shadow print:shadow-none print:break-after-page">
-          <div className="text-right text-xl text-red-500 font-semibold">Gospel</div>
-          {wedding.gospel_reading ? (
-            <>
-              <div className="text-right text-xl text-red-500 font-semibold italic">
-                {wedding.gospel_reading.pericope || 'No pericope'}
-              </div>
-              <div className="mt-3">
-                <span className="font-semibold">Priest:</span> The Lord be with you.
-              </div>
-              <div className="mt-3 italic">
-                <span className="font-semibold">People:</span> And with your spirit.
-              </div>
-              {wedding.gospel_reading.introduction && (
-                <div className="mt-3 font-semibold">{wedding.gospel_reading.introduction}</div>
-              )}
-              <div className="mt-3 whitespace-pre-line">
-                {wedding.gospel_reading.text || 'No gospel text'}
-              </div>
-              {wedding.gospel_reading.conclusion && (
-                <div className="mt-3 font-semibold">{wedding.gospel_reading.conclusion}</div>
-              )}
-              <div className="mt-3 italic">
-                <span className="font-semibold">People:</span> Praise to you, Lord Jesus Christ.
-              </div>
-            </>
-          ) : (
-            <div>None Selected</div>
-          )}
-        </div>
-
-        {/* Page 5: Petitions */}
-        <div className="p-6 bg-white rounded-lg shadow print:shadow-none">
-          <div className="text-right text-xl text-red-500 font-semibold">Petitions</div>
-          {petitionsReader && (
-            <div className="text-right text-xl text-red-500 font-bold">{petitionsReader}</div>
-          )}
-
-          <div className="space-y-2 mt-4">
-            <div className="font-semibold">
-              <span className="font-bold">Reader:</span> The response is "Lord, hear our prayer."{' '}
-              <span className="font-bold text-red-500">[Pause]</span>
-              <br />
-              For {brideName} and {groomName}, joined now in marriage, that their love will grow and
-              their commitment will deepen every day, let us pray to the Lord.
-            </div>
-
-            <div className="italic">
-              <span className="font-semibold">People:</span> Lord, hear our prayer.
-            </div>
-
-            <div className="font-semibold">
-              <span className="font-bold">Reader:</span> For the parents and grandparents of {brideName} and{' '}
-              {groomName}, without whose dedication to God and family we would not be gathered here today,
-              that they will be blessed as they gain a son or daughter, let us pray to the Lord.
-            </div>
-
-            <div className="italic">
-              <span className="font-semibold">People:</span> Lord, hear our prayer.
-            </div>
-
-            <div className="font-semibold">
-              <span className="font-bold">Reader:</span> For the families and friends of {brideName} and{' '}
-              {groomName}, gathered here today, that they continue to enrich each other with love and
-              support through the years, let us pray to the Lord.
-            </div>
-
-            <div className="italic">
-              <span className="font-semibold">People:</span> Lord, hear our prayer.
-            </div>
-
-            {customPetitions.map((petition, index) => (
-              <div key={index}>
-                <div className="font-semibold">
-                  <span className="font-bold">Reader:</span> {petition}, let us pray to the Lord.
+                <div className="liturgy-response">
+                  <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
                 </div>
 
-                <div className="italic">
-                  <span className="font-semibold">People:</span> Lord, hear our prayer.
+                <div className="liturgy-petition-text">
+                  <span className="liturgy-petition-reader">Reader:</span> For the parents and grandparents of {brideName} and{' '}
+                  {groomName}, without whose dedication to God and family we would not be gathered here today,
+                  that they will be blessed as they gain a son or daughter, let us pray to the Lord.
                 </div>
+
+                <div className="liturgy-response">
+                  <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                </div>
+
+                <div className="liturgy-petition-text">
+                  <span className="liturgy-petition-reader">Reader:</span> For the families and friends of {brideName} and{' '}
+                  {groomName}, gathered here today, that they continue to enrich each other with love and
+                  support through the years, let us pray to the Lord.
+                </div>
+
+                <div className="liturgy-response">
+                  <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                </div>
+
+                {customPetitions.map((petition, index) => (
+                  <div key={index}>
+                    <div className="liturgy-petition-text">
+                      <span className="liturgy-petition-reader">Reader:</span> {petition}, let us pray to the Lord.
+                    </div>
+
+                    <div className="liturgy-response">
+                      <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+
+            {/* Announcements Section */}
+            {wedding.announcements && (
+              <div>
+                <div className="liturgy-section-title">Announcements</div>
+                <div className="liturgy-text">{wedding.announcements}</div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Side Panel */}
