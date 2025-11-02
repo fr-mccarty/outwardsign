@@ -6,9 +6,44 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Edit, Download } from 'lucide-react'
 import Link from 'next/link'
 import { formatEventDateTime } from '@/lib/utils/date-format'
+import { liturgyPatterns, htmlStyles, createHtmlStyle } from '@/lib/styles/liturgy-styles'
 
 interface WeddingViewClientProps {
   wedding: WeddingWithRelations
+}
+
+// Additional liturgical styles not covered by patterns
+const additionalStyles = {
+  sectionTitle: createHtmlStyle({
+    fontSize: 'sectionTitle',
+    bold: true,
+    marginTop: 'large',
+    marginBottom: 'medium',
+  }),
+  responseLabel: createHtmlStyle({
+    fontSize: 'response',
+    bold: true,
+  }),
+  priestDialogue: createHtmlStyle({
+    fontSize: 'priestDialogue',
+    marginTop: 'small',
+  }),
+  petitionText: createHtmlStyle({
+    fontSize: 'petition',
+    lineHeight: 'normal',
+    bold: true,
+    marginTop: 'small',
+    marginBottom: 'small',
+  }),
+  petitionReader: createHtmlStyle({
+    fontSize: 'petition',
+    bold: true,
+  }),
+  petitionPause: createHtmlStyle({
+    fontSize: 'petition',
+    bold: true,
+    color: htmlStyles.color,
+  }),
 }
 
 export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
@@ -73,13 +108,13 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
             {/* Summary Section */}
             <div className="liturgy-section print:break-after-page">
               <div className="text-center">
-                <div className="liturgy-event-title">{weddingTitle}</div>
-                <div className="liturgy-event-datetime">{eventDateTime}</div>
+                <div style={liturgyPatterns.html.eventTitle}>{weddingTitle}</div>
+                <div style={liturgyPatterns.html.eventDateTime}>{eventDateTime}</div>
               </div>
 
               {(wedding.rehearsal_event || wedding.rehearsal_dinner_event) && (
                 <div>
-                  <div className="liturgy-section-title">Rehearsal</div>
+                  <div style={additionalStyles.sectionTitle}>Rehearsal</div>
                   {wedding.rehearsal_event && (
                     <>
                       {wedding.rehearsal_event.start_date && (
@@ -106,7 +141,7 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
               )}
 
               <div>
-                <div className="liturgy-section-title">Wedding</div>
+                <div style={additionalStyles.sectionTitle}>Wedding</div>
                 {wedding.bride && (
                   <div className="liturgy-info-grid">
                     <div className="liturgy-info-label">Bride:</div>
@@ -170,7 +205,7 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
               </div>
 
               <div>
-                <div className="liturgy-section-title">Sacred Liturgy</div>
+                <div style={additionalStyles.sectionTitle}>Sacred Liturgy</div>
                 {wedding.first_reading && (
                   <div className="liturgy-info-grid">
                     <div className="liturgy-info-label">First Reading:</div>
@@ -238,31 +273,31 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
             <div className="space-y-6 print:break-after-page">
               {/* First Reading */}
               <div>
-                <div className="liturgy-event-title">{weddingTitle}</div>
-                <div className="liturgy-event-datetime">{eventDateTime}</div>
+                <div style={liturgyPatterns.html.eventTitle}>{weddingTitle}</div>
+                <div style={liturgyPatterns.html.eventDateTime}>{eventDateTime}</div>
 
-                <div className="liturgy-reading-title mt-6">FIRST READING</div>
+                <div style={{...liturgyPatterns.html.readingTitle, marginTop: htmlStyles.spacing.large}}>FIRST READING</div>
                 {wedding.first_reading ? (
                   <>
-                    <div className="liturgy-pericope">
+                    <div style={liturgyPatterns.html.pericope}>
                       {wedding.first_reading.pericope || 'No pericope'}
                     </div>
                     {wedding.first_reader && (
-                      <div className="liturgy-reader-name">
+                      <div style={liturgyPatterns.html.readerName}>
                         {wedding.first_reader.first_name} {wedding.first_reader.last_name}
                       </div>
                     )}
                     {wedding.first_reading.introduction && (
-                      <div className="liturgy-introduction">{wedding.first_reading.introduction}</div>
+                      <div style={liturgyPatterns.html.introduction}>{wedding.first_reading.introduction}</div>
                     )}
-                    <div className="liturgy-text">
+                    <div style={liturgyPatterns.html.readingText}>
                       {wedding.first_reading.text || 'No reading text'}
                     </div>
                     {wedding.first_reading.conclusion && (
-                      <div className="liturgy-conclusion">{wedding.first_reading.conclusion}</div>
+                      <div style={liturgyPatterns.html.conclusion}>{wedding.first_reading.conclusion}</div>
                     )}
-                    <div className="liturgy-response">
-                      <span className="liturgy-response-label">People:</span> Thanks be to God.
+                    <div style={liturgyPatterns.html.response}>
+                      <span style={additionalStyles.responseLabel}>People:</span> Thanks be to God.
                     </div>
                   </>
                 ) : (
@@ -272,28 +307,28 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 
               {/* Psalm */}
               <div>
-                <div className="liturgy-reading-title">Psalm</div>
+                <div style={liturgyPatterns.html.readingTitle}>Psalm</div>
                 {wedding.psalm ? (
                   <>
-                    <div className="liturgy-pericope">
+                    <div style={liturgyPatterns.html.pericope}>
                       {wedding.psalm.pericope || 'No pericope'}
                     </div>
                     {!wedding.psalm_is_sung && wedding.psalm_reader && (
-                      <div className="liturgy-reader-name">
+                      <div style={liturgyPatterns.html.readerName}>
                         {wedding.psalm_reader.first_name} {wedding.psalm_reader.last_name}
                       </div>
                     )}
                     {wedding.psalm_is_sung && (
-                      <div className="liturgy-reader-name">Sung</div>
+                      <div style={liturgyPatterns.html.readerName}>Sung</div>
                     )}
                     {wedding.psalm.introduction && (
-                      <div className="liturgy-introduction">{wedding.psalm.introduction}</div>
+                      <div style={liturgyPatterns.html.introduction}>{wedding.psalm.introduction}</div>
                     )}
-                    <div className="liturgy-text space-y-2">
+                    <div style={liturgyPatterns.html.readingText}>
                       {wedding.psalm.text || 'No psalm text'}
                     </div>
                     {wedding.psalm.conclusion && (
-                      <div className="liturgy-conclusion">{wedding.psalm.conclusion}</div>
+                      <div style={liturgyPatterns.html.conclusion}>{wedding.psalm.conclusion}</div>
                     )}
                   </>
                 ) : (
@@ -303,28 +338,28 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 
               {/* Second Reading */}
               <div>
-                <div className="liturgy-reading-title">Second Reading</div>
+                <div style={liturgyPatterns.html.readingTitle}>Second Reading</div>
                 {wedding.second_reading ? (
                   <>
-                    <div className="liturgy-pericope">
+                    <div style={liturgyPatterns.html.pericope}>
                       {wedding.second_reading.pericope || 'No pericope'}
                     </div>
                     {wedding.second_reader && (
-                      <div className="liturgy-reader-name">
+                      <div style={liturgyPatterns.html.readerName}>
                         {wedding.second_reader.first_name} {wedding.second_reader.last_name}
                       </div>
                     )}
                     {wedding.second_reading.introduction && (
-                      <div className="liturgy-introduction">{wedding.second_reading.introduction}</div>
+                      <div style={liturgyPatterns.html.introduction}>{wedding.second_reading.introduction}</div>
                     )}
-                    <div className="liturgy-text">
+                    <div style={liturgyPatterns.html.readingText}>
                       {wedding.second_reading.text || 'No reading text'}
                     </div>
                     {wedding.second_reading.conclusion && (
-                      <div className="liturgy-conclusion">{wedding.second_reading.conclusion}</div>
+                      <div style={liturgyPatterns.html.conclusion}>{wedding.second_reading.conclusion}</div>
                     )}
-                    <div className="liturgy-response">
-                      <span className="liturgy-response-label">People:</span> Thanks be to God.
+                    <div style={liturgyPatterns.html.response}>
+                      <span style={additionalStyles.responseLabel}>People:</span> Thanks be to God.
                     </div>
                   </>
                 ) : (
@@ -334,29 +369,29 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 
               {/* Gospel */}
               <div>
-                <div className="liturgy-reading-title">Gospel</div>
+                <div style={liturgyPatterns.html.readingTitle}>Gospel</div>
                 {wedding.gospel_reading ? (
                   <>
-                    <div className="liturgy-pericope">
+                    <div style={liturgyPatterns.html.pericope}>
                       {wedding.gospel_reading.pericope || 'No pericope'}
                     </div>
-                    <div className="liturgy-priest-dialogue">
-                      <span className="liturgy-response-label">Priest:</span> The Lord be with you.
+                    <div style={additionalStyles.priestDialogue}>
+                      <span style={additionalStyles.responseLabel}>Priest:</span> The Lord be with you.
                     </div>
-                    <div className="liturgy-response">
-                      <span className="liturgy-response-label">People:</span> And with your spirit.
+                    <div style={liturgyPatterns.html.response}>
+                      <span style={additionalStyles.responseLabel}>People:</span> And with your spirit.
                     </div>
                     {wedding.gospel_reading.introduction && (
-                      <div className="liturgy-introduction">{wedding.gospel_reading.introduction}</div>
+                      <div style={liturgyPatterns.html.introduction}>{wedding.gospel_reading.introduction}</div>
                     )}
-                    <div className="liturgy-text">
+                    <div style={liturgyPatterns.html.readingText}>
                       {wedding.gospel_reading.text || 'No gospel text'}
                     </div>
                     {wedding.gospel_reading.conclusion && (
-                      <div className="liturgy-conclusion">{wedding.gospel_reading.conclusion}</div>
+                      <div style={liturgyPatterns.html.conclusion}>{wedding.gospel_reading.conclusion}</div>
                     )}
-                    <div className="liturgy-response">
-                      <span className="liturgy-response-label">People:</span> Praise to you, Lord Jesus Christ.
+                    <div style={liturgyPatterns.html.response}>
+                      <span style={additionalStyles.responseLabel}>People:</span> Praise to you, Lord Jesus Christ.
                     </div>
                   </>
                 ) : (
@@ -367,52 +402,52 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 
             {/* Petitions Section */}
             <div className="print:break-after-page">
-              <div className="liturgy-reading-title">Petitions</div>
+              <div style={liturgyPatterns.html.readingTitle}>Petitions</div>
               {petitionsReader && (
-                <div className="liturgy-reader-name">{petitionsReader}</div>
+                <div style={liturgyPatterns.html.readerName}>{petitionsReader}</div>
               )}
 
               <div className="space-y-2 mt-4">
-                <div className="liturgy-petition-text">
-                  <span className="liturgy-petition-reader">Reader:</span> The response is "Lord, hear our prayer."{' '}
-                  <span className="liturgy-petition-pause">[Pause]</span>
+                <div style={additionalStyles.petitionText}>
+                  <span style={additionalStyles.petitionReader}>Reader:</span> The response is "Lord, hear our prayer."{' '}
+                  <span style={additionalStyles.petitionPause}>[Pause]</span>
                   <br />
                   For {brideName} and {groomName}, joined now in marriage, that their love will grow and
                   their commitment will deepen every day, let us pray to the Lord.
                 </div>
 
-                <div className="liturgy-response">
-                  <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                <div style={liturgyPatterns.html.response}>
+                  <span style={additionalStyles.responseLabel}>People:</span> Lord, hear our prayer.
                 </div>
 
-                <div className="liturgy-petition-text">
-                  <span className="liturgy-petition-reader">Reader:</span> For the parents and grandparents of {brideName} and{' '}
+                <div style={additionalStyles.petitionText}>
+                  <span style={additionalStyles.petitionReader}>Reader:</span> For the parents and grandparents of {brideName} and{' '}
                   {groomName}, without whose dedication to God and family we would not be gathered here today,
                   that they will be blessed as they gain a son or daughter, let us pray to the Lord.
                 </div>
 
-                <div className="liturgy-response">
-                  <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                <div style={liturgyPatterns.html.response}>
+                  <span style={additionalStyles.responseLabel}>People:</span> Lord, hear our prayer.
                 </div>
 
-                <div className="liturgy-petition-text">
-                  <span className="liturgy-petition-reader">Reader:</span> For the families and friends of {brideName} and{' '}
+                <div style={additionalStyles.petitionText}>
+                  <span style={additionalStyles.petitionReader}>Reader:</span> For the families and friends of {brideName} and{' '}
                   {groomName}, gathered here today, that they continue to enrich each other with love and
                   support through the years, let us pray to the Lord.
                 </div>
 
-                <div className="liturgy-response">
-                  <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                <div style={liturgyPatterns.html.response}>
+                  <span style={additionalStyles.responseLabel}>People:</span> Lord, hear our prayer.
                 </div>
 
                 {customPetitions.map((petition, index) => (
                   <div key={index}>
-                    <div className="liturgy-petition-text">
-                      <span className="liturgy-petition-reader">Reader:</span> {petition}, let us pray to the Lord.
+                    <div style={additionalStyles.petitionText}>
+                      <span style={additionalStyles.petitionReader}>Reader:</span> {petition}, let us pray to the Lord.
                     </div>
 
-                    <div className="liturgy-response">
-                      <span className="liturgy-response-label">People:</span> Lord, hear our prayer.
+                    <div style={liturgyPatterns.html.response}>
+                      <span style={additionalStyles.responseLabel}>People:</span> Lord, hear our prayer.
                     </div>
                   </div>
                 ))}
@@ -422,8 +457,8 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
             {/* Announcements Section */}
             {wedding.announcements && (
               <div>
-                <div className="liturgy-section-title">Announcements</div>
-                <div className="liturgy-text">{wedding.announcements}</div>
+                <div style={additionalStyles.sectionTitle}>Announcements</div>
+                <div style={liturgyPatterns.html.readingText}>{wedding.announcements}</div>
               </div>
             )}
           </CardContent>

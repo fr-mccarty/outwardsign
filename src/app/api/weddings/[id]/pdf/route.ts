@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getWeddingWithRelations } from '@/lib/actions/weddings'
 import PdfPrinter from 'pdfmake'
 import { TDocumentDefinitions, Content } from 'pdfmake/interfaces'
+import { pdfStyles } from '@/lib/styles/liturgy-styles'
 
 // Define fonts for pdfmake
 const fonts = {
@@ -338,68 +339,68 @@ export async function GET(
       content,
       styles: {
         title: {
-          fontSize: 20,
+          fontSize: pdfStyles.sizes.eventTitle,
           bold: true,
-          color: '#c41e3a'
+          color: pdfStyles.color
         },
         subtitle: {
-          fontSize: 14,
+          fontSize: pdfStyles.sizes.eventDateTime,
           color: '#666'
         },
         sectionTitle: {
-          fontSize: 16,
+          fontSize: pdfStyles.sizes.sectionTitle,
           bold: true,
-          color: '#c41e3a',
-          margin: [0, 15, 0, 10]
+          color: pdfStyles.color,
+          margin: [0, pdfStyles.spacing.large, 0, pdfStyles.spacing.medium]
         },
         readingTitle: {
-          fontSize: 14,
+          fontSize: pdfStyles.sizes.readingTitle,
           bold: true,
-          color: '#c41e3a',
-          margin: [0, 10, 0, 5]
+          color: pdfStyles.color,
+          margin: [0, pdfStyles.spacing.medium, 0, pdfStyles.spacing.small]
         },
         pericope: {
-          fontSize: 12,
+          fontSize: pdfStyles.sizes.pericope,
           italics: true,
-          color: '#c41e3a',
-          margin: [0, 5, 0, 3]
+          color: pdfStyles.color,
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.tiny]
         },
         readerName: {
-          fontSize: 11,
-          color: '#c41e3a',
-          margin: [0, 0, 0, 10]
+          fontSize: pdfStyles.sizes.readerName,
+          color: pdfStyles.color,
+          margin: [0, 0, 0, pdfStyles.spacing.medium]
         },
         introduction: {
-          fontSize: 11,
+          fontSize: pdfStyles.sizes.introduction,
           italics: true,
-          margin: [0, 5, 0, 5]
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small]
         },
         readingText: {
-          fontSize: 11,
-          lineHeight: 1.4,
-          margin: [0, 5, 0, 5]
+          fontSize: pdfStyles.sizes.text,
+          lineHeight: pdfStyles.lineHeight.normal,
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small]
         },
         conclusion: {
-          fontSize: 11,
+          fontSize: pdfStyles.sizes.conclusion,
           italics: true,
-          margin: [0, 5, 0, 5]
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small]
         },
         response: {
-          fontSize: 11,
+          fontSize: pdfStyles.sizes.response,
           bold: true,
-          margin: [0, 5, 0, 5]
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small]
         },
         priestDialogue: {
-          fontSize: 11,
-          margin: [0, 5, 0, 5]
+          fontSize: pdfStyles.sizes.priestDialogue,
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small]
         },
         petition: {
-          fontSize: 11,
-          lineHeight: 1.4,
-          margin: [0, 5, 0, 5]
+          fontSize: pdfStyles.sizes.petition,
+          lineHeight: pdfStyles.lineHeight.normal,
+          margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small]
         }
       },
-      pageMargins: [60, 60, 60, 60]
+      pageMargins: [pdfStyles.margins.page, pdfStyles.margins.page, pdfStyles.margins.page, pdfStyles.margins.page]
     }
 
     // Generate PDF

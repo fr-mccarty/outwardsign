@@ -1,34 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWeddingWithRelations } from '@/lib/actions/weddings'
 import { Document, Packer, Paragraph, TextRun, PageBreak, AlignmentType, HeadingLevel } from 'docx'
+import { wordStyles } from '@/lib/styles/liturgy-styles'
 
-// Liturgy red color
-const LITURGY_RED = 'c41e3a'
-
-// Font family
-const FONT_FAMILY = 'Helvetica'
-
-// Spacing values in twentieths of a point (twips)
-// 1 point = 20 twips, so 12pt = 240 twips
-const SPACING = {
-  small: 60,     // 3pt
-  medium: 120,   // 6pt
-  large: 180,    // 9pt
-  xlarge: 240    // 12pt
-}
-
-// Paragraph spacing constants
-const PARAGRAPH_SPACING = {
-  before: 0,          // 3pt before paragraphs
-  after: 80,          // 6pt after paragraphs
-  afterResponse: 80,  // 9pt after responses
-  beforeSection: 0,  // 12pt before section headers
-  afterSection: 80    // 6pt after section headers
-}
-
-// Line spacing (within paragraphs)
-// 276 = single spacing, 360 = 1.5 spacing, 480 = double spacing
-const LINE_SPACING = 300  // Slightly more than single spacing
+// Centralized liturgy styles are now imported from wordStyles
+// All values are automatically converted to Word-specific units (twips, half-points)
 
 // Helper to format person name
 const formatPersonName = (person?: { first_name: string; last_name: string } | null): string => {
@@ -88,12 +64,12 @@ export async function GET(
     // ===== TITLE AND DATE =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: weddingTitle, size: 36, bold: true })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: weddingTitle, size: wordStyles.sizes.eventTitle, bold: true })],
         alignment: AlignmentType.CENTER
       }),
       new Paragraph({ text: '' }), // Empty line for spacing
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: eventDateTime, size: 28 })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: eventDateTime, size: wordStyles.sizes.eventDateTime })],
         alignment: AlignmentType.CENTER
       }),
       new Paragraph({ text: '' }), // Empty line for spacing
@@ -104,8 +80,8 @@ export async function GET(
     if (wedding.rehearsal_event || wedding.rehearsal_dinner_event) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: 'Rehearsal', size: 28, bold: true })],
-          spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Rehearsal', size: wordStyles.sizes.sectionTitle, bold: true })],
+          spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
         })
       )
 
@@ -113,10 +89,10 @@ export async function GET(
         children.push(
           new Paragraph({
             children: [
-              new TextRun({ font: FONT_FAMILY, text: 'Rehearsal Date & Time: ', bold: true }),
-              new TextRun({ font: FONT_FAMILY, text: formatEventDateTimeString(wedding.rehearsal_event) })
+              new TextRun({ font: wordStyles.fonts.primary, text: 'Rehearsal Date & Time: ', bold: true }),
+              new TextRun({ font: wordStyles.fonts.primary, text: formatEventDateTimeString(wedding.rehearsal_event) })
             ],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
@@ -125,10 +101,10 @@ export async function GET(
         children.push(
           new Paragraph({
             children: [
-              new TextRun({ font: FONT_FAMILY, text: 'Rehearsal Location: ', bold: true }),
-              new TextRun({ font: FONT_FAMILY, text: wedding.rehearsal_event.location })
+              new TextRun({ font: wordStyles.fonts.primary, text: 'Rehearsal Location: ', bold: true }),
+              new TextRun({ font: wordStyles.fonts.primary, text: wedding.rehearsal_event.location })
             ],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
@@ -137,10 +113,10 @@ export async function GET(
         children.push(
           new Paragraph({
             children: [
-              new TextRun({ font: FONT_FAMILY, text: 'Rehearsal Dinner Location: ', bold: true }),
-              new TextRun({ font: FONT_FAMILY, text: wedding.rehearsal_dinner_event.location })
+              new TextRun({ font: wordStyles.fonts.primary, text: 'Rehearsal Dinner Location: ', bold: true }),
+              new TextRun({ font: wordStyles.fonts.primary, text: wedding.rehearsal_dinner_event.location })
             ],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
@@ -149,8 +125,8 @@ export async function GET(
     // ===== WEDDING SECTION =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'Wedding', size: 28, bold: true })],
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Wedding', size: wordStyles.sizes.sectionTitle, bold: true })],
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
@@ -170,10 +146,10 @@ export async function GET(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: `${info.label} `, bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: info.value })
+            new TextRun({ font: wordStyles.fonts.primary, text: `${info.label} `, bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: info.value })
           ],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     })
@@ -181,8 +157,8 @@ export async function GET(
     // ===== SACRED LITURGY SECTION =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'Sacred Liturgy', size: 28, bold: true })],
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Sacred Liturgy', size: wordStyles.sizes.sectionTitle, bold: true })],
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
@@ -205,10 +181,10 @@ export async function GET(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: `${info.label} `, bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: info.value })
+            new TextRun({ font: wordStyles.fonts.primary, text: `${info.label} `, bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: info.value })
           ],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     })
@@ -219,41 +195,41 @@ export async function GET(
     // ===== READINGS SECTION HEADER =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: weddingTitle, size: 36, bold: true })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: weddingTitle, size: wordStyles.sizes.eventTitle, bold: true })],
         alignment: AlignmentType.CENTER,
-        spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before }
+        spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph }
       }),
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: eventDateTime, size: 28 })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: eventDateTime, size: wordStyles.sizes.eventDateTime })],
         alignment: AlignmentType.CENTER,
-        spacing: { after: PARAGRAPH_SPACING.beforeSection, before: PARAGRAPH_SPACING.before }
+        spacing: { after: wordStyles.spacing.beforeSection, before: wordStyles.spacing.beforeParagraph }
       })
     )
 
     // ===== FIRST READING =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'FIRST READING', size: 28, bold: true, color: LITURGY_RED })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'FIRST READING', size: wordStyles.sizes.readingTitle, bold: true, color: wordStyles.color })],
         alignment: AlignmentType.RIGHT,
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
     if (wedding.first_reading) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.first_reading.pericope || 'No pericope', size: 28, bold: true, italics: true, color: LITURGY_RED })],
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.first_reading.pericope || 'No pericope', size: wordStyles.sizes.pericope, bold: true, italics: true, color: wordStyles.color })],
           alignment: AlignmentType.RIGHT,
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph }
         })
       )
 
       if (wedding.first_reader) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: formatPersonName(wedding.first_reader), size: 28, bold: true, color: LITURGY_RED })],
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: formatPersonName(wedding.first_reader), size: wordStyles.sizes.readerName, bold: true, color: wordStyles.color })],
             alignment: AlignmentType.RIGHT,
-            spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before }
+            spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph }
           })
         )
       }
@@ -261,24 +237,24 @@ export async function GET(
       if (wedding.first_reading.introduction) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.first_reading.introduction, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.first_reading.introduction, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
 
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.first_reading.text || 'No reading text' })],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.first_reading.text || 'No reading text' })],
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
 
       if (wedding.first_reading.conclusion) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.first_reading.conclusion, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.first_reading.conclusion, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
@@ -286,14 +262,14 @@ export async function GET(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: 'Thanks be to God.', italics: true })
+            new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: 'Thanks be to God.', italics: true })
           ],
-          spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     } else {
-      children.push(new Paragraph({ text: 'None Selected', spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before } }))
+      children.push(new Paragraph({ text: 'None Selected', spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph } }))
     }
 
     // ===== PAGE BREAK BEFORE PSALM =====
@@ -304,35 +280,35 @@ export async function GET(
     // ===== PSALM =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'Psalm', size: 28, bold: true, color: LITURGY_RED })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Psalm', size: wordStyles.sizes.readingTitle, bold: true, color: wordStyles.color })],
         alignment: AlignmentType.RIGHT,
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
     if (wedding.psalm) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.psalm.pericope || 'No pericope', size: 28, bold: true, italics: true, color: LITURGY_RED })],
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.psalm.pericope || 'No pericope', size: wordStyles.sizes.pericope, bold: true, italics: true, color: wordStyles.color })],
           alignment: AlignmentType.RIGHT,
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph }
         })
       )
 
       if (wedding.psalm_is_sung) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: 'Sung', size: 28, bold: true, color: LITURGY_RED })],
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Sung', size: wordStyles.sizes.readerName, bold: true, color: wordStyles.color })],
             alignment: AlignmentType.RIGHT,
-            spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before }
+            spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph }
           })
         )
       } else if (wedding.psalm_reader) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: formatPersonName(wedding.psalm_reader), size: 28, bold: true, color: LITURGY_RED })],
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: formatPersonName(wedding.psalm_reader), size: wordStyles.sizes.readerName, bold: true, color: wordStyles.color })],
             alignment: AlignmentType.RIGHT,
-            spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before }
+            spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph }
           })
         )
       }
@@ -340,29 +316,29 @@ export async function GET(
       if (wedding.psalm.introduction) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.psalm.introduction, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.psalm.introduction, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
 
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.psalm.text || 'No psalm text' })],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.psalm.text || 'No psalm text' })],
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
 
       if (wedding.psalm.conclusion) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.psalm.conclusion, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.psalm.conclusion, bold: true })],
+            spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
     } else {
-      children.push(new Paragraph({ text: 'None Selected', spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before } }))
+      children.push(new Paragraph({ text: 'None Selected', spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph } }))
     }
 
     // ===== PAGE BREAK BEFORE SECOND READING =====
@@ -373,27 +349,27 @@ export async function GET(
     // ===== SECOND READING =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'Second Reading', size: 28, bold: true, color: LITURGY_RED })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Second Reading', size: wordStyles.sizes.readingTitle, bold: true, color: wordStyles.color })],
         alignment: AlignmentType.RIGHT,
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
     if (wedding.second_reading) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.second_reading.pericope || 'No pericope', size: 28, bold: true, italics: true, color: LITURGY_RED })],
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.second_reading.pericope || 'No pericope', size: wordStyles.sizes.pericope, bold: true, italics: true, color: wordStyles.color })],
           alignment: AlignmentType.RIGHT,
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph }
         })
       )
 
       if (wedding.second_reader) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: formatPersonName(wedding.second_reader), size: 28, bold: true, color: LITURGY_RED })],
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: formatPersonName(wedding.second_reader), size: wordStyles.sizes.readerName, bold: true, color: wordStyles.color })],
             alignment: AlignmentType.RIGHT,
-            spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before }
+            spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph }
           })
         )
       }
@@ -401,24 +377,24 @@ export async function GET(
       if (wedding.second_reading.introduction) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.second_reading.introduction, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.second_reading.introduction, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
 
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.second_reading.text || 'No reading text' })],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.second_reading.text || 'No reading text' })],
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
 
       if (wedding.second_reading.conclusion) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.second_reading.conclusion, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.second_reading.conclusion, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
@@ -426,14 +402,14 @@ export async function GET(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: 'Thanks be to God.', italics: true })
+            new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: 'Thanks be to God.', italics: true })
           ],
-          spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     } else {
-      children.push(new Paragraph({ text: 'None Selected', spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before } }))
+      children.push(new Paragraph({ text: 'None Selected', spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph } }))
     }
 
     // ===== PAGE BREAK BEFORE GOSPEL =====
@@ -444,56 +420,56 @@ export async function GET(
     // ===== GOSPEL =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'Gospel', size: 28, bold: true, color: LITURGY_RED })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Gospel', size: wordStyles.sizes.readingTitle, bold: true, color: wordStyles.color })],
         alignment: AlignmentType.RIGHT,
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
     if (wedding.gospel_reading) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.gospel_reading.pericope || 'No pericope', size: 28, bold: true, italics: true, color: LITURGY_RED })],
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.gospel_reading.pericope || 'No pericope', size: wordStyles.sizes.pericope, bold: true, italics: true, color: wordStyles.color })],
           alignment: AlignmentType.RIGHT,
-          spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before }
+          spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph }
         })
       )
 
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: 'Priest: The Lord be with you.' })],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Priest: The Lord be with you.' })],
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         }),
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: 'And with your spirit.', italics: true })
+            new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: 'And with your spirit.', italics: true })
           ],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
 
       if (wedding.gospel_reading.introduction) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.gospel_reading.introduction, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.gospel_reading.introduction, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
 
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.gospel_reading.text || 'No gospel text' })],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.gospel_reading.text || 'No gospel text' })],
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
 
       if (wedding.gospel_reading.conclusion) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ font: FONT_FAMILY, text: wedding.gospel_reading.conclusion, bold: true })],
-            spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+            children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.gospel_reading.conclusion, bold: true })],
+            spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
           })
         )
       }
@@ -501,14 +477,14 @@ export async function GET(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: 'Praise to you, Lord Jesus Christ.', italics: true })
+            new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: 'Praise to you, Lord Jesus Christ.', italics: true })
           ],
-          spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     } else {
-      children.push(new Paragraph({ text: 'None Selected', spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before } }))
+      children.push(new Paragraph({ text: 'None Selected', spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph } }))
     }
 
     // ===== PAGE BREAK BEFORE PETITIONS =====
@@ -517,18 +493,18 @@ export async function GET(
     // ===== PETITIONS SECTION =====
     children.push(
       new Paragraph({
-        children: [new TextRun({ font: FONT_FAMILY, text: 'Petitions', size: 28, bold: true, color: LITURGY_RED })],
+        children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Petitions', size: wordStyles.sizes.readingTitle, bold: true, color: wordStyles.color })],
         alignment: AlignmentType.RIGHT,
-        spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
       })
     )
 
     if (petitionsReader) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: petitionsReader, size: 28, bold: true, color: LITURGY_RED })],
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: petitionsReader, size: wordStyles.sizes.readerName, bold: true, color: wordStyles.color })],
           alignment: AlignmentType.RIGHT,
-          spacing: { after: PARAGRAPH_SPACING.afterResponse, before: PARAGRAPH_SPACING.before }
+          spacing: { after: wordStyles.spacing.afterResponse, before: wordStyles.spacing.beforeParagraph }
         })
       )
     }
@@ -537,53 +513,53 @@ export async function GET(
     children.push(
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'Reader: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: 'The response is "Lord, hear our prayer." ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: '[Pause]', bold: true, color: LITURGY_RED })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Reader: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: 'The response is "Lord, hear our prayer." ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: '[Pause]', bold: true, color: wordStyles.color })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       }),
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'Reader: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: `For ${brideName} and ${groomName}, joined now in marriage, that their love will grow and their commitment will deepen every day, let us pray to the Lord.`, bold: true })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Reader: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: `For ${brideName} and ${groomName}, joined now in marriage, that their love will grow and their commitment will deepen every day, let us pray to the Lord.`, bold: true })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       }),
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: 'Lord, hear our prayer.', italics: true })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Lord, hear our prayer.', italics: true })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       }),
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'Reader: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: `For the parents and grandparents of ${brideName} and ${groomName}, without whose dedication to God and family we would not be gathered here today, that they will be blessed as they gain a son or daughter, let us pray to the Lord.`, bold: true })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Reader: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: `For the parents and grandparents of ${brideName} and ${groomName}, without whose dedication to God and family we would not be gathered here today, that they will be blessed as they gain a son or daughter, let us pray to the Lord.`, bold: true })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       }),
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: 'Lord, hear our prayer.', italics: true })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Lord, hear our prayer.', italics: true })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       }),
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'Reader: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: `For the families and friends of ${brideName} and ${groomName}, gathered here today, that they continue to enrich each other with love and support through the years, let us pray to the Lord.`, bold: true })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Reader: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: `For the families and friends of ${brideName} and ${groomName}, gathered here today, that they continue to enrich each other with love and support through the years, let us pray to the Lord.`, bold: true })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       }),
       new Paragraph({
         children: [
-          new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-          new TextRun({ font: FONT_FAMILY, text: 'Lord, hear our prayer.', italics: true })
+          new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+          new TextRun({ font: wordStyles.fonts.primary, text: 'Lord, hear our prayer.', italics: true })
         ],
-        spacing: { after: 480, before: 240, line: LINE_SPACING }
+        spacing: { after: 480, before: 240, line: wordStyles.lineHeight.normal }
       })
     )
 
@@ -592,17 +568,17 @@ export async function GET(
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: 'Reader: ', bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: `${petition}, let us pray to the Lord.`, bold: true })
+            new TextRun({ font: wordStyles.fonts.primary, text: 'Reader: ', bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: `${petition}, let us pray to the Lord.`, bold: true })
           ],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         }),
         new Paragraph({
           children: [
-            new TextRun({ font: FONT_FAMILY, text: 'People: ', bold: true }),
-            new TextRun({ font: FONT_FAMILY, text: 'Lord, hear our prayer.', italics: true })
+            new TextRun({ font: wordStyles.fonts.primary, text: 'People: ', bold: true }),
+            new TextRun({ font: wordStyles.fonts.primary, text: 'Lord, hear our prayer.', italics: true })
           ],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     })
@@ -611,12 +587,12 @@ export async function GET(
     if (wedding.announcements) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: 'Announcements', size: 28, bold: true })],
-          spacing: { before: PARAGRAPH_SPACING.beforeSection, after: PARAGRAPH_SPACING.afterSection }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: 'Announcements', size: wordStyles.sizes.sectionTitle, bold: true })],
+          spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection }
         }),
         new Paragraph({
-          children: [new TextRun({ font: FONT_FAMILY, text: wedding.announcements })],
-          spacing: { after: PARAGRAPH_SPACING.after, before: PARAGRAPH_SPACING.before, line: LINE_SPACING }
+          children: [new TextRun({ font: wordStyles.fonts.primary, text: wedding.announcements })],
+          spacing: { after: wordStyles.spacing.afterParagraph, before: wordStyles.spacing.beforeParagraph, line: wordStyles.lineHeight.normal }
         })
       )
     }
