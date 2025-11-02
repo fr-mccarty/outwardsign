@@ -221,7 +221,7 @@ export interface IndividualReading {
   translation_id: number
   sort_order: number
   introduction?: string
-  reading_text: string
+  text: string
   conclusion?: string
   is_template: boolean
   created_at: string
@@ -256,7 +256,7 @@ export async function getIndividualReadings(): Promise<IndividualReading[]> {
     translation_id: 1,
     sort_order: 0,
     introduction: reading.introduction || '',
-    reading_text: reading.text || '',
+    text: reading.text || '',
     conclusion: reading.conclusion || '',
     is_template: false,
     created_at: reading.created_at,
@@ -267,7 +267,7 @@ export async function getIndividualReadings(): Promise<IndividualReading[]> {
 export async function getIndividualReading(id: string): Promise<IndividualReading | null> {
   const reading = await getReading(id)
   if (!reading) return null
-  
+
   // Transform Reading to IndividualReading format
   return {
     id: reading.id,
@@ -279,7 +279,7 @@ export async function getIndividualReading(id: string): Promise<IndividualReadin
     translation_id: 1,
     sort_order: 0,
     introduction: reading.introduction || '',
-    reading_text: reading.text || '',
+    text: reading.text || '',
     conclusion: reading.conclusion || '',
     is_template: false,
     created_at: reading.created_at,
@@ -294,9 +294,9 @@ export async function createIndividualReading(data: CreateIndividualReadingData)
     categories: [data.category],
     language: 'English'
   }
-  
+
   const reading = await createReading(readingData)
-  
+
   // Transform Reading to IndividualReading format
   return {
     id: reading.id,
@@ -308,7 +308,7 @@ export async function createIndividualReading(data: CreateIndividualReadingData)
     translation_id: data.translation_id || 1,
     sort_order: data.sort_order || 0,
     introduction: data.introduction || '',
-    reading_text: data.reading_text,
+    text: data.reading_text,
     conclusion: data.conclusion || '',
     is_template: data.is_template || false,
     created_at: reading.created_at,

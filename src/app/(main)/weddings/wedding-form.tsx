@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { Save, User, BookOpen } from "lucide-react"
 import { createWedding, updateWedding, type CreateWeddingData } from "@/lib/actions/weddings"
-import { getReadings } from "@/lib/actions/readings"
+import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Wedding, Person, IndividualReading } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -92,7 +92,7 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
   useEffect(() => {
     const loadReadings = async () => {
       try {
-        const allReadings = await getReadings()
+        const allReadings = await getIndividualReadings()
         setReadings(allReadings)
       } catch (error) {
         console.error('Failed to load readings:', error)
@@ -392,18 +392,20 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
                 {psalm ? psalm.pericope : 'Select Psalm'}
               </Button>
             </div>
-            <div className="space-y-2">
-              <Label>Psalm Reader</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowPsalmReaderPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {psalmReader ? `${psalmReader.first_name} ${psalmReader.last_name}` : 'Select Psalm Reader'}
-              </Button>
-            </div>
+            {!psalmIsSung && (
+              <div className="space-y-2">
+                <Label>Psalm Reader</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowPsalmReaderPicker(true)}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  {psalmReader ? `${psalmReader.first_name} ${psalmReader.last_name}` : 'Select Psalm Reader'}
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-2">

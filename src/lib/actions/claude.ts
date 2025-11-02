@@ -35,7 +35,7 @@ export async function getReadingSuggestions({
     category: reading.category,
     language: reading.language || 'English',
     introduction: reading.introduction?.substring(0, 200),
-    text: reading.reading_text?.substring(0, 500), // Limit text for token efficiency
+    text: reading.text?.substring(0, 500), // Limit text for token efficiency
     conclusion: reading.conclusion?.substring(0, 200)
   }))
 

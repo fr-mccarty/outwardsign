@@ -179,7 +179,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
             {firstReading.introduction && (
               <div className="mt-3 font-semibold">{firstReading.introduction}</div>
             )}
-            <p className="mt-3 whitespace-pre-line">{firstReading.reading_text}</p>
+            <p className="mt-3 whitespace-pre-line">{firstReading.text}</p>
             {firstReading.conclusion && (
               <div className="mt-3 font-semibold">{firstReading.conclusion}</div>
             )}
@@ -197,7 +197,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
             {psalm.introduction && (
               <div className="mt-3 font-semibold">{psalm.introduction}</div>
             )}
-            <div className="mt-3" dangerouslySetInnerHTML={{ __html: formatPsalmText(psalm.reading_text) }} />
+            <div className="mt-3" dangerouslySetInnerHTML={{ __html: formatPsalmText(psalm.text) }} />
             {psalm.conclusion && (
               <div className="mt-3 font-semibold">{psalm.conclusion}</div>
             )}
@@ -215,7 +215,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
             {secondReading.introduction && (
               <div className="mt-3 font-semibold">{secondReading.introduction}</div>
             )}
-            <p className="mt-3 whitespace-pre-line">{secondReading.reading_text}</p>
+            <p className="mt-3 whitespace-pre-line">{secondReading.text}</p>
             {secondReading.conclusion && (
               <div className="mt-3 font-semibold">{secondReading.conclusion}</div>
             )}
@@ -233,7 +233,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
             {gospel.introduction && (
               <div className="mt-3 font-semibold">{gospel.introduction}</div>
             )}
-            <p className="mt-3 whitespace-pre-line">{gospel.reading_text}</p>
+            <p className="mt-3 whitespace-pre-line">{gospel.text}</p>
             {gospel.conclusion && (
               <div className="mt-3 font-semibold">{gospel.conclusion}</div>
             )}

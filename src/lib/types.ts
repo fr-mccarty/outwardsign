@@ -147,7 +147,7 @@ export interface IndividualReading {
   translation_id: number
   sort_order: number
   introduction?: string
-  reading_text: string
+  text: string
   conclusion?: string
   is_template: boolean
   created_at: string

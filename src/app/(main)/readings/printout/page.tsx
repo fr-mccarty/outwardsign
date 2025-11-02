@@ -129,7 +129,7 @@ export default function ReadingsPrintoutPage() {
       if (reading.introduction) {
         content += `${reading.introduction}\n\n`
       }
-      content += `${reading.reading_text}\n\n`
+      content += `${reading.text}\n\n`
       if (reading.conclusion) {
         content += `— ${reading.conclusion}\n\n`
       }
@@ -313,7 +313,7 @@ export default function ReadingsPrintoutPage() {
                       )}
                       
                       <div className="mb-3 leading-relaxed">
-                        {reading.reading_text.split('\n').map((paragraph, i) => (
+                        {reading.text.split('\n').map((paragraph, i) => (
                           <p key={i} className="mb-2">{paragraph}</p>
                         ))}
                       </div>

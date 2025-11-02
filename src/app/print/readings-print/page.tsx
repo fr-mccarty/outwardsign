@@ -156,7 +156,7 @@ function PrintReadingsContent() {
               )}
               
               <div className="reading-text">
-                {reading.reading_text.split('\n').map((paragraph, i) => (
+                {reading.text.split('\n').map((paragraph, i) => (
                   <p key={i} style={{ marginBottom: '0.8rem' }}>
                     {paragraph}
                   </p>
