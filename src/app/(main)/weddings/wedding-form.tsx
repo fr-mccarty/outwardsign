@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
-import { Save, User, BookOpen } from "lucide-react"
+import { Save, User, BookOpen, Calendar } from "lucide-react"
 import { createWedding, updateWedding, type CreateWeddingData } from "@/lib/actions/weddings"
 import { getIndividualReadings } from "@/lib/actions/readings"
-import type { Wedding, Person, IndividualReading } from "@/lib/types"
+import type { Wedding, Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import {
@@ -23,12 +23,14 @@ import {
 } from "@/components/ui/select"
 import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
+import { EventPicker } from "@/components/event-picker"
 
 interface WeddingFormProps {
   wedding?: Wedding
+  formId?: string
 }
 
-export function WeddingForm({ wedding }: WeddingFormProps) {
+export function WeddingForm({ wedding, formId }: WeddingFormProps) {
   const router = useRouter()
   const isEditing = !!wedding
   const [isLoading, setIsLoading] = useState(false)
@@ -42,6 +44,12 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
   // Boolean states
   const [psalmIsSung, setPsalmIsSung] = useState(wedding?.psalm_is_sung || false)
   const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(wedding?.petitions_read_by_second_reader || false)
+
+  // Event picker states
+  const [showWeddingEventPicker, setShowWeddingEventPicker] = useState(false)
+  const [showReceptionEventPicker, setShowReceptionEventPicker] = useState(false)
+  const [showRehearsalEventPicker, setShowRehearsalEventPicker] = useState(false)
+  const [showRehearsalDinnerEventPicker, setShowRehearsalDinnerEventPicker] = useState(false)
 
   // People picker states
   const [showBridePicker, setShowBridePicker] = useState(false)
@@ -58,6 +66,12 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
   const [showPsalmReaderPicker, setShowPsalmReaderPicker] = useState(false)
   const [showGospelReaderPicker, setShowGospelReaderPicker] = useState(false)
   const [showPetitionReaderPicker, setShowPetitionReaderPicker] = useState(false)
+
+  // Selected events
+  const [weddingEvent, setWeddingEvent] = useState<Event | null>(null)
+  const [receptionEvent, setReceptionEvent] = useState<Event | null>(null)
+  const [rehearsalEvent, setRehearsalEvent] = useState<Event | null>(null)
+  const [rehearsalDinnerEvent, setRehearsalDinnerEvent] = useState<Event | null>(null)
 
   // Selected people
   const [bride, setBride] = useState<Person | null>(null)
@@ -102,6 +116,39 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
     loadReadings()
   }, [])
 
+  // Initialize form with wedding data when editing
+  useEffect(() => {
+    if (wedding) {
+      // Set events
+      if ((wedding as any).wedding_event) setWeddingEvent((wedding as any).wedding_event)
+      if ((wedding as any).reception_event) setReceptionEvent((wedding as any).reception_event)
+      if ((wedding as any).rehearsal_event) setRehearsalEvent((wedding as any).rehearsal_event)
+      if ((wedding as any).rehearsal_dinner_event) setRehearsalDinnerEvent((wedding as any).rehearsal_dinner_event)
+
+      // Set people
+      if ((wedding as any).bride) setBride((wedding as any).bride)
+      if ((wedding as any).groom) setGroom((wedding as any).groom)
+      if ((wedding as any).coordinator) setCoordinator((wedding as any).coordinator)
+      if ((wedding as any).presider) setPresider((wedding as any).presider)
+      if ((wedding as any).homilist) setHomilist((wedding as any).homilist)
+      if ((wedding as any).lead_musician) setLeadMusician((wedding as any).lead_musician)
+      if ((wedding as any).cantor) setCantor((wedding as any).cantor)
+      if ((wedding as any).witness_1) setWitness1((wedding as any).witness_1)
+      if ((wedding as any).witness_2) setWitness2((wedding as any).witness_2)
+      if ((wedding as any).first_reader) setFirstReader((wedding as any).first_reader)
+      if ((wedding as any).second_reader) setSecondReader((wedding as any).second_reader)
+      if ((wedding as any).psalm_reader) setPsalmReader((wedding as any).psalm_reader)
+      if ((wedding as any).gospel_reader) setGospelReader((wedding as any).gospel_reader)
+      if ((wedding as any).petition_reader) setPetitionReader((wedding as any).petition_reader)
+
+      // Set readings
+      if ((wedding as any).first_reading) setFirstReading((wedding as any).first_reading)
+      if ((wedding as any).psalm) setPsalm((wedding as any).psalm)
+      if ((wedding as any).second_reading) setSecondReading((wedding as any).second_reading)
+      if ((wedding as any).gospel_reading) setGospelReading((wedding as any).gospel_reading)
+    }
+  }, [wedding])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -109,6 +156,10 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
     try {
       const weddingData: CreateWeddingData = {
         status: status || undefined,
+        wedding_event_id: weddingEvent?.id,
+        reception_event_id: receptionEvent?.id,
+        rehearsal_event_id: rehearsalEvent?.id,
+        rehearsal_dinner_event_id: rehearsalDinnerEvent?.id,
         bride_id: bride?.id,
         groom_id: groom?.id,
         coordinator_id: coordinator?.id,
@@ -137,7 +188,7 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
       if (isEditing) {
         await updateWedding(wedding.id, weddingData)
         toast.success('Wedding updated successfully')
-        router.push(`/weddings/${wedding.id}`)
+        // Stay on edit page, don't redirect
       } else {
         const newWedding = await createWedding(weddingData)
         toast.success('Wedding created successfully!')
@@ -152,12 +203,12 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
-          <CardDescription>General details about the wedding</CardDescription>
+          <CardDescription>General details and event times</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -173,6 +224,62 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
                 <SelectItem value="Cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Wedding Ceremony</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowWeddingEventPicker(true)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {weddingEvent ? `${weddingEvent.name} - ${weddingEvent.start_date || 'No date'}` : 'Add Wedding Event'}
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <Label>Reception</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowReceptionEventPicker(true)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {receptionEvent ? `${receptionEvent.name} - ${receptionEvent.start_date || 'No date'}` : 'Add Reception Event'}
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Rehearsal</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowRehearsalEventPicker(true)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {rehearsalEvent ? `${rehearsalEvent.name} - ${rehearsalEvent.start_date || 'No date'}` : 'Add Rehearsal Event'}
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <Label>Rehearsal Dinner</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setShowRehearsalDinnerEventPicker(true)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {rehearsalDinnerEvent ? `${rehearsalDinnerEvent.name} - ${rehearsalDinnerEvent.start_date || 'No date'}` : 'Add Rehearsal Dinner Event'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -568,9 +675,43 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
         </Button>
         <Button type="submit" disabled={isLoading}>
           <Save className="h-4 w-4 mr-2" />
-          {isLoading ? 'Saving...' : isEditing ? 'Update Wedding' : 'Create Wedding'}
+          {isLoading ? 'Saving...' : isEditing ? 'Update Wedding' : 'Save'}
         </Button>
       </div>
+
+      {/* Event Pickers */}
+      <EventPicker
+        open={showWeddingEventPicker}
+        onOpenChange={setShowWeddingEventPicker}
+        onSelect={(event) => setWeddingEvent(event)}
+        selectedEventId={weddingEvent?.id}
+        defaultEventType="Wedding Ceremony"
+        defaultName="Wedding Ceremony"
+      />
+      <EventPicker
+        open={showReceptionEventPicker}
+        onOpenChange={setShowReceptionEventPicker}
+        onSelect={(event) => setReceptionEvent(event)}
+        selectedEventId={receptionEvent?.id}
+        defaultEventType="Reception"
+        defaultName="Reception"
+      />
+      <EventPicker
+        open={showRehearsalEventPicker}
+        onOpenChange={setShowRehearsalEventPicker}
+        onSelect={(event) => setRehearsalEvent(event)}
+        selectedEventId={rehearsalEvent?.id}
+        defaultEventType="Rehearsal"
+        defaultName="Rehearsal"
+      />
+      <EventPicker
+        open={showRehearsalDinnerEventPicker}
+        onOpenChange={setShowRehearsalDinnerEventPicker}
+        onSelect={(event) => setRehearsalDinnerEvent(event)}
+        selectedEventId={rehearsalDinnerEvent?.id}
+        defaultEventType="Rehearsal Dinner"
+        defaultName="Rehearsal Dinner"
+      />
 
       {/* People Pickers */}
       <PeoplePicker

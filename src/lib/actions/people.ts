@@ -15,7 +15,7 @@ export interface CreatePersonData {
   city?: string
   state?: string
   zipcode?: string
-  notes?: string
+  note?: string
 }
 
 export interface UpdatePersonData {
@@ -27,7 +27,7 @@ export interface UpdatePersonData {
   city?: string
   state?: string
   zipcode?: string
-  notes?: string
+  note?: string
 }
 
 export interface PersonFilterParams {
@@ -102,7 +102,7 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
         city: data.city || null,
         state: data.state || null,
         zipcode: data.zipcode || null,
-        notes: data.notes || null,
+        note: data.note || null,
       }
     ])
     .select()
@@ -110,10 +110,9 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
 
   if (error) {
     console.error('Error creating person:', error)
-    throw new Error('Failed to create person')
+    throw new Error(`Failed to create person: ${error.message}`)
   }
 
-  revalidatePath('/people')
   return person
 }
 
@@ -131,7 +130,7 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
   if (data.city !== undefined) updateData.city = data.city || null
   if (data.state !== undefined) updateData.state = data.state || null
   if (data.zipcode !== undefined) updateData.zipcode = data.zipcode || null
-  if (data.notes !== undefined) updateData.notes = data.notes || null
+  if (data.note !== undefined) updateData.note = data.note || null
 
   const { data: person, error } = await supabase
     .from('people')

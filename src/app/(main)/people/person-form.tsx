@@ -42,7 +42,7 @@ export function PersonForm({ person }: PersonFormProps) {
         city: city || undefined,
         state: state || undefined,
         zipcode: zipcode || undefined,
-        notes: notes || undefined,
+        note: notes || undefined,
       }
 
       if (isEditing) {

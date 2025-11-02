@@ -1,0 +1,444 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Calendar,
+  CalendarPlus,
+  Clock,
+  Save
+} from 'lucide-react'
+import { getEvents, createEvent } from '@/lib/actions/events'
+import type { Event } from '@/lib/types'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+
+interface EventPickerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (event: Event) => void
+  placeholder?: string
+  emptyMessage?: string
+  selectedEventId?: string
+  className?: string
+  defaultEventType?: string
+  defaultName?: string
+}
+
+// Custom hook for debounced search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
+
+export function EventPicker({
+  open,
+  onOpenChange,
+  onSelect,
+  placeholder = "Search for an event...",
+  emptyMessage = "No events found.",
+  selectedEventId,
+  className,
+  defaultEventType = "",
+  defaultName = "",
+}: EventPickerProps) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [savingEvent, setSavingEvent] = useState(false)
+  const [newEventForm, setNewEventForm] = useState({
+    name: defaultName,
+    event_type: defaultEventType,
+    start_date: '',
+    start_time: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  })
+
+  // Debounce search query to avoid too many API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
+  const searchEventsCallback = useCallback(async (query: string) => {
+    try {
+      setLoading(true)
+      const results = await getEvents(query ? { search: query } : undefined)
+      setEvents(results)
+    } catch (error) {
+      console.error('Error searching events:', error)
+      toast.error('Failed to search events')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Effect to search when debounced query changes
+  useEffect(() => {
+    if (open) {
+      searchEventsCallback(debouncedSearchQuery)
+    }
+  }, [debouncedSearchQuery, open, searchEventsCallback])
+
+  // Load initial data when dialog opens
+  useEffect(() => {
+    if (open && events.length === 0) {
+      searchEventsCallback('')
+    }
+  }, [open, events.length, searchEventsCallback])
+
+  // Update form defaults when they change
+  useEffect(() => {
+    setNewEventForm(prev => ({
+      ...prev,
+      name: defaultName,
+      event_type: defaultEventType,
+    }))
+  }, [defaultName, defaultEventType])
+
+  // Automatically show add form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setShowAddForm(true)
+    }
+  }, [open])
+
+  const handleEventSelect = (event: Event) => {
+    onSelect(event)
+    onOpenChange(false)
+    setSearchQuery('')
+    setShowAddForm(false)
+  }
+
+  const handleAddNewEvent = () => {
+    setShowAddForm(true)
+  }
+
+  const handleNewEventFormChange = (field: string, value: string) => {
+    setNewEventForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!newEventForm.name.trim() || !newEventForm.start_date || !newEventForm.start_time) {
+      toast.error('Name, date, and time are required')
+      return
+    }
+
+    try {
+      setSavingEvent(true)
+      const newEvent = await createEvent({
+        name: newEventForm.name,
+        event_type: newEventForm.event_type,
+        start_date: newEventForm.start_date,
+        start_time: newEventForm.start_time,
+      })
+
+      toast.success('Event created successfully')
+
+      // Reset form
+      setNewEventForm({
+        name: defaultName,
+        event_type: defaultEventType,
+        start_date: '',
+        start_time: '',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      })
+      setShowAddForm(false)
+
+      // Select the newly created event (this will close the picker)
+      handleEventSelect(newEvent)
+    } catch (error) {
+      console.error('Error creating event:', error)
+      toast.error('Failed to add event')
+    } finally {
+      setSavingEvent(false)
+    }
+  }
+
+  const handleCancelAddEvent = () => {
+    setShowAddForm(false)
+    setNewEventForm({
+      name: defaultName,
+      event_type: defaultEventType,
+      start_date: '',
+      start_time: '',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    })
+  }
+
+  const formatEventDateTime = (event: Event) => {
+    const parts: string[] = []
+
+    if (event.start_date) {
+      const date = new Date(event.start_date)
+      parts.push(date.toLocaleDateString())
+    }
+
+    if (event.start_time) {
+      parts.push(event.start_time)
+    }
+
+    return parts.join(' at ') || 'No date/time'
+  }
+
+  const isEventSelected = (event: Event) => {
+    return selectedEventId === event.id
+  }
+
+  return (
+    <>
+      <CommandDialog open={open && !showAddForm} onOpenChange={onOpenChange}>
+        <DialogTitle className="sr-only">Select Event</DialogTitle>
+      <Command className={cn("rounded-lg border shadow-md", className)}>
+        <div className="flex items-center border-b px-3" onClick={(e) => e.stopPropagation()}>
+          <CommandInput
+            placeholder={placeholder}
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+
+        <CommandList className="max-h-[400px]">
+          {loading && (
+            <div className="flex items-center justify-center py-6">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                Searching...
+              </div>
+            </div>
+          )}
+
+          {!loading && events.length === 0 && (
+            <CommandEmpty className="py-6 text-center text-sm">
+              <div className="flex flex-col items-center gap-2">
+                <Calendar className="h-8 w-8 text-muted-foreground" />
+                <div>{emptyMessage}</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddNewEvent}
+                  className="mt-2"
+                >
+                  <CalendarPlus className="h-4 w-4 mr-2" />
+                  Add New Event
+                </Button>
+              </div>
+            </CommandEmpty>
+          )}
+
+          {!loading && events.length > 0 && (
+            <>
+              <CommandGroup heading="Events">
+                {events.map((event) => (
+                  <CommandItem
+                    key={event.id}
+                    value={`${event.name} ${event.event_type || ''} ${event.start_date || ''}`}
+                    onSelect={() => handleEventSelect(event)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 cursor-pointer",
+                      isEventSelected(event) && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {event.name}
+                        </span>
+                        {isEventSelected(event) && (
+                          <Badge variant="secondary" className="text-xs">
+                            Selected
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{formatEventDateTime(event)}</span>
+                        </div>
+                        {event.location && (
+                          <span className="truncate">{event.location}</span>
+                        )}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+
+              <CommandSeparator />
+
+              <CommandGroup>
+                <CommandItem
+                  onSelect={handleAddNewEvent}
+                  className="flex items-center gap-2 px-3 py-3 cursor-pointer text-muted-foreground hover:text-foreground"
+                >
+                  <CalendarPlus className="h-4 w-4" />
+                  <span>Add New Event</span>
+                </CommandItem>
+              </CommandGroup>
+            </>
+          )}
+        </CommandList>
+      </Command>
+    </CommandDialog>
+
+    {/* New Event Dialog */}
+    <Dialog open={showAddForm} onOpenChange={(open) => {
+      setShowAddForm(open)
+      if (!open) {
+        onOpenChange(false)
+      }
+    }}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add New Event</DialogTitle>
+          <DialogDescription>
+            Create a new event. Fill in the details below.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleCreateEvent}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name *
+              </Label>
+              <Input
+                id="name"
+                value={newEventForm.name}
+                onChange={(e) => handleNewEventFormChange('name', e.target.value)}
+                className="col-span-3"
+                placeholder="Wedding Ceremony"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="start_date" className="text-right">
+                Date *
+              </Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={newEventForm.start_date}
+                onChange={(e) => handleNewEventFormChange('start_date', e.target.value)}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="start_time" className="text-right">
+                Time *
+              </Label>
+              <Input
+                id="start_time"
+                type="time"
+                value={newEventForm.start_time}
+                onChange={(e) => handleNewEventFormChange('start_time', e.target.value)}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="timezone" className="text-right">
+                Time Zone
+              </Label>
+              <Input
+                id="timezone"
+                value={newEventForm.timezone}
+                onChange={(e) => handleNewEventFormChange('timezone', e.target.value)}
+                className="col-span-3"
+                placeholder="UTC"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelAddEvent}
+              disabled={savingEvent}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={savingEvent}>
+              {savingEvent ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Event
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+    </>
+  )
+}
+
+// Hook to use the event picker
+export function useEventPicker() {
+  const [open, setOpen] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+
+  const openPicker = () => setOpen(true)
+  const closePicker = () => setOpen(false)
+
+  const handleSelect = (event: Event) => {
+    setSelectedEvent(event)
+    setOpen(false)
+  }
+
+  const clearSelection = () => {
+    setSelectedEvent(null)
+  }
+
+  return {
+    open,
+    openPicker,
+    closePicker,
+    selectedEvent,
+    handleSelect,
+    clearSelection,
+    setOpen,
+  }
+}

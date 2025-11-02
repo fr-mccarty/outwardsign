@@ -9,7 +9,7 @@ import { Event } from '@/lib/types'
 export interface CreateEventData {
   name: string
   description?: string
-  responsible_party_id: string
+  responsible_party_id?: string
   event_type: string
   start_date?: string
   start_time?: string
@@ -110,7 +110,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         parish_id: selectedParishId,
         name: data.name,
         description: data.description || null,
-        responsible_party_id: data.responsible_party_id,
+        responsible_party_id: data.responsible_party_id || null,
         event_type: data.event_type,
         start_date: data.start_date || null,
         start_time: data.start_time || null,

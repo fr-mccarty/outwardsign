@@ -23,6 +23,16 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
     ? formatEventDateTime(wedding.wedding_event.start_date, wedding.wedding_event.start_time)
     : 'Missing Date and Time'
 
+  // Generate filename for downloads
+  const generateFilename = (extension: string) => {
+    const brideLastName = wedding.bride?.last_name || 'Bride'
+    const groomLastName = wedding.groom?.last_name || 'Groom'
+    const weddingDate = wedding.wedding_event?.start_date
+      ? new Date(wedding.wedding_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
+      : 'NoDate'
+    return `${brideLastName}-${groomLastName}-${weddingDate}.${extension}`
+  }
+
   // Parse custom petitions from the petitions field
   const customPetitions = wedding.petitions
     ? wedding.petitions.split('\n').filter(p => p.trim())
@@ -434,13 +444,35 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
             <div className="pt-2 border-t">
               <h3 className="font-semibold mb-2">Download Liturgy</h3>
               <div className="space-y-2">
-                <Button className="w-full" variant="outline" onClick={() => window.print()}>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => {
+                    const link = document.createElement('a')
+                    link.href = `/api/weddings/${wedding.id}/pdf`
+                    link.download = generateFilename('pdf')
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                  }}
+                >
                   <Download className="h-4 w-4 mr-2" />
-                  PDF (Print)
+                  PDF
                 </Button>
-                <Button className="w-full" variant="outline" disabled>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => {
+                    const link = document.createElement('a')
+                    link.href = `/api/weddings/${wedding.id}/word`
+                    link.download = generateFilename('docx')
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                  }}
+                >
                   <FileText className="h-4 w-4 mr-2" />
-                  Word Doc (Coming Soon)
+                  Word Doc
                 </Button>
               </div>
             </div>

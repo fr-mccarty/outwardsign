@@ -83,7 +83,7 @@ export function PeoplePicker({
     last_name: '',
     email: '',
     phone_number: '',
-    notes: ''
+    note: ''
   })
 
   // Debounce search query to avoid too many API calls
@@ -146,26 +146,26 @@ export function PeoplePicker({
         last_name: newPersonForm.last_name,
         email: newPersonForm.email || undefined,
         phone_number: newPersonForm.phone_number || undefined,
-        notes: newPersonForm.notes || undefined
+        note: newPersonForm.note || undefined
       })
-      
+
       toast.success('Person created successfully')
-      
-      // Select the newly created person
-      handlePersonSelect(newPerson)
-      
-      // Reset form and close modal
+
+      // Reset form
       setNewPersonForm({
         first_name: '',
         last_name: '',
         email: '',
         phone_number: '',
-        notes: ''
+        note: ''
       })
       setShowAddForm(false)
+
+      // Select the newly created person (this will close the picker)
+      handlePersonSelect(newPerson)
     } catch (error) {
       console.error('Error creating person:', error)
-      toast.error('Failed to create person')
+      toast.error('Failed to add person')
     } finally {
       setSavingPerson(false)
     }
@@ -178,7 +178,7 @@ export function PeoplePicker({
       last_name: '',
       email: '',
       phone_number: '',
-      notes: ''
+      note: ''
     })
   }
 
@@ -369,15 +369,15 @@ export function PeoplePicker({
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">
-                Notes
+              <Label htmlFor="note" className="text-right">
+                Note
               </Label>
               <Textarea
-                id="notes"
-                value={newPersonForm.notes}
-                onChange={(e) => handleNewPersonFormChange('notes', e.target.value)}
+                id="note"
+                value={newPersonForm.note}
+                onChange={(e) => handleNewPersonFormChange('note', e.target.value)}
                 className="col-span-3"
-                placeholder="Additional notes..."
+                placeholder="Additional note..."
                 rows={3}
               />
             </div>

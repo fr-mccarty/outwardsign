@@ -2,8 +2,11 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getWedding } from '@/lib/actions/weddings'
-import { WeddingForm } from '../../wedding-form'
+import { getWeddingWithRelations } from '@/lib/actions/weddings'
+import { WeddingFormWrapper } from '../../wedding-form-wrapper'
+import { Button } from '@/components/ui/button'
+import { Eye, Save } from 'lucide-react'
+import Link from 'next/link'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -19,7 +22,7 @@ export default async function EditWeddingPage({ params }: PageProps) {
   }
 
   const { id } = await params
-  const wedding = await getWedding(id)
+  const wedding = await getWeddingWithRelations(id)
 
   if (!wedding) {
     notFound()
@@ -32,13 +35,28 @@ export default async function EditWeddingPage({ params }: PageProps) {
   ]
 
   return (
-    <PageContainer
-      title="Edit Wedding"
-      description="Update wedding information."
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <WeddingForm wedding={wedding} />
-    </PageContainer>
+      <WeddingFormWrapper
+        wedding={wedding}
+        title="Edit Wedding"
+        description="Update wedding information."
+        saveButtonLabel="Save Wedding"
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href={`/weddings/${id}`}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Wedding
+              </Link>
+            </Button>
+            <Button type="submit" form="wedding-form">
+              <Save className="h-4 w-4 mr-2" />
+              Update Wedding
+            </Button>
+          </>
+        }
+      />
+    </>
   )
 }

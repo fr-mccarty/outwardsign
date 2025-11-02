@@ -2,7 +2,9 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { WeddingForm } from '../wedding-form'
+import { WeddingFormWrapper } from '../wedding-form-wrapper'
+import { Button } from '@/components/ui/button'
+import { Save } from 'lucide-react'
 
 export default async function CreateWeddingPage() {
   const supabase = await createClient()
@@ -20,13 +22,19 @@ export default async function CreateWeddingPage() {
   ]
 
   return (
-    <PageContainer
-      title="Create Wedding"
-      description="Add a new wedding celebration to your parish."
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <WeddingForm />
-    </PageContainer>
+      <WeddingFormWrapper
+        title="Create Wedding"
+        description="Add a new wedding celebration to your parish."
+        saveButtonLabel="Create Wedding"
+        actions={
+          <Button type="submit" form="wedding-form">
+            <Save className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+        }
+      />
+    </>
   )
 }
