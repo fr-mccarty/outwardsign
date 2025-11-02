@@ -20,7 +20,7 @@ import { wordStyles } from '@/lib/styles/liturgy-styles'
 /**
  * Convert alignment string to docx AlignmentType
  */
-function getAlignment(alignment?: TextAlignment): AlignmentType {
+function getAlignment(alignment?: TextAlignment) {
   switch (alignment) {
     case 'center':
       return AlignmentType.CENTER
