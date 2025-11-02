@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Edit, Download } from 'lucide-react'
 import Link from 'next/link'
 import { formatEventDateTime } from '@/lib/utils/date-format'
-import { buildWeddingLiturgy } from '@/lib/content-builders/wedding-templates'
+import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
 import { renderHTML } from '@/lib/renderers/html-renderer'
 
 interface WeddingViewClientProps {

@@ -1,62 +1,12 @@
 /**
- * Wedding Templates
+ * Wedding Full Script (English) Template
  *
- * Wedding-specific content builders that convert WeddingWithRelations data
- * into a structured LiturgyDocument that can be rendered to HTML, PDF, or Word.
- *
- * For other sacraments, create similar files:
- * - baptism-templates.ts
- * - funeral-templates.ts
- * - quinceanera-templates.ts
- *
- * Each should follow this same pattern:
- * 1. Import sacrament-specific data type (e.g., BaptismWithRelations)
- * 2. Create builder functions for each template
- * 3. Export template registry and main builder function
+ * Complete wedding liturgy with all readings, responses, and directions
  */
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
-import {
-  LiturgyDocument,
-  ContentSection,
-  ContentElement,
-  LiturgyTemplate,
-} from '@/lib/types/liturgy-content'
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Format person name
- */
-function formatPersonName(person?: { first_name: string; last_name: string } | null): string {
-  return person ? `${person.first_name} ${person.last_name}` : ''
-}
-
-/**
- * Format person with phone number
- */
-function formatPersonWithPhone(
-  person?: { first_name: string; last_name: string; phone_number?: string } | null
-): string {
-  if (!person) return ''
-  const name = `${person.first_name} ${person.last_name}`
-  return person.phone_number ? `${name} (${person.phone_number})` : name
-}
-
-/**
- * Format event date and time
- */
-function formatEventDateTime(event?: { start_date?: string; start_time?: string } | null): string {
-  if (!event?.start_date) return ''
-  const date = new Date(event.start_date).toLocaleDateString()
-  return event.start_time ? `${date} at ${event.start_time}` : date
-}
-
-// ============================================================================
-// SECTION BUILDERS
-// ============================================================================
+import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
+import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
 
 /**
  * Build summary section (rehearsal, wedding info, sacred liturgy info)
@@ -286,13 +236,13 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
 function buildFirstReadingSection(wedding: WeddingWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
-  elements.push({
-    type: 'reading-title',
-    text: 'FIRST READING',
-    alignment: 'right',
-  })
-
   if (wedding.first_reading) {
+    elements.push({
+      type: 'reading-title',
+      text: 'FIRST READING',
+      alignment: 'right',
+    })
+
     elements.push({
       type: 'pericope',
       text: wedding.first_reading.pericope || 'No pericope',
@@ -353,13 +303,13 @@ function buildFirstReadingSection(wedding: WeddingWithRelations): ContentSection
 function buildPsalmSection(wedding: WeddingWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
-  elements.push({
-    type: 'reading-title',
-    text: 'Psalm',
-    alignment: 'right',
-  })
-
   if (wedding.psalm) {
+    elements.push({
+      type: 'reading-title',
+      text: 'Psalm',
+      alignment: 'right',
+    })
+
     elements.push({
       type: 'pericope',
       text: wedding.psalm.pericope || 'No pericope',
@@ -399,11 +349,6 @@ function buildPsalmSection(wedding: WeddingWithRelations): ContentSection {
         text: wedding.psalm.conclusion,
       })
     }
-  } else {
-    elements.push({
-      type: 'text',
-      text: 'None Selected',
-    })
   }
 
   return {
@@ -419,13 +364,13 @@ function buildPsalmSection(wedding: WeddingWithRelations): ContentSection {
 function buildSecondReadingSection(wedding: WeddingWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
-  elements.push({
-    type: 'reading-title',
-    text: 'Second Reading',
-    alignment: 'right',
-  })
-
   if (wedding.second_reading) {
+    elements.push({
+      type: 'reading-title',
+      text: 'Second Reading',
+      alignment: 'right',
+    })
+
     elements.push({
       type: 'pericope',
       text: wedding.second_reading.pericope || 'No pericope',
@@ -467,11 +412,6 @@ function buildSecondReadingSection(wedding: WeddingWithRelations): ContentSectio
         { text: ' Thanks be to God.', formatting: ['italic'] },
       ],
     })
-  } else {
-    elements.push({
-      type: 'text',
-      text: 'None Selected',
-    })
   }
 
   return {
@@ -487,13 +427,13 @@ function buildSecondReadingSection(wedding: WeddingWithRelations): ContentSectio
 function buildGospelSection(wedding: WeddingWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
-  elements.push({
-    type: 'reading-title',
-    text: 'Gospel',
-    alignment: 'right',
-  })
-
   if (wedding.gospel_reading) {
+    elements.push({
+      type: 'reading-title',
+      text: 'Gospel',
+      alignment: 'right',
+    })
+
     elements.push({
       type: 'pericope',
       text: wedding.gospel_reading.pericope || 'No pericope',
@@ -539,11 +479,6 @@ function buildGospelSection(wedding: WeddingWithRelations): ContentSection {
         { text: 'People:', formatting: ['bold'] },
         { text: ' Praise to you, Lord Jesus Christ.', formatting: ['italic'] },
       ],
-    })
-  } else {
-    elements.push({
-      type: 'text',
-      text: 'None Selected',
     })
   }
 
@@ -704,14 +639,10 @@ function buildAnnouncementsSection(wedding: WeddingWithRelations): ContentSectio
   }
 }
 
-// ============================================================================
-// TEMPLATE BUILDERS
-// ============================================================================
-
 /**
- * Build full wedding script
+ * Build full wedding script (English)
  */
-function buildFullScript(wedding: WeddingWithRelations): LiturgyDocument {
+export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDocument {
   const weddingTitle =
     wedding.bride && wedding.groom
       ? `${wedding.bride.first_name} ${wedding.bride.last_name} & ${wedding.groom.first_name} ${wedding.groom.last_name}`
@@ -781,33 +712,4 @@ function buildFullScript(wedding: WeddingWithRelations): LiturgyDocument {
     subtitle: eventDateTime,
     sections,
   }
-}
-
-// ============================================================================
-// TEMPLATE REGISTRY
-// ============================================================================
-
-export const WEDDING_TEMPLATES: Record<string, LiturgyTemplate<WeddingWithRelations>> = {
-  'wedding-full-script-english': {
-    id: 'wedding-full-script-english',
-    name: 'Full Ceremony Script (English)',
-    description: 'Complete wedding liturgy with all readings, responses, and directions',
-    supportedLanguages: ['en'],
-    builder: buildFullScript,
-  },
-  // Future templates can be added here:
-  // 'wedding-readings-only-english': { ... },
-  // 'wedding-summary-card-english': { ... },
-  // 'wedding-full-script-spanish': { ... },
-}
-
-/**
- * Main export: Build wedding liturgy content
- */
-export function buildWeddingLiturgy(
-  wedding: WeddingWithRelations,
-  templateId: string = 'wedding-full-script-english'
-): LiturgyDocument {
-  const template = WEDDING_TEMPLATES[templateId] || WEDDING_TEMPLATES['wedding-full-script-english']
-  return template.builder(wedding)
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWeddingWithRelations } from '@/lib/actions/weddings'
 import { Document, Packer } from 'docx'
-import { buildWeddingLiturgy } from '@/lib/content-builders/wedding-templates'
+import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
 import { renderWord } from '@/lib/renderers/word-renderer'
 
 export async function GET(

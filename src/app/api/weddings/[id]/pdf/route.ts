@@ -3,7 +3,7 @@ import { getWeddingWithRelations } from '@/lib/actions/weddings'
 import PdfPrinter from 'pdfmake'
 import { TDocumentDefinitions } from 'pdfmake/interfaces'
 import { pdfStyles } from '@/lib/styles/liturgy-styles'
-import { buildWeddingLiturgy } from '@/lib/content-builders/wedding-templates'
+import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
 import { renderPDF } from '@/lib/renderers/pdf-renderer'
 
 // Define fonts for pdfmake
