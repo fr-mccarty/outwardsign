@@ -126,6 +126,139 @@ export async function getWedding(id: string): Promise<Wedding | null> {
   return data
 }
 
+// Enhanced wedding interface with all related data
+export interface WeddingWithRelations extends Wedding {
+  bride?: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  groom?: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  wedding_event?: {
+    id: string
+    name: string
+    start_date?: string
+    start_time?: string
+    end_time?: string
+    location?: string
+  } | null
+  first_reading?: {
+    id: string
+    pericope: string | null
+    introduction: string | null
+    text: string | null
+    conclusion: string | null
+  } | null
+  psalm?: {
+    id: string
+    pericope: string | null
+    introduction: string | null
+    text: string | null
+    conclusion: string | null
+  } | null
+  second_reading?: {
+    id: string
+    pericope: string | null
+    introduction: string | null
+    text: string | null
+    conclusion: string | null
+  } | null
+  gospel_reading?: {
+    id: string
+    pericope: string | null
+    introduction: string | null
+    text: string | null
+    conclusion: string | null
+  } | null
+  first_reader?: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  second_reader?: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  psalm_reader?: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  petition_reader?: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+}
+
+export async function getWeddingWithRelations(id: string): Promise<WeddingWithRelations | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the wedding
+  const { data: wedding, error } = await supabase
+    .from('weddings')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching wedding:', error)
+    throw new Error('Failed to fetch wedding')
+  }
+
+  // Fetch all related data in parallel
+  const [
+    brideData,
+    groomData,
+    eventData,
+    firstReadingData,
+    psalmData,
+    secondReadingData,
+    gospelReadingData,
+    firstReaderData,
+    secondReaderData,
+    psalmReaderData,
+    petitionReaderData
+  ] = await Promise.all([
+    wedding.bride_id ? supabase.from('people').select('id, first_name, last_name').eq('id', wedding.bride_id).single() : Promise.resolve({ data: null }),
+    wedding.groom_id ? supabase.from('people').select('id, first_name, last_name').eq('id', wedding.groom_id).single() : Promise.resolve({ data: null }),
+    wedding.wedding_event_id ? supabase.from('events').select('id, name, start_date, start_time, end_time, location').eq('id', wedding.wedding_event_id).single() : Promise.resolve({ data: null }),
+    wedding.first_reading_id ? supabase.from('readings').select('id, pericope, introduction, text, conclusion').eq('id', wedding.first_reading_id).single() : Promise.resolve({ data: null }),
+    wedding.psalm_id ? supabase.from('readings').select('id, pericope, introduction, text, conclusion').eq('id', wedding.psalm_id).single() : Promise.resolve({ data: null }),
+    wedding.second_reading_id ? supabase.from('readings').select('id, pericope, introduction, text, conclusion').eq('id', wedding.second_reading_id).single() : Promise.resolve({ data: null }),
+    wedding.gospel_reading_id ? supabase.from('readings').select('id, pericope, introduction, text, conclusion').eq('id', wedding.gospel_reading_id).single() : Promise.resolve({ data: null }),
+    wedding.first_reader_id ? supabase.from('people').select('id, first_name, last_name').eq('id', wedding.first_reader_id).single() : Promise.resolve({ data: null }),
+    wedding.second_reader_id ? supabase.from('people').select('id, first_name, last_name').eq('id', wedding.second_reader_id).single() : Promise.resolve({ data: null }),
+    wedding.psalm_reader_id ? supabase.from('people').select('id, first_name, last_name').eq('id', wedding.psalm_reader_id).single() : Promise.resolve({ data: null }),
+    wedding.petition_reader_id ? supabase.from('people').select('id, first_name, last_name').eq('id', wedding.petition_reader_id).single() : Promise.resolve({ data: null })
+  ])
+
+  return {
+    ...wedding,
+    bride: brideData.data,
+    groom: groomData.data,
+    wedding_event: eventData.data,
+    first_reading: firstReadingData.data,
+    psalm: psalmData.data,
+    second_reading: secondReadingData.data,
+    gospel_reading: gospelReadingData.data,
+    first_reader: firstReaderData.data,
+    second_reader: secondReaderData.data,
+    psalm_reader: psalmReaderData.data,
+    petition_reader: petitionReaderData.data
+  }
+}
+
 export async function createWedding(data: CreateWeddingData): Promise<Wedding> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
