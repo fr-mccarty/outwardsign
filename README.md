@@ -107,8 +107,3 @@ Please file feedback and issues over on the [Supabase GitHub org](https://github
 - `CLAUDE.md` documents architecture, data patterns, and workflow expectations tailored for AI coding assistants.
 - `AGENTS.md` provides contributor guidelines summarizing project structure, commands, testing, and review practices.
 
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)

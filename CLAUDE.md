@@ -215,4 +215,5 @@ Client Component (BreadcrumbSetter):
 (Document any existing bugs or performance concerns here)
 
 ## Permissions & Automation
-(Document things you want to give Claude permission to do automatically)
+You are never allowed to make a commit.
+Neither are you allowed to add files to the repository.
