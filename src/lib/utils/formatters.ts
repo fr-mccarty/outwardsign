@@ -27,6 +27,25 @@ export function formatPersonWithPhone(
  */
 export function formatEventDateTime(event?: { start_date?: string; start_time?: string } | null): string {
   if (!event?.start_date) return ''
-  const date = new Date(event.start_date).toLocaleDateString()
-  return event.start_time ? `${date} at ${event.start_time}` : date
+
+  // Format date as "November 13, 2025"
+  const dateObj = new Date(event.start_date)
+  const date = dateObj.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+  if (!event.start_time) return date
+
+  // Parse time (format: "16:21:00" or "16:21")
+  const [hours, minutes] = event.start_time.split(':').map(Number)
+
+  // Convert to 12-hour format with AM/PM
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
+  const displayMinutes = minutes.toString().padStart(2, '0')
+  const time = `${displayHours}:${displayMinutes} ${period}`
+
+  return `${date} at ${time}`
 }

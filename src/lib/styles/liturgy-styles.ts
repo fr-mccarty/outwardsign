@@ -357,7 +357,7 @@ export const liturgyPatterns = {
       fontSize: 'eventTitle',
       bold: true,
       alignment: 'center',
-      marginBottom: pdfStyles.spacing.medium,
+      marginBottom: pdfStyles.spacing.tiny,
     }),
 
     eventDateTime: createPdfStyle({
@@ -426,7 +426,7 @@ export const liturgyPatterns = {
       fontSize: 'eventTitle',
       bold: true,
       alignment: 'center',
-      marginBottom: 'medium',
+      marginBottom: 'tiny',
     }),
 
     eventDateTime: createHtmlStyle({

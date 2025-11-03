@@ -26,7 +26,6 @@ function renderElement(element: ContentElement): Content {
         text: element.text,
         fontSize: pdfStyles.sizes.eventTitle,
         bold: true,
-        color: pdfStyles.color,
         alignment: element.alignment || pdfStyles.alignment.left,
         margin: [0, 0, 0, pdfStyles.spacing.medium],
       }
@@ -44,7 +43,6 @@ function renderElement(element: ContentElement): Content {
         text: element.text,
         fontSize: pdfStyles.sizes.sectionTitle,
         bold: true,
-        color: pdfStyles.color,
         alignment: element.alignment || pdfStyles.alignment.left,
         margin: [0, pdfStyles.spacing.large, 0, pdfStyles.spacing.medium],
       }

@@ -231,60 +231,103 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
 }
 
 /**
- * Build first reading section
+ * Configuration for building a reading section
  */
-function buildFirstReadingSection(wedding: WeddingWithRelations): ContentSection {
+interface ReadingSectionConfig {
+  id: string
+  title: string
+  reading: any // The reading object (first_reading, second_reading, or gospel_reading)
+  reader?: any // The reader object (first_reader, second_reader, or null for gospel)
+  responseText?: string
+  includeGospelDialogue?: boolean
+  pageBreakBefore?: boolean
+  showNoneSelected?: boolean
+}
+
+/**
+ * Build reading section (first, second, or gospel)
+ */
+function buildReadingSection(config: ReadingSectionConfig): ContentSection {
+  const {
+    id,
+    title,
+    reading,
+    reader,
+    responseText,
+    includeGospelDialogue = false,
+    pageBreakBefore = false,
+    showNoneSelected = false,
+  } = config
+
   const elements: ContentElement[] = []
 
-  if (wedding.first_reading) {
+  if (reading) {
     elements.push({
       type: 'reading-title',
-      text: 'FIRST READING',
+      text: title,
       alignment: 'right',
     })
 
     elements.push({
       type: 'pericope',
-      text: wedding.first_reading.pericope || 'No pericope',
+      text: reading.pericope || 'No pericope',
       alignment: 'right',
     })
 
-    if (wedding.first_reader) {
+    if (reader) {
       elements.push({
         type: 'reader-name',
-        text: formatPersonName(wedding.first_reader),
+        text: formatPersonName(reader),
         alignment: 'right',
       })
     }
 
-    if (wedding.first_reading.introduction) {
+    // Gospel-specific dialogue
+    if (includeGospelDialogue) {
+      elements.push({
+        type: 'priest-dialogue',
+        text: 'Priest: The Lord be with you.',
+      })
+
+      elements.push({
+        type: 'response',
+        parts: [
+          { text: 'People:', formatting: ['bold'] },
+          { text: ' And with your spirit.', formatting: ['italic'] },
+        ],
+      })
+    }
+
+    if (reading.introduction) {
       elements.push({
         type: 'introduction',
-        text: wedding.first_reading.introduction,
+        text: reading.introduction,
       })
     }
 
     elements.push({
       type: 'reading-text',
-      text: wedding.first_reading.text || 'No reading text',
+      text: reading.text || 'No reading text',
       preserveLineBreaks: true,
     })
 
-    if (wedding.first_reading.conclusion) {
+    if (reading.conclusion) {
       elements.push({
         type: 'conclusion',
-        text: wedding.first_reading.conclusion,
+        text: reading.conclusion,
       })
     }
 
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'People:', formatting: ['bold'] },
-        { text: ' Thanks be to God.', formatting: ['italic'] },
-      ],
-    })
-  } else {
+    if (responseText) {
+      elements.push({
+        type: 'response',
+        parts: [
+          { text: 'People:', formatting: ['bold'] },
+          { text: ` ${responseText}`, formatting: ['italic'] },
+        ],
+      })
+    }
+  } else if (showNoneSelected) {
     elements.push({
       type: 'text',
       text: 'None Selected',
@@ -292,7 +335,8 @@ function buildFirstReadingSection(wedding: WeddingWithRelations): ContentSection
   }
 
   return {
-    id: 'first-reading',
+    id,
+    pageBreakBefore,
     elements,
   }
 }
@@ -357,138 +401,6 @@ function buildPsalmSection(wedding: WeddingWithRelations): ContentSection {
     elements,
   }
 }
-
-/**
- * Build second reading section
- */
-function buildSecondReadingSection(wedding: WeddingWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  if (wedding.second_reading) {
-    elements.push({
-      type: 'reading-title',
-      text: 'Second Reading',
-      alignment: 'right',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: wedding.second_reading.pericope || 'No pericope',
-      alignment: 'right',
-    })
-
-    if (wedding.second_reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(wedding.second_reader),
-        alignment: 'right',
-      })
-    }
-
-    if (wedding.second_reading.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: wedding.second_reading.introduction,
-      })
-    }
-
-    elements.push({
-      type: 'reading-text',
-      text: wedding.second_reading.text || 'No reading text',
-      preserveLineBreaks: true,
-    })
-
-    if (wedding.second_reading.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: wedding.second_reading.conclusion,
-      })
-    }
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'People:', formatting: ['bold'] },
-        { text: ' Thanks be to God.', formatting: ['italic'] },
-      ],
-    })
-  }
-
-  return {
-    id: 'second-reading',
-    pageBreakBefore: wedding.second_reading ? true : false,
-    elements,
-  }
-}
-
-/**
- * Build gospel section
- */
-function buildGospelSection(wedding: WeddingWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  if (wedding.gospel_reading) {
-    elements.push({
-      type: 'reading-title',
-      text: 'Gospel',
-      alignment: 'right',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: wedding.gospel_reading.pericope || 'No pericope',
-      alignment: 'right',
-    })
-
-    elements.push({
-      type: 'priest-dialogue',
-      text: 'Priest: The Lord be with you.',
-    })
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'People:', formatting: ['bold'] },
-        { text: ' And with your spirit.', formatting: ['italic'] },
-      ],
-    })
-
-    if (wedding.gospel_reading.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: wedding.gospel_reading.introduction,
-      })
-    }
-
-    elements.push({
-      type: 'reading-text',
-      text: wedding.gospel_reading.text || 'No gospel text',
-      preserveLineBreaks: true,
-    })
-
-    if (wedding.gospel_reading.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: wedding.gospel_reading.conclusion,
-      })
-    }
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'People:', formatting: ['bold'] },
-        { text: ' Praise to you, Lord Jesus Christ.', formatting: ['italic'] },
-      ],
-    })
-  }
-
-  return {
-    id: 'gospel',
-    pageBreakBefore: wedding.gospel_reading ? true : false,
-    elements,
-  }
-}
-
 /**
  * Build petitions section
  */
@@ -672,27 +584,54 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
   sections.push(summarySection)
 
   // Add header before readings
-  sections.push({
-    id: 'readings-header',
-    elements: [
-      {
-        type: 'event-title',
-        text: weddingTitle,
-        alignment: 'center',
-      },
-      {
-        type: 'event-datetime',
-        text: eventDateTime,
-        alignment: 'center',
-      },
-    ],
-  })
+  // sections.push({
+  //   id: 'readings-header',
+  //   elements: [
+  //     {
+  //       type: 'event-title',
+  //       text: weddingTitle,
+  //       alignment: 'center',
+  //     },
+  //     {
+  //       type: 'event-datetime',
+  //       text: eventDateTime,
+  //       alignment: 'center',
+  //     },
+  //   ],
+  // })
 
   // Add all reading sections
-  sections.push(buildFirstReadingSection(wedding))
+  sections.push(
+    buildReadingSection({
+      id: 'first-reading',
+      title: 'FIRST READING',
+      reading: wedding.first_reading,
+      reader: wedding.first_reader,
+      showNoneSelected: true,
+    })
+  )
+
   sections.push(buildPsalmSection(wedding))
-  sections.push(buildSecondReadingSection(wedding))
-  sections.push(buildGospelSection(wedding))
+
+  sections.push(
+    buildReadingSection({
+      id: 'second-reading',
+      title: 'SECOND READING',
+      reading: wedding.second_reading,
+      reader: wedding.second_reader,
+      pageBreakBefore: !!wedding.second_reading,
+    })
+  )
+
+  sections.push(
+    buildReadingSection({
+      id: 'gospel',
+      title: 'GOSPEL',
+      reading: wedding.gospel_reading,
+      includeGospelDialogue: false,
+      pageBreakBefore: !!wedding.gospel_reading,
+    })
+  )
 
   // Add petitions
   sections.push(buildPetitionsSection(wedding))
