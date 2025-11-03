@@ -24,6 +24,7 @@ import {
 import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
+import { EventDisplay } from "@/components/event-display"
 
 interface WeddingFormProps {
   wedding?: Wedding
@@ -36,7 +37,7 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   // State for all fields
-  const [status, setStatus] = useState(wedding?.status || "Planning")
+  const [status, setStatus] = useState(wedding?.status || "Active")
   const [notes, setNotes] = useState(wedding?.notes || "")
   const [announcements, setAnnouncements] = useState(wedding?.announcements || "")
   const [petitions, setPetitions] = useState(wedding?.petitions || "")
@@ -218,10 +219,8 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Planning">Planning</SelectItem>
-                <SelectItem value="Scheduled">Scheduled</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -234,11 +233,11 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full justify-start"
+                className="w-full justify-start text-left h-auto py-3"
                 onClick={() => setShowWeddingEventPicker(true)}
               >
-                <Calendar className="h-4 w-4 mr-2" />
-                {weddingEvent ? `${weddingEvent.name} - ${weddingEvent.start_date || 'No date'}` : 'Add Wedding Event'}
+                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                <EventDisplay event={weddingEvent} placeholder="Add Wedding Ceremony" />
               </Button>
             </div>
             <div className="space-y-2">
@@ -246,11 +245,11 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full justify-start"
+                className="w-full justify-start text-left h-auto py-3"
                 onClick={() => setShowReceptionEventPicker(true)}
               >
-                <Calendar className="h-4 w-4 mr-2" />
-                {receptionEvent ? `${receptionEvent.name} - ${receptionEvent.start_date || 'No date'}` : 'Add Reception Event'}
+                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                <EventDisplay event={receptionEvent} placeholder="Add Reception" />
               </Button>
             </div>
           </div>
@@ -261,11 +260,11 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full justify-start"
+                className="w-full justify-start text-left h-auto py-3"
                 onClick={() => setShowRehearsalEventPicker(true)}
               >
-                <Calendar className="h-4 w-4 mr-2" />
-                {rehearsalEvent ? `${rehearsalEvent.name} - ${rehearsalEvent.start_date || 'No date'}` : 'Add Rehearsal Event'}
+                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                <EventDisplay event={rehearsalEvent} placeholder="Add Rehearsal" />
               </Button>
             </div>
             <div className="space-y-2">
@@ -273,11 +272,11 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full justify-start"
+                className="w-full justify-start text-left h-auto py-3"
                 onClick={() => setShowRehearsalDinnerEventPicker(true)}
               >
-                <Calendar className="h-4 w-4 mr-2" />
-                {rehearsalDinnerEvent ? `${rehearsalDinnerEvent.name} - ${rehearsalDinnerEvent.start_date || 'No date'}` : 'Add Rehearsal Dinner Event'}
+                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                <EventDisplay event={rehearsalDinnerEvent} placeholder="Add Rehearsal Dinner" />
               </Button>
             </div>
           </div>
@@ -685,32 +684,44 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
         onOpenChange={setShowWeddingEventPicker}
         onSelect={(event) => setWeddingEvent(event)}
         selectedEventId={weddingEvent?.id}
+        selectedEvent={weddingEvent}
         defaultEventType="Wedding Ceremony"
         defaultName="Wedding Ceremony"
+        openToNewEvent={!weddingEvent}
+        disableSearch={true}
       />
       <EventPicker
         open={showReceptionEventPicker}
         onOpenChange={setShowReceptionEventPicker}
         onSelect={(event) => setReceptionEvent(event)}
         selectedEventId={receptionEvent?.id}
+        selectedEvent={receptionEvent}
         defaultEventType="Reception"
         defaultName="Reception"
+        openToNewEvent={!receptionEvent}
+        disableSearch={true}
       />
       <EventPicker
         open={showRehearsalEventPicker}
         onOpenChange={setShowRehearsalEventPicker}
         onSelect={(event) => setRehearsalEvent(event)}
         selectedEventId={rehearsalEvent?.id}
+        selectedEvent={rehearsalEvent}
         defaultEventType="Rehearsal"
         defaultName="Rehearsal"
+        openToNewEvent={!rehearsalEvent}
+        disableSearch={true}
       />
       <EventPicker
         open={showRehearsalDinnerEventPicker}
         onOpenChange={setShowRehearsalDinnerEventPicker}
         onSelect={(event) => setRehearsalDinnerEvent(event)}
         selectedEventId={rehearsalDinnerEvent?.id}
+        selectedEvent={rehearsalDinnerEvent}
         defaultEventType="Rehearsal Dinner"
         defaultName="Rehearsal Dinner"
+        openToNewEvent={!rehearsalDinnerEvent}
+        disableSearch={true}
       />
 
       {/* People Pickers */}

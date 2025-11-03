@@ -15,9 +15,10 @@ export interface CreateEventData {
   start_time?: string
   end_date?: string
   end_time?: string
+  timezone?: string
   location?: string
   language?: string
-  notes?: string
+  note?: string
 }
 
 export interface UpdateEventData {
@@ -29,9 +30,10 @@ export interface UpdateEventData {
   start_time?: string
   end_date?: string
   end_time?: string
+  timezone?: string
   location?: string
   language?: string
-  notes?: string
+  note?: string
 }
 
 export interface EventFilterParams {
@@ -116,9 +118,10 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         start_time: data.start_time || null,
         end_date: data.end_date || null,
         end_time: data.end_time || null,
+        timezone: data.timezone || null,
         location: data.location || null,
         language: data.language || null,
-        notes: data.notes || null,
+        note: data.note || null,
       }
     ])
     .select()
@@ -147,9 +150,10 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
   if (data.start_time !== undefined) updateData.start_time = data.start_time || null
   if (data.end_date !== undefined) updateData.end_date = data.end_date || null
   if (data.end_time !== undefined) updateData.end_time = data.end_time || null
+  if (data.timezone !== undefined) updateData.timezone = data.timezone || null
   if (data.location !== undefined) updateData.location = data.location || null
   if (data.language !== undefined) updateData.language = data.language || null
-  if (data.notes !== undefined) updateData.notes = data.notes || null
+  if (data.note !== undefined) updateData.note = data.note || null
 
   const { data: event, error } = await supabase
     .from('events')

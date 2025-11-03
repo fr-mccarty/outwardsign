@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, VenusAndMars, Eye, Calendar, Search, Filter } from "lucide-react"
+import { Plus, VenusAndMars, Eye, Calendar, Search, Filter, Edit, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -108,8 +108,8 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/weddings/${wedding.id}`}>
-                      <Eye className="h-4 w-4" />
+                    <Link href={`/weddings/${wedding.id}/edit`}>
+                      <Edit className="h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
@@ -139,13 +139,11 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
                   </p>
                 )}
 
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Added {new Date(wedding.created_at).toLocaleDateString()}
-                  </span>
+                <div className="flex justify-end items-center pt-2">
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/weddings/${wedding.id}`}>
-                      View Details
+                      <FileText className="h-4 w-4 mr-1" />
+                      Preview
                     </Link>
                   </Button>
                 </div>

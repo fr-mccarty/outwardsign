@@ -23,13 +23,21 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Calendar,
   CalendarPlus,
   Clock,
   Save
 } from 'lucide-react'
-import { getEvents, createEvent } from '@/lib/actions/events'
+import { getEvents, createEvent, updateEvent } from '@/lib/actions/events'
 import type { Event } from '@/lib/types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -41,9 +49,12 @@ interface EventPickerProps {
   placeholder?: string
   emptyMessage?: string
   selectedEventId?: string
+  selectedEvent?: Event | null
   className?: string
   defaultEventType?: string
   defaultName?: string
+  openToNewEvent?: boolean
+  disableSearch?: boolean
 }
 
 // Custom hook for debounced search
@@ -63,6 +74,18 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue
 }
 
+// Helper function to get default timezone
+function getDefaultTimezone() {
+  const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const usTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles']
+  // If detected timezone is one of our US timezones, use it
+  if (usTimezones.includes(detected)) {
+    return detected
+  }
+  // Default to Eastern if not detected or not a US timezone
+  return 'America/New_York'
+}
+
 export function EventPicker({
   open,
   onOpenChange,
@@ -70,21 +93,27 @@ export function EventPicker({
   placeholder = "Search for an event...",
   emptyMessage = "No events found.",
   selectedEventId,
+  selectedEvent,
   className,
   defaultEventType = "",
   defaultName = "",
+  openToNewEvent = false,
+  disableSearch = false,
 }: EventPickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [savingEvent, setSavingEvent] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [newEventForm, setNewEventForm] = useState({
     name: defaultName,
     event_type: defaultEventType,
     start_date: '',
     start_time: '',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    timezone: getDefaultTimezone(),
+    note: '',
   })
 
   // Debounce search query to avoid too many API calls
@@ -126,12 +155,38 @@ export function EventPicker({
     }))
   }, [defaultName, defaultEventType])
 
-  // Automatically show add form when dialog opens
+  // Automatically show add form when openToNewEvent is true and dialog opens
+  // OR when selectedEvent is provided (edit mode)
+  // OR when disableSearch is true (always show form, never search)
   useEffect(() => {
     if (open) {
-      setShowAddForm(true)
+      if (disableSearch || selectedEvent || openToNewEvent) {
+        // Determine if we're editing or creating
+        if (selectedEvent) {
+          // Edit mode: pre-fill form with selected event
+          setIsEditMode(true)
+          setEditingEventId(selectedEvent.id)
+          setNewEventForm({
+            name: selectedEvent.name,
+            event_type: selectedEvent.event_type || defaultEventType,
+            start_date: selectedEvent.start_date || '',
+            start_time: selectedEvent.start_time || '',
+            timezone: selectedEvent.timezone || getDefaultTimezone(),
+            note: (selectedEvent as any).note || '',
+          })
+        } else {
+          // Create new mode
+          setIsEditMode(false)
+          setEditingEventId(null)
+        }
+        setShowAddForm(true)
+      } else {
+        // Just browsing events
+        setIsEditMode(false)
+        setEditingEventId(null)
+      }
     }
-  }, [open])
+  }, [open, selectedEvent, openToNewEvent, disableSearch, defaultEventType])
 
   const handleEventSelect = (event: Event) => {
     onSelect(event)
@@ -158,14 +213,32 @@ export function EventPicker({
 
     try {
       setSavingEvent(true)
-      const newEvent = await createEvent({
-        name: newEventForm.name,
-        event_type: newEventForm.event_type,
-        start_date: newEventForm.start_date,
-        start_time: newEventForm.start_time,
-      })
 
-      toast.success('Event created successfully')
+      let updatedEvent: Event
+
+      if (isEditMode && editingEventId) {
+        // Update existing event
+        updatedEvent = await updateEvent(editingEventId, {
+          name: newEventForm.name,
+          event_type: newEventForm.event_type,
+          start_date: newEventForm.start_date,
+          start_time: newEventForm.start_time,
+          timezone: newEventForm.timezone,
+          note: newEventForm.note || undefined,
+        })
+        toast.success('Event updated successfully')
+      } else {
+        // Create new event
+        updatedEvent = await createEvent({
+          name: newEventForm.name,
+          event_type: newEventForm.event_type,
+          start_date: newEventForm.start_date,
+          start_time: newEventForm.start_time,
+          timezone: newEventForm.timezone,
+          note: newEventForm.note || undefined,
+        })
+        toast.success('Event created successfully')
+      }
 
       // Reset form
       setNewEventForm({
@@ -173,15 +246,18 @@ export function EventPicker({
         event_type: defaultEventType,
         start_date: '',
         start_time: '',
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        timezone: getDefaultTimezone(),
+        note: '',
       })
       setShowAddForm(false)
+      setIsEditMode(false)
+      setEditingEventId(null)
 
-      // Select the newly created event (this will close the picker)
-      handleEventSelect(newEvent)
+      // Select the created/updated event (this will close the picker)
+      handleEventSelect(updatedEvent)
     } catch (error) {
-      console.error('Error creating event:', error)
-      toast.error('Failed to add event')
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} event:`, error)
+      toast.error(`Failed to ${isEditMode ? 'update' : 'add'} event`)
     } finally {
       setSavingEvent(false)
     }
@@ -189,13 +265,20 @@ export function EventPicker({
 
   const handleCancelAddEvent = () => {
     setShowAddForm(false)
+    setIsEditMode(false)
+    setEditingEventId(null)
     setNewEventForm({
       name: defaultName,
       event_type: defaultEventType,
       start_date: '',
       start_time: '',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      timezone: getDefaultTimezone(),
+      note: '',
     })
+    // If search is disabled, close the entire picker when canceling
+    if (disableSearch) {
+      onOpenChange(false)
+    }
   }
 
   const formatEventDateTime = (event: Event) => {
@@ -219,7 +302,7 @@ export function EventPicker({
 
   return (
     <>
-      <CommandDialog open={open && !showAddForm} onOpenChange={onOpenChange}>
+      <CommandDialog open={open && !showAddForm && !disableSearch} onOpenChange={onOpenChange}>
         <DialogTitle className="sr-only">Select Event</DialogTitle>
       <Command className={cn("rounded-lg border shadow-md", className)}>
         <div className="flex items-center border-b px-3" onClick={(e) => e.stopPropagation()}>
@@ -326,9 +409,9 @@ export function EventPicker({
     }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Event</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Event' : 'Add New Event'}</DialogTitle>
           <DialogDescription>
-            Create a new event. Fill in the details below.
+            {isEditMode ? 'Update the event details below.' : 'Create a new event. Fill in the details below.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleCreateEvent}>
@@ -376,12 +459,32 @@ export function EventPicker({
               <Label htmlFor="timezone" className="text-right">
                 Time Zone
               </Label>
-              <Input
-                id="timezone"
+              <Select
                 value={newEventForm.timezone}
-                onChange={(e) => handleNewEventFormChange('timezone', e.target.value)}
+                onValueChange={(value) => handleNewEventFormChange('timezone', value)}
+              >
+                <SelectTrigger id="timezone" className="col-span-3">
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="America/New_York">Eastern (ET)</SelectItem>
+                  <SelectItem value="America/Chicago">Central (CT)</SelectItem>
+                  <SelectItem value="America/Denver">Mountain (MT)</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Pacific (PT)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="note" className="text-right pt-2">
+                Note
+              </Label>
+              <Textarea
+                id="note"
+                value={newEventForm.note}
+                onChange={(e) => handleNewEventFormChange('note', e.target.value)}
                 className="col-span-3"
-                placeholder="UTC"
+                placeholder="Add any notes about this event..."
+                rows={3}
               />
             </div>
           </div>
@@ -398,12 +501,12 @@ export function EventPicker({
               {savingEvent ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
-                  Saving...
+                  {isEditMode ? 'Updating...' : 'Saving...'}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Event
+                  {isEditMode ? 'Update Event' : 'Save Event'}
                 </>
               )}
             </Button>
