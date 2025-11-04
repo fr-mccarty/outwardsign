@@ -172,6 +172,24 @@ export function MainSidebar() {
               />
 
               <CollapsibleNavSection
+                name="Presentations"
+                icon={HandHeartIcon}
+                items={[
+                  {
+                    title: "Our Presentations",
+                    url: "/presentations",
+                    icon: HandHeartIcon,
+                  },
+                  {
+                    title: "New Presentation",
+                    url: "/presentations/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
                 name="People"
                 icon={User}
                 items={[
@@ -265,24 +283,6 @@ export function MainSidebar() {
               {/*  ]}*/}
               {/*  defaultOpen={false}*/}
               {/*/>*/}
-
-              <CollapsibleNavSection
-                name="Presentations"
-                icon={HandHeartIcon}
-                items={[
-                  {
-                    title: "Our Presentations",
-                    url: "/presentations",
-                    icon: HandHeartIcon,
-                  },
-                  {
-                    title: "New Presentation",
-                    url: "/presentations/create",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
 
               <CollapsibleNavSection
                 name="Quinceañeras"

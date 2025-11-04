@@ -1,12 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { Presentation } from '@/lib/types'
+import type { PresentationWithNames } from '@/lib/actions/presentations'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, HandHeartIcon, Eye, Calendar, Search, Filter } from "lucide-react"
+import { Plus, HandHeartIcon, Eye, Calendar, Search, Filter, Edit, FileText, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -15,18 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { PRESENTATION_STATUS } from "@/lib/constants"
 
 interface Stats {
   total: number
-  baptized: number
-  unbaptized: number
   filtered: number
-  englishCount: number
-  spanishCount: number
 }
 
 interface PresentationsListClientProps {
-  initialData: Presentation[]
+  initialData: PresentationWithNames[]
   stats: Stats
 }
 
@@ -35,9 +33,8 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
   const searchParams = useSearchParams()
 
   // Get current filter values from URL
-  const searchTerm = searchParams.get('search') || ''
-  const selectedLanguage = searchParams.get('language') || 'all'
-  const selectedSex = searchParams.get('child_sex') || 'all'
+  const selectedStatus = searchParams.get('status') || 'all'
+  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
 
   // Update URL with new filter values
   const updateFilters = (key: string, value: string) => {
@@ -47,14 +44,21 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
     } else {
       params.delete(key)
     }
-    router.push(`/presentations?${params.toString()}`)
+    const newUrl = `/presentations${params.toString() ? `?${params.toString()}` : ''}`
+    router.push(newUrl)
+  }
+
+  const clearSearch = () => {
+    setSearchValue('')
+    updateFilters('search', '')
   }
 
   const clearFilters = () => {
+    setSearchValue('')
     router.push('/presentations')
   }
 
-  const hasActiveFilters = searchTerm || selectedLanguage !== 'all' || selectedSex !== 'all'
+  const hasActiveFilters = searchValue || selectedStatus !== 'all'
 
   return (
     <div className="space-y-6">
@@ -65,31 +69,36 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search presentations by child, mother, or father name..."
-                defaultValue={searchTerm}
-                onChange={(e) => updateFilters('search', e.target.value)}
-                className="pl-10"
+                placeholder="Search by child, mother, or father name..."
+                value={searchValue}
+                onChange={(e) => {
+                  setSearchValue(e.target.value)
+                  updateFilters('search', e.target.value)
+                }}
+                className="pl-10 pr-10"
               />
+              {searchValue && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             <div className="flex gap-2">
-              <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
+              <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Language" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="Spanish">Spanish</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={selectedSex} onValueChange={(value) => updateFilters('child_sex', value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Sex" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
+                  {PRESENTATION_STATUS.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -106,61 +115,70 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-lg line-clamp-1">
-                      {presentation.child_name}
+                      Presentation
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs">
-                        {presentation.language}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {presentation.child_sex}
-                      </Badge>
+                      {presentation.status && (
+                        <Badge variant="outline" className="text-xs">
+                          {presentation.status}
+                        </Badge>
+                      )}
                       {presentation.is_baptized && (
-                        <Badge className="text-xs bg-blue-100 text-blue-800">
+                        <Badge variant="secondary" className="text-xs">
                           Baptized
                         </Badge>
                       )}
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(presentation.created_at).toLocaleDateString()}
-                      </div>
+                      {presentation.presentation_event && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {presentation.presentation_event.start_date && new Date(presentation.presentation_event.start_date).toLocaleDateString()}
+                          {presentation.presentation_event.start_time && ` at ${presentation.presentation_event.start_time}`}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/presentations/${presentation.id}`}>
-                      <Eye className="h-4 w-4" />
+                    <Link href={`/presentations/${presentation.id}/edit`}>
+                      <Edit className="h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="text-sm space-y-1">
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Mother:</span> {presentation.mother_name}
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Father:</span> {presentation.father_name}
-                  </p>
-                  {presentation.godparents_names && (
+                  {presentation.child && (
                     <p className="text-muted-foreground">
-                      <span className="font-medium">Godparents:</span> {presentation.godparents_names}
+                      <span className="font-medium">Child:</span> {presentation.child.first_name} {presentation.child.last_name}
+                    </p>
+                  )}
+                  {presentation.mother && (
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">Mother:</span> {presentation.mother.first_name} {presentation.mother.last_name}
+                    </p>
+                  )}
+                  {presentation.father && (
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">Father:</span> {presentation.father.first_name} {presentation.father.last_name}
+                    </p>
+                  )}
+                  {presentation.presentation_event?.location && (
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">Location:</span> {presentation.presentation_event.location}
                     </p>
                   )}
                 </div>
 
-                {presentation.notes && (
+                {presentation.note && (
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {presentation.notes}
+                    {presentation.note}
                   </p>
                 )}
 
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Added {new Date(presentation.created_at).toLocaleDateString()}
-                  </span>
+                <div className="flex justify-end items-center pt-2">
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/presentations/${presentation.id}`}>
-                      View Details
+                      <FileText className="h-4 w-4 mr-1" />
+                      Preview
                     </Link>
                   </Button>
                 </div>
@@ -209,18 +227,10 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
             <CardTitle>Presentation Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold">{stats.total}</div>
                 <div className="text-sm text-muted-foreground">Total Presentations</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.baptized}</div>
-                <div className="text-sm text-muted-foreground">Baptized</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.unbaptized}</div>
-                <div className="text-sm text-muted-foreground">Unbaptized</div>
               </div>
               <div>
                 <div className="text-2xl font-bold">{stats.filtered}</div>

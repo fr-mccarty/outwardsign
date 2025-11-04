@@ -1,8 +1,7 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { PresentationForm } from '../presentation-form'
+import { PresentationFormWrapper } from '../presentation-form-wrapper'
 
 export default async function CreatePresentationPage() {
   const supabase = await createClient()
@@ -16,18 +15,17 @@ export default async function CreatePresentationPage() {
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Presentations", href: "/presentations" },
-    { label: "Create Presentation" }
+    { label: "Create" }
   ]
 
   return (
-    <PageContainer
-      title="Create Presentation"
-      description="Add a new child presentation to your parish records."
-      cardTitle="Presentation Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <PresentationForm />
-    </PageContainer>
+      <PresentationFormWrapper
+        title="Create Presentation"
+        description="Add a new child presentation to your parish."
+        saveButtonLabel="Create Presentation"
+      />
+    </>
   )
 }

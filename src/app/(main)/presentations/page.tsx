@@ -8,8 +8,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PresentationsListClient } from './presentations-list-client'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
-  searchParams: Promise<{ search?: string; language?: string; child_sex?: string }>
+  searchParams: Promise<{ search?: string; status?: string }>
 }
 
 export default async function PresentationsPage({ searchParams }: PageProps) {
@@ -26,8 +28,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: PresentationFilterParams = {
     search: params.search,
-    language: params.language,
-    child_sex: params.child_sex
+    status: params.status
   }
 
   // Fetch presentations server-side with filters
@@ -37,11 +38,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
   const allPresentations = await getPresentations()
   const stats = {
     total: allPresentations.length,
-    baptized: allPresentations.filter(p => p.is_baptized).length,
-    unbaptized: allPresentations.filter(p => !p.is_baptized).length,
     filtered: presentations.length,
-    englishCount: allPresentations.filter(p => p.language === 'English').length,
-    spanishCount: allPresentations.filter(p => p.language === 'Spanish').length,
   }
 
   const breadcrumbs = [

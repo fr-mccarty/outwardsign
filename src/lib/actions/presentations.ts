@@ -4,59 +4,62 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Presentation } from '@/lib/types'
+import { Presentation, Person, Event } from '@/lib/types'
 
 export interface CreatePresentationData {
-  child_name: string
-  child_sex: 'Male' | 'Female'
-  mother_name: string
-  father_name: string
-  godparents_names?: string
-  is_baptized: boolean
-  language: 'English' | 'Spanish'
-  event_id?: string
-  notes?: string
+  presentation_event_id?: string
+  child_id?: string
+  mother_id?: string
+  father_id?: string
+  coordinator_id?: string
+  is_baptized?: boolean
+  status?: string
+  note?: string
+  presentation_template_id?: string
 }
 
 export interface UpdatePresentationData {
-  child_name?: string
-  child_sex?: 'Male' | 'Female'
-  mother_name?: string
-  father_name?: string
-  godparents_names?: string
+  presentation_event_id?: string | null
+  child_id?: string | null
+  mother_id?: string | null
+  father_id?: string | null
+  coordinator_id?: string | null
   is_baptized?: boolean
-  language?: 'English' | 'Spanish'
-  event_id?: string
-  notes?: string
+  status?: string | null
+  note?: string | null
+  presentation_template_id?: string | null
 }
 
 export interface PresentationFilterParams {
   search?: string
-  language?: string
-  child_sex?: string
+  status?: string
 }
 
-export async function getPresentations(filters?: PresentationFilterParams): Promise<Presentation[]> {
+export interface PresentationWithNames extends Presentation {
+  child?: Person | null
+  mother?: Person | null
+  father?: Person | null
+  presentation_event?: Event | null
+}
+
+export async function getPresentations(filters?: PresentationFilterParams): Promise<PresentationWithNames[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   let query = supabase
     .from('presentations')
-    .select('*')
+    .select(`
+      *,
+      child:people!child_id(*),
+      mother:people!mother_id(*),
+      father:people!father_id(*),
+      presentation_event:events!presentation_event_id(*)
+    `)
 
-  // Apply filters
-  if (filters?.language && filters.language !== 'all') {
-    query = query.eq('language', filters.language)
-  }
-
-  if (filters?.child_sex && filters.child_sex !== 'all') {
-    query = query.eq('child_sex', filters.child_sex)
-  }
-
-  if (filters?.search) {
-    // Use OR condition for search across multiple fields
-    query = query.or(`child_name.ilike.%${filters.search}%,mother_name.ilike.%${filters.search}%,father_name.ilike.%${filters.search}%`)
+  // Apply status filter at database level
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
   }
 
   query = query.order('created_at', { ascending: false })
@@ -68,7 +71,31 @@ export async function getPresentations(filters?: PresentationFilterParams): Prom
     throw new Error('Failed to fetch presentations')
   }
 
-  return data || []
+  let presentations = data || []
+
+  // Apply search filter in application layer (searching related table fields)
+  if (filters?.search) {
+    const searchTerm = filters.search.toLowerCase()
+    presentations = presentations.filter(presentation => {
+      const childFirstName = presentation.child?.first_name?.toLowerCase() || ''
+      const childLastName = presentation.child?.last_name?.toLowerCase() || ''
+      const motherFirstName = presentation.mother?.first_name?.toLowerCase() || ''
+      const motherLastName = presentation.mother?.last_name?.toLowerCase() || ''
+      const fatherFirstName = presentation.father?.first_name?.toLowerCase() || ''
+      const fatherLastName = presentation.father?.last_name?.toLowerCase() || ''
+
+      return (
+        childFirstName.includes(searchTerm) ||
+        childLastName.includes(searchTerm) ||
+        motherFirstName.includes(searchTerm) ||
+        motherLastName.includes(searchTerm) ||
+        fatherFirstName.includes(searchTerm) ||
+        fatherLastName.includes(searchTerm)
+      )
+    })
+  }
+
+  return presentations
 }
 
 export async function getPresentation(id: string): Promise<Presentation | null> {
@@ -93,6 +120,60 @@ export async function getPresentation(id: string): Promise<Presentation | null> 
   return data
 }
 
+// Enhanced presentation interface with all related data
+export interface PresentationWithRelations extends Presentation {
+  child?: Person | null
+  mother?: Person | null
+  father?: Person | null
+  coordinator?: Person | null
+  presentation_event?: Event | null
+}
+
+export async function getPresentationWithRelations(id: string): Promise<PresentationWithRelations | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the presentation
+  const { data: presentation, error } = await supabase
+    .from('presentations')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching presentation:', error)
+    throw new Error('Failed to fetch presentation')
+  }
+
+  // Fetch all related data in parallel
+  const [
+    childData,
+    motherData,
+    fatherData,
+    coordinatorData,
+    presentationEventData
+  ] = await Promise.all([
+    presentation.child_id ? supabase.from('people').select('*').eq('id', presentation.child_id).single() : Promise.resolve({ data: null }),
+    presentation.mother_id ? supabase.from('people').select('*').eq('id', presentation.mother_id).single() : Promise.resolve({ data: null }),
+    presentation.father_id ? supabase.from('people').select('*').eq('id', presentation.father_id).single() : Promise.resolve({ data: null }),
+    presentation.coordinator_id ? supabase.from('people').select('*').eq('id', presentation.coordinator_id).single() : Promise.resolve({ data: null }),
+    presentation.presentation_event_id ? supabase.from('events').select('*').eq('id', presentation.presentation_event_id).single() : Promise.resolve({ data: null })
+  ])
+
+  return {
+    ...presentation,
+    child: childData.data,
+    mother: motherData.data,
+    father: fatherData.data,
+    coordinator: coordinatorData.data,
+    presentation_event: presentationEventData.data
+  }
+}
+
 export async function createPresentation(data: CreatePresentationData): Promise<Presentation> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -103,15 +184,15 @@ export async function createPresentation(data: CreatePresentationData): Promise<
     .insert([
       {
         parish_id: selectedParishId,
-        child_name: data.child_name,
-        child_sex: data.child_sex,
-        mother_name: data.mother_name,
-        father_name: data.father_name,
-        godparents_names: data.godparents_names || null,
-        is_baptized: data.is_baptized,
-        language: data.language,
-        event_id: data.event_id || null,
-        notes: data.notes || null,
+        presentation_event_id: data.presentation_event_id || null,
+        child_id: data.child_id || null,
+        mother_id: data.mother_id || null,
+        father_id: data.father_id || null,
+        coordinator_id: data.coordinator_id || null,
+        is_baptized: data.is_baptized || false,
+        status: data.status || null,
+        note: data.note || null,
+        presentation_template_id: data.presentation_template_id || null,
       }
     ])
     .select()
@@ -131,16 +212,10 @@ export async function updatePresentation(id: string, data: UpdatePresentationDat
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const updateData: Record<string, unknown> = {}
-  if (data.child_name !== undefined) updateData.child_name = data.child_name
-  if (data.child_sex !== undefined) updateData.child_sex = data.child_sex
-  if (data.mother_name !== undefined) updateData.mother_name = data.mother_name
-  if (data.father_name !== undefined) updateData.father_name = data.father_name
-  if (data.godparents_names !== undefined) updateData.godparents_names = data.godparents_names || null
-  if (data.is_baptized !== undefined) updateData.is_baptized = data.is_baptized
-  if (data.language !== undefined) updateData.language = data.language
-  if (data.event_id !== undefined) updateData.event_id = data.event_id || null
-  if (data.notes !== undefined) updateData.notes = data.notes || null
+  // Build update object from only defined values
+  const updateData = Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined)
+  )
 
   const { data: presentation, error } = await supabase
     .from('presentations')
@@ -156,6 +231,7 @@ export async function updatePresentation(id: string, data: UpdatePresentationDat
 
   revalidatePath('/presentations')
   revalidatePath(`/presentations/${id}`)
+  revalidatePath(`/presentations/${id}/edit`)
   return presentation
 }
 

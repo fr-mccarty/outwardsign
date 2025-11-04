@@ -10,6 +10,7 @@ CREATE TABLE people (
   city TEXT,
   state TEXT,
   zipcode TEXT,
+  sex TEXT CHECK (sex IN ('Male', 'Female')),
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

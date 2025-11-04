@@ -15,6 +15,7 @@ export interface CreatePersonData {
   city?: string
   state?: string
   zipcode?: string
+  sex?: 'Male' | 'Female'
   note?: string
 }
 
@@ -27,6 +28,7 @@ export interface UpdatePersonData {
   city?: string
   state?: string
   zipcode?: string
+  sex?: 'Male' | 'Female'
   note?: string
 }
 
@@ -102,6 +104,7 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
         city: data.city || null,
         state: data.state || null,
         zipcode: data.zipcode || null,
+        sex: data.sex || null,
         note: data.note || null,
       }
     ])
@@ -130,6 +133,7 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
   if (data.city !== undefined) updateData.city = data.city || null
   if (data.state !== undefined) updateData.state = data.state || null
   if (data.zipcode !== undefined) updateData.zipcode = data.zipcode || null
+  if (data.sex !== undefined) updateData.sex = data.sex || null
   if (data.note !== undefined) updateData.note = data.note || null
 
   const { data: person, error } = await supabase

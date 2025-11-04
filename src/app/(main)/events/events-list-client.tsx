@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, Calendar, Eye, MapPin, Clock, Search, Filter } from "lucide-react"
+import { Plus, CalendarDays, Eye, MapPin, Clock, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -155,7 +155,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                   <div className="text-sm space-y-1">
                     {event.start_date && (
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <CalendarDays className="h-3 w-3 text-muted-foreground" />
                         <span className="text-muted-foreground">
                           {formatDate(event.start_date)}
                           {event.start_time && ` at ${formatTime(event.start_time)}`}
@@ -190,7 +190,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
       ) : (
         <Card>
           <CardContent className="text-center py-12">
-            <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">
               {hasActiveFilters
                 ? 'No events found'

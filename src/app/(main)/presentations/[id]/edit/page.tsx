@@ -1,9 +1,8 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { getPresentation } from "@/lib/actions/presentations"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { PresentationForm } from '../../presentation-form'
+import { getPresentationWithRelations } from '@/lib/actions/presentations'
+import { PresentationFormWrapper } from '../../presentation-form-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -19,30 +18,35 @@ export default async function EditPresentationPage({ params }: PageProps) {
   }
 
   const { id } = await params
-
-  // Fetch presentation server-side
-  const presentation = await getPresentation(id)
+  const presentation = await getPresentationWithRelations(id)
 
   if (!presentation) {
     notFound()
   }
 
+  // Build dynamic title from child name
+  const child = presentation.child
+  let title = "Edit Presentation"
+
+  if (child?.last_name) {
+    title = `${child.last_name} Presentation`
+  }
+
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Presentations", href: "/presentations" },
-    { label: presentation.child_name, href: `/presentations/${id}` },
     { label: "Edit" }
   ]
 
   return (
-    <PageContainer
-      title="Edit Presentation"
-      description="Update the child presentation details."
-      cardTitle="Presentation Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <PresentationForm presentation={presentation} />
-    </PageContainer>
+      <PresentationFormWrapper
+        presentation={presentation}
+        title={title}
+        description="Update presentation information."
+        saveButtonLabel="Save Presentation"
+      />
+    </>
   )
 }

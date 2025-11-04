@@ -494,6 +494,8 @@ Each module must use a consistent icon from `lucide-react` throughout the applic
 - **Baptisms**: TBD
 - **Presentations**: TBD
 
+The main sidebar (`src/components/main-sidebar.tsx`) is the source of truth for which icon should be used for each module.
+
 Icons are used in:
 - Main sidebar navigation (`src/components/main-sidebar.tsx`)
 - Module list pages (if displaying icons)

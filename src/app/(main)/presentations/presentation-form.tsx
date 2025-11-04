@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { Save } from "lucide-react"
-import { createPresentation, updatePresentation, type CreatePresentationData } from "@/lib/actions/presentations"
-import type { Presentation } from "@/lib/types"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { User, Calendar } from "lucide-react"
+import { createPresentation, updatePresentation, type PresentationWithRelations } from "@/lib/actions/presentations"
+import type { Person, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import {
@@ -18,48 +19,92 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { PeoplePicker } from "@/components/people-picker"
+import { EventPicker } from "@/components/event-picker"
+import { EventDisplay } from "@/components/event-display"
+import { PRESENTATION_STATUS } from "@/lib/constants"
+import { SaveButton } from "@/components/save-button"
+import { CancelButton } from "@/components/cancel-button"
 
 interface PresentationFormProps {
-  presentation?: Presentation
+  presentation?: PresentationWithRelations
+  formId?: string
+  onLoadingChange?: (loading: boolean) => void
 }
 
-export function PresentationForm({ presentation }: PresentationFormProps) {
+export function PresentationForm({ presentation, formId, onLoadingChange }: PresentationFormProps) {
   const router = useRouter()
   const isEditing = !!presentation
   const [isLoading, setIsLoading] = useState(false)
-  const [childName, setChildName] = useState(presentation?.child_name || "")
-  const [childSex, setChildSex] = useState<'Male' | 'Female'>(presentation?.child_sex || 'Male')
-  const [motherName, setMotherName] = useState(presentation?.mother_name || "")
-  const [fatherName, setFatherName] = useState(presentation?.father_name || "")
-  const [godparentsNames, setGodparentsNames] = useState(presentation?.godparents_names || "")
+
+  // Notify parent component of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isLoading)
+  }, [isLoading, onLoadingChange])
+
+  // State for all fields
+  const [status, setStatus] = useState(presentation?.status || "Active")
+  const [note, setNote] = useState(presentation?.note || "")
   const [isBaptized, setIsBaptized] = useState(presentation?.is_baptized || false)
-  const [language, setLanguage] = useState<'English' | 'Spanish'>(presentation?.language || 'English')
-  const [notes, setNotes] = useState(presentation?.notes || "")
+  const [presentationTemplateId, setPresentationTemplateId] = useState(presentation?.presentation_template_id || "")
+
+  // Event picker states
+  const [showPresentationEventPicker, setShowPresentationEventPicker] = useState(false)
+
+  // People picker states
+  const [showChildPicker, setShowChildPicker] = useState(false)
+  const [showMotherPicker, setShowMotherPicker] = useState(false)
+  const [showFatherPicker, setShowFatherPicker] = useState(false)
+  const [showCoordinatorPicker, setShowCoordinatorPicker] = useState(false)
+
+  // Selected event
+  const [presentationEvent, setPresentationEvent] = useState<Event | null>(null)
+
+  // Selected people
+  const [child, setChild] = useState<Person | null>(null)
+  const [mother, setMother] = useState<Person | null>(null)
+  const [father, setFather] = useState<Person | null>(null)
+  const [coordinator, setCoordinator] = useState<Person | null>(null)
+
+  // Initialize form with presentation data when editing
+  useEffect(() => {
+    if (presentation) {
+      // Set event
+      if (presentation.presentation_event) setPresentationEvent(presentation.presentation_event)
+
+      // Set people
+      if (presentation.child) setChild(presentation.child)
+      if (presentation.mother) setMother(presentation.mother)
+      if (presentation.father) setFather(presentation.father)
+      if (presentation.coordinator) setCoordinator(presentation.coordinator)
+    }
+  }, [presentation])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const presentationData: CreatePresentationData = {
-        child_name: childName,
-        child_sex: childSex,
-        mother_name: motherName,
-        father_name: fatherName,
-        godparents_names: godparentsNames || undefined,
+      const presentationData = {
+        presentation_event_id: presentationEvent?.id || null,
+        child_id: child?.id || null,
+        mother_id: mother?.id || null,
+        father_id: father?.id || null,
+        coordinator_id: coordinator?.id || null,
         is_baptized: isBaptized,
-        language: language,
-        notes: notes || undefined,
+        status: status || null,
+        note: note || null,
+        presentation_template_id: presentationTemplateId || null,
       }
 
       if (isEditing) {
         await updatePresentation(presentation.id, presentationData)
         toast.success('Presentation updated successfully')
-        router.push(`/presentations/${presentation.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         const newPresentation = await createPresentation(presentationData)
         toast.success('Presentation created successfully!')
-        router.push(`/presentations/${newPresentation.id}`)
+        router.push(`/presentations/${newPresentation.id}`) // Go to view page
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} presentation:`, error)
@@ -70,118 +115,300 @@ export function PresentationForm({ presentation }: PresentationFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          id="child_name"
-          label="Child Name"
-          value={childName}
-          onChange={setChildName}
-          required
-          placeholder="Enter child's full name"
-        />
+    <form id={formId} onSubmit={handleSubmit} className="space-y-8">
+      {/* Event Information */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            <CardTitle>Event Information</CardTitle>
+          </div>
+          <CardDescription>Schedule and location details for the presentation</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Presentation Event</Label>
+            <div className="mt-2">
+              {presentationEvent ? (
+                <div className="space-y-2">
+                  <EventDisplay event={presentationEvent} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPresentationEventPicker(true)}
+                  >
+                    Change Event
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPresentationEventPicker(true)}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Select Event
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-2">
-          <Label htmlFor="child_sex">Child Sex</Label>
-          <Select value={childSex} onValueChange={(value) => setChildSex(value as 'Male' | 'Female')}>
-            <SelectTrigger id="child_sex">
-              <SelectValue placeholder="Select sex" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Male">Male</SelectItem>
-              <SelectItem value="Female">Female</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* People Information */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <CardTitle>People</CardTitle>
+          </div>
+          <CardDescription>Select the child and family members</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Child {child?.sex && <span className="text-muted-foreground">({child.sex})</span>}</Label>
+              <div className="mt-2">
+                {child ? (
+                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+                    <span className="text-sm">{child.first_name} {child.last_name}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowChildPicker(true)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowChildPicker(true)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Select Child
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label>Mother</Label>
+              <div className="mt-2">
+                {mother ? (
+                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+                    <span className="text-sm">{mother.first_name} {mother.last_name}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowMotherPicker(true)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowMotherPicker(true)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Select Mother
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Father</Label>
+              <div className="mt-2">
+                {father ? (
+                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+                    <span className="text-sm">{father.first_name} {father.last_name}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFatherPicker(true)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowFatherPicker(true)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Select Father
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label>Coordinator (Optional)</Label>
+              <div className="mt-2">
+                {coordinator ? (
+                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+                    <span className="text-sm">{coordinator.first_name} {coordinator.last_name}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowCoordinatorPicker(true)}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowCoordinatorPicker(true)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Select Coordinator
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Additional Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Additional Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select value={status || ""} onValueChange={setStatus}>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRESENTATION_STATUS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_baptized"
+              checked={isBaptized}
+              onCheckedChange={(checked) => setIsBaptized(checked as boolean)}
+            />
+            <label
+              htmlFor="is_baptized"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Child is baptized
+            </label>
+          </div>
+
+          <FormField
+            id="note"
+            label="Notes (Optional)"
+            inputType="textarea"
+            value={note}
+            onChange={setNote}
+            placeholder="Enter any additional notes..."
+            rows={4}
+            description="Additional information or special considerations"
+          />
+        </CardContent>
+      </Card>
+
+      {/* Guidelines */}
+      <Card className="bg-muted/50">
+        <CardHeader>
+          <CardTitle className="text-base">Presentation Guidelines</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Select the child who will be presented</li>
+            <li>• Include both parents in the ceremony</li>
+            <li>• Indicate whether the child has been baptized</li>
+            <li>• Assign a coordinator to help manage the presentation</li>
+            <li>• Add any special notes or considerations</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Form Buttons - Only shown if not in form wrapper */}
+      {!isEditing && (
+        <div className="flex gap-4">
+          <SaveButton isLoading={isLoading} />
+          <CancelButton href="/presentations" />
         </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          id="mother_name"
-          label="Mother Name"
-          value={motherName}
-          onChange={setMotherName}
-          required
-          placeholder="Enter mother's full name"
+      {/* Event Picker Modals */}
+      {showPresentationEventPicker && (
+        <EventPicker
+          onSelect={(event) => {
+            setPresentationEvent(event)
+            setShowPresentationEventPicker(false)
+          }}
+          onClose={() => setShowPresentationEventPicker(false)}
         />
+      )}
 
-        <FormField
-          id="father_name"
-          label="Father Name"
-          value={fatherName}
-          onChange={setFatherName}
-          required
-          placeholder="Enter father's full name"
+      {/* People Picker Modals */}
+      {showChildPicker && (
+        <PeoplePicker
+          onSelect={(person) => {
+            setChild(person)
+            setShowChildPicker(false)
+          }}
+          onClose={() => setShowChildPicker(false)}
+          showSex={true}
         />
-      </div>
+      )}
 
-      <FormField
-        id="godparents_names"
-        label="Godparents Names (Optional)"
-        value={godparentsNames}
-        onChange={setGodparentsNames}
-        placeholder="Enter godparents' names"
-        description="Names of the godparents, if any"
-      />
-
-      <div className="space-y-2">
-        <Label htmlFor="language">Language</Label>
-        <Select value={language} onValueChange={(value) => setLanguage(value as 'English' | 'Spanish')}>
-          <SelectTrigger id="language">
-            <SelectValue placeholder="Select language" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="English">English</SelectItem>
-            <SelectItem value="Spanish">Spanish</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="is_baptized"
-          checked={isBaptized}
-          onCheckedChange={(checked) => setIsBaptized(checked as boolean)}
+      {showMotherPicker && (
+        <PeoplePicker
+          onSelect={(person) => {
+            setMother(person)
+            setShowMotherPicker(false)
+          }}
+          onClose={() => setShowMotherPicker(false)}
         />
-        <label
-          htmlFor="is_baptized"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-        >
-          Child is baptized
-        </label>
-      </div>
+      )}
 
-      <FormField
-        id="notes"
-        label="Notes (Optional)"
-        inputType="textarea"
-        value={notes}
-        onChange={setNotes}
-        placeholder="Enter any additional notes..."
-        rows={4}
-        description="Additional information or special considerations"
-      />
+      {showFatherPicker && (
+        <PeoplePicker
+          onSelect={(person) => {
+            setFather(person)
+            setShowFatherPicker(false)
+          }}
+          onClose={() => setShowFatherPicker(false)}
+        />
+      )}
 
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Presentation Guidelines</h3>
-        <ul className="text-sm text-muted-foreground space-y-1">
-          <li>• Enter complete names as they should appear in records</li>
-          <li>• Indicate whether the child has been baptized</li>
-          <li>• Include godparents' names if applicable</li>
-          <li>• Select the appropriate language for the ceremony</li>
-          <li>• Add any special notes or considerations in the notes field</li>
-        </ul>
-      </div>
-
-      <div className="flex gap-4">
-        <Button type="submit" disabled={isLoading}>
-          <Save className="h-4 w-4 mr-2" />
-          {isLoading ? (isEditing ? "Saving..." : "Creating...") : (isEditing ? "Save Changes" : "Create Presentation")}
-        </Button>
-        <Button type="button" variant="outline" asChild>
-          <Link href={isEditing ? `/presentations/${presentation.id}` : "/presentations"}>Cancel</Link>
-        </Button>
-      </div>
+      {showCoordinatorPicker && (
+        <PeoplePicker
+          onSelect={(person) => {
+            setCoordinator(person)
+            setShowCoordinatorPicker(false)
+          }}
+          onClose={() => setShowCoordinatorPicker(false)}
+        />
+      )}
     </form>
   )
 }

@@ -25,6 +25,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { 
   User, 
   UserPlus, 
@@ -45,6 +52,7 @@ interface PeoplePickerProps {
   emptyMessage?: string
   selectedPersonId?: string
   className?: string
+  showSexField?: boolean
 }
 
 // Custom hook for debounced search
@@ -72,17 +80,26 @@ export function PeoplePicker({
   emptyMessage = "No people found.",
   selectedPersonId,
   className,
+  showSexField = false,
 }: PeoplePickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [savingPerson, setSavingPerson] = useState(false)
-  const [newPersonForm, setNewPersonForm] = useState({
+  const [newPersonForm, setNewPersonForm] = useState<{
+    first_name: string
+    last_name: string
+    email: string
+    phone_number: string
+    sex: '' | 'Male' | 'Female'
+    note: string
+  }>({
     first_name: '',
     last_name: '',
     email: '',
     phone_number: '',
+    sex: '',
     note: ''
   })
 
@@ -146,6 +163,7 @@ export function PeoplePicker({
         last_name: newPersonForm.last_name,
         email: newPersonForm.email || undefined,
         phone_number: newPersonForm.phone_number || undefined,
+        sex: newPersonForm.sex || undefined,
         note: newPersonForm.note || undefined
       })
 
@@ -157,6 +175,7 @@ export function PeoplePicker({
         last_name: '',
         email: '',
         phone_number: '',
+        sex: '',
         note: ''
       })
       setShowAddForm(false)
@@ -178,6 +197,7 @@ export function PeoplePicker({
       last_name: '',
       email: '',
       phone_number: '',
+      sex: '',
       note: ''
     })
   }
@@ -368,6 +388,25 @@ export function PeoplePicker({
                 placeholder="(555) 123-4567"
               />
             </div>
+            {showSexField && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="sex" className="text-right">
+                  Sex
+                </Label>
+                <Select
+                  value={newPersonForm.sex}
+                  onValueChange={(value: 'Male' | 'Female') => handleNewPersonFormChange('sex', value)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select sex" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="note" className="text-right">
                 Note

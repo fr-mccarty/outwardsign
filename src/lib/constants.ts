@@ -108,6 +108,23 @@ Roguemos al Señor.
 Por nuestra comunidad, para que nos apoyemos unos a otros en fe y amor.
 Roguemos al Señor.`
 
+export const DEFAULT_PETITION_CONTEXT_PRESENTATION_ENGLISH = `For [Child Name], that they may grow in faith and in the knowledge of God's love.
+For the parents, that they may be faithful witnesses of Christ to their child.
+For all families, that they may find strength and joy in their faith journey together.
+For our parish community, that we may support one another in living out our baptismal promises.
+For all children, that they may be protected and blessed by God's grace.`
+
+export const DEFAULT_PETITION_CONTEXT_PRESENTATION_SPANISH = `Por [Nombre del Niño/a], para que crezca en la fe y en el conocimiento del amor de Dios.
+Roguemos al Señor.
+Por los padres, para que sean testigos fieles de Cristo para su hijo/a.
+Roguemos al Señor.
+Por todas las familias, para que encuentren fuerza y alegría en su camino de fe juntos.
+Roguemos al Señor.
+Por nuestra comunidad parroquial, para que nos apoyemos unos a otros en vivir nuestras promesas bautismales.
+Roguemos al Señor.
+Por todos los niños, para que sean protegidos y bendecidos por la gracia de Dios.
+Roguemos al Señor.`
+
 // Wedding Status
 export const WEDDING_STATUS = ['Active', 'Inactive', 'Completed'] as const
 
@@ -116,6 +133,9 @@ export const FUNERAL_STATUS = ['Active', 'Inactive', 'Completed'] as const
 
 // Quinceañera Status
 export const QUINCEANERA_STATUS = ['Active', 'Inactive', 'Completed'] as const
+
+// Presentation Status
+export const PRESENTATION_STATUS = ['Active', 'Inactive', 'Completed'] as const
 
 // Reading Categories
 // Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database

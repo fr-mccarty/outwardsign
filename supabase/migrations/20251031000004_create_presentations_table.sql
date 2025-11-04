@@ -2,15 +2,15 @@
 CREATE TABLE presentations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  child_name TEXT NOT NULL,
-  child_sex TEXT NOT NULL CHECK (child_sex IN ('Male', 'Female')),
-  mother_name TEXT NOT NULL,
-  father_name TEXT NOT NULL,
-  godparents_names TEXT,
+  presentation_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
+  child_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  mother_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  father_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  coordinator_id UUID REFERENCES people(id) ON DELETE SET NULL,
   is_baptized BOOLEAN NOT NULL DEFAULT false,
-  language TEXT NOT NULL CHECK (language IN ('English', 'Spanish')),
-  event_id UUID REFERENCES events(id) ON DELETE SET NULL,
+  status TEXT,
   note TEXT,
+  presentation_template_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -25,9 +25,12 @@ GRANT ALL ON presentations TO service_role;
 
 -- Add indexes
 CREATE INDEX idx_presentations_parish_id ON presentations(parish_id);
-CREATE INDEX idx_presentations_event_id ON presentations(event_id);
-CREATE INDEX idx_presentations_language ON presentations(language);
-CREATE INDEX idx_presentations_child_name ON presentations(child_name);
+CREATE INDEX idx_presentations_presentation_event_id ON presentations(presentation_event_id);
+CREATE INDEX idx_presentations_child_id ON presentations(child_id);
+CREATE INDEX idx_presentations_mother_id ON presentations(mother_id);
+CREATE INDEX idx_presentations_father_id ON presentations(father_id);
+CREATE INDEX idx_presentations_coordinator_id ON presentations(coordinator_id);
+CREATE INDEX idx_presentations_status ON presentations(status);
 
 -- RLS Policies for presentations
 -- Parish members can read presentations from their parish

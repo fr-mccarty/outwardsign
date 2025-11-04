@@ -368,6 +368,7 @@ export interface Person {
   city?: string
   state?: string
   zipcode?: string
+  sex?: 'Male' | 'Female'
   notes?: string
   created_at: string
   updated_at: string
@@ -428,15 +429,15 @@ export interface Reading {
 export interface Presentation {
   id: string
   parish_id: string
-  child_name: string
-  child_sex: 'Male' | 'Female'
-  mother_name: string
-  father_name: string
-  godparents_names?: string
+  presentation_event_id?: string
+  child_id?: string
+  mother_id?: string
+  father_id?: string
+  coordinator_id?: string
   is_baptized: boolean
-  language: 'English' | 'Spanish'
-  event_id: string
-  notes?: string
+  status?: string
+  note?: string
+  presentation_template_id?: string
   created_at: string
   updated_at: string
 }
@@ -555,6 +556,33 @@ export interface Quinceanera {
   announcements?: string
   note?: string
   quinceanera_template_id?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Baptism {
+  id: string
+  parish_id: string
+  baptized_person_id?: string
+  place_of_birth?: string
+  mother_id?: string
+  father_id?: string
+  godmother_id?: string
+  godfather_id?: string
+  presider_id?: string
+  baptism_event_id?: string
+  first_reading_id?: string
+  psalm_id?: string
+  second_reading_id?: string
+  gospel_reading_id?: string
+  first_reader_id?: string
+  psalm_reader_id?: string
+  second_reader_id?: string
+  petitions?: string
+  announcements?: string
+  notes?: string
+  baptism_template_id?: string
+  status?: string
   created_at: string
   updated_at: string
 }
