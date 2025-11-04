@@ -7,6 +7,7 @@
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptSpanish } from './templates/full-script-spanish'
+import { buildFullScriptEnglish } from './templates/full-script-english'
 
 /**
  * Template Registry
@@ -20,8 +21,13 @@ export const PRESENTATION_TEMPLATES: Record<string, LiturgyTemplate<Presentation
     supportedLanguages: ['es'],
     builder: buildFullScriptSpanish,
   },
-  // Future templates:
-  // 'presentation-english': { ... },
+  'presentation-english': {
+    id: 'presentation-english',
+    name: 'Presentation in the Temple (English)',
+    description: 'Complete presentation liturgy in English',
+    supportedLanguages: ['en'],
+    builder: buildFullScriptEnglish,
+  },
 }
 
 /**
