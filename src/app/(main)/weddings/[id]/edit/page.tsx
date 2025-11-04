@@ -24,6 +24,19 @@ export default async function EditWeddingPage({ params }: PageProps) {
     notFound()
   }
 
+  // Build dynamic title from bride and groom names
+  const bride = (wedding as any).bride
+  const groom = (wedding as any).groom
+  let title = "Edit Wedding"
+
+  if (bride?.last_name && groom?.last_name) {
+    title = `${bride.last_name}-${groom.last_name} Wedding`
+  } else if (bride?.last_name) {
+    title = `${bride.last_name} Wedding`
+  } else if (groom?.last_name) {
+    title = `${groom.last_name} Wedding`
+  }
+
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Weddings", href: "/weddings" },
@@ -35,7 +48,7 @@ export default async function EditWeddingPage({ params }: PageProps) {
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <WeddingFormWrapper
         wedding={wedding}
-        title="Edit Wedding"
+        title={title}
         description="Update wedding information."
         saveButtonLabel="Save Wedding"
       />

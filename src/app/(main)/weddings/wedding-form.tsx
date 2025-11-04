@@ -673,6 +673,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
           <FormField
             id="announcements"
             label="Announcements"
+            description="These announcements will be printed on the last page of the liturgy script"
             value={announcements}
             onChange={setAnnouncements}
             placeholder="Enter any announcements..."
@@ -682,7 +683,8 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
 
           <FormField
             id="notes"
-            label="Notes"
+            label="Note"
+            description="These notes are just for reference and will not be printed in the script"
             value={notes}
             onChange={setNotes}
             placeholder="Enter any additional notes..."
