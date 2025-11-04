@@ -93,20 +93,6 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
               </div>
             </div>
 
-            <div className="pt-2 border-t">
-              <h3 className="font-semibold mb-2">Letters to Church of Baptism</h3>
-              <div className="space-y-2">
-                <Button className="w-full" variant="outline" disabled>
-                  <Download className="h-4 w-4 mr-2" />
-                  PDF (Coming Soon)
-                </Button>
-                <Button className="w-full" variant="outline" disabled>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Word Doc (Coming Soon)
-                </Button>
-              </div>
-            </div>
-
             <div className="pt-4 border-t space-y-2 text-sm">
               <div>
                 <span className="font-medium">Status:</span> {wedding.status || 'N/A'}
