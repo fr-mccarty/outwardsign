@@ -1,5 +1,29 @@
 # CLAUDE.md
 
+## Table of Contents
+
+- [Project Description](#project-description)
+- [🔴 Database](#-database)
+- [Testing](#testing)
+- [Tools](#tools)
+- [🔴 Accessing Records](#-accessing-records)
+- [🔴 Role Permissions](#-role-permissions)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [📖 Styling](#-styling)
+- [🔴 Module Structure (Main Files)](#-module-structure-main-files)
+- [📖 Additional Module Essentials](#-additional-module-essentials)
+- [📖 Data Flow Pattern](#-data-flow-pattern)
+- [Breadcrumbs](#breadcrumbs)
+- [Code Conventions](#code-conventions)
+- [🔴 Creating New Modules](#-creating-new-modules)
+- [📖 Module Icons](#-module-icons)
+- [🔴 Common Module Creation Mistakes](#-common-module-creation-mistakes)
+- [Known Issues](#known-issues)
+- [🔴 Permissions & Automation](#-permissions--automation)
+
+---
+
 ## Project Description
 **Name:** Outward Sign  
 **URL:** outwardsign.church  
@@ -22,7 +46,7 @@ Plan, Communicate, and Celebrate Sacraments and Sacramentals in a Catholic Paris
 
 **Examples:** Wedding Liturgies, Quinceanera, Baptisms, Presentations (Latino), Funerals
 
-## Database
+## 🔴 Database
 For making database changes, a migration file should first be created.
 Claude Code should NEVER use the supabase mcp server to make database changes.
 
@@ -44,10 +68,10 @@ Supabase MCP Server - for all actions related to the database
 you may use query and select operations on supabase without asking for permission
 All other actions need permission
 
-## Accessing Records
+## 🔴 Accessing Records
 The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
 
-## Role Permissions
+## 🔴 Role Permissions
 - super-admin: Billing settings, parish ownership
 - admin: Parish settings, parish management
 - staff: Read parish information (default role), they can create, read, update, and delete all other tables.
@@ -77,7 +101,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 - TypeScript interfaces: singular form (e.g., `Petition`, `Baptism`)
 - **Special Case:** For simplification, "Quinceañeras" is spelled without the ñ in all programming contexts (file names, variables, types, routes, etc.). Use "Quinceanera" in code, "Quinceañera" in user-facing text only.
 
-## Styling
+## 📖 Styling
 Ensure that: All form fields use standardized, basic styling with no specialized text formatting!
 For views that are within a print folder, allow those views to set their style however they wish.
 
@@ -122,7 +146,7 @@ The app uses `next-themes` with a CSS variable-based approach for automatic dark
 </div>
 ```
 
-### Module Structure (Main Files)
+## 🔴 Module Structure (Main Files)
 **CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
 
 1. **List Page (Server)** - `page.tsx`
@@ -172,7 +196,7 @@ The app uses `next-themes` with a CSS variable-based approach for automatic dark
 - Builds liturgy using `build[Entity]Liturgy(entity, templateId)` where templateId comes from `entity.[entity]_template_id`
 - Renders liturgy content using `renderHTML(liturgyDocument)`
 
-## Additional Module Essentials
+## 📖 Additional Module Essentials
 
 ### File Naming Conventions
 - Server pages: page.tsx (async function, no 'use client')
@@ -317,7 +341,7 @@ export async function get[Entity]WithRelations(id: string): Promise<[Entity]With
 - Eliminates unsafe `as any` type casts
 - View pages need full entity details for rendering
 
-## Data Flow Pattern
+## 📖 Data Flow Pattern
 Server → Client: Pass serializable data as props
 - List: initialData={entities}
 - Form: entity={entity} (edit) or no prop (create)
@@ -445,73 +469,24 @@ Client Component (BreadcrumbSetter):
 - **Integrate with Supabase Auth** for user-facing features
 - **Use consistent design patterns** from existing component library
 
-## Creating New Modules (Funerals, Baptisms, etc.)
-
-### Quick Reference Checklist
-
-When creating a new module based on the wedding template:
-
-**1. Database Layer:**
-- [ ] Create migration for new table in `supabase/migrations/`
-- [ ] Add `parish_id` column and RLS policies
-- [ ] Include foreign keys for people, events, and readings as needed
-- [ ] Add base type to `lib/types.ts` (singular form)
-
-**2. Server Actions (`lib/actions/[entity].ts`):**
-- [ ] Define `Create[Entity]Data` interface
-- [ ] Define `Update[Entity]Data` interface (with nullable fields)
-- [ ] Define `[Entity]WithRelations` interface extending base type
-- [ ] Implement `get[Entities](filters?)` with server-side filtering
-- [ ] Implement `get[Entity](id)` for basic fetch
-- [ ] Implement `get[Entity]WithRelations(id)` using Promise.all() for related data
-- [ ] Implement `create[Entity](data)` with revalidatePath()
-- [ ] Implement `update[Entity](id, data)` using simplified Object.fromEntries pattern
-- [ ] Implement `delete[Entity](id)` with revalidatePath()
-
-**3. Module Structure (8 files in main, 1 in print):**
-- [ ] `page.tsx` - List page (server)
-- [ ] `[entity]-list-client.tsx` - List with URL search params
-- [ ] `create/page.tsx` - Create page (server)
-- [ ] `[id]/page.tsx` - View page (server, fetch WithRelations)
-- [ ] `[id]/[entity]-view-client.tsx` - View display with ModuleViewPanel
-- [ ] `[id]/edit/page.tsx` - Edit page (server, fetch WithRelations)
-- [ ] `[entity]-form.tsx` - Unified form accepting [Entity]WithRelations prop
-- [ ] `[id]/[entity]-form-actions.tsx` - Form action buttons (optional, if not using view client)
-- [ ] `print/[entity]/[id]/page.tsx` - Print-optimized view
-
-**4. Reusable Components:**
-- [ ] Use `ModuleViewPanel` for view page side panel
-- [ ] Use `PeoplePicker` for person selection
-- [ ] Use `EventPicker` for event selection
-- [ ] Use `ReadingPickerModal` for scripture readings
-- [ ] Use `PetitionEditor` if petitions are needed
-- [ ] Use `SaveButton` and `CancelButton` in forms
-
-**5. Content & Export:**
-- [ ] Create content builder in `lib/content-builders/[entity].ts`
-  - Export `build[Entity]Liturgy(entity, templateId)` function
-  - Returns liturgy document structure (sections, headings, paragraphs)
-  - Used by view, print, PDF, and Word export
-- [ ] Create API route `app/api/[entities]/[id]/pdf/route.ts`
-  - Fetches entity with relations
-  - Builds liturgy content using content builder
-  - Converts to PDF and returns as download
-- [ ] Create API route `app/api/[entities]/[id]/word/route.ts`
-  - Fetches entity with relations
-  - Builds liturgy content using content builder
-  - Generates .docx file and returns as download
-- [ ] Create print view in `app/print/[entity]/[id]/page.tsx`
-  - Fetches entity with relations
-  - Builds and renders liturgy using content builder + HTML renderer
-  - Print-optimized styling
-
-**6. Constants:**
-- [ ] Add status constants to `lib/constants.ts` if needed
-- [ ] Add to main sidebar navigation
+## 🔴 Creating New Modules (Funerals, Baptisms, etc.)
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
 
-## Module Icons
+**Complete Checklist:** See [MODULE_CHECKLIST.md](MODULE_CHECKLIST.md) for the full step-by-step checklist when creating new modules.
+
+### Quick Overview
+
+When creating a new module:
+
+1. **Database Layer** - Migration, RLS policies, base types
+2. **Server Actions** - CRUD operations with `WithRelations` interface
+3. **Module Structure** - 8 main files + 1 print page (follow wedding pattern exactly)
+4. **Reusable Components** - Use existing pickers and shared components
+5. **Content & Export** - Content builder + API routes for PDF/Word
+6. **Constants** - Status constants and sidebar navigation
+
+## 📖 Module Icons
 Each module must use a consistent icon from `lucide-react` throughout the application:
 
 - **Weddings**: `VenusAndMars` (lucide-react)
@@ -524,7 +499,7 @@ Icons are used in:
 - Module list pages (if displaying icons)
 - Breadcrumbs or page headers (if applicable)
 
-## Common Module Creation Mistakes
+## 🔴 Common Module Creation Mistakes
 
 ### Critical Errors to Avoid:
 
@@ -567,6 +542,6 @@ Before completing a new module, verify:
 ## Known Issues
 (Document any existing bugs or performance concerns here)
 
-## Permissions & Automation
+## 🔴 Permissions & Automation
 You are never allowed to make a commit.
 Neither are you allowed to add files to the repository.
