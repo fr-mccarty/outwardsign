@@ -89,7 +89,10 @@ Por nosotros mismos, para que estemos preparados para nuestro propio viaje a la 
 Roguemos al Señor.`
 
 // Wedding Status
-export const WEDDING_STATUS = ['Active', 'Inactive'] as const
+export const WEDDING_STATUS = ['Active', 'Inactive', 'Completed'] as const
+
+// Funeral Status
+export const FUNERAL_STATUS = ['Active', 'Inactive', 'Completed'] as const
 
 // Reading Categories
 // Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database

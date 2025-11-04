@@ -1,22 +1,17 @@
--- Create weddings table
-CREATE TABLE weddings (
+-- Create funerals table
+CREATE TABLE funerals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  wedding_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  bride_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  groom_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  funeral_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
+  funeral_meal_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
+  deceased_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  family_contact_id UUID REFERENCES people(id) ON DELETE SET NULL,
   coordinator_id UUID REFERENCES people(id) ON DELETE SET NULL,
   presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
   lead_musician_id UUID REFERENCES people(id) ON DELETE SET NULL,
   cantor_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  reception_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  rehearsal_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  rehearsal_dinner_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  witness_1_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  witness_2_id UUID REFERENCES people(id) ON DELETE SET NULL,
   status TEXT,
-  wedding_template_id TEXT,
   first_reading_id UUID REFERENCES readings(id) ON DELETE SET NULL,
   psalm_id UUID REFERENCES readings(id) ON DELETE SET NULL,
   psalm_reader_id UUID REFERENCES people(id) ON DELETE SET NULL,
@@ -30,30 +25,32 @@ CREATE TABLE weddings (
   petition_reader_id UUID REFERENCES people(id) ON DELETE SET NULL,
   petitions TEXT,
   announcements TEXT,
-  notes TEXT,
+  note TEXT,
+  funeral_template_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Enable RLS
-ALTER TABLE weddings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE funerals ENABLE ROW LEVEL SECURITY;
 
 -- Grant access to authenticated users and anon role (used with JWT)
-GRANT ALL ON weddings TO anon;
-GRANT ALL ON weddings TO authenticated;
-GRANT ALL ON weddings TO service_role;
+GRANT ALL ON funerals TO anon;
+GRANT ALL ON funerals TO authenticated;
+GRANT ALL ON funerals TO service_role;
 
 -- Add indexes
-CREATE INDEX idx_weddings_parish_id ON weddings(parish_id);
-CREATE INDEX idx_weddings_wedding_event_id ON weddings(wedding_event_id);
-CREATE INDEX idx_weddings_bride_id ON weddings(bride_id);
-CREATE INDEX idx_weddings_groom_id ON weddings(groom_id);
-CREATE INDEX idx_weddings_status ON weddings(status);
+CREATE INDEX idx_funerals_parish_id ON funerals(parish_id);
+CREATE INDEX idx_funerals_funeral_event_id ON funerals(funeral_event_id);
+CREATE INDEX idx_funerals_funeral_meal_event_id ON funerals(funeral_meal_event_id);
+CREATE INDEX idx_funerals_deceased_id ON funerals(deceased_id);
+CREATE INDEX idx_funerals_family_contact_id ON funerals(family_contact_id);
+CREATE INDEX idx_funerals_status ON funerals(status);
 
--- RLS Policies for weddings
--- Parish members can read weddings from their parish
-CREATE POLICY "Parish members can read their parish weddings"
-  ON weddings
+-- RLS Policies for funerals
+-- Parish members can read funerals from their parish
+CREATE POLICY "Parish members can read their parish funerals"
+  ON funerals
   FOR SELECT
   TO anon, authenticated
   USING (
@@ -63,9 +60,9 @@ CREATE POLICY "Parish members can read their parish weddings"
     )
   );
 
--- Parish members can insert weddings for their parish
-CREATE POLICY "Parish members can create weddings for their parish"
-  ON weddings
+-- Parish members can insert funerals for their parish
+CREATE POLICY "Parish members can create funerals for their parish"
+  ON funerals
   FOR INSERT
   TO anon, authenticated
   WITH CHECK (
@@ -75,9 +72,9 @@ CREATE POLICY "Parish members can create weddings for their parish"
     )
   );
 
--- Parish members can update weddings from their parish
-CREATE POLICY "Parish members can update their parish weddings"
-  ON weddings
+-- Parish members can update funerals from their parish
+CREATE POLICY "Parish members can update their parish funerals"
+  ON funerals
   FOR UPDATE
   TO anon, authenticated
   USING (
@@ -87,9 +84,9 @@ CREATE POLICY "Parish members can update their parish weddings"
     )
   );
 
--- Parish members can delete weddings from their parish
-CREATE POLICY "Parish members can delete their parish weddings"
-  ON weddings
+-- Parish members can delete funerals from their parish
+CREATE POLICY "Parish members can delete their parish funerals"
+  ON funerals
   FOR DELETE
   TO anon, authenticated
   USING (
@@ -99,8 +96,8 @@ CREATE POLICY "Parish members can delete their parish weddings"
     )
   );
 
--- Add trigger to update updated_at timestamp on weddings
-CREATE TRIGGER update_weddings_updated_at
-  BEFORE UPDATE ON weddings
+-- Add trigger to update updated_at timestamp on funerals
+CREATE TRIGGER update_funerals_updated_at
+  BEFORE UPDATE ON funerals
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();

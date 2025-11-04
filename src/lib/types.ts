@@ -490,6 +490,39 @@ export interface Wedding {
   petitions?: string
   announcements?: string
   notes?: string
+  wedding_template_id?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Funeral {
+  id: string
+  parish_id: string
+  funeral_event_id?: string
+  funeral_meal_event_id?: string
+  deceased_id?: string
+  family_contact_id?: string
+  coordinator_id?: string
+  presider_id?: string
+  homilist_id?: string
+  lead_musician_id?: string
+  cantor_id?: string
+  status?: string
+  first_reading_id?: string
+  psalm_id?: string
+  psalm_reader_id?: string
+  psalm_is_sung?: boolean
+  second_reading_id?: string
+  gospel_reading_id?: string
+  gospel_reader_id?: string
+  first_reader_id?: string
+  second_reader_id?: string
+  petitions_read_by_second_reader?: boolean
+  petition_reader_id?: string
+  petitions?: string
+  announcements?: string
+  note?: string
+  funeral_template_id?: string
   created_at: string
   updated_at: string
 }

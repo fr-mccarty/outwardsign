@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { User, BookOpen, Calendar } from "lucide-react"
-import { createWedding, updateWedding, type CreateWeddingData, type WeddingWithRelations } from "@/lib/actions/weddings"
+import { createFuneral, updateFuneral, type CreateFuneralData, type FuneralWithRelations } from "@/lib/actions/funerals"
 import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -24,22 +24,22 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { WEDDING_STATUS } from "@/lib/constants"
+import { FUNERAL_STATUS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
-import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
-import { WEDDING_TEMPLATES } from "@/lib/content-builders/wedding"
+import { funeralTemplates, buildFuneralPetitions } from "@/lib/petition-templates/funeral"
+import { FUNERAL_TEMPLATES } from "@/lib/content-builders/funeral"
 
-interface WeddingFormProps {
-  wedding?: WeddingWithRelations
+interface FuneralFormProps {
+  funeral?: FuneralWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
 }
 
-export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormProps) {
+export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormProps) {
   const router = useRouter()
-  const isEditing = !!wedding
+  const isEditing = !!funeral
   const [isLoading, setIsLoading] = useState(false)
 
   // Notify parent component of loading state changes
@@ -48,32 +48,28 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(wedding?.status || "Active")
-  const [notes, setNotes] = useState(wedding?.notes || "")
-  const [announcements, setAnnouncements] = useState(wedding?.announcements || "")
-  const [petitions, setPetitions] = useState(wedding?.petitions || "")
-  const [weddingTemplateId, setWeddingTemplateId] = useState(wedding?.wedding_template_id || "")
+  const [status, setStatus] = useState(funeral?.status || "Active")
+  const [note, setNote] = useState(funeral?.note || "")
+  const [announcements, setAnnouncements] = useState(funeral?.announcements || "")
+  const [petitions, setPetitions] = useState(funeral?.petitions || "")
+  const [funeralTemplateId, setFuneralTemplateId] = useState(funeral?.funeral_template_id || "")
 
   // Boolean states
-  const [psalmIsSung, setPsalmIsSung] = useState(wedding?.psalm_is_sung || false)
-  const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(wedding?.petitions_read_by_second_reader || false)
+  const [psalmIsSung, setPsalmIsSung] = useState(funeral?.psalm_is_sung || false)
+  const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(funeral?.petitions_read_by_second_reader || false)
 
   // Event picker states
-  const [showWeddingEventPicker, setShowWeddingEventPicker] = useState(false)
-  const [showReceptionEventPicker, setShowReceptionEventPicker] = useState(false)
-  const [showRehearsalEventPicker, setShowRehearsalEventPicker] = useState(false)
-  const [showRehearsalDinnerEventPicker, setShowRehearsalDinnerEventPicker] = useState(false)
+  const [showFuneralEventPicker, setShowFuneralEventPicker] = useState(false)
+  const [showFuneralMealEventPicker, setShowFuneralMealEventPicker] = useState(false)
 
   // People picker states
-  const [showBridePicker, setShowBridePicker] = useState(false)
-  const [showGroomPicker, setShowGroomPicker] = useState(false)
+  const [showDeceasedPicker, setShowDeceasedPicker] = useState(false)
+  const [showFamilyContactPicker, setShowFamilyContactPicker] = useState(false)
   const [showCoordinatorPicker, setShowCoordinatorPicker] = useState(false)
   const [showPresiderPicker, setShowPresiderPicker] = useState(false)
   const [showHomilistPicker, setShowHomilistPicker] = useState(false)
   const [showLeadMusicianPicker, setShowLeadMusicianPicker] = useState(false)
   const [showCantorPicker, setShowCantorPicker] = useState(false)
-  const [showWitness1Picker, setShowWitness1Picker] = useState(false)
-  const [showWitness2Picker, setShowWitness2Picker] = useState(false)
   const [showFirstReaderPicker, setShowFirstReaderPicker] = useState(false)
   const [showSecondReaderPicker, setShowSecondReaderPicker] = useState(false)
   const [showPsalmReaderPicker, setShowPsalmReaderPicker] = useState(false)
@@ -81,21 +77,17 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   const [showPetitionReaderPicker, setShowPetitionReaderPicker] = useState(false)
 
   // Selected events
-  const [weddingEvent, setWeddingEvent] = useState<Event | null>(null)
-  const [receptionEvent, setReceptionEvent] = useState<Event | null>(null)
-  const [rehearsalEvent, setRehearsalEvent] = useState<Event | null>(null)
-  const [rehearsalDinnerEvent, setRehearsalDinnerEvent] = useState<Event | null>(null)
+  const [funeralEvent, setFuneralEvent] = useState<Event | null>(null)
+  const [funeralMealEvent, setFuneralMealEvent] = useState<Event | null>(null)
 
   // Selected people
-  const [bride, setBride] = useState<Person | null>(null)
-  const [groom, setGroom] = useState<Person | null>(null)
+  const [deceased, setDeceased] = useState<Person | null>(null)
+  const [familyContact, setFamilyContact] = useState<Person | null>(null)
   const [coordinator, setCoordinator] = useState<Person | null>(null)
   const [presider, setPresider] = useState<Person | null>(null)
   const [homilist, setHomilist] = useState<Person | null>(null)
   const [leadMusician, setLeadMusician] = useState<Person | null>(null)
   const [cantor, setCantor] = useState<Person | null>(null)
-  const [witness1, setWitness1] = useState<Person | null>(null)
-  const [witness2, setWitness2] = useState<Person | null>(null)
   const [firstReader, setFirstReader] = useState<Person | null>(null)
   const [secondReader, setSecondReader] = useState<Person | null>(null)
   const [psalmReader, setPsalmReader] = useState<Person | null>(null)
@@ -129,50 +121,45 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     loadReadings()
   }, [])
 
-  // Initialize form with wedding data when editing
+  // Initialize form with funeral data when editing
   useEffect(() => {
-    if (wedding) {
+    if (funeral) {
       // Set events
-      if (wedding.wedding_event) setWeddingEvent(wedding.wedding_event)
-      if (wedding.reception_event) setReceptionEvent(wedding.reception_event)
-      if (wedding.rehearsal_event) setRehearsalEvent(wedding.rehearsal_event)
-      if (wedding.rehearsal_dinner_event) setRehearsalDinnerEvent(wedding.rehearsal_dinner_event)
+      if (funeral.funeral_event) setFuneralEvent(funeral.funeral_event)
+      if (funeral.funeral_meal_event) setFuneralMealEvent(funeral.funeral_meal_event)
 
       // Set people
-      if (wedding.bride) setBride(wedding.bride)
-      if (wedding.groom) setGroom(wedding.groom)
-      if (wedding.coordinator) setCoordinator(wedding.coordinator)
-      if (wedding.presider) setPresider(wedding.presider)
-      if (wedding.homilist) setHomilist(wedding.homilist)
-      if (wedding.lead_musician) setLeadMusician(wedding.lead_musician)
-      if (wedding.cantor) setCantor(wedding.cantor)
-      if (wedding.witness_1) setWitness1(wedding.witness_1)
-      if (wedding.witness_2) setWitness2(wedding.witness_2)
-      if (wedding.first_reader) setFirstReader(wedding.first_reader)
-      if (wedding.second_reader) setSecondReader(wedding.second_reader)
-      if (wedding.psalm_reader) setPsalmReader(wedding.psalm_reader)
-      if (wedding.gospel_reader) setGospelReader(wedding.gospel_reader)
-      if (wedding.petition_reader) setPetitionReader(wedding.petition_reader)
+      if (funeral.deceased) setDeceased(funeral.deceased)
+      if (funeral.family_contact) setFamilyContact(funeral.family_contact)
+      if (funeral.coordinator) setCoordinator(funeral.coordinator)
+      if (funeral.presider) setPresider(funeral.presider)
+      if (funeral.homilist) setHomilist(funeral.homilist)
+      if (funeral.lead_musician) setLeadMusician(funeral.lead_musician)
+      if (funeral.cantor) setCantor(funeral.cantor)
+      if (funeral.first_reader) setFirstReader(funeral.first_reader)
+      if (funeral.second_reader) setSecondReader(funeral.second_reader)
+      if (funeral.psalm_reader) setPsalmReader(funeral.psalm_reader)
+      if (funeral.gospel_reader) setGospelReader(funeral.gospel_reader)
+      if (funeral.petition_reader) setPetitionReader(funeral.petition_reader)
 
       // Set readings
-      if (wedding.first_reading) setFirstReading(wedding.first_reading)
-      if (wedding.psalm) setPsalm(wedding.psalm)
-      if (wedding.second_reading) setSecondReading(wedding.second_reading)
-      if (wedding.gospel_reading) setGospelReading(wedding.gospel_reading)
+      if (funeral.first_reading) setFirstReading(funeral.first_reading)
+      if (funeral.psalm) setPsalm(funeral.psalm)
+      if (funeral.second_reading) setSecondReading(funeral.second_reading)
+      if (funeral.gospel_reading) setGospelReading(funeral.gospel_reading)
     }
-  }, [wedding])
+  }, [funeral])
 
   // Handle inserting template petitions
   const handleInsertTemplate = (templateId: string): string[] => {
-    const brideName = bride?.first_name || ''
-    const groomName = groom?.first_name || ''
+    const deceasedName = deceased?.first_name || ''
 
     // Build petitions from selected template
-    return buildWeddingPetitions(templateId, brideName, groomName)
+    return buildFuneralPetitions(templateId, deceasedName)
   }
 
   // Get available templates - convert to PetitionTemplate format
-  const petitionTemplates: PetitionTemplate[] = weddingTemplates.map(t => ({
+  const petitionTemplates: PetitionTemplate[] = funeralTemplates.map(t => ({
     id: t.id,
     name: t.name,
     description: t.description,
@@ -183,21 +170,17 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     setIsLoading(true)
 
     try {
-      const weddingData: CreateWeddingData = {
+      const funeralData: CreateFuneralData = {
         status: status || undefined,
-        wedding_event_id: weddingEvent?.id,
-        reception_event_id: receptionEvent?.id,
-        rehearsal_event_id: rehearsalEvent?.id,
-        rehearsal_dinner_event_id: rehearsalDinnerEvent?.id,
-        bride_id: bride?.id,
-        groom_id: groom?.id,
+        funeral_event_id: funeralEvent?.id,
+        funeral_meal_event_id: funeralMealEvent?.id,
+        deceased_id: deceased?.id,
+        family_contact_id: familyContact?.id,
         coordinator_id: coordinator?.id,
         presider_id: presider?.id,
         homilist_id: homilist?.id,
         lead_musician_id: leadMusician?.id,
         cantor_id: cantor?.id,
-        witness_1_id: witness1?.id,
-        witness_2_id: witness2?.id,
         first_reader_id: firstReader?.id,
         second_reader_id: secondReader?.id,
         psalm_reader_id: psalmReader?.id,
@@ -211,22 +194,22 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         petitions_read_by_second_reader: petitionsReadBySecondReader,
         petitions: petitions || undefined,
         announcements: announcements || undefined,
-        notes: notes || undefined,
-        wedding_template_id: weddingTemplateId || undefined,
+        note: note || undefined,
+        funeral_template_id: funeralTemplateId || undefined,
       }
 
       if (isEditing) {
-        await updateWedding(wedding.id, weddingData)
-        toast.success('Wedding updated successfully')
+        await updateFuneral(funeral.id, funeralData)
+        toast.success('Funeral updated successfully')
         router.refresh() // Refresh to get updated data
       } else {
-        const newWedding = await createWedding(weddingData)
-        toast.success('Wedding created successfully!')
-        router.push(`/weddings/${newWedding.id}`)
+        const newFuneral = await createFuneral(funeralData)
+        toast.success('Funeral created successfully!')
+        router.push(`/funerals/${newFuneral.id}`)
       }
     } catch (error) {
-      console.error(`Failed to ${isEditing ? 'update' : 'create'} wedding:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} wedding. Please try again.`)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} funeral:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} funeral. Please try again.`)
     } finally {
       setIsLoading(false)
     }
@@ -238,7 +221,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
-          <CardDescription>General details and event times</CardDescription>
+          <CardDescription>General details and event time</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -248,7 +231,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {WEDDING_STATUS.map((statusOption) => (
+                {FUNERAL_STATUS.map((statusOption) => (
                   <SelectItem key={statusOption} value={statusOption}>
                     {statusOption}
                   </SelectItem>
@@ -261,90 +244,63 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Wedding Ceremony</Label>
+              <Label>Funeral Service</Label>
               <Button
                 type="button"
                 variant="outline"
                 className="w-full justify-start text-left h-auto py-3"
-                onClick={() => setShowWeddingEventPicker(true)}
+                onClick={() => setShowFuneralEventPicker(true)}
               >
                 <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                <EventDisplay event={weddingEvent} placeholder="Add Wedding Ceremony" />
+                <EventDisplay event={funeralEvent} placeholder="Add Funeral Service" />
               </Button>
             </div>
             <div className="space-y-2">
-              <Label>Reception</Label>
+              <Label>Funeral Meal / Reception</Label>
               <Button
                 type="button"
                 variant="outline"
                 className="w-full justify-start text-left h-auto py-3"
-                onClick={() => setShowReceptionEventPicker(true)}
+                onClick={() => setShowFuneralMealEventPicker(true)}
               >
                 <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                <EventDisplay event={receptionEvent} placeholder="Add Reception" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Rehearsal</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start text-left h-auto py-3"
-                onClick={() => setShowRehearsalEventPicker(true)}
-              >
-                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                <EventDisplay event={rehearsalEvent} placeholder="Add Rehearsal" />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Rehearsal Dinner</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start text-left h-auto py-3"
-                onClick={() => setShowRehearsalDinnerEventPicker(true)}
-              >
-                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                <EventDisplay event={rehearsalDinnerEvent} placeholder="Add Rehearsal Dinner" />
+                <EventDisplay event={funeralMealEvent} placeholder="Add Funeral Meal" />
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Couple */}
+      {/* Deceased and Family */}
       <Card>
         <CardHeader>
-          <CardTitle>Couple</CardTitle>
-          <CardDescription>Bride and groom information</CardDescription>
+          <CardTitle>Deceased and Family Contact</CardTitle>
+          <CardDescription>Information about the deceased and primary family contact</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Bride</Label>
+              <Label>Deceased</Label>
               <Button
                 type="button"
                 variant="outline"
                 className="w-full justify-start"
-                onClick={() => setShowBridePicker(true)}
+                onClick={() => setShowDeceasedPicker(true)}
               >
                 <User className="h-4 w-4 mr-2" />
-                {bride ? `${bride.first_name} ${bride.last_name}` : 'Select Bride'}
+                {deceased ? `${deceased.first_name} ${deceased.last_name}` : 'Select Deceased'}
               </Button>
             </div>
             <div className="space-y-2">
-              <Label>Groom</Label>
+              <Label>Family Contact</Label>
               <Button
                 type="button"
                 variant="outline"
                 className="w-full justify-start"
-                onClick={() => setShowGroomPicker(true)}
+                onClick={() => setShowFamilyContactPicker(true)}
               >
                 <User className="h-4 w-4 mr-2" />
-                {groom ? `${groom.first_name} ${groom.last_name}` : 'Select Groom'}
+                {familyContact ? `${familyContact.first_name} ${familyContact.last_name}` : 'Select Family Contact'}
               </Button>
             </div>
           </div>
@@ -423,47 +379,11 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         </CardContent>
       </Card>
 
-      {/* Witnesses */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Witnesses</CardTitle>
-          <CardDescription>Official witnesses for the wedding</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Witness 1</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowWitness1Picker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {witness1 ? `${witness1.first_name} ${witness1.last_name}` : 'Select Witness 1'}
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Witness 2</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowWitness2Picker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {witness2 ? `${witness2.first_name} ${witness2.last_name}` : 'Select Witness 2'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Coordinator */}
       <Card>
         <CardHeader>
           <CardTitle>Coordination</CardTitle>
-          <CardDescription>Wedding coordinator</CardDescription>
+          <CardDescription>Funeral coordinator</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -485,7 +405,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       <Card>
         <CardHeader>
           <CardTitle>Readings</CardTitle>
-          <CardDescription>Scripture readings for the wedding liturgy</CardDescription>
+          <CardDescription>Scripture readings for the funeral liturgy</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -685,11 +605,11 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
           />
 
           <FormField
-            id="notes"
+            id="note"
             label="Note"
             description="These notes are just for reference and will not be printed in the script"
-            value={notes}
-            onChange={setNotes}
+            value={note}
+            onChange={setNote}
             placeholder="Enter any additional notes..."
             inputType="textarea"
             rows={3}
@@ -700,18 +620,18 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       {/* Template Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Wedding Template</CardTitle>
-          <CardDescription>Select the liturgy template for the wedding ceremony script</CardDescription>
+          <CardTitle>Funeral Template</CardTitle>
+          <CardDescription>Select the liturgy template for the funeral ceremony script</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="wedding_template_id">Liturgy Template</Label>
-            <Select value={weddingTemplateId} onValueChange={setWeddingTemplateId}>
-              <SelectTrigger id="wedding_template_id">
+            <Label htmlFor="funeral_template_id">Liturgy Template</Label>
+            <Select value={funeralTemplateId} onValueChange={setFuneralTemplateId}>
+              <SelectTrigger id="funeral_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(WEDDING_TEMPLATES).map((template) => (
+                {Object.values(FUNERAL_TEMPLATES).map((template) => (
                   <SelectItem key={template.id} value={template.id}>
                     {template.name}
                   </SelectItem>
@@ -725,72 +645,50 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       {/* Submit Buttons */}
       <div className="flex gap-4 justify-end">
         <CancelButton
-          href={isEditing ? `/weddings/${wedding.id}` : '/weddings'}
+          href={isEditing ? `/funerals/${funeral.id}` : '/funerals'}
           disabled={isLoading}
         />
         <SaveButton isLoading={isLoading}>
-          {isEditing ? 'Update Wedding' : 'Save Wedding'}
+          {isEditing ? 'Update Funeral' : 'Save Funeral'}
         </SaveButton>
       </div>
 
       {/* Event Pickers */}
       <EventPicker
-        open={showWeddingEventPicker}
-        onOpenChange={setShowWeddingEventPicker}
-        onSelect={(event) => setWeddingEvent(event)}
-        selectedEventId={weddingEvent?.id}
-        selectedEvent={weddingEvent}
-        defaultEventType="Wedding Ceremony"
-        defaultName="Wedding Ceremony"
-        openToNewEvent={!weddingEvent}
+        open={showFuneralEventPicker}
+        onOpenChange={setShowFuneralEventPicker}
+        onSelect={(event) => setFuneralEvent(event)}
+        selectedEventId={funeralEvent?.id}
+        selectedEvent={funeralEvent}
+        defaultEventType="Funeral"
+        defaultName="Funeral Service"
+        openToNewEvent={!funeralEvent}
         disableSearch={true}
       />
       <EventPicker
-        open={showReceptionEventPicker}
-        onOpenChange={setShowReceptionEventPicker}
-        onSelect={(event) => setReceptionEvent(event)}
-        selectedEventId={receptionEvent?.id}
-        selectedEvent={receptionEvent}
-        defaultEventType="Reception"
-        defaultName="Reception"
-        openToNewEvent={!receptionEvent}
-        disableSearch={true}
-      />
-      <EventPicker
-        open={showRehearsalEventPicker}
-        onOpenChange={setShowRehearsalEventPicker}
-        onSelect={(event) => setRehearsalEvent(event)}
-        selectedEventId={rehearsalEvent?.id}
-        selectedEvent={rehearsalEvent}
-        defaultEventType="Rehearsal"
-        defaultName="Rehearsal"
-        openToNewEvent={!rehearsalEvent}
-        disableSearch={true}
-      />
-      <EventPicker
-        open={showRehearsalDinnerEventPicker}
-        onOpenChange={setShowRehearsalDinnerEventPicker}
-        onSelect={(event) => setRehearsalDinnerEvent(event)}
-        selectedEventId={rehearsalDinnerEvent?.id}
-        selectedEvent={rehearsalDinnerEvent}
-        defaultEventType="Rehearsal Dinner"
-        defaultName="Rehearsal Dinner"
-        openToNewEvent={!rehearsalDinnerEvent}
+        open={showFuneralMealEventPicker}
+        onOpenChange={setShowFuneralMealEventPicker}
+        onSelect={(event) => setFuneralMealEvent(event)}
+        selectedEventId={funeralMealEvent?.id}
+        selectedEvent={funeralMealEvent}
+        defaultEventType="Funeral Meal"
+        defaultName="Funeral Meal"
+        openToNewEvent={!funeralMealEvent}
         disableSearch={true}
       />
 
       {/* People Pickers */}
       <PeoplePicker
-        open={showBridePicker}
-        onOpenChange={setShowBridePicker}
-        onSelect={(person) => setBride(person)}
-        selectedPersonId={bride?.id}
+        open={showDeceasedPicker}
+        onOpenChange={setShowDeceasedPicker}
+        onSelect={(person) => setDeceased(person)}
+        selectedPersonId={deceased?.id}
       />
       <PeoplePicker
-        open={showGroomPicker}
-        onOpenChange={setShowGroomPicker}
-        onSelect={(person) => setGroom(person)}
-        selectedPersonId={groom?.id}
+        open={showFamilyContactPicker}
+        onOpenChange={setShowFamilyContactPicker}
+        onSelect={(person) => setFamilyContact(person)}
+        selectedPersonId={familyContact?.id}
       />
       <PeoplePicker
         open={showCoordinatorPicker}
@@ -821,18 +719,6 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         onOpenChange={setShowCantorPicker}
         onSelect={(person) => setCantor(person)}
         selectedPersonId={cantor?.id}
-      />
-      <PeoplePicker
-        open={showWitness1Picker}
-        onOpenChange={setShowWitness1Picker}
-        onSelect={(person) => setWitness1(person)}
-        selectedPersonId={witness1?.id}
-      />
-      <PeoplePicker
-        open={showWitness2Picker}
-        onOpenChange={setShowWitness2Picker}
-        onSelect={(person) => setWitness2(person)}
-        selectedPersonId={witness2?.id}
       />
       <PeoplePicker
         open={showFirstReaderPicker}
@@ -873,7 +759,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedReading={firstReading}
         readings={readings}
         title="Select First Reading"
-        preselectedCategories={['First Reading', 'Wedding']}
+        preselectedCategories={['First Reading', 'Funeral']}
       />
       <ReadingPickerModal
         isOpen={showPsalmPicker}
@@ -882,7 +768,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedReading={psalm}
         readings={readings}
         title="Select Responsorial Psalm"
-        preselectedCategories={['Psalm', 'Wedding']}
+        preselectedCategories={['Psalm', 'Funeral']}
       />
       <ReadingPickerModal
         isOpen={showSecondReadingPicker}
@@ -891,7 +777,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedReading={secondReading}
         readings={readings}
         title="Select Second Reading"
-        preselectedCategories={['Second Reading', 'Wedding']}
+        preselectedCategories={['Second Reading', 'Funeral']}
       />
       <ReadingPickerModal
         isOpen={showGospelReadingPicker}
@@ -900,7 +786,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedReading={gospelReading}
         readings={readings}
         title="Select Gospel Reading"
-        preselectedCategories={['Gospel', 'Wedding']}
+        preselectedCategories={['Gospel', 'Funeral']}
       />
     </form>
   )

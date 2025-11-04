@@ -36,6 +36,7 @@ export interface CreateWeddingData {
   petitions?: string
   announcements?: string
   notes?: string
+  wedding_template_id?: string
 }
 
 export interface UpdateWeddingData {
@@ -67,6 +68,7 @@ export interface UpdateWeddingData {
   petitions?: string | null
   announcements?: string | null
   notes?: string | null
+  wedding_template_id?: string | null
 }
 
 export interface WeddingFilterParams {
@@ -313,6 +315,7 @@ export async function createWedding(data: CreateWeddingData): Promise<Wedding> {
         petitions: data.petitions || null,
         announcements: data.announcements || null,
         notes: data.notes || null,
+        wedding_template_id: data.wedding_template_id || null,
       }
     ])
     .select()

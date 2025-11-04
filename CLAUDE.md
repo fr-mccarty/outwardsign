@@ -121,40 +121,55 @@ The app uses `next-themes` with a CSS variable-based approach for automatic dark
 </div>
 ```
 
-### Module Structure (7 Files)
-1. List Page (Server) - page.tsx
+### Module Structure (Main Files)
+**CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
+
+1. **List Page (Server)** - `page.tsx`
 - Auth check → fetch entities with filters from searchParams → compute stats server-side → define breadcrumbs
-- PageContainer → BreadcrumbSetter → [Entity]ListClient initialData={entities} stats={stats}
+- Structure: `BreadcrumbSetter → [Entity]ListClient initialData={entities} stats={stats}`
 - Example: `async function Page({ searchParams }: { searchParams: { search?: string; type?: string } })`
 
-2. List Client - [entity]-list-client.tsx
+2. **List Client** - `[entity]-list-client.tsx` or `[entities]-list-client.tsx`
 - Uses URL search params for shareable, linkable state (search, filters, pagination)
 - Updates URL via router.push() when filters change - NO client-side filtering of data
 - Card (Search/Filters: Input, Select) → Grid of Cards → Empty state Card → Stats Card
 
-3. Create Page (Server) - create/page.tsx
+3. **Create Page (Server)** - `create/page.tsx`
 - Auth check → define breadcrumbs
-- PageContainer → BreadcrumbSetter → [Entity]Form (no prop)
+- Structure: `BreadcrumbSetter → [Entity]FormWrapper` with no entity prop
+- Uses FormWrapper to wrap the form with PageContainer
 
-4. View Page (Server) - [id]/page.tsx
-- Auth check → fetch entity WITH RELATIONS using get[Entity]WithRelations(id) → define breadcrumbs
-- PageContainer → BreadcrumbSetter → [Entity]ViewClient entity={entity}
+4. **View Page (Server)** - `[id]/page.tsx`
+- Auth check → fetch entity WITH RELATIONS using `get[Entity]WithRelations(id)` → define breadcrumbs
+- Structure: `PageContainer → BreadcrumbSetter → [Entity]ViewClient entity={entity}`
 - View client renders: ModuleViewPanel + Liturgy content (using content builder and HTML renderer)
 
-5. Edit Page (Server) - [id]/edit/page.tsx
+5. **Edit Page (Server)** - `[id]/edit/page.tsx`
 - Auth check → fetch entity WITH RELATIONS server-side → define breadcrumbs
-- PageContainer → BreadcrumbSetter → [Entity]Form entity={entity}
+- Structure: `BreadcrumbSetter → [Entity]FormWrapper entity={entity}`
+- Uses FormWrapper to wrap the form with PageContainer and action buttons
 
-6. Unified Form (Client) - [entity]-form.tsx
-Detects mode: entity prop = edit, no prop = create
-- **Type**: Accepts [Entity]WithRelations for edit mode (not base [Entity] type)
-- FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel)
-- Uses SaveButton and CancelButton components
-- Calls createEntity() or updateEntity() Server Action
+6. **Form Wrapper (Client)** - `[entity]-form-wrapper.tsx`
+- Wraps the form with PageContainer
+- Manages form loading state
+- For edit mode: Shows action buttons (View button + Save button) at top of page
+- For create mode: No action buttons shown
+- Passes form props down to the actual form component
 
-7. Form Actions (Client) - [id]/[entity]-form-actions.tsx
-- Interactive Buttons: Copy (clipboard), Edit (link), Delete (confirmation + toast)
-- Router navigation post-action
+7. **Unified Form (Client)** - `[entity]-form.tsx`
+- Detects mode: entity prop = edit, no prop = create
+- **Type**: Accepts `[Entity]WithRelations` for edit mode (not base [Entity] type)
+- FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel at BOTTOM)
+- Uses SaveButton and CancelButton components at the bottom of the form
+- Calls `create[Entity]()` or `update[Entity]()` Server Action
+- **Redirection Pattern:**
+  - After UPDATE: `router.refresh()` (stays on edit page to show updated data)
+  - After CREATE: `router.push(\`/[entities]/\${newEntity.id}\`)` (goes to view page)
+
+8. **View Client** - `[id]/[entity]-view-client.tsx`
+- Renders the ModuleViewPanel with entity data
+- Builds liturgy using `build[Entity]Liturgy(entity, templateId)` where templateId comes from `entity.[entity]_template_id`
+- Renders liturgy content using `renderHTML(liturgyDocument)`
 
 ## Additional Module Essentials
 
@@ -169,22 +184,24 @@ Detects mode: entity prop = edit, no prop = create
 **Main Module Directory** (`app/(main)/[entity-plural]/`):
 ```
 [entity-plural]/
-├── page.tsx                    # List (Server)
-├── loading.tsx                 # Suspense fallback (imports reusable component)
-├── error.tsx                   # Error boundary (imports reusable component)
-├── [entity]-list-client.tsx    # List interactivity (Client)
-├── [entity]-form.tsx           # Unified create/edit form (Client)
+├── page.tsx                       # List (Server)
+├── loading.tsx                    # Suspense fallback (imports reusable component)
+├── error.tsx                      # Error boundary (imports reusable component)
+├── [entities]-list-client.tsx     # List interactivity (Client) - note plural
+├── [entity]-form-wrapper.tsx      # Form wrapper with PageContainer (Client)
+├── [entity]-form.tsx              # Unified create/edit form (Client)
 ├── create/
-│   └── page.tsx               # Create (Server)
+│   └── page.tsx                  # Create (Server)
 └── [id]/
-    ├── page.tsx               # View (Server)
-    ├── [entity]-view-client.tsx   # View display (Client)
-    ├── loading.tsx            # Suspense fallback (imports reusable component)
-    ├── error.tsx              # Error boundary (imports reusable component)
-    ├── [entity]-form-actions.tsx  # View actions (Client)
+    ├── page.tsx                  # View (Server)
+    ├── [entity]-view-client.tsx  # View display (Client)
+    ├── loading.tsx               # Suspense fallback (imports reusable component)
+    ├── error.tsx                 # Error boundary (imports reusable component)
     └── edit/
-        └── page.tsx           # Edit (Server)
+        └── page.tsx              # Edit (Server)
 ```
+
+**IMPORTANT:** The `[entity]-form-wrapper.tsx` file is REQUIRED and must follow the wedding module pattern exactly.
 
 **Print View Directory** (`app/print/[entity]/`):
 ```
@@ -470,6 +487,59 @@ When creating a new module based on the wedding template:
 - [ ] Add to main sidebar navigation
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
+
+## Module Icons
+Each module must use a consistent icon from `lucide-react` throughout the application:
+
+- **Weddings**: `VenusAndMars` (lucide-react)
+- **Funerals**: `Cross` (lucide-react)
+- **Baptisms**: TBD
+- **Presentations**: TBD
+
+Icons are used in:
+- Main sidebar navigation (`src/components/main-sidebar.tsx`)
+- Module list pages (if displaying icons)
+- Breadcrumbs or page headers (if applicable)
+
+## Common Module Creation Mistakes
+
+### Critical Errors to Avoid:
+
+1. **Missing Form Wrapper**: Always create `[entity]-form-wrapper.tsx` - this is NOT optional
+   - Wraps the form with PageContainer
+   - Provides action buttons for edit mode (View + Save at top)
+   - Manages loading state
+
+2. **Wrong Redirection Pattern**:
+   - ✅ CORRECT: After UPDATE → `router.refresh()` (stays on edit page)
+   - ✅ CORRECT: After CREATE → `router.push(\`/[entities]/\${newEntity.id}\`)` (goes to view page)
+   - ❌ WRONG: Using `router.push()` after update (loses unsaved context)
+   - ❌ WRONG: Staying on create page after creation
+
+3. **Incorrect Type Usage**:
+   - ✅ Form must accept `[Entity]WithRelations` type (not base `[Entity]`)
+   - ✅ View pages must fetch using `get[Entity]WithRelations(id)`
+   - ❌ Using base type causes missing nested data (people, events, readings)
+
+4. **Missing Template ID Check**:
+   - ✅ View client must use: `const templateId = entity.[entity]_template_id || 'default-template-id'`
+   - ✅ Pass templateId to: `build[Entity]Liturgy(entity, templateId)`
+   - ❌ Hard-coding template ID prevents users from selecting different templates
+
+5. **File Structure Deviations**:
+   - Always create ALL files that exist in the wedding module
+   - Use exact same naming patterns (`[entities]-list-client.tsx` with plural)
+   - Follow exact same component structure and props
+
+### Validation Checklist:
+Before completing a new module, verify:
+- [ ] Form wrapper exists and matches wedding pattern
+- [ ] Redirections match wedding module (refresh on update, push on create)
+- [ ] Types use `WithRelations` interfaces
+- [ ] Template ID is read from database and used in liturgy builder
+- [ ] All view pages (view, print, PDF, Word) use template ID from database
+- [ ] Icon is consistent across all uses
+- [ ] All wedding module files have corresponding files in new module
 
 ## Known Issues
 (Document any existing bugs or performance concerns here)

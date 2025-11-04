@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getWeddingWithRelations } from '@/lib/actions/weddings'
+import { getFuneralWithRelations } from '@/lib/actions/funerals'
 import { Document, Packer } from 'docx'
-import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
+import { buildFuneralLiturgy } from '@/lib/content-builders/funeral'
 import { renderWord } from '@/lib/renderers/word-renderer'
 
 export async function GET(
@@ -10,16 +10,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const wedding = await getWeddingWithRelations(id)
+    const funeral = await getFuneralWithRelations(id)
 
-    if (!wedding) {
-      return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
+    if (!funeral) {
+      return NextResponse.json({ error: 'Funeral not found' }, { status: 404 })
     }
 
     // Build liturgy content using centralized content builder
-    // Use the template_id from the wedding record, defaulting to 'wedding-full-script-english'
-    const templateId = wedding.wedding_template_id || 'wedding-full-script-english'
-    const liturgyDocument = buildWeddingLiturgy(wedding, templateId)
+    // Use the template_id from the funeral record, defaulting to 'funeral-full-script-english'
+    const templateId = funeral.funeral_template_id || 'funeral-full-script-english'
+    const liturgyDocument = buildFuneralLiturgy(funeral, templateId)
 
     // Render to Word format
     const paragraphs = renderWord(liturgyDocument)
@@ -36,12 +36,11 @@ export async function GET(
     const buffer = await Packer.toBuffer(doc)
 
     // Generate filename
-    const brideLastName = wedding.bride?.last_name || 'Bride'
-    const groomLastName = wedding.groom?.last_name || 'Groom'
-    const weddingDate = wedding.wedding_event?.start_date
-      ? new Date(wedding.wedding_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
+    const deceasedLastName = funeral.deceased?.last_name || 'Deceased'
+    const funeralDate = funeral.funeral_event?.start_date
+      ? new Date(funeral.funeral_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
       : 'NoDate'
-    const filename = `${brideLastName}-${groomLastName}-${weddingDate}.docx`
+    const filename = `${deceasedLastName}-Funeral-${funeralDate}.docx`
 
     // Return Word document
     return new NextResponse(buffer as any, {

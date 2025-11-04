@@ -22,7 +22,9 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
   }
 
   // Build liturgy content using centralized content builder
-  const liturgyDocument = buildWeddingLiturgy(wedding, 'wedding-full-script-english')
+  // Use the template_id from the wedding record, defaulting to 'wedding-full-script-english'
+  const templateId = wedding.wedding_template_id || 'wedding-full-script-english'
+  const liturgyDocument = buildWeddingLiturgy(wedding, templateId)
 
   // Render to HTML
   const liturgyContent = renderHTML(liturgyDocument)
