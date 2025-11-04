@@ -13,13 +13,12 @@ import {
 } from "@/components/ui/dialog"
 import Link from "next/link"
 import { Edit, Copy, Trash2 } from "lucide-react"
-import { deletePresentation } from "@/lib/actions/presentations"
-import type { Presentation } from "@/lib/types"
+import { deletePresentation, type PresentationWithRelations } from "@/lib/actions/presentations"
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 interface PresentationFormActionsProps {
-  presentation: Presentation
+  presentation: PresentationWithRelations
 }
 
 export function PresentationFormActions({ presentation }: PresentationFormActionsProps) {
@@ -43,7 +42,12 @@ export function PresentationFormActions({ presentation }: PresentationFormAction
   }
 
   const handleCopyInfo = () => {
-    const info = `Child: ${presentation.child_name}\nSex: ${presentation.child_sex}\nMother: ${presentation.mother_name}\nFather: ${presentation.father_name}${presentation.godparents_names ? `\nGodparents: ${presentation.godparents_names}` : ''}\nBaptized: ${presentation.is_baptized ? 'Yes' : 'No'}\nLanguage: ${presentation.language}${presentation.notes ? `\n\nNotes: ${presentation.notes}` : ''}`
+    const childName = presentation.child ? `${presentation.child.first_name} ${presentation.child.last_name}` : 'Not specified'
+    const childSex = presentation.child?.sex || 'Not specified'
+    const motherName = presentation.mother ? `${presentation.mother.first_name} ${presentation.mother.last_name}` : 'Not specified'
+    const fatherName = presentation.father ? `${presentation.father.first_name} ${presentation.father.last_name}` : 'Not specified'
+
+    const info = `Child: ${childName}\nSex: ${childSex}\nMother: ${motherName}\nFather: ${fatherName}\nBaptized: ${presentation.is_baptized ? 'Yes' : 'No'}${presentation.note ? `\n\nNotes: ${presentation.note}` : ''}`
     navigator.clipboard.writeText(info)
     toast.success('Presentation information copied to clipboard')
   }

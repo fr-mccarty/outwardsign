@@ -131,7 +131,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             <div className="mt-2">
               {presentationEvent ? (
                 <div className="space-y-2">
-                  <EventDisplay event={presentationEvent} />
+                  <EventDisplay event={presentationEvent} placeholder="No presentation event selected" />
                   <Button
                     type="button"
                     variant="outline"
@@ -358,57 +358,52 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       )}
 
       {/* Event Picker Modals */}
-      {showPresentationEventPicker && (
-        <EventPicker
-          onSelect={(event) => {
-            setPresentationEvent(event)
-            setShowPresentationEventPicker(false)
-          }}
-          onClose={() => setShowPresentationEventPicker(false)}
-        />
-      )}
+      <EventPicker
+        open={showPresentationEventPicker}
+        onOpenChange={setShowPresentationEventPicker}
+        onSelect={(event) => {
+          setPresentationEvent(event)
+          setShowPresentationEventPicker(false)
+        }}
+      />
 
       {/* People Picker Modals */}
-      {showChildPicker && (
-        <PeoplePicker
-          onSelect={(person) => {
-            setChild(person)
-            setShowChildPicker(false)
-          }}
-          onClose={() => setShowChildPicker(false)}
-          showSex={true}
-        />
-      )}
+      <PeoplePicker
+        open={showChildPicker}
+        onOpenChange={setShowChildPicker}
+        onSelect={(person) => {
+          setChild(person)
+          setShowChildPicker(false)
+        }}
+        showSexField={true}
+      />
 
-      {showMotherPicker && (
-        <PeoplePicker
-          onSelect={(person) => {
-            setMother(person)
-            setShowMotherPicker(false)
-          }}
-          onClose={() => setShowMotherPicker(false)}
-        />
-      )}
+      <PeoplePicker
+        open={showMotherPicker}
+        onOpenChange={setShowMotherPicker}
+        onSelect={(person) => {
+          setMother(person)
+          setShowMotherPicker(false)
+        }}
+      />
 
-      {showFatherPicker && (
-        <PeoplePicker
-          onSelect={(person) => {
-            setFather(person)
-            setShowFatherPicker(false)
-          }}
-          onClose={() => setShowFatherPicker(false)}
-        />
-      )}
+      <PeoplePicker
+        open={showFatherPicker}
+        onOpenChange={setShowFatherPicker}
+        onSelect={(person) => {
+          setFather(person)
+          setShowFatherPicker(false)
+        }}
+      />
 
-      {showCoordinatorPicker && (
-        <PeoplePicker
-          onSelect={(person) => {
-            setCoordinator(person)
-            setShowCoordinatorPicker(false)
-          }}
-          onClose={() => setShowCoordinatorPicker(false)}
-        />
-      )}
+      <PeoplePicker
+        open={showCoordinatorPicker}
+        onOpenChange={setShowCoordinatorPicker}
+        onSelect={(person) => {
+          setCoordinator(person)
+          setShowCoordinatorPicker(false)
+        }}
+      />
     </form>
   )
 }

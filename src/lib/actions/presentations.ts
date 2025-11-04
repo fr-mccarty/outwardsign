@@ -7,15 +7,15 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Presentation, Person, Event } from '@/lib/types'
 
 export interface CreatePresentationData {
-  presentation_event_id?: string
-  child_id?: string
-  mother_id?: string
-  father_id?: string
-  coordinator_id?: string
+  presentation_event_id?: string | null
+  child_id?: string | null
+  mother_id?: string | null
+  father_id?: string | null
+  coordinator_id?: string | null
   is_baptized?: boolean
-  status?: string
-  note?: string
-  presentation_template_id?: string
+  status?: string | null
+  note?: string | null
+  presentation_template_id?: string | null
 }
 
 export interface UpdatePresentationData {
