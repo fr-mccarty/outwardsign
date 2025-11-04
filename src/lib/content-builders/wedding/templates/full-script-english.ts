@@ -439,11 +439,14 @@ function buildPetitionsSection(wedding: WeddingWithRelations): ContentSection {
   const petitions = wedding.petitions ? wedding.petitions.split('\n').filter((p) => p.trim()) : []
 
   petitions.forEach((petition) => {
+    // Strip trailing period if present, then add ", let us pray to the Lord."
+    const petitionText = petition.trim().replace(/\.$/, '')
+
     elements.push({
       type: 'petition',
       parts: [
         { text: 'Reader:', formatting: ['bold'] },
-        { text: ` ${petition}, let us pray to the Lord.`, formatting: ['bold'] },
+        { text: ` ${petitionText}, let us pray to the Lord.`, formatting: ['bold'] },
       ],
     })
 

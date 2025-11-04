@@ -27,9 +27,8 @@ import { EventDisplay } from "@/components/event-display"
 import { WEDDING_STATUS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
-import { PetitionEditor } from "@/components/petition-editor"
-import { PetitionWizard } from "@/components/petition-wizard"
-import { buildWeddingPetitions } from "@/lib/content-builders/petitions"
+import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
+import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
 
 interface WeddingFormProps {
   wedding?: Wedding
@@ -62,9 +61,6 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   const [showReceptionEventPicker, setShowReceptionEventPicker] = useState(false)
   const [showRehearsalEventPicker, setShowRehearsalEventPicker] = useState(false)
   const [showRehearsalDinnerEventPicker, setShowRehearsalDinnerEventPicker] = useState(false)
-
-  // Petition wizard state
-  const [showPetitionWizard, setShowPetitionWizard] = useState(false)
 
   // People picker states
   const [showBridePicker, setShowBridePicker] = useState(false)
@@ -164,21 +160,21 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     }
   }, [wedding])
 
-  // Handle inserting default petitions
-  const handleInsertDefaultPetitions = (): string[] => {
-    // Build a temporary wedding object with current form data
-    const tempWedding = {
-      id: wedding?.id || '',
-      bride,
-      groom,
-    } as any
+  // Handle inserting template petitions
+  const handleInsertTemplate = (templateId: string): string[] => {
+    const brideName = bride?.first_name || ''
+    const groomName = groom?.first_name || ''
 
-    // Use content builder to generate petitions
-    const petitionCollection = buildWeddingPetitions(tempWedding, 'wedding-english-default')
-
-    // Return array of petition texts
-    return petitionCollection.petitions.map(p => p.text)
+    // Build petitions from selected template
+    return buildWeddingPetitions(templateId, brideName, groomName)
   }
+
+  // Get available templates - convert to PetitionTemplate format
+  const petitionTemplates: PetitionTemplate[] = weddingTemplates.map(t => ({
+    id: t.id,
+    name: t.name,
+    description: t.description,
+  }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -625,8 +621,8 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       <PetitionEditor
         value={petitions}
         onChange={setPetitions}
-        onOpenWizard={() => setShowPetitionWizard(true)}
-        onInsertDefault={handleInsertDefaultPetitions}
+        onInsertTemplate={handleInsertTemplate}
+        templates={petitionTemplates}
       />
 
       {/* Petition Reader */}
@@ -875,19 +871,6 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         readings={readings}
         title="Select Gospel Reading"
         preselectedCategories={['Gospel', 'Wedding']}
-      />
-
-      {/* Petition Wizard */}
-      <PetitionWizard
-        open={showPetitionWizard}
-        onOpenChange={setShowPetitionWizard}
-        onApply={setPetitions}
-        currentPetitions={petitions}
-        contextNames={[
-          bride?.first_name,
-          groom?.first_name,
-        ].filter(Boolean) as string[]}
-        occasion="Wedding"
       />
     </form>
   )
