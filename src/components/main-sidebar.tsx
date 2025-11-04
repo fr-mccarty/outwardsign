@@ -248,23 +248,23 @@ export function MainSidebar() {
                 defaultOpen={false}
               />
 
-              <CollapsibleNavSection
-                name="Confirmations"
-                icon={Flame}
-                items={[
-                  {
-                    title: "Our Confirmations",
-                    url: "/confirmations",
-                    icon: Flame,
-                  },
-                  {
-                    title: "New Confirmation",
-                    url: "/confirmations",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              {/*<CollapsibleNavSection*/}
+              {/*  name="Confirmations"*/}
+              {/*  icon={Flame}*/}
+              {/*  items={[*/}
+              {/*    {*/}
+              {/*      title: "Our Confirmations",*/}
+              {/*      url: "/confirmations",*/}
+              {/*      icon: Flame,*/}
+              {/*    },*/}
+              {/*    {*/}
+              {/*      title: "New Confirmation",*/}
+              {/*      url: "/confirmations",*/}
+              {/*      icon: Plus,*/}
+              {/*    },*/}
+              {/*  ]}*/}
+              {/*  defaultOpen={false}*/}
+              {/*/>*/}
 
               <CollapsibleNavSection
                 name="Presentations"

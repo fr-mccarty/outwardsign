@@ -75,6 +75,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 **Naming Conventions:**
 - Database tables: plural form (e.g., `petitions`, `baptisms`)
 - TypeScript interfaces: singular form (e.g., `Petition`, `Baptism`)
+- **Special Case:** For simplification, "Quinceañeras" is spelled without the ñ in all programming contexts (file names, variables, types, routes, etc.). Use "Quinceanera" in code, "Quinceañera" in user-facing text only.
 
 ## Styling
 Ensure that: All form fields use standardized, basic styling with no specialized text formatting!
@@ -203,12 +204,13 @@ The app uses `next-themes` with a CSS variable-based approach for automatic dark
 
 **IMPORTANT:** The `[entity]-form-wrapper.tsx` file is REQUIRED and must follow the wedding module pattern exactly.
 
-**Print View Directory** (`app/print/[entity]/`):
+**Print View Directory** (`app/print/[entity-plural]/`):
 ```
-print/[entity]/
+print/[entity-plural]/
 └── [id]/
     └── page.tsx               # Print-optimized view (Server)
 ```
+- **IMPORTANT:** Directory name must be PLURAL (e.g., `weddings`, `funerals`, `quinceaneras`) to match `modulePath` prop
 - Fetches entity with relations
 - Uses print-specific styling (can override global styles)
 - No navigation elements, optimized for printing/PDF generation
