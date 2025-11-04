@@ -27,6 +27,9 @@ import { EventDisplay } from "@/components/event-display"
 import { WEDDING_STATUS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
+import { PetitionEditor } from "@/components/petition-editor"
+import { PetitionWizard } from "@/components/petition-wizard"
+import { buildWeddingPetitions } from "@/lib/content-builders/petitions"
 
 interface WeddingFormProps {
   wedding?: Wedding
@@ -59,6 +62,9 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   const [showReceptionEventPicker, setShowReceptionEventPicker] = useState(false)
   const [showRehearsalEventPicker, setShowRehearsalEventPicker] = useState(false)
   const [showRehearsalDinnerEventPicker, setShowRehearsalDinnerEventPicker] = useState(false)
+
+  // Petition wizard state
+  const [showPetitionWizard, setShowPetitionWizard] = useState(false)
 
   // People picker states
   const [showBridePicker, setShowBridePicker] = useState(false)
@@ -157,6 +163,22 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       if ((wedding as any).gospel_reading) setGospelReading((wedding as any).gospel_reading)
     }
   }, [wedding])
+
+  // Handle inserting default petitions
+  const handleInsertDefaultPetitions = (): string[] => {
+    // Build a temporary wedding object with current form data
+    const tempWedding = {
+      id: wedding?.id || '',
+      bride,
+      groom,
+    } as any
+
+    // Use content builder to generate petitions
+    const petitionCollection = buildWeddingPetitions(tempWedding, 'wedding-english-default')
+
+    // Return array of petition texts
+    return petitionCollection.petitions.map(p => p.text)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -600,22 +622,20 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       </Card>
 
       {/* Petitions */}
+      <PetitionEditor
+        value={petitions}
+        onChange={setPetitions}
+        onOpenWizard={() => setShowPetitionWizard(true)}
+        onInsertDefault={handleInsertDefaultPetitions}
+      />
+
+      {/* Petition Reader */}
       <Card>
         <CardHeader>
-          <CardTitle>Petitions</CardTitle>
-          <CardDescription>Universal prayers</CardDescription>
+          <CardTitle>Petition Reader</CardTitle>
+          <CardDescription>Who will read the petitions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <FormField
-            id="petitions"
-            label="Petitions Text"
-            value={petitions}
-            onChange={setPetitions}
-            placeholder="Enter the petitions text..."
-            inputType="textarea"
-            rows={5}
-          />
-
           <div className="flex items-center space-x-2">
             <Checkbox
               id="petitions_read_by_second_reader"
@@ -855,6 +875,19 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         readings={readings}
         title="Select Gospel Reading"
         preselectedCategories={['Gospel', 'Wedding']}
+      />
+
+      {/* Petition Wizard */}
+      <PetitionWizard
+        open={showPetitionWizard}
+        onOpenChange={setShowPetitionWizard}
+        onApply={setPetitions}
+        currentPetitions={petitions}
+        contextNames={[
+          bride?.first_name,
+          groom?.first_name,
+        ].filter(Boolean) as string[]}
+        occasion="Wedding"
       />
     </form>
   )

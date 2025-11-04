@@ -215,14 +215,6 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     })
   }
 
-  if (wedding.petitions) {
-    elements.push({
-      type: 'info-row',
-      label: 'Additional Petitions:',
-      value: wedding.petitions,
-    })
-  }
-
   return {
     id: 'summary',
     pageBreakAfter: true,
@@ -433,7 +425,7 @@ function buildPetitionsSection(wedding: WeddingWithRelations): ContentSection {
 
   elements.push({ type: 'spacer', size: 'medium' })
 
-  // Introductory petition
+  // Introductory petition instruction
   elements.push({
     type: 'petition',
     parts: [
@@ -443,68 +435,10 @@ function buildPetitionsSection(wedding: WeddingWithRelations): ContentSection {
     ],
   })
 
-  // Standard petitions
-  elements.push({
-    type: 'petition',
-    parts: [
-      { text: 'Reader:', formatting: ['bold'] },
-      {
-        text: ` For ${brideName} and ${groomName}, joined now in marriage, that their love will grow and their commitment will deepen every day, let us pray to the Lord.`,
-        formatting: ['bold'],
-      },
-    ],
-  })
+  // Petitions from database - just format what's saved
+  const petitions = wedding.petitions ? wedding.petitions.split('\n').filter((p) => p.trim()) : []
 
-  elements.push({
-    type: 'response',
-    parts: [
-      { text: 'People:', formatting: ['bold'] },
-      { text: ' Lord, hear our prayer.', formatting: ['italic'] },
-    ],
-  })
-
-  elements.push({
-    type: 'petition',
-    parts: [
-      { text: 'Reader:', formatting: ['bold'] },
-      {
-        text: ` For the parents and grandparents of ${brideName} and ${groomName}, without whose dedication to God and family we would not be gathered here today, that they will be blessed as they gain a son or daughter, let us pray to the Lord.`,
-        formatting: ['bold'],
-      },
-    ],
-  })
-
-  elements.push({
-    type: 'response',
-    parts: [
-      { text: 'People:', formatting: ['bold'] },
-      { text: ' Lord, hear our prayer.', formatting: ['italic'] },
-    ],
-  })
-
-  elements.push({
-    type: 'petition',
-    parts: [
-      { text: 'Reader:', formatting: ['bold'] },
-      {
-        text: ` For the families and friends of ${brideName} and ${groomName}, gathered here today, that they continue to enrich each other with love and support through the years, let us pray to the Lord.`,
-        formatting: ['bold'],
-      },
-    ],
-  })
-
-  elements.push({
-    type: 'response',
-    parts: [
-      { text: 'People:', formatting: ['bold'] },
-      { text: ' Lord, hear our prayer.', formatting: ['italic'] },
-    ],
-  })
-
-  // Custom petitions
-  const customPetitions = wedding.petitions ? wedding.petitions.split('\n').filter((p) => p.trim()) : []
-
-  customPetitions.forEach((petition) => {
+  petitions.forEach((petition) => {
     elements.push({
       type: 'petition',
       parts: [

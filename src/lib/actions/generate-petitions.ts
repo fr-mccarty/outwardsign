@@ -1,0 +1,99 @@
+'use server'
+
+import Anthropic from '@anthropic-ai/sdk'
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+})
+
+export interface GeneratePetitionsParams {
+  templateText: string
+  context?: {
+    names?: string[]
+    occasion?: string
+    additionalContext?: string
+  }
+  count?: number
+}
+
+export interface GeneratedPetition {
+  text: string
+}
+
+/**
+ * Generate petitions using Claude AI based on a template and context
+ */
+export async function generatePetitions(
+  params: GeneratePetitionsParams
+): Promise<GeneratedPetition[]> {
+  const { templateText, context, count = 5 } = params
+
+  // Build the prompt
+  let prompt = `You are helping to write petitions (universal prayers) for a Catholic liturgy.
+
+IMPORTANT FORMATTING RULES:
+- Each petition should be ONE sentence
+- Do NOT include "Reader:" prefix
+- Do NOT include the response "Lord, hear our prayer" or "let us pray to the Lord"
+- Just write the petition text itself
+- Each petition should end with a period
+
+`
+
+  if (context?.occasion) {
+    prompt += `Occasion: ${context.occasion}\n`
+  }
+
+  if (context?.names && context.names.length > 0) {
+    prompt += `Names to consider: ${context.names.join(', ')}\n`
+  }
+
+  if (context?.additionalContext) {
+    prompt += `Additional context: ${context.additionalContext}\n`
+  }
+
+  prompt += `\nHere is a template to use as inspiration:\n${templateText}\n\n`
+  prompt += `Please generate ${count} petitions inspired by this template.`
+  prompt += `\nReturn ONLY the petitions, one per line, with no numbering, no "Reader:", and no responses.`
+  prompt += `\nExample format:\n`
+  prompt += `For the bride and groom, that their love may grow stronger each day.\n`
+  prompt += `For all married couples, that they may find joy in their commitment.\n`
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    })
+
+    const responseText =
+      message.content[0].type === 'text' ? message.content[0].text : ''
+
+    // Parse the response into individual petitions
+    const petitions = responseText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => {
+        // Filter out empty lines, numbered lines, and lines with "Reader:" or responses
+        return (
+          line.length > 0 &&
+          !line.match(/^\d+\.?\s/) && // No numbering
+          !line.toLowerCase().includes('reader:') &&
+          !line.toLowerCase().includes('people:') &&
+          !line.toLowerCase().includes('lord, hear our prayer') &&
+          !line.toLowerCase().includes('let us pray to the lord')
+        )
+      })
+      .map(text => ({ text }))
+
+    return petitions
+  } catch (error) {
+    console.error('Error generating petitions:', error)
+    throw new Error('Failed to generate petitions. Please try again.')
+  }
+}
