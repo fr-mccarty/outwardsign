@@ -4,12 +4,20 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import Link from "next/link"
 import { Save } from "lucide-react"
 import { createEvent, updateEvent, type CreateEventData } from "@/lib/actions/events"
 import type { Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
+import { EVENT_TYPES } from "@/lib/constants"
 
 interface EventFormProps {
   event?: Event
@@ -89,14 +97,23 @@ export function EventForm({ event }: EventFormProps) {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          id="event_type"
-          label="Event Type"
-          value={eventType}
-          onChange={setEventType}
-          required
-          placeholder="e.g., Wedding, Baptism, Mass, Meeting"
-        />
+        <div className="space-y-2">
+          <Label htmlFor="event_type">
+            Event Type <span className="text-destructive">*</span>
+          </Label>
+          <Select value={eventType} onValueChange={setEventType} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select event type" />
+            </SelectTrigger>
+            <SelectContent>
+              {EVENT_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <FormField
           id="responsible_party_id"

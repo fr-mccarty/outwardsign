@@ -137,6 +137,20 @@ export const QUINCEANERA_STATUS = ['Active', 'Inactive', 'Completed'] as const
 // Presentation Status
 export const PRESENTATION_STATUS = ['Active', 'Inactive', 'Completed'] as const
 
+// Event Types
+export const EVENT_TYPES = [
+  'Wedding',
+  'Funeral',
+  'Baptism',
+  'Quinceañera',
+  'Presentation',
+  'Mass',
+  'Confession',
+  'Meeting',
+  'Rehearsal',
+  'Other'
+] as const
+
 // Reading Categories
 // Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database
 // Display localized labels using READING_CATEGORY_LABELS[category][lang]
