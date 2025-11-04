@@ -73,23 +73,29 @@ export interface WeddingFilterParams {
   status?: string
 }
 
-export async function getWeddings(filters?: WeddingFilterParams): Promise<Wedding[]> {
+export interface WeddingWithNames extends Wedding {
+  bride?: Person | null
+  groom?: Person | null
+  wedding_event?: Event | null
+}
+
+export async function getWeddings(filters?: WeddingFilterParams): Promise<WeddingWithNames[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   let query = supabase
     .from('weddings')
-    .select('*')
+    .select(`
+      *,
+      bride:people!bride_id(*),
+      groom:people!groom_id(*),
+      wedding_event:events!wedding_event_id(*)
+    `)
 
-  // Apply filters
+  // Apply status filter at database level
   if (filters?.status && filters.status !== 'all') {
     query = query.eq('status', filters.status)
-  }
-
-  if (filters?.search) {
-    // Search across status and notes
-    query = query.or(`status.ilike.%${filters.search}%,notes.ilike.%${filters.search}%,announcements.ilike.%${filters.search}%`)
   }
 
   query = query.order('created_at', { ascending: false })
@@ -101,7 +107,27 @@ export async function getWeddings(filters?: WeddingFilterParams): Promise<Weddin
     throw new Error('Failed to fetch weddings')
   }
 
-  return data || []
+  let weddings = data || []
+
+  // Apply search filter in application layer (searching related table fields)
+  if (filters?.search) {
+    const searchTerm = filters.search.toLowerCase()
+    weddings = weddings.filter(wedding => {
+      const brideFirstName = wedding.bride?.first_name?.toLowerCase() || ''
+      const brideLastName = wedding.bride?.last_name?.toLowerCase() || ''
+      const groomFirstName = wedding.groom?.first_name?.toLowerCase() || ''
+      const groomLastName = wedding.groom?.last_name?.toLowerCase() || ''
+
+      return (
+        brideFirstName.includes(searchTerm) ||
+        brideLastName.includes(searchTerm) ||
+        groomFirstName.includes(searchTerm) ||
+        groomLastName.includes(searchTerm)
+      )
+    })
+  }
+
+  return weddings
 }
 
 export async function getWedding(id: string): Promise<Wedding | null> {

@@ -36,20 +36,11 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
   const liturgyContent = renderHTML(liturgyDocument)
 
   return (
-    <div className="flex gap-6">
-      {/* Main Content */}
-      <div className="flex-1">
+    <div className="flex flex-col md:flex-row gap-6">
+      {/* Side Panel - appears first on mobile, second on desktop */}
+      <div className="w-full md:w-80 space-y-4 print:hidden order-1 md:order-2">
         <Card>
-          <CardContent className="p-6 space-y-6">
-            {liturgyContent}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Side Panel */}
-      <div className="w-80 space-y-4 print:hidden">
-        <Card>
-          <CardContent className="p-4 space-y-3">
+          <CardContent className="pt-4 px-4 pb-2 space-y-3">
             <Button asChild className="w-full" variant="default">
               <Link href={`/weddings/${wedding.id}/edit`}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -115,23 +106,29 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
                 </Button>
               </div>
             </div>
+
+            <div className="pt-4 border-t space-y-2 text-sm">
+              <div>
+                <span className="font-medium">Status:</span> {wedding.status || 'N/A'}
+              </div>
+              {wedding.wedding_event?.location && (
+                <div>
+                  <span className="font-medium">Location:</span> {wedding.wedding_event.location}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground pt-1 border-t">
+                Created: {new Date(wedding.created_at).toLocaleDateString()}
+              </div>
+            </div>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Wedding Info Card */}
+      {/* Main Content - appears second on mobile, first on desktop */}
+      <div className="flex-1 order-2 md:order-1">
         <Card>
-          <CardContent className="p-4 space-y-2 text-sm">
-            <div>
-              <span className="font-medium">Status:</span> {wedding.status || 'N/A'}
-            </div>
-            {wedding.wedding_event?.location && (
-              <div>
-                <span className="font-medium">Location:</span> {wedding.wedding_event.location}
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground pt-2 border-t">
-              Created: {new Date(wedding.created_at).toLocaleDateString()}
-            </div>
+          <CardContent className="p-6 space-y-6">
+            {liturgyContent}
           </CardContent>
         </Card>
       </div>

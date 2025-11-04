@@ -7,8 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
-import { Save, User, BookOpen, Calendar } from "lucide-react"
+import { User, BookOpen, Calendar } from "lucide-react"
 import { createWedding, updateWedding, type CreateWeddingData } from "@/lib/actions/weddings"
 import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Wedding, Person, IndividualReading, Event } from "@/lib/types"
@@ -25,16 +24,25 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
+import { WEDDING_STATUS } from "@/lib/constants"
+import { SaveButton } from "@/components/save-button"
+import { CancelButton } from "@/components/cancel-button"
 
 interface WeddingFormProps {
   wedding?: Wedding
   formId?: string
+  onLoadingChange?: (loading: boolean) => void
 }
 
-export function WeddingForm({ wedding, formId }: WeddingFormProps) {
+export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormProps) {
   const router = useRouter()
   const isEditing = !!wedding
   const [isLoading, setIsLoading] = useState(false)
+
+  // Notify parent component of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isLoading)
+  }, [isLoading, onLoadingChange])
 
   // State for all fields
   const [status, setStatus] = useState(wedding?.status || "Active")
@@ -219,8 +227,11 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
+                {WEDDING_STATUS.map((statusOption) => (
+                  <SelectItem key={statusOption} value={statusOption}>
+                    {statusOption}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -667,15 +678,13 @@ export function WeddingForm({ wedding, formId }: WeddingFormProps) {
 
       {/* Submit Buttons */}
       <div className="flex gap-4 justify-end">
-        <Button type="button" variant="outline" asChild disabled={isLoading}>
-          <Link href={isEditing ? `/weddings/${wedding.id}` : '/weddings'}>
-            Cancel
-          </Link>
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          <Save className="h-4 w-4 mr-2" />
-          {isLoading ? 'Saving...' : isEditing ? 'Update Wedding' : 'Save'}
-        </Button>
+        <CancelButton
+          href={isEditing ? `/weddings/${wedding.id}` : '/weddings'}
+          disabled={isLoading}
+        />
+        <SaveButton isLoading={isLoading}>
+          {isEditing ? 'Update Wedding' : 'Save Wedding'}
+        </SaveButton>
       </div>
 
       {/* Event Pickers */}

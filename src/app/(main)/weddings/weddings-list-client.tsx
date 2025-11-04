@@ -1,12 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { Wedding } from '@/lib/types'
+import type { WeddingWithNames } from '@/lib/actions/weddings'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, VenusAndMars, Eye, Calendar, Search, Filter, Edit, FileText } from "lucide-react"
+import { Plus, VenusAndMars, Eye, Calendar, Search, Filter, Edit, FileText, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { WEDDING_STATUS } from "@/lib/constants"
 
 interface Stats {
   total: number
@@ -22,7 +24,7 @@ interface Stats {
 }
 
 interface WeddingsListClientProps {
-  initialData: Wedding[]
+  initialData: WeddingWithNames[]
   stats: Stats
 }
 
@@ -31,8 +33,8 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
   const searchParams = useSearchParams()
 
   // Get current filter values from URL
-  const searchTerm = searchParams.get('search') || ''
   const selectedStatus = searchParams.get('status') || 'all'
+  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
 
   // Update URL with new filter values
   const updateFilters = (key: string, value: string) => {
@@ -42,14 +44,21 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
     } else {
       params.delete(key)
     }
-    router.push(`/weddings?${params.toString()}`)
+    const newUrl = `/weddings${params.toString() ? `?${params.toString()}` : ''}`
+    router.push(newUrl)
+  }
+
+  const clearSearch = () => {
+    setSearchValue('')
+    updateFilters('search', '')
   }
 
   const clearFilters = () => {
+    setSearchValue('')
     router.push('/weddings')
   }
 
-  const hasActiveFilters = searchTerm || selectedStatus !== 'all'
+  const hasActiveFilters = searchValue || selectedStatus !== 'all'
 
   return (
     <div className="space-y-6">
@@ -60,11 +69,23 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search weddings by status, notes, or announcements..."
-                defaultValue={searchTerm}
-                onChange={(e) => updateFilters('search', e.target.value)}
-                className="pl-10"
+                placeholder="Search by bride or groom name..."
+                value={searchValue}
+                onChange={(e) => {
+                  setSearchValue(e.target.value)
+                  updateFilters('search', e.target.value)
+                }}
+                className="pl-10 pr-10"
               />
+              {searchValue && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             <div className="flex gap-2">
               <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
@@ -73,10 +94,11 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Planning">Planning</SelectItem>
-                  <SelectItem value="Scheduled">Scheduled</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  {WEDDING_STATUS.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -101,10 +123,13 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
                           {wedding.status}
                         </Badge>
                       )}
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(wedding.created_at).toLocaleDateString()}
-                      </div>
+                      {wedding.wedding_event && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {wedding.wedding_event.start_date && new Date(wedding.wedding_event.start_date).toLocaleDateString()}
+                          {wedding.wedding_event.start_time && ` at ${wedding.wedding_event.start_time}`}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" asChild>
@@ -116,19 +141,19 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="text-sm space-y-1">
-                  {wedding.bride_id && (
+                  {wedding.bride && (
                     <p className="text-muted-foreground">
-                      <span className="font-medium">Bride ID:</span> {wedding.bride_id.substring(0, 8)}...
+                      <span className="font-medium">Bride:</span> {wedding.bride.first_name} {wedding.bride.last_name}
                     </p>
                   )}
-                  {wedding.groom_id && (
+                  {wedding.groom && (
                     <p className="text-muted-foreground">
-                      <span className="font-medium">Groom ID:</span> {wedding.groom_id.substring(0, 8)}...
+                      <span className="font-medium">Groom:</span> {wedding.groom.first_name} {wedding.groom.last_name}
                     </p>
                   )}
-                  {wedding.wedding_event_id && (
+                  {wedding.wedding_event?.location && (
                     <p className="text-muted-foreground">
-                      <span className="font-medium">Event ID:</span> {wedding.wedding_event_id.substring(0, 8)}...
+                      <span className="font-medium">Location:</span> {wedding.wedding_event.location}
                     </p>
                   )}
                 </div>

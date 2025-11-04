@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { WeddingsListClient } from './weddings-list-client'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   searchParams: Promise<{ search?: string; status?: string }>
 }

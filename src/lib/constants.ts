@@ -88,6 +88,9 @@ Roguemos al Señor.
 Por nosotros mismos, para que estemos preparados para nuestro propio viaje a la vida eterna.
 Roguemos al Señor.`
 
+// Wedding Status
+export const WEDDING_STATUS = ['Active', 'Inactive'] as const
+
 // Reading Categories
 // Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database
 // Display localized labels using READING_CATEGORY_LABELS[category][lang]
