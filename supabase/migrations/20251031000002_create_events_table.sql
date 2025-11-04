@@ -11,11 +11,16 @@ CREATE TABLE events (
   end_date DATE,
   end_time TIME,
   timezone TEXT NOT NULL DEFAULT 'UTC',
+  is_all_day BOOLEAN NOT NULL DEFAULT false,
   location TEXT,
   language TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT check_all_day_no_times CHECK (
+    (is_all_day = false) OR
+    (is_all_day = true AND start_time IS NULL AND end_time IS NULL)
+  )
 );
 
 -- Enable RLS

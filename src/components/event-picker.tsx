@@ -171,7 +171,7 @@ export function EventPicker({
             event_type: selectedEvent.event_type || defaultEventType,
             start_date: selectedEvent.start_date || '',
             start_time: selectedEvent.start_time || '',
-            timezone: selectedEvent.timezone || getDefaultTimezone(),
+            timezone: (selectedEvent as any).timezone || getDefaultTimezone(),
             note: (selectedEvent as any).note || '',
           })
         } else {

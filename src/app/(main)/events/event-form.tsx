@@ -47,7 +47,7 @@ export function EventForm({ event }: EventFormProps) {
         end_time: endTime || undefined,
         location: location || undefined,
         language: language || undefined,
-        notes: notes || undefined,
+        note: notes || undefined,
       }
 
       if (isEditing) {

@@ -92,10 +92,10 @@ export default function OnboardingPage() {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>
     )
@@ -103,7 +103,7 @@ export default function OnboardingPage() {
 
   if (preparing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center space-y-6">
@@ -113,17 +113,17 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-semibold text-foreground">
                   Setting up your parish
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   One minute while we get your parish ready for you.
                 </p>
               </div>
               <div className="flex justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Seeding parish readings...
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         {/* Logo Header */}
         <div className="text-center">
@@ -142,9 +142,9 @@ export default function OnboardingPage() {
             <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Flower className="size-7" />
             </div>
-            <div className="font-semibold text-2xl text-gray-900">{APP_NAME}</div>
+            <div className="font-semibold text-2xl text-foreground">{APP_NAME}</div>
           </div>
-          <h2 className="mt-6 text-xl text-gray-600">Welcome! Let&apos;s set up your parish</h2>
+          <h2 className="mt-6 text-xl text-muted-foreground">Welcome! Let&apos;s set up your parish</h2>
         </div>
 
         <Card className="w-full">

@@ -13,7 +13,7 @@ interface DataTableEmptyProps {
 }
 
 export function DataTableEmpty({
-  icon = <FileText className="h-12 w-12 text-gray-400" />,
+  icon = <FileText className="h-12 w-12 text-muted-foreground" />,
   title = "No data",
   description = "No items found.",
   action,
@@ -23,12 +23,12 @@ export function DataTableEmpty({
     <div className={cn("text-center py-12", className)}>
       {icon && <div className="mx-auto mb-4 flex justify-center">{icon}</div>}
       {title && (
-        <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <p className="text-lg font-medium text-foreground">
           {title}
         </p>
       )}
       {description && (
-        <p className="mt-1 text-gray-500 dark:text-gray-400">{description}</p>
+        <p className="mt-1 text-muted-foreground">{description}</p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </div>

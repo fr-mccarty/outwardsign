@@ -37,7 +37,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         {/* Logo Header */}
         <div className="text-center">
@@ -45,7 +45,7 @@ export default function LoginPage() {
             <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Flower className="size-7" />
             </div>
-            <div className="font-semibold text-2xl text-gray-900">{APP_NAME}</div>
+            <div className="font-semibold text-2xl text-foreground">{APP_NAME}</div>
           </Link>
         </div>
         <Card className="w-full">

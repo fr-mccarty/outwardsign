@@ -80,6 +80,47 @@ The ideal way that we want to access the records is by using the RLS feature on 
 Ensure that: All form fields use standardized, basic styling with no specialized text formatting!
 For views that are within a print folder, allow those views to set their style however they wish.
 
+### Dark Mode
+The app uses `next-themes` with a CSS variable-based approach for automatic dark mode support. Users can switch between light, dark, and system themes via the parish user menu.
+
+**Implementation:** All styling uses semantic CSS variables defined in `globals.css` that automatically adapt to dark mode. Never use hardcoded gray values or `dark:` utility classes.
+
+**Available Tokens:**
+- `bg-background text-foreground` - Page backgrounds and primary text
+- `bg-card text-card-foreground` - Card components
+- `bg-popover text-popover-foreground` - Popovers and dropdowns
+- `bg-primary text-primary-foreground` - Primary actions/buttons
+- `bg-secondary text-secondary-foreground` - Secondary elements
+- `bg-muted text-muted-foreground` - Muted backgrounds and secondary text
+- `bg-accent text-accent-foreground` - Accent elements and hover states
+- `border-border` - All borders
+- `border-input` - Input borders
+- `ring-ring` - Focus rings
+- `text-destructive` - Error/destructive text
+
+**Best Practices:**
+- ✅ Always use semantic tokens: `bg-background`, `text-foreground`, `text-muted-foreground`
+- ✅ Pair backgrounds with foregrounds: `bg-card text-card-foreground`
+- ❌ Never use hardcoded colors: `bg-gray-50`, `text-gray-900`, `bg-white`
+- ❌ Never use `dark:` classes for basic colors (CSS variables handle this automatically)
+
+**Example:**
+```tsx
+// ✅ CORRECT - Auto-adapts to dark mode
+<div className="bg-background text-foreground">
+  <Card className="bg-card text-card-foreground">
+    <p className="text-muted-foreground">Secondary text</p>
+  </Card>
+</div>
+
+// ❌ WRONG - Won't work in dark mode
+<div className="bg-gray-50 text-gray-900">
+  <Card className="bg-white">
+    <p className="text-gray-500">Secondary text</p>
+  </Card>
+</div>
+```
+
 ### Module Structure (7 Files)
 1. List Page (Server) - page.tsx
 - Auth check → fetch entities with filters from searchParams → compute stats server-side → define breadcrumbs

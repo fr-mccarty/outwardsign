@@ -2,26 +2,33 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import { setSelectedParish, getCurrentParish } from '@/lib/auth/parish'
 import { Parish } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
-  LogOut, 
-  Settings, 
-  ChevronUp, 
-  Check, 
-  Plus, 
-  Edit3
+import {
+  LogOut,
+  Settings,
+  ChevronUp,
+  Check,
+  Plus,
+  Edit3,
+  Monitor,
+  Moon,
+  Sun
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -46,6 +53,7 @@ export function ParishUserMenu() {
   const [switching, setSwitching] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const { theme, setTheme } = useTheme()
 
   useEffect(() => {
     loadData()
@@ -243,14 +251,44 @@ export function ParishUserMenu() {
           User Account
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex items-center gap-2">
+            {theme === 'light' ? (
+              <Sun className="h-4 w-4" />
+            ) : theme === 'dark' ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Monitor className="h-4 w-4" />
+            )}
+            <span>Theme</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem onClick={() => setTheme('light')} className="flex items-center gap-2">
+              <Sun className="h-4 w-4" />
+              <span>Light</span>
+              {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('dark')} className="flex items-center gap-2">
+              <Moon className="h-4 w-4" />
+              <span>Dark</span>
+              {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('system')} className="flex items-center gap-2">
+              <Monitor className="h-4 w-4" />
+              <span>System</span>
+              {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+
         <DropdownMenuItem asChild>
           <Link href="/settings" className="cursor-pointer flex items-center gap-2">
             <Settings className="h-4 w-4" />
             User Settings
           </Link>
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
         
         <DropdownMenuItem 
