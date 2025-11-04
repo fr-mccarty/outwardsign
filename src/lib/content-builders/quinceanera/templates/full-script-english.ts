@@ -5,56 +5,109 @@
  */
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
-import { LiturgyDocument } from '@/lib/types/liturgy-content'
+import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
+import { formatEventDateTime } from '@/lib/utils/formatters'
 
 export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): LiturgyDocument {
   const quinceaneraName = quinceanera.quinceanera
     ? `${quinceanera.quinceanera.first_name} ${quinceanera.quinceanera.last_name}`
     : '[Quinceañera Name]'
 
-  return {
-    title: `Quinceañera Celebration for ${quinceaneraName}`,
-    sections: [
+  const eventDateTime =
+    quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event?.start_time
+      ? formatEventDateTime(quinceanera.quinceanera_event)
+      : 'Missing Date and Time'
+
+  const sections: ContentSection[] = []
+
+  // Introduction section
+  sections.push({
+    id: 'introduction',
+    title: 'Introduction',
+    elements: [
       {
-        heading: 'Introduction',
-        content: [
-          {
-            type: 'paragraph',
-            text: `This is a quinceañera celebration for ${quinceaneraName}.`,
-          },
-          {
-            type: 'paragraph',
-            text: 'TODO: Add complete liturgy content following the wedding/funeral template patterns.',
-          },
-        ],
+        type: 'event-title',
+        text: `Quinceañera Celebration for ${quinceaneraName}`,
+        alignment: 'center',
       },
       {
-        heading: 'Liturgy of the Word',
-        content: [
-          {
-            type: 'heading',
-            level: 3,
-            text: 'First Reading',
-          },
-          {
-            type: 'paragraph',
-            text: quinceanera.first_reading?.pericope || '[First Reading not selected]',
-          },
-          {
-            type: 'paragraph',
-            text: quinceanera.first_reading?.content || '',
-          },
-        ],
+        type: 'event-datetime',
+        text: eventDateTime,
+        alignment: 'center',
       },
       {
-        heading: 'Petitions',
-        content: [
-          {
-            type: 'paragraph',
-            text: quinceanera.petitions || '[No petitions entered]',
-          },
-        ],
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'text',
+        text: 'TODO: Add complete liturgy content following the wedding/funeral template patterns.',
       },
     ],
+  })
+
+  // Liturgy of the Word section
+  if (quinceanera.first_reading) {
+    sections.push({
+      id: 'first-reading',
+      title: 'Liturgy of the Word',
+      pageBreakBefore: true,
+      elements: [
+        {
+          type: 'reading-title',
+          text: 'FIRST READING',
+          alignment: 'center',
+        },
+        {
+          type: 'pericope',
+          text: quinceanera.first_reading.pericope || '',
+          alignment: 'center',
+        },
+        {
+          type: 'spacer',
+          size: 'small',
+        },
+        {
+          type: 'reading-text',
+          text: quinceanera.first_reading.text || '',
+          preserveLineBreaks: true,
+        },
+      ],
+    })
+  }
+
+  // Petitions section
+  if (quinceanera.petitions) {
+    sections.push({
+      id: 'petitions',
+      title: 'Petitions',
+      pageBreakBefore: true,
+      elements: [
+        {
+          type: 'section-title',
+          text: 'Universal Prayer / Prayer of the Faithful',
+          alignment: 'center',
+        },
+        {
+          type: 'spacer',
+          size: 'medium',
+        },
+        {
+          type: 'text',
+          text: quinceanera.petitions,
+          preserveLineBreaks: true,
+        },
+      ],
+    })
+  }
+
+  return {
+    id: quinceanera.id,
+    type: 'quinceanera',
+    language: 'en',
+    template: 'quinceanera-full-script-english',
+    title: `Quinceañera Celebration for ${quinceaneraName}`,
+    subtitle: eventDateTime,
+    sections,
   }
 }

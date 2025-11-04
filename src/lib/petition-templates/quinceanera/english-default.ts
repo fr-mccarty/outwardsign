@@ -18,7 +18,7 @@ export const quinceaneraEnglishDefault = {
       'For our parish youth, that they may be inspired by this celebration of faith and grow closer to Christ.',
       'For those who have helped prepare this celebration, that they may be blessed for their service.',
       'For our community, that we may support one another in faith and love.',
-      'For all who are sick, lonely, or in need, that they may know God's healing presence.',
+      'For all who are sick, lonely, or in need, that they may know God\'s healing presence.',
       'For those who have died, especially members of our families, that they may rest in eternal peace.',
     ]
   },
