@@ -7,6 +7,12 @@
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import {
+  buildReadingSection,
+  buildPsalmSection,
+  buildPetitionsSection,
+  buildAnnouncementsSection,
+} from '@/lib/content-builders/shared/script-sections'
 
 /**
  * Build summary section (funeral service info)
@@ -146,306 +152,7 @@ function buildSummarySection(funeral: FuneralWithRelations): ContentSection {
 
   return {
     id: 'summary',
-    title: 'Summary',
-    elements,
-  }
-}
-
-/**
- * Build liturgy of the word section
- */
-function buildLiturgyOfTheWordSection(funeral: FuneralWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  elements.push({
-    type: 'section-title',
-    text: 'Liturgy of the Word',
-  })
-
-  // First Reading
-  if (funeral.first_reading) {
-    elements.push({
-      type: 'reading-title',
-      text: 'First Reading',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: funeral.first_reading.pericope || '',
-    })
-
-    if (funeral.first_reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(funeral.first_reader),
-      })
-    }
-
-    if (funeral.first_reading.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: funeral.first_reading.introduction,
-      })
-    }
-
-    if (funeral.first_reading.text) {
-      elements.push({
-        type: 'reading-text',
-        text: funeral.first_reading.text,
-        preserveLineBreaks: true,
-      })
-    }
-
-    if (funeral.first_reading.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: funeral.first_reading.conclusion,
-      })
-    }
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'All:', formatting: ['bold'] },
-        { text: ' Thanks be to God.', formatting: ['italic'] },
-      ],
-    })
-  }
-
-  // Responsorial Psalm
-  if (funeral.psalm) {
-    elements.push({
-      type: 'reading-title',
-      text: 'Responsorial Psalm',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: funeral.psalm.pericope || '',
-    })
-
-    if (funeral.psalm_is_sung) {
-      elements.push({
-        type: 'text',
-        text: 'Psalm is sung',
-      })
-    } else if (funeral.psalm_reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(funeral.psalm_reader),
-      })
-    }
-
-    if (funeral.psalm.text) {
-      elements.push({
-        type: 'reading-text',
-        text: funeral.psalm.text,
-        preserveLineBreaks: true,
-      })
-    }
-  }
-
-  // Second Reading
-  if (funeral.second_reading) {
-    elements.push({
-      type: 'reading-title',
-      text: 'Second Reading',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: funeral.second_reading.pericope || '',
-    })
-
-    if (funeral.second_reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(funeral.second_reader),
-      })
-    }
-
-    if (funeral.second_reading.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: funeral.second_reading.introduction,
-      })
-    }
-
-    if (funeral.second_reading.text) {
-      elements.push({
-        type: 'reading-text',
-        text: funeral.second_reading.text,
-        preserveLineBreaks: true,
-      })
-    }
-
-    if (funeral.second_reading.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: funeral.second_reading.conclusion,
-      })
-    }
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'All:', formatting: ['bold'] },
-        { text: ' Thanks be to God.', formatting: ['italic'] },
-      ],
-    })
-  }
-
-  // Gospel Reading
-  if (funeral.gospel_reading) {
-    elements.push({
-      type: 'reading-title',
-      text: 'Gospel',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: funeral.gospel_reading.pericope || '',
-    })
-
-    if (funeral.presider) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(funeral.presider),
-      })
-    }
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'All:', formatting: ['bold'] },
-        { text: ' Glory to you, O Lord.', formatting: ['italic'] },
-      ],
-    })
-
-    if (funeral.gospel_reading.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: funeral.gospel_reading.introduction,
-      })
-    }
-
-    if (funeral.gospel_reading.text) {
-      elements.push({
-        type: 'reading-text',
-        text: funeral.gospel_reading.text,
-        preserveLineBreaks: true,
-      })
-    }
-
-    if (funeral.gospel_reading.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: funeral.gospel_reading.conclusion,
-      })
-    }
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'All:', formatting: ['bold'] },
-        { text: ' Praise to you, Lord Jesus Christ.', formatting: ['italic'] },
-      ],
-    })
-  }
-
-  return {
-    id: 'liturgy-of-the-word',
-    title: 'Liturgy of the Word',
-    elements,
-  }
-}
-
-/**
- * Build petitions section
- */
-function buildPetitionsSection(funeral: FuneralWithRelations): ContentSection | null {
-  if (!funeral.petitions) return null
-
-  const elements: ContentElement[] = []
-
-  elements.push({
-    type: 'section-title',
-    text: 'Universal Prayer (Petitions)',
-  })
-
-  const petitionReader = funeral.petitions_read_by_second_reader
-    ? funeral.second_reader
-    : funeral.petition_reader
-
-  if (petitionReader) {
-    elements.push({
-      type: 'reader-name',
-      text: formatPersonName(petitionReader),
-    })
-  }
-
-  // Add introductory instruction
-  elements.push({
-    type: 'petition',
-    parts: [
-      { text: 'Reader:', formatting: ['bold'] },
-      { text: ' The response is "Lord, hear our prayer." ', formatting: ['bold'] },
-    ],
-  })
-
-  // Split petitions by line breaks and create elements
-  const petitionLines = funeral.petitions.split('\n').filter(line => line.trim())
-  for (const petition of petitionLines) {
-    const petitionText = petition.trim().replace(/\.$/, '')
-
-    elements.push({
-      type: 'petition',
-      parts: [
-        { text: 'Reader:', formatting: ['bold'] },
-        { text: ` ${petitionText}, let us pray to the Lord.`, formatting: ['bold'] },
-      ],
-    })
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'All:', formatting: ['bold'] },
-        { text: ' Lord, hear our prayer.', formatting: ['italic'] },
-      ],
-    })
-  }
-
-  return {
-    id: 'petitions',
-    title: 'Petitions',
-    elements,
-  }
-}
-
-/**
- * Build announcements section
- */
-function buildAnnouncementsSection(funeral: FuneralWithRelations): ContentSection | null {
-  if (!funeral.announcements) return null
-
-  const elements: ContentElement[] = []
-
-  elements.push({
-    type: 'section-title',
-    text: 'Announcements',
-  })
-
-  const announcementLines = funeral.announcements.split('\n').filter(line => line.trim())
-  for (const line of announcementLines) {
-    elements.push({
-      type: 'text',
-      text: line.trim(),
-    })
-  }
-
-  return {
-    id: 'announcements',
-    title: 'Announcements',
+    pageBreakAfter: true,
     elements,
   }
 }
@@ -466,20 +173,77 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
 
   const sections: ContentSection[] = []
 
-  // Add summary section
-  sections.push(buildSummarySection(funeral))
+  // Add header to summary section
+  const summarySection = buildSummarySection(funeral)
+  summarySection.elements.unshift(
+    {
+      type: 'event-title',
+      text: funeralTitle,
+      alignment: 'center',
+    },
+    {
+      type: 'event-datetime',
+      text: eventDateTime,
+      alignment: 'center',
+    }
+  )
+  sections.push(summarySection)
 
-  // Add liturgy of the word
-  sections.push(buildLiturgyOfTheWordSection(funeral))
+  // Add all reading sections
+  sections.push(
+    buildReadingSection({
+      id: 'first-reading',
+      title: 'LITURGY OF THE WORD',
+      reading: funeral.first_reading,
+      reader: funeral.first_reader,
+      responseText: 'Thanks be to God.',
+      showNoneSelected: true,
+    })
+  )
+
+  sections.push(
+    buildPsalmSection({
+      psalm: funeral.psalm,
+      psalm_reader: funeral.psalm_reader,
+      psalm_is_sung: funeral.psalm_is_sung,
+    })
+  )
+
+  sections.push(
+    buildReadingSection({
+      id: 'second-reading',
+      title: 'SECOND READING',
+      reading: funeral.second_reading,
+      reader: funeral.second_reader,
+      responseText: 'Thanks be to God.',
+      pageBreakBefore: !!funeral.second_reading,
+    })
+  )
+
+  sections.push(
+    buildReadingSection({
+      id: 'gospel',
+      title: 'GOSPEL',
+      reading: funeral.gospel_reading,
+      reader: funeral.presider,
+      includeGospelAcclamations: true,
+      pageBreakBefore: !!funeral.gospel_reading,
+    })
+  )
 
   // Add petitions if present
-  const petitionsSection = buildPetitionsSection(funeral)
+  const petitionsSection = buildPetitionsSection({
+    petitions: funeral.petitions,
+    petition_reader: funeral.petition_reader,
+    second_reader: funeral.second_reader,
+    petitions_read_by_second_reader: funeral.petitions_read_by_second_reader,
+  })
   if (petitionsSection) {
     sections.push(petitionsSection)
   }
 
   // Add announcements if present
-  const announcementsSection = buildAnnouncementsSection(funeral)
+  const announcementsSection = buildAnnouncementsSection(funeral.announcements)
   if (announcementsSection) {
     sections.push(announcementsSection)
   }

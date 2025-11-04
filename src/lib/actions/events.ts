@@ -189,3 +189,51 @@ export async function deleteEvent(id: string): Promise<void> {
 
   revalidatePath('/events')
 }
+
+export interface EventModuleLink {
+  moduleType: 'wedding' | 'funeral' | 'baptism' | 'presentation' | 'quinceanera' | null
+  moduleId: string | null
+}
+
+export async function getEventModuleLink(eventId: string): Promise<EventModuleLink> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check weddings
+  const { data: wedding } = await supabase
+    .from('weddings')
+    .select('id')
+    .eq('wedding_event_id', eventId)
+    .maybeSingle()
+
+  if (wedding) {
+    return { moduleType: 'wedding', moduleId: wedding.id }
+  }
+
+  // Check funerals
+  const { data: funeral } = await supabase
+    .from('funerals')
+    .select('id')
+    .eq('funeral_event_id', eventId)
+    .maybeSingle()
+
+  if (funeral) {
+    return { moduleType: 'funeral', moduleId: funeral.id }
+  }
+
+  // Check baptisms (if exists)
+  const { data: baptism } = await supabase
+    .from('baptisms')
+    .select('id')
+    .eq('baptism_event_id', eventId)
+    .maybeSingle()
+
+  if (baptism) {
+    return { moduleType: 'baptism', moduleId: baptism.id }
+  }
+
+  // Add more module checks as needed
+
+  return { moduleType: null, moduleId: null }
+}

@@ -205,6 +205,7 @@ export function EventPicker({
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
 
     if (!newEventForm.name.trim() || !newEventForm.start_date || !newEventForm.start_time) {
       toast.error('Name, date, and time are required')

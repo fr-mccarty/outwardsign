@@ -7,6 +7,12 @@
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import {
+  buildReadingSection,
+  buildPsalmSection,
+  buildPetitionsSection,
+  buildAnnouncementsSection,
+} from '@/lib/content-builders/shared/script-sections'
 
 /**
  * Build summary section (rehearsal, wedding info, sacred liturgy info)
@@ -223,272 +229,6 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
 }
 
 /**
- * Configuration for building a reading section
- */
-interface ReadingSectionConfig {
-  id: string
-  title: string
-  reading: any // The reading object (first_reading, second_reading, or gospel_reading)
-  reader?: any // The reader object (first_reader, second_reader, or null for gospel)
-  responseText?: string
-  includeGospelDialogue?: boolean
-  pageBreakBefore?: boolean
-  showNoneSelected?: boolean
-}
-
-/**
- * Build reading section (first, second, or gospel)
- */
-function buildReadingSection(config: ReadingSectionConfig): ContentSection {
-  const {
-    id,
-    title,
-    reading,
-    reader,
-    responseText,
-    includeGospelDialogue = false,
-    pageBreakBefore = false,
-    showNoneSelected = false,
-  } = config
-
-  const elements: ContentElement[] = []
-
-  if (reading) {
-    elements.push({
-      type: 'reading-title',
-      text: title,
-      alignment: 'right',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: reading.pericope || 'No pericope',
-      alignment: 'right',
-    })
-
-    if (reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(reader),
-        alignment: 'right',
-      })
-    }
-
-    // Gospel-specific dialogue
-    if (includeGospelDialogue) {
-      elements.push({
-        type: 'priest-dialogue',
-        text: 'Priest: The Lord be with you.',
-      })
-
-      elements.push({
-        type: 'response',
-        parts: [
-          { text: 'People:', formatting: ['bold'] },
-          { text: ' And with your spirit.', formatting: ['italic'] },
-        ],
-      })
-    }
-
-    if (reading.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: reading.introduction,
-      })
-    }
-
-    elements.push({
-      type: 'reading-text',
-      text: reading.text || 'No reading text',
-      preserveLineBreaks: true,
-    })
-
-    if (reading.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: reading.conclusion,
-      })
-    }
-
-    if (responseText) {
-      elements.push({
-        type: 'response',
-        parts: [
-          { text: 'People:', formatting: ['bold'] },
-          { text: ` ${responseText}`, formatting: ['italic'] },
-        ],
-      })
-    }
-  } else if (showNoneSelected) {
-    elements.push({
-      type: 'text',
-      text: 'None Selected',
-    })
-  }
-
-  return {
-    id,
-    pageBreakBefore,
-    elements,
-  }
-}
-
-/**
- * Build psalm section
- */
-function buildPsalmSection(wedding: WeddingWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  if (wedding.psalm) {
-    elements.push({
-      type: 'reading-title',
-      text: 'Psalm',
-      alignment: 'right',
-    })
-
-    elements.push({
-      type: 'pericope',
-      text: wedding.psalm.pericope || 'No pericope',
-      alignment: 'right',
-    })
-
-    if (wedding.psalm_is_sung) {
-      elements.push({
-        type: 'reader-name',
-        text: 'Sung',
-        alignment: 'right',
-      })
-    } else if (wedding.psalm_reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(wedding.psalm_reader),
-        alignment: 'right',
-      })
-    }
-
-    if (wedding.psalm.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: wedding.psalm.introduction,
-      })
-    }
-
-    elements.push({
-      type: 'reading-text',
-      text: wedding.psalm.text || 'No psalm text',
-      preserveLineBreaks: true,
-    })
-
-    if (wedding.psalm.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: wedding.psalm.conclusion,
-      })
-    }
-  }
-
-  return {
-    id: 'psalm',
-    pageBreakBefore: wedding.psalm ? true : false,
-    elements,
-  }
-}
-/**
- * Build petitions section
- */
-function buildPetitionsSection(wedding: WeddingWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  const brideName = wedding.bride?.first_name || ''
-  const groomName = wedding.groom?.first_name || ''
-
-  // Determine petition reader
-  const petitionsReader = wedding.petitions_read_by_second_reader && wedding.second_reader
-    ? formatPersonName(wedding.second_reader)
-    : wedding.petition_reader
-    ? formatPersonName(wedding.petition_reader)
-    : ''
-
-  elements.push({
-    type: 'reading-title',
-    text: 'Petitions',
-    alignment: 'right',
-  })
-
-  if (petitionsReader) {
-    elements.push({
-      type: 'reader-name',
-      text: petitionsReader,
-      alignment: 'right',
-    })
-  }
-
-  elements.push({ type: 'spacer', size: 'medium' })
-
-  // Introductory petition instruction
-  elements.push({
-    type: 'petition',
-    parts: [
-      { text: 'Reader:', formatting: ['bold'] },
-      { text: ' The response is "Lord, hear our prayer." ', formatting: ['bold'] },
-      { text: '[Pause]', formatting: ['bold'], color: 'liturgy-red' },
-    ],
-  })
-
-  // Petitions from database - just format what's saved
-  const petitions = wedding.petitions ? wedding.petitions.split('\n').filter((p) => p.trim()) : []
-
-  petitions.forEach((petition) => {
-    // Strip trailing period if present, then add ", let us pray to the Lord."
-    const petitionText = petition.trim().replace(/\.$/, '')
-
-    elements.push({
-      type: 'petition',
-      parts: [
-        { text: 'Reader:', formatting: ['bold'] },
-        { text: ` ${petitionText}, let us pray to the Lord.`, formatting: ['bold'] },
-      ],
-    })
-
-    elements.push({
-      type: 'response',
-      parts: [
-        { text: 'People:', formatting: ['bold'] },
-        { text: ' Lord, hear our prayer.', formatting: ['italic'] },
-      ],
-    })
-  })
-
-  return {
-    id: 'petitions',
-    pageBreakBefore: true,
-    elements,
-  }
-}
-
-/**
- * Build announcements section
- */
-function buildAnnouncementsSection(wedding: WeddingWithRelations): ContentSection | null {
-  if (!wedding.announcements) return null
-
-  return {
-    id: 'announcements',
-    elements: [
-      {
-        type: 'section-title',
-        text: 'Announcements',
-      },
-      {
-        type: 'reading-text',
-        text: wedding.announcements,
-        preserveLineBreaks: true,
-      },
-    ],
-  }
-}
-
-/**
  * Build full wedding script (English)
  */
 export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDocument {
@@ -548,7 +288,13 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     })
   )
 
-  sections.push(buildPsalmSection(wedding))
+  sections.push(
+    buildPsalmSection({
+      psalm: wedding.psalm,
+      psalm_reader: wedding.psalm_reader,
+      psalm_is_sung: wedding.psalm_is_sung,
+    })
+  )
 
   sections.push(
     buildReadingSection({
@@ -571,10 +317,18 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
   )
 
   // Add petitions
-  sections.push(buildPetitionsSection(wedding))
+  const petitionsSection = buildPetitionsSection({
+    petitions: wedding.petitions,
+    petition_reader: wedding.petition_reader,
+    second_reader: wedding.second_reader,
+    petitions_read_by_second_reader: wedding.petitions_read_by_second_reader,
+  })
+  if (petitionsSection) {
+    sections.push(petitionsSection)
+  }
 
   // Add announcements if present
-  const announcementsSection = buildAnnouncementsSection(wedding)
+  const announcementsSection = buildAnnouncementsSection(wedding.announcements)
   if (announcementsSection) {
     sections.push(announcementsSection)
   }

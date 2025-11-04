@@ -385,6 +385,27 @@ if (!user) redirect('/login')
 - Context: UI state only (theme, breadcrumbs, modals) - NEVER for data fetching
 - No prop drilling: Use Server Actions for data operations
 
+### Form Event Handling
+**CRITICAL:** When creating forms inside dialogs/modals that are rendered within other forms (nested forms), always prevent event propagation:
+
+```tsx
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  e.stopPropagation() // ← REQUIRED to prevent bubbling to parent form
+
+  // ... form submission logic
+}
+```
+
+**Why:** Dialog forms (like EventPicker, PeoplePicker with inline creation) are often rendered while a parent form is active. Without `e.stopPropagation()`, submitting the dialog form will also trigger the parent form's submission, causing unintended saves.
+
+**Where to apply:**
+- EventPicker: Already implemented in `handleCreateEvent`
+- PeoplePicker: Apply if adding inline creation forms
+- Any custom picker/modal components with forms
+
+**Reference:** See `/components/event-picker.tsx` line 208 for the canonical implementation.
+
 ### Performance Patterns
 **Server-side filtering:** List pages accept searchParams prop. Pass these to get[Entities]() functions to filter on the server, not the client.
 **Parallel data fetching:** Use Promise.all() when fetching multiple independent data sources in server components.

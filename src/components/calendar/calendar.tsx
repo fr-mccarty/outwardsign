@@ -55,6 +55,7 @@ export function Calendar<T extends CalendarItem = CalendarItem>({
         <CardContent className="p-6">
           <CalendarGrid
             currentDate={currentDate}
+            view={view}
             items={items}
             onDayClick={onDayClick}
             renderDayContent={renderDayContent}

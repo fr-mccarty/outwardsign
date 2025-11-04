@@ -12,7 +12,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
   onItemClick,
   maxItemsPerDay = 3
 }: CalendarDayProps<T>) {
-  const defaultGetItemColor = (item: T) => "bg-blue-100 text-blue-800"
+  const defaultGetItemColor = (item: T) => "bg-primary/20 text-primary border border-primary/30"
   const itemColorFn = getItemColor || defaultGetItemColor
 
   const defaultRenderContent = (day: CalendarDay<T>) => (
@@ -21,7 +21,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
         <div
           key={item.id}
           className={cn(
-            "text-xs px-2 py-1 rounded truncate cursor-pointer hover:brightness-95",
+            "text-xs px-2 py-1 rounded truncate cursor-pointer hover:brightness-110 transition-all",
             itemColorFn(item)
           )}
           onClick={(e) => {
@@ -45,13 +45,17 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
   return (
     <div
       className={cn(
-        "min-h-[100px] border border-gray-200 p-2 cursor-pointer hover:bg-gray-50",
-        !day.isCurrentMonth && "bg-gray-50 text-muted-foreground",
-        day.isToday && "bg-blue-50 border-blue-300"
+        "min-h-[100px] border p-3 cursor-pointer transition-colors rounded-sm",
+        "bg-card hover:bg-accent/50",
+        !day.isCurrentMonth && "bg-muted/30 text-muted-foreground opacity-60",
+        day.isToday && "ring-2 ring-primary bg-primary/5"
       )}
       onClick={() => onClick?.(day.date)}
     >
-      <div className="font-medium text-sm mb-1">
+      <div className={cn(
+        "font-medium text-sm mb-2",
+        day.isToday && "text-primary font-bold"
+      )}>
         {day.date.getDate()}
       </div>
       {contentRenderer(day)}

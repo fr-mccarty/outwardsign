@@ -28,6 +28,7 @@ export interface CalendarHeaderProps {
 export interface CalendarGridProps<T extends CalendarItem = CalendarItem> {
   currentDate: Date
   items: T[]
+  view?: CalendarView
   onDayClick?: (date: Date) => void
   renderDayContent?: (day: CalendarDay<T>) => React.ReactNode
   getItemColor?: (item: T) => string
@@ -42,4 +43,5 @@ export interface CalendarDayProps<T extends CalendarItem = CalendarItem> {
   getItemColor?: (item: T) => string
   onItemClick?: (item: T, event: React.MouseEvent) => void
   maxItemsPerDay?: number
+  view?: CalendarView
 }
