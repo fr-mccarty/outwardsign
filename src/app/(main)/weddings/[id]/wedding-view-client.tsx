@@ -3,7 +3,7 @@
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileText, Edit, Download } from 'lucide-react'
+import { FileText, Edit, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
 import { formatEventDateTime } from '@/lib/utils/date-format'
 import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
@@ -55,6 +55,15 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Wedding
               </Link>
+            </Button>
+
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => window.open(`/print/wedding/${wedding.id}`, '_blank')}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Print View
             </Button>
 
             <div className="pt-2 border-t">
