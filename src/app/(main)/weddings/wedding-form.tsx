@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { User, BookOpen, Calendar } from "lucide-react"
-import { createWedding, updateWedding, type CreateWeddingData } from "@/lib/actions/weddings"
+import { createWedding, updateWedding, type CreateWeddingData, type WeddingWithRelations } from "@/lib/actions/weddings"
 import { getIndividualReadings } from "@/lib/actions/readings"
-import type { Wedding, Person, IndividualReading, Event } from "@/lib/types"
+import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import {
@@ -31,7 +31,7 @@ import { PetitionEditor, type PetitionTemplate } from "@/components/petition-edi
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
 
 interface WeddingFormProps {
-  wedding?: Wedding
+  wedding?: WeddingWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
 }
@@ -131,32 +131,32 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   useEffect(() => {
     if (wedding) {
       // Set events
-      if ((wedding as any).wedding_event) setWeddingEvent((wedding as any).wedding_event)
-      if ((wedding as any).reception_event) setReceptionEvent((wedding as any).reception_event)
-      if ((wedding as any).rehearsal_event) setRehearsalEvent((wedding as any).rehearsal_event)
-      if ((wedding as any).rehearsal_dinner_event) setRehearsalDinnerEvent((wedding as any).rehearsal_dinner_event)
+      if (wedding.wedding_event) setWeddingEvent(wedding.wedding_event)
+      if (wedding.reception_event) setReceptionEvent(wedding.reception_event)
+      if (wedding.rehearsal_event) setRehearsalEvent(wedding.rehearsal_event)
+      if (wedding.rehearsal_dinner_event) setRehearsalDinnerEvent(wedding.rehearsal_dinner_event)
 
       // Set people
-      if ((wedding as any).bride) setBride((wedding as any).bride)
-      if ((wedding as any).groom) setGroom((wedding as any).groom)
-      if ((wedding as any).coordinator) setCoordinator((wedding as any).coordinator)
-      if ((wedding as any).presider) setPresider((wedding as any).presider)
-      if ((wedding as any).homilist) setHomilist((wedding as any).homilist)
-      if ((wedding as any).lead_musician) setLeadMusician((wedding as any).lead_musician)
-      if ((wedding as any).cantor) setCantor((wedding as any).cantor)
-      if ((wedding as any).witness_1) setWitness1((wedding as any).witness_1)
-      if ((wedding as any).witness_2) setWitness2((wedding as any).witness_2)
-      if ((wedding as any).first_reader) setFirstReader((wedding as any).first_reader)
-      if ((wedding as any).second_reader) setSecondReader((wedding as any).second_reader)
-      if ((wedding as any).psalm_reader) setPsalmReader((wedding as any).psalm_reader)
-      if ((wedding as any).gospel_reader) setGospelReader((wedding as any).gospel_reader)
-      if ((wedding as any).petition_reader) setPetitionReader((wedding as any).petition_reader)
+      if (wedding.bride) setBride(wedding.bride)
+      if (wedding.groom) setGroom(wedding.groom)
+      if (wedding.coordinator) setCoordinator(wedding.coordinator)
+      if (wedding.presider) setPresider(wedding.presider)
+      if (wedding.homilist) setHomilist(wedding.homilist)
+      if (wedding.lead_musician) setLeadMusician(wedding.lead_musician)
+      if (wedding.cantor) setCantor(wedding.cantor)
+      if (wedding.witness_1) setWitness1(wedding.witness_1)
+      if (wedding.witness_2) setWitness2(wedding.witness_2)
+      if (wedding.first_reader) setFirstReader(wedding.first_reader)
+      if (wedding.second_reader) setSecondReader(wedding.second_reader)
+      if (wedding.psalm_reader) setPsalmReader(wedding.psalm_reader)
+      if (wedding.gospel_reader) setGospelReader(wedding.gospel_reader)
+      if (wedding.petition_reader) setPetitionReader(wedding.petition_reader)
 
       // Set readings
-      if ((wedding as any).first_reading) setFirstReading((wedding as any).first_reading)
-      if ((wedding as any).psalm) setPsalm((wedding as any).psalm)
-      if ((wedding as any).second_reading) setSecondReading((wedding as any).second_reading)
-      if ((wedding as any).gospel_reading) setGospelReading((wedding as any).gospel_reading)
+      if (wedding.first_reading) setFirstReading(wedding.first_reading)
+      if (wedding.psalm) setPsalm(wedding.psalm)
+      if (wedding.second_reading) setSecondReading(wedding.second_reading)
+      if (wedding.gospel_reading) setGospelReading(wedding.gospel_reading)
     }
   }, [wedding])
 
@@ -215,7 +215,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       if (isEditing) {
         await updateWedding(wedding.id, weddingData)
         toast.success('Wedding updated successfully')
-        // Stay on edit page, don't redirect
+        router.refresh() // Refresh to get updated data
       } else {
         const newWedding = await createWedding(weddingData)
         toast.success('Wedding created successfully!')

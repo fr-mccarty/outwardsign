@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Wedding, Person, Event, Reading } from '@/lib/types'
+import { Wedding, Person, Event } from '@/lib/types'
+import { IndividualReading } from '@/lib/actions/readings'
 
 export interface CreateWeddingData {
   wedding_event_id?: string
@@ -167,13 +168,14 @@ export interface WeddingWithRelations extends Wedding {
   reception_event?: Event | null
   rehearsal_event?: Event | null
   rehearsal_dinner_event?: Event | null
-  first_reading?: Reading | null
-  psalm?: Reading | null
-  second_reading?: Reading | null
-  gospel_reading?: Reading | null
+  first_reading?: IndividualReading | null
+  psalm?: IndividualReading | null
+  second_reading?: IndividualReading | null
+  gospel_reading?: IndividualReading | null
   first_reader?: Person | null
   second_reader?: Person | null
   psalm_reader?: Person | null
+  gospel_reader?: Person | null
   petition_reader?: Person | null
 }
 
@@ -219,6 +221,7 @@ export async function getWeddingWithRelations(id: string): Promise<WeddingWithRe
     firstReaderData,
     secondReaderData,
     psalmReaderData,
+    gospelReaderData,
     petitionReaderData
   ] = await Promise.all([
     wedding.bride_id ? supabase.from('people').select('*').eq('id', wedding.bride_id).single() : Promise.resolve({ data: null }),
@@ -241,6 +244,7 @@ export async function getWeddingWithRelations(id: string): Promise<WeddingWithRe
     wedding.first_reader_id ? supabase.from('people').select('*').eq('id', wedding.first_reader_id).single() : Promise.resolve({ data: null }),
     wedding.second_reader_id ? supabase.from('people').select('*').eq('id', wedding.second_reader_id).single() : Promise.resolve({ data: null }),
     wedding.psalm_reader_id ? supabase.from('people').select('*').eq('id', wedding.psalm_reader_id).single() : Promise.resolve({ data: null }),
+    wedding.gospel_reader_id ? supabase.from('people').select('*').eq('id', wedding.gospel_reader_id).single() : Promise.resolve({ data: null }),
     wedding.petition_reader_id ? supabase.from('people').select('*').eq('id', wedding.petition_reader_id).single() : Promise.resolve({ data: null })
   ])
 
@@ -266,6 +270,7 @@ export async function getWeddingWithRelations(id: string): Promise<WeddingWithRe
     first_reader: firstReaderData.data,
     second_reader: secondReaderData.data,
     psalm_reader: psalmReaderData.data,
+    gospel_reader: gospelReaderData.data,
     petition_reader: petitionReaderData.data
   }
 }
@@ -327,35 +332,10 @@ export async function updateWedding(id: string, data: UpdateWeddingData): Promis
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const updateData: Record<string, unknown> = {}
-  if (data.wedding_event_id !== undefined) updateData.wedding_event_id = data.wedding_event_id
-  if (data.bride_id !== undefined) updateData.bride_id = data.bride_id
-  if (data.groom_id !== undefined) updateData.groom_id = data.groom_id
-  if (data.coordinator_id !== undefined) updateData.coordinator_id = data.coordinator_id
-  if (data.presider_id !== undefined) updateData.presider_id = data.presider_id
-  if (data.homilist_id !== undefined) updateData.homilist_id = data.homilist_id
-  if (data.lead_musician_id !== undefined) updateData.lead_musician_id = data.lead_musician_id
-  if (data.cantor_id !== undefined) updateData.cantor_id = data.cantor_id
-  if (data.reception_event_id !== undefined) updateData.reception_event_id = data.reception_event_id
-  if (data.rehearsal_event_id !== undefined) updateData.rehearsal_event_id = data.rehearsal_event_id
-  if (data.rehearsal_dinner_event_id !== undefined) updateData.rehearsal_dinner_event_id = data.rehearsal_dinner_event_id
-  if (data.witness_1_id !== undefined) updateData.witness_1_id = data.witness_1_id
-  if (data.witness_2_id !== undefined) updateData.witness_2_id = data.witness_2_id
-  if (data.status !== undefined) updateData.status = data.status
-  if (data.first_reading_id !== undefined) updateData.first_reading_id = data.first_reading_id
-  if (data.psalm_id !== undefined) updateData.psalm_id = data.psalm_id
-  if (data.psalm_reader_id !== undefined) updateData.psalm_reader_id = data.psalm_reader_id
-  if (data.psalm_is_sung !== undefined) updateData.psalm_is_sung = data.psalm_is_sung
-  if (data.second_reading_id !== undefined) updateData.second_reading_id = data.second_reading_id
-  if (data.gospel_reading_id !== undefined) updateData.gospel_reading_id = data.gospel_reading_id
-  if (data.gospel_reader_id !== undefined) updateData.gospel_reader_id = data.gospel_reader_id
-  if (data.first_reader_id !== undefined) updateData.first_reader_id = data.first_reader_id
-  if (data.second_reader_id !== undefined) updateData.second_reader_id = data.second_reader_id
-  if (data.petitions_read_by_second_reader !== undefined) updateData.petitions_read_by_second_reader = data.petitions_read_by_second_reader
-  if (data.petition_reader_id !== undefined) updateData.petition_reader_id = data.petition_reader_id
-  if (data.petitions !== undefined) updateData.petitions = data.petitions
-  if (data.announcements !== undefined) updateData.announcements = data.announcements
-  if (data.notes !== undefined) updateData.notes = data.notes
+  // Build update object from only defined values
+  const updateData = Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined)
+  )
 
   const { data: wedding, error } = await supabase
     .from('weddings')
@@ -371,6 +351,7 @@ export async function updateWedding(id: string, data: UpdateWeddingData): Promis
 
   revalidatePath('/weddings')
   revalidatePath(`/weddings/${id}`)
+  revalidatePath(`/weddings/${id}/edit`)
   return wedding
 }
 

@@ -137,16 +137,19 @@ The app uses `next-themes` with a CSS variable-based approach for automatic dark
 - PageContainer → BreadcrumbSetter → [Entity]Form (no prop)
 
 4. View Page (Server) - [id]/page.tsx
-- Auth check → fetch entity server-side → define breadcrumbs
-- PageContainer → BreadcrumbSetter → [Entity]FormActions entity={entity} → Display Cards
+- Auth check → fetch entity WITH RELATIONS using get[Entity]WithRelations(id) → define breadcrumbs
+- PageContainer → BreadcrumbSetter → [Entity]ViewClient entity={entity}
+- View client renders: ModuleViewPanel + Liturgy content (using content builder and HTML renderer)
 
 5. Edit Page (Server) - [id]/edit/page.tsx
-- Auth check → fetch entity server-side → define breadcrumbs
+- Auth check → fetch entity WITH RELATIONS server-side → define breadcrumbs
 - PageContainer → BreadcrumbSetter → [Entity]Form entity={entity}
 
 6. Unified Form (Client) - [entity]-form.tsx
 Detects mode: entity prop = edit, no prop = create
+- **Type**: Accepts [Entity]WithRelations for edit mode (not base [Entity] type)
 - FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel)
+- Uses SaveButton and CancelButton components
 - Calls createEntity() or updateEntity() Server Action
 
 7. Form Actions (Client) - [id]/[entity]-form-actions.tsx
@@ -163,6 +166,8 @@ Detects mode: entity prop = edit, no prop = create
 - Types: Defined in Server Action files, exported for reuse
 
 ### Directory Structure
+**Main Module Directory** (`app/(main)/[entity-plural]/`):
+```
 [entity-plural]/
 ├── page.tsx                    # List (Server)
 ├── loading.tsx                 # Suspense fallback (imports reusable component)
@@ -173,11 +178,125 @@ Detects mode: entity prop = edit, no prop = create
 │   └── page.tsx               # Create (Server)
 └── [id]/
     ├── page.tsx               # View (Server)
+    ├── [entity]-view-client.tsx   # View display (Client)
     ├── loading.tsx            # Suspense fallback (imports reusable component)
     ├── error.tsx              # Error boundary (imports reusable component)
     ├── [entity]-form-actions.tsx  # View actions (Client)
     └── edit/
         └── page.tsx           # Edit (Server)
+```
+
+**Print View Directory** (`app/print/[entity]/`):
+```
+print/[entity]/
+└── [id]/
+    └── page.tsx               # Print-optimized view (Server)
+```
+- Fetches entity with relations
+- Uses print-specific styling (can override global styles)
+- No navigation elements, optimized for printing/PDF generation
+
+**API Routes Directory** (`app/api/[entity-plural]/`):
+```
+api/[entity-plural]/
+└── [id]/
+    ├── pdf/
+    │   └── route.ts           # PDF export endpoint
+    └── word/
+        └── route.ts           # Word document export endpoint
+```
+- Uses content builders to generate liturgy document
+- PDF endpoint converts HTML to PDF
+- Word endpoint generates .docx file
+- Both endpoints fetch entity with relations and use `build[Entity]Liturgy()` function
+
+### Reusable Module Components
+
+**ModuleViewPanel Component** (`src/components/module-view-panel.tsx`)
+- Generic view panel for all modules (weddings, funerals, baptisms, etc.)
+- Handles: Edit button, Print view, PDF/Word downloads, Status/Location/Created date display
+- Props:
+  - `entity` - The entity being viewed (must have id, status, created_at)
+  - `entityType` - Display name (e.g., "Wedding", "Funeral")
+  - `modulePath` - URL path (e.g., "weddings", "funerals")
+  - `mainEvent` - Optional event for location display
+  - `generateFilename` - Function to generate download filenames
+  - `printViewPath` - Optional custom print path
+
+**Example Usage:**
+```tsx
+<ModuleViewPanel
+  entity={wedding}
+  entityType="Wedding"
+  modulePath="weddings"
+  mainEvent={wedding.wedding_event}
+  generateFilename={(ext) => `wedding-${wedding.id}.${ext}`}
+/>
+```
+
+**usePickerState Hook** (`src/hooks/use-picker-state.ts`)
+- Reduces boilerplate for managing modal picker state (people, events, readings)
+- Returns: `{ value, setValue, showPicker, setShowPicker }`
+- Usage: `const bride = usePickerState<Person>()`
+
+**Available Picker Components:**
+- `PeoplePicker` - Select person from parish directory with search and inline creation
+- `EventPicker` - Select or create events with date/time/location
+- `ReadingPickerModal` - Select scripture readings with category filters
+- `PetitionEditor` - Edit petitions with template insertion
+
+**Shared Form Components:**
+- `SaveButton` - Handles loading state, shows spinner while saving
+- `CancelButton` - Standard cancel button with routing
+- `FormField` - Standardized form field wrapper
+- `EventDisplay` - Display event date/time/location in forms
+
+**Content Builders & Renderers:**
+Content builders create liturgy document structures that can be rendered in multiple formats:
+
+- **Content Builders** (`lib/content-builders/[entity].ts`):
+  - `build[Entity]Liturgy(entity, templateId)` - Creates structured document
+  - Returns array of sections with headings, paragraphs, formatted text
+  - Single source of truth for liturgy content across all output formats
+
+- **HTML Renderer** (`lib/renderers/html-renderer.ts`):
+  - `renderHTML(document)` - Converts structure to HTML/React elements
+  - Used for view pages and print pages
+
+- **Usage Pattern**:
+  ```tsx
+  // In view client or print page
+  const liturgyDocument = buildWeddingLiturgy(wedding, 'wedding-full-script-english')
+  const liturgyContent = renderHTML(liturgyDocument)
+  // Returns React elements ready to render
+  ```
+
+### Type Patterns
+
+**WithRelations Interface Pattern:**
+All modules should define a `[Entity]WithRelations` interface that extends the base entity type and includes related data:
+
+```tsx
+// In lib/actions/[entity].ts
+export interface WeddingWithRelations extends Wedding {
+  bride?: Person | null
+  groom?: Person | null
+  wedding_event?: Event | null
+  // ... all related foreign keys expanded to full objects
+}
+
+export async function get[Entity]WithRelations(id: string): Promise<[Entity]WithRelations | null> {
+  // 1. Fetch base entity
+  // 2. Use Promise.all() to fetch all related data in parallel
+  // 3. Return merged object
+}
+```
+
+**Why:**
+- Forms need related data for display (not just IDs)
+- Type-safe access to nested properties
+- Eliminates unsafe `as any` type casts
+- View pages need full entity details for rendering
 
 ## Data Flow Pattern
 Server → Client: Pass serializable data as props
@@ -188,11 +307,45 @@ Server → Client: Pass serializable data as props
 ### Server Actions (lib/actions/[entity].ts)
 Required exports:
 - get[Entities](filters?: FilterParams) - Fetch list with optional server-side filtering
-- get[Entity](id) - Fetch single
+- get[Entity](id) - Fetch single entity (basic)
+- get[Entity]WithRelations(id) - Fetch entity with all related data (for view/edit pages)
 - create[Entity](data) - Create
 - update[Entity](id, data) - Update
 - delete[Entity](id) - Delete
-- Types: [Entity], Create[Entity]Data
+- Types: [Entity], [Entity]WithRelations, Create[Entity]Data, Update[Entity]Data
+
+**Simplified Update Pattern:**
+Use Object.fromEntries to filter undefined values instead of 30+ if statements:
+
+```tsx
+export async function update[Entity](id: string, data: Update[Entity]Data): Promise<[Entity]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Build update object from only defined values (filters out undefined)
+  const updateData = Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined)
+  )
+
+  const { data: entity, error } = await supabase
+    .from('[entities]')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating [entity]:', error)
+    throw new Error('Failed to update [entity]')
+  }
+
+  revalidatePath('/[entities]')
+  revalidatePath(`/[entities]/${id}`)
+  revalidatePath(`/[entities]/${id}/edit`)
+  return entity
+}
+```
 
 **Cache revalidation:** After mutations (create/update/delete), use revalidatePath() to invalidate Next.js cache for affected routes. Always revalidate both list pages and detail pages.
 
@@ -251,6 +404,72 @@ Client Component (BreadcrumbSetter):
 - **Maintain responsive design** across all new components
 - **Integrate with Supabase Auth** for user-facing features
 - **Use consistent design patterns** from existing component library
+
+## Creating New Modules (Funerals, Baptisms, etc.)
+
+### Quick Reference Checklist
+
+When creating a new module based on the wedding template:
+
+**1. Database Layer:**
+- [ ] Create migration for new table in `supabase/migrations/`
+- [ ] Add `parish_id` column and RLS policies
+- [ ] Include foreign keys for people, events, and readings as needed
+- [ ] Add base type to `lib/types.ts` (singular form)
+
+**2. Server Actions (`lib/actions/[entity].ts`):**
+- [ ] Define `Create[Entity]Data` interface
+- [ ] Define `Update[Entity]Data` interface (with nullable fields)
+- [ ] Define `[Entity]WithRelations` interface extending base type
+- [ ] Implement `get[Entities](filters?)` with server-side filtering
+- [ ] Implement `get[Entity](id)` for basic fetch
+- [ ] Implement `get[Entity]WithRelations(id)` using Promise.all() for related data
+- [ ] Implement `create[Entity](data)` with revalidatePath()
+- [ ] Implement `update[Entity](id, data)` using simplified Object.fromEntries pattern
+- [ ] Implement `delete[Entity](id)` with revalidatePath()
+
+**3. Module Structure (8 files in main, 1 in print):**
+- [ ] `page.tsx` - List page (server)
+- [ ] `[entity]-list-client.tsx` - List with URL search params
+- [ ] `create/page.tsx` - Create page (server)
+- [ ] `[id]/page.tsx` - View page (server, fetch WithRelations)
+- [ ] `[id]/[entity]-view-client.tsx` - View display with ModuleViewPanel
+- [ ] `[id]/edit/page.tsx` - Edit page (server, fetch WithRelations)
+- [ ] `[entity]-form.tsx` - Unified form accepting [Entity]WithRelations prop
+- [ ] `[id]/[entity]-form-actions.tsx` - Form action buttons (optional, if not using view client)
+- [ ] `print/[entity]/[id]/page.tsx` - Print-optimized view
+
+**4. Reusable Components:**
+- [ ] Use `ModuleViewPanel` for view page side panel
+- [ ] Use `PeoplePicker` for person selection
+- [ ] Use `EventPicker` for event selection
+- [ ] Use `ReadingPickerModal` for scripture readings
+- [ ] Use `PetitionEditor` if petitions are needed
+- [ ] Use `SaveButton` and `CancelButton` in forms
+
+**5. Content & Export:**
+- [ ] Create content builder in `lib/content-builders/[entity].ts`
+  - Export `build[Entity]Liturgy(entity, templateId)` function
+  - Returns liturgy document structure (sections, headings, paragraphs)
+  - Used by view, print, PDF, and Word export
+- [ ] Create API route `app/api/[entities]/[id]/pdf/route.ts`
+  - Fetches entity with relations
+  - Builds liturgy content using content builder
+  - Converts to PDF and returns as download
+- [ ] Create API route `app/api/[entities]/[id]/word/route.ts`
+  - Fetches entity with relations
+  - Builds liturgy content using content builder
+  - Generates .docx file and returns as download
+- [ ] Create print view in `app/print/[entity]/[id]/page.tsx`
+  - Fetches entity with relations
+  - Builds and renders liturgy using content builder + HTML renderer
+  - Print-optimized styling
+
+**6. Constants:**
+- [ ] Add status constants to `lib/constants.ts` if needed
+- [ ] Add to main sidebar navigation
+
+**Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
 
 ## Known Issues
 (Document any existing bugs or performance concerns here)
