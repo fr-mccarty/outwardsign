@@ -662,7 +662,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         selectedEvent={funeralEvent}
         defaultEventType="Funeral"
         defaultName="Funeral Service"
-        openToNewEvent={!funeralEvent}
+        openToNewEvent={!isEditing}
         disableSearch={true}
       />
       <EventPicker
@@ -673,7 +673,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         selectedEvent={funeralMealEvent}
         defaultEventType="Funeral Meal"
         defaultName="Funeral Meal"
-        openToNewEvent={!funeralMealEvent}
+        openToNewEvent={!isEditing}
         disableSearch={true}
       />
 

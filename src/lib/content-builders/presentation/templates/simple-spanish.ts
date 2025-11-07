@@ -1,6 +1,6 @@
 /**
- * Presentation Full Script - Spanish
- * Based on the traditional Presentation in the Temple liturgy
+ * Presentation Simple Script - Spanish
+ * A shorter, simplified version of the Presentation in the Temple liturgy
  */
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
@@ -88,7 +88,7 @@ function buildSummarySection(presentation: PresentationWithRelations): ContentSe
   }
 }
 
-export function buildFullScriptSpanish(presentation: PresentationWithRelations): LiturgyDocument {
+export function buildSimpleSpanish(presentation: PresentationWithRelations): LiturgyDocument {
   const child = presentation.child
   const mother = presentation.mother
   const father = presentation.father
@@ -102,12 +102,6 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
   const gendered = (maleText: string, femaleText: string) => {
     return childSex === 'Male' ? maleText : femaleText
   }
-
-  const getParentsText = () => {
-    return `los padres, ${motherName} y ${fatherName}`
-  }
-
-  const getAudienceText = () => 'padres'
 
   // Build title and subtitle
   const title = `Presentación en el Templo - ${childName}`
@@ -128,12 +122,6 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
   })
 
   liturgyElements.push({
-    type: 'text',
-    text: '[Después de la Homilía]',
-    formatting: ['italic'],
-  })
-
-  liturgyElements.push({
     type: 'spacer',
   })
 
@@ -146,7 +134,7 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
         formatting: ['bold'],
       },
       {
-        text: `La vida es el mayor regalo de Dios para nosotros. Agradecidos por la vida de su ${gendered('hijo', 'hija')}, ${getParentsText()} quisieran presentar a su ${gendered('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Les damos la bienvenida aquí al frente de la iglesia.`,
+        text: `${motherName} y ${fatherName} presentan a su ${gendered('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Por favor, pasen adelante.`,
       },
     ],
   })
@@ -157,7 +145,7 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
 
   liturgyElements.push({
     type: 'text',
-    text: '[Caminar al frente del altar]',
+    text: '[La familia viene al frente del altar]',
     formatting: ['italic'],
   })
 
@@ -170,11 +158,11 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
     type: 'multi-part-text',
     parts: [
       {
-        text: `CELEBRANTE (a los ${getAudienceText()}): `,
+        text: 'CELEBRANTE: ',
         formatting: ['bold'],
       },
       {
-        text: `Al presentar a ${gendered('este niño', 'esta niña')} al Señor y a esta comunidad hoy, ${isBaptized ? 'renuevan su compromiso' : 'se comprometen'} a ${gendered('criarlo', 'criarla')} en los caminos de la fe. ¿Entienden y aceptan esta responsabilidad?`,
+        text: `¿Se comprometen a criar a ${childName} en la fe católica?`,
       },
     ],
   })
@@ -192,7 +180,7 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
         formatting: ['bold'],
       },
       {
-        text: 'Sí, aceptamos.',
+        text: 'Sí, nos comprometemos.',
       },
     ],
   })
@@ -206,13 +194,23 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
     type: 'multi-part-text',
     parts: [
       {
-        text: `CELEBRANTE (al ${gendered('niño', 'niña')}): `,
+        text: 'CELEBRANTE: ',
         formatting: ['bold'],
       },
       {
-        text: `${isBaptized ? 'Como en el día de tu bautismo, te' : 'Te'} signo con la señal de la cruz, y pido a tus ${getAudienceText()} que hagan lo mismo.`,
+        text: `${gendered('Lo', 'La')} signo con la señal de la cruz. Padres, por favor hagan lo mismo.`,
       },
     ],
+  })
+
+  liturgyElements.push({
+    type: 'spacer',
+  })
+
+  liturgyElements.push({
+    type: 'text',
+    text: '[El celebrante y los padres hacen la señal de la cruz sobre el niño/a]',
+    formatting: ['italic'],
   })
 
   liturgyElements.push({
@@ -228,19 +226,9 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
         formatting: ['bold'],
       },
       {
-        text: `Padre Celestial, tú eres el dador de toda vida. Nos diste ${gendered('este hijo', 'esta hija')} y te ${gendered('lo', 'la')} presentamos, como María presentó a Jesús en el templo. Te rogamos por estos ${getAudienceText()}. Bendícelos en sus esfuerzos por criar a ${gendered('este niño', 'esta niña')} como ${gendered('un buen cristiano', 'una buena cristiana')} y como ${gendered('un buen católico', 'una buena católica')}. Bendice a ${gendered('este niño', 'esta niña')}. Dale buena salud, protége${gendered('lo', 'la')} de cualquier peligro del cuerpo y del espíritu, y ayúda${gendered('lo', 'la')} a crecer en edad y en sabiduría, siempre en tu presencia.`,
+        text: `Padre celestial, bendice a ${gendered('este niño', 'esta niña')} y a estos padres. Ayúdales a ${gendered('criarlo', 'criarla')} en la fe y el amor. Te lo pedimos por Cristo nuestro Señor.`,
       },
     ],
-  })
-
-  liturgyElements.push({
-    type: 'spacer',
-  })
-
-  // Prayer to Mary
-  liturgyElements.push({
-    type: 'text',
-    text: `Santa María, Madre de Dios y Madre nuestra, pedimos tu protección sobre esta familia y sobre ${gendered('este hijo', 'esta hija')}. Es siguiendo tu ejemplo que esta familia trae a ${gendered('este niño', 'esta niña')} para ser presentado a Dios, nuestro creador, y a esta comunidad hoy. Ayuda a estos padres a criar a ${gendered('este niño', 'esta niña')} con palabra y ejemplo. Hacemos nuestra oración en el nombre de Jesucristo, que es Señor por los siglos de los siglos.`,
   })
 
   liturgyElements.push({
@@ -265,10 +253,10 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
     type: 'spacer',
   })
 
-  // Blessing of religious articles
+  // Blessing of religious articles (if applicable)
   liturgyElements.push({
     type: 'text',
-    text: '[Bendecir artículos religiosos]',
+    text: '[Bendecir artículos religiosos si se presentan]',
     formatting: ['italic'],
   })
 
@@ -285,7 +273,7 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
         formatting: ['bold'],
       },
       {
-        text: 'Ahora los enviamos de regreso a sus lugares, mientras les mostramos nuestro apoyo con un aplauso.',
+        text: 'Mostremos nuestro apoyo con un aplauso.',
       },
     ],
   })
@@ -317,7 +305,7 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
     id: presentation.id,
     type: 'presentation',
     language: 'es',
-    template: 'presentation-spanish',
+    template: 'presentation-simple-spanish',
     title,
     subtitle,
     sections,

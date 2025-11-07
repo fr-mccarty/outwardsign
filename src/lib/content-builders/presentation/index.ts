@@ -8,6 +8,9 @@ import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptSpanish } from './templates/full-script-spanish'
 import { buildFullScriptEnglish } from './templates/full-script-english'
+import { buildSimpleSpanish } from './templates/simple-spanish'
+import { buildSimpleEnglish } from './templates/simple-english'
+import { buildBilingual } from './templates/bilingual'
 
 /**
  * Template Registry
@@ -27,6 +30,27 @@ export const PRESENTATION_TEMPLATES: Record<string, LiturgyTemplate<Presentation
     description: 'Complete presentation liturgy in English',
     supportedLanguages: ['en'],
     builder: buildFullScriptEnglish,
+  },
+  'presentation-simple-spanish': {
+    id: 'presentation-simple-spanish',
+    name: 'Presentación Simple (Español)',
+    description: 'Simplified presentation liturgy in Spanish',
+    supportedLanguages: ['es'],
+    builder: buildSimpleSpanish,
+  },
+  'presentation-simple-english': {
+    id: 'presentation-simple-english',
+    name: 'Simple Presentation (English)',
+    description: 'Simplified presentation liturgy in English',
+    supportedLanguages: ['en'],
+    builder: buildSimpleEnglish,
+  },
+  'presentation-bilingual': {
+    id: 'presentation-bilingual',
+    name: 'Bilingual Presentation (English & Spanish)',
+    description: 'Complete bilingual presentation liturgy',
+    supportedLanguages: ['en', 'es'],
+    builder: buildBilingual,
   },
 }
 

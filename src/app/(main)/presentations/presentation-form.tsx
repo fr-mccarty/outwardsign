@@ -25,6 +25,7 @@ import { EventDisplay } from "@/components/event-display"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
+import { PRESENTATION_TEMPLATES } from "@/lib/content-builders/presentation"
 
 interface PresentationFormProps {
   presentation?: PresentationWithRelations
@@ -46,7 +47,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
   const [status, setStatus] = useState(presentation?.status || "ACTIVE")
   const [note, setNote] = useState(presentation?.note || "")
   const [isBaptized, setIsBaptized] = useState(presentation?.is_baptized || false)
-  const [presentationTemplateId, setPresentationTemplateId] = useState(presentation?.presentation_template_id || "")
+  const [presentationTemplateId, setPresentationTemplateId] = useState(
+    presentation?.presentation_template_id || "presentation-spanish"
+  )
 
   // Event picker states
   const [showPresentationEventPicker, setShowPresentationEventPicker] = useState(false)
@@ -306,6 +309,22 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="template">Ceremony Template</Label>
+            <Select value={presentationTemplateId} onValueChange={setPresentationTemplateId}>
+              <SelectTrigger id="template">
+                <SelectValue placeholder="Select template" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(PRESENTATION_TEMPLATES).map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="is_baptized"
@@ -365,6 +384,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           setPresentationEvent(event)
           setShowPresentationEventPicker(false)
         }}
+        openToNewEvent={!isEditing}
       />
 
       {/* People Picker Modals */}

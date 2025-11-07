@@ -5,7 +5,88 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatEventDateTime } from '@/lib/utils/formatters'
+import { formatEventDateTime, formatPersonName } from '@/lib/utils/formatters'
+
+/**
+ * Build summary section (presentation info)
+ */
+function buildSummarySection(presentation: PresentationWithRelations): ContentSection {
+  const elements: ContentElement[] = []
+
+  // Presentation Information subsection
+  elements.push({
+    type: 'section-title',
+    text: 'Presentation Information',
+  })
+
+  if (presentation.child) {
+    elements.push({
+      type: 'info-row',
+      label: 'Child:',
+      value: formatPersonName(presentation.child),
+    })
+  }
+
+  if (presentation.mother) {
+    elements.push({
+      type: 'info-row',
+      label: 'Mother:',
+      value: formatPersonName(presentation.mother),
+    })
+  }
+
+  if (presentation.father) {
+    elements.push({
+      type: 'info-row',
+      label: 'Father:',
+      value: formatPersonName(presentation.father),
+    })
+  }
+
+  if (presentation.coordinator) {
+    elements.push({
+      type: 'info-row',
+      label: 'Coordinator:',
+      value: formatPersonName(presentation.coordinator),
+    })
+  }
+
+  if (presentation.presentation_event?.start_date) {
+    elements.push({
+      type: 'info-row',
+      label: 'Event Date & Time:',
+      value: formatEventDateTime(presentation.presentation_event),
+    })
+  }
+
+  if (presentation.presentation_event?.location) {
+    elements.push({
+      type: 'info-row',
+      label: 'Location:',
+      value: presentation.presentation_event.location,
+    })
+  }
+
+  elements.push({
+    type: 'info-row',
+    label: 'Baptism Status:',
+    value: presentation.is_baptized ? 'Baptized' : 'Not yet baptized',
+  })
+
+  if (presentation.note) {
+    elements.push({
+      type: 'info-row',
+      label: 'Notes:',
+      value: presentation.note,
+    })
+  }
+
+  return {
+    id: 'summary',
+    pageBreakAfter: true,
+    elements,
+  }
+}
 
 export function buildFullScriptEnglish(presentation: PresentationWithRelations): LiturgyDocument {
   const child = presentation.child
@@ -208,6 +289,22 @@ export function buildFullScriptEnglish(presentation: PresentationWithRelations):
       },
     ],
   })
+
+  // Add header to summary section
+  const summarySection = buildSummarySection(presentation)
+  summarySection.elements.unshift(
+    {
+      type: 'event-title',
+      text: title,
+      alignment: 'center',
+    },
+    {
+      type: 'event-datetime',
+      text: subtitle || 'No date/time',
+      alignment: 'center',
+    }
+  )
+  sections.push(summarySection)
 
   // Add liturgy section
   sections.push({

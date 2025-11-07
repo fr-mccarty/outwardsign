@@ -742,7 +742,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedEvent={weddingEvent}
         defaultEventType="Wedding Ceremony"
         defaultName="Wedding Ceremony"
-        openToNewEvent={!weddingEvent}
+        openToNewEvent={!isEditing}
         disableSearch={true}
       />
       <EventPicker
@@ -753,7 +753,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedEvent={receptionEvent}
         defaultEventType="Reception"
         defaultName="Reception"
-        openToNewEvent={!receptionEvent}
+        openToNewEvent={!isEditing}
         disableSearch={true}
       />
       <EventPicker
@@ -764,7 +764,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedEvent={rehearsalEvent}
         defaultEventType="Rehearsal"
         defaultName="Rehearsal"
-        openToNewEvent={!rehearsalEvent}
+        openToNewEvent={!isEditing}
         disableSearch={true}
       />
       <EventPicker
@@ -775,7 +775,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         selectedEvent={rehearsalDinnerEvent}
         defaultEventType="Rehearsal Dinner"
         defaultName="Rehearsal Dinner"
-        openToNewEvent={!rehearsalDinnerEvent}
+        openToNewEvent={!isEditing}
         disableSearch={true}
       />
 

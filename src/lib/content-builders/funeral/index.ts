@@ -7,6 +7,7 @@
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptEnglish } from './templates/full-script-english'
+import { buildFullScriptSpanish } from './templates/full-script-spanish'
 
 /**
  * Template Registry
@@ -20,8 +21,14 @@ export const FUNERAL_TEMPLATES: Record<string, LiturgyTemplate<FuneralWithRelati
     supportedLanguages: ['en'],
     builder: buildFullScriptEnglish,
   },
+  'funeral-full-script-spanish': {
+    id: 'funeral-full-script-spanish',
+    name: 'Guión Completo de la Liturgia Fúnebre (Español)',
+    description: 'Liturgia fúnebre completa con todas las lecturas, respuestas e indicaciones',
+    supportedLanguages: ['es'],
+    builder: buildFullScriptSpanish,
+  },
   // Future templates:
-  // 'funeral-full-script-spanish': { ... },
   // 'funeral-readings-only-english': { ... },
 }
 

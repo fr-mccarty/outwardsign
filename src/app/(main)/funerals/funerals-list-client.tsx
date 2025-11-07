@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, Heart, Eye, Calendar, Search, Filter, Edit, FileText, X } from "lucide-react"
+import { Plus, Cross, Eye, Calendar, Search, Filter, Edit, FileText, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -179,7 +179,7 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
       ) : (
         <Card>
           <CardContent className="text-center py-12">
-            <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <Cross className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">
               {hasActiveFilters
                 ? 'No funerals found'

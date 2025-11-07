@@ -7,6 +7,7 @@
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptEnglish } from './templates/full-script-english'
+import { buildFullScriptSpanish } from './templates/full-script-spanish'
 
 /**
  * Template Registry
@@ -20,8 +21,14 @@ export const WEDDING_TEMPLATES: Record<string, LiturgyTemplate<WeddingWithRelati
     supportedLanguages: ['en'],
     builder: buildFullScriptEnglish,
   },
+  'wedding-full-script-spanish': {
+    id: 'wedding-full-script-spanish',
+    name: 'Guión Completo de la Ceremonia (Español)',
+    description: 'Liturgia completa de boda con todas las lecturas, respuestas e indicaciones',
+    supportedLanguages: ['es'],
+    builder: buildFullScriptSpanish,
+  },
   // Future templates:
-  // 'wedding-full-script-spanish': { ... },
   // 'wedding-readings-only-english': { ... },
   // 'wedding-summary-card-english': { ... },
 }
