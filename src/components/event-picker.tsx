@@ -95,7 +95,7 @@ export function EventPicker({
   selectedEventId,
   selectedEvent,
   className,
-  defaultEventType = "",
+  defaultEventType = "EVENT",
   defaultName = "",
   openToNewEvent = false,
   disableSearch = false,

@@ -57,7 +57,11 @@ test.describe('Readings Module', () => {
 
     await page.fill('input#pericope', testPericope);
     await page.fill('input#lectionary_id', testLectionaryId);
-    await page.fill('input#language', testLanguage);
+
+    // Select language from dropdown
+    await page.click('#language');
+    await page.click(`[role="option"]:has-text("${testLanguage}")`);
+
     await page.fill('textarea#introduction', testIntroduction);
     await page.fill('textarea#text', testText);
     await page.fill('textarea#conclusion', testConclusion);
@@ -130,7 +134,11 @@ test.describe('Readings Module', () => {
 
     // Create first reading (English)
     await page.fill('input#pericope', 'Matthew 5:1-12');
-    await page.fill('input#language', 'English');
+
+    // Select English from dropdown
+    await page.click('#language');
+    await page.click('[role="option"]:has-text("English")');
+
     await page.fill('textarea#text', 'Blessed are the poor in spirit...');
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/readings\/[a-f0-9-]+$/, { timeout: 10000 });
@@ -138,7 +146,11 @@ test.describe('Readings Module', () => {
     // Create second reading (Spanish)
     await page.goto('/readings/create');
     await page.fill('input#pericope', 'Lucas 1:26-38');
-    await page.fill('input#language', 'Spanish');
+
+    // Select Spanish from dropdown
+    await page.click('#language');
+    await page.click('[role="option"]:has-text("Spanish")');
+
     await page.fill('textarea#text', 'En el sexto mes, el ángel Gabriel...');
     await page.click('button[type="submit"]');
     await page.waitForURL(/\/readings\/[a-f0-9-]+$/, { timeout: 10000 });

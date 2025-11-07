@@ -6,7 +6,7 @@ CREATE TABLE readings (
   text TEXT NOT NULL,
   introduction TEXT,
   conclusion TEXT,
-  language TEXT,
+  language TEXT DEFAULT 'ENGLISH',
   lectionary_id TEXT,
   categories TEXT[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

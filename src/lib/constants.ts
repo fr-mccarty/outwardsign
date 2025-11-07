@@ -125,31 +125,70 @@ Roguemos al Señor.
 Por todos los niños, para que sean protegidos y bendecidos por la gracia de Dios.
 Roguemos al Señor.`
 
-// Wedding Status
-export const WEDDING_STATUS = ['Active', 'Inactive', 'Completed'] as const
+// Status values (stored as uppercase in database) - shared across all modules
+export const MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE', 'COMPLETED'] as const
 
-// Funeral Status
-export const FUNERAL_STATUS = ['Active', 'Inactive', 'Completed'] as const
+// Status labels for display - shared across all modules
+export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = {
+  ACTIVE: {
+    en: 'Active',
+    es: 'Activo'
+  },
+  INACTIVE: {
+    en: 'Inactive',
+    es: 'Inactivo'
+  },
+  COMPLETED: {
+    en: 'Completed',
+    es: 'Completado'
+  }
+}
 
-// Quinceañera Status
-export const QUINCEANERA_STATUS = ['Active', 'Inactive', 'Completed'] as const
-
-// Presentation Status
-export const PRESENTATION_STATUS = ['Active', 'Inactive', 'Completed'] as const
-
-// Event Types
-export const EVENT_TYPES = [
-  'Wedding',
-  'Funeral',
-  'Baptism',
-  'Quinceañera',
-  'Presentation',
-  'Mass',
-  'Confession',
-  'Meeting',
-  'Rehearsal',
-  'Other'
+// Event type values (stored as uppercase in database)
+export const EVENT_TYPE_VALUES = [
+  'WEDDING',
+  'FUNERAL',
+  'BAPTISM',
+  'QUINCEANERA',
+  'PRESENTATION',
+  'MASS',
+  'CONFESSION',
+  'MEETING',
+  'REHEARSAL',
+  'OTHER'
 ] as const
+
+// Event type labels for display
+export const EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
+  WEDDING: {
+    en: 'Wedding',
+    es: 'Boda'
+  },
+  FUNERAL: {
+    en: 'Funeral',
+    es: 'Funeral'
+  },
+  BAPTISM: {
+    en: 'Baptism',
+    es: 'Bautismo'
+  },
+  QUINCEANERA: {
+    en: 'Quinceañera',
+    es: 'Quinceañera'
+  },
+  PRESENTATION: {
+    en: 'Presentation',
+    es: 'Presentación'
+  },
+  MASS: {
+    en: 'Mass',
+    es: 'Misa'
+  },
+  OTHER: {
+    en: 'Other',
+    es: 'Otro'
+  }
+}
 
 // Reading Categories
 // Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database
@@ -189,5 +228,24 @@ export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }>
   GOSPEL: {
     en: 'Gospel',
     es: 'Evangelio'
+  }
+}
+
+// Language values (stored as uppercase in database)
+export const LANGUAGE_VALUES = ['ENGLISH', 'SPANISH', 'LATIN'] as const
+
+// Language labels for display
+export const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
+  ENGLISH: {
+    en: 'English',
+    es: 'Inglés'
+  },
+  SPANISH: {
+    en: 'Spanish',
+    es: 'Español'
+  },
+  LATIN: {
+    en: 'Latin',
+    es: 'Latín'
   }
 }

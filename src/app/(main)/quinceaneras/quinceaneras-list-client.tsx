@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { QUINCEANERA_STATUS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 
 interface Stats {
   total: number
@@ -94,9 +94,9 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {QUINCEANERA_STATUS.map((status) => (
+                  {MODULE_STATUS_VALUES.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status}
+                      {MODULE_STATUS_LABELS[status].en}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -120,7 +120,7 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {quinceanera.status && (
                         <Badge variant="outline" className="text-xs">
-                          {quinceanera.status}
+                          {MODULE_STATUS_LABELS[quinceanera.status]?.en || quinceanera.status}
                         </Badge>
                       )}
                       {quinceanera.quinceanera_event && (

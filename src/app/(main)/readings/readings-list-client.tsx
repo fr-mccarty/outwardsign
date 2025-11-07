@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, BookOpen, Eye, Calendar, Search, Filter } from "lucide-react"
-import { READING_CATEGORY_LABELS } from "@/lib/constants"
+import { READING_CATEGORY_LABELS, LANGUAGE_LABELS } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -92,7 +92,9 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
                 <SelectContent>
                   <SelectItem value="all">All Languages</SelectItem>
                   {stats.languages.map(lang => (
-                    <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                    <SelectItem key={lang} value={lang}>
+                      {LANGUAGE_LABELS[lang]?.en || lang}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -128,7 +130,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {reading.language && (
                         <Badge variant="outline" className="text-xs">
-                          {reading.language}
+                          {LANGUAGE_LABELS[reading.language]?.en || reading.language}
                         </Badge>
                       )}
                       {reading.lectionary_id && (

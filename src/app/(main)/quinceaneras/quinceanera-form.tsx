@@ -24,7 +24,7 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { QUINCEANERA_STATUS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -48,7 +48,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(quinceanera?.status || "Active")
+  const [status, setStatus] = useState(quinceanera?.status || "ACTIVE")
   const [note, setNote] = useState(quinceanera?.note || "")
   const [announcements, setAnnouncements] = useState(quinceanera?.announcements || "")
   const [petitions, setPetitions] = useState(quinceanera?.petitions || "")
@@ -231,9 +231,9 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {QUINCEANERA_STATUS.map((statusOption) => (
+                {MODULE_STATUS_VALUES.map((statusOption) => (
                   <SelectItem key={statusOption} value={statusOption}>
-                    {statusOption}
+                    {MODULE_STATUS_LABELS[statusOption].en}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { EVENT_TYPE_LABELS } from "@/lib/constants"
 
 interface Stats {
   total: number
@@ -89,7 +90,9 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
                   {stats.eventTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>
+                      {EVENT_TYPE_LABELS[type]?.en || type}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -124,7 +127,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <Badge variant="outline" className="text-xs">
-                          {event.event_type}
+                          {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
                         </Badge>
                         {event.language && (
                           <Badge variant="secondary" className="text-xs">

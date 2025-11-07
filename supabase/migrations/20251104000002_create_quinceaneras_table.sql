@@ -11,7 +11,7 @@ CREATE TABLE quinceaneras (
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
   lead_musician_id UUID REFERENCES people(id) ON DELETE SET NULL,
   cantor_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  status TEXT,
+  status TEXT DEFAULT 'ACTIVE',
   quinceanera_template_id TEXT,
   first_reading_id UUID REFERENCES readings(id) ON DELETE SET NULL,
   psalm_id UUID REFERENCES readings(id) ON DELETE SET NULL,

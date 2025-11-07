@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { PRESENTATION_STATUS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 
 interface Stats {
   total: number
@@ -94,9 +94,9 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {PRESENTATION_STATUS.map((status) => (
+                  {MODULE_STATUS_VALUES.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status}
+                      {MODULE_STATUS_LABELS[status].en}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -120,7 +120,7 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {presentation.status && (
                         <Badge variant="outline" className="text-xs">
-                          {presentation.status}
+                          {MODULE_STATUS_LABELS[presentation.status]?.en || presentation.status}
                         </Badge>
                       )}
                       {presentation.is_baptized && (

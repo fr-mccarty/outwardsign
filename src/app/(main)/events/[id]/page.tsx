@@ -7,6 +7,7 @@ import { getEvent } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { EventFormActions } from './event-form-actions'
+import { EVENT_TYPE_LABELS } from "@/lib/constants"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -51,7 +52,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   return (
     <PageContainer
       title={event.name}
-      description={event.event_type}
+      description={EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
       maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
@@ -61,7 +62,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold">{event.name}</h1>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge variant="outline">
-              {event.event_type}
+              {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
             </Badge>
             {event.language && (
               <Badge variant="secondary">

@@ -22,7 +22,7 @@ import {
 import { PeoplePicker } from "@/components/people-picker"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { PRESENTATION_STATUS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
 
@@ -43,7 +43,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(presentation?.status || "Active")
+  const [status, setStatus] = useState(presentation?.status || "ACTIVE")
   const [note, setNote] = useState(presentation?.note || "")
   const [isBaptized, setIsBaptized] = useState(presentation?.is_baptized || false)
   const [presentationTemplateId, setPresentationTemplateId] = useState(presentation?.presentation_template_id || "")
@@ -297,9 +297,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {PRESENTATION_STATUS.map((s) => (
+                {MODULE_STATUS_VALUES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s}
+                    {MODULE_STATUS_LABELS[s].en}
                   </SelectItem>
                 ))}
               </SelectContent>

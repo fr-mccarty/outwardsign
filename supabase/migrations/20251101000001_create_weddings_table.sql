@@ -15,7 +15,7 @@ CREATE TABLE weddings (
   rehearsal_dinner_event_id UUID REFERENCES events(id) ON DELETE SET NULL,
   witness_1_id UUID REFERENCES people(id) ON DELETE SET NULL,
   witness_2_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  status TEXT,
+  status TEXT DEFAULT 'ACTIVE',
   wedding_template_id TEXT,
   first_reading_id UUID REFERENCES readings(id) ON DELETE SET NULL,
   psalm_id UUID REFERENCES readings(id) ON DELETE SET NULL,

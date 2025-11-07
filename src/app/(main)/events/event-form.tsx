@@ -17,7 +17,7 @@ import { createEvent, updateEvent, type CreateEventData } from "@/lib/actions/ev
 import type { Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { EVENT_TYPES } from "@/lib/constants"
+import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS } from "@/lib/constants"
 
 interface EventFormProps {
   event?: Event
@@ -30,7 +30,7 @@ export function EventForm({ event }: EventFormProps) {
   const [name, setName] = useState(event?.name || "")
   const [description, setDescription] = useState(event?.description || "")
   const [responsiblePartyId, setResponsiblePartyId] = useState(event?.responsible_party_id || "")
-  const [eventType, setEventType] = useState(event?.event_type || "")
+  const [eventType, setEventType] = useState(event?.event_type || "EVENT")
   const [startDate, setStartDate] = useState(event?.start_date || "")
   const [startTime, setStartTime] = useState(event?.start_time || "")
   const [endDate, setEndDate] = useState(event?.end_date || "")
@@ -106,9 +106,9 @@ export function EventForm({ event }: EventFormProps) {
               <SelectValue placeholder="Select event type" />
             </SelectTrigger>
             <SelectContent>
-              {EVENT_TYPES.map((type) => (
+              {EVENT_TYPE_VALUES.map((type) => (
                 <SelectItem key={type} value={type}>
-                  {type}
+                  {EVENT_TYPE_LABELS[type].en}
                 </SelectItem>
               ))}
             </SelectContent>

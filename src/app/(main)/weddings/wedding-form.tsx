@@ -24,7 +24,7 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { WEDDING_STATUS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { SaveButton } from "@/components/save-button"
 import { CancelButton } from "@/components/cancel-button"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -48,7 +48,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(wedding?.status || "Active")
+  const [status, setStatus] = useState(wedding?.status || "ACTIVE")
   const [notes, setNotes] = useState(wedding?.notes || "")
   const [announcements, setAnnouncements] = useState(wedding?.announcements || "")
   const [petitions, setPetitions] = useState(wedding?.petitions || "")
@@ -248,9 +248,9 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {WEDDING_STATUS.map((statusOption) => (
+                {MODULE_STATUS_VALUES.map((statusOption) => (
                   <SelectItem key={statusOption} value={statusOption}>
-                    {statusOption}
+                    {MODULE_STATUS_LABELS[statusOption].en}
                   </SelectItem>
                 ))}
               </SelectContent>

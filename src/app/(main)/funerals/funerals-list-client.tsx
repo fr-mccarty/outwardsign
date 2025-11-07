@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { FUNERAL_STATUS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 
 interface Stats {
   total: number
@@ -94,9 +94,9 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {FUNERAL_STATUS.map((status) => (
+                  {MODULE_STATUS_VALUES.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status}
+                      {MODULE_STATUS_LABELS[status].en}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -120,7 +120,7 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {funeral.status && (
                         <Badge variant="outline" className="text-xs">
-                          {funeral.status}
+                          {MODULE_STATUS_LABELS[funeral.status]?.en || funeral.status}
                         </Badge>
                       )}
                       {funeral.funeral_event && (

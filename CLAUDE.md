@@ -253,6 +253,9 @@ api/[entity-plural]/
 - Word endpoint generates .docx file
 - Both endpoints fetch entity with relations and use `build[Entity]Liturgy()` function
 
+### Constants Pattern
+The application uses a dual-constant pattern where `*_VALUES` arrays contain uppercase keys stored in the database (e.g., `MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE']`), and `*_LABELS` objects map those keys to localized display strings in both English and Spanish (e.g., `MODULE_STATUS_LABELS.ACTIVE.en = 'Active'`). This standardizes database storage while enabling multilingual UI display across all modules.
+
 ### Reusable Module Components
 
 **ModuleViewPanel Component** (`src/components/module-view-panel.tsx`)

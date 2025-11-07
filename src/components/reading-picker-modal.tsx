@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BookOpen, Filter, Check, Eye } from "lucide-react"
 import type { IndividualReading } from '@/lib/actions/readings'
 import { toast } from 'sonner'
-import { READING_CATEGORIES, READING_CATEGORY_LABELS } from '@/lib/constants'
+import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from '@/lib/constants'
 
 interface ReadingPickerModalProps {
   isOpen: boolean
@@ -100,39 +100,18 @@ export function ReadingPickerModal({
     return readings
   }, [readings, selectedCategories])
 
-  // Get unique languages and categories for filters
+  // Get available languages from constants
   const availableLanguages = useMemo(() => {
-    const languages = new Set<string>()
-
-    if (readings.length === 0) {
-      // If no readings, provide basic language options in uppercase
-      languages.add('ENGLISH')
-      languages.add('SPANISH')
-      languages.add('LATIN')
-    } else {
-      // Use all readings to get languages, not just filtered ones
-      readings.forEach(reading => {
-        const language = (reading.language || 'English').toUpperCase()
-        languages.add(language)
-      })
-      // Always ensure we have at least English as an option
-      languages.add('ENGLISH')
-    }
-
-    return Array.from(languages).sort()
-  }, [readings])
+    return [...LANGUAGE_VALUES]
+  }, [])
 
   // Get display labels for categories
   const categoryLabels = READING_CATEGORIES.map(cat => READING_CATEGORY_LABELS[cat].en)
 
   const getReadingLanguage = useCallback((reading: IndividualReading): string => {
-    return (reading.language || 'English').toUpperCase()
+    // Return uppercase language value (ENGLISH, SPANISH, LATIN)
+    return (reading.language || 'ENGLISH').toUpperCase()
   }, [])
-
-  // Helper to format language for display (capitalize first letter, rest lowercase)
-  const formatLanguageDisplay = (lang: string): string => {
-    return lang.charAt(0).toUpperCase() + lang.slice(1).toLowerCase()
-  }
 
   // Pre-select categories when picker opens (only once)
   React.useEffect(() => {
@@ -180,8 +159,8 @@ export function ReadingPickerModal({
       // Language filter
       if (selectedLanguage !== 'all') {
         const readingLanguage = getReadingLanguage(reading)
-        // Compare in uppercase
-        if (readingLanguage.toUpperCase() !== selectedLanguage.toUpperCase()) {
+        // Compare case-insensitively
+        if (readingLanguage.toLowerCase() !== selectedLanguage.toLowerCase()) {
           console.log('Filtered out by language:', reading.pericope, 'readingLang:', readingLanguage, 'selectedLang:', selectedLanguage)
           return false
         }
@@ -280,13 +259,13 @@ export function ReadingPickerModal({
             <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
               <SelectTrigger className="w-full sm:w-1/2">
                 <SelectValue placeholder="Select language">
-                  {selectedLanguage === 'all' ? 'All Languages' : formatLanguageDisplay(selectedLanguage)}
+                  {selectedLanguage === 'all' ? 'All Languages' : LANGUAGE_LABELS[selectedLanguage]?.en || selectedLanguage}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Languages</SelectItem>
                 {availableLanguages.map(lang => (
-                  <SelectItem key={lang} value={lang}>{formatLanguageDisplay(lang)}</SelectItem>
+                  <SelectItem key={lang} value={lang}>{LANGUAGE_LABELS[lang].en}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

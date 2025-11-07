@@ -8,9 +8,16 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { Save } from "lucide-react"
 import { createReading, updateReading, type CreateReadingData, type Reading } from "@/lib/actions/readings"
-import { READING_CATEGORIES, READING_CATEGORY_LABELS } from "@/lib/constants"
+import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ReadingFormProps {
   reading?: Reading
@@ -91,13 +98,21 @@ export function ReadingForm({ reading }: ReadingFormProps) {
         />
       </div>
 
-      <FormField
-        id="language"
-        label="Language"
-        value={language}
-        onChange={setLanguage}
-        placeholder="e.g., English, Spanish, Latin"
-      />
+      <div className="space-y-2">
+        <Label htmlFor="language">Language</Label>
+        <Select value={language} onValueChange={setLanguage}>
+          <SelectTrigger id="language">
+            <SelectValue placeholder="Select a language" />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGE_VALUES.map(lang => (
+              <SelectItem key={lang} value={lang}>
+                {LANGUAGE_LABELS[lang].en}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <FormField
         id="introduction"

@@ -5,7 +5,7 @@ CREATE TABLE events (
   name TEXT NOT NULL,
   description TEXT,
   responsible_party_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  event_type TEXT NOT NULL,
+  event_type TEXT NOT NULL DEFAULT 'EVENT',
   start_date DATE,
   start_time TIME,
   end_date DATE,
