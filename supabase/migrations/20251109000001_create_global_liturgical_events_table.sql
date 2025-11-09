@@ -49,6 +49,12 @@ CREATE TRIGGER trigger_update_global_liturgical_events_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_global_liturgical_events_updated_at();
 
+-- Grant table-level permissions
+-- anon and authenticated roles need SELECT permission on the table itself
+GRANT SELECT ON global_liturgical_events TO anon;
+GRANT SELECT ON global_liturgical_events TO authenticated;
+GRANT ALL ON global_liturgical_events TO service_role;
+
 -- RLS Policies
 -- This is global read-only data, so we allow authenticated users to read
 -- Only backend/admin operations can write
@@ -60,6 +66,13 @@ CREATE POLICY "Anyone can read global liturgical events"
   ON global_liturgical_events
   FOR SELECT
   TO authenticated
+  USING (true);
+
+-- Allow anonymous users to read global liturgical events (frontend uses anon role)
+CREATE POLICY "Anonymous users can read global liturgical events"
+  ON global_liturgical_events
+  FOR SELECT
+  TO anon
   USING (true);
 
 -- Only service role can insert/update/delete (backend operations only)

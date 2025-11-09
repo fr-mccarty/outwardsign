@@ -40,7 +40,7 @@ export function CalendarClient({ events, initialView }: CalendarClientProps) {
   const { setBreadcrumbs } = useBreadcrumbs()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>(initialView)
-  const [showLiturgical, setShowLiturgical] = useState(false)
+  const [showLiturgical, setShowLiturgical] = useState(true) // Default to ON
   const [liturgicalEvents, setLiturgicalEvents] = useState<GlobalLiturgicalEvent[]>([])
   const [loadingLiturgical, setLoadingLiturgical] = useState(false)
   const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<GlobalLiturgicalEvent | null>(null)
@@ -51,6 +51,9 @@ export function CalendarClient({ events, initialView }: CalendarClientProps) {
     const saved = localStorage.getItem('showLiturgicalCalendar')
     if (saved !== null) {
       setShowLiturgical(JSON.parse(saved))
+    } else {
+      // First time - set default to true in localStorage
+      localStorage.setItem('showLiturgicalCalendar', JSON.stringify(true))
     }
   }, [])
 

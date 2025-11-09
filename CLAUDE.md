@@ -59,9 +59,11 @@ Problems and policies need to be fixed at the migration level. Never try to fix 
 
 According to Claude, the backend access the database at Supabaes using the Authenticated policy, and the frontend uses the Anon policy.
 
+**Migration Strategy (Early Development):**
+During initial development, modify existing migrations instead of creating new migration files. When database changes are needed, update the relevant existing migration, then prompt the user to reset the database and re-run all migrations from scratch.
+
 ## Testing
-use Playwright to test:
-npm run test:headed
+For testing instructions and commands, refer to the [README.md](../README.md#testing) file.
 
 ## Tools
 Supabase MCP Server - for all actions related to the database
