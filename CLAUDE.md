@@ -5,6 +5,7 @@
 ## Table of Contents
 
 - [Project Description](#project-description)
+- [📖 User Personas](#-user-personas)
 - [🔴 Database](#-database)
 - [Testing](#testing)
 - [Tools](#tools)
@@ -47,6 +48,14 @@ Plan, Communicate, and Celebrate Sacraments and Sacramentals in a Catholic Paris
 - Language Management
 
 **Examples:** Wedding Liturgies, Quinceanera, Baptisms, Presentations (Latino), Funerals
+
+## 📖 User Personas
+
+User personas have been created to guide development and evaluate the application from the perspective of real parish users. These personas represent the primary users of Outward Sign and help ensure the application meets their needs.
+
+**Reference File:** [PERSONAS.md](./PERSONAS.md)
+
+When implementing features or evaluating the application, refer to the personas file to ensure the design, functionality, and user experience align with the needs of priests, deacons, pastoral associates, liturgical directors, parish staff, and parishioners.
 
 ## 🔴 Database
 For making database changes, a migration file should first be created.

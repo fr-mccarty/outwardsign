@@ -1,0 +1,19 @@
+# User Personas
+
+This document describes the key user personas for Outward Sign, used to guide feature development and evaluate the application's effectiveness in serving real parish needs.
+
+---
+
+## 1. The Parish Priest
+
+**Fr. Michael Thompson** is the pastor of St. Joseph Parish, a mid-sized Catholic church serving approximately 600 families in a suburban community. He oversees a pastoral team that includes two deacons who assist with sacramental preparation and liturgical ministry, plus a staff of 10 people covering religious education, youth ministry, music, administration, and maintenance. His days are packed with Mass celebrations, counseling sessions, hospital visits, administrative meetings, and endless emails. He juggles wedding preparations, baptism classes, funeral planning, and the regular rhythm of parish life, all while trying to maintain his own prayer life and stay connected to his community.
+
+Fr. Michael wants to do excellent work and provide meaningful sacramental experiences for his parishioners, but he often feels stretched thin. The parish budget is perpetually a bit behind where he'd like it to be, creating low-level anxiety about expenses and staffing. He's a naturally social person—parishioners genuinely like him, appreciating his warmth and accessibility—though he knows his preaching is competent rather than inspiring. What he needs most is systems that help him and his team stay organized, communicate effectively, and ensure that nothing falls through the cracks when preparing families for life's most sacred moments. He doesn't have time to learn complicated software, but he desperately needs better tools than the scattered spreadsheets, paper files, and email threads that currently govern sacramental preparation at St. Joseph's.
+
+---
+
+## 2. The Pastoral Associate
+
+**Maria Rodriguez** has served as Pastoral Associate at St. Joseph Parish for eight years, and Fr. Michael depends on her completely to keep the sacramental preparation programs running smoothly. She is intensely detail-oriented and takes deep pride in her work—every wedding binder must be perfect, every baptism certificate filed correctly, every funeral script ready in the sacristy well before the priest arrives. Her Catholic faith is central to her identity; she loves God deeply and views her ministry as a sacred vocation, not just a job. She arrives early, stays late, and obsesses over the details that make liturgies beautiful and meaningful. When everything comes together—when a family is moved to tears at a well-prepared funeral, when a wedding runs flawlessly—she feels a profound sense of purpose and satisfaction.
+
+However, Maria struggles with anxiety and perfectionism that sometimes work against her. When things go wrong—a family shows up unprepared, a visiting priest ignores her carefully prepared script, or the printer jams twenty minutes before a funeral—she can become visibly upset and irritable. She has a tendency to be overcontrolling, micromanaging aspects of sacramental preparation that might be better delegated, partly because she believes no one else will do it as well and partly because so much of her self-worth is tied up in getting everything exactly right. She knows intellectually that her value doesn't depend on perfect liturgies, but emotionally she can't shake the feeling that every mistake reflects poorly on her faith, her competence, and her service to God. What Maria needs is a system that gives her the control and organization she craves while also reducing the mental burden of tracking hundreds of details across dozens of families and events. With better tools, she could channel her gifts for organization and attention to detail without burning out from the stress of keeping everything in her head and on scattered paper lists.
