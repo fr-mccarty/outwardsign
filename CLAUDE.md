@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> **Documentation Structure Note:** This file should remain as a single document until its content exceeds 1000 lines. The current priority markers (🔴 for critical, 📖 for reference) and table of contents provide sufficient navigation. Only split into separate files when the size truly impedes usability.
+
 ## Table of Contents
 
 - [Project Description](#project-description)
@@ -549,6 +551,7 @@ Client Component (BreadcrumbSetter):
 - Do not use the system dialog for confirming or alerting the user. Use shadcn components.
 - Handling an empty table: make sure there is always a button to create new, unless otherwise specified. Be sure to use the icon which the module is using in the main-sidebar.
 - Table content should always be fetched server-side. Pagination should always be available. Use shadcn components.
+- **Modals should be scrollable:** When creating modals with content that may overflow, use flexbox layout with a fixed header and scrollable content area. Structure: `DialogContent` with `flex flex-col`, `DialogHeader` with `flex-shrink-0`, and content wrapper with `overflow-y-auto flex-1`. Reference implementation: `src/components/calendar/day-events-modal.tsx`
 
 ### Development Guidelines
 - **Always use custom components** before falling back to shadcn/ui components

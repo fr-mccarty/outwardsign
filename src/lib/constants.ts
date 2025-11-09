@@ -1,5 +1,6 @@
 export const APP_NAME = 'Outward Sign'
 export const APP_TAGLINE = 'Bloom in Christ'
+export const GITHUB_URL = 'https://github.com/fr-mccarty/outwardsign'
 
 export const DEFAULT_PETITION_CONTEXT_SUNDAY_ENGLISH = `For our Holy Father, Pope Leo, our Bishop, and all the clergy.
 For our nation's leaders and all who serve in public office.

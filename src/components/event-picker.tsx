@@ -408,15 +408,15 @@ export function EventPicker({
         onOpenChange(false)
       }
     }}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditMode ? 'Edit Event' : 'Add New Event'}</DialogTitle>
           <DialogDescription>
             {isEditMode ? 'Update the event details below.' : 'Create a new event. Fill in the details below.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleCreateEvent}>
-          <div className="grid gap-4 py-4">
+        <form onSubmit={handleCreateEvent} className="flex flex-col flex-1 min-h-0">
+          <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Name *
@@ -489,7 +489,7 @@ export function EventPicker({
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button
               type="button"
               variant="outline"

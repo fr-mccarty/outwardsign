@@ -84,7 +84,7 @@ export function CalendarGrid<T extends CalendarItem = CalendarItem>({
           renderContent={renderDayContent}
           getItemColor={getItemColor}
           onItemClick={onItemClick}
-          maxItemsPerDay={view === 'day' ? 999 : maxItemsPerDay}
+          maxItemsPerDay={view === 'day' || view === 'week' ? 999 : maxItemsPerDay}
           view={view}
         />
       ))}

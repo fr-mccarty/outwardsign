@@ -328,15 +328,15 @@ export function PeoplePicker({
 
     {/* New Person Dialog */}
     <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add New Person</DialogTitle>
           <DialogDescription>
             Create a new person record. Fill in their details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleCreatePerson}>
-          <div className="grid gap-4 py-4">
+        <form onSubmit={handleCreatePerson} className="flex flex-col flex-1 min-h-0">
+          <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="first_name" className="text-right">
                 First Name *
@@ -422,7 +422,7 @@ export function PeoplePicker({
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             <Button
               type="button"
               variant="outline"
