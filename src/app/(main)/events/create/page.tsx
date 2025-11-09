@@ -1,8 +1,7 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { EventForm } from '../event-form'
+import { EventFormWrapper } from '../event-form-wrapper'
 
 export default async function CreateEventPage() {
   const supabase = await createClient()
@@ -20,14 +19,13 @@ export default async function CreateEventPage() {
   ]
 
   return (
-    <PageContainer
-      title="Create Event"
-      description="Add a new event to your parish calendar."
-      cardTitle="Event Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventForm />
-    </PageContainer>
+      <EventFormWrapper
+        title="Create Event"
+        description="Add a new event to your parish calendar."
+        saveButtonLabel="Create Event"
+      />
+    </>
   )
 }

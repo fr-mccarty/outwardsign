@@ -53,6 +53,7 @@ interface PeoplePickerProps {
   selectedPersonId?: string
   className?: string
   showSexField?: boolean
+  openToNewPerson?: boolean
 }
 
 // Custom hook for debounced search
@@ -81,6 +82,7 @@ export function PeoplePicker({
   selectedPersonId,
   className,
   showSexField = false,
+  openToNewPerson = false,
 }: PeoplePickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [people, setPeople] = useState<Person[]>([])
@@ -132,6 +134,13 @@ export function PeoplePicker({
       searchPeopleCallback('')
     }
   }, [open, people.length, searchPeopleCallback])
+
+  // Auto-open add form when openToNewPerson is true
+  useEffect(() => {
+    if (open && openToNewPerson) {
+      setShowAddForm(true)
+    }
+  }, [open, openToNewPerson])
 
   const handlePersonSelect = (person: Person) => {
     onSelect(person)

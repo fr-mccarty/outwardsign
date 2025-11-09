@@ -10,7 +10,8 @@
       "Bash(diff:*)",
       "Bash(npx playwright test:*)",
       "WebFetch(domain:code.claude.com)",
-      "Bash(npm run test:setup:*)"
+      "Bash(npm run test:setup:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

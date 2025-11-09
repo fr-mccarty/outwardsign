@@ -152,47 +152,166 @@ export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = 
 
 // Event type values (stored as uppercase in database)
 export const EVENT_TYPE_VALUES = [
+  // Wedding-related events
   'WEDDING',
+  'WEDDING_RECEPTION',
+  'WEDDING_REHEARSAL',
+  'WEDDING_REHEARSAL_DINNER',
+
+  // Funeral-related events
   'FUNERAL',
-  'BAPTISM',
+  'FUNERAL_MEAL',
+
+  // Quinceañera-related events
   'QUINCEANERA',
+  'QUINCEANERA_RECEPTION',
+
+  // Other sacramental events
   'PRESENTATION',
+  'BAPTISM',
   'MASS',
-  'CONFESSION',
+
+  // General parish events
   'MEETING',
-  'REHEARSAL',
+  'EVENT',
   'OTHER'
 ] as const
 
 // Event type labels for display
 export const EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
+  // Wedding-related events
   WEDDING: {
     en: 'Wedding',
     es: 'Boda'
   },
+  WEDDING_RECEPTION: {
+    en: 'Wedding Reception',
+    es: 'Recepción de Boda'
+  },
+  WEDDING_REHEARSAL: {
+    en: 'Wedding Rehearsal',
+    es: 'Ensayo de Boda'
+  },
+  WEDDING_REHEARSAL_DINNER: {
+    en: 'Wedding Rehearsal Dinner',
+    es: 'Cena de Ensayo de Boda'
+  },
+
+  // Funeral-related events
   FUNERAL: {
     en: 'Funeral',
     es: 'Funeral'
+  },
+  FUNERAL_MEAL: {
+    en: 'Funeral Meal',
+    es: 'Comida Funeral'
+  },
+
+  // Quinceañera-related events
+  QUINCEANERA: {
+    en: 'Quinceañera',
+    es: 'Quinceañera'
+  },
+  QUINCEANERA_RECEPTION: {
+    en: 'Quinceañera Reception',
+    es: 'Recepción de Quinceañera'
+  },
+
+  // Other sacramental events
+  PRESENTATION: {
+    en: 'Presentation',
+    es: 'Presentación'
   },
   BAPTISM: {
     en: 'Baptism',
     es: 'Bautismo'
   },
-  QUINCEANERA: {
-    en: 'Quinceañera',
-    es: 'Quinceañera'
-  },
-  PRESENTATION: {
-    en: 'Presentation',
-    es: 'Presentación'
-  },
   MASS: {
     en: 'Mass',
     es: 'Misa'
   },
+
+  // General parish events
+  MEETING: {
+    en: 'Meeting',
+    es: 'Reunión'
+  },
+  EVENT: {
+    en: 'Event',
+    es: 'Evento'
+  },
   OTHER: {
     en: 'Other',
     es: 'Otro'
+  }
+}
+
+// Module Event Type Mapping
+// Maps event types to their parent module for reverse lookup (event → module)
+// Used to display module references on event detail pages
+export const MODULE_EVENT_TYPE_MAP: Record<string, {
+  module: 'weddings' | 'funerals' | 'presentations' | 'quinceaneras' | 'mass-intentions'
+  column: string
+  display: { en: string; es: string }
+}> = {
+  // Wedding module events
+  WEDDING: {
+    module: 'weddings',
+    column: 'wedding_event_id',
+    display: { en: 'Wedding', es: 'Boda' }
+  },
+  WEDDING_RECEPTION: {
+    module: 'weddings',
+    column: 'reception_event_id',
+    display: { en: 'Wedding Reception', es: 'Recepción de Boda' }
+  },
+  WEDDING_REHEARSAL: {
+    module: 'weddings',
+    column: 'rehearsal_event_id',
+    display: { en: 'Wedding Rehearsal', es: 'Ensayo de Boda' }
+  },
+  WEDDING_REHEARSAL_DINNER: {
+    module: 'weddings',
+    column: 'rehearsal_dinner_event_id',
+    display: { en: 'Wedding Rehearsal Dinner', es: 'Cena de Ensayo de Boda' }
+  },
+
+  // Funeral module events
+  FUNERAL: {
+    module: 'funerals',
+    column: 'funeral_event_id',
+    display: { en: 'Funeral', es: 'Funeral' }
+  },
+  FUNERAL_MEAL: {
+    module: 'funerals',
+    column: 'funeral_meal_event_id',
+    display: { en: 'Funeral Meal', es: 'Comida Funeral' }
+  },
+
+  // Presentation module events
+  PRESENTATION: {
+    module: 'presentations',
+    column: 'presentation_event_id',
+    display: { en: 'Presentation', es: 'Presentación' }
+  },
+
+  // Quinceañera module events
+  QUINCEANERA: {
+    module: 'quinceaneras',
+    column: 'quinceanera_event_id',
+    display: { en: 'Quinceañera', es: 'Quinceañera' }
+  },
+  QUINCEANERA_RECEPTION: {
+    module: 'quinceaneras',
+    column: 'quinceanera_reception_id',
+    display: { en: 'Quinceañera Reception', es: 'Recepción de Quinceañera' }
+  },
+
+  // Mass Intentions (special case: uses liturgical_event_id)
+  MASS: {
+    module: 'mass-intentions',
+    column: 'liturgical_event_id',
+    display: { en: 'Mass Intention', es: 'Intención de Misa' }
   }
 }
 

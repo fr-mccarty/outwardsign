@@ -83,11 +83,6 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
       {/* Content with left padding to account for liturgical bars */}
       <div style={{ paddingLeft: `${totalBarsWidth + 12}px`, paddingRight: '12px' }}>
         <div className="font-medium">{event.title}</div>
-        {event.liturgicalEvent?.event_data.description && (
-          <div className="text-xs mt-1 opacity-80 line-clamp-2">
-            {event.liturgicalEvent.event_data.description}
-          </div>
-        )}
       </div>
     </div>
   )

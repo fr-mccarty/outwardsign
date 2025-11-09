@@ -679,72 +679,84 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         onOpenChange={setShowQuinceaneraPicker}
         onSelect={(person) => setQuinceaneraGirl(person)}
         selectedPersonId={quinceaneraGirl?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showFamilyContactPicker}
         onOpenChange={setShowFamilyContactPicker}
         onSelect={(person) => setFamilyContact(person)}
         selectedPersonId={familyContact?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showCoordinatorPicker}
         onOpenChange={setShowCoordinatorPicker}
         onSelect={(person) => setCoordinator(person)}
         selectedPersonId={coordinator?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showPresiderPicker}
         onOpenChange={setShowPresiderPicker}
         onSelect={(person) => setPresider(person)}
         selectedPersonId={presider?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showHomilistPicker}
         onOpenChange={setShowHomilistPicker}
         onSelect={(person) => setHomilist(person)}
         selectedPersonId={homilist?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showLeadMusicianPicker}
         onOpenChange={setShowLeadMusicianPicker}
         onSelect={(person) => setLeadMusician(person)}
         selectedPersonId={leadMusician?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showCantorPicker}
         onOpenChange={setShowCantorPicker}
         onSelect={(person) => setCantor(person)}
         selectedPersonId={cantor?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showFirstReaderPicker}
         onOpenChange={setShowFirstReaderPicker}
         onSelect={(person) => setFirstReader(person)}
         selectedPersonId={firstReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showSecondReaderPicker}
         onOpenChange={setShowSecondReaderPicker}
         onSelect={(person) => setSecondReader(person)}
         selectedPersonId={secondReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showPsalmReaderPicker}
         onOpenChange={setShowPsalmReaderPicker}
         onSelect={(person) => setPsalmReader(person)}
         selectedPersonId={psalmReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showGospelReaderPicker}
         onOpenChange={setShowGospelReaderPicker}
         onSelect={(person) => setGospelReader(person)}
         selectedPersonId={gospelReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showPetitionReaderPicker}
         onOpenChange={setShowPetitionReaderPicker}
         onSelect={(person) => setPetitionReader(person)}
         selectedPersonId={petitionReader?.id}
+        openToNewPerson={!isEditing}
       />
 
       {/* Reading Pickers */}

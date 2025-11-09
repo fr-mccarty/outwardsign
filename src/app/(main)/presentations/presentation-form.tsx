@@ -400,6 +400,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           setShowChildPicker(false)
         }}
         showSexField={true}
+        openToNewPerson={!isEditing}
       />
 
       <PeoplePicker
@@ -409,6 +410,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           setMother(person)
           setShowMotherPicker(false)
         }}
+        openToNewPerson={!isEditing}
       />
 
       <PeoplePicker
@@ -418,6 +420,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           setFather(person)
           setShowFatherPicker(false)
         }}
+        openToNewPerson={!isEditing}
       />
 
       <PeoplePicker
@@ -427,6 +430,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           setCoordinator(person)
           setShowCoordinatorPicker(false)
         }}
+        openToNewPerson={!isEditing}
       />
     </form>
   )

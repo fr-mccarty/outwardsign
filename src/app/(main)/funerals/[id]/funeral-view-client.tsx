@@ -1,10 +1,8 @@
 "use client"
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
-import { Card, CardContent } from '@/components/ui/card'
-import { ModuleViewPanel } from '@/components/module-view-panel'
+import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildFuneralLiturgy } from '@/lib/content-builders/funeral'
-import { renderHTML } from '@/lib/renderers/html-renderer'
 
 interface FuneralViewClientProps {
   funeral: FuneralWithRelations
@@ -20,33 +18,20 @@ export function FuneralViewClient({ funeral }: FuneralViewClientProps) {
     return `${deceasedLastName}-Funeral-${funeralDate}.${extension}`
   }
 
-  // Build liturgy content using centralized content builder
-  // Use the template_id from the funeral record, defaulting to 'funeral-full-script-english'
-  const templateId = funeral.funeral_template_id || 'funeral-full-script-english'
-  const liturgyDocument = buildFuneralLiturgy(funeral, templateId)
-
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Extract template ID from funeral record
+  const getTemplateId = (funeral: FuneralWithRelations) => {
+    return funeral.funeral_template_id || 'funeral-full-script-english'
+  }
 
   return (
-    <div className="flex flex-col md:flex-row gap-6">
-      {/* Side Panel - appears first on mobile, second on desktop */}
-      <ModuleViewPanel
-        entity={funeral}
-        entityType="Funeral"
-        modulePath="funerals"
-        mainEvent={funeral.funeral_event}
-        generateFilename={generateFilename}
-      />
-
-      {/* Main Content - appears second on mobile, first on desktop */}
-      <div className="flex-1 order-2 md:order-1">
-        <Card>
-          <CardContent className="p-6 space-y-6">
-            {liturgyContent}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <ModuleViewContainer
+      entity={funeral}
+      entityType="Funeral"
+      modulePath="funerals"
+      mainEvent={funeral.funeral_event}
+      generateFilename={generateFilename}
+      buildLiturgy={buildFuneralLiturgy}
+      getTemplateId={getTemplateId}
+    />
   )
 }

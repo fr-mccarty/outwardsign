@@ -2,9 +2,15 @@
  * Test runner with temporary user - automatic setup and cleanup
  *
  * This script handles the complete test lifecycle:
- * 1. Creates a temporary test user and parish
- * 2. Runs Playwright tests with authenticated state
- * 3. Automatically cleans up all test data when done
+ * 1. Generates unique test credentials for this run
+ * 2. Creates a temporary test user and parish
+ * 3. Runs Playwright tests with authenticated state
+ * 4. Automatically cleans up all test data when done
+ *
+ * Features:
+ * - Dynamic credentials (unique per test run)
+ * - Guaranteed test isolation
+ * - Automatic cleanup on success, failure, or interruption
  *
  * Usage:
  *   npm run test:with-temp-user
@@ -20,6 +26,13 @@ require('dotenv').config({ path: '.env' });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Generate unique credentials for this test run
+const timestamp = Date.now();
+const random = Math.floor(Math.random() * 100000);
+const TEST_EMAIL = `test-staff-${timestamp}-${random}@outwardsign.test`;
+const TEST_PASSWORD = 'TestPassword123!';
+const TEST_PARISH_NAME = `Playwright Test Parish ${timestamp}`;
 
 let testUserId = null;
 let testParishId = null;
@@ -60,12 +73,22 @@ async function cleanup() {
 
 async function main() {
   try {
-    // Step 1: Run setup script and capture user/parish IDs
-    console.log('📦 Setting up test environment...\n');
+    console.log('📦 Setting up test environment with dynamic credentials...\n');
+    console.log(`   📧 Email: ${TEST_EMAIL}`);
+    console.log(`   🏛️  Parish: ${TEST_PARISH_NAME}\n`);
 
+    // Step 1: Run setup script with dynamic credentials
     const setupOutput = execSync('node scripts/setup-test-user.js', {
       encoding: 'utf-8',
-      stdio: 'pipe'
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        TEST_USER_EMAIL: TEST_EMAIL,
+        TEST_USER_PASSWORD: TEST_PASSWORD,
+        TEST_PARISH_NAME: TEST_PARISH_NAME,
+        TEST_PARISH_CITY: 'Test City',
+        TEST_PARISH_STATE: 'TS'
+      }
     });
 
     console.log(setupOutput);
@@ -77,7 +100,7 @@ async function main() {
     if (userIdMatch) testUserId = userIdMatch[1];
     if (parishIdMatch) testParishId = parishIdMatch[1];
 
-    // Step 2: Run Playwright tests with any arguments passed to this script
+    // Step 2: Run Playwright tests with same dynamic credentials
     console.log('\n🎭 Running Playwright tests...\n');
 
     const testArgs = process.argv.slice(2).join(' ');
@@ -88,7 +111,13 @@ async function main() {
     try {
       execSync(playwrightCommand, {
         encoding: 'utf-8',
-        stdio: 'inherit' // Show test output in real-time
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          TEST_USER_EMAIL: TEST_EMAIL,
+          TEST_USER_PASSWORD: TEST_PASSWORD,
+          TEST_PARISH_NAME: TEST_PARISH_NAME
+        }
       });
       console.log('\n✅ Tests completed successfully');
     } catch (testError) {

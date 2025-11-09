@@ -165,35 +165,99 @@ On first visit, you'll be directed to the authentication page. You can:
 - `npm run build` - Build for production
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm test` - Run Playwright tests
-- `npm run test:ui` - Run tests with Playwright UI
+- `npm test` - Run Playwright tests (with automatic setup/cleanup)
+- `npm run test:headed` - Run tests in headed mode (see browser)
+- `npm run test:ui` - Run tests with Playwright UI (for debugging)
 - `npm run seed` - Run all database seeders
 
 ### Testing
 
-This project uses Playwright for end-to-end testing.
+This project uses Playwright for end-to-end testing with **automatic test user setup and cleanup**.
 
-**Run tests:**
+**Run all tests** (recommended):
 ```bash
 npm test
 ```
+This automatically:
+1. Creates a temporary test user and parish
+2. Runs all Playwright tests with authentication
+3. Cleans up all test data when complete
 
-**Run tests with UI:**
-```bash
-npm run test:ui
-```
-
-**Run tests in headed mode (see browser):**
+**Run tests in headed mode** (see browser):
 ```bash
 npm run test:headed
 ```
 
-**Set up test user:**
+**Run tests with Playwright UI** (for debugging):
 ```bash
-npm run test:setup
+npm run test:ui
 ```
 
-For more testing details, see the [Testing section](#testing).
+**How it works:**
+- `npm test` runs `scripts/run-tests-with-temp-user.js`
+- **Dynamic credentials** are generated for each test run (unique email with timestamp)
+- Each test run starts with a completely fresh, isolated test environment
+- All test data (user, parish, events, etc.) is automatically deleted after tests complete
+- **Guaranteed test isolation** - no data contamination between runs
+- No manual setup or cleanup required!
+
+#### Writing Tests (CRITICAL)
+
+**⚠️ IMPORTANT:** All tests are pre-authenticated automatically. **DO NOT** create custom authentication functions in your tests.
+
+**The authentication flow:**
+1. `npm test` generates **unique credentials** (e.g., `test-staff-1732894756321-45678@outwardsign.test`)
+2. `setup-test-user.js` creates a test user and parish with those credentials
+3. `auth.setup.ts` logs in as that user and saves the session state to `playwright/.auth/staff.json`
+4. **YOUR TESTS** automatically use that authenticated session (configured in `playwright.config.ts`)
+5. After tests complete, all test data is automatically cleaned up
+
+**Benefits of dynamic credentials:**
+- ✅ Fresh database state every test run
+- ✅ No leftover data from previous runs
+- ✅ Can run multiple test suites in parallel (different credentials each time)
+- ✅ Automatic cleanup ensures no orphaned test data
+
+**✅ CORRECT Pattern - Use the Test Template:**
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.describe('My Module Tests', () => {
+  test('should do something', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json
+
+    // Start by navigating directly to the page you need
+    await page.goto('/my-module');
+
+    // Your test logic here...
+  });
+});
+```
+
+**❌ WRONG Pattern - DO NOT DO THIS:**
+```typescript
+// ❌ DO NOT create setupTestUser() functions
+// ❌ DO NOT navigate to /signup or /login in tests
+// ❌ DO NOT try to authenticate manually
+
+async function setupTestUser(page: any) {  // ← WRONG!
+  await page.goto('/signup');              // ← WRONG!
+  await page.fill('input[type="email"]', testEmail);
+  // ... This is unnecessary and causes test failures!
+}
+```
+
+**Test Template:**
+- Copy `tests/TEST_TEMPLATE.spec.ts` to create new test files
+- See `tests/presentation.spec.ts` for a reference implementation
+- See `tests/events.spec.ts` for how tests should be structured
+
+**Key Points:**
+- Tests are **already authenticated** - just navigate to pages you need to test
+- Use `page.goto('/your-page')` to start each test
+- Trust the test infrastructure - it handles all authentication automatically
+- Each test run gets a fresh, isolated environment
+- All test data is cleaned up automatically
 
 ## 📁 Project Structure
 

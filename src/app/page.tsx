@@ -27,7 +27,7 @@ import {
   Moon
 } from "lucide-react"
 import { APP_NAME, APP_TAGLINE, GITHUB_URL, HomeLanguage, DEFAULT_HOME_LANGUAGE } from "@/lib/constants"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 
@@ -425,7 +425,7 @@ const translations = {
   }
 }
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { theme, setTheme } = useTheme()
@@ -1108,5 +1108,13 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <HomeContent />
+    </Suspense>
   )
 }

@@ -1,9 +1,8 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getEvent } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { EventForm } from '../../event-form'
+import { EventFormWrapper } from '../../event-form-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -35,14 +34,14 @@ export default async function EditEventPage({ params }: PageProps) {
   ]
 
   return (
-    <PageContainer
-      title="Edit Event"
-      description="Update the event details."
-      cardTitle="Event Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventForm event={event} />
-    </PageContainer>
+      <EventFormWrapper
+        event={event}
+        title="Edit Event"
+        description="Update the event details."
+        saveButtonLabel="Save Changes"
+      />
+    </>
   )
 }

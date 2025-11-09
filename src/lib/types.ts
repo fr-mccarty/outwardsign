@@ -447,15 +447,17 @@ export interface Event {
   parish_id: string
   name: string
   description?: string
-  responsible_party_id: string
+  responsible_party_id: string | null
   event_type: string
   start_date?: string
   start_time?: string
   end_date?: string
   end_time?: string
+  timezone: string
+  is_all_day: boolean
   location?: string
   language?: string
-  notes?: string
+  note?: string
   created_at: string
   updated_at: string
 }

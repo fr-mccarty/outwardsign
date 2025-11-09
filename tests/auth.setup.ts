@@ -5,13 +5,16 @@ import path from 'path';
 const authFile = path.join(__dirname, '../playwright/.auth/staff.json');
 
 setup('authenticate as staff user', async ({ page }) => {
+  // Credentials are passed dynamically from run-tests-with-temp-user.js
+  // via environment variables in the Playwright process
   const testEmail = process.env.TEST_USER_EMAIL!;
   const testPassword = process.env.TEST_USER_PASSWORD!;
 
   if (!testEmail || !testPassword) {
     throw new Error(
-      'TEST_USER_EMAIL and TEST_USER_PASSWORD must be set in .env.local\n' +
-      'See .env.local for instructions on creating the test user in Supabase.'
+      'TEST_USER_EMAIL and TEST_USER_PASSWORD must be set.\n' +
+      'These are automatically provided when running via "npm test".\n' +
+      'If running Playwright directly, ensure credentials are set in environment.'
     );
   }
 

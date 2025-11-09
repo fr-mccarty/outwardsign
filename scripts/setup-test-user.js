@@ -7,7 +7,13 @@
  * 3. Links the user to the parish with 'staff' role
  * 4. Creates user settings with the parish selected
  *
- * Usage: node scripts/setup-test-user.js
+ * Credentials:
+ * - When called from run-tests-with-temp-user.js: Uses dynamic credentials passed via environment variables
+ * - When called standalone: Falls back to .env.local credentials
+ *
+ * Usage:
+ *   node scripts/setup-test-user.js
+ *   TEST_USER_EMAIL=test@example.com node scripts/setup-test-user.js
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -15,6 +21,7 @@ require('dotenv').config({ path: '.env.local' });
 require('dotenv').config({ path: '.env' });
 
 // Configuration from environment
+// Priority: process.env (dynamic) > .env.local (fallback)
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'test-staff@outwardsign.test';

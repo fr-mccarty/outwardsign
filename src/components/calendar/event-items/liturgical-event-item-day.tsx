@@ -83,16 +83,11 @@ export function LiturgicalEventItemDay({ event, onClick }: LiturgicalEventItemDa
       {/* Content with left padding to account for liturgical bars */}
       <div style={{ paddingLeft: `${totalBarsWidth + 16}px`, paddingRight: '16px' }}>
         <div className="font-semibold text-base">{event.title}</div>
-        {event.liturgicalEvent && (
+        {event.liturgicalEvent && colors.length > 0 && (
           <div className="mt-2 space-y-1">
-            {event.liturgicalEvent.event_data.description && (
-              <p className="text-sm">{event.liturgicalEvent.event_data.description}</p>
-            )}
-            {colors.length > 0 && (
-              <div className="text-xs opacity-75">
-                Liturgical Color{colors.length > 1 ? 's' : ''}: {colors.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}
-              </div>
-            )}
+            <div className="text-xs opacity-75">
+              Liturgical Color{colors.length > 1 ? 's' : ''}: {colors.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}
+            </div>
           </div>
         )}
       </div>

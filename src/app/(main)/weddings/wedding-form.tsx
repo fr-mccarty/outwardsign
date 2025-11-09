@@ -781,84 +781,98 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         onOpenChange={setShowBridePicker}
         onSelect={(person) => setBride(person)}
         selectedPersonId={bride?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showGroomPicker}
         onOpenChange={setShowGroomPicker}
         onSelect={(person) => setGroom(person)}
         selectedPersonId={groom?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showCoordinatorPicker}
         onOpenChange={setShowCoordinatorPicker}
         onSelect={(person) => setCoordinator(person)}
         selectedPersonId={coordinator?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showPresiderPicker}
         onOpenChange={setShowPresiderPicker}
         onSelect={(person) => setPresider(person)}
         selectedPersonId={presider?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showHomilistPicker}
         onOpenChange={setShowHomilistPicker}
         onSelect={(person) => setHomilist(person)}
         selectedPersonId={homilist?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showLeadMusicianPicker}
         onOpenChange={setShowLeadMusicianPicker}
         onSelect={(person) => setLeadMusician(person)}
         selectedPersonId={leadMusician?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showCantorPicker}
         onOpenChange={setShowCantorPicker}
         onSelect={(person) => setCantor(person)}
         selectedPersonId={cantor?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showWitness1Picker}
         onOpenChange={setShowWitness1Picker}
         onSelect={(person) => setWitness1(person)}
         selectedPersonId={witness1?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showWitness2Picker}
         onOpenChange={setShowWitness2Picker}
         onSelect={(person) => setWitness2(person)}
         selectedPersonId={witness2?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showFirstReaderPicker}
         onOpenChange={setShowFirstReaderPicker}
         onSelect={(person) => setFirstReader(person)}
         selectedPersonId={firstReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showSecondReaderPicker}
         onOpenChange={setShowSecondReaderPicker}
         onSelect={(person) => setSecondReader(person)}
         selectedPersonId={secondReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showPsalmReaderPicker}
         onOpenChange={setShowPsalmReaderPicker}
         onSelect={(person) => setPsalmReader(person)}
         selectedPersonId={psalmReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showGospelReaderPicker}
         onOpenChange={setShowGospelReaderPicker}
         onSelect={(person) => setGospelReader(person)}
         selectedPersonId={gospelReader?.id}
+        openToNewPerson={!isEditing}
       />
       <PeoplePicker
         open={showPetitionReaderPicker}
         onOpenChange={setShowPetitionReaderPicker}
         onSelect={(person) => setPetitionReader(person)}
         selectedPersonId={petitionReader?.id}
+        openToNewPerson={!isEditing}
       />
 
       {/* Reading Pickers */}
