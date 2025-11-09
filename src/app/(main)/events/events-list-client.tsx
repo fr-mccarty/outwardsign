@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, CalendarDays, Eye, MapPin, Clock, Search, Filter } from "lucide-react"
+import { Plus, CalendarDays, Eye, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -162,14 +162,6 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                         <span className="text-muted-foreground">
                           {formatDate(event.start_date)}
                           {event.start_time && ` at ${formatTime(event.start_time)}`}
-                        </span>
-                      </div>
-                    )}
-                    {event.location && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-muted-foreground line-clamp-1">
-                          {event.location}
                         </span>
                       </div>
                     )}

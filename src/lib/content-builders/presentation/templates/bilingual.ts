@@ -60,10 +60,15 @@ function buildSummarySection(presentation: PresentationWithRelations): ContentSe
   }
 
   if (presentation.presentation_event?.location) {
+    const location = presentation.presentation_event.location
+    const locationText = location.name +
+      (location.street || location.city ?
+        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+        '')
     elements.push({
       type: 'info-row',
       label: 'Location / Lugar:',
-      value: presentation.presentation_event.location,
+      value: locationText,
     })
   }
 

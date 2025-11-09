@@ -2,7 +2,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-react'
-import { getEvent } from "@/lib/actions/events"
+import { getEventWithRelations } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
@@ -26,8 +26,8 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   const { id } = await params
 
-  // Fetch event server-side
-  const event = await getEvent(id)
+  // Fetch event server-side with relations
+  const event = await getEventWithRelations(id)
 
   if (!event) {
     notFound()

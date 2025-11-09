@@ -21,8 +21,6 @@
   - [🔴 Bilingual Implementation](#-bilingual-implementation-english--spanish)
 - [🔴 Design Principles](#-design-principles)
 - [🔴 Creating New Modules](#-creating-new-modules)
-- [📖 Module Icons](#-module-icons)
-- [🔴 Common Module Creation Mistakes](#-common-module-creation-mistakes)
 - [Known Issues](#known-issues)
 - [🔴 Permissions & Automation](#-permissions--automation)
 
@@ -110,49 +108,64 @@ The ideal way that we want to access the records is by using the RLS feature on 
 - **Special Case:** For simplification, "Quinceañeras" is spelled without the ñ in all programming contexts (file names, variables, types, routes, etc.). Use "Quinceanera" in code, "Quinceañera" in user-facing text only.
 
 ## 📖 Styling
-Ensure that: All form fields use standardized, basic styling with no specialized text formatting!
-For views that are within a print folder, allow those views to set their style however they wish.
 
-### Dark Mode
-The app uses `next-themes` with a CSS variable-based approach for automatic dark mode support. Users can switch between light, dark, and system themes via the parish user menu.
+**For detailed styling guidelines, patterns, and examples, see [STYLES.md](./STYLES.md).**
 
-**Implementation:** All styling uses semantic CSS variables defined in `globals.css` that automatically adapt to dark mode. Never use hardcoded gray values or `dark:` utility classes.
+### General Principles
 
-**Available Tokens:**
-- `bg-background text-foreground` - Page backgrounds and primary text
-- `bg-card text-card-foreground` - Card components
-- `bg-popover text-popover-foreground` - Popovers and dropdowns
-- `bg-primary text-primary-foreground` - Primary actions/buttons
-- `bg-secondary text-secondary-foreground` - Secondary elements
-- `bg-muted text-muted-foreground` - Muted backgrounds and secondary text
-- `bg-accent text-accent-foreground` - Accent elements and hover states
-- `border-border` - All borders
-- `border-input` - Input borders
-- `ring-ring` - Focus rings
-- `text-destructive` - Error/destructive text
+1. **Use System Defaults**
+   - Use the system font stack (no custom fonts except in print views)
+   - Use semantic color tokens from the theme system
+   - Keep styling simple and straightforward
 
-**Best Practices:**
-- ✅ Always use semantic tokens: `bg-background`, `text-foreground`, `text-muted-foreground`
-- ✅ Pair backgrounds with foregrounds: `bg-card text-card-foreground`
-- ❌ Never use hardcoded colors: `bg-gray-50`, `text-gray-900`, `bg-white`
-- ❌ Never use `dark:` classes for basic colors (CSS variables handle this automatically)
+2. **Dark Mode Support**
+   - All styling uses semantic CSS variables that automatically adapt to dark mode
+   - **NEVER use hardcoded colors** (`bg-white`, `text-gray-900`, hex colors)
+   - **ALWAYS pair backgrounds with foregrounds** (`bg-card text-card-foreground`)
+   - Users can switch between light, dark, and system themes
+
+3. **Semantic Color Tokens**
+   - Use tokens like `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`
+   - Never use `dark:` utility classes for basic colors (CSS variables handle this automatically)
+   - See [STYLES.md](./STYLES.md) for complete token reference
+
+### 🔴 Form Input Styling (CRITICAL)
+
+**NEVER modify font-family, font style, font weight, borders, or backgrounds in form inputs.** All form inputs (Input, Textarea, Select) must use the default component styling from shadcn/ui.
+
+**PROHIBITED in form inputs:**
+- ❌ `font-mono` - Monospace fonts
+- ❌ `font-serif` - Serif fonts
+- ❌ `font-sans` - Explicit sans-serif (use default instead)
+- ❌ `italic` - Italicized text
+- ❌ `font-light`, `font-bold`, `font-semibold`, etc. - Custom font weights
+- ❌ `border`, `border-*`, `rounded-*` - Border customizations
+- ❌ `bg-*` - Background color changes
+- ❌ Any `font-family` or `style={{fontFamily: ...}}` properties
+
+**ALLOWED styling for form inputs:**
+- ✅ Text sizes: `text-xs`, `text-sm`, `text-base`, `text-lg` (size adjustments are fine)
+- ✅ Layout: `w-full`, `min-h-[300px]`, `max-w-*`, padding, margin, spacing
+- ✅ Standard component defaults from shadcn/ui (borders, backgrounds come from the base component)
 
 **Example:**
 ```tsx
-// ✅ CORRECT - Auto-adapts to dark mode
-<div className="bg-background text-foreground">
-  <Card className="bg-card text-card-foreground">
-    <p className="text-muted-foreground">Secondary text</p>
-  </Card>
-</div>
+// ❌ WRONG - Never apply font-family, font style, borders, or backgrounds to inputs
+<Textarea className="min-h-[300px] font-mono text-sm" />
+<Input className="font-serif italic bg-gray-100" />
+<Input className="font-bold border-2 rounded-lg" />
 
-// ❌ WRONG - Won't work in dark mode
-<div className="bg-gray-50 text-gray-900">
-  <Card className="bg-white">
-    <p className="text-gray-500">Secondary text</p>
-  </Card>
-</div>
+// ✅ CORRECT - Only layout and text size
+<Textarea className="min-h-[300px] text-sm" />
+<Input className="w-full text-base" />
+<Input className="max-w-md" />
 ```
+
+**Why this matters:** Form inputs must maintain consistent styling across the application. The shadcn/ui components already provide proper borders, backgrounds, and focus states that work with dark mode. Only layout and text size should be adjusted.
+
+### Print Views Exception
+
+For views within a print folder (`app/print/`), custom styling is allowed to optimize for printing and PDF generation. These views are not interactive and do not need to follow the standard form input rules.
 
 ## 🔴 Module Structure (Main Files)
 **CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
@@ -597,6 +610,11 @@ Client Component (BreadcrumbSetter):
 - **Language:** TypeScript for all new files
 - **Component type:** Server Components by default, Client Components only when needed
 
+### Spelling and Typos
+- **Proactive corrections:** Always suggest spelling corrections when you notice typos, misspellings, or grammatical errors in code comments, documentation, user-facing text, or variable names
+- **Scope:** This applies to all text content including comments, strings, documentation files, README files, and identifiers (where appropriate and safe to rename)
+- **User preference:** The user wants to maintain high-quality, professional text throughout the codebase
+
 ### 🔴 Bilingual Implementation (English & Spanish)
 **CRITICAL:** Most content in the application is bilingual (English and Spanish). Always check the language implementation of each change.
 
@@ -749,77 +767,25 @@ These core design principles guide all development decisions in Outward Sign. Ev
 - Are we showing too much complexity upfront?
 - Could this common task be made more efficient?
 
-## 🔴 Creating New Modules (Funerals, Baptisms, etc.)
+## 🔴 Creating New Modules
+
+**IMPORTANT:** When the user requests creation of a new module (Funerals, Baptisms, Presentations, etc.), you MUST read the [MODULE_CHECKLIST.md](MODULE_CHECKLIST.md) file first to ensure you follow the complete checklist and avoid common mistakes.
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
 
-**Complete Checklist:** See [MODULE_CHECKLIST.md](MODULE_CHECKLIST.md) for the full step-by-step checklist when creating new modules.
+**Complete Checklist:** See [MODULE_CHECKLIST.md](MODULE_CHECKLIST.md) for the comprehensive step-by-step guide including:
+- Detailed phase-by-phase checklist (Database → Server Actions → Module Structure → Print/Export → Testing)
+- Common mistakes to avoid
+- Validation checklist
+- Module icons reference
 
-### Quick Overview
-
-When creating a new module:
-
-1. **Database Layer** - Migration, RLS policies, base types
-2. **Server Actions** - CRUD operations with `WithRelations` interface
-3. **Module Structure** - 8 main files + 1 print page (follow wedding pattern exactly)
-4. **Reusable Components** - Use existing pickers and shared components
-5. **Content & Export** - Content builder + API routes for PDF/Word
-6. **Constants** - Status constants and sidebar navigation
-
-## 📖 Module Icons
-Each module must use a consistent icon from `lucide-react` throughout the application:
-
-- **Weddings**: `VenusAndMars` (lucide-react)
-- **Funerals**: `Cross` (lucide-react)
-- **Baptisms**: TBD
-- **Presentations**: TBD
-
-The main sidebar (`src/components/main-sidebar.tsx`) is the source of truth for which icon should be used for each module.
-
-Icons are used in:
-- Main sidebar navigation (`src/components/main-sidebar.tsx`)
-- Module list pages (if displaying icons)
-- Breadcrumbs or page headers (if applicable)
-
-## 🔴 Common Module Creation Mistakes
-
-### Critical Errors to Avoid:
-
-1. **Missing Form Wrapper**: Always create `[entity]-form-wrapper.tsx` - this is NOT optional
-   - Wraps the form with PageContainer
-   - Provides action buttons for edit mode (View + Save at top)
-   - Manages loading state
-
-2. **Wrong Redirection Pattern**:
-   - ✅ CORRECT: After UPDATE → `router.refresh()` (stays on edit page)
-   - ✅ CORRECT: After CREATE → `router.push(\`/[entities]/\${newEntity.id}\`)` (goes to view page)
-   - ❌ WRONG: Using `router.push()` after update (loses unsaved context)
-   - ❌ WRONG: Staying on create page after creation
-
-3. **Incorrect Type Usage**:
-   - ✅ Form must accept `[Entity]WithRelations` type (not base `[Entity]`)
-   - ✅ View pages must fetch using `get[Entity]WithRelations(id)`
-   - ❌ Using base type causes missing nested data (people, events, readings)
-
-4. **Missing Template ID Check**:
-   - ✅ View client must use: `const templateId = entity.[entity]_template_id || 'default-template-id'`
-   - ✅ Pass templateId to: `build[Entity]Liturgy(entity, templateId)`
-   - ❌ Hard-coding template ID prevents users from selecting different templates
-
-5. **File Structure Deviations**:
-   - Always create ALL files that exist in the wedding module
-   - Use exact same naming patterns (`[entities]-list-client.tsx` with plural)
-   - Follow exact same component structure and props
-
-### Validation Checklist:
-Before completing a new module, verify:
-- [ ] Form wrapper exists and matches wedding pattern
-- [ ] Redirections match wedding module (refresh on update, push on create)
-- [ ] Types use `WithRelations` interfaces
-- [ ] Template ID is read from database and used in liturgy builder
-- [ ] All view pages (view, print, PDF, Word) use template ID from database
-- [ ] Icon is consistent across all uses
-- [ ] All wedding module files have corresponding files in new module
+**Quick Reference:** When creating a new module, follow these major steps:
+1. Database Layer - Migration, RLS policies, base types
+2. Server Actions - CRUD operations with `WithRelations` interface
+3. Module Structure - 8 main files + 1 print page (follow wedding pattern exactly)
+4. Reusable Components - Use existing pickers and shared components
+5. Content & Export - Content builder + API routes for PDF/Word
+6. Constants - Status constants and sidebar navigation
 
 ## Known Issues
 (Document any existing bugs or performance concerns here)

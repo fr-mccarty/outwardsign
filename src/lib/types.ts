@@ -455,9 +455,23 @@ export interface Event {
   end_time?: string
   timezone: string
   is_all_day: boolean
-  location?: string
+  location_id?: string | null
   language?: string
   note?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Location {
+  id: string
+  parish_id: string
+  name: string
+  description?: string | null
+  street?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  phone_number?: string | null
   created_at: string
   updated_at: string
 }

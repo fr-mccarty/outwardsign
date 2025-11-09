@@ -151,11 +151,6 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
                       <span className="font-medium">Family Contact:</span> {funeral.family_contact.first_name} {funeral.family_contact.last_name}
                     </p>
                   )}
-                  {funeral.funeral_event?.location && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Location:</span> {funeral.funeral_event.location}
-                    </p>
-                  )}
                 </div>
 
                 {funeral.note && (

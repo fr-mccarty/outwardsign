@@ -370,14 +370,9 @@ export function EventPicker({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{formatEventDateTime(event)}</span>
-                        </div>
-                        {event.location && (
-                          <span className="truncate">{event.location}</span>
-                        )}
+                      <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>{formatEventDateTime(event)}</span>
                       </div>
                     </div>
                   </CommandItem>

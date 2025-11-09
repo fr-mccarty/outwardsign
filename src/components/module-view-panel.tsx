@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Edit, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
-import type { Event } from '@/lib/types'
+import type { Event, Location } from '@/lib/types'
 
 interface ModuleViewPanelProps {
   /**
@@ -29,8 +29,9 @@ interface ModuleViewPanelProps {
 
   /**
    * Main event for displaying location (optional)
+   * Can include location object if fetched with relations
    */
-  mainEvent?: Event | null
+  mainEvent?: (Event & { location?: Location | null }) | null
 
   /**
    * Function to generate download filenames
@@ -118,7 +119,13 @@ export function ModuleViewPanel({
             </div>
             {mainEvent?.location && (
               <div>
-                <span className="font-medium">Location:</span> {mainEvent.location}
+                <span className="font-medium">Location:</span> {mainEvent.location.name}
+                {(mainEvent.location.street || mainEvent.location.city || mainEvent.location.state) && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {[mainEvent.location.street, mainEvent.location.city, mainEvent.location.state]
+                      .filter(Boolean).join(', ')}
+                  </div>
+                )}
               </div>
             )}
             <div className="text-xs text-muted-foreground pt-1 border-t">

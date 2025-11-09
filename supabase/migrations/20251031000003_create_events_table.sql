@@ -12,7 +12,7 @@ CREATE TABLE events (
   end_time TIME,
   timezone TEXT NOT NULL DEFAULT 'UTC',
   is_all_day BOOLEAN NOT NULL DEFAULT false,
-  location TEXT,
+  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
   language TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -36,6 +36,7 @@ CREATE INDEX idx_events_parish_id ON events(parish_id);
 CREATE INDEX idx_events_responsible_party_id ON events(responsible_party_id);
 CREATE INDEX idx_events_event_type ON events(event_type);
 CREATE INDEX idx_events_start_date ON events(start_date);
+CREATE INDEX idx_events_location_id ON events(location_id);
 CREATE INDEX idx_events_language ON events(language);
 
 -- RLS Policies for events

@@ -50,8 +50,8 @@ const translations = {
       getStartedFree: "Get Started Free",
       seeHowItWorks: "See How It Works",
       disclaimer: "Free forever • No credit card required • Open source",
-      problemStatement: "Every sacrament and sacramental celebration deserves excellence.",
-      problemDescription: "From weddings to funerals, baptisms to quinceañeras—when parish staff, presiders, and families work together with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
+      problemStatement: "An outward sign instituted by Christ to give grace.",
+      problemDescription: "This is the traditional Catholic definition of a sacrament. From weddings to funerals, baptisms to quinceañeras—when parish staff, presiders, and families work together with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
     },
     features: {
       sectionTitle: "Everything You Need in One Place",
@@ -130,6 +130,8 @@ const translations = {
     sacraments: {
       sectionTitle: "Manage Every Sacrament & Sacramental",
       sectionSubtitle: "Dedicated workflows for each type of sacrament and sacramental your parish celebrates.",
+      catechismQuote: "The sacraments are efficacious signs of grace, instituted by Christ and entrusted to the Church, by which divine life is dispensed to us.",
+      catechismReference: "— Catechism of the Catholic Church (CCC 1131)",
       weddings: {
         title: "Weddings",
         description: "Bride, groom, ceremony planning, and celebration details"
@@ -182,7 +184,7 @@ const translations = {
         title: "Export Options",
         description: "PDF for printing, Word for editing and customization"
       },
-      exampleExport: "Example Export",
+      exampleExport: "Example Script",
       weddingCeremony: "Wedding Ceremony",
       firstReading: "First Reading",
       gospel: "Gospel",
@@ -215,7 +217,7 @@ const translations = {
     },
     finalCTA: {
       title: "Beautiful Celebrations Are Evangelization",
-      subtitle: "Join parishes who are creating moments of profound spiritual significance through careful preparation, clear communication, and beautiful celebrations.",
+      subtitle: "Join parishes who are creating moments of profound spiritual significance through careful preparation, clear communication, and beautiful celebrations of these outward signs instituted by Christ to give grace.",
       getStartedFree: "Get Started Free",
       signInToYourParish: "Sign In to Your Parish",
       disclaimer: "100% Free Forever • No Credit Card • No Hidden Fees • Open Source"
@@ -245,8 +247,8 @@ const translations = {
       getStartedFree: "Comenzar Gratis",
       seeHowItWorks: "Ver Cómo Funciona",
       disclaimer: "Gratis para siempre • No se requiere tarjeta de crédito • Código abierto",
-      problemStatement: "Cada celebración de sacramento y sacramental merece excelencia.",
-      problemDescription: "Desde bodas hasta funerales, bautismos hasta quinceañeras—cuando el personal parroquial, los presidentes y las familias trabajan juntos con comunicación clara y preparación adecuada, crean momentos de profundo significado espiritual para los individuos y toda la comunidad."
+      problemStatement: "Un signo visible instituido por Cristo para dar la gracia.",
+      problemDescription: "Esta es la definición católica tradicional de un sacramento. Desde bodas hasta funerales, bautismos hasta quinceañeras—cuando el personal parroquial, los presidentes y las familias trabajan juntos con comunicación clara y preparación adecuada, crean momentos de profundo significado espiritual para los individuos y toda la comunidad."
     },
     features: {
       sectionTitle: "Todo lo que Necesitas en un Solo Lugar",
@@ -325,6 +327,8 @@ const translations = {
     sacraments: {
       sectionTitle: "Gestiona Cada Sacramento y Sacramental",
       sectionSubtitle: "Flujos de trabajo dedicados para cada tipo de sacramento y sacramental que tu parroquia celebra.",
+      catechismQuote: "Los sacramentos son signos eficaces de la gracia, instituidos por Cristo y confiados a la Iglesia, por los cuales nos es dispensada la vida divina.",
+      catechismReference: "— Catecismo de la Iglesia Católica (CIC 1131)",
       weddings: {
         title: "Bodas",
         description: "Novia, novio, planificación de ceremonia y detalles de celebración"
@@ -377,7 +381,7 @@ const translations = {
         title: "Opciones de Exportación",
         description: "PDF para imprimir, Word para editar y personalizar"
       },
-      exampleExport: "Ejemplo de Exportación",
+      exampleExport: "Ejemplo de Guion",
       weddingCeremony: "Ceremonia de Boda",
       firstReading: "Primera Lectura",
       gospel: "Evangelio",
@@ -410,7 +414,7 @@ const translations = {
     },
     finalCTA: {
       title: "Las Celebraciones Hermosas Son Evangelización",
-      subtitle: "Únete a las parroquias que están creando momentos de profundo significado espiritual a través de una preparación cuidadosa, comunicación clara y celebraciones hermosas.",
+      subtitle: "Únete a las parroquias que están creando momentos de profundo significado espiritual a través de una preparación cuidadosa, comunicación clara y celebraciones hermosas de estos signos visibles instituidos por Cristo para dar la gracia.",
       getStartedFree: "Comenzar Gratis",
       signInToYourParish: "Inicia Sesión en tu Parroquia",
       disclaimer: "100% Gratis Para Siempre • Sin Tarjeta de Crédito • Sin Tarifas Ocultas • Código Abierto"
@@ -597,7 +601,7 @@ function HomeContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Sacrament Management */}
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -622,7 +626,7 @@ function HomeContent() {
             </Card>
 
             {/* Collaboration */}
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -647,7 +651,7 @@ function HomeContent() {
             </Card>
 
             {/* Script Generation */}
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -672,7 +676,7 @@ function HomeContent() {
             </Card>
 
             {/* Print & Export */}
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -697,7 +701,7 @@ function HomeContent() {
             </Card>
 
             {/* Calendar Integration */}
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -722,7 +726,7 @@ function HomeContent() {
             </Card>
 
             {/* Multilingual */}
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -787,8 +791,22 @@ function HomeContent() {
             </p>
           </div>
 
+          {/* Catechism Quote Banner */}
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/20 bg-primary/5">
+              <CardContent className="p-8">
+                <p className="text-lg italic text-muted-foreground leading-relaxed text-center">
+                  "{t.sacraments.catechismQuote}"
+                </p>
+                <p className="text-sm text-muted-foreground text-center mt-4">
+                  {t.sacraments.catechismReference}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
+            <Card className="bg-card text-card-foreground text-center hover:shadow-lg transition-all hover:border-primary/20 border">
               <CardContent className="pt-8 pb-8">
                 <VenusAndMars className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="font-semibold text-lg mb-2">{t.sacraments.weddings.title}</h3>
@@ -798,7 +816,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
+            <Card className="bg-card text-card-foreground text-center hover:shadow-lg transition-all hover:border-primary/20 border">
               <CardContent className="pt-8 pb-8">
                 <Cross className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="font-semibold text-lg mb-2">{t.sacraments.funerals.title}</h3>
@@ -808,7 +826,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
+            <Card className="bg-card text-card-foreground text-center hover:shadow-lg transition-all hover:border-primary/20 border">
               <CardContent className="pt-8 pb-8">
                 <Droplet className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="font-semibold text-lg mb-2">{t.sacraments.baptisms.title}</h3>
@@ -818,7 +836,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
+            <Card className="bg-card text-card-foreground text-center hover:shadow-lg transition-all hover:border-primary/20 border">
               <CardContent className="pt-8 pb-8">
                 <BookHeart className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="font-semibold text-lg mb-2">{t.sacraments.quinceaneras.title}</h3>
@@ -828,7 +846,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
+            <Card className="bg-card text-card-foreground text-center hover:shadow-lg transition-all hover:border-primary/20 border">
               <CardContent className="pt-8 pb-8">
                 <HandHeartIcon className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="font-semibold text-lg mb-2">{t.sacraments.presentations.title}</h3>
@@ -927,44 +945,44 @@ function HomeContent() {
                 </div>
               </div>
 
-              <div className="bg-card rounded-xl p-6 shadow-xl border-2 space-y-4">
+              <div className="bg-card text-card-foreground rounded-xl p-6 shadow-xl border space-y-4">
                 <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t.printFeature.exampleExport}</div>
                 <div className="bg-background rounded-lg p-8 space-y-6 border border-border">
                   {/* Event Title */}
                   <div className="text-center space-y-1">
-                    <div className="font-bold text-lg">{t.printFeature.weddingCeremony}</div>
-                    <div className="text-sm text-foreground">October 12, 2025 • 2:00 PM</div>
+                    <div className="font-bold text-lg text-foreground">{t.printFeature.weddingCeremony}</div>
+                    <div className="text-sm text-muted-foreground">October 12, 2025 • 2:00 PM</div>
                   </div>
 
                   {/* First Reading */}
                   <div className="space-y-1 pt-4">
-                    <div className="text-right font-bold text-sm" style={{ color: '#c41e3a' }}>
+                    <div className="text-right font-bold text-sm text-destructive">
                       {t.printFeature.firstReading}
                     </div>
-                    <div className="text-right italic text-xs" style={{ color: '#c41e3a' }}>
+                    <div className="text-right italic text-xs text-destructive">
                       1 Corinthians 13:4-8a
                     </div>
-                    <div className="text-right text-xs" style={{ color: '#c41e3a' }}>
+                    <div className="text-right text-xs text-destructive">
                       {t.printFeature.lector}: Sarah Johnson
                     </div>
                     <div className="pt-2 text-sm leading-relaxed text-foreground">
                       Love is patient, love is kind. It is not jealous, it is not pompous, it is not inflated, it is not rude...
                     </div>
-                    <div className="pt-1 italic text-sm text-foreground">
+                    <div className="pt-1 italic text-sm text-muted-foreground">
                       {t.printFeature.wordOfTheLord}
                     </div>
                     <div className="pt-1 text-sm text-foreground">
                       <span className="font-bold">People: </span>
-                      <span className="italic">{t.printFeature.thanksBe}</span>
+                      <span className="italic text-muted-foreground">{t.printFeature.thanksBe}</span>
                     </div>
                   </div>
 
                   {/* Gospel */}
                   <div className="space-y-1 pt-4">
-                    <div className="text-right font-bold text-sm" style={{ color: '#c41e3a' }}>
+                    <div className="text-right font-bold text-sm text-destructive">
                       {t.printFeature.gospel}
                     </div>
-                    <div className="text-right italic text-xs" style={{ color: '#c41e3a' }}>
+                    <div className="text-right italic text-xs text-destructive">
                       John 15:9-12
                     </div>
                     <div className="pt-2 text-sm leading-relaxed text-foreground">
@@ -1002,7 +1020,7 @@ function HomeContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="text-center border-2">
+            <Card className="bg-card text-card-foreground text-center border">
               <CardContent className="pt-8 pb-8">
                 <Church className="h-10 w-10 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold mb-2">{t.whoItsFor.priestsDeacons.title}</h3>
@@ -1012,7 +1030,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center border-2">
+            <Card className="bg-card text-card-foreground text-center border">
               <CardContent className="pt-8 pb-8">
                 <Users className="h-10 w-10 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold mb-2">{t.whoItsFor.pastoralAssociates.title}</h3>
@@ -1022,7 +1040,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center border-2">
+            <Card className="bg-card text-card-foreground text-center border">
               <CardContent className="pt-8 pb-8">
                 <FileText className="h-10 w-10 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold mb-2">{t.whoItsFor.liturgicalDirectors.title}</h3>
@@ -1032,7 +1050,7 @@ function HomeContent() {
               </CardContent>
             </Card>
 
-            <Card className="text-center border-2">
+            <Card className="bg-card text-card-foreground text-center border">
               <CardContent className="pt-8 pb-8">
                 <Heart className="h-10 w-10 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold mb-2">{t.whoItsFor.parishStaff.title}</h3>
@@ -1045,34 +1063,34 @@ function HomeContent() {
         </div>
 
         {/* Final CTA */}
-        <div className="bg-primary text-primary-foreground rounded-2xl p-12 md:p-16 text-center space-y-8">
+        <Card className="bg-card text-card-foreground border-2 border-primary/20 rounded-2xl p-12 md:p-16 text-center space-y-8">
           <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               {t.finalCTA.title}
             </h2>
-            <p className="text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {t.finalCTA.subtitle}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="secondary" className="text-lg px-8 h-12">
+            <Button asChild size="lg" className="text-lg px-8 h-12">
               <Link href="/signup">
                 <Church className="h-5 w-5 mr-2" />
                 {t.finalCTA.getStartedFree}
               </Link>
             </Button>
-            <Button asChild size="lg" className="text-lg px-8 h-12 bg-card text-card-foreground border-2 border-card-foreground/20 hover:bg-card/90">
+            <Button asChild size="lg" variant="outline" className="text-lg px-8 h-12">
               <Link href="/login">
                 {t.finalCTA.signInToYourParish}
               </Link>
             </Button>
           </div>
 
-          <p className="text-sm text-primary-foreground/80 pt-4 font-medium">
+          <p className="text-sm text-muted-foreground pt-4 font-medium">
             {t.finalCTA.disclaimer}
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* Footer */}

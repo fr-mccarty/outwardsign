@@ -4,7 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Event } from '@/lib/types'
+import { Event, Location } from '@/lib/types'
+
+export interface EventWithRelations extends Event {
+  location?: Location | null
+}
 
 export interface CreateEventData {
   name: string
@@ -16,7 +20,7 @@ export interface CreateEventData {
   end_date?: string
   end_time?: string
   timezone?: string
-  location?: string
+  location_id?: string
   language?: string
   note?: string
 }
@@ -31,7 +35,7 @@ export interface UpdateEventData {
   end_date?: string
   end_time?: string
   timezone?: string
-  location?: string
+  location_id?: string
   language?: string
   note?: string
 }
@@ -62,7 +66,7 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
 
   if (filters?.search) {
     // Use OR condition for search across multiple fields
-    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,location.ilike.%${filters.search}%`)
+    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
   }
 
   query = query.order('start_date', { ascending: false, nullsFirst: false })
@@ -100,6 +104,44 @@ export async function getEvent(id: string): Promise<Event | null> {
   return data
 }
 
+export async function getEventWithRelations(id: string): Promise<EventWithRelations | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Fetch base event
+  const { data: event, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching event:', error)
+    throw new Error('Failed to fetch event')
+  }
+
+  // Fetch location if location_id exists
+  let location = null
+  if (event.location_id) {
+    const { data: locationData } = await supabase
+      .from('locations')
+      .select('*')
+      .eq('id', event.location_id)
+      .single()
+
+    location = locationData
+  }
+
+  return {
+    ...event,
+    location,
+  }
+}
+
 export async function createEvent(data: CreateEventData): Promise<Event> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -119,7 +161,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         end_date: data.end_date || null,
         end_time: data.end_time || null,
         timezone: data.timezone || null,
-        location: data.location || null,
+        location_id: data.location_id || null,
         language: data.language || null,
         note: data.note || null,
       }
@@ -151,7 +193,7 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
   if (data.end_date !== undefined) updateData.end_date = data.end_date || null
   if (data.end_time !== undefined) updateData.end_time = data.end_time || null
   if (data.timezone !== undefined) updateData.timezone = data.timezone || null
-  if (data.location !== undefined) updateData.location = data.location || null
+  if (data.location_id !== undefined) updateData.location_id = data.location_id || null
   if (data.language !== undefined) updateData.language = data.language || null
   if (data.note !== undefined) updateData.note = data.note || null
 

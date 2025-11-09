@@ -151,11 +151,6 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
                       <span className="font-medium">Groom:</span> {wedding.groom.first_name} {wedding.groom.last_name}
                     </p>
                   )}
-                  {wedding.wedding_event?.location && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Location:</span> {wedding.wedding_event.location}
-                    </p>
-                  )}
                 </div>
 
                 {wedding.notes && (

@@ -158,7 +158,7 @@ export function PetitionEditor({
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder="Enter petitions, one per line...&#10;&#10;Example:&#10;For the bride and groom, that their love may grow stronger each day.&#10;For all married couples, that they may find joy in their commitment.&#10;For those who are sick or suffering, that they may know God's healing presence."
-            className="min-h-[300px] font-mono text-sm"
+            className="min-h-[300px]"
             disabled={readOnly}
           />
           <p className="text-xs text-muted-foreground">

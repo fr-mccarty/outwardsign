@@ -11,19 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createEvent, updateEvent, type CreateEventData } from "@/lib/actions/events"
-import type { Event, Person } from "@/lib/types"
+import { createEvent, updateEvent, type CreateEventData, type EventWithRelations } from "@/lib/actions/events"
+import type { Person, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PeoplePicker } from "@/components/people-picker"
+import { LocationPicker } from "@/components/location-picker"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 
 interface EventFormProps {
-  event?: Event
+  event?: EventWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
 }
@@ -44,12 +45,21 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const [startTime, setStartTime] = useState(event?.start_time || "")
   const [endDate, setEndDate] = useState(event?.end_date || "")
   const [endTime, setEndTime] = useState(event?.end_time || "")
-  const [location, setLocation] = useState(event?.location || "")
   const [language, setLanguage] = useState(event?.language || "")
   const [notes, setNotes] = useState(event?.note || "")
 
   // Responsible party picker state
   const responsibleParty = usePickerState<Person>()
+
+  // Location picker state - initialize with existing location if editing
+  const location = usePickerState<Location>()
+
+  // Initialize location picker with existing location data
+  useEffect(() => {
+    if (event?.location && !location.value) {
+      location.setValue(event.location)
+    }
+  }, [event?.location])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,7 +75,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         start_time: startTime || undefined,
         end_date: endDate || undefined,
         end_time: endTime || undefined,
-        location: location || undefined,
+        location_id: location.value?.id || undefined,
         language: language || undefined,
         note: notes || undefined,
       }
@@ -227,13 +237,36 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              id="location"
-              label="Location"
-              value={location}
-              onChange={setLocation}
-              placeholder="Enter event location"
-            />
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              {location.value ? (
+                <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                  <span className="text-sm">
+                    {location.value.name}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => location.setValue(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => location.setShowPicker(true)}
+                  className="w-full"
+                >
+                  Select Location
+                </Button>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Where the event will take place
+              </p>
+            </div>
 
             <FormField
               id="language"
@@ -243,6 +276,12 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
               placeholder="e.g., English, Spanish"
             />
           </div>
+
+          <LocationPicker
+            open={location.showPicker}
+            onOpenChange={location.setShowPicker}
+            onSelect={(loc) => location.setValue(loc)}
+          />
         </CardContent>
       </Card>
 

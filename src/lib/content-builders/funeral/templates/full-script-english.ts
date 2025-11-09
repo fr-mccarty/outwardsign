@@ -83,10 +83,15 @@ function buildSummarySection(funeral: FuneralWithRelations): ContentSection {
   }
 
   if (funeral.funeral_event?.location) {
+    const location = funeral.funeral_event.location
+    const locationText = location.name +
+      (location.street || location.city ?
+        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+        '')
     elements.push({
       type: 'info-row',
       label: 'Service Location:',
-      value: funeral.funeral_event.location,
+      value: locationText,
     })
   }
 

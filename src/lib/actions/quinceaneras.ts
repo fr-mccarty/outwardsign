@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Quinceanera, Person, Event } from '@/lib/types'
+import { Quinceanera, Person, Event, Location } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
+import { EventWithRelations } from '@/lib/actions/events'
 
 export interface CreateQuinceaneraData {
   quinceanera_event_id?: string
@@ -156,8 +157,8 @@ export interface QuinceaneraWithRelations extends Quinceanera {
   homilist?: Person | null
   lead_musician?: Person | null
   cantor?: Person | null
-  quinceanera_event?: Event | null
-  quinceanera_reception?: Event | null
+  quinceanera_event?: EventWithRelations | null
+  quinceanera_reception?: EventWithRelations | null
   first_reading?: IndividualReading | null
   psalm?: IndividualReading | null
   second_reading?: IndividualReading | null
@@ -217,8 +218,8 @@ export async function getQuinceaneraWithRelations(id: string): Promise<Quinceane
     quinceanera.homilist_id ? supabase.from('people').select('*').eq('id', quinceanera.homilist_id).single() : Promise.resolve({ data: null }),
     quinceanera.lead_musician_id ? supabase.from('people').select('*').eq('id', quinceanera.lead_musician_id).single() : Promise.resolve({ data: null }),
     quinceanera.cantor_id ? supabase.from('people').select('*').eq('id', quinceanera.cantor_id).single() : Promise.resolve({ data: null }),
-    quinceanera.quinceanera_event_id ? supabase.from('events').select('*').eq('id', quinceanera.quinceanera_event_id).single() : Promise.resolve({ data: null }),
-    quinceanera.quinceanera_reception_id ? supabase.from('events').select('*').eq('id', quinceanera.quinceanera_reception_id).single() : Promise.resolve({ data: null }),
+    quinceanera.quinceanera_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', quinceanera.quinceanera_event_id).single() : Promise.resolve({ data: null }),
+    quinceanera.quinceanera_reception_id ? supabase.from('events').select('*, location:locations(*)').eq('id', quinceanera.quinceanera_reception_id).single() : Promise.resolve({ data: null }),
     quinceanera.first_reading_id ? supabase.from('readings').select('*').eq('id', quinceanera.first_reading_id).single() : Promise.resolve({ data: null }),
     quinceanera.psalm_id ? supabase.from('readings').select('*').eq('id', quinceanera.psalm_id).single() : Promise.resolve({ data: null }),
     quinceanera.second_reading_id ? supabase.from('readings').select('*').eq('id', quinceanera.second_reading_id).single() : Promise.resolve({ data: null }),

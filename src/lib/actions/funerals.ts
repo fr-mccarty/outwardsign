@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Funeral, Person, Event } from '@/lib/types'
+import { Funeral, Person, Event, Location } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
+import { EventWithRelations } from '@/lib/actions/events'
 
 export interface CreateFuneralData {
   funeral_event_id?: string
@@ -156,8 +157,8 @@ export interface FuneralWithRelations extends Funeral {
   homilist?: Person | null
   lead_musician?: Person | null
   cantor?: Person | null
-  funeral_event?: Event | null
-  funeral_meal_event?: Event | null
+  funeral_event?: EventWithRelations | null
+  funeral_meal_event?: EventWithRelations | null
   first_reading?: IndividualReading | null
   psalm?: IndividualReading | null
   second_reading?: IndividualReading | null
@@ -217,8 +218,8 @@ export async function getFuneralWithRelations(id: string): Promise<FuneralWithRe
     funeral.homilist_id ? supabase.from('people').select('*').eq('id', funeral.homilist_id).single() : Promise.resolve({ data: null }),
     funeral.lead_musician_id ? supabase.from('people').select('*').eq('id', funeral.lead_musician_id).single() : Promise.resolve({ data: null }),
     funeral.cantor_id ? supabase.from('people').select('*').eq('id', funeral.cantor_id).single() : Promise.resolve({ data: null }),
-    funeral.funeral_event_id ? supabase.from('events').select('*').eq('id', funeral.funeral_event_id).single() : Promise.resolve({ data: null }),
-    funeral.funeral_meal_event_id ? supabase.from('events').select('*').eq('id', funeral.funeral_meal_event_id).single() : Promise.resolve({ data: null }),
+    funeral.funeral_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', funeral.funeral_event_id).single() : Promise.resolve({ data: null }),
+    funeral.funeral_meal_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', funeral.funeral_meal_event_id).single() : Promise.resolve({ data: null }),
     funeral.first_reading_id ? supabase.from('readings').select('*').eq('id', funeral.first_reading_id).single() : Promise.resolve({ data: null }),
     funeral.psalm_id ? supabase.from('readings').select('*').eq('id', funeral.psalm_id).single() : Promise.resolve({ data: null }),
     funeral.second_reading_id ? supabase.from('readings').select('*').eq('id', funeral.second_reading_id).single() : Promise.resolve({ data: null }),

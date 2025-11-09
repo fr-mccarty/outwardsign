@@ -8,6 +8,20 @@ Outward Sign is a comprehensive sacrament and sacramental management tool design
 
 ## 📖 Purpose
 
+### What is a Sacrament?
+
+From the Catholic perspective, a sacrament is traditionally defined as:
+
+**"An outward sign instituted by Christ to give grace"**
+
+The Catechism of the Catholic Church (CCC 1131) further clarifies:
+
+> *"The sacraments are efficacious signs of grace, instituted by Christ and entrusted to the Church, by which divine life is dispensed to us."*
+
+The name "Outward Sign" directly references this theological definition, highlighting that the sacraments are visible, communal celebrations that manifest invisible grace in the life of the Church.
+
+### Why This Tool Matters
+
 The Sacraments and Sacramentals are the core activity of the Catholic Parish—their proper celebration at every step is the evangelizing work of parishes. However, coordinating these sacred moments often involves juggling multiple tools, endless email chains, scattered documents, and last-minute scrambling to ensure everything is ready for the celebration.
 
 Outward Sign addresses this challenge by providing a unified platform where parish staff, presiders, and families can collaborate seamlessly throughout the entire preparation process. From the initial planning stages through to having a beautifully formatted script ready in the sacristy, every detail is organized, accessible, and designed to serve the beauty and sanctity of each sacramental celebration.

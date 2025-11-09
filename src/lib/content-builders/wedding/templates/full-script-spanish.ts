@@ -36,18 +36,28 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     }
 
     if (wedding.rehearsal_event?.location) {
+      const location = wedding.rehearsal_event.location
+      const locationText = location.name +
+        (location.street || location.city ?
+          ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+          '')
       elements.push({
         type: 'info-row',
         label: 'Lugar del Ensayo:',
-        value: wedding.rehearsal_event.location,
+        value: locationText,
       })
     }
 
     if (wedding.rehearsal_dinner_event?.location) {
+      const location = wedding.rehearsal_dinner_event.location
+      const locationText = location.name +
+        (location.street || location.city ?
+          ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+          '')
       elements.push({
         type: 'info-row',
         label: 'Lugar de la Cena del Ensayo:',
-        value: wedding.rehearsal_dinner_event.location,
+        value: locationText,
       })
     }
   }
@@ -99,18 +109,28 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
   }
 
   if (wedding.wedding_event?.location) {
+    const location = wedding.wedding_event.location
+    const locationText = location.name +
+      (location.street || location.city ?
+        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Boda:',
-      value: wedding.wedding_event.location,
+      value: locationText,
     })
   }
 
   if (wedding.reception_event?.location) {
+    const location = wedding.reception_event.location
+    const locationText = location.name +
+      (location.street || location.city ?
+        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Recepción:',
-      value: wedding.reception_event.location,
+      value: locationText,
     })
   }
 

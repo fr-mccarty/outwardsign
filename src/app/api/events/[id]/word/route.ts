@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getEvent } from '@/lib/actions/events'
+import { getEventWithRelations } from '@/lib/actions/events'
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from 'docx'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
 
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const event = await getEvent(id)
+    const event = await getEventWithRelations(id)
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
@@ -119,11 +119,15 @@ export async function GET(
     }
 
     if (event.location) {
+      const locationText = event.location.name +
+        (event.location.street || event.location.city ?
+          ` (${[event.location.street, event.location.city, event.location.state].filter(Boolean).join(', ')})` :
+          '')
       paragraphs.push(
         new Paragraph({
           children: [
             new TextRun({ text: 'Location: ', bold: true }),
-            new TextRun({ text: event.location })
+            new TextRun({ text: locationText })
           ]
         })
       )

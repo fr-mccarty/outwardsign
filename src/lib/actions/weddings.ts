@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Wedding, Person, Event } from '@/lib/types'
+import { Wedding, Person, Event, Location } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
+import { EventWithRelations } from '@/lib/actions/events'
 
 export interface CreateWeddingData {
   wedding_event_id?: string
@@ -166,10 +167,10 @@ export interface WeddingWithRelations extends Wedding {
   cantor?: Person | null
   witness_1?: Person | null
   witness_2?: Person | null
-  wedding_event?: Event | null
-  reception_event?: Event | null
-  rehearsal_event?: Event | null
-  rehearsal_dinner_event?: Event | null
+  wedding_event?: EventWithRelations | null
+  reception_event?: EventWithRelations | null
+  rehearsal_event?: EventWithRelations | null
+  rehearsal_dinner_event?: EventWithRelations | null
   first_reading?: IndividualReading | null
   psalm?: IndividualReading | null
   second_reading?: IndividualReading | null
@@ -235,10 +236,10 @@ export async function getWeddingWithRelations(id: string): Promise<WeddingWithRe
     wedding.cantor_id ? supabase.from('people').select('*').eq('id', wedding.cantor_id).single() : Promise.resolve({ data: null }),
     wedding.witness_1_id ? supabase.from('people').select('*').eq('id', wedding.witness_1_id).single() : Promise.resolve({ data: null }),
     wedding.witness_2_id ? supabase.from('people').select('*').eq('id', wedding.witness_2_id).single() : Promise.resolve({ data: null }),
-    wedding.wedding_event_id ? supabase.from('events').select('*').eq('id', wedding.wedding_event_id).single() : Promise.resolve({ data: null }),
-    wedding.reception_event_id ? supabase.from('events').select('*').eq('id', wedding.reception_event_id).single() : Promise.resolve({ data: null }),
-    wedding.rehearsal_event_id ? supabase.from('events').select('*').eq('id', wedding.rehearsal_event_id).single() : Promise.resolve({ data: null }),
-    wedding.rehearsal_dinner_event_id ? supabase.from('events').select('*').eq('id', wedding.rehearsal_dinner_event_id).single() : Promise.resolve({ data: null }),
+    wedding.wedding_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', wedding.wedding_event_id).single() : Promise.resolve({ data: null }),
+    wedding.reception_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', wedding.reception_event_id).single() : Promise.resolve({ data: null }),
+    wedding.rehearsal_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', wedding.rehearsal_event_id).single() : Promise.resolve({ data: null }),
+    wedding.rehearsal_dinner_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', wedding.rehearsal_dinner_event_id).single() : Promise.resolve({ data: null }),
     wedding.first_reading_id ? supabase.from('readings').select('*').eq('id', wedding.first_reading_id).single() : Promise.resolve({ data: null }),
     wedding.psalm_id ? supabase.from('readings').select('*').eq('id', wedding.psalm_id).single() : Promise.resolve({ data: null }),
     wedding.second_reading_id ? supabase.from('readings').select('*').eq('id', wedding.second_reading_id).single() : Promise.resolve({ data: null }),

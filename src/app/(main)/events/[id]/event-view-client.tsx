@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, User, ExternalLink } from "lucide-react"
 import { EVENT_TYPE_LABELS, MODULE_STATUS_LABELS } from "@/lib/constants"
-import type { Event } from '@/lib/types'
+import type { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleReference } from '@/lib/helpers/event-helpers'
 import Link from 'next/link'
 
 interface EventViewClientProps {
-  event: Event
+  event: EventWithRelations
   moduleReference: ModuleReference | null
 }
 
@@ -137,8 +137,15 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
                   Location
                 </h4>
                 <p className="text-sm">
-                  {event.location}
+                  {event.location.name}
                 </p>
+                {(event.location.street || event.location.city || event.location.state) && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {[event.location.street, event.location.city, event.location.state]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </p>
+                )}
               </div>
             )}
             <div>

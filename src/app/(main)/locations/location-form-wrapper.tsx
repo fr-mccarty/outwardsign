@@ -1,38 +1,38 @@
 'use client'
 
 import React, { useState } from 'react'
-import { EventForm } from './event-form'
+import { LocationForm } from './location-form'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { SaveButton } from '@/components/save-button'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
-import type { EventWithRelations } from '@/lib/actions/events'
+import type { Location } from '@/lib/types'
 
-interface EventFormWrapperProps {
-  event?: EventWithRelations
+interface LocationFormWrapperProps {
+  location?: Location
   title: string
   description: string
   saveButtonLabel: string
 }
 
-export function EventFormWrapper({
-  event,
+export function LocationFormWrapper({
+  location,
   title,
   description,
   saveButtonLabel
-}: EventFormWrapperProps) {
-  const formId = 'event-form'
+}: LocationFormWrapperProps) {
+  const formId = 'location-form'
   const [isLoading, setIsLoading] = useState(false)
-  const isEditing = !!event
+  const isEditing = !!location
 
   const actions = (
     <>
       {isEditing && (
         <Button variant="outline" asChild>
-          <Link href={`/events/${event.id}`}>
+          <Link href={`/locations/${location.id}`}>
             <Eye className="h-4 w-4 mr-2" />
-            View Event
+            View Location
           </Link>
         </Button>
       )}
@@ -49,8 +49,8 @@ export function EventFormWrapper({
       maxWidth="4xl"
       actions={actions}
     >
-      <EventForm
-        event={event}
+      <LocationForm
+        location={location}
         formId={formId}
         onLoadingChange={setIsLoading}
       />

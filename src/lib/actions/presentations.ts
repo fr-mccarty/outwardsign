@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Presentation, Person, Event } from '@/lib/types'
+import { Presentation, Person, Event, Location } from '@/lib/types'
+import { EventWithRelations } from '@/lib/actions/events'
 
 export interface CreatePresentationData {
   presentation_event_id?: string | null
@@ -126,7 +127,7 @@ export interface PresentationWithRelations extends Presentation {
   mother?: Person | null
   father?: Person | null
   coordinator?: Person | null
-  presentation_event?: Event | null
+  presentation_event?: EventWithRelations | null
 }
 
 export async function getPresentationWithRelations(id: string): Promise<PresentationWithRelations | null> {
@@ -161,7 +162,7 @@ export async function getPresentationWithRelations(id: string): Promise<Presenta
     presentation.mother_id ? supabase.from('people').select('*').eq('id', presentation.mother_id).single() : Promise.resolve({ data: null }),
     presentation.father_id ? supabase.from('people').select('*').eq('id', presentation.father_id).single() : Promise.resolve({ data: null }),
     presentation.coordinator_id ? supabase.from('people').select('*').eq('id', presentation.coordinator_id).single() : Promise.resolve({ data: null }),
-    presentation.presentation_event_id ? supabase.from('events').select('*').eq('id', presentation.presentation_event_id).single() : Promise.resolve({ data: null })
+    presentation.presentation_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', presentation.presentation_event_id).single() : Promise.resolve({ data: null })
   ])
 
   return {

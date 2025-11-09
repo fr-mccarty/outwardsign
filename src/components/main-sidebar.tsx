@@ -22,7 +22,7 @@ import {
   Settings,
   Church,
   Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
-  BookHeart, CalendarDays
+  BookHeart, CalendarDays, Building
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -93,6 +93,24 @@ export function MainSidebar() {
                   {
                     title: "Create Event",
                     url: "/events/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
+                name="Locations"
+                icon={Building}
+                items={[
+                  {
+                    title: "Our Locations",
+                    url: "/locations",
+                    icon: Building,
+                  },
+                  {
+                    title: "New Location",
+                    url: "/locations/create",
                     icon: Plus,
                   },
                 ]}

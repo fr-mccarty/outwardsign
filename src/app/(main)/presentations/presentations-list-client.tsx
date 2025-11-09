@@ -161,11 +161,6 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
                       <span className="font-medium">Father:</span> {presentation.father.first_name} {presentation.father.last_name}
                     </p>
                   )}
-                  {presentation.presentation_event?.location && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Location:</span> {presentation.presentation_event.location}
-                    </p>
-                  )}
                 </div>
 
                 {presentation.note && (

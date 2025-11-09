@@ -151,11 +151,6 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
                       <span className="font-medium">Family Contact:</span> {quinceanera.family_contact.first_name} {quinceanera.family_contact.last_name}
                     </p>
                   )}
-                  {quinceanera.quinceanera_event?.location && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Location:</span> {quinceanera.quinceanera_event.location}
-                    </p>
-                  )}
                 </div>
 
                 {quinceanera.note && (

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEvent } from '@/lib/actions/events'
+import { getEventWithRelations } from '@/lib/actions/events'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
 
 interface PageProps {
@@ -17,7 +17,7 @@ export default async function PrintEventPage({ params }: PageProps) {
   }
 
   const { id } = await params
-  const event = await getEvent(id)
+  const event = await getEventWithRelations(id)
 
   if (!event) {
     notFound()
@@ -163,7 +163,14 @@ export default async function PrintEventPage({ params }: PageProps) {
           {event.location && (
             <div className="detail-row">
               <div className="detail-label">Location:</div>
-              <div className="detail-value">{event.location}</div>
+              <div className="detail-value">
+                {event.location.name}
+                {(event.location.street || event.location.city) && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {[event.location.street, event.location.city, event.location.state].filter(Boolean).join(', ')}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
