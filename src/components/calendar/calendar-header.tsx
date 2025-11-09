@@ -20,7 +20,7 @@ export function CalendarHeader({
       year: 'numeric',
       month: 'long'
     }
-    
+
     switch (view) {
       case 'month':
         return currentDate.toLocaleDateString(undefined, options)
@@ -29,13 +29,25 @@ export function CalendarHeader({
         startOfWeek.setDate(currentDate.getDate() - currentDate.getDay())
         const endOfWeek = new Date(startOfWeek)
         endOfWeek.setDate(startOfWeek.getDate() + 6)
-        return `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`
+
+        const startMonth = startOfWeek.toLocaleDateString(undefined, { month: 'short' })
+        const endMonth = endOfWeek.toLocaleDateString(undefined, { month: 'short' })
+        const startDay = startOfWeek.getDate()
+        const endDay = endOfWeek.getDate()
+        const year = endOfWeek.getFullYear()
+
+        // If same month, show: Nov 23 - 29, 2025
+        if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
+          return `${startMonth} ${startDay} - ${endDay}, ${year}`
+        }
+        // If different months, show: Nov 30 - Dec 6, 2025
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`
       case 'day':
-        return currentDate.toLocaleDateString(undefined, { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        return currentDate.toLocaleDateString(undefined, {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
         })
     }
   }

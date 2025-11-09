@@ -22,7 +22,7 @@ import {
 import { PeoplePicker } from "@/components/people-picker"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PRESENTATION_TEMPLATES } from "@/lib/content-builders/presentation"
 
@@ -383,7 +383,12 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           setPresentationEvent(event)
           setShowPresentationEventPicker(false)
         }}
+        selectedEventId={presentationEvent?.id}
+        selectedEvent={presentationEvent}
+        defaultEventType="PRESENTATION"
+        defaultName={EVENT_TYPE_LABELS.PRESENTATION.en}
         openToNewEvent={!isEditing}
+        disableSearch={true}
       />
 
       {/* People Picker Modals */}

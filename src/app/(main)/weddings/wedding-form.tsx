@@ -24,7 +24,7 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
@@ -736,8 +736,8 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         onSelect={(event) => setWeddingEvent(event)}
         selectedEventId={weddingEvent?.id}
         selectedEvent={weddingEvent}
-        defaultEventType="Wedding Ceremony"
-        defaultName="Wedding Ceremony"
+        defaultEventType="WEDDING"
+        defaultName={EVENT_TYPE_LABELS.WEDDING.en}
         openToNewEvent={!isEditing}
         disableSearch={true}
       />
@@ -747,7 +747,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         onSelect={(event) => setReceptionEvent(event)}
         selectedEventId={receptionEvent?.id}
         selectedEvent={receptionEvent}
-        defaultEventType="Reception"
+        defaultEventType="OTHER"
         defaultName="Reception"
         openToNewEvent={!isEditing}
         disableSearch={true}
@@ -758,7 +758,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         onSelect={(event) => setRehearsalEvent(event)}
         selectedEventId={rehearsalEvent?.id}
         selectedEvent={rehearsalEvent}
-        defaultEventType="Rehearsal"
+        defaultEventType="REHEARSAL"
         defaultName="Rehearsal"
         openToNewEvent={!isEditing}
         disableSearch={true}
@@ -769,7 +769,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         onSelect={(event) => setRehearsalDinnerEvent(event)}
         selectedEventId={rehearsalDinnerEvent?.id}
         selectedEvent={rehearsalDinnerEvent}
-        defaultEventType="Rehearsal Dinner"
+        defaultEventType="OTHER"
         defaultName="Rehearsal Dinner"
         openToNewEvent={!isEditing}
         disableSearch={true}

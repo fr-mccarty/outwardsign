@@ -1,3 +1,5 @@
+'use client'
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,11 +21,435 @@ import {
   BookHeart,
   HandHeartIcon,
   VenusAndMars,
-  Github
+  Github,
+  Languages,
+  Sun,
+  Moon
 } from "lucide-react"
-import { APP_NAME, GITHUB_URL } from "@/lib/constants"
+import { APP_NAME, APP_TAGLINE, GITHUB_URL, HomeLanguage, DEFAULT_HOME_LANGUAGE } from "@/lib/constants"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useTheme } from "next-themes"
+
+// Translations for the homepage
+const translations = {
+  en: {
+    nav: {
+      features: "Features",
+      sacraments: "Sacraments",
+      howItWorks: "How it Works",
+      login: "Login",
+      getStarted: "Get Started"
+    },
+    hero: {
+      forCatholicParishes: "For Catholic Parishes",
+      freeOpenSource: "Free & Open Source",
+      title: "Plan, Communicate, and Celebrate",
+      titleHighlight: "Sacraments & Sacramentals with Excellence",
+      subtitle: "The Sacraments and Sacramentals are the core activity of your parish. Stop juggling scattered documents, endless email chains, and last-minute scrambling. Prepare beautiful celebrations—together.",
+      getStartedFree: "Get Started Free",
+      seeHowItWorks: "See How It Works",
+      disclaimer: "Free forever • No credit card required • Open source",
+      problemStatement: "Every sacrament and sacramental celebration deserves excellence.",
+      problemDescription: "From weddings to funerals, baptisms to quinceañeras—when parish staff, presiders, and families work together with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
+    },
+    features: {
+      sectionTitle: "Everything You Need in One Place",
+      sectionSubtitle: "From initial planning to the printed script in the sacristy—manage every aspect of sacrament and sacramental preparation with clarity and care.",
+      sacramentManagement: {
+        title: "Complete Sacrament & Sacramental Management",
+        description: "Manage weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type.",
+        features: [
+          "Custom forms for each sacrament type",
+          "Track participants and family details",
+          "Organize readings and liturgical elements"
+        ]
+      },
+      collaboration: {
+        title: "Staff & Family Collaboration",
+        description: "Work together seamlessly with presiders, parish staff, and families throughout the entire preparation process.",
+        features: [
+          "Parish directory with role management",
+          "Shared access to event details",
+          "Clear communication channels"
+        ]
+      },
+      scriptGeneration: {
+        title: "Professional Script Generation",
+        description: "Automatically generate beautiful, properly formatted liturgical scripts with readings, prayers, and all celebration details.",
+        features: [
+          "Complete liturgy scripts",
+          "Readings with pericope references",
+          "Customizable templates"
+        ]
+      },
+      printExport: {
+        title: "Print & Export Ready",
+        description: "Export to PDF or Word for printing. Have beautifully formatted scripts ready in a binder for the presider to take to the sacristy.",
+        features: [
+          "One-click PDF generation",
+          "Editable Word documents",
+          "Professional typography"
+        ]
+      },
+      calendar: {
+        title: "Calendar Integration",
+        description: "View all sacramental events in one calendar. Export to .ics feeds for seamless scheduling across your parish systems.",
+        features: [
+          "Unified parish calendar view",
+          "Liturgical calendar integration",
+          ".ics export for external calendars"
+        ]
+      },
+      multilingual: {
+        title: "Multilingual Support",
+        description: "Serve diverse parish communities with built-in language management for all liturgical content and celebrations.",
+        features: [
+          "English and Spanish supported",
+          "Bilingual script generation",
+          "Language-specific templates"
+        ]
+      },
+      freeOpenSource: {
+        title: "Completely Free & Open Source",
+        description: "Built for the Catholic community. Every parish deserves access to excellent sacrament preparation tools, regardless of budget. No subscriptions, no hidden fees, no limitations—ever.",
+        noCost: {
+          title: "No Cost",
+          description: "Use all features free forever"
+        },
+        openSource: {
+          title: "Open Source",
+          description: "Transparent, community-driven code"
+        },
+        forAllParishes: {
+          title: "For All Parishes",
+          description: "Small or large, rural or urban"
+        }
+      }
+    },
+    sacraments: {
+      sectionTitle: "Manage Every Sacrament & Sacramental",
+      sectionSubtitle: "Dedicated workflows for each type of sacrament and sacramental your parish celebrates.",
+      weddings: {
+        title: "Weddings",
+        description: "Bride, groom, ceremony planning, and celebration details"
+      },
+      funerals: {
+        title: "Funerals",
+        description: "Memorial planning, family support, and liturgy preparation"
+      },
+      baptisms: {
+        title: "Baptisms",
+        description: "Preparation classes, godparent tracking, celebration"
+      },
+      quinceaneras: {
+        title: "Quinceañeras",
+        description: "Cultural celebration planning and liturgical preparation"
+      },
+      presentations: {
+        title: "Presentations",
+        description: "Latino tradition celebrations and family coordination"
+      }
+    },
+    howItWorks: {
+      sectionTitle: "From Planning to Celebration",
+      sectionSubtitle: "A simple, three-step process that takes you from initial planning to a beautifully prepared celebration.",
+      step1: {
+        title: "Plan Together",
+        description: "Create the event, add participants, assign roles. Parish staff and families collaborate in real-time with shared access."
+      },
+      step2: {
+        title: "Prepare the Liturgy",
+        description: "Select readings, add prayers, customize the celebration. The system generates a complete, properly formatted liturgical script."
+      },
+      step3: {
+        title: "Print & Celebrate",
+        description: "Export to PDF or Word, print the script, place it in a binder—ready for the presider to pick up and celebrate with confidence."
+      }
+    },
+    printFeature: {
+      title: "Ready for the Sacristy",
+      description: "Being fully prepared means having the summary and script printed and ready in a binder for the priest, deacon, or church leader to confidently celebrate each sacrament and sacramental.",
+      professionalTypography: {
+        title: "Professional Typography",
+        description: "Properly formatted for easy reading during liturgy"
+      },
+      completeScripts: {
+        title: "Complete Scripts",
+        description: "All readings, prayers, and celebration elements included"
+      },
+      exportOptions: {
+        title: "Export Options",
+        description: "PDF for printing, Word for editing and customization"
+      },
+      exampleExport: "Example Export",
+      weddingCeremony: "Wedding Ceremony",
+      firstReading: "First Reading",
+      gospel: "Gospel",
+      lector: "Lector",
+      wordOfTheLord: "The word of the Lord.",
+      thanksBe: "Thanks be to God.",
+      fullScriptContinues: "+ Full script continues...",
+      downloadPdf: "Download PDF",
+      downloadWord: "Download Word"
+    },
+    whoItsFor: {
+      sectionTitle: "Built for Parish Leaders",
+      sectionSubtitle: "Designed with input from priests, deacons, and parish staff who understand the importance of beautiful, well-prepared celebrations of sacraments and sacramentals.",
+      priestsDeacons: {
+        title: "Priests & Deacons",
+        description: "Celebrate confidently with complete, print-ready scripts"
+      },
+      pastoralAssociates: {
+        title: "Pastoral Associates",
+        description: "Coordinate families and staff throughout preparation"
+      },
+      liturgicalDirectors: {
+        title: "Liturgical Directors",
+        description: "Manage all parish liturgies from one platform"
+      },
+      parishStaff: {
+        title: "Parish Staff",
+        description: "Collaborate seamlessly across the entire team"
+      }
+    },
+    finalCTA: {
+      title: "Beautiful Celebrations Are Evangelization",
+      subtitle: "Join parishes who are creating moments of profound spiritual significance through careful preparation, clear communication, and beautiful celebrations.",
+      getStartedFree: "Get Started Free",
+      signInToYourParish: "Sign In to Your Parish",
+      disclaimer: "100% Free Forever • No Credit Card • No Hidden Fees • Open Source"
+    },
+    footer: {
+      madeWith: "Made with care for Catholic parishes",
+      freeForever: "Free Forever",
+      openSource: "Open Source",
+      viewOnGithub: "View on GitHub",
+      license: "Licensed under MIT • Community-driven development"
+    }
+  },
+  es: {
+    nav: {
+      features: "Características",
+      sacraments: "Sacramentos",
+      howItWorks: "Cómo Funciona",
+      login: "Iniciar Sesión",
+      getStarted: "Comenzar"
+    },
+    hero: {
+      forCatholicParishes: "Para Parroquias Católicas",
+      freeOpenSource: "Gratis y de Código Abierto",
+      title: "Planifica, Comunica y Celebra",
+      titleHighlight: "Sacramentos y Sacramentales con Excelencia",
+      subtitle: "Los Sacramentos y Sacramentales son la actividad central de tu parroquia. Deja de hacer malabarismos con documentos dispersos, cadenas interminables de correos electrónicos y preparativos de último minuto. Prepara celebraciones hermosas—juntos.",
+      getStartedFree: "Comenzar Gratis",
+      seeHowItWorks: "Ver Cómo Funciona",
+      disclaimer: "Gratis para siempre • No se requiere tarjeta de crédito • Código abierto",
+      problemStatement: "Cada celebración de sacramento y sacramental merece excelencia.",
+      problemDescription: "Desde bodas hasta funerales, bautismos hasta quinceañeras—cuando el personal parroquial, los presidentes y las familias trabajan juntos con comunicación clara y preparación adecuada, crean momentos de profundo significado espiritual para los individuos y toda la comunidad."
+    },
+    features: {
+      sectionTitle: "Todo lo que Necesitas en un Solo Lugar",
+      sectionSubtitle: "Desde la planificación inicial hasta el guion impreso en la sacristía—gestiona cada aspecto de la preparación de sacramentos y sacramentales con claridad y cuidado.",
+      sacramentManagement: {
+        title: "Gestión Completa de Sacramentos y Sacramentales",
+        description: "Gestiona bodas, funerales, bautismos, presentaciones y quinceañeras con flujos de trabajo dedicados para cada tipo de celebración.",
+        features: [
+          "Formularios personalizados para cada tipo de sacramento",
+          "Seguimiento de participantes y detalles familiares",
+          "Organización de lecturas y elementos litúrgicos"
+        ]
+      },
+      collaboration: {
+        title: "Colaboración entre Personal y Familias",
+        description: "Trabaja en conjunto sin problemas con presidentes, personal parroquial y familias durante todo el proceso de preparación.",
+        features: [
+          "Directorio parroquial con gestión de roles",
+          "Acceso compartido a detalles de eventos",
+          "Canales de comunicación claros"
+        ]
+      },
+      scriptGeneration: {
+        title: "Generación Profesional de Guiones",
+        description: "Genera automáticamente guiones litúrgicos hermosos y correctamente formateados con lecturas, oraciones y todos los detalles de la celebración.",
+        features: [
+          "Guiones litúrgicos completos",
+          "Lecturas con referencias de perícopas",
+          "Plantillas personalizables"
+        ]
+      },
+      printExport: {
+        title: "Listo para Imprimir y Exportar",
+        description: "Exporta a PDF o Word para imprimir. Ten guiones bellamente formateados listos en una carpeta para que el presidente los lleve a la sacristía.",
+        features: [
+          "Generación de PDF con un clic",
+          "Documentos Word editables",
+          "Tipografía profesional"
+        ]
+      },
+      calendar: {
+        title: "Integración de Calendario",
+        description: "Visualiza todos los eventos sacramentales en un solo calendario. Exporta a feeds .ics para una programación perfecta en todos los sistemas de tu parroquia.",
+        features: [
+          "Vista unificada del calendario parroquial",
+          "Integración del calendario litúrgico",
+          "Exportación .ics para calendarios externos"
+        ]
+      },
+      multilingual: {
+        title: "Soporte Multilingüe",
+        description: "Sirve a comunidades parroquiales diversas con gestión integrada de idiomas para todo el contenido litúrgico y celebraciones.",
+        features: [
+          "Inglés y español disponibles",
+          "Generación de guiones bilingües",
+          "Plantillas específicas por idioma"
+        ]
+      },
+      freeOpenSource: {
+        title: "Completamente Gratis y de Código Abierto",
+        description: "Construido para la comunidad católica. Cada parroquia merece acceso a excelentes herramientas de preparación sacramental, independientemente del presupuesto. Sin suscripciones, sin tarifas ocultas, sin limitaciones—nunca.",
+        noCost: {
+          title: "Sin Costo",
+          description: "Usa todas las funciones gratis para siempre"
+        },
+        openSource: {
+          title: "Código Abierto",
+          description: "Código transparente e impulsado por la comunidad"
+        },
+        forAllParishes: {
+          title: "Para Todas las Parroquias",
+          description: "Pequeñas o grandes, rurales o urbanas"
+        }
+      }
+    },
+    sacraments: {
+      sectionTitle: "Gestiona Cada Sacramento y Sacramental",
+      sectionSubtitle: "Flujos de trabajo dedicados para cada tipo de sacramento y sacramental que tu parroquia celebra.",
+      weddings: {
+        title: "Bodas",
+        description: "Novia, novio, planificación de ceremonia y detalles de celebración"
+      },
+      funerals: {
+        title: "Funerales",
+        description: "Planificación de memorial, apoyo familiar y preparación litúrgica"
+      },
+      baptisms: {
+        title: "Bautismos",
+        description: "Clases de preparación, seguimiento de padrinos, celebración"
+      },
+      quinceaneras: {
+        title: "Quinceañeras",
+        description: "Planificación de celebración cultural y preparación litúrgica"
+      },
+      presentations: {
+        title: "Presentaciones",
+        description: "Celebraciones de tradición latina y coordinación familiar"
+      }
+    },
+    howItWorks: {
+      sectionTitle: "Desde la Planificación hasta la Celebración",
+      sectionSubtitle: "Un proceso simple de tres pasos que te lleva desde la planificación inicial hasta una celebración bellamente preparada.",
+      step1: {
+        title: "Planifica Juntos",
+        description: "Crea el evento, añade participantes, asigna roles. El personal parroquial y las familias colaboran en tiempo real con acceso compartido."
+      },
+      step2: {
+        title: "Prepara la Liturgia",
+        description: "Selecciona lecturas, añade oraciones, personaliza la celebración. El sistema genera un guion litúrgico completo y correctamente formateado."
+      },
+      step3: {
+        title: "Imprime y Celebra",
+        description: "Exporta a PDF o Word, imprime el guion, colócalo en una carpeta—listo para que el presidente lo recoja y celebre con confianza."
+      }
+    },
+    printFeature: {
+      title: "Listo para la Sacristía",
+      description: "Estar completamente preparado significa tener el resumen y el guion impresos y listos en una carpeta para que el sacerdote, diácono o líder de la iglesia celebre con confianza cada sacramento y sacramental.",
+      professionalTypography: {
+        title: "Tipografía Profesional",
+        description: "Correctamente formateado para lectura fácil durante la liturgia"
+      },
+      completeScripts: {
+        title: "Guiones Completos",
+        description: "Todas las lecturas, oraciones y elementos de celebración incluidos"
+      },
+      exportOptions: {
+        title: "Opciones de Exportación",
+        description: "PDF para imprimir, Word para editar y personalizar"
+      },
+      exampleExport: "Ejemplo de Exportación",
+      weddingCeremony: "Ceremonia de Boda",
+      firstReading: "Primera Lectura",
+      gospel: "Evangelio",
+      lector: "Lector",
+      wordOfTheLord: "Palabra de Dios.",
+      thanksBe: "Te alabamos, Señor.",
+      fullScriptContinues: "+ El guion completo continúa...",
+      downloadPdf: "Descargar PDF",
+      downloadWord: "Descargar Word"
+    },
+    whoItsFor: {
+      sectionTitle: "Construido para Líderes Parroquiales",
+      sectionSubtitle: "Diseñado con el aporte de sacerdotes, diáconos y personal parroquial que comprenden la importancia de celebraciones hermosas y bien preparadas de sacramentos y sacramentales.",
+      priestsDeacons: {
+        title: "Sacerdotes y Diáconos",
+        description: "Celebra con confianza con guiones completos y listos para imprimir"
+      },
+      pastoralAssociates: {
+        title: "Asociados Pastorales",
+        description: "Coordina familias y personal durante toda la preparación"
+      },
+      liturgicalDirectors: {
+        title: "Directores Litúrgicos",
+        description: "Gestiona todas las liturgias parroquiales desde una plataforma"
+      },
+      parishStaff: {
+        title: "Personal Parroquial",
+        description: "Colabora sin problemas en todo el equipo"
+      }
+    },
+    finalCTA: {
+      title: "Las Celebraciones Hermosas Son Evangelización",
+      subtitle: "Únete a las parroquias que están creando momentos de profundo significado espiritual a través de una preparación cuidadosa, comunicación clara y celebraciones hermosas.",
+      getStartedFree: "Comenzar Gratis",
+      signInToYourParish: "Inicia Sesión en tu Parroquia",
+      disclaimer: "100% Gratis Para Siempre • Sin Tarjeta de Crédito • Sin Tarifas Ocultas • Código Abierto"
+    },
+    footer: {
+      madeWith: "Hecho con cuidado para parroquias católicas",
+      freeForever: "Gratis Para Siempre",
+      openSource: "Código Abierto",
+      viewOnGithub: "Ver en GitHub",
+      license: "Licenciado bajo MIT • Desarrollo impulsado por la comunidad"
+    }
+  }
+}
 
 export default function Home() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { theme, setTheme } = useTheme()
+  const [language, setLanguage] = useState<HomeLanguage>(DEFAULT_HOME_LANGUAGE)
+  const [mounted, setMounted] = useState(false)
+  const t = translations[language]
+
+  // Read language from URL on mount
+  useEffect(() => {
+    setMounted(true)
+    const langParam = searchParams.get('lang')
+    if (langParam === 'en' || langParam === 'es') {
+      setLanguage(langParam)
+    }
+  }, [searchParams])
+
+  // Update language and URL
+  const handleLanguageChange = (newLang: HomeLanguage) => {
+    setLanguage(newLang)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('lang', newLang)
+    router.push(`?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
@@ -33,28 +459,68 @@ export default function Home() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
                 <Flower className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold">{APP_NAME}</span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold">{APP_NAME}</span>
+                  <span className="text-xs text-muted-foreground">{APP_TAGLINE}</span>
+                </div>
               </Link>
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
               <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                Features
+                {t.nav.features}
               </Link>
               <Link href="#sacraments" className="text-muted-foreground hover:text-foreground transition-colors">
-                Sacraments
+                {t.nav.sacraments}
               </Link>
               <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-                How it Works
+                {t.nav.howItWorks}
               </Link>
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Theme Toggle */}
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+                aria-label="Toggle theme"
+              >
+                {mounted && theme === 'dark' ? (
+                  <Sun className="h-4 w-4 text-foreground" />
+                ) : (
+                  <Moon className="h-4 w-4 text-foreground" />
+                )}
+              </button>
+
+              {/* Language Selector */}
+              <div className="flex items-center gap-2 border border-border rounded-lg p-1">
+                <button
+                  onClick={() => handleLanguageChange('en')}
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    language === 'en'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => handleLanguageChange('es')}
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    language === 'es'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  ES
+                </button>
+              </div>
+
               <Button asChild variant="ghost">
-                <Link href="/login">Login</Link>
+                <Link href="/login">{t.nav.login}</Link>
               </Button>
               <Button asChild>
-                <Link href="/signup">Get Started</Link>
+                <Link href="/signup">{t.nav.getStarted}</Link>
               </Button>
               <Button variant="ghost" size="sm" className="md:hidden">
                 <Menu className="h-5 w-5" />
@@ -71,41 +537,40 @@ export default function Home() {
           <div className="flex justify-center gap-3 mb-6 flex-wrap">
             <Badge variant="secondary" className="px-4 py-2 text-sm">
               <Church className="h-4 w-4 mr-2" />
-              For Catholic Parishes
+              {t.hero.forCatholicParishes}
             </Badge>
-            <Badge variant="default" className="px-4 py-2 text-sm bg-primary">
+            <Badge variant="default" className="px-4 py-2 text-sm">
               <Heart className="h-4 w-4 mr-2" />
-              Free & Open Source
+              {t.hero.freeOpenSource}
             </Badge>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-4xl mx-auto">
-            Plan, Communicate, and Celebrate
-            <span className="text-primary block mt-2">Sacraments & Sacramentals with Excellence</span>
+            {t.hero.title}
+            <span className="text-primary block mt-2">{t.hero.titleHighlight}</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            The Sacraments and Sacramentals are the core activity of your parish. Stop juggling scattered documents,
-            endless email chains, and last-minute scrambling. Prepare beautiful celebrations—together.
+            {t.hero.subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             <Button asChild size="lg" className="text-lg px-8 h-12">
               <Link href="/signup">
                 <Heart className="h-5 w-5 mr-2" />
-                Get Started Free
+                {t.hero.getStartedFree}
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-lg px-8 h-12">
               <Link href="#how-it-works">
-                See How It Works
+                {t.hero.seeHowItWorks}
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Link>
             </Button>
           </div>
 
           <p className="text-sm text-muted-foreground pt-4">
-            Free forever • No credit card required • Open source
+            {t.hero.disclaimer}
           </p>
 
           {/* Problem Statement Banner */}
@@ -113,10 +578,8 @@ export default function Home() {
             <Card className="border-2 border-primary/20 bg-primary/5">
               <CardContent className="p-8">
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  <span className="font-semibold text-foreground">Every sacrament and sacramental celebration deserves excellence.</span>
-                  {" "}From weddings to funerals, baptisms to quinceañeras—when parish staff, presiders, and families
-                  work together with clear communication and proper preparation, you create moments of profound
-                  spiritual significance for individuals and the entire community.
+                  <span className="font-semibold text-foreground">{t.hero.problemStatement}</span>
+                  {" "}{t.hero.problemDescription}
                 </p>
               </CardContent>
             </Card>
@@ -126,10 +589,9 @@ export default function Home() {
         {/* Core Features Section */}
         <div id="features" className="space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">Everything You Need in One Place</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t.features.sectionTitle}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From initial planning to the printed script in the sacristy—manage every aspect
-              of sacrament and sacramental preparation with clarity and care.
+              {t.features.sectionSubtitle}
             </p>
           </div>
 
@@ -141,27 +603,20 @@ export default function Home() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Church className="h-6 w-6 text-primary" />
                   </div>
-                  Complete Sacrament & Sacramental Management
+                  {t.features.sacramentManagement.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Manage weddings, funerals, baptisms, presentations, and quinceañeras
-                  with dedicated workflows for each celebration type.
+                  {t.features.sacramentManagement.description}
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Custom forms for each sacrament type</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Track participants and family details</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Organize readings and liturgical elements</span>
-                  </li>
+                  {t.features.sacramentManagement.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -173,27 +628,20 @@ export default function Home() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Users className="h-6 w-6 text-primary" />
                   </div>
-                  Staff & Family Collaboration
+                  {t.features.collaboration.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Work together seamlessly with presiders, parish staff, and families
-                  throughout the entire preparation process.
+                  {t.features.collaboration.description}
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Parish directory with role management</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Shared access to event details</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Clear communication channels</span>
-                  </li>
+                  {t.features.collaboration.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -205,27 +653,20 @@ export default function Home() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <FileText className="h-6 w-6 text-primary" />
                   </div>
-                  Professional Script Generation
+                  {t.features.scriptGeneration.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Automatically generate beautiful, properly formatted liturgical scripts
-                  with readings, prayers, and all celebration details.
+                  {t.features.scriptGeneration.description}
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Complete liturgy scripts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Readings with pericope references</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Customizable templates</span>
-                  </li>
+                  {t.features.scriptGeneration.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -237,27 +678,20 @@ export default function Home() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Printer className="h-6 w-6 text-primary" />
                   </div>
-                  Print & Export Ready
+                  {t.features.printExport.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Export to PDF or Word for printing. Have beautifully formatted scripts
-                  ready in a binder for the presider to take to the sacristy.
+                  {t.features.printExport.description}
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>One-click PDF generation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Editable Word documents</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Professional typography</span>
-                  </li>
+                  {t.features.printExport.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -269,27 +703,20 @@ export default function Home() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Calendar className="h-6 w-6 text-primary" />
                   </div>
-                  Calendar Integration
+                  {t.features.calendar.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  View all sacramental events in one calendar. Export to .ics feeds
-                  for seamless scheduling across your parish systems.
+                  {t.features.calendar.description}
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Unified parish calendar view</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Liturgical calendar integration</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>.ics export for external calendars</span>
-                  </li>
+                  {t.features.calendar.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -301,27 +728,20 @@ export default function Home() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Globe className="h-6 w-6 text-primary" />
                   </div>
-                  Multilingual Support
+                  {t.features.multilingual.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Serve diverse parish communities with built-in language management
-                  for all liturgical content and celebrations.
+                  {t.features.multilingual.description}
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>English and Spanish supported</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Bilingual script generation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Language-specific templates</span>
-                  </li>
+                  {t.features.multilingual.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -332,27 +752,26 @@ export default function Home() {
             <div className="max-w-4xl mx-auto text-center space-y-4">
               <div className="flex items-center justify-center gap-3">
                 <Heart className="h-8 w-8 text-primary" />
-                <h3 className="text-2xl md:text-3xl font-bold">Completely Free & Open Source</h3>
+                <h3 className="text-2xl md:text-3xl font-bold">{t.features.freeOpenSource.title}</h3>
               </div>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Built for the Catholic community. Every parish deserves access to excellent sacrament preparation tools,
-                regardless of budget. No subscriptions, no hidden fees, no limitations—ever.
+                {t.features.freeOpenSource.description}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
                 <div className="flex flex-col items-center gap-2">
                   <CheckCircle2 className="h-6 w-6 text-primary" />
-                  <div className="font-medium">No Cost</div>
-                  <div className="text-sm text-muted-foreground">Use all features free forever</div>
+                  <div className="font-medium">{t.features.freeOpenSource.noCost.title}</div>
+                  <div className="text-sm text-muted-foreground">{t.features.freeOpenSource.noCost.description}</div>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <CheckCircle2 className="h-6 w-6 text-primary" />
-                  <div className="font-medium">Open Source</div>
-                  <div className="text-sm text-muted-foreground">Transparent, community-driven code</div>
+                  <div className="font-medium">{t.features.freeOpenSource.openSource.title}</div>
+                  <div className="text-sm text-muted-foreground">{t.features.freeOpenSource.openSource.description}</div>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <CheckCircle2 className="h-6 w-6 text-primary" />
-                  <div className="font-medium">For All Parishes</div>
-                  <div className="text-sm text-muted-foreground">Small or large, rural or urban</div>
+                  <div className="font-medium">{t.features.freeOpenSource.forAllParishes.title}</div>
+                  <div className="text-sm text-muted-foreground">{t.features.freeOpenSource.forAllParishes.description}</div>
                 </div>
               </div>
             </div>
@@ -362,9 +781,9 @@ export default function Home() {
         {/* Sacraments & Sacramentals Showcase */}
         <div id="sacraments" className="space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">Manage Every Sacrament & Sacramental</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t.sacraments.sectionTitle}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Dedicated workflows for each type of sacrament and sacramental your parish celebrates.
+              {t.sacraments.sectionSubtitle}
             </p>
           </div>
 
@@ -372,9 +791,9 @@ export default function Home() {
             <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
               <CardContent className="pt-8 pb-8">
                 <VenusAndMars className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Weddings</h3>
+                <h3 className="font-semibold text-lg mb-2">{t.sacraments.weddings.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Bride, groom, ceremony planning, and celebration details
+                  {t.sacraments.weddings.description}
                 </p>
               </CardContent>
             </Card>
@@ -382,9 +801,9 @@ export default function Home() {
             <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
               <CardContent className="pt-8 pb-8">
                 <Cross className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Funerals</h3>
+                <h3 className="font-semibold text-lg mb-2">{t.sacraments.funerals.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Memorial planning, family support, and liturgy preparation
+                  {t.sacraments.funerals.description}
                 </p>
               </CardContent>
             </Card>
@@ -392,9 +811,9 @@ export default function Home() {
             <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
               <CardContent className="pt-8 pb-8">
                 <Droplet className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Baptisms</h3>
+                <h3 className="font-semibold text-lg mb-2">{t.sacraments.baptisms.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Preparation classes, godparent tracking, celebration
+                  {t.sacraments.baptisms.description}
                 </p>
               </CardContent>
             </Card>
@@ -402,9 +821,9 @@ export default function Home() {
             <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
               <CardContent className="pt-8 pb-8">
                 <BookHeart className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Quinceañeras</h3>
+                <h3 className="font-semibold text-lg mb-2">{t.sacraments.quinceaneras.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Cultural celebration planning and liturgical preparation
+                  {t.sacraments.quinceaneras.description}
                 </p>
               </CardContent>
             </Card>
@@ -412,9 +831,9 @@ export default function Home() {
             <Card className="text-center hover:shadow-lg transition-all hover:border-primary/20 border-2">
               <CardContent className="pt-8 pb-8">
                 <HandHeartIcon className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Presentations</h3>
+                <h3 className="font-semibold text-lg mb-2">{t.sacraments.presentations.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Latino tradition celebrations and family coordination
+                  {t.sacraments.presentations.description}
                 </p>
               </CardContent>
             </Card>
@@ -424,10 +843,9 @@ export default function Home() {
         {/* How It Works */}
         <div id="how-it-works" className="space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">From Planning to Celebration</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t.howItWorks.sectionTitle}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              A simple, three-step process that takes you from initial planning
-              to a beautifully prepared celebration.
+              {t.howItWorks.sectionSubtitle}
             </p>
           </div>
 
@@ -437,10 +855,9 @@ export default function Home() {
                 1
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-semibold">Plan Together</h3>
+                <h3 className="text-xl font-semibold">{t.howItWorks.step1.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Create the event, add participants, assign roles.
-                  Parish staff and families collaborate in real-time with shared access.
+                  {t.howItWorks.step1.description}
                 </p>
               </div>
             </div>
@@ -450,10 +867,9 @@ export default function Home() {
                 2
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-semibold">Prepare the Liturgy</h3>
+                <h3 className="text-xl font-semibold">{t.howItWorks.step2.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Select readings, add prayers, customize the celebration.
-                  The system generates a complete, properly formatted liturgical script.
+                  {t.howItWorks.step2.description}
                 </p>
               </div>
             </div>
@@ -463,10 +879,9 @@ export default function Home() {
                 3
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-semibold">Print & Celebrate</h3>
+                <h3 className="text-xl font-semibold">{t.howItWorks.step3.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Export to PDF or Word, print the script, place it in a binder—
-                  ready for the presider to pick up and celebrate with confidence.
+                  {t.howItWorks.step3.description}
                 </p>
               </div>
             </div>
@@ -482,65 +897,94 @@ export default function Home() {
                   <div className="p-3 bg-primary text-primary-foreground rounded-xl shadow-lg">
                     <Printer className="h-8 w-8" />
                   </div>
-                  <h3 className="text-3xl font-bold">Ready for the Sacristy</h3>
+                  <h3 className="text-3xl font-bold">{t.printFeature.title}</h3>
                 </div>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Being fully prepared means having the summary and script printed and ready
-                  in a binder for the priest, deacon, or church leader to confidently celebrate
-                  each sacrament and sacramental.
+                  {t.printFeature.description}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-medium">Professional Typography</div>
-                      <div className="text-sm text-muted-foreground">Properly formatted for easy reading during liturgy</div>
+                      <div className="font-medium">{t.printFeature.professionalTypography.title}</div>
+                      <div className="text-sm text-muted-foreground">{t.printFeature.professionalTypography.description}</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-medium">Complete Scripts</div>
-                      <div className="text-sm text-muted-foreground">All readings, prayers, and celebration elements included</div>
+                      <div className="font-medium">{t.printFeature.completeScripts.title}</div>
+                      <div className="text-sm text-muted-foreground">{t.printFeature.completeScripts.description}</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-medium">Export Options</div>
-                      <div className="text-sm text-muted-foreground">PDF for printing, Word for editing and customization</div>
+                      <div className="font-medium">{t.printFeature.exportOptions.title}</div>
+                      <div className="text-sm text-muted-foreground">{t.printFeature.exportOptions.description}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="bg-card rounded-xl p-6 shadow-xl border-2 space-y-4">
-                <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Example Export</div>
-                <div className="bg-muted/50 rounded-lg p-6 space-y-3 font-mono text-sm">
-                  <div className="font-bold text-base">Wedding Ceremony</div>
-                  <div className="text-muted-foreground">October 12, 2025 • 2:00 PM</div>
-                  <div className="border-t border-border pt-3 space-y-2">
-                    <div className="text-xs text-muted-foreground">First Reading</div>
-                    <div className="text-sm">1 Corinthians 13:4-8a</div>
-                    <div className="text-xs italic text-muted-foreground">Love is patient, love is kind...</div>
+                <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t.printFeature.exampleExport}</div>
+                <div className="bg-background rounded-lg p-8 space-y-6 border border-border">
+                  {/* Event Title */}
+                  <div className="text-center space-y-1">
+                    <div className="font-bold text-lg">{t.printFeature.weddingCeremony}</div>
+                    <div className="text-sm text-foreground">October 12, 2025 • 2:00 PM</div>
                   </div>
-                  <div className="border-t border-border pt-3 space-y-2">
-                    <div className="text-xs text-muted-foreground">Gospel</div>
-                    <div className="text-sm">John 15:9-12</div>
-                    <div className="text-xs italic text-muted-foreground">As the Father loves me...</div>
+
+                  {/* First Reading */}
+                  <div className="space-y-1 pt-4">
+                    <div className="text-right font-bold text-sm" style={{ color: '#c41e3a' }}>
+                      {t.printFeature.firstReading}
+                    </div>
+                    <div className="text-right italic text-xs" style={{ color: '#c41e3a' }}>
+                      1 Corinthians 13:4-8a
+                    </div>
+                    <div className="text-right text-xs" style={{ color: '#c41e3a' }}>
+                      {t.printFeature.lector}: Sarah Johnson
+                    </div>
+                    <div className="pt-2 text-sm leading-relaxed text-foreground">
+                      Love is patient, love is kind. It is not jealous, it is not pompous, it is not inflated, it is not rude...
+                    </div>
+                    <div className="pt-1 italic text-sm text-foreground">
+                      {t.printFeature.wordOfTheLord}
+                    </div>
+                    <div className="pt-1 text-sm text-foreground">
+                      <span className="font-bold">People: </span>
+                      <span className="italic">{t.printFeature.thanksBe}</span>
+                    </div>
                   </div>
-                  <div className="text-center pt-2">
-                    <div className="text-xs text-muted-foreground">+ Full script continues...</div>
+
+                  {/* Gospel */}
+                  <div className="space-y-1 pt-4">
+                    <div className="text-right font-bold text-sm" style={{ color: '#c41e3a' }}>
+                      {t.printFeature.gospel}
+                    </div>
+                    <div className="text-right italic text-xs" style={{ color: '#c41e3a' }}>
+                      John 15:9-12
+                    </div>
+                    <div className="pt-2 text-sm leading-relaxed text-foreground">
+                      As the Father loves me, so I also love you. Remain in my love...
+                    </div>
+                  </div>
+
+                  {/* Continuation indicator */}
+                  <div className="text-center pt-2 border-t border-border">
+                    <div className="text-xs text-muted-foreground">{t.printFeature.fullScriptContinues}</div>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" size="sm" className="flex-1">
                     <FileText className="h-4 w-4 mr-2" />
-                    Download PDF
+                    {t.printFeature.downloadPdf}
                   </Button>
                   <Button variant="outline" size="sm" className="flex-1">
                     <FileText className="h-4 w-4 mr-2" />
-                    Download Word
+                    {t.printFeature.downloadWord}
                   </Button>
                 </div>
               </div>
@@ -551,10 +995,9 @@ export default function Home() {
         {/* Who It's For */}
         <div className="space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">Built for Parish Leaders</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t.whoItsFor.sectionTitle}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Designed with input from priests, deacons, and parish staff who understand
-              the importance of beautiful, well-prepared celebrations of sacraments and sacramentals.
+              {t.whoItsFor.sectionSubtitle}
             </p>
           </div>
 
@@ -562,9 +1005,9 @@ export default function Home() {
             <Card className="text-center border-2">
               <CardContent className="pt-8 pb-8">
                 <Church className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Priests & Deacons</h3>
+                <h3 className="font-semibold mb-2">{t.whoItsFor.priestsDeacons.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Celebrate confidently with complete, print-ready scripts
+                  {t.whoItsFor.priestsDeacons.description}
                 </p>
               </CardContent>
             </Card>
@@ -572,9 +1015,9 @@ export default function Home() {
             <Card className="text-center border-2">
               <CardContent className="pt-8 pb-8">
                 <Users className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Pastoral Associates</h3>
+                <h3 className="font-semibold mb-2">{t.whoItsFor.pastoralAssociates.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Coordinate families and staff throughout preparation
+                  {t.whoItsFor.pastoralAssociates.description}
                 </p>
               </CardContent>
             </Card>
@@ -582,9 +1025,9 @@ export default function Home() {
             <Card className="text-center border-2">
               <CardContent className="pt-8 pb-8">
                 <FileText className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Liturgical Directors</h3>
+                <h3 className="font-semibold mb-2">{t.whoItsFor.liturgicalDirectors.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Manage all parish liturgies from one platform
+                  {t.whoItsFor.liturgicalDirectors.description}
                 </p>
               </CardContent>
             </Card>
@@ -592,9 +1035,9 @@ export default function Home() {
             <Card className="text-center border-2">
               <CardContent className="pt-8 pb-8">
                 <Heart className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Parish Staff</h3>
+                <h3 className="font-semibold mb-2">{t.whoItsFor.parishStaff.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Collaborate seamlessly across the entire team
+                  {t.whoItsFor.parishStaff.description}
                 </p>
               </CardContent>
             </Card>
@@ -605,11 +1048,10 @@ export default function Home() {
         <div className="bg-primary text-primary-foreground rounded-2xl p-12 md:p-16 text-center space-y-8">
           <div className="space-y-4">
             <h2 className="text-3xl md:text-4xl font-bold">
-              Transform Your Sacrament & Sacramental Preparation
+              {t.finalCTA.title}
             </h2>
             <p className="text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto leading-relaxed">
-              Join parishes who are creating moments of profound spiritual significance
-              through careful preparation, clear communication, and beautiful celebrations.
+              {t.finalCTA.subtitle}
             </p>
           </div>
 
@@ -617,18 +1059,18 @@ export default function Home() {
             <Button asChild size="lg" variant="secondary" className="text-lg px-8 h-12">
               <Link href="/signup">
                 <Church className="h-5 w-5 mr-2" />
-                Get Started Free
+                {t.finalCTA.getStartedFree}
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg px-8 h-12 bg-background text-foreground hover:bg-background/90">
+            <Button asChild size="lg" className="text-lg px-8 h-12 bg-card text-card-foreground border-2 border-card-foreground/20 hover:bg-card/90">
               <Link href="/login">
-                Sign In to Your Parish
+                {t.finalCTA.signInToYourParish}
               </Link>
             </Button>
           </div>
 
           <p className="text-sm text-primary-foreground/80 pt-4 font-medium">
-            100% Free Forever • No Credit Card • No Hidden Fees • Open Source
+            {t.finalCTA.disclaimer}
           </p>
         </div>
       </div>
@@ -639,28 +1081,28 @@ export default function Home() {
           <div className="text-center space-y-4">
             <div className="text-sm text-muted-foreground">
               <p className="mb-2">
-                <span className="font-semibold text-foreground">{APP_NAME}</span> • Made with care for Catholic parishes
+                <span className="font-semibold text-foreground">{APP_NAME}</span> • <span className="italic">{APP_TAGLINE}</span> • {t.footer.madeWith}
               </p>
               <p className="mb-3">outwardsign.church</p>
               <div className="flex items-center justify-center gap-4 text-xs">
                 <Badge variant="outline" className="gap-1">
                   <Heart className="h-3 w-3" />
-                  Free Forever
+                  {t.footer.freeForever}
                 </Badge>
                 <Badge variant="outline" className="gap-1">
                   <Globe className="h-3 w-3" />
-                  Open Source
+                  {t.footer.openSource}
                 </Badge>
                 <Badge variant="outline" className="gap-1" asChild>
                   <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="cursor-pointer hover:bg-accent">
                     <Github className="h-3 w-3" />
-                    View on GitHub
+                    {t.footer.viewOnGithub}
                   </a>
                 </Badge>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Licensed under MIT • Community-driven development
+              {t.footer.license}
             </p>
           </div>
         </div>

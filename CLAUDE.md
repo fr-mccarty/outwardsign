@@ -18,6 +18,7 @@
 - [📖 Data Flow Pattern](#-data-flow-pattern)
 - [Breadcrumbs](#breadcrumbs)
 - [Code Conventions](#code-conventions)
+  - [🔴 Bilingual Implementation](#-bilingual-implementation-english--spanish)
 - [🔴 Creating New Modules](#-creating-new-modules)
 - [📖 Module Icons](#-module-icons)
 - [🔴 Common Module Creation Mistakes](#-common-module-creation-mistakes)
@@ -546,6 +547,16 @@ Client Component (BreadcrumbSetter):
 - **Indentation:** 2 spaces
 - **Language:** TypeScript for all new files
 - **Component type:** Server Components by default, Client Components only when needed
+
+### 🔴 Bilingual Implementation (English & Spanish)
+**CRITICAL:** Most content in the application is bilingual (English and Spanish). Always check the language implementation of each change.
+
+- **Homepage:** All text must be in both English and Spanish in the translations object
+- **User-facing content:** Forms, labels, messages, and UI text should support both languages where applicable
+- **Verification:** After making changes to user-facing text, especially on the homepage, verify that both English and Spanish translations are complete and accurate
+- **Translation pattern:** Follow the existing pattern in `src/app/page.tsx` with translations object containing `en` and `es` keys
+
+**When in doubt:** Check existing bilingual implementations (homepage, constants file) for the correct pattern.
 
 ### UI Patterns
 - Do not use the system dialog for confirming or alerting the user. Use shadcn components.

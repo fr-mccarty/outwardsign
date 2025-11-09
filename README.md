@@ -26,7 +26,7 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 - **Shared Preparation:** Collaborate with presiders, staff, and families throughout the entire preparation process
 - **Calendar Integration:** Export events to .ics feeds for seamless scheduling across parish systems
 - **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word)
-- **Multilingual Support:** Built-in language management for diverse parish communities
+- **Multilingual Support:** Full English and Spanish language support throughout the application, including the public homepage with language selector, liturgical content, and all user interfaces for diverse parish communities
 - **Liturgical Calendar:** Integration with global Catholic liturgical calendar data
 
 ## 🎨 Sacrament & Sacramental Icons

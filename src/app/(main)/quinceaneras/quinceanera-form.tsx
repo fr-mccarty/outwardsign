@@ -24,7 +24,7 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { quinceaneraTemplates, buildQuinceaneraPetitions } from "@/lib/petition-templates/quinceanera"
@@ -656,8 +656,8 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         onSelect={(event) => setQuinceaneraEvent(event)}
         selectedEventId={quinceaneraEvent?.id}
         selectedEvent={quinceaneraEvent}
-        defaultEventType="Quinceañera Ceremony"
-        defaultName="Quinceañera Ceremony"
+        defaultEventType="QUINCEANERA"
+        defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
         openToNewEvent={!quinceaneraEvent}
         disableSearch={true}
       />
@@ -667,7 +667,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         onSelect={(event) => setQuinceaneraReception(event)}
         selectedEventId={quinceaneraReception?.id}
         selectedEvent={quinceaneraReception}
-        defaultEventType="Reception"
+        defaultEventType="OTHER"
         defaultName="Reception"
         openToNewEvent={!quinceaneraReception}
         disableSearch={true}

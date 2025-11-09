@@ -24,7 +24,7 @@ import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { funeralTemplates, buildFuneralPetitions } from "@/lib/petition-templates/funeral"
@@ -656,8 +656,8 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         onSelect={(event) => setFuneralEvent(event)}
         selectedEventId={funeralEvent?.id}
         selectedEvent={funeralEvent}
-        defaultEventType="Funeral"
-        defaultName="Funeral Service"
+        defaultEventType="FUNERAL"
+        defaultName={EVENT_TYPE_LABELS.FUNERAL.en}
         openToNewEvent={!isEditing}
         disableSearch={true}
       />
@@ -667,7 +667,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         onSelect={(event) => setFuneralMealEvent(event)}
         selectedEventId={funeralMealEvent?.id}
         selectedEvent={funeralMealEvent}
-        defaultEventType="Funeral Meal"
+        defaultEventType="OTHER"
         defaultName="Funeral Meal"
         openToNewEvent={!isEditing}
         disableSearch={true}
