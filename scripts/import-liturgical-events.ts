@@ -4,15 +4,20 @@
  * Import Liturgical Events from John Romano D'Orazio's Liturgical Calendar API
  *
  * Usage:
- *   npm run import:liturgical -- --year 2025 --locale en
- *   npm run import:liturgical -- --year 2025 --locale es
+ *   npm run seed:liturgical:2025
+ *   npm run seed:liturgical:2026
+ *   npm run seed:liturgical -- --year=2027 --locale=es
  *
  * Default: current year, locale 'en'
  *
  * API: https://litcal.johnromanodorazio.com/api/dev/calendar
  */
 
+import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+
+// Load environment variables from .env.local
+config({ path: '.env.local' })
 
 // Configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -83,6 +88,7 @@ interface LiturgicalEvent {
   psalter_week?: number
   liturgical_season?: string
   liturgical_season_lcl?: string
+  holy_day_of_obligation?: boolean
 }
 
 interface ApiResponse {

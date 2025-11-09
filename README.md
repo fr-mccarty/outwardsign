@@ -107,40 +107,62 @@ Please file feedback and issues over on the [Supabase GitHub org](https://github
 - `CLAUDE.md` documents architecture, data patterns, and workflow expectations tailored for AI coding assistants.
 - `AGENTS.md` provides contributor guidelines summarizing project structure, commands, testing, and review practices.
 
-## Liturgical Calendar Import
+## Database Management
+
+### Database Resets
+
+**IMPORTANT:** Database resets are performed via the Supabase UI Dashboard, NOT via CLI commands.
+
+**Workflow:**
+1. Go to your Supabase project dashboard
+2. Navigate to Database → Reset Database
+3. Confirm the reset (this will drop all tables and re-run migrations)
+4. After reset completes, run the seed command (see below)
+
+### Seeding the Database
+
+After resetting the database or running migrations, seed the database with initial data:
+
+```bash
+npm run seed
+```
+
+This will run all configured seeders defined in `scripts/seed.ts`, including:
+- Liturgical calendar events for 2025 (English)
+- Liturgical calendar events for 2026 (English)
+
+### Liturgical Calendar Data
 
 The application uses global liturgical calendar data from [John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com).
 
-### Importing Liturgical Events
+**Individual Year Seeding:**
+```bash
+# Seed 2025 liturgical events
+npm run seed:liturgical:2025
 
-To add liturgical calendar data for a new year or locale:
+# Seed 2026 liturgical events
+npm run seed:liturgical:2026
 
-1. **Generate the migration file:**
-   ```bash
-   # For 2025 English
-   npx tsx scripts/generate-global-liturgical-migration.ts 2025 en
+# Custom year and locale
+npm run seed:liturgical -- --year=2027 --locale=es
+```
 
-   # For 2026 English
-   npx tsx scripts/generate-global-liturgical-migration.ts 2026 en
+**Adding New Seeders:**
 
-   # For 2025 Spanish
-   npx tsx scripts/generate-global-liturgical-migration.ts 2025 es
-   ```
+To add more seeders, edit `scripts/seed.ts` and add to the `seeders` array:
 
-2. **Review the generated migration file:**
-   ```
-   supabase/migrations/YYYYMMDD000002_seed_global_liturgical_events_[year]_[locale].sql
-   ```
-
-3. **Push to database:**
-   ```bash
-   supabase db push
-   ```
+```typescript
+{
+  name: 'Your Seeder Name',
+  command: 'tsx scripts/your-script.ts --args',
+  description: 'What this seeder does'
+}
+```
 
 ### Notes
 
-- The script generates SQL INSERT statements for all liturgical events
-- Uses `ON CONFLICT DO NOTHING` to safely handle re-runs
+- All seeding is done via TypeScript scripts that fetch from external APIs
 - Data is stored in `global_liturgical_events` table with JSONB for full event data
+- Uses `ON CONFLICT DO NOTHING` to safely handle re-runs
 - Indexed for efficient date range queries
 
