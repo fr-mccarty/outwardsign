@@ -25,8 +25,7 @@ import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
-import { SaveButton } from "@/components/save-button"
-import { CancelButton } from "@/components/cancel-button"
+import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
 import { WEDDING_TEMPLATES } from "@/lib/content-builders/wedding"
@@ -723,15 +722,12 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       </Card>
 
       {/* Submit Buttons */}
-      <div className="flex gap-4 justify-end">
-        <CancelButton
-          href={isEditing ? `/weddings/${wedding.id}` : '/weddings'}
-          disabled={isLoading}
-        />
-        <SaveButton isLoading={isLoading}>
-          {isEditing ? 'Update Wedding' : 'Save Wedding'}
-        </SaveButton>
-      </div>
+      <FormBottomActions
+        isEditing={isEditing}
+        isLoading={isLoading}
+        cancelHref={isEditing ? `/weddings/${wedding.id}` : '/weddings'}
+        saveLabel={isEditing ? 'Update Wedding' : 'Save Wedding'}
+      />
 
       {/* Event Pickers */}
       <EventPicker

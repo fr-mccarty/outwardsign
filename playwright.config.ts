@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local for test credentials
+dotenv.config({ path: '.env.local' });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -25,9 +30,20 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // Setup project - runs first to authenticate and save state
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+    // Chromium tests with authenticated state
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Use the authenticated state from setup
+        storageState: path.join(__dirname, 'playwright/.auth/staff.json'),
+      },
+      dependencies: ['setup'], // Run setup before this project
     },
   ],
 

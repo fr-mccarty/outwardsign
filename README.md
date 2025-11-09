@@ -107,3 +107,40 @@ Please file feedback and issues over on the [Supabase GitHub org](https://github
 - `CLAUDE.md` documents architecture, data patterns, and workflow expectations tailored for AI coding assistants.
 - `AGENTS.md` provides contributor guidelines summarizing project structure, commands, testing, and review practices.
 
+## Liturgical Calendar Import
+
+The application uses global liturgical calendar data from [John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com).
+
+### Importing Liturgical Events
+
+To add liturgical calendar data for a new year or locale:
+
+1. **Generate the migration file:**
+   ```bash
+   # For 2025 English
+   npx tsx scripts/generate-global-liturgical-migration.ts 2025 en
+
+   # For 2026 English
+   npx tsx scripts/generate-global-liturgical-migration.ts 2026 en
+
+   # For 2025 Spanish
+   npx tsx scripts/generate-global-liturgical-migration.ts 2025 es
+   ```
+
+2. **Review the generated migration file:**
+   ```
+   supabase/migrations/YYYYMMDD000002_seed_global_liturgical_events_[year]_[locale].sql
+   ```
+
+3. **Push to database:**
+   ```bash
+   supabase db push
+   ```
+
+### Notes
+
+- The script generates SQL INSERT statements for all liturgical events
+- Uses `ON CONFLICT DO NOTHING` to safely handle re-runs
+- Data is stored in `global_liturgical_events` table with JSONB for full event data
+- Indexed for efficient date range queries
+

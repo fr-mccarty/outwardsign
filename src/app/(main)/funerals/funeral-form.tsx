@@ -25,8 +25,7 @@ import { ReadingPickerModal } from "@/components/reading-picker-modal"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
-import { SaveButton } from "@/components/save-button"
-import { CancelButton } from "@/components/cancel-button"
+import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { funeralTemplates, buildFuneralPetitions } from "@/lib/petition-templates/funeral"
 import { FUNERAL_TEMPLATES } from "@/lib/content-builders/funeral"
@@ -643,15 +642,12 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
       </Card>
 
       {/* Submit Buttons */}
-      <div className="flex gap-4 justify-end">
-        <CancelButton
-          href={isEditing ? `/funerals/${funeral.id}` : '/funerals'}
-          disabled={isLoading}
-        />
-        <SaveButton isLoading={isLoading}>
-          {isEditing ? 'Update Funeral' : 'Save Funeral'}
-        </SaveButton>
-      </div>
+      <FormBottomActions
+        isEditing={isEditing}
+        isLoading={isLoading}
+        cancelHref={isEditing ? `/funerals/${funeral.id}` : '/funerals'}
+        saveLabel={isEditing ? 'Update Funeral' : 'Save Funeral'}
+      />
 
       {/* Event Pickers */}
       <EventPicker

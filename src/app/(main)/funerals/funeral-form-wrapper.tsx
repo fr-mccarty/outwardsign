@@ -26,19 +26,21 @@ export function FuneralFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!funeral
 
-  const actions = isEditing ? (
+  const actions = (
     <>
-      <Button variant="outline" asChild>
-        <Link href={`/funerals/${funeral.id}`}>
-          <Eye className="h-4 w-4 mr-2" />
-          View Funeral
-        </Link>
-      </Button>
+      {isEditing && (
+        <Button variant="outline" asChild>
+          <Link href={`/funerals/${funeral.id}`}>
+            <Eye className="h-4 w-4 mr-2" />
+            View Funeral
+          </Link>
+        </Button>
+      )}
       <SaveButton isLoading={isLoading} form={formId}>
-        Update Funeral
+        {saveButtonLabel}
       </SaveButton>
     </>
-  ) : null
+  )
 
   return (
     <PageContainer

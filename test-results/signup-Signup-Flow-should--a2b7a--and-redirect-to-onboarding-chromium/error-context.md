@@ -6,12 +6,12 @@
     - generic [ref=e5]:
       - list [ref=e7]:
         - listitem [ref=e8]:
-          - link "Outward Sign Let your Parish Bloom" [ref=e9] [cursor=pointer]:
+          - link "Outward Sign Bloom in Christ" [ref=e9] [cursor=pointer]:
             - /url: /dashboard
             - img [ref=e11]
             - generic [ref=e18]:
               - generic [ref=e19]: Outward Sign
-              - generic [ref=e20]: Let your Parish Bloom
+              - generic [ref=e20]: Bloom in Christ
       - generic [ref=e21]:
         - generic [ref=e22]:
           - generic [ref=e23]: Application
@@ -27,182 +27,192 @@
                 - img [ref=e34]
                 - generic [ref=e36]: Calendar
             - listitem [ref=e37]:
-              - button "Readings" [ref=e39]:
+              - button "Events" [ref=e39]:
                 - img [ref=e40]
-                - generic [ref=e42]: Readings
+                - generic [ref=e42]: Events
                 - img [ref=e43]
             - listitem [ref=e45]:
-              - button "Mass" [ref=e47]:
+              - button "Readings" [ref=e47]:
                 - img [ref=e48]
-                - generic [ref=e51]: Mass
-                - img [ref=e52]
-            - listitem [ref=e54]:
-              - button "Marriage" [ref=e56]:
-                - img [ref=e57]
-                - generic [ref=e59]: Marriage
-                - img [ref=e60]
-            - listitem [ref=e62]:
-              - button "Funeral" [ref=e64]:
-                - img [ref=e65]
-                - generic [ref=e68]: Funeral
+                - generic [ref=e50]: Readings
+                - img [ref=e51]
+            - listitem [ref=e53]:
+              - button "Masses" [ref=e55]:
+                - img [ref=e56]
+                - generic [ref=e58]: Masses
+                - img [ref=e59]
+            - listitem [ref=e61]:
+              - button "Weddings" [ref=e63]:
+                - img [ref=e64]
+                - generic [ref=e68]: Weddings
                 - img [ref=e69]
             - listitem [ref=e71]:
-              - button "People" [ref=e73]:
+              - button "Funerals" [ref=e73]:
                 - img [ref=e74]
-                - generic [ref=e78]: People
-                - img [ref=e79]
-            - listitem [ref=e81]:
-              - button "Mass Intentions" [ref=e83]:
-                - img [ref=e84]
-                - generic [ref=e86]: Mass Intentions
-                - img [ref=e87]
-            - listitem [ref=e89]:
-              - button "Baptisms" [ref=e91]:
-                - img [ref=e92]
-                - generic [ref=e95]: Baptisms
-                - img [ref=e96]
-            - listitem [ref=e98]:
-              - button "Confirmation" [ref=e100]:
-                - img [ref=e101]
-                - generic [ref=e103]: Confirmation
-                - img [ref=e104]
-            - listitem [ref=e106]:
-              - button "Presentations" [ref=e108]:
-                - img [ref=e109]
-                - generic [ref=e112]: Presentations
+                - generic [ref=e76]: Funerals
+                - img [ref=e77]
+            - listitem [ref=e79]:
+              - button "Presentations" [ref=e81]:
+                - img [ref=e82]
+                - generic [ref=e87]: Presentations
+                - img [ref=e88]
+            - listitem [ref=e90]:
+              - button "People" [ref=e92]:
+                - img [ref=e93]
+                - generic [ref=e96]: People
+                - img [ref=e97]
+            - listitem [ref=e99]:
+              - button "Groups" [ref=e101]:
+                - img [ref=e102]
+                - generic [ref=e107]: Groups
+                - img [ref=e108]
+            - listitem [ref=e110]:
+              - button "Mass Intentions" [ref=e112]:
                 - img [ref=e113]
-        - generic [ref=e115]:
-          - generic [ref=e116]: Settings
-          - list [ref=e118]:
-            - listitem [ref=e119]:
-              - button "Settings" [ref=e121]:
-                - img [ref=e122]
-                - generic [ref=e125]: Settings
-                - img [ref=e126]
-      - button "TP Test Parish Test City, TS" [ref=e129]:
-        - generic [ref=e130]:
-          - generic [ref=e132]: TP
-          - generic [ref=e133]:
-            - generic [ref=e134]: Test Parish
-            - generic [ref=e135]: Test City, TS
+                - generic [ref=e114]: Mass Intentions
+                - img [ref=e115]
+            - listitem [ref=e117]:
+              - button "Baptisms" [ref=e119]:
+                - img [ref=e120]
+                - generic [ref=e122]: Baptisms
+                - img [ref=e123]
+            - listitem [ref=e125]:
+              - button "Quinceañeras" [ref=e127]:
+                - img [ref=e128]
+                - generic [ref=e131]: Quinceañeras
+                - img [ref=e132]
+        - generic [ref=e134]:
+          - generic [ref=e135]: Settings
+          - list [ref=e137]:
+            - listitem [ref=e138]:
+              - button "Settings" [ref=e140]:
+                - img [ref=e141]
+                - generic [ref=e144]: Settings
+                - img [ref=e145]
+      - button "TP Test Parish Test City, TS" [ref=e148]:
+        - generic [ref=e149]:
+          - generic [ref=e151]: TP
+          - generic [ref=e152]:
+            - generic [ref=e153]: Test Parish
+            - generic [ref=e154]: Test City, TS
         - img
-    - generic [ref=e136]:
-      - banner [ref=e137]:
-        - generic [ref=e138]:
-          - button "Toggle Sidebar" [ref=e139]:
+    - generic [ref=e155]:
+      - banner [ref=e156]:
+        - generic [ref=e157]:
+          - button "Toggle Sidebar" [ref=e158]:
             - img
-            - generic [ref=e140]: Toggle Sidebar
-          - navigation "breadcrumb" [ref=e141]:
-            - list [ref=e142]:
-              - listitem [ref=e143]:
-                - link "Dashboard" [disabled] [ref=e144]
-      - main [ref=e145]:
-        - generic [ref=e147]:
-          - generic [ref=e148]:
-            - heading "Dashboard" [level=1] [ref=e149]
-            - paragraph [ref=e150]: Welcome back! Here's an overview of your liturgical management platform.
-          - generic [ref=e151]:
-            - generic [ref=e152]:
-              - generic [ref=e153]:
-                - generic [ref=e154]: Total Petitions
-                - img [ref=e155]
-              - generic [ref=e158]:
-                - generic [ref=e159]: "12"
-                - paragraph [ref=e160]: Lifetime petitions created
-            - generic [ref=e161]:
-              - generic [ref=e162]:
-                - generic [ref=e163]: This Month
-                - img [ref=e164]
-              - generic [ref=e167]:
-                - generic [ref=e168]: "7"
-                - paragraph [ref=e169]: Petitions this month
-            - generic [ref=e170]:
-              - generic [ref=e171]:
-                - generic [ref=e172]: Active Ministers
-                - img [ref=e173]
+            - generic [ref=e159]: Toggle Sidebar
+          - navigation "breadcrumb" [ref=e160]:
+            - list [ref=e161]:
+              - listitem [ref=e162]:
+                - link "Dashboard" [disabled] [ref=e163]
+      - main [ref=e164]:
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - heading "Dashboard" [level=1] [ref=e168]
+            - paragraph [ref=e169]: Welcome back! Here's an overview of your liturgical management platform.
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]: Total Petitions
+                - img [ref=e174]
               - generic [ref=e177]:
-                - generic [ref=e178]: "22"
-                - paragraph [ref=e179]: Ready to serve
+                - generic [ref=e178]: "12"
+                - paragraph [ref=e179]: Lifetime petitions created
             - generic [ref=e180]:
               - generic [ref=e181]:
-                - generic [ref=e182]: Liturgy Plans
+                - generic [ref=e182]: This Month
                 - img [ref=e183]
               - generic [ref=e186]:
-                - generic [ref=e187]: "100"
-                - paragraph [ref=e188]: Total celebrations planned
+                - generic [ref=e187]: "7"
+                - paragraph [ref=e188]: Petitions this month
             - generic [ref=e189]:
               - generic [ref=e190]:
-                - generic [ref=e191]: Reading Collections
+                - generic [ref=e191]: Active Ministers
                 - img [ref=e192]
-              - generic [ref=e194]:
-                - generic [ref=e195]: "89"
-                - paragraph [ref=e196]: Personal collections created
-          - generic [ref=e197]:
-            - generic [ref=e198]:
+              - generic [ref=e196]:
+                - generic [ref=e197]: "22"
+                - paragraph [ref=e198]: Ready to serve
+            - generic [ref=e199]:
               - generic [ref=e200]:
-                - img [ref=e201]
+                - generic [ref=e201]: Liturgy Plans
+                - img [ref=e202]
+              - generic [ref=e205]:
+                - generic [ref=e206]: "100"
+                - paragraph [ref=e207]: Total celebrations planned
+            - generic [ref=e208]:
+              - generic [ref=e209]:
+                - generic [ref=e210]: Reading Collections
+                - img [ref=e211]
+              - generic [ref=e213]:
+                - generic [ref=e214]: "89"
+                - paragraph [ref=e215]: Personal collections created
+          - generic [ref=e216]:
+            - generic [ref=e217]:
+              - generic [ref=e219]:
+                - img [ref=e220]
                 - text: Quick Actions
-              - generic [ref=e202]:
-                - link "Create Petition" [ref=e203] [cursor=pointer]:
+              - generic [ref=e221]:
+                - link "Create Petition" [ref=e222] [cursor=pointer]:
                   - /url: /petitions/create
                   - img
                   - text: Create Petition
-                - link "Plan Liturgy" [ref=e204] [cursor=pointer]:
+                - link "Plan Liturgy" [ref=e223] [cursor=pointer]:
                   - /url: /liturgy-planning/create
                   - img
                   - text: Plan Liturgy
-                - link "Add Minister" [ref=e205] [cursor=pointer]:
+                - link "Add Minister" [ref=e224] [cursor=pointer]:
                   - /url: /ministers/create
                   - img
                   - text: Add Minister
-                - link "Add Event" [ref=e206] [cursor=pointer]:
+                - link "Add Event" [ref=e225] [cursor=pointer]:
                   - /url: /calendar/create
                   - img
                   - text: Add Event
-                - link "New Reading Collection" [ref=e207] [cursor=pointer]:
+                - link "New Reading Collection" [ref=e226] [cursor=pointer]:
                   - /url: /readings/create
                   - img
                   - text: New Reading Collection
-            - generic [ref=e208]:
-              - generic [ref=e210]: Upcoming Events
-              - generic [ref=e212]:
-                - img [ref=e213]
-                - paragraph [ref=e215]: No upcoming events
-                - link "Add Event" [ref=e216] [cursor=pointer]:
+            - generic [ref=e227]:
+              - generic [ref=e229]: Upcoming Events
+              - generic [ref=e231]:
+                - img [ref=e232]
+                - paragraph [ref=e234]: No upcoming events
+                - link "Add Event" [ref=e235] [cursor=pointer]:
                   - /url: /calendar/create
                   - img
                   - text: Add Event
-            - generic [ref=e219]: Recent Activity
-          - generic [ref=e220]:
-            - generic [ref=e222]: Platform Features
-            - generic [ref=e224]:
-              - generic [ref=e225]:
-                - heading "Smart Petitions" [level=4] [ref=e226]:
-                  - img [ref=e227]
-                  - text: Smart Petitions
-                - paragraph [ref=e230]: Generate liturgical petitions with AI assistance following traditional Catholic formats.
-              - generic [ref=e231]:
-                - heading "Liturgy Planning" [level=4] [ref=e232]:
-                  - img [ref=e233]
-                  - text: Liturgy Planning
-                - paragraph [ref=e236]: Plan complete celebrations with prayers, prefaces, readings, and special instructions.
-              - generic [ref=e237]:
-                - heading "Ministers Directory" [level=4] [ref=e238]:
-                  - img [ref=e239]
-                  - text: Ministers Directory
-                - paragraph [ref=e243]: Manage contact information and availability for all ministers and volunteers.
+            - generic [ref=e238]: Recent Activity
+          - generic [ref=e239]:
+            - generic [ref=e241]: Platform Features
+            - generic [ref=e243]:
               - generic [ref=e244]:
-                - heading "Liturgical Calendar" [level=4] [ref=e245]:
+                - heading "Smart Petitions" [level=4] [ref=e245]:
                   - img [ref=e246]
+                  - text: Smart Petitions
+                - paragraph [ref=e249]: Generate liturgical petitions with AI assistance following traditional Catholic formats.
+              - generic [ref=e250]:
+                - heading "Liturgy Planning" [level=4] [ref=e251]:
+                  - img [ref=e252]
+                  - text: Liturgy Planning
+                - paragraph [ref=e255]: Plan complete celebrations with prayers, prefaces, readings, and special instructions.
+              - generic [ref=e256]:
+                - heading "Ministers Directory" [level=4] [ref=e257]:
+                  - img [ref=e258]
+                  - text: Ministers Directory
+                - paragraph [ref=e262]: Manage contact information and availability for all ministers and volunteers.
+              - generic [ref=e263]:
+                - heading "Liturgical Calendar" [level=4] [ref=e264]:
+                  - img [ref=e265]
                   - text: Liturgical Calendar
-                - paragraph [ref=e248]: Track feast days, special celebrations, and liturgical seasons throughout the year.
-              - generic [ref=e249]:
-                - heading "Reading Collections" [level=4] [ref=e250]:
-                  - img [ref=e251]
+                - paragraph [ref=e267]: Track feast days, special celebrations, and liturgical seasons throughout the year.
+              - generic [ref=e268]:
+                - heading "Reading Collections" [level=4] [ref=e269]:
+                  - img [ref=e270]
                   - text: Reading Collections
-                - paragraph [ref=e253]: Organize pre-assembled sets of readings for weddings, funerals, and other occasions.
+                - paragraph [ref=e272]: Organize pre-assembled sets of readings for weddings, funerals, and other occasions.
   - region "Notifications alt+T"
-  - button "Open Next.js Dev Tools" [ref=e259] [cursor=pointer]:
-    - img [ref=e260]
-  - alert [ref=e263]
+  - button "Open Next.js Dev Tools" [ref=e278] [cursor=pointer]:
+    - img [ref=e279]
+  - alert [ref=e282]
 ```

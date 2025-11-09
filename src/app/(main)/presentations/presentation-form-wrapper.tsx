@@ -26,19 +26,21 @@ export function PresentationFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!presentation
 
-  const actions = isEditing ? (
+  const actions = (
     <>
-      <Button variant="outline" asChild>
-        <Link href={`/presentations/${presentation.id}`}>
-          <Eye className="h-4 w-4 mr-2" />
-          View Presentation
-        </Link>
-      </Button>
+      {isEditing && (
+        <Button variant="outline" asChild>
+          <Link href={`/presentations/${presentation.id}`}>
+            <Eye className="h-4 w-4 mr-2" />
+            View Presentation
+          </Link>
+        </Button>
+      )}
       <SaveButton isLoading={isLoading} form={formId}>
-        Update Presentation
+        {saveButtonLabel}
       </SaveButton>
     </>
-  ) : null
+  )
 
   return (
     <PageContainer

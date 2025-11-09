@@ -150,7 +150,8 @@ export function PeoplePicker({
 
   const handleCreatePerson = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    e.stopPropagation() // Prevent bubbling to parent form
+
     if (!newPersonForm.first_name.trim() || !newPersonForm.last_name.trim()) {
       toast.error('First and last name are required')
       return

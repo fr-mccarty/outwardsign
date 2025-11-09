@@ -26,19 +26,21 @@ export function QuinceaneraFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!quinceanera
 
-  const actions = isEditing ? (
+  const actions = (
     <>
-      <Button variant="outline" asChild>
-        <Link href={`/quinceaneras/${quinceanera.id}`}>
-          <Eye className="h-4 w-4 mr-2" />
-          View Quinceañera
-        </Link>
-      </Button>
+      {isEditing && (
+        <Button variant="outline" asChild>
+          <Link href={`/quinceaneras/${quinceanera.id}`}>
+            <Eye className="h-4 w-4 mr-2" />
+            View Quinceañera
+          </Link>
+        </Button>
+      )}
       <SaveButton isLoading={isLoading} form={formId}>
-        Update Quinceañera
+        {saveButtonLabel}
       </SaveButton>
     </>
-  ) : null
+  )
 
   return (
     <PageContainer

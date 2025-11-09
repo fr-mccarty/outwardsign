@@ -26,19 +26,21 @@ export function WeddingFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!wedding
 
-  const actions = isEditing ? (
+  const actions = (
     <>
-      <Button variant="outline" asChild>
-        <Link href={`/weddings/${wedding.id}`}>
-          <Eye className="h-4 w-4 mr-2" />
-          View Wedding
-        </Link>
-      </Button>
+      {isEditing && (
+        <Button variant="outline" asChild>
+          <Link href={`/weddings/${wedding.id}`}>
+            <Eye className="h-4 w-4 mr-2" />
+            View Wedding
+          </Link>
+        </Button>
+      )}
       <SaveButton isLoading={isLoading} form={formId}>
-        Update Wedding
+        {saveButtonLabel}
       </SaveButton>
     </>
-  ) : null
+  )
 
   return (
     <PageContainer

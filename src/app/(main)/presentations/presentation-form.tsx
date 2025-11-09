@@ -23,8 +23,7 @@ import { PeoplePicker } from "@/components/people-picker"
 import { EventPicker } from "@/components/event-picker"
 import { EventDisplay } from "@/components/event-display"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
-import { SaveButton } from "@/components/save-button"
-import { CancelButton } from "@/components/cancel-button"
+import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PRESENTATION_TEMPLATES } from "@/lib/content-builders/presentation"
 
 interface PresentationFormProps {
@@ -368,13 +367,13 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         </CardContent>
       </Card>
 
-      {/* Form Buttons - Only shown if not in form wrapper */}
-      {!isEditing && (
-        <div className="flex gap-4">
-          <SaveButton isLoading={isLoading} />
-          <CancelButton href="/presentations" />
-        </div>
-      )}
+      {/* Form Buttons */}
+      <FormBottomActions
+        isEditing={isEditing}
+        isLoading={isLoading}
+        cancelHref={isEditing ? `/presentations/${presentation.id}` : '/presentations'}
+        saveLabel={isEditing ? 'Update Presentation' : 'Save Presentation'}
+      />
 
       {/* Event Picker Modals */}
       <EventPicker
