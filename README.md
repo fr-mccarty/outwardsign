@@ -1,111 +1,3 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
-
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
-
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
-
-## Features
-
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
-
-## Demo
-
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
-
-## Deploy to Vercel
-
-Vercel deployment will guide you through creating a Supabase account and project.
-
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
-
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
-
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
-
-## Clone and run locally
-
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
-
-2. Create a Next.js app using the Supabase Starter template npx command
-
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
-
-3. Use `cd` to change into the app's directory
-
-   ```bash
-   cd with-supabase-app
-   ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
-
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-
-5. You can now run the Next.js local development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
-
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
-
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
-
-## Feedback and issues
-
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## Repository Guides
-
-- `CLAUDE.md` documents architecture, data patterns, and workflow expectations tailored for AI coding assistants.
-- `AGENTS.md` provides contributor guidelines summarizing project structure, commands, testing, and review practices.
 
 ## Database Management
 
@@ -121,6 +13,8 @@ Please file feedback and issues over on the [Supabase GitHub org](https://github
 
 ### Seeding the Database
 
+> **Development Note:** During development, it's recommended to seed data directly from the migrations folder rather than using the dynamic API import script (which can be slow). Include seed data in your migration files for faster database resets. The procedure below (using `npm run seed` to fetch from the API) will be the standard approach in production, but for now, seeding from migrations is more efficient.
+
 After resetting the database or running migrations, seed the database with initial data:
 
 ```bash
@@ -135,21 +29,69 @@ This will run all configured seeders defined in `scripts/seed.ts`, including:
 
 The application uses global liturgical calendar data from [John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com).
 
-**Individual Year Seeding:**
-```bash
-# Seed 2025 liturgical events
-npm run seed:liturgical:2025
+**Current Migrations:**
+- `20251109000002_seed_global_liturgical_events_2025_en.sql` - 538 events for 2025
+- `20251109000003_seed_global_liturgical_events_2026_en.sql` - 547 events for 2026
 
-# Seed 2026 liturgical events
+#### Creating New Liturgical Calendar Migrations
+
+To create a migration file for a new year (e.g., 2027), use the Task tool with these instructions:
+
+1. **Fetch data from API:**
+   ```
+   https://litcal.johnromanodorazio.com/api/dev/calendar?locale=en&year=2027
+   ```
+
+2. **Parse the JSON** and extract all events from the `litcal` array
+
+3. **Create SQL migration file** at:
+   ```
+   supabase/migrations/YYYYMMDD000004_seed_global_liturgical_events_2027_en.sql
+   ```
+   (Increment the sequence number: 000004, 000005, etc.)
+
+4. **Follow this format:**
+   ```sql
+   -- Seed global_liturgical_events table for year 2027 (locale: en)
+   -- Generated from https://litcal.johnromanodorazio.com/api/dev/calendar
+   -- Total events: [count]
+   -- Generated on: [ISO timestamp]
+
+   INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
+   VALUES ('EventKey', 'YYYY-MM-DD', 2027, 'en', '{...full JSON...}'::jsonb)
+   ON CONFLICT (event_key, date, locale) DO NOTHING;
+   ```
+
+5. **Important:**
+   - Extract date as YYYY-MM-DD only (from ISO timestamp)
+   - Store full event JSON in `event_data` as JSONB
+   - Escape single quotes by doubling them (`'` becomes `''`)
+   - Use `ON CONFLICT DO NOTHING` for idempotent migrations
+
+6. **Reference existing file** for exact format:
+   ```
+   supabase/migrations/20251109000002_seed_global_liturgical_events_2025_en.sql
+   ```
+
+#### Alternative: Dynamic API Seeding (Future Use)
+
+For production or when SQL migrations become too large, use the TypeScript API import scripts:
+
+```bash
+# Seed individual years
+npm run seed:liturgical:2025
 npm run seed:liturgical:2026
 
 # Custom year and locale
 npm run seed:liturgical -- --year=2027 --locale=es
+
+# Run all seeders
+npm run seed
 ```
 
 **Adding New Seeders:**
 
-To add more seeders, edit `scripts/seed.ts` and add to the `seeders` array:
+Edit `scripts/seed.ts` and add to the `seeders` array:
 
 ```typescript
 {
@@ -161,8 +103,9 @@ To add more seeders, edit `scripts/seed.ts` and add to the `seeders` array:
 
 ### Notes
 
-- All seeding is done via TypeScript scripts that fetch from external APIs
+- **Current approach:** Liturgical data is seeded via SQL migrations for faster database resets during development
+- **Future approach:** TypeScript scripts (above) fetch from API - useful for production or when migrations become too large
 - Data is stored in `global_liturgical_events` table with JSONB for full event data
-- Uses `ON CONFLICT DO NOTHING` to safely handle re-runs
+- Migrations run automatically when database is reset via Supabase UI
 - Indexed for efficient date range queries
 
