@@ -1,14 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { User, Calendar } from "lucide-react"
-import { createPresentation, updatePresentation, type PresentationWithRelations } from "@/lib/actions/presentations"
+import {
+  createPresentation,
+  updatePresentation,
+  type PresentationWithRelations
+} from "@/lib/actions/presentations"
+import {
+  createPresentationSchema,
+  type CreatePresentationData
+} from "@/lib/schemas/presentations"
 import type { Person, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -35,89 +44,79 @@ interface PresentationFormProps {
 export function PresentationForm({ presentation, formId, onLoadingChange }: PresentationFormProps) {
   const router = useRouter()
   const isEditing = !!presentation
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreatePresentationData>({
+    resolver: zodResolver(createPresentationSchema),
+    defaultValues: {
+      presentation_event_id: presentation?.presentation_event_id || null,
+      child_id: presentation?.child_id || null,
+      mother_id: presentation?.mother_id || null,
+      father_id: presentation?.father_id || null,
+      coordinator_id: presentation?.coordinator_id || null,
+      is_baptized: presentation?.is_baptized || false,
+      status: presentation?.status || "ACTIVE",
+      note: presentation?.note || null,
+      presentation_template_id: presentation?.presentation_template_id || "presentation-spanish",
+    },
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
-  // State for all fields
-  const [status, setStatus] = useState(presentation?.status || "ACTIVE")
-  const [note, setNote] = useState(presentation?.note || "")
-  const [isBaptized, setIsBaptized] = useState(presentation?.is_baptized || false)
-  const [presentationTemplateId, setPresentationTemplateId] = useState(
-    presentation?.presentation_template_id || "presentation-spanish"
-  )
+  // Watch form values for pickers
+  const presentationEventId = watch("presentation_event_id")
+  const childId = watch("child_id")
+  const motherId = watch("mother_id")
+  const fatherId = watch("father_id")
+  const coordinatorId = watch("coordinator_id")
+  const isBaptized = watch("is_baptized")
+  const status = watch("status")
+  const presentationTemplateId = watch("presentation_template_id")
 
-  // Event picker states
+  // State for picker modals
   const [showPresentationEventPicker, setShowPresentationEventPicker] = useState(false)
-
-  // People picker states
   const [showChildPicker, setShowChildPicker] = useState(false)
   const [showMotherPicker, setShowMotherPicker] = useState(false)
   const [showFatherPicker, setShowFatherPicker] = useState(false)
   const [showCoordinatorPicker, setShowCoordinatorPicker] = useState(false)
 
-  // Selected event
-  const [presentationEvent, setPresentationEvent] = useState<Event | null>(null)
+  // State for selected entities (for display purposes)
+  const [presentationEvent, setPresentationEvent] = useState<Event | null>(
+    presentation?.presentation_event || null
+  )
+  const [child, setChild] = useState<Person | null>(presentation?.child || null)
+  const [mother, setMother] = useState<Person | null>(presentation?.mother || null)
+  const [father, setFather] = useState<Person | null>(presentation?.father || null)
+  const [coordinator, setCoordinator] = useState<Person | null>(presentation?.coordinator || null)
 
-  // Selected people
-  const [child, setChild] = useState<Person | null>(null)
-  const [mother, setMother] = useState<Person | null>(null)
-  const [father, setFather] = useState<Person | null>(null)
-  const [coordinator, setCoordinator] = useState<Person | null>(null)
-
-  // Initialize form with presentation data when editing
-  useEffect(() => {
-    if (presentation) {
-      // Set event
-      if (presentation.presentation_event) setPresentationEvent(presentation.presentation_event)
-
-      // Set people
-      if (presentation.child) setChild(presentation.child)
-      if (presentation.mother) setMother(presentation.mother)
-      if (presentation.father) setFather(presentation.father)
-      if (presentation.coordinator) setCoordinator(presentation.coordinator)
-    }
-  }, [presentation])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreatePresentationData) => {
     try {
-      const presentationData = {
-        presentation_event_id: presentationEvent?.id || null,
-        child_id: child?.id || null,
-        mother_id: mother?.id || null,
-        father_id: father?.id || null,
-        coordinator_id: coordinator?.id || null,
-        is_baptized: isBaptized,
-        status: status || null,
-        note: note || null,
-        presentation_template_id: presentationTemplateId || null,
-      }
-
       if (isEditing) {
-        await updatePresentation(presentation.id, presentationData)
+        await updatePresentation(presentation.id, data)
         toast.success('Presentation updated successfully')
-        router.refresh() // Stay on edit page to show updated data
+        router.refresh()
       } else {
-        const newPresentation = await createPresentation(presentationData)
+        const newPresentation = await createPresentation(data)
         toast.success('Presentation created successfully!')
-        router.push(`/presentations/${newPresentation.id}`) // Go to view page
+        router.push(`/presentations/${newPresentation.id}`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} presentation:`, error)
       toast.error(`Failed to ${isEditing ? 'update' : 'create'} presentation. Please try again.`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-8">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Event Information */}
       <Card>
         <CardHeader>
@@ -154,6 +153,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                 </Button>
               )}
             </div>
+            {errors.presentation_event_id && (
+              <p className="text-sm text-destructive mt-1">{errors.presentation_event_id.message}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -195,6 +197,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                   </Button>
                 )}
               </div>
+              {errors.child_id && (
+                <p className="text-sm text-destructive mt-1">{errors.child_id.message}</p>
+              )}
             </div>
 
             <div>
@@ -223,6 +228,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                   </Button>
                 )}
               </div>
+              {errors.mother_id && (
+                <p className="text-sm text-destructive mt-1">{errors.mother_id.message}</p>
+              )}
             </div>
           </div>
 
@@ -253,6 +261,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                   </Button>
                 )}
               </div>
+              {errors.father_id && (
+                <p className="text-sm text-destructive mt-1">{errors.father_id.message}</p>
+              )}
             </div>
 
             <div>
@@ -294,7 +305,10 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status || ""} onValueChange={setStatus}>
+            <Select
+              value={status || ""}
+              onValueChange={(value) => setValue("status", value as any)}
+            >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -306,11 +320,17 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                 ))}
               </SelectContent>
             </Select>
+            {errors.status && (
+              <p className="text-sm text-destructive">{errors.status.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="template">Ceremony Template</Label>
-            <Select value={presentationTemplateId} onValueChange={setPresentationTemplateId}>
+            <Select
+              value={presentationTemplateId || ""}
+              onValueChange={(value) => setValue("presentation_template_id", value)}
+            >
               <SelectTrigger id="template">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -327,8 +347,8 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           <div className="flex items-center space-x-2">
             <Checkbox
               id="is_baptized"
-              checked={isBaptized}
-              onCheckedChange={(checked) => setIsBaptized(checked as boolean)}
+              checked={isBaptized || false}
+              onCheckedChange={(checked) => setValue("is_baptized", checked as boolean)}
             />
             <label
               htmlFor="is_baptized"
@@ -342,12 +362,15 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             id="note"
             label="Notes (Optional)"
             inputType="textarea"
-            value={note}
-            onChange={setNote}
+            value={watch("note") || ""}
+            onChange={(value) => setValue("note", value)}
             placeholder="Enter any additional notes..."
             rows={4}
             description="Additional information or special considerations"
           />
+          {errors.note && (
+            <p className="text-sm text-destructive">{errors.note.message}</p>
+          )}
         </CardContent>
       </Card>
 
@@ -370,7 +393,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       {/* Form Buttons */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/presentations/${presentation.id}` : '/presentations'}
         saveLabel={isEditing ? 'Update Presentation' : 'Save Presentation'}
       />
@@ -381,6 +404,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         onOpenChange={setShowPresentationEventPicker}
         onSelect={(event) => {
           setPresentationEvent(event)
+          setValue("presentation_event_id", event.id)
           setShowPresentationEventPicker(false)
         }}
         selectedEventId={presentationEvent?.id}
@@ -397,6 +421,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         onOpenChange={setShowChildPicker}
         onSelect={(person) => {
           setChild(person)
+          setValue("child_id", person.id)
           setShowChildPicker(false)
         }}
         showSexField={true}
@@ -408,6 +433,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         onOpenChange={setShowMotherPicker}
         onSelect={(person) => {
           setMother(person)
+          setValue("mother_id", person.id)
           setShowMotherPicker(false)
         }}
         openToNewPerson={!isEditing}
@@ -418,6 +444,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         onOpenChange={setShowFatherPicker}
         onSelect={(person) => {
           setFather(person)
+          setValue("father_id", person.id)
           setShowFatherPicker(false)
         }}
         openToNewPerson={!isEditing}
@@ -428,6 +455,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         onOpenChange={setShowCoordinatorPicker}
         onSelect={(person) => {
           setCoordinator(person)
+          setValue("coordinator_id", person.id)
           setShowCoordinatorPicker(false)
         }}
         openToNewPerson={!isEditing}

@@ -6,32 +6,27 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Baptism, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
+import { z } from 'zod'
 
-export interface CreateBaptismData {
-  baptism_event_id?: string
-  child_id?: string
-  mother_id?: string
-  father_id?: string
-  sponsor_1_id?: string
-  sponsor_2_id?: string
-  presider_id?: string
-  status?: string
-  baptism_template_id?: string
-  note?: string
-}
+// Zod validation schemas
+export const createBaptismSchema = z.object({
+  baptism_event_id: z.string().uuid().optional(),
+  child_id: z.string().uuid().optional(),
+  mother_id: z.string().uuid().optional(),
+  father_id: z.string().uuid().optional(),
+  sponsor_1_id: z.string().uuid().optional(),
+  sponsor_2_id: z.string().uuid().optional(),
+  presider_id: z.string().uuid().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']).optional(),
+  baptism_template_id: z.string().optional(),
+  note: z.string().optional(),
+})
 
-export interface UpdateBaptismData {
-  baptism_event_id?: string | null
-  child_id?: string | null
-  mother_id?: string | null
-  father_id?: string | null
-  sponsor_1_id?: string | null
-  sponsor_2_id?: string | null
-  presider_id?: string | null
-  status?: string | null
-  baptism_template_id?: string | null
-  note?: string | null
-}
+export const updateBaptismSchema = createBaptismSchema.partial()
+
+// Export types from schemas
+export type CreateBaptismData = z.infer<typeof createBaptismSchema>
+export type UpdateBaptismData = z.infer<typeof updateBaptismSchema>
 
 export interface BaptismFilterParams {
   search?: string
@@ -178,21 +173,24 @@ export async function createBaptism(data: CreateBaptismData): Promise<Baptism> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Server-side validation (security boundary)
+  const validatedData = createBaptismSchema.parse(data)
+
   const { data: baptism, error } = await supabase
     .from('baptisms')
     .insert([
       {
         parish_id: selectedParishId,
-        baptism_event_id: data.baptism_event_id || null,
-        child_id: data.child_id || null,
-        mother_id: data.mother_id || null,
-        father_id: data.father_id || null,
-        sponsor_1_id: data.sponsor_1_id || null,
-        sponsor_2_id: data.sponsor_2_id || null,
-        presider_id: data.presider_id || null,
-        status: data.status || null,
-        baptism_template_id: data.baptism_template_id || null,
-        note: data.note || null,
+        baptism_event_id: validatedData.baptism_event_id || null,
+        child_id: validatedData.child_id || null,
+        mother_id: validatedData.mother_id || null,
+        father_id: validatedData.father_id || null,
+        sponsor_1_id: validatedData.sponsor_1_id || null,
+        sponsor_2_id: validatedData.sponsor_2_id || null,
+        presider_id: validatedData.presider_id || null,
+        status: validatedData.status || null,
+        baptism_template_id: validatedData.baptism_template_id || null,
+        note: validatedData.note || null,
       }
     ])
     .select()
@@ -212,9 +210,12 @@ export async function updateBaptism(id: string, data: UpdateBaptismData): Promis
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Server-side validation (security boundary)
+  const validatedData = updateBaptismSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
   )
 
   const { data: baptism, error } = await supabase

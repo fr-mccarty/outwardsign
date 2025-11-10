@@ -7,7 +7,7 @@ This document contains feedback on Outward Sign from the perspective of our key 
 ## Homepage Evaluation
 
 **Date:** 2025-11-10
-**Evaluated By:** Fr. Michael Thompson (Parish Priest) and Maria Rodriguez (Pastoral Associate)
+**Evaluated By:** Fr. Michael Thompson (Parish Priest), Maria Rodriguez (Pastoral Associate), and Carmen Santos (Business Manager)
 **Page:** Landing page (src/app/page.tsx)
 
 ---
@@ -92,6 +92,57 @@ She'd probably create a detailed pros/cons list, visit the site multiple times, 
 
 ---
 
+## Carmen Santos's Evaluation
+
+### What Would Resonate with Her ✅
+
+**Financial sustainability addressed upfront:**
+- "Free forever • No credit card required • No hidden fees" repeated three times - This is music to her ears given her constant budget scrutiny
+- "No subscriptions, no hidden fees, no limitations—ever" - Directly addresses her #1 concern: "Can we really afford this?"
+- "Every parish deserves access to excellent sacrament preparation tools, regardless of budget" - This aligns with her stewardship values
+
+**Clear value proposition:**
+- "Stop juggling scattered documents, endless email chains" - She translates this immediately to staff time savings (= cost savings)
+- "One-click PDF generation" - Means less time for staff printing/formatting (= efficiency gains)
+- Open source transparency - As someone who deals with vendor contracts and fine print, she appreciates transparency
+
+**Small/mid-sized parish focus:**
+- "Small or large, rural or urban" - Shows they understand parishes like St. Joseph's with 600 families
+- The feature set seems right-sized, not enterprise bloatware that would be overkill
+
+### Her Concerns and Questions ⚠️
+
+**ROI and hidden costs:**
+- *"Okay, the software is free, but what about implementation costs? How many staff hours will this take?"*
+- *"Is this going to replace something we're currently paying for, or is it just another tool on top of everything else?"*
+- *"If it saves Maria 5 hours a week, that's real money - but how do I quantify that to Fr. Michael and the finance council?"*
+
+**Sustainability and risk:**
+- *"If it's completely free with no business model, what happens when the developers lose interest? Will we be stuck with a dead product?"*
+- *"What's their long-term sustainability plan? I can't migrate our data to something that might disappear in two years."*
+- *"Who's responsible if something goes wrong? There's no SLA, no contract, no vendor to hold accountable."*
+
+**Financial tracking gaps:**
+- *"This looks great for liturgy preparation, but what about the business side? Can it track wedding fees, funeral stipends, honorariums?"*
+- *"Does it integrate with QuickBooks or our parish management system, or will I be manually entering data in multiple places?"*
+- *"How does this help me with financial reporting for sacraments? Can I pull reports on wedding revenue by month?"*
+
+**Implementation burden:**
+- *"Who's going to manage the setup and training? I'm already stretched thin."*
+- *"Will this create more work for me initially while everyone learns the new system?"*
+- *"Do we need IT support to set this up, or can Maria and I handle it ourselves?"*
+
+**Data security and compliance:**
+- *"Where is our parish data stored? Is it secure?"*
+- *"Are we compliant with data privacy regulations? What about families' personal information?"*
+- *"Can we export all our data if we need to switch to something else later?"*
+
+### Persuasiveness: **5/10 - Skeptical but Open-Minded**
+
+Carmen would highlight the "free forever" feature in yellow on her printout, then write in the margin: "Too good to be true?" She'd create a spreadsheet comparing current costs vs. potential time savings, research the open source sustainability model, and want to schedule a call with someone who can answer her technical and financial questions before recommending adoption to Fr. Michael. Her pro-social nature means she wants this to work for her colleagues, but her fiduciary responsibility means she needs to see the complete picture first.
+
+---
+
 ## Recommended Improvements Based on Persona Feedback
 
 ### 1. **Add Social Proof** (Critical for Fr. Michael)
@@ -169,6 +220,45 @@ Address:
 - "Can I try it before committing?" → Guest/demo mode
 - "What if my parish has unique needs?" → Customization options
 
+### 11. **Quantify ROI and Time Savings** (Critical for Carmen)
+
+Add a section showing concrete cost/time savings:
+
+**"What's the Real Value?"**
+- Average time saved per wedding: 3-5 hours (reduced from 8 hours to 3 hours)
+- Annual time savings for a parish with 20 weddings: 60-100 staff hours
+- At $25/hour staff time = $1,500-$2,500 annual savings
+- Setup time: 2-3 hours total (not weeks)
+- Training time per staff member: 30 minutes
+
+### 12. **Address Sustainability Model** (Critical for Carmen)
+
+Add to the "Why is this free?" explanation:
+
+**"How is this sustainable?"**
+- Built and maintained by developers who care about serving the Church
+- Open source model means community contributions and support
+- No venture capital, no pressure to monetize user data
+- Source code is publicly available - can be self-hosted if needed
+- Active development roadmap (link to GitHub for transparency)
+
+### 13. **Data Security and Compliance** (Carmen's concern)
+
+Add a trust/security section:
+- "Your parish data is encrypted and securely stored"
+- "GDPR and privacy-compliant data handling"
+- "Export your complete data anytime (CSV, JSON, PDF)"
+- "No data selling, no third-party tracking"
+- "Role-based access controls to protect sensitive information"
+
+### 14. **Integration Capabilities** (Carmen's workflow concern)
+
+Clarify what integrations exist or are planned:
+- "Calendar integration (.ics export works with any calendar system)"
+- "PDF/Word export for use with existing workflows"
+- "Data export for financial record-keeping"
+- "Future: Accounting system integration under consideration"
+
 ---
 
 ## Summary
@@ -177,15 +267,35 @@ Address:
 
 **Maria** needs to know she can maintain her level of control and quality. She needs reassurance about reliability, customization, backups, and the ability to keep things "perfect" according to her standards.
 
-**Both** would benefit from seeing real examples, testimonials from people like them, and clear answers to the "what's the catch?" question that naturally arises with free software.
+**Carmen** needs to understand the total cost of ownership (including implementation time), see a clear ROI calculation, and get answers about the sustainability model and data security. She's the financial gatekeeper who will ultimately approve or veto adoption based on stewardship principles.
 
-**Overall Assessment:** The homepage is strong on features and vision, but needs more **proof, reassurance, and specificity** to convert cautious, busy parish leaders into confident users.
+**All three** would benefit from seeing real examples, testimonials from people like them, and clear answers to the "what's the catch?" question that naturally arises with free software.
+
+**Overall Assessment:** The homepage is strong on features and vision, but needs more **proof, reassurance, and specificity** to convert cautious, busy parish leaders into confident users. Carmen's concerns, in particular, reveal gaps in addressing the financial decision-maker's questions about ROI, sustainability, and hidden costs.
 
 ---
 
 ## Next Steps
 
-- [ ] Prioritize quick wins: Add time estimates, "Why is this free?" FAQ
-- [ ] Medium effort: Create testimonial section (can use placeholder/sample testimonials initially)
-- [ ] Larger effort: Screenshot/video demos of the interface in action
+### Quick Wins (1-2 hours implementation)
+- [ ] Add time estimates to "How It Works" section (Setup: 15 min, First event: 20-30 min)
+- [ ] Add "Why is this free?" FAQ with sustainability explanation
+- [ ] Add data security bullet points to features section
+- [ ] Quantify ROI with concrete time/cost savings numbers
+
+### Medium Effort (1-2 days implementation)
+- [ ] Create testimonial section (can use placeholder/sample testimonials initially)
+- [ ] Expand "Common Questions" section addressing Carmen's financial concerns
+- [ ] Add sustainability model explanation (open source, community-driven)
+- [ ] Clarify integration capabilities and data export options
+
+### Larger Effort (1+ week implementation)
+- [ ] Screenshot/video demos of the interface in action
+- [ ] Create ROI calculator tool for parishes to estimate their savings
+- [ ] Develop detailed technical documentation for Carmen-type evaluators
 - [ ] Consider A/B testing different messaging approaches with target users
+
+### Future Considerations
+- [ ] Financial tracking features (wedding fees, stipends, donations) to address Carmen's needs
+- [ ] Accounting system integration (QuickBooks, parish management systems)
+- [ ] Enhanced reporting for financial oversight

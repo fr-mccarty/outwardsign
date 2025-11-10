@@ -29,7 +29,13 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    /* Timeout for each action (click, fill, etc.) */
+    actionTimeout: 10000, // 10 seconds for actions
+    /* Timeout for navigation operations */
+    navigationTimeout: 15000, // 15 seconds for page navigation
   },
+  /* Global test timeout - maximum time for a single test */
+  timeout: 60000, // 60 seconds per test
 
   /* Configure projects for major browsers */
   projects: [
@@ -38,7 +44,7 @@ export default defineConfig({
       name: 'setup',
       testMatch: /auth\.setup\.ts/,
     },
-    // Chromium tests with authenticated state (excludes signup tests)
+    // Chromium tests with authenticated state (excludes signup tests and template)
     {
       name: 'chromium',
       use: {
@@ -47,7 +53,7 @@ export default defineConfig({
         storageState: path.join(__dirname, 'playwright/.auth/staff.json'),
       },
       dependencies: ['setup'], // Run setup before this project
-      testIgnore: /signup\.spec\.ts/, // Exclude signup tests from authenticated project
+      testIgnore: [/signup\.spec\.ts/, /TEST_TEMPLATE\.spec\.ts/], // Exclude signup tests and template from authenticated project
     },
     // Unauthenticated tests project (for signup flow)
     {

@@ -6,30 +6,15 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Presentation, Person, Event, Location } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
+import {
+  createPresentationSchema,
+  updatePresentationSchema,
+  type CreatePresentationData,
+  type UpdatePresentationData
+} from '@/lib/schemas/presentations'
 
-export interface CreatePresentationData {
-  presentation_event_id?: string | null
-  child_id?: string | null
-  mother_id?: string | null
-  father_id?: string | null
-  coordinator_id?: string | null
-  is_baptized?: boolean
-  status?: string | null
-  note?: string | null
-  presentation_template_id?: string | null
-}
-
-export interface UpdatePresentationData {
-  presentation_event_id?: string | null
-  child_id?: string | null
-  mother_id?: string | null
-  father_id?: string | null
-  coordinator_id?: string | null
-  is_baptized?: boolean
-  status?: string | null
-  note?: string | null
-  presentation_template_id?: string | null
-}
+// Note: Schemas and types are imported from '@/lib/schemas/presentations'
+// They cannot be re-exported from this 'use server' file
 
 export interface PresentationFilterParams {
   search?: string
@@ -180,20 +165,23 @@ export async function createPresentation(data: CreatePresentationData): Promise<
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Server-side validation (security boundary)
+  const validatedData = createPresentationSchema.parse(data)
+
   const { data: presentation, error } = await supabase
     .from('presentations')
     .insert([
       {
         parish_id: selectedParishId,
-        presentation_event_id: data.presentation_event_id || null,
-        child_id: data.child_id || null,
-        mother_id: data.mother_id || null,
-        father_id: data.father_id || null,
-        coordinator_id: data.coordinator_id || null,
-        is_baptized: data.is_baptized || false,
-        status: data.status || null,
-        note: data.note || null,
-        presentation_template_id: data.presentation_template_id || null,
+        presentation_event_id: validatedData.presentation_event_id || null,
+        child_id: validatedData.child_id || null,
+        mother_id: validatedData.mother_id || null,
+        father_id: validatedData.father_id || null,
+        coordinator_id: validatedData.coordinator_id || null,
+        is_baptized: validatedData.is_baptized || false,
+        status: validatedData.status || null,
+        note: validatedData.note || null,
+        presentation_template_id: validatedData.presentation_template_id || null,
       }
     ])
     .select()
@@ -213,9 +201,12 @@ export async function updatePresentation(id: string, data: UpdatePresentationDat
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Server-side validation (security boundary)
+  const validatedData = updatePresentationSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
   )
 
   const { data: presentation, error } = await supabase

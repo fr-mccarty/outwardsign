@@ -73,8 +73,15 @@ According to Claude, the backend access the database at Supabaes using the Authe
 **Migration Strategy (Early Development):**
 During initial development, modify existing migrations instead of creating new migration files. When database changes are needed, update the relevant existing migration, then prompt the user to reset the database and re-run all migrations from scratch.
 
+**Migration File Structure:**
+- **One table per migration file** - Each migration file should create or modify only ONE table
+- Module tables should be named in **plural form** (e.g., `weddings`, `funerals`, `baptisms`)
+- Keep migrations focused and atomic for better version control and rollback capability
+
 ## Testing
 For testing instructions and commands, refer to the [README.md](../README.md#testing) file.
+
+**Test Architecture & Testability:** For comprehensive guidance on making components testable, selector strategies, test ID conventions, accessibility patterns, and Page Object Model, see [tests/TEST_ARCHITECTURE.md](tests/TEST_ARCHITECTURE.md). This includes key testing principles for selector priority, component testability, and timeout management.
 
 **Authentication in Tests:** For information on how to use authentication in tests (setting up test users, authenticated requests, etc.), refer to the authentication testing section in the [README.md](../README.md#testing) file.
 

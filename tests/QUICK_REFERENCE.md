@@ -159,6 +159,7 @@ npx playwright show-trace trace.zip
 ## 📚 Documentation Files
 
 - 📖 **TESTING_GUIDE.md** - Complete testing guide
+- 🏗️ **TEST_ARCHITECTURE.md** - Testability patterns, selectors, test IDs, Page Object Model
 - 📋 **TEST_TEMPLATE.spec.ts** - Template for new tests
 - ⚡ **QUICK_REFERENCE.md** - This file
 

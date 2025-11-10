@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { createBaptism, updateBaptism, type CreateBaptismData, type BaptismWithRelations } from "@/lib/actions/baptisms"
+import { createBaptism, updateBaptism, createBaptismSchema, type CreateBaptismData, type BaptismWithRelations } from "@/lib/actions/baptisms"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import {
@@ -33,6 +33,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   const router = useRouter()
   const isEditing = !!baptism
   const [isLoading, setIsLoading] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Notify parent component of loading state changes
   useEffect(() => {
@@ -72,6 +73,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setValidationErrors({})
 
     try {
       const formData: CreateBaptismData = {
@@ -87,12 +89,29 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
         note: note || undefined,
       }
 
+      // Client-side validation (optional, for instant feedback)
+      const result = createBaptismSchema.safeParse(formData)
+
+      if (!result.success) {
+        // Convert Zod errors to field errors
+        const fieldErrors: Record<string, string> = {}
+        result.error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0].toString()] = err.message
+          }
+        })
+        setValidationErrors(fieldErrors)
+        toast.error('Please fix the validation errors')
+        setIsLoading(false)
+        return
+      }
+
       if (isEditing && baptism) {
-        await updateBaptism(baptism.id, formData)
+        await updateBaptism(baptism.id, result.data)
         toast.success('Baptism updated successfully')
         router.refresh()
       } else {
-        const newBaptism = await createBaptism(formData)
+        const newBaptism = await createBaptism(result.data)
         toast.success('Baptism created successfully')
         router.push(`/baptisms/${newBaptism.id}`)
       }

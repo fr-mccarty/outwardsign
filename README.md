@@ -183,29 +183,35 @@ On first visit, you'll be directed to the authentication page. You can:
 - `npm run test:headed` - Run tests in headed mode (see browser)
 - `npm run test:ui` - Run tests with Playwright UI (for debugging)
 - `npm run seed` - Run all database seeders
+- `npm run db:reset` - **⚠️ DESTRUCTIVE:** Reset database (requires service role key)
 
 ### Testing
 
 This project uses Playwright for end-to-end testing with **automatic test user setup and cleanup**.
 
-**Run all tests** (recommended):
+**Standard Command (Use This):**
 ```bash
 npm test
 ```
+
 This automatically:
 1. Creates a temporary test user and parish
 2. Runs all Playwright tests with authentication
 3. Cleans up all test data when complete
 
-**Run tests in headed mode** (see browser):
+**Alternative Commands:**
+
+**See tests run in browser:**
 ```bash
 npm run test:headed
 ```
 
-**Run tests with Playwright UI** (for debugging):
+**Debug with Playwright UI:**
 ```bash
 npm run test:ui
 ```
+
+**⚠️ Important:** Always use `npm test` (not `npx playwright test` directly). The npm command handles all the automatic setup and cleanup.
 
 **How it works:**
 - `npm test` runs `scripts/run-tests-with-temp-user.js`

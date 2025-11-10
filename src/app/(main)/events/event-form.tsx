@@ -65,6 +65,13 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
     e.preventDefault()
     setIsLoading(true)
 
+    // Validate required fields (Radix Select doesn't support HTML5 validation)
+    if (!eventType) {
+      toast.error('Please select an event type')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const eventData: CreateEventData = {
         name,
@@ -130,8 +137,8 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
               <Label htmlFor="event_type">
                 Event Type <span className="text-destructive">*</span>
               </Label>
-              <Select value={eventType} onValueChange={setEventType} required>
-                <SelectTrigger>
+              <Select value={eventType} onValueChange={setEventType}>
+                <SelectTrigger id="event_type">
                   <SelectValue placeholder="Select event type" />
                 </SelectTrigger>
                 <SelectContent>

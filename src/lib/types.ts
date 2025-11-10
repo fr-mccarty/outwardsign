@@ -593,3 +593,68 @@ export interface Baptism {
   created_at: string
   updated_at: string
 }
+
+export interface Role {
+  id: string
+  parish_id: string
+  name: string
+  description?: string
+  note?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MassRolesTemplate {
+  id: string
+  parish_id: string
+  name: string
+  description?: string
+  note?: string
+  parameters?: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
+export interface Mass {
+  id: string
+  parish_id: string
+  event_id?: string
+  presider_id?: string
+  homilist_id?: string
+  liturgical_event_id?: string
+  mass_roles_template_id?: string
+  pre_mass_announcement_id?: string
+  pre_mass_announcement_topic?: string
+  status?: string
+  mass_template_id?: string
+  announcements?: string
+  note?: string
+  petitions?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MassRole {
+  id: string
+  mass_id: string
+  person_id: string
+  role_id: string
+  parameters?: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
+export interface MassIntention {
+  id: string
+  parish_id: string
+  mass_id?: string
+  mass_offered_for?: string
+  requested_by_id?: string
+  date_received?: string
+  date_requested?: string
+  stipend_in_cents?: number
+  status?: string
+  note?: string
+  created_at: string
+  updated_at: string
+}

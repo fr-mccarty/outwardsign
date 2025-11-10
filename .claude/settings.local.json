@@ -14,7 +14,9 @@
       "Bash(npm test:*)",
       "Bash(node:*)",
       "Bash(npm run test:headed:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx playwright show-report)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []

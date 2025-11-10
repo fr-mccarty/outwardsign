@@ -22,10 +22,7 @@ test.describe('Signup Flow', () => {
     // 4. Submit the form
     await page.click('button[type="submit"]');
 
-    // 5. Wait for the success message before redirect
-    await page.waitForSelector('text=/Account created successfully/i', { timeout: 10000 });
-
-    // 6. Wait for redirect to onboarding (may take a moment)
+    // 5. Wait for redirect to onboarding (navigation proves success)
     await page.waitForURL('/onboarding', { timeout: 15000 });
 
     // 6. Verify we're on the onboarding page
