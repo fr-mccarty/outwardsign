@@ -72,14 +72,7 @@ export function EventPickerField({
       </Label>
       {value ? (
         <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-sm leading-tight">{formatEventDateTime(value)}</span>
-            {value.location && (
-              <span className="text-xs text-muted-foreground mt-0.5">
-                {value.location.name}
-              </span>
-            )}
-          </div>
+          <span className="text-sm leading-tight">{formatEventDateTime(value)}</span>
           <Button
             type="button"
             variant="ghost"

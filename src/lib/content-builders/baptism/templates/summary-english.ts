@@ -120,12 +120,13 @@ function buildSummarySection(baptism: BaptismWithRelations): ContentSection {
       text: 'Additional Note',
     })
     elements.push({
-      type: 'paragraph',
+      type: 'text',
       text: baptism.note,
     })
   }
 
   return {
+    id: 'baptism-summary',
     title: 'Baptism Summary',
     elements,
   }
@@ -141,6 +142,10 @@ export function buildSummaryEnglish(baptism: BaptismWithRelations): LiturgyDocum
   sections.push(buildSummarySection(baptism))
 
   return {
+    id: `baptism-summary-${baptism.id}`,
+    type: 'baptism',
+    language: 'en',
+    template: 'summary-english',
     title: 'Baptism Summary',
     sections,
   }

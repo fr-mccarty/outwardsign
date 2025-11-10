@@ -177,7 +177,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={location.showPicker}
             onShowPickerChange={location.setShowPicker}
             placeholder="Select Location"
-            openToNewLocation={!isEditing}
           />
         </CardContent>
       </Card>
@@ -285,7 +284,8 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
 
       {/* Form Actions */}
       <FormBottomActions
-        cancelHref="/baptisms"
+        isEditing={isEditing}
+        cancelHref={isEditing && baptism ? `/baptisms/${baptism.id}` : "/baptisms"}
         isLoading={isLoading}
         saveLabel={isEditing ? "Save Changes" : "Create Baptism"}
       />
