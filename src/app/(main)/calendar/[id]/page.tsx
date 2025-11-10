@@ -30,21 +30,21 @@ export default function CalendarDetailPage({ params }: PageProps) {
         const { id } = await params
         setEntryId(id)
         const entryData = await getCalendarEntry(id)
-        
+
         if (!entryData) {
-          router.push('/calendar')
+          router.push('/calendar?view=month')
           return
         }
 
         setEntry(entryData)
         setBreadcrumbs([
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Liturgical Calendar", href: "/calendar" },
+          { label: "Liturgical Calendar", href: "/calendar?view=month" },
           { label: entryData.title }
         ])
       } catch (error) {
         console.error('Failed to load calendar entry:', error)
-        router.push('/calendar')
+        router.push('/calendar?view=month')
       } finally {
         setLoading(false)
       }
@@ -99,7 +99,7 @@ export default function CalendarDetailPage({ params }: PageProps) {
     >
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/calendar">
+          <Link href="/calendar?view=month">
             <ArrowLeft className="h-4 w-4" />
             Back to Calendar
           </Link>

@@ -74,7 +74,7 @@ export function MainSidebar() {
 
               <SidebarMenuItem key="Calendar">
                 <SidebarMenuButton asChild>
-                  <Link href="/calendar" onClick={handleLinkClick}>
+                  <Link href="/calendar?view=month" onClick={handleLinkClick}>
                     <Calendar />
                     <span>Calendar</span>
                   </Link>

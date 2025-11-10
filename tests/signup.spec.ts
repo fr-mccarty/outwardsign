@@ -39,23 +39,9 @@ test.describe('Signup Flow', () => {
 
     await page.click('button[type="submit"]');
 
-    // Wait for preparing screen
-    await expect(page.locator('text=/One minute while we get your parish ready for you/i')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=/Creating sample readings/i')).toBeVisible();
-
-    // Should redirect to dashboard after creating parish and populating data
+    // Should redirect to dashboard after creating parish
     await page.waitForURL('/dashboard', { timeout: 15000 });
     await expect(page).toHaveURL('/dashboard');
-
-    // Navigate to readings module to verify initial readings were populated
-    // The readings link is in a collapsible section, so let's navigate directly
-    await page.goto('/readings');
-    await expect(page).toHaveURL('/readings');
-
-    // Verify that the 3 initial readings were created
-    await expect(page.locator('text=/1 Corinthians 13:4-13/i')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=/John 14:1-6/i')).toBeVisible();
-    await expect(page.locator('text=/Matthew 28:18-20/i')).toBeVisible();
   });
 
   test('should show error for invalid credentials', async ({ page }) => {

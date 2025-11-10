@@ -579,26 +579,17 @@ export interface Quinceanera {
 export interface Baptism {
   id: string
   parish_id: string
-  baptized_person_id?: string
-  place_of_birth?: string
+  baptism_event_id?: string
+  child_id?: string
   mother_id?: string
   father_id?: string
-  godmother_id?: string
-  godfather_id?: string
+  sponsor_1_id?: string
+  sponsor_2_id?: string
+  location_id?: string
   presider_id?: string
-  baptism_event_id?: string
-  first_reading_id?: string
-  psalm_id?: string
-  second_reading_id?: string
-  gospel_reading_id?: string
-  first_reader_id?: string
-  psalm_reader_id?: string
-  second_reader_id?: string
-  petitions?: string
-  announcements?: string
-  notes?: string
-  baptism_template_id?: string
   status?: string
+  baptism_template_id?: string
+  note?: string
   created_at: string
   updated_at: string
 }

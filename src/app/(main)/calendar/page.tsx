@@ -4,9 +4,10 @@ import { getEvents } from '@/lib/actions/events'
 import { CalendarClient } from './calendar-client'
 
 interface CalendarPageProps {
-  searchParams: {
+  searchParams: Promise<{
     view?: string
-  }
+    date?: string
+  }>
 }
 
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
@@ -17,12 +18,15 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   // Fetch all events
   const events = await getEvents()
 
-  const view = (searchParams.view || 'month') as 'month' | 'week' | 'day'
+  const params = await searchParams
+  const view = (params.view || 'month') as 'month' | 'week' | 'day'
+  const dateParam = params.date
 
   return (
     <CalendarClient
       events={events}
       initialView={view}
+      initialDate={dateParam}
     />
   )
 }

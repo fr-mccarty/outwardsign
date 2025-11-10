@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
 import { Calendar } from '@/components/calendar/calendar'
 import { CalendarView, CalendarItem } from '@/components/calendar/types'
 import { PageContainer } from '@/components/page-container'
@@ -17,6 +18,7 @@ import { toast } from 'sonner'
 interface CalendarClientProps {
   events: Event[]
   initialView: CalendarView
+  initialDate?: string
 }
 
 interface LiturgicalCalendarItem extends CalendarItem {
@@ -35,16 +37,32 @@ function eventToCalendarItem(event: Event): CalendarItem {
   }
 }
 
-export function CalendarClient({ events, initialView }: CalendarClientProps) {
+export function CalendarClient({ events, initialView, initialDate }: CalendarClientProps) {
   const router = useRouter()
   const { setBreadcrumbs } = useBreadcrumbs()
-  const [currentDate, setCurrentDate] = useState(new Date())
+
+  // Parse initial date if provided, otherwise use today
+  const parsedInitialDate = initialDate ? new Date(initialDate) : new Date()
+  const [currentDate, setCurrentDate] = useState(parsedInitialDate)
   const [view, setView] = useState<CalendarView>(initialView)
   const [showLiturgical, setShowLiturgical] = useState(true) // Default to ON
   const [liturgicalEvents, setLiturgicalEvents] = useState<GlobalLiturgicalEvent[]>([])
   const [loadingLiturgical, setLoadingLiturgical] = useState(false)
   const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<GlobalLiturgicalEvent | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+
+  // Ensure URL has view parameter on initial load
+  useEffect(() => {
+    // Check if URL has view parameter, if not, set it
+    const urlParams = new URLSearchParams(window.location.search)
+    if (!urlParams.has('view')) {
+      const dateParam = urlParams.get('date')
+      const newUrl = dateParam
+        ? `/calendar?view=${initialView}&date=${dateParam}`
+        : `/calendar?view=${initialView}`
+      router.replace(newUrl, { scroll: false })
+    }
+  }, []) // Only run on mount
 
   // Load toggle state from localStorage
   useEffect(() => {
@@ -131,16 +149,24 @@ export function CalendarClient({ events, initialView }: CalendarClientProps) {
     }
 
     setCurrentDate(newDate)
+    // Update URL with new date
+    const dateStr = format(newDate, 'yyyy-MM-dd')
+    router.push(`/calendar?view=${view}&date=${dateStr}`)
   }
 
   const handleToday = () => {
-    setCurrentDate(new Date())
+    const today = new Date()
+    setCurrentDate(today)
+    // Update URL with today's date
+    const dateStr = format(today, 'yyyy-MM-dd')
+    router.push(`/calendar?view=${view}&date=${dateStr}`)
   }
 
   const handleViewChange = (newView: CalendarView) => {
     setView(newView)
-    // Update URL with new view
-    router.push(`/calendar?view=${newView}`)
+    // Update URL with new view, preserving the current date
+    const dateStr = format(currentDate, 'yyyy-MM-dd')
+    router.push(`/calendar?view=${newView}&date=${dateStr}`)
   }
 
   const handleEventClick = async (item: CalendarItem, event: React.MouseEvent) => {

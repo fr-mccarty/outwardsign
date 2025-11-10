@@ -54,15 +54,15 @@ export default function EditCalendarPage() {
           // Set breadcrumbs with entry title
           setBreadcrumbs([
             { label: "Dashboard", href: "/dashboard" },
-            { label: "Liturgical Calendar", href: "/calendar" },
+            { label: "Liturgical Calendar", href: "/calendar?view=month" },
             { label: entry.title, href: `/calendar/${id}` },
             { label: "Edit" }
           ])
         } else {
-          router.push("/calendar")
+          router.push("/calendar?view=month")
         }
       } catch {
-        router.push("/calendar")
+        router.push("/calendar?view=month")
       } finally {
         setIsLoadingData(false)
       }
@@ -114,7 +114,7 @@ export default function EditCalendarPage() {
       >
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/calendar">
+            <Link href="/calendar?view=month">
               <ArrowLeft className="h-4 w-4" />
               Back to Calendar
             </Link>

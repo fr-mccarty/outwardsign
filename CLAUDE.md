@@ -113,6 +113,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 
 **Naming Conventions:**
 - Database tables: plural form (e.g., `petitions`, `baptisms`)
+- Database columns: singular form (e.g., `note`, not `notes`)
 - TypeScript interfaces: singular form (e.g., `Petition`, `Baptism`)
 - **Special Case:** For simplification, "Quinceañeras" is spelled without the ñ in all programming contexts (file names, variables, types, routes, etc.). Use "Quinceanera" in code, "Quinceañera" in user-facing text only.
 
@@ -179,10 +180,28 @@ For views within a print folder (`app/print/`), custom styling is allowed to opt
 ## 🔴 Module Structure (Main Files)
 **CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
 
+**Next.js 15 searchParams Pattern:**
+In Next.js 15, `searchParams` is now a Promise and must be awaited before accessing its properties.
+
+```tsx
+interface PageProps {
+  searchParams: Promise<{ search?: string; status?: string }>
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  const params = await searchParams
+  const filters = {
+    search: params.search,
+    status: params.status
+  }
+  // ... rest of page logic
+}
+```
+
 1. **List Page (Server)** - `page.tsx`
 - Auth check → fetch entities with filters from searchParams → compute stats server-side → define breadcrumbs
 - Structure: `BreadcrumbSetter → [Entity]ListClient initialData={entities} stats={stats}`
-- Example: `async function Page({ searchParams }: { searchParams: { search?: string; type?: string } })`
+- **IMPORTANT**: searchParams must be typed as `Promise<{...}>` and awaited before use
 
 2. **List Client** - `[entity]-list-client.tsx` or `[entities]-list-client.tsx`
 - Uses URL search params for shareable, linkable state (search, filters, pagination)

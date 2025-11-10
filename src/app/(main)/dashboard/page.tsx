@@ -22,6 +22,7 @@ import { getPeople } from "@/lib/actions/people"
 import { getLocations } from "@/lib/actions/locations"
 import { getEvents } from "@/lib/actions/events"
 import { formatDistance } from "date-fns"
+import { MiniCalendar } from "@/components/mini-calendar"
 
 export const dynamic = 'force-dynamic'
 
@@ -205,7 +206,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Main Content Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {/* Sacrament Breakdown */}
         <Card>
           <CardHeader>
@@ -328,6 +329,16 @@ export default async function DashboardPage() {
                 </p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Mini Calendar */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Calendar</CardTitle>
+          </CardHeader>
+          <CardContent className="p-3">
+            <MiniCalendar events={events} />
           </CardContent>
         </Card>
       </div>

@@ -97,14 +97,6 @@ export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: L
             </div>
           </div>
 
-          {/* Psalter Week */}
-          {eventData.psalter_week && (
-            <div>
-              <div className="text-sm font-medium text-muted-foreground">Psalter Week</div>
-              <div className="text-base mt-1">Week {eventData.psalter_week}</div>
-            </div>
-          )}
-
           {/* Special Indicators */}
           {(eventData.has_vigil_mass || eventData.is_vigil_mass || eventData.has_vesper_i || eventData.has_vesper_ii) && (
             <>

@@ -48,7 +48,7 @@ export default function CreateCalendarPage() {
         readings: readings.filter(r => r.trim()),
         special_prayers: prayers.filter(p => p.trim())
       })
-      router.push("/calendar")
+      router.push("/calendar?view=month")
     } catch {
       alert("Failed to create calendar entry. Please try again.")
     } finally {
@@ -226,7 +226,7 @@ export default function CreateCalendarPage() {
                 {isLoading ? "Creating..." : "Create Event"}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link href="/calendar">Cancel</Link>
+                <Link href="/calendar?view=month">Cancel</Link>
               </Button>
             </div>
           </form>
