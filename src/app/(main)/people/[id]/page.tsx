@@ -31,7 +31,7 @@ export default async function PersonDetailPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "People", href: "/people" },
+    { label: "Our People", href: "/people" },
     { label: `${person.first_name} ${person.last_name}` }
   ]
 

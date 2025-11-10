@@ -34,7 +34,7 @@ export default async function EditFuneralPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Funerals", href: "/funerals" },
+    { label: "Our Funerals", href: "/funerals" },
     { label: "Edit" }
   ]
 

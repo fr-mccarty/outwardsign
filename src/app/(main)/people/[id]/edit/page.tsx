@@ -29,7 +29,7 @@ export default async function EditPersonPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "People", href: "/people" },
+    { label: "Our People", href: "/people" },
     { label: `${person.first_name} ${person.last_name}`, href: `/people/${id}` },
     { label: "Edit" }
   ]

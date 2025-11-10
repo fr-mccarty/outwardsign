@@ -43,7 +43,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Quinceañeras" }
+    { label: "Our Quinceañeras" }
   ]
 
   return (

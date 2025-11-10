@@ -14,7 +14,7 @@ export default async function CreateFuneralPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Funerals", href: "/funerals" },
+    { label: "Our Funerals", href: "/funerals" },
     { label: "Create" }
   ]
 

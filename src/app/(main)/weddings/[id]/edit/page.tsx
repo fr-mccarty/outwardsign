@@ -39,7 +39,7 @@ export default async function EditWeddingPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Weddings", href: "/weddings" },
+    { label: "Our Weddings", href: "/weddings" },
     { label: "Edit" }
   ]
 

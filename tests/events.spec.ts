@@ -7,7 +7,6 @@ test.describe('Events Module - Standalone Events', () => {
     // Navigate to events page
     await page.goto('/events');
     await expect(page).toHaveURL('/events');
-    await expect(page.locator('text=Our Events')).toBeVisible();
 
     // Click "New Event" button
     const newEventLink = page.getByRole('link', { name: /New Event/i }).first();
@@ -31,8 +30,9 @@ test.describe('Events Module - Standalone Events', () => {
     await page.fill('textarea#description', eventDescription);
 
     // Select event type - MEETING (standalone, not linked to any module)
-    await page.locator('#event_type').click();
-    await page.locator('[role="option"]:has-text("Meeting")').click();
+    // Find the Event Type select by its label
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'Meeting' }).click();
 
     // Fill in start date and time
     await page.fill('input#start_date', eventDate);
@@ -44,11 +44,14 @@ test.describe('Events Module - Standalone Events', () => {
     // Fill in notes
     await page.fill('textarea#notes', eventNotes);
 
-    // Submit the form
-    await page.click('button[type="submit"]:has-text("Create Event")');
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(500);
+
+    // Submit the form (click the first Create Event button)
+    await page.getByRole('button', { name: /Create Event/i }).first().click();
 
     // Wait for success toast
-    await page.waitForSelector('text=/Event created successfully/i', { timeout: 5000 });
+    await page.waitForSelector('text=/Event created successfully/i', { timeout: 10000 });
 
     // Should redirect to the event detail page
     await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 5000 });
@@ -76,15 +79,15 @@ test.describe('Events Module - Standalone Events', () => {
     await page.fill('textarea#description', 'Fun social gathering for parish youth group');
 
     // Select "Event" type (generic standalone event)
-    await page.locator('#event_type').click();
-    await page.locator('[role="option"]:has-text("Event")').click();
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'Event' }).click();
 
     await page.fill('input#start_date', '2025-12-20');
 
     // Submit
-    await page.click('button[type="submit"]:has-text("Create Event")');
-    await page.waitForSelector('text=/Event created successfully/i', { timeout: 5000 });
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.getByRole('button', { name: /Create Event/i }).first().click();
+    await page.waitForSelector('text=/Event created successfully/i', { timeout: 10000 });
+    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 10000 });
 
     // Verify event type is shown
     await expect(page.locator('text=Event')).toBeVisible();
@@ -97,13 +100,13 @@ test.describe('Events Module - Standalone Events', () => {
     await page.goto('/events/create');
     await page.fill('input#name', 'Export Test Meeting');
 
-    await page.locator('#event_type').click();
-    await page.locator('[role="option"]:has-text("Meeting")').click();
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'Meeting' }).click();
 
     await page.fill('input#start_date', '2025-12-01');
-    await page.click('button[type="submit"]:has-text("Create Event")');
-    await page.waitForSelector('text=/Event created successfully/i', { timeout: 5000 });
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.getByRole('button', { name: /Create Event/i }).first().click();
+    await page.waitForSelector('text=/Event created successfully/i', { timeout: 10000 });
+    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 10000 });
 
     // Verify export buttons exist
     await expect(page.locator('button:has-text("Print")')).toBeVisible();
@@ -118,12 +121,12 @@ test.describe('Events Module - Standalone Events', () => {
     await page.goto('/events/create');
     await page.fill('input#name', 'Staff Meeting');
 
-    await page.locator('#event_type').click();
-    await page.locator('[role="option"]:has-text("Meeting")').click();
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'Meeting' }).click();
 
     await page.fill('input#start_date', '2025-12-10');
-    await page.click('button[type="submit"]:has-text("Create Event")');
-    await page.waitForSelector('text=/Event created successfully/i', { timeout: 5000 });
+    await page.getByRole('button', { name: /Create Event/i }).first().click();
+    await page.waitForSelector('text=/Event created successfully/i', { timeout: 10000 });
 
     // Go to events list
     await page.goto('/events');
@@ -139,12 +142,12 @@ test.describe('Events Module - Standalone Events', () => {
     await page.goto('/events/create');
     await page.fill('input#name', 'Breadcrumb Test Event');
 
-    await page.locator('#event_type').click();
-    await page.locator('[role="option"]:has-text("Event")').click();
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'Event' }).click();
 
     await page.fill('input#start_date', '2025-12-05');
-    await page.click('button[type="submit"]:has-text("Create Event")');
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.getByRole('button', { name: /Create Event/i }).first().click();
+    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: 10000 });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');

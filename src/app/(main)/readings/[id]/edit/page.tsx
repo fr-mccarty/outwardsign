@@ -29,7 +29,7 @@ export default async function EditReadingPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "My Readings", href: "/readings" },
+    { label: "Our Readings", href: "/readings" },
     { label: reading.pericope || 'Reading', href: `/readings/${id}` },
     { label: "Edit" }
   ]

@@ -49,7 +49,7 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "My Readings" }
+    { label: "Our Readings" }
   ]
 
   return (

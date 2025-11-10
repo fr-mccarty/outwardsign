@@ -35,7 +35,7 @@ export default async function ViewQuinceaneraPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Quinceañeras", href: "/quinceaneras" },
+    { label: "Our Quinceañeras", href: "/quinceaneras" },
     { label: "View" }
   ]
 

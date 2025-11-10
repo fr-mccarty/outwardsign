@@ -43,7 +43,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Funerals" }
+    { label: "Our Funerals" }
   ]
 
   return (

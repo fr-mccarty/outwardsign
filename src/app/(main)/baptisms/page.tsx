@@ -43,7 +43,7 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Baptisms" }
+    { label: "Our Baptisms" }
   ]
 
   return (

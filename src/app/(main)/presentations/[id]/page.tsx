@@ -35,7 +35,7 @@ export default async function ViewPresentationPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Presentations", href: "/presentations" },
+    { label: "Our Presentations", href: "/presentations" },
     { label: "View" }
   ]
 

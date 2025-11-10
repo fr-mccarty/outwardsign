@@ -38,7 +38,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Events", href: "/events" },
+    { label: "Our Events", href: "/events" },
     { label: event.name }
   ]
 

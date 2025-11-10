@@ -14,7 +14,7 @@ export default async function CreatePresentationPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Presentations", href: "/presentations" },
+    { label: "Our Presentations", href: "/presentations" },
     { label: "Create" }
   ]
 

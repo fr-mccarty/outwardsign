@@ -11,7 +11,10 @@
       "Bash(npx playwright test:*)",
       "WebFetch(domain:code.claude.com)",
       "Bash(npm run test:setup:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(node:*)",
+      "Bash(npm run test:headed:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

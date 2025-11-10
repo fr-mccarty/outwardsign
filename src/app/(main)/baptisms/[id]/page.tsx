@@ -37,7 +37,7 @@ export default async function ViewBaptismPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Baptisms", href: "/baptisms" },
+    { label: "Our Baptisms", href: "/baptisms" },
     { label: "View" }
   ]
 

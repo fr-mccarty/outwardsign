@@ -32,7 +32,7 @@ export default async function ReadingDetailPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "My Readings", href: "/readings" },
+    { label: "Our Readings", href: "/readings" },
     { label: reading.pericope || 'Reading' }
   ]
 

@@ -43,7 +43,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Weddings" }
+    { label: "Our Weddings" }
   ]
 
   return (

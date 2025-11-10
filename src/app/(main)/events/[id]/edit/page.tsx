@@ -28,7 +28,7 @@ export default async function EditEventPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Events", href: "/events" },
+    { label: "Our Events", href: "/events" },
     { label: event.name, href: `/events/${id}` },
     { label: "Edit" }
   ]

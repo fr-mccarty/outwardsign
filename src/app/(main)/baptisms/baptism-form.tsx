@@ -17,12 +17,11 @@ import {
 } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
-import { LocationPickerField } from "@/components/location-picker-field"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { BAPTISM_TEMPLATES } from "@/lib/content-builders/baptism"
 import { usePickerState } from "@/hooks/use-picker-state"
-import type { Person, Event, Location } from "@/lib/types"
+import type { Person, Event } from "@/lib/types"
 
 interface BaptismFormProps {
   baptism?: BaptismWithRelations
@@ -47,7 +46,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
 
   // Picker states using usePickerState hook
   const baptismEvent = usePickerState<Event>()
-  const location = usePickerState<Location>()
   const child = usePickerState<Person>()
   const mother = usePickerState<Person>()
   const father = usePickerState<Person>()
@@ -60,9 +58,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
     if (baptism) {
       // Set event
       if (baptism.baptism_event) baptismEvent.setValue(baptism.baptism_event)
-
-      // Set location
-      if (baptism.location) location.setValue(baptism.location)
 
       // Set people
       if (baptism.child) child.setValue(baptism.child)
@@ -81,7 +76,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
     try {
       const formData: CreateBaptismData = {
         baptism_event_id: baptismEvent.value?.id,
-        location_id: location.value?.id,
         child_id: child.value?.id,
         mother_id: mother.value?.id,
         father_id: father.value?.id,
@@ -167,16 +161,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             defaultEventType="BAPTISM"
             defaultName="Baptism"
             disableSearch={true}
-          />
-
-          {/* Location */}
-          <LocationPickerField
-            label="Location"
-            value={location.value}
-            onValueChange={location.setValue}
-            showPicker={location.showPicker}
-            onShowPickerChange={location.setShowPicker}
-            placeholder="Select Location"
           />
         </CardContent>
       </Card>

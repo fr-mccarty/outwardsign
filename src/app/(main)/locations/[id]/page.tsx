@@ -26,7 +26,7 @@ export default async function LocationPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Locations", href: "/locations" },
+    { label: "Our Locations", href: "/locations" },
     { label: location.name }
   ]
 

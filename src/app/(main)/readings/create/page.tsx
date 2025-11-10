@@ -15,7 +15,7 @@ export default async function CreateReadingPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "My Readings", href: "/readings" },
+    { label: "Our Readings", href: "/readings" },
     { label: "Create Reading" }
   ]
 

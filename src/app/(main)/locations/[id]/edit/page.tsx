@@ -26,7 +26,7 @@ export default async function EditLocationPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Locations", href: "/locations" },
+    { label: "Our Locations", href: "/locations" },
     { label: location.name, href: `/locations/${id}` },
     { label: "Edit" }
   ]

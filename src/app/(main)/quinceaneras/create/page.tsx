@@ -14,7 +14,7 @@ export default async function CreateQuinceaneraPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Quinceañeras", href: "/quinceaneras" },
+    { label: "Our Quinceañeras", href: "/quinceaneras" },
     { label: "Create" }
   ]
 

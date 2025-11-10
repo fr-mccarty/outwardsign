@@ -15,7 +15,7 @@ export default async function CreatePersonPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "People", href: "/people" },
+    { label: "Our People", href: "/people" },
     { label: "Create Person" }
   ]
 

@@ -42,7 +42,7 @@ export default async function PeoplePage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "People" }
+    { label: "Our People" }
   ]
 
   return (

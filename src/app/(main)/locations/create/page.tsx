@@ -14,7 +14,7 @@ export default async function CreateLocationPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Locations", href: "/locations" },
+    { label: "Our Locations", href: "/locations" },
     { label: "Create" }
   ]
 

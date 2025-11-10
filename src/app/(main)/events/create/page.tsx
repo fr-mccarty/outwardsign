@@ -14,7 +14,7 @@ export default async function CreateEventPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Events", href: "/events" },
+    { label: "Our Events", href: "/events" },
     { label: "Create" }
   ]
 

@@ -35,12 +35,15 @@ import {
   Calendar,
   CalendarPlus,
   Clock,
-  Save
+  Save,
+  MapPin,
+  X
 } from 'lucide-react'
 import { getEvents, createEvent, updateEvent } from '@/lib/actions/events'
-import type { Event } from '@/lib/types'
+import type { Event, Location } from '@/lib/types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { LocationPicker } from '@/components/location-picker'
 
 interface EventPickerProps {
   open: boolean
@@ -107,6 +110,8 @@ export function EventPicker({
   const [savingEvent, setSavingEvent] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [newEventForm, setNewEventForm] = useState({
     name: defaultName,
     event_type: defaultEventType,
@@ -174,10 +179,17 @@ export function EventPicker({
             timezone: (selectedEvent as any).timezone || getDefaultTimezone(),
             note: (selectedEvent as any).note || '',
           })
+          // Load location if event has one
+          if ((selectedEvent as any).location) {
+            setSelectedLocation((selectedEvent as any).location)
+          } else {
+            setSelectedLocation(null)
+          }
         } else {
           // Create new mode
           setIsEditMode(false)
           setEditingEventId(null)
+          setSelectedLocation(null)
         }
         setShowAddForm(true)
       } else {
@@ -225,6 +237,7 @@ export function EventPicker({
           start_date: newEventForm.start_date,
           start_time: newEventForm.start_time,
           timezone: newEventForm.timezone,
+          location_id: selectedLocation?.id || undefined,
           note: newEventForm.note || undefined,
         })
         toast.success('Event updated successfully')
@@ -236,6 +249,7 @@ export function EventPicker({
           start_date: newEventForm.start_date,
           start_time: newEventForm.start_time,
           timezone: newEventForm.timezone,
+          location_id: selectedLocation?.id || undefined,
           note: newEventForm.note || undefined,
         })
         toast.success('Event created successfully')
@@ -250,6 +264,7 @@ export function EventPicker({
         timezone: getDefaultTimezone(),
         note: '',
       })
+      setSelectedLocation(null)
       setShowAddForm(false)
       setIsEditMode(false)
       setEditingEventId(null)
@@ -268,6 +283,7 @@ export function EventPicker({
     setShowAddForm(false)
     setIsEditMode(false)
     setEditingEventId(null)
+    setSelectedLocation(null)
     setNewEventForm({
       name: defaultName,
       event_type: defaultEventType,
@@ -470,6 +486,40 @@ export function EventPicker({
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="location" className="text-right">
+                Location
+              </Label>
+              <div className="col-span-3">
+                {selectedLocation ? (
+                  <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+                    <span className="text-sm">
+                      {selectedLocation.name}
+                      {selectedLocation.city && `, ${selectedLocation.city}`}
+                      {selectedLocation.state && `, ${selectedLocation.state}`}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedLocation(null)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="w-full justify-start"
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Select Location
+                  </Button>
+                )}
+              </div>
+            </div>
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="note" className="text-right pt-2">
                 Note
@@ -510,6 +560,15 @@ export function EventPicker({
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Location Picker Modal */}
+    <LocationPicker
+      open={showLocationPicker}
+      onOpenChange={setShowLocationPicker}
+      onSelect={setSelectedLocation}
+      selectedLocationId={selectedLocation?.id}
+      openToNewLocation={false}
+    />
     </>
   )
 }

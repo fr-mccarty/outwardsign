@@ -14,7 +14,7 @@ export default async function CreateBaptismPage() {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Baptisms", href: "/baptisms" },
+    { label: "Our Baptisms", href: "/baptisms" },
     { label: "Create" }
   ]
 

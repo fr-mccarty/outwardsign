@@ -8,7 +8,6 @@ CREATE TABLE baptisms (
   father_id UUID REFERENCES people(id) ON DELETE SET NULL,
   sponsor_1_id UUID REFERENCES people(id) ON DELETE SET NULL,
   sponsor_2_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
   presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
   status TEXT DEFAULT 'ACTIVE',
   baptism_template_id TEXT,

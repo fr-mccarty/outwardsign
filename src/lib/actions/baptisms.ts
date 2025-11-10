@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Baptism, Person, Event, Location } from '@/lib/types'
+import { Baptism, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 
 export interface CreateBaptismData {
@@ -14,7 +14,6 @@ export interface CreateBaptismData {
   father_id?: string
   sponsor_1_id?: string
   sponsor_2_id?: string
-  location_id?: string
   presider_id?: string
   status?: string
   baptism_template_id?: string
@@ -28,7 +27,6 @@ export interface UpdateBaptismData {
   father_id?: string | null
   sponsor_1_id?: string | null
   sponsor_2_id?: string | null
-  location_id?: string | null
   presider_id?: string | null
   status?: string | null
   baptism_template_id?: string | null
@@ -120,7 +118,6 @@ export interface BaptismWithRelations extends Baptism {
   father?: Person | null
   sponsor_1?: Person | null
   sponsor_2?: Person | null
-  location?: Location | null
   presider?: Person | null
   baptism_event?: EventWithRelations | null
 }
@@ -152,7 +149,6 @@ export async function getBaptismWithRelations(id: string): Promise<BaptismWithRe
     fatherData,
     sponsor1Data,
     sponsor2Data,
-    locationData,
     presiderData,
     baptismEventData
   ] = await Promise.all([
@@ -161,7 +157,6 @@ export async function getBaptismWithRelations(id: string): Promise<BaptismWithRe
     baptism.father_id ? supabase.from('people').select('*').eq('id', baptism.father_id).single() : Promise.resolve({ data: null }),
     baptism.sponsor_1_id ? supabase.from('people').select('*').eq('id', baptism.sponsor_1_id).single() : Promise.resolve({ data: null }),
     baptism.sponsor_2_id ? supabase.from('people').select('*').eq('id', baptism.sponsor_2_id).single() : Promise.resolve({ data: null }),
-    baptism.location_id ? supabase.from('locations').select('*').eq('id', baptism.location_id).single() : Promise.resolve({ data: null }),
     baptism.presider_id ? supabase.from('people').select('*').eq('id', baptism.presider_id).single() : Promise.resolve({ data: null }),
     baptism.baptism_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', baptism.baptism_event_id).single() : Promise.resolve({ data: null })
   ])
@@ -173,7 +168,6 @@ export async function getBaptismWithRelations(id: string): Promise<BaptismWithRe
     father: fatherData.data,
     sponsor_1: sponsor1Data.data,
     sponsor_2: sponsor2Data.data,
-    location: locationData.data,
     presider: presiderData.data,
     baptism_event: baptismEventData.data
   }
@@ -195,7 +189,6 @@ export async function createBaptism(data: CreateBaptismData): Promise<Baptism> {
         father_id: data.father_id || null,
         sponsor_1_id: data.sponsor_1_id || null,
         sponsor_2_id: data.sponsor_2_id || null,
-        location_id: data.location_id || null,
         presider_id: data.presider_id || null,
         status: data.status || null,
         baptism_template_id: data.baptism_template_id || null,
