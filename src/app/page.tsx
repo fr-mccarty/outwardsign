@@ -1134,7 +1134,7 @@ function HomeContent() {
                     <div className="text-xs text-muted-foreground">{t.printFeature.fullScriptContinues}</div>
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="outline" size="sm" className="flex-1">
                     <FileText className="h-4 w-4 mr-2" />
                     {t.printFeature.downloadPdf}

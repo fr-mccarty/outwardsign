@@ -1,48 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
-import { useDebounce } from '@/hooks/use-debounce'
-import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/command'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { UserCog, Plus, Save } from 'lucide-react'
+import { UserCog } from 'lucide-react'
 import { getRoles, createRole } from '@/lib/actions/roles'
 import type { Role } from '@/lib/types'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-
-// Zod schema for inline "Add New Role" form
-const newRoleSchema = z.object({
-  name: z.string().min(1, 'Role name is required'),
-  description: z.string().optional(),
-  note: z.string().optional(),
-})
-
-type NewRoleFormData = z.infer<typeof newRoleSchema>
+import { CorePicker } from '@/components/core-picker'
+import { PickerFieldConfig } from '@/types/core-picker'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 
 interface RolePickerProps {
   open: boolean
@@ -54,52 +21,50 @@ interface RolePickerProps {
   className?: string
   visibleFields?: string[] // Optional fields to show: 'description', 'note'
   requiredFields?: string[] // Fields that should be marked as required
+  autoOpenCreateForm?: boolean
+  defaultCreateFormData?: Record<string, any>
 }
+
+// Default visible fields - defined outside component to prevent re-creation
+const DEFAULT_VISIBLE_FIELDS = ['description', 'note']
+
+// Empty object constant to prevent re-creation on every render
+const EMPTY_FORM_DATA = {}
 
 export function RolePicker({
   open,
   onOpenChange,
   onSelect,
-  placeholder = "Search for a role...",
-  emptyMessage = "No roles found.",
+  placeholder = 'Search for a role...',
+  emptyMessage = 'No roles found.',
   selectedRoleId,
   className,
   visibleFields,
   requiredFields,
+  autoOpenCreateForm = false,
+  defaultCreateFormData,
 }: RolePickerProps) {
-  const [searchQuery, setSearchQuery] = useState('')
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(false)
-  const [showAddForm, setShowAddForm] = useState(false)
 
-  // Determine which fields should be visible and required
-  const defaultVisibleFields = ['description', 'note']
-  const isFieldVisible = (fieldName: string) =>
-    checkFieldVisible(fieldName, visibleFields, defaultVisibleFields)
-  const isFieldRequired = (fieldName: string) =>
-    checkFieldRequired(fieldName, requiredFields)
+  // Memoize helper functions to prevent unnecessary re-renders
+  const isFieldVisible = useCallback(
+    (fieldName: string) => checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS),
+    [visibleFields]
+  )
+  const isFieldRequired = useCallback(
+    (fieldName: string) => checkFieldRequired(fieldName, requiredFields),
+    [requiredFields]
+  )
 
-  // Initialize React Hook Form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    watch,
-    reset,
-  } = useForm<NewRoleFormData>({
-    resolver: zodResolver(newRoleSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      note: '',
-    },
-  })
+  // Load roles when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadRoles()
+    }
+  }, [open])
 
-  // Debounce search query
-  const debouncedSearchQuery = useDebounce(searchQuery, 300)
-
-  const loadRolesCallback = useCallback(async () => {
+  const loadRoles = async () => {
     try {
       setLoading(true)
       const results = await getRoles()
@@ -110,253 +75,114 @@ export function RolePicker({
     } finally {
       setLoading(false)
     }
-  }, [])
-
-  // Load roles when dialog opens
-  useEffect(() => {
-    if (open && roles.length === 0) {
-      loadRolesCallback()
-    }
-  }, [open, roles.length, loadRolesCallback])
-
-  // Filter roles client-side based on search query
-  const filteredRoles = roles.filter((role) => {
-    if (!debouncedSearchQuery) return true
-    const query = debouncedSearchQuery.toLowerCase()
-    return (
-      role.name.toLowerCase().includes(query) ||
-      role.description?.toLowerCase().includes(query)
-    )
-  })
-
-  const handleRoleSelect = (role: Role) => {
-    onSelect(role)
-    onOpenChange(false)
-    setSearchQuery('')
-    setShowAddForm(false)
   }
 
-  const handleAddNewRole = () => {
-    setShowAddForm(true)
-  }
+  const selectedRole = selectedRoleId
+    ? roles.find((r) => r.id === selectedRoleId)
+    : null
 
-  const onSubmitNewRole = async (data: NewRoleFormData) => {
-    try {
-      const newRole = await createRole({
-        name: data.name,
-        description: data.description || undefined,
-        note: data.note || undefined
+  // Build create fields configuration dynamically - memoized to prevent infinite re-renders
+  const createFields: PickerFieldConfig[] = useMemo(() => {
+    const fields: PickerFieldConfig[] = [
+      {
+        key: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Lector',
+        validation: z.string().min(1, 'Role name is required'),
+      },
+    ]
+
+    if (isFieldVisible('description')) {
+      fields.push({
+        key: 'description',
+        label: 'Description',
+        type: 'text',
+        required: isFieldRequired('description'),
+        placeholder: 'Proclaims the Word of God',
       })
-
-      toast.success('Role created successfully')
-
-      // Reset form
-      reset()
-      setShowAddForm(false)
-
-      // Refresh roles list
-      await loadRolesCallback()
-
-      // Select the newly created role (this will close the picker)
-      handleRoleSelect(newRole)
-    } catch (error) {
-      console.error('Error creating role:', error)
-      toast.error('Failed to add role')
     }
+
+    if (isFieldVisible('note')) {
+      fields.push({
+        key: 'note',
+        label: 'Note',
+        type: 'textarea',
+        required: isFieldRequired('note'),
+        placeholder: 'Additional notes...',
+      })
+    }
+
+    return fields
+  }, [isFieldVisible, isFieldRequired])
+
+  // Handle creating a new role
+  const handleCreateRole = async (data: any): Promise<Role> => {
+    const newRole = await createRole({
+      name: data.name,
+      description: data.description || undefined,
+      note: data.note || undefined,
+    })
+
+    // Add to local list
+    setRoles((prev) => [newRole, ...prev])
+
+    return newRole
   }
 
-  const handleCancelAddRole = () => {
-    setShowAddForm(false)
-    reset()
-  }
+  // Custom render for role list items
+  const renderRoleItem = (role: Role) => {
+    const isSelected = selectedRoleId === role.id
 
-  const isRoleSelected = (role: Role) => {
-    return selectedRoleId === role.id
+    return (
+      <div className="flex items-center gap-3">
+        <UserCog className="h-5 w-5 text-muted-foreground" />
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{role.name}</span>
+            {isSelected && (
+              <Badge variant="secondary" className="text-xs">
+                Selected
+              </Badge>
+            )}
+          </div>
+
+          {role.description && (
+            <div className="mt-1 text-xs text-muted-foreground line-clamp-1">
+              {role.description}
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
-    <>
-      <CommandDialog open={open} onOpenChange={onOpenChange}>
-        <DialogTitle className="sr-only">Select Role</DialogTitle>
-        <Command className={cn("rounded-lg border shadow-md", className)} shouldFilter={false}>
-          <div className="flex items-center border-b px-3" onClick={(e) => e.stopPropagation()}>
-            <CommandInput
-              placeholder={placeholder}
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
-
-          <CommandList className="max-h-[400px]">
-            {loading && (
-              <div className="flex items-center justify-center py-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-                  Loading roles...
-                </div>
-              </div>
-            )}
-
-            {!loading && filteredRoles.length === 0 && (
-              <CommandEmpty className="py-6 text-center text-sm">
-                <div className="flex flex-col items-center gap-2">
-                  <UserCog className="h-8 w-8 text-muted-foreground" />
-                  <div>{emptyMessage}</div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddNewRole}
-                    className="mt-2"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Role
-                  </Button>
-                </div>
-              </CommandEmpty>
-            )}
-
-            {!loading && filteredRoles.length > 0 && (
-              <>
-                <CommandGroup heading="Roles">
-                  {filteredRoles.map((role) => (
-                    <CommandItem
-                      key={role.id}
-                      value={role.id}
-                      onSelect={() => handleRoleSelect(role)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-3 cursor-pointer",
-                        isRoleSelected(role) && "bg-accent text-accent-foreground"
-                      )}
-                    >
-                      <UserCog className="h-5 w-5 text-muted-foreground" />
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {role.name}
-                          </span>
-                          {isRoleSelected(role) && (
-                            <Badge variant="secondary" className="text-xs">
-                              Selected
-                            </Badge>
-                          )}
-                        </div>
-
-                        {role.description && (
-                          <div className="mt-1 text-xs text-muted-foreground line-clamp-1">
-                            {role.description}
-                          </div>
-                        )}
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-
-                <CommandSeparator />
-
-                <CommandGroup>
-                  <CommandItem
-                    onSelect={handleAddNewRole}
-                    className="flex items-center gap-2 px-3 py-3 cursor-pointer text-muted-foreground hover:text-foreground"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Add New Role</span>
-                  </CommandItem>
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </CommandDialog>
-
-      {/* New Role Dialog */}
-      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="sm:max-w-[425px] max-h-[85vh] flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle>Add New Role</DialogTitle>
-            <DialogDescription>
-              Create a new liturgical role for your parish.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(onSubmitNewRole)} className="flex flex-col flex-1 min-h-0">
-            <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="name" className="text-right pt-2">
-                  Name *
-                </Label>
-                <div className="col-span-3">
-                  <Input
-                    id="name"
-                    value={watch('name')}
-                    onChange={(e) => setValue('name', e.target.value)}
-                    className={cn(errors.name && "border-red-500")}
-                    placeholder="Lector"
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-                  )}
-                </div>
-              </div>
-              {isFieldVisible('description') && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Description{isFieldRequired('description') && <span className="text-destructive ml-0.5">*</span>}
-                  </Label>
-                  <Input
-                    id="description"
-                    value={watch('description') || ''}
-                    onChange={(e) => setValue('description', e.target.value)}
-                    className="col-span-3"
-                    placeholder="Proclaims the Word of God"
-                    required={isFieldRequired('description')}
-                  />
-                </div>
-              )}
-              {isFieldVisible('note') && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="note" className="text-right">
-                    Note{isFieldRequired('note') && <span className="text-destructive ml-0.5">*</span>}
-                  </Label>
-                  <Textarea
-                    id="note"
-                    value={watch('note') || ''}
-                    onChange={(e) => setValue('note', e.target.value)}
-                    className="col-span-3"
-                    placeholder="Additional notes..."
-                    rows={3}
-                    required={isFieldRequired('note')}
-                  />
-                </div>
-              )}
-            </div>
-            <DialogFooter className="flex-shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancelAddRole}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Role
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+    <CorePicker<Role>
+      open={open}
+      onOpenChange={onOpenChange}
+      items={roles}
+      selectedItem={selectedRole}
+      onSelect={onSelect}
+      title="Select Role"
+      searchPlaceholder={placeholder}
+      searchFields={['name', 'description']}
+      getItemLabel={(role) => role.name}
+      getItemId={(role) => role.id}
+      renderItem={renderRoleItem}
+      enableCreate={true}
+      createFields={createFields}
+      onCreateSubmit={handleCreateRole}
+      createButtonLabel="Save Role"
+      addNewButtonLabel="Add New Role"
+      emptyMessage={emptyMessage}
+      noResultsMessage="No roles match your search"
+      isLoading={loading}
+      autoOpenCreateForm={autoOpenCreateForm}
+      defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
+    />
   )
 }
 

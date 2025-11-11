@@ -1,59 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
-import { useDebounce } from '@/hooks/use-debounce'
-import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/command'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Building,
-  Plus,
-  MapPin,
-  Phone,
-  Save
-} from 'lucide-react'
-import { getLocations, createLocation } from '@/lib/actions/locations'
-import type { Location } from '@/lib/types'
+import { Badge } from '@/components/ui/badge'
+import { MapPin, Phone } from 'lucide-react'
+import { getLocations, createLocation, type Location } from '@/lib/actions/locations'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-
-// Zod schema for inline "Add New Location" form
-const newLocationSchema = z.object({
-  name: z.string().min(1, 'Location name is required'),
-  description: z.string().optional(),
-  street: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  country: z.string().optional(),
-  phone_number: z.string().optional(),
-})
-
-type NewLocationFormData = z.infer<typeof newLocationSchema>
+import { CorePicker } from '@/components/core-picker'
+import { PickerFieldConfig } from '@/types/core-picker'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 
 interface LocationPickerProps {
   open: boolean
@@ -68,132 +25,55 @@ interface LocationPickerProps {
   requiredFields?: string[] // Fields that should be marked as required
 }
 
+// Default visible fields - defined outside component to prevent re-creation
+const DEFAULT_VISIBLE_FIELDS = ['description', 'street', 'city', 'state', 'country', 'phone_number']
+
+// Empty object constant to prevent re-creation on every render
+const EMPTY_FORM_DATA = {}
+
 export function LocationPicker({
   open,
   onOpenChange,
   onSelect,
-  placeholder = "Search for a location...",
-  emptyMessage = "No locations found.",
+  placeholder = 'Search for a location...',
+  emptyMessage = 'No locations found.',
   selectedLocationId,
   className,
   openToNewLocation = false,
   visibleFields,
   requiredFields,
 }: LocationPickerProps) {
-  const [searchQuery, setSearchQuery] = useState('')
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
-  const [showAddForm, setShowAddForm] = useState(false)
 
-  // Determine which fields should be visible and required
-  const defaultVisibleFields = ['description', 'street', 'city', 'state', 'country', 'phone_number']
-  const isFieldVisible = (fieldName: string) =>
-    checkFieldVisible(fieldName, visibleFields, defaultVisibleFields)
-  const isFieldRequired = (fieldName: string) =>
-    checkFieldRequired(fieldName, requiredFields)
+  // Memoize helper functions to prevent unnecessary re-renders
+  const isFieldVisible = useCallback(
+    (fieldName: string) => checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS),
+    [visibleFields]
+  )
+  const isFieldRequired = useCallback(
+    (fieldName: string) => checkFieldRequired(fieldName, requiredFields),
+    [requiredFields]
+  )
 
-  // Initialize React Hook Form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    watch,
-    reset,
-  } = useForm<NewLocationFormData>({
-    resolver: zodResolver(newLocationSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      street: '',
-      city: '',
-      state: '',
-      country: '',
-      phone_number: '',
-    },
-  })
+  // Load locations when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadLocations()
+    }
+  }, [open])
 
-  // Debounce search query to avoid too many API calls
-  const debouncedSearchQuery = useDebounce(searchQuery, 300)
-
-  const searchLocationsCallback = useCallback(async (query: string) => {
+  const loadLocations = async () => {
     try {
       setLoading(true)
-      const results = await getLocations(query ? { search: query } : undefined)
+      const results = await getLocations()
       setLocations(results)
     } catch (error) {
-      console.error('Error searching locations:', error)
-      toast.error('Failed to search locations')
+      console.error('Error loading locations:', error)
+      toast.error('Failed to load locations')
     } finally {
       setLoading(false)
     }
-  }, [])
-
-  // Effect to search when debounced query changes
-  useEffect(() => {
-    if (open) {
-      searchLocationsCallback(debouncedSearchQuery)
-    }
-  }, [debouncedSearchQuery, open, searchLocationsCallback])
-
-  // Load initial data when dialog opens
-  useEffect(() => {
-    if (open && locations.length === 0) {
-      searchLocationsCallback('')
-    }
-  }, [open, locations.length, searchLocationsCallback])
-
-  // Auto-open add form when openToNewLocation is true
-  useEffect(() => {
-    if (open && openToNewLocation) {
-      setShowAddForm(true)
-    }
-  }, [open, openToNewLocation])
-
-  const handleLocationSelect = (location: Location) => {
-    onSelect(location)
-    onOpenChange(false)
-    setSearchQuery('')
-    setShowAddForm(false)
-  }
-
-  const handleAddNewLocation = () => {
-    setShowAddForm(true)
-  }
-
-  const onSubmitNewLocation = async (data: NewLocationFormData, e?: React.BaseSyntheticEvent) => {
-    // Prevent event from bubbling up to parent forms
-    e?.preventDefault()
-    e?.stopPropagation()
-
-    try {
-      const newLocation = await createLocation({
-        name: data.name,
-        description: data.description || undefined,
-        street: data.street || undefined,
-        city: data.city || undefined,
-        state: data.state || undefined,
-        country: data.country || undefined,
-        phone_number: data.phone_number || undefined,
-      })
-
-      toast.success('Location created successfully')
-
-      // Reset form
-      reset()
-      setShowAddForm(false)
-
-      // Select the newly created location (this will close the picker)
-      handleLocationSelect(newLocation)
-    } catch (error) {
-      console.error('Error creating location:', error)
-      toast.error('Failed to add location')
-    }
-  }
-
-  const handleCancelAddLocation = () => {
-    setShowAddForm(false)
-    reset()
   }
 
   const getLocationInitials = (location: Location) => {
@@ -204,280 +84,174 @@ export function LocationPicker({
     return location.name.substring(0, 2).toUpperCase()
   }
 
-  const isLocationSelected = (location: Location) => {
-    return selectedLocationId === location.id
-  }
-
   const getLocationAddress = (location: Location) => {
     const parts = [location.street, location.city, location.state].filter(Boolean)
     return parts.join(', ')
   }
 
-  return (
-    <>
-      <CommandDialog open={open} onOpenChange={onOpenChange}>
-        <DialogTitle className="sr-only">Select Location</DialogTitle>
-      <Command className={cn("rounded-lg border shadow-md", className)}>
-        <div className="flex items-center border-b px-3" onClick={(e) => e.stopPropagation()}>
-          <CommandInput
-            placeholder={placeholder}
-            value={searchQuery}
-            onValueChange={setSearchQuery}
-            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
+  const selectedLocation = selectedLocationId
+    ? locations.find((loc) => loc.id === selectedLocationId)
+    : null
 
-        <CommandList className="max-h-[400px]">
-          {loading && (
-            <div className="flex items-center justify-center py-6">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-                Searching...
-              </div>
-            </div>
-          )}
+  // Build create fields configuration dynamically - memoized to prevent infinite re-renders
+  const createFields: PickerFieldConfig[] = useMemo(() => {
+    const fields: PickerFieldConfig[] = [
+      {
+        key: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: "St. Mary's Church",
+        validation: z.string().min(1, 'Location name is required'),
+      },
+    ]
 
-          {!loading && locations.length === 0 && (
-            <CommandEmpty className="py-6 text-center text-sm">
-              <div className="flex flex-col items-center gap-2">
-                <Building className="h-8 w-8 text-muted-foreground" />
-                <div>{emptyMessage}</div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddNewLocation}
-                  className="mt-2"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Location
-                </Button>
-              </div>
-            </CommandEmpty>
-          )}
+    if (isFieldVisible('description')) {
+      fields.push({
+        key: 'description',
+        label: 'Description',
+        type: 'textarea',
+        required: isFieldRequired('description'),
+        placeholder: 'Brief description...',
+      })
+    }
 
-          {!loading && locations.length > 0 && (
-            <>
-              <CommandGroup heading="Locations">
-                {locations.map((location) => {
-                  const address = getLocationAddress(location)
-                  return (
-                    <CommandItem
-                      key={location.id}
-                      value={`${location.name} ${location.city || ''} ${location.state || ''}`}
-                      onSelect={() => handleLocationSelect(location)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-3 cursor-pointer",
-                        isLocationSelected(location) && "bg-accent text-accent-foreground"
-                      )}
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs">
-                          {getLocationInitials(location)}
-                        </AvatarFallback>
-                      </Avatar>
+    if (isFieldVisible('street')) {
+      fields.push({
+        key: 'street',
+        label: 'Street',
+        type: 'text',
+        required: isFieldRequired('street'),
+        placeholder: '123 Main St',
+      })
+    }
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {location.name}
-                          </span>
-                          {isLocationSelected(location) && (
-                            <Badge variant="secondary" className="text-xs">
-                              Selected
-                            </Badge>
-                          )}
-                        </div>
+    if (isFieldVisible('city')) {
+      fields.push({
+        key: 'city',
+        label: 'City',
+        type: 'text',
+        required: isFieldRequired('city'),
+        placeholder: 'Springfield',
+      })
+    }
 
-                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                          {address && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span className="truncate">{address}</span>
-                            </div>
-                          )}
-                          {location.phone_number && (
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              <span>{location.phone_number}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CommandItem>
-                  )
-                })}
-              </CommandGroup>
+    if (isFieldVisible('state')) {
+      fields.push({
+        key: 'state',
+        label: 'State',
+        type: 'text',
+        required: isFieldRequired('state'),
+        placeholder: 'IL',
+      })
+    }
 
-              <CommandSeparator />
+    if (isFieldVisible('country')) {
+      fields.push({
+        key: 'country',
+        label: 'Country',
+        type: 'text',
+        required: isFieldRequired('country'),
+        placeholder: 'USA',
+      })
+    }
 
-              <CommandGroup>
-                <CommandItem
-                  onSelect={handleAddNewLocation}
-                  className="flex items-center gap-2 px-3 py-3 cursor-pointer text-muted-foreground hover:text-foreground"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add New Location</span>
-                </CommandItem>
-              </CommandGroup>
-            </>
-          )}
-        </CommandList>
-      </Command>
-    </CommandDialog>
+    if (isFieldVisible('phone_number')) {
+      fields.push({
+        key: 'phone_number',
+        label: 'Phone',
+        type: 'tel',
+        required: isFieldRequired('phone_number'),
+        placeholder: '(555) 123-4567',
+      })
+    }
 
-    {/* New Location Dialog */}
-    <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add New Location</DialogTitle>
-          <DialogDescription>
-            Create a new location record. Fill in the details below.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.stopPropagation()
-            handleSubmit(onSubmitNewLocation)(e)
-          }}
-          className="flex flex-col flex-1 min-h-0"
-        >
-          <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="name" className="text-right pt-2">
-                Name *
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="name"
-                  value={watch('name')}
-                  onChange={(e) => setValue('name', e.target.value)}
-                  className={cn(errors.name && "border-red-500")}
-                  placeholder="St. Mary's Church"
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-                )}
-              </div>
-            </div>
-            {isFieldVisible('description') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description{isFieldRequired('description') && <span className="text-destructive ml-0.5">*</span>}
-                </Label>
-                <Textarea
-                  id="description"
-                  value={watch('description') || ''}
-                  onChange={(e) => setValue('description', e.target.value)}
-                  className="col-span-3"
-                  placeholder="Brief description..."
-                  rows={2}
-                  required={isFieldRequired('description')}
-                />
+    return fields
+  }, [isFieldVisible, isFieldRequired])
+
+  // Handle creating a new location
+  const handleCreateLocation = async (data: any): Promise<Location> => {
+    const newLocation = await createLocation({
+      name: data.name,
+      description: data.description || undefined,
+      street: data.street || undefined,
+      city: data.city || undefined,
+      state: data.state || undefined,
+      country: data.country || undefined,
+      phone_number: data.phone_number || undefined,
+    })
+
+    // Add to local list
+    setLocations((prev) => [newLocation, ...prev])
+
+    return newLocation
+  }
+
+  // Custom render for location list items
+  const renderLocationItem = (location: Location) => {
+    const address = getLocationAddress(location)
+    const isSelected = selectedLocationId === location.id
+
+    return (
+      <div className="flex items-center gap-3">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="text-xs">
+            {getLocationInitials(location)}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{location.name}</span>
+            {isSelected && (
+              <Badge variant="secondary" className="text-xs">
+                Selected
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+            {address && (
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                <span className="truncate">{address}</span>
               </div>
             )}
-            {isFieldVisible('street') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="street" className="text-right">
-                  Street{isFieldRequired('street') && <span className="text-destructive ml-0.5">*</span>}
-                </Label>
-                <Input
-                  id="street"
-                  value={watch('street') || ''}
-                  onChange={(e) => setValue('street', e.target.value)}
-                  className="col-span-3"
-                  placeholder="123 Main St"
-                  required={isFieldRequired('street')}
-                />
-              </div>
-            )}
-            {isFieldVisible('city') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="city" className="text-right">
-                  City{isFieldRequired('city') && <span className="text-destructive ml-0.5">*</span>}
-                </Label>
-                <Input
-                  id="city"
-                  value={watch('city') || ''}
-                  onChange={(e) => setValue('city', e.target.value)}
-                  className="col-span-3"
-                  placeholder="Springfield"
-                  required={isFieldRequired('city')}
-                />
-              </div>
-            )}
-            {isFieldVisible('state') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="state" className="text-right">
-                  State{isFieldRequired('state') && <span className="text-destructive ml-0.5">*</span>}
-                </Label>
-                <Input
-                  id="state"
-                  value={watch('state') || ''}
-                  onChange={(e) => setValue('state', e.target.value)}
-                  className="col-span-3"
-                  placeholder="IL"
-                  required={isFieldRequired('state')}
-                />
-              </div>
-            )}
-            {isFieldVisible('country') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="country" className="text-right">
-                  Country{isFieldRequired('country') && <span className="text-destructive ml-0.5">*</span>}
-                </Label>
-                <Input
-                  id="country"
-                  value={watch('country') || ''}
-                  onChange={(e) => setValue('country', e.target.value)}
-                  className="col-span-3"
-                  placeholder="USA"
-                  required={isFieldRequired('country')}
-                />
-              </div>
-            )}
-            {isFieldVisible('phone_number') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone_number" className="text-right">
-                  Phone{isFieldRequired('phone_number') && <span className="text-destructive ml-0.5">*</span>}
-                </Label>
-                <Input
-                  id="phone_number"
-                  type="tel"
-                  value={watch('phone_number') || ''}
-                  onChange={(e) => setValue('phone_number', e.target.value)}
-                  className="col-span-3"
-                  placeholder="(555) 123-4567"
-                  required={isFieldRequired('phone_number')}
-                />
+            {location.phone_number && (
+              <div className="flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                <span>{location.phone_number}</span>
               </div>
             )}
           </div>
-          <DialogFooter className="flex-shrink-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancelAddLocation}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Location
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-    </>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <CorePicker<Location>
+      open={open}
+      onOpenChange={onOpenChange}
+      items={locations}
+      selectedItem={selectedLocation}
+      onSelect={onSelect}
+      title="Select Location"
+      searchPlaceholder={placeholder}
+      searchFields={['name', 'city', 'state', 'street']}
+      getItemLabel={(location) => location.name}
+      getItemId={(location) => location.id}
+      renderItem={renderLocationItem}
+      enableCreate={true}
+      createFields={createFields}
+      onCreateSubmit={handleCreateLocation}
+      createButtonLabel="Save Location"
+      addNewButtonLabel="Add New Location"
+      emptyMessage={emptyMessage}
+      noResultsMessage="No locations match your search"
+      isLoading={loading}
+      autoOpenCreateForm={openToNewLocation}
+      defaultCreateFormData={EMPTY_FORM_DATA}
+    />
   )
 }
