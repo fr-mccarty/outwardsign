@@ -491,19 +491,19 @@ For detailed development guidelines, see [CLAUDE.md](./CLAUDE.md).
 
 ### Development Resources
 
-The `AGENT_RESOURCES/` directory contains in-depth documentation on specialized topics:
+The `docs/` directory contains in-depth documentation on specialized topics:
 
-- **[MODULE_CHECKLIST.md](./AGENT_RESOURCES/MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules
-- **[FORMS.md](./AGENT_RESOURCES/FORMS.md)** - Form implementation guidelines and patterns
-- **[COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
-- **[STYLES.md](./AGENT_RESOURCES/STYLES.md)** - Styling guidelines and theme tokens
-- **[PERSONA.md](./AGENT_RESOURCES/PERSONA.md)** - User personas and use cases
+- **[MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules
+- **[FORMS.md](./docs/FORMS.md)** - Form implementation guidelines and patterns
+- **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
+- **[STYLES.md](./docs/STYLES.md)** - Styling guidelines and theme tokens
+- **[PERSONA.md](./docs/PERSONA.md)** - User personas and use cases
 
 ### Testing Documentation
 
-- **[TESTING_QUICKSTART.md](./AGENT_RESOURCES/TESTING_QUICKSTART.md)** - Quick setup guide for running tests
-- **[TESTING_GUIDE.md](./AGENT_RESOURCES/TESTING_GUIDE.md)** - Comprehensive guide for writing tests
-- **[TESTING_ARCHITECTURE.md](./AGENT_RESOURCES/TESTING_ARCHITECTURE.md)** - Testability patterns and standards
+- **[TESTING_QUICKSTART.md](./docs/TESTING_QUICKSTART.md)** - Quick setup guide for running tests
+- **[TESTING_GUIDE.md](./docs/TESTING_GUIDE.md)** - Comprehensive guide for writing tests
+- **[TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md)** - Testability patterns and standards
 
 ### External Resources
 

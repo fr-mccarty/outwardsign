@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDebounce } from '@/hooks/use-debounce'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import {
   Command,
   CommandDialog,
@@ -64,6 +65,7 @@ interface LocationPickerProps {
   className?: string
   openToNewLocation?: boolean
   visibleFields?: string[] // Optional fields to show: 'description', 'street', 'city', 'state', 'country', 'phone_number'
+  requiredFields?: string[] // Fields that should be marked as required
 }
 
 export function LocationPicker({
@@ -76,22 +78,19 @@ export function LocationPicker({
   className,
   openToNewLocation = false,
   visibleFields,
+  requiredFields,
 }: LocationPickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
 
-  // Determine which fields should be visible
-  // If visibleFields is not provided, show all optional fields by default
+  // Determine which fields should be visible and required
   const defaultVisibleFields = ['description', 'street', 'city', 'state', 'country', 'phone_number']
-  const isFieldVisible = (fieldName: string) => {
-    if (!visibleFields) {
-      // If not specified, show all fields
-      return defaultVisibleFields.includes(fieldName)
-    }
-    return visibleFields.includes(fieldName)
-  }
+  const isFieldVisible = (fieldName: string) =>
+    checkFieldVisible(fieldName, visibleFields, defaultVisibleFields)
+  const isFieldRequired = (fieldName: string) =>
+    checkFieldRequired(fieldName, requiredFields)
 
   // Initialize React Hook Form
   const {
@@ -363,7 +362,7 @@ export function LocationPicker({
             {isFieldVisible('description') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">
-                  Description
+                  Description{isFieldRequired('description') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <Textarea
                   id="description"
@@ -372,13 +371,14 @@ export function LocationPicker({
                   className="col-span-3"
                   placeholder="Brief description..."
                   rows={2}
+                  required={isFieldRequired('description')}
                 />
               </div>
             )}
             {isFieldVisible('street') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="street" className="text-right">
-                  Street
+                  Street{isFieldRequired('street') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <Input
                   id="street"
@@ -386,13 +386,14 @@ export function LocationPicker({
                   onChange={(e) => setValue('street', e.target.value)}
                   className="col-span-3"
                   placeholder="123 Main St"
+                  required={isFieldRequired('street')}
                 />
               </div>
             )}
             {isFieldVisible('city') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="city" className="text-right">
-                  City
+                  City{isFieldRequired('city') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <Input
                   id="city"
@@ -400,13 +401,14 @@ export function LocationPicker({
                   onChange={(e) => setValue('city', e.target.value)}
                   className="col-span-3"
                   placeholder="Springfield"
+                  required={isFieldRequired('city')}
                 />
               </div>
             )}
             {isFieldVisible('state') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="state" className="text-right">
-                  State
+                  State{isFieldRequired('state') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <Input
                   id="state"
@@ -414,13 +416,14 @@ export function LocationPicker({
                   onChange={(e) => setValue('state', e.target.value)}
                   className="col-span-3"
                   placeholder="IL"
+                  required={isFieldRequired('state')}
                 />
               </div>
             )}
             {isFieldVisible('country') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="country" className="text-right">
-                  Country
+                  Country{isFieldRequired('country') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <Input
                   id="country"
@@ -428,13 +431,14 @@ export function LocationPicker({
                   onChange={(e) => setValue('country', e.target.value)}
                   className="col-span-3"
                   placeholder="USA"
+                  required={isFieldRequired('country')}
                 />
               </div>
             )}
             {isFieldVisible('phone_number') && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="phone_number" className="text-right">
-                  Phone
+                  Phone{isFieldRequired('phone_number') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <Input
                   id="phone_number"
@@ -443,6 +447,7 @@ export function LocationPicker({
                   onChange={(e) => setValue('phone_number', e.target.value)}
                   className="col-span-3"
                   placeholder="(555) 123-4567"
+                  required={isFieldRequired('phone_number')}
                 />
               </div>
             )}

@@ -19,6 +19,7 @@ interface EventPickerFieldProps {
   defaultName?: string
   disableSearch?: boolean
   visibleFields?: string[] // Optional fields to show: 'location', 'note'
+  requiredFields?: string[] // Fields that should be marked as required in the picker form
 }
 
 // Helper function to format event date and time
@@ -64,6 +65,7 @@ export function EventPickerField({
   defaultName,
   disableSearch = false,
   visibleFields,
+  requiredFields,
 }: EventPickerFieldProps) {
   return (
     <PickerField
@@ -91,6 +93,7 @@ export function EventPickerField({
         defaultName={defaultName}
         disableSearch={disableSearch}
         visibleFields={visibleFields}
+        requiredFields={requiredFields}
       />
     </PickerField>
   )

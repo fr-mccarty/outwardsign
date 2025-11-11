@@ -16,6 +16,7 @@ interface LocationPickerFieldProps {
   required?: boolean
   openToNewLocation?: boolean
   visibleFields?: string[] // Optional fields to show: 'description', 'street', 'city', 'state', 'country', 'phone_number'
+  requiredFields?: string[] // Fields that should be marked as required in the picker form
 }
 
 export function LocationPickerField({
@@ -29,6 +30,7 @@ export function LocationPickerField({
   required = false,
   openToNewLocation = false,
   visibleFields,
+  requiredFields,
 }: LocationPickerFieldProps) {
   const getLocationDisplay = (location: Location) => {
     const parts = [location.name]
@@ -57,6 +59,7 @@ export function LocationPickerField({
         selectedLocationId={value?.id}
         openToNewLocation={openToNewLocation}
         visibleFields={visibleFields}
+        requiredFields={requiredFields}
       />
     </PickerField>
   )

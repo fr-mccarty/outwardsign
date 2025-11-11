@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDebounce } from '@/hooks/use-debounce'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import {
   Command,
   CommandDialog,
@@ -67,6 +68,7 @@ interface PeoplePickerProps {
   selectedPersonId?: string
   className?: string
   visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
+  requiredFields?: string[] // Fields that should be marked as required: 'email', 'phone_number', 'sex', 'note'
   openToNewPerson?: boolean
 }
 
@@ -79,6 +81,7 @@ export function PeoplePicker({
   selectedPersonId,
   className,
   visibleFields,
+  requiredFields,
   openToNewPerson = false,
 }: PeoplePickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -86,16 +89,12 @@ export function PeoplePicker({
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
 
-  // Determine which fields should be visible
-  // If visibleFields is not provided, show all fields by default
+  // Determine which fields should be visible and required
   const defaultVisibleFields = ['email', 'phone_number', 'sex', 'note']
-  const isFieldVisible = (fieldName: string) => {
-    if (!visibleFields) {
-      // If not specified, show all fields
-      return defaultVisibleFields.includes(fieldName)
-    }
-    return visibleFields.includes(fieldName)
-  }
+  const isFieldVisible = (fieldName: string) =>
+    checkFieldVisible(fieldName, visibleFields, defaultVisibleFields)
+  const isFieldRequired = (fieldName: string) =>
+    checkFieldRequired(fieldName, requiredFields)
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -371,6 +370,7 @@ export function PeoplePicker({
                 value={watch('email') || ''}
                 onChange={(value) => setValue('email', value)}
                 placeholder="john.doe@example.com"
+                required={isFieldRequired('email')}
               />
             )}
 
@@ -382,6 +382,7 @@ export function PeoplePicker({
                 value={watch('phone_number') || ''}
                 onChange={(value) => setValue('phone_number', value)}
                 placeholder="(555) 123-4567"
+                required={isFieldRequired('phone_number')}
               />
             )}
 
@@ -392,7 +393,8 @@ export function PeoplePicker({
                 inputType="select"
                 value={sexValue || ''}
                 onChange={(value) => setValue('sex', value as 'Male' | 'Female')}
-                placeholder="Select sex (optional)"
+                placeholder={isFieldRequired('sex') ? 'Select sex' : 'Select sex (optional)'}
+                required={isFieldRequired('sex')}
               >
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
@@ -408,6 +410,7 @@ export function PeoplePicker({
                 onChange={(value) => setValue('note', value)}
                 placeholder="Additional note..."
                 rows={3}
+                required={isFieldRequired('note')}
               />
             )}
           </div>

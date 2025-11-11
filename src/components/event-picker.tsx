@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDebounce } from '@/hooks/use-debounce'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import {
   Command,
   CommandDialog,
@@ -76,6 +77,7 @@ interface EventPickerProps {
   openToNewEvent?: boolean
   disableSearch?: boolean
   visibleFields?: string[] // Optional fields to show: 'location', 'note'
+  requiredFields?: string[] // Fields that should be marked as required: 'location', 'note'
 }
 
 // Helper function to get default timezone
@@ -104,6 +106,7 @@ export function EventPicker({
   openToNewEvent = false,
   disableSearch = false,
   visibleFields,
+  requiredFields,
 }: EventPickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [events, setEvents] = useState<Event[]>([])
@@ -114,16 +117,12 @@ export function EventPicker({
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
 
-  // Determine which fields should be visible
-  // If visibleFields is not provided, show all optional fields by default
+  // Determine which fields should be visible and required
   const defaultVisibleFields = ['location', 'note']
-  const isFieldVisible = (fieldName: string) => {
-    if (!visibleFields) {
-      // If not specified, show all fields
-      return defaultVisibleFields.includes(fieldName)
-    }
-    return visibleFields.includes(fieldName)
-  }
+  const isFieldVisible = (fieldName: string) =>
+    checkFieldVisible(fieldName, visibleFields, defaultVisibleFields)
+  const isFieldRequired = (fieldName: string) =>
+    checkFieldRequired(fieldName, requiredFields)
 
   // Initialize React Hook Form
   const {
@@ -565,7 +564,7 @@ export function EventPicker({
             {isFieldVisible('note') && (
               <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="note" className="text-right pt-2">
-                  Note
+                  Note{isFieldRequired('note') && <span className="text-destructive ml-0.5">*</span>}
                 </Label>
                 <div className="col-span-3">
                   <Textarea
@@ -573,8 +572,9 @@ export function EventPicker({
                     value={watch('note') || ''}
                     onChange={(e) => setValue('note', e.target.value)}
                     className={cn(errors.note && "border-red-500")}
-                    placeholder="Add any notes about this event..."
+                    placeholder={isFieldRequired('note') ? "Add notes..." : "Add any notes about this event..."}
                     rows={3}
+                    required={isFieldRequired('note')}
                   />
                   {errors.note && (
                     <p className="text-sm text-red-500 mt-1">{errors.note.message}</p>

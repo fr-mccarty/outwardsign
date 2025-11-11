@@ -173,8 +173,8 @@ npx playwright test --project=setup
 After running tests successfully:
 
 1. **Explore existing tests**: Open `npm run test:ui` to see test structure
-2. **Learn testing patterns**: See `AGENT_RESOURCES/TESTING_GUIDE.md`
-3. **Understand testability**: See `AGENT_RESOURCES/TESTING_ARCHITECTURE.md`
+2. **Learn testing patterns**: See `docs/TESTING_GUIDE.md`
+3. **Understand testability**: See `docs/TESTING_ARCHITECTURE.md`
 4. **Write new tests**: Copy `tests/TEST_TEMPLATE.spec.ts` as a starting point
 
 ## Quick Reference

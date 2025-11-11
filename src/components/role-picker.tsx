@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDebounce } from '@/hooks/use-debounce'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import {
   Command,
   CommandDialog,
@@ -51,6 +52,8 @@ interface RolePickerProps {
   emptyMessage?: string
   selectedRoleId?: string
   className?: string
+  visibleFields?: string[] // Optional fields to show: 'description', 'note'
+  requiredFields?: string[] // Fields that should be marked as required
 }
 
 export function RolePicker({
@@ -61,11 +64,20 @@ export function RolePicker({
   emptyMessage = "No roles found.",
   selectedRoleId,
   className,
+  visibleFields,
+  requiredFields,
 }: RolePickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // Determine which fields should be visible and required
+  const defaultVisibleFields = ['description', 'note']
+  const isFieldVisible = (fieldName: string) =>
+    checkFieldVisible(fieldName, visibleFields, defaultVisibleFields)
+  const isFieldRequired = (fieldName: string) =>
+    checkFieldRequired(fieldName, requiredFields)
 
   // Initialize React Hook Form
   const {
@@ -286,31 +298,37 @@ export function RolePicker({
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Input
-                  id="description"
-                  value={watch('description') || ''}
-                  onChange={(e) => setValue('description', e.target.value)}
-                  className="col-span-3"
-                  placeholder="Proclaims the Word of God"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="note" className="text-right">
-                  Note
-                </Label>
-                <Textarea
-                  id="note"
-                  value={watch('note') || ''}
-                  onChange={(e) => setValue('note', e.target.value)}
-                  className="col-span-3"
-                  placeholder="Additional notes..."
-                  rows={3}
-                />
-              </div>
+              {isFieldVisible('description') && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">
+                    Description{isFieldRequired('description') && <span className="text-destructive ml-0.5">*</span>}
+                  </Label>
+                  <Input
+                    id="description"
+                    value={watch('description') || ''}
+                    onChange={(e) => setValue('description', e.target.value)}
+                    className="col-span-3"
+                    placeholder="Proclaims the Word of God"
+                    required={isFieldRequired('description')}
+                  />
+                </div>
+              )}
+              {isFieldVisible('note') && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="note" className="text-right">
+                    Note{isFieldRequired('note') && <span className="text-destructive ml-0.5">*</span>}
+                  </Label>
+                  <Textarea
+                    id="note"
+                    value={watch('note') || ''}
+                    onChange={(e) => setValue('note', e.target.value)}
+                    className="col-span-3"
+                    placeholder="Additional notes..."
+                    rows={3}
+                    required={isFieldRequired('note')}
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter className="flex-shrink-0">
               <Button

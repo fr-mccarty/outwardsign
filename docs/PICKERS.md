@@ -29,6 +29,7 @@
 - `selectedPersonId?: string` - Highlight selected person
 - `className?: string` - Additional CSS classes
 - `visibleFields?: string[]` - Optional fields to show: `['email', 'phone_number', 'sex', 'note']` (default: all fields)
+- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['sex', 'email']`)
 - `openToNewPerson?: boolean` - Auto-open create form (default: false)
 
 ---
@@ -50,6 +51,7 @@
 - `openToNewEvent?: boolean` - Auto-open create form (default: false)
 - `disableSearch?: boolean` - Disable search functionality (default: false)
 - `visibleFields?: string[]` - Optional fields to show: `['location', 'note']` (default: all fields)
+- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['location', 'note']`)
 
 ---
 
@@ -66,6 +68,7 @@
 - `className?: string` - Additional CSS classes
 - `openToNewLocation?: boolean` - Auto-open create form (default: false)
 - `visibleFields?: string[]` - Optional fields to show: `['description', 'street', 'city', 'state', 'country', 'phone_number']` (default: all fields)
+- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['street', 'city', 'state']`)
 
 ---
 
@@ -80,8 +83,8 @@
 - `emptyMessage?: string` - Empty state message (default: "No roles found.")
 - `selectedRoleId?: string` - Highlight selected role
 - `className?: string` - Additional CSS classes
-
-**Note:** All form fields (`name`, `description`, `note`) are always shown. Future enhancement: Add `visibleFields` support.
+- `visibleFields?: string[]` - Optional fields to show: `['description', 'note']` (default: all fields)
+- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['description']`)
 
 ---
 
@@ -144,7 +147,27 @@
    - ✅ All 5 pickers that use debouncing now import from central location
    - ✅ Eliminated ~100 lines of duplicated code
 
-2. **Props Interface Structure**
+2. **Base Picker Types**
+   - ✅ **COMPLETED:** Created `src/types/picker.ts` with base interfaces
+   - ✅ `BasePickerProps<T>` - Base interface for all pickers
+   - ✅ `BasePickerWithFormProps<T>` - Extended interface for pickers with inline forms
+   - ✅ Helper functions: `isFieldVisible()`, `isFieldRequired()`
+   - Used by: PeoplePicker, EventPicker, LocationPicker, RolePicker
+
+3. **visibleFields Pattern**
+   - ✅ **COMPLETED:** Implemented in PeoplePicker, EventPicker, LocationPicker, RolePicker
+   - Controls which optional fields appear in inline creation forms
+   - Default: Show all fields if not specified
+   - Example: `visibleFields={['email', 'phone_number']}` for PeoplePicker
+
+4. **requiredFields Pattern**
+   - ✅ **COMPLETED:** Implemented in PeoplePicker, EventPicker, LocationPicker, RolePicker
+   - Marks specific fields as required in different contexts
+   - Adds visual required indicator (`*`) to labels
+   - Adds HTML `required` attribute to form inputs
+   - Example: `requiredFields={['sex', 'email']}` for child in baptism
+
+5. **Props Interface Structure**
    - All pickers (except ReadingPickerModal) share similar base props:
      - `open: boolean` (ReadingPickerModal uses `isOpen`)
      - `onOpenChange: (open: boolean) => void` (ReadingPickerModal uses `onClose: () => void`)
@@ -155,14 +178,14 @@
      - `className?: string` (not used by ReadingPickerModal)
    - See "Complete Props Documentation" section above for full details of each picker's interface
 
-3. **State Management**
+6. **State Management**
    - All pickers use similar state:
      - `searchQuery` (string)
      - `items` (array of entities)
      - `loading` (boolean)
      - `showAddForm` (boolean, for pickers with inline creation)
 
-4. **Search/Loading Pattern**
+7. **Search/Loading Pattern**
    - Debounced search
    - Loading state during fetch
    - useEffect to load data when picker opens
@@ -190,9 +213,11 @@
 
 ---
 
-### 🟡 MEDIUM PRIORITY: Create Base Picker Props Interface
+### ✅ COMPLETED: Create Base Picker Props Interface
 
 **Impact:** Ensures consistency and type safety across all pickers
+
+**Status:** ✅ DONE - Created `src/types/picker.ts` with base interfaces and helper functions
 
 **Implementation:**
 ```tsx
@@ -207,27 +232,51 @@ export interface BasePickerProps<T> {
   className?: string
 }
 
-// Usage in individual pickers:
-interface PeoplePickerProps extends BasePickerProps<Person> {
+export interface BasePickerWithFormProps<T> extends BasePickerProps<T> {
+  openToNewItem?: boolean
   visibleFields?: string[]
-  openToNewPerson?: boolean
+  requiredFields?: string[]
 }
+
+// Helper functions
+export function isFieldVisible(fieldName, visibleFields, defaultVisibleFields)
+export function isFieldRequired(fieldName, requiredFields)
 ```
+
+**Files Updated:**
+- ✅ Created `src/types/picker.ts`
+- ✅ PeoplePicker imports and uses base types
+- ✅ EventPicker imports and uses base types
+- ✅ LocationPicker imports and uses base types
+- ✅ RolePicker imports and uses base types
 
 ---
 
-### 🟡 MEDIUM PRIORITY: Standardize visibleFields Pattern
+### ✅ COMPLETED: Standardize visibleFields Pattern
 
-**Current State:**
+**Status:** ✅ DONE - All pickers with inline forms now support `visibleFields`
+
+**Implementation:**
 - ✅ PeoplePicker has `visibleFields`
 - ✅ EventPicker has `visibleFields`
 - ✅ LocationPicker has `visibleFields`
-- ❌ RolePicker does NOT have `visibleFields` (but has optional fields)
+- ✅ RolePicker has `visibleFields`
 
-**Recommendation:**
-Add `visibleFields` to RolePicker for consistency:
-- Optional fields: `description`, `note`
-- Default: Show all fields if not specified
+---
+
+### ✅ COMPLETED: Add requiredFields Pattern
+
+**Impact:** Enables context-specific required fields across all pickers
+
+**Status:** ✅ DONE - All pickers with inline forms now support `requiredFields`
+
+**Implementation:**
+- ✅ PeoplePicker has `requiredFields`
+- ✅ EventPicker has `requiredFields`
+- ✅ LocationPicker has `requiredFields`
+- ✅ RolePicker has `requiredFields`
+- ✅ Required indicator (`*`) added to labels
+- ✅ HTML `required` attribute added to inputs
 
 ---
 
@@ -297,25 +346,28 @@ Create a reusable `BaseCommandPicker` component that provides:
 
 ## Recommended Refactoring Steps
 
-### Phase 1: Extract Shared Utilities (Immediate)
+### ✅ Phase 1: Extract Shared Utilities (COMPLETED)
 1. ✅ Extract `useDebounce` to `src/hooks/use-debounce.ts`
 2. ✅ Update all 6 pickers to import from central location
 3. ✅ Remove `showSexField` (COMPLETED)
 
-### Phase 2: Standardize Naming (Next)
-1. Standardize search function names across all pickers
-2. Create `BasePickerProps<T>` interface
-3. Update all pickers to extend `BasePickerProps<T>`
+### ✅ Phase 2: Implement Base Types and Patterns (COMPLETED)
+1. ✅ Create `BasePickerProps<T>` interface in `src/types/picker.ts`
+2. ✅ Create `BasePickerWithFormProps<T>` interface
+3. ✅ Add helper functions: `isFieldVisible()`, `isFieldRequired()`
+4. ✅ Update all pickers to import and use base types
 
-### Phase 3: Add visibleFields to RolePicker (Optional)
-1. Add `visibleFields?: string[]` prop to RolePicker
-2. Implement conditional field rendering for `description` and `note`
-3. Update RolePickerField wrapper
+### ✅ Phase 3: Add visibleFields and requiredFields (COMPLETED)
+1. ✅ Implement `visibleFields` in PeoplePicker, EventPicker, LocationPicker, RolePicker
+2. ✅ Implement `requiredFields` in PeoplePicker, EventPicker, LocationPicker, RolePicker
+3. ✅ Update all PickerField wrappers to pass through props
+4. ✅ Add required indicators to labels and form inputs
 
-### Phase 4: Documentation (Ongoing)
-1. Update COMPONENT_REGISTRY.md with standardized patterns
-2. Document when to use which picker
-3. Document visibleFields arrays for each picker
+### ✅ Phase 4: Documentation (COMPLETED)
+1. ✅ Update PICKERS.md with complete props documentation
+2. ✅ Document visibleFields arrays for each picker
+3. ✅ Document requiredFields pattern
+4. 🟡 TODO: Update COMPONENT_REGISTRY.md with standardized patterns
 
 ---
 
@@ -343,16 +395,17 @@ This exception is acceptable and follows the "use the right tool for the job" pr
 
 ## Summary
 
-**Excellent Progress:**
+**Completed Work:**
 - ✅ Removed `showSexField` completely
-- ✅ Implemented `visibleFields` pattern in 3 main pickers
+- ✅ Implemented `visibleFields` pattern in all 4 main pickers (PeoplePicker, EventPicker, LocationPicker, RolePicker)
+- ✅ Implemented `requiredFields` pattern in all 4 main pickers
+- ✅ Created base picker types (`BasePickerProps<T>`, `BasePickerWithFormProps<T>`) in `src/types/picker.ts`
+- ✅ Created helper functions (`isFieldVisible()`, `isFieldRequired()`)
+- ✅ Extracted `useDebounce` hook to eliminate ~100 lines of duplication
 - ✅ Consistent prop naming across all pickers
 - ✅ All pickers follow similar structure
+- ✅ Comprehensive documentation in PICKERS.md
 
-**Immediate Action Needed:**
-- Extract `useDebounce` hook to eliminate duplication
-
-**Future Improvements:**
-- Create `BasePickerProps<T>` interface
-- Add `visibleFields` to RolePicker
-- Standardize function naming conventions
+**Remaining Work:**
+- 🟡 Update COMPONENT_REGISTRY.md with standardized patterns
+- 🟢 Consider standardizing function naming conventions (low priority)

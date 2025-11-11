@@ -421,10 +421,10 @@ test.describe('Weddings Module', () => {
 ```
 tests/
 ├── README.md                 # Basic testing overview (legacy)
-├── TESTING_GUIDE.md          # This comprehensive guide (legacy - see AGENT_RESOURCES/)
-├── QUICK_REFERENCE.md        # Command reference (legacy - see AGENT_RESOURCES/)
-├── TEST_ARCHITECTURE.md      # Testability patterns (legacy - see AGENT_RESOURCES/)
-├── TESTABILITY_EXAMPLES.md   # Before/after examples (legacy - see AGENT_RESOURCES/)
+├── TESTING_GUIDE.md          # This comprehensive guide (legacy - see docs/)
+├── QUICK_REFERENCE.md        # Command reference (legacy - see docs/)
+├── TEST_ARCHITECTURE.md      # Testability patterns (legacy - see docs/)
+├── TESTABILITY_EXAMPLES.md   # Before/after examples (legacy - see docs/)
 ├── TEST_TEMPLATE.spec.ts     # Template for new tests
 ├── auth.setup.ts             # Global auth setup (runs once)
 ├── helpers/
@@ -441,7 +441,7 @@ tests/
 playwright/.auth/
 └── staff.json               # Cached auth state (git-ignored)
 
-AGENT_RESOURCES/
+docs/
 ├── TESTING_QUICKSTART.md    # Quick start guide for running tests
 ├── TESTING_ARCHITECTURE.md  # Testability patterns and standards
 └── TESTING_GUIDE.md         # This file (comprehensive guide)

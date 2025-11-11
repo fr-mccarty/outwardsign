@@ -226,8 +226,8 @@ When adding new TODOs:
 ## ✅ Recently Completed
 
 ### 2025-11-10
-- [x] Created AGENT_RESOURCES folder for documentation organization
-- [x] Moved all capitalized MD files to AGENT_RESOURCES
+- [x] Created docs folder for documentation organization
+- [x] Moved all capitalized MD files to docs
 - [x] Updated all documentation references in CLAUDE.md and README.md
 - [x] Created FORMS.md with comprehensive form guidelines
 - [x] Added Component Registry section to CLAUDE.md

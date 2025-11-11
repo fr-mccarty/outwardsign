@@ -2,7 +2,7 @@
 
 > **Documentation Structure Note:** This file should remain as a single document until its content exceeds 1000 lines. The current priority markers (🔴 for critical, 📖 for reference) and table of contents provide sufficient navigation. Only split into separate files when the size truly impedes usability.
 
-> **🔴 CRITICAL - Forms Context:** When creating or editing ANY form component, you MUST include [FORMS.md](./AGENT_RESOURCES/FORMS.md) in your context. This file contains critical form patterns, validation rules, styling requirements, and component usage guidelines that are essential for maintaining consistency across the application.
+> **🔴 CRITICAL - Forms Context:** When creating or editing ANY form component, you MUST include [FORMS.md](./docs/FORMS.md) in your context. This file contains critical form patterns, validation rules, styling requirements, and component usage guidelines that are essential for maintaining consistency across the application.
 
 ## Table of Contents
 
@@ -32,9 +32,9 @@
 
 ## 📚 Detailed Documentation
 
-**The `AGENT_RESOURCES/` directory contains comprehensive, in-depth documentation files on specialized topics.**
+**The `docs/` directory contains comprehensive, in-depth documentation files on specialized topics.**
 
-When you need detailed information on forms, styling, components, modules, testing, or other specific topics, search the `AGENT_RESOURCES/` directory. Files are named descriptively to make them easy to discover.
+When you need detailed information on forms, styling, components, modules, testing, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.
 
 This main CLAUDE.md file provides overviews and references these detailed resources where appropriate.
 
@@ -66,7 +66,7 @@ Plan, Communicate, and Celebrate Sacraments and Sacramentals in a Catholic Paris
 
 User personas have been created to guide development and evaluate the application from the perspective of real parish users. These personas represent the primary users of Outward Sign and help ensure the application meets their needs.
 
-**Reference File:** [PERSONA.md](./AGENT_RESOURCES/PERSONA.md)
+**Reference File:** [PERSONA.md](./docs/PERSONA.md)
 
 When implementing features or evaluating the application, refer to the personas file to ensure the design, functionality, and user experience align with the needs of priests, deacons, pastoral associates, liturgical directors, parish staff, and parishioners.
 
@@ -93,11 +93,11 @@ During initial development, modify existing migrations instead of creating new m
 
 ## Testing
 
-**For quick setup and running tests:** See [TESTING_QUICKSTART.md](./AGENT_RESOURCES/TESTING_QUICKSTART.md)
+**For quick setup and running tests:** See [TESTING_QUICKSTART.md](./docs/TESTING_QUICKSTART.md)
 
-**For AI agents writing tests:** See [TESTING_GUIDE.md](./AGENT_RESOURCES/TESTING_GUIDE.md) - Comprehensive guide including authentication patterns, file structure, writing tests, Page Object Model, debugging techniques, and command reference.
+**For AI agents writing tests:** See [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Comprehensive guide including authentication patterns, file structure, writing tests, Page Object Model, debugging techniques, and command reference.
 
-**For testability standards and code review:** See [TESTING_ARCHITECTURE.md](./AGENT_RESOURCES/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, test ID conventions, accessibility requirements, and anti-patterns to avoid.
+**For testability standards and code review:** See [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, test ID conventions, accessibility requirements, and anti-patterns to avoid.
 
 **Key Points:**
 - Tests are pre-authenticated automatically - no manual auth setup needed in test files
@@ -152,7 +152,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 
 ## 📖 Styling
 
-**For detailed styling guidelines, patterns, and examples, see [STYLES.md](./AGENT_RESOURCES/STYLES.md).**
+**For detailed styling guidelines, patterns, and examples, see [STYLES.md](./docs/STYLES.md).**
 
 ### General Principles
 
@@ -170,7 +170,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 3. **Semantic Color Tokens**
    - Use tokens like `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`
    - Never use `dark:` utility classes for basic colors (CSS variables handle this automatically)
-   - See [STYLES.md](./AGENT_RESOURCES/STYLES.md) for complete token reference
+   - See [STYLES.md](./docs/STYLES.md) for complete token reference
 
 ### Print Views Exception
 
@@ -178,7 +178,7 @@ For views within a print folder (`app/print/`), custom styling is allowed to opt
 
 ## 🔴 Forms
 
-**For comprehensive form implementation guidelines, see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
+**For comprehensive form implementation guidelines, see [FORMS.md](./docs/FORMS.md).**
 
 This includes:
 - 🔴 **Form Input Styling** - Critical rules for styling form inputs (NEVER modify font-family, borders, or backgrounds)
@@ -249,7 +249,7 @@ export default async function Page({ searchParams }: PageProps) {
 - FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel at BOTTOM)
 - Uses SaveButton and CancelButton components at the bottom of the form
 - Calls `create[Entity]()` or `update[Entity]()` Server Action
-- **See [FORMS.md](./AGENT_RESOURCES/FORMS.md) for:**
+- **See [FORMS.md](./docs/FORMS.md) for:**
   - isEditing Pattern (how to handle create vs edit mode)
   - Redirection Pattern (where to navigate after submit)
   - FormField usage requirements (REQUIRED for all inputs)
@@ -317,7 +317,7 @@ api/[entity-plural]/
 - Word endpoint generates .docx file
 - Both endpoints fetch entity with relations and use `build[Entity]Liturgy()` function
 
-**For detailed implementation patterns for print pages and export endpoints, see [LITURGICAL_SCRIPT_SYSTEM.md](./AGENT_RESOURCES/LITURGICAL_SCRIPT_SYSTEM.md).**
+**For detailed implementation patterns for print pages and export endpoints, see [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md).**
 
 ### Constants Pattern
 The application uses a dual-constant pattern where `*_VALUES` arrays contain uppercase keys stored in the database (e.g., `MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE']`), and `*_LABELS` objects map those keys to localized display strings in both English and Spanish (e.g., `MODULE_STATUS_LABELS.ACTIVE.en = 'Active'`). This standardizes database storage while enabling multilingual UI display across all modules.
@@ -393,7 +393,7 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 
 ### 🔴 Component Registry (CRITICAL)
 
-**ALWAYS consult [COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md) before using or creating components.**
+**ALWAYS consult [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) before using or creating components.**
 
 The Component Registry is a comprehensive catalog of all reusable components in the application. It provides:
 - Component purpose and description
@@ -419,15 +419,15 @@ This registry enables fast component lookup without reading source code, ensurin
 **Shared Form Components:**
 - `SaveButton` - Handles loading state, shows spinner while saving
 - `CancelButton` - Standard cancel button with routing
-- `FormField` - Standardized form field wrapper (**REQUIRED** for all inputs/selects/textareas - see [FORMS.md](./AGENT_RESOURCES/FORMS.md))
+- `FormField` - Standardized form field wrapper (**REQUIRED** for all inputs/selects/textareas - see [FORMS.md](./docs/FORMS.md))
 - `EventDisplay` - Display event date/time/location in forms
 
-**For detailed component documentation, see [COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md).**
-**For detailed FormField usage patterns, validation, and form event handling, see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
+**For detailed component documentation, see [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md).**
+**For detailed FormField usage patterns, validation, and form event handling, see [FORMS.md](./docs/FORMS.md).**
 
 **Content Builders & Renderers:**
 
-**For comprehensive documentation on the liturgical script system, including content builder interfaces, template structure, styling, and export functionality, see [LITURGICAL_SCRIPT_SYSTEM.md](./AGENT_RESOURCES/LITURGICAL_SCRIPT_SYSTEM.md).**
+**For comprehensive documentation on the liturgical script system, including content builder interfaces, template structure, styling, and export functionality, see [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md).**
 
 Content builders create liturgy document structures that can be rendered in multiple formats:
 
@@ -545,7 +545,7 @@ if (!user) redirect('/login')
 - Context: UI state only (theme, breadcrumbs, modals) - NEVER for data fetching
 - No prop drilling: Use Server Actions for data operations
 
-**For form event handling (nested forms, e.stopPropagation), see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
+**For form event handling (nested forms, e.stopPropagation), see [FORMS.md](./docs/FORMS.md).**
 
 ### 🔴 Picker Modal Behavior (Critical)
 
@@ -635,7 +635,7 @@ When implementing or modifying picker components, verify:
 ### Loading and Error States
 **Pattern:** Create reusable skeleton and error components in components/ directory. Route-level loading.tsx and error.tsx files import and render these reusable components. This ensures consistent UX across modules.
 
-**For form validation patterns with Zod, see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
+**For form validation patterns with Zod, see [FORMS.md](./docs/FORMS.md).**
 
 ## Breadcrumbs
 Client Component (BreadcrumbSetter):
@@ -808,11 +808,11 @@ These core design principles guide all development decisions in Outward Sign. Ev
 
 ## 🔴 Creating New Modules
 
-**IMPORTANT:** When the user requests creation of a new module (Funerals, Baptisms, Presentations, etc.), you MUST read the [MODULE_CHECKLIST.md](AGENT_RESOURCES/MODULE_CHECKLIST.md) file first to ensure you follow the complete checklist and avoid common mistakes.
+**IMPORTANT:** When the user requests creation of a new module (Funerals, Baptisms, Presentations, etc.), you MUST read the [MODULE_CHECKLIST.md](docs/MODULE_CHECKLIST.md) file first to ensure you follow the complete checklist and avoid common mistakes.
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
 
-**Complete Checklist:** See [MODULE_CHECKLIST.md](AGENT_RESOURCES/MODULE_CHECKLIST.md) for the comprehensive step-by-step guide including:
+**Complete Checklist:** See [MODULE_CHECKLIST.md](docs/MODULE_CHECKLIST.md) for the comprehensive step-by-step guide including:
 - Detailed phase-by-phase checklist (Database → Server Actions → Module Structure → Print/Export → Testing)
 - Common mistakes to avoid
 - Validation checklist

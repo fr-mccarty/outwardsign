@@ -16,6 +16,7 @@ interface PersonPickerFieldProps {
   required?: boolean
   openToNewPerson?: boolean
   visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
+  requiredFields?: string[] // Fields that should be marked as required in the picker form
 }
 
 export function PersonPickerField({
@@ -29,6 +30,7 @@ export function PersonPickerField({
   required = false,
   openToNewPerson = false,
   visibleFields,
+  requiredFields,
 }: PersonPickerFieldProps) {
   return (
     <PickerField
@@ -50,6 +52,7 @@ export function PersonPickerField({
         selectedPersonId={value?.id}
         openToNewPerson={openToNewPerson}
         visibleFields={visibleFields}
+        requiredFields={requiredFields}
       />
     </PickerField>
   )
