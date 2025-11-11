@@ -327,7 +327,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               showPicker={presider.showPicker}
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!presider.value}
             />
             <PersonPickerField
               label="Homilist"

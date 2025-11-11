@@ -19,6 +19,15 @@ import { CorePickerProps, PickerFieldConfig } from '@/types/core-picker'
 import { cn } from '@/lib/utils'
 
 /**
+ * STABLE DEFAULTS
+ * Define these outside the component to prevent infinite re-render loops.
+ * When these are defined inline as default parameters, they create new references
+ * on every render, causing useEffect dependencies to trigger repeatedly.
+ */
+const EMPTY_CREATE_FIELDS: PickerFieldConfig[] = []
+const EMPTY_FORM_DATA: Record<string, any> = {}
+
+/**
  * CorePicker - Reusable picker modal component
  *
  * Features:
@@ -48,12 +57,12 @@ export function CorePicker<T>({
 
   // Inline creation
   enableCreate = false,
-  createFields = [],
+  createFields = EMPTY_CREATE_FIELDS,
   onCreateSubmit,
   createButtonLabel = 'Create',
   addNewButtonLabel = 'Add New',
   autoOpenCreateForm = false,
-  defaultCreateFormData = {},
+  defaultCreateFormData = EMPTY_FORM_DATA,
   CustomFormComponent,
 
   // Inline editing

@@ -98,8 +98,8 @@ Follow the wedding module pattern exactly for all 8 main files:
   - [ ] Use `isEditing` for all mode detection
   - [ ] **CRITICAL:** ALL inputs, selects, and textareas MUST use `FormField` component
   - [ ] Implement form fields with pickers (PeoplePicker, EventPicker, etc.)
-  - [ ] Use `openToNewEvent={!isEditing}` for EventPicker
-  - [ ] Use `openToNewPerson={!isEditing}` for PeoplePicker
+  - [ ] Use `openToNewEvent={!value}` for EventPicker (e.g., `openToNewEvent={!weddingEvent.value}`)
+  - [ ] Use `openToNewPerson={!value}` for PeoplePicker (e.g., `openToNewPerson={!presider.value}`)
   - [ ] Place SaveButton and CancelButton at bottom
   - [ ] Call `create[Entity]()` or `update[Entity]()`
   - [ ] After UPDATE: `router.refresh()` (stay on edit page)

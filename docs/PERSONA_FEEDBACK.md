@@ -9,7 +9,7 @@
 ## Homepage Evaluation
 
 **Date:** 2025-11-10
-**Evaluated By:** Fr. Michael Thompson (Parish Priest), Maria Rodriguez (Pastoral Associate), and Carmen Santos (Business Manager)
+**Evaluated By:** Fr. Michael Thompson (Parish Priest), Teresa Rodriguez (Pastoral Associate), and Carmen Santos (Business Manager)
 **Page:** Landing page (src/app/page.tsx)
 
 ---
@@ -35,7 +35,7 @@
 
 **Skepticism about complexity:**
 - *"This looks comprehensive, but is it actually simple? I don't have time to learn complicated software."*
-- *"There are a lot of features listed - will Maria and I get overwhelmed during setup?"*
+- *"There are a lot of features listed - will Teresa and I get overwhelmed during setup?"*
 
 **Implementation anxiety:**
 - *"How long will it take to get this running? I can't afford weeks of disruption."*
@@ -47,11 +47,11 @@
 
 ### Persuasiveness: **6/10 - Interested but Cautious**
 
-He'd likely forward this to Maria with a note: *"What do you think? Looks promising but I want to make sure it won't be another headache."*
+He'd likely forward this to Teresa with a note: *"What do you think? Looks promising but I want to make sure it won't be another headache."*
 
 ---
 
-## Maria Rodriguez's Evaluation
+## Teresa Rodriguez's Evaluation
 
 ### What Would Resonate with Her ✅
 
@@ -117,7 +117,7 @@ She'd probably create a detailed pros/cons list, visit the site multiple times, 
 **ROI and hidden costs:**
 - *"Okay, the software is free, but what about implementation costs? How many staff hours will this take?"*
 - *"Is this going to replace something we're currently paying for, or is it just another tool on top of everything else?"*
-- *"If it saves Maria 5 hours a week, that's real money - but how do I quantify that to Fr. Michael and the finance council?"*
+- *"If it saves Teresa 5 hours a week, that's real money - but how do I quantify that to Fr. Michael and the finance council?"*
 
 **Sustainability and risk:**
 - *"If it's completely free with no business model, what happens when the developers lose interest? Will we be stuck with a dead product?"*
@@ -132,7 +132,7 @@ She'd probably create a detailed pros/cons list, visit the site multiple times, 
 **Implementation burden:**
 - *"Who's going to manage the setup and training? I'm already stretched thin."*
 - *"Will this create more work for me initially while everyone learns the new system?"*
-- *"Do we need IT support to set this up, or can Maria and I handle it ourselves?"*
+- *"Do we need IT support to set this up, or can Teresa and I handle it ourselves?"*
 
 **Data security and compliance:**
 - *"Where is our parish data stored? Is it secure?"*
@@ -151,7 +151,7 @@ Carmen would highlight the "free forever" feature in yellow on her printout, the
 
 Add a testimonials section:
 - "Fr. James from Holy Family Parish: 'Set up our first wedding in 20 minutes. Now I actually have time to meet with couples instead of formatting documents.'"
-- "Maria S., Pastoral Associate: 'Finally, a system that matches my attention to detail. Everything I need is in one place.'"
+- "Teresa S., Pastoral Associate: 'Finally, a system that matches my attention to detail. Everything I need is in one place.'"
 
 ### 2. **Show, Don't Just Tell Simplicity** (Critical for Fr. Michael)
 
@@ -159,7 +159,7 @@ Add a testimonials section:
 - Include screenshots of the actual interface with captions like "Clean, simple forms" and "No clutter, just what you need"
 - Add timing: "Create your first wedding in under 30 minutes"
 
-### 3. **Address Control & Customization** (Critical for Maria)
+### 3. **Address Control & Customization** (Critical for Teresa)
 
 Add a feature highlight:
 
@@ -169,7 +169,7 @@ Add a feature highlight:
 - Set permission levels for team collaboration
 - Export backups anytime (PDF, Word, or full data export)
 
-### 4. **Reliability & Backup Assurances** (Critical for Maria)
+### 4. **Reliability & Backup Assurances** (Critical for Teresa)
 
 Add to features or FAQ:
 - "Your data is automatically backed up daily"
@@ -183,7 +183,7 @@ Add to "How It Works" section:
 - First event: 20-30 minutes
 - Subsequent events: 10-15 minutes (reuse readings, templates)
 
-### 6. **Migration Support** (Especially Maria)
+### 6. **Migration Support** (Especially Teresa)
 
 Add a section:
 
@@ -192,7 +192,7 @@ Add a section:
 - Copy/paste readings and prayers
 - No pressure - keep your old files as backup while you transition
 
-### 7. **Collaboration Controls Explanation** (Maria's anxiety)
+### 7. **Collaboration Controls Explanation** (Teresa's anxiety)
 
 Clarify under "Staff & Family Collaboration":
 - "You control who can view, edit, or manage each event"
@@ -267,7 +267,7 @@ Clarify what integrations exist or are planned:
 
 **Fr. Michael** needs reassurance that this won't add to his already overwhelming workload. He needs to see that it's truly simple, that others are successfully using it, and that the setup won't consume his limited time.
 
-**Maria** needs to know she can maintain her level of control and quality. She needs reassurance about reliability, customization, backups, and the ability to keep things "perfect" according to her standards.
+**Teresa** needs to know she can maintain her level of control and quality. She needs reassurance about reliability, customization, backups, and the ability to keep things "perfect" according to her standards.
 
 **Carmen** needs to understand the total cost of ownership (including implementation time), see a clear ROI calculation, and get answers about the sustainability model and data security. She's the financial gatekeeper who will ultimately approve or veto adoption based on stewardship principles.
 

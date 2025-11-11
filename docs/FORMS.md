@@ -82,19 +82,19 @@ export function EntityForm({ entity }: EntityFormProps) {
 
   // 3. For EventPicker components
   <EventPicker
-    openToNewEvent={!isEditing}  // ← Use !isEditing (not !entity or !event)
+    openToNewEvent={!weddingEvent.value}  // ← Use !value (opens to create form when field is empty)
     // ...
   />
 
   // 4. For PeoplePicker components
   <PeoplePicker
-    openToNewPerson={!isEditing}  // ← Use !isEditing (not !entity or !person)
+    openToNewPerson={!presider.value}  // ← Use !value (opens to create form when field is empty)
     // ...
   />
 
   // This creates consistent behavior:
-  // - Create mode: always opens to new entity creation forms
-  // - Edit mode: always opens to search/picker view
+  // - Empty field: opens to new entity creation form (likely creating new person/event)
+  // - Field with value: opens to search/picker view (likely changing to different entity)
 }
 ```
 

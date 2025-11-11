@@ -367,7 +367,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={presider.showPicker}
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!presider.value}
             />
             <PersonPickerField
               label="Homilist"

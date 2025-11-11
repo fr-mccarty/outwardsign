@@ -428,7 +428,7 @@ outwardsign.church
 > - 12 dioceses represented
 >
 > **Testimonial:**
-> "We use Outward Sign for all our weddings now, and we discovered [Sponsor] through their recommended resources section. Just ordered their new Lectionary!" - Maria, Pastoral Associate, St. Joseph Parish
+> "We use Outward Sign for all our weddings now, and we discovered [Sponsor] through their recommended resources section. Just ordered their new Lectionary!" - Teresa, Pastoral Associate, St. Joseph Parish
 >
 > Thank you for your partnership! Your support makes this tool possible for parishes nationwide.
 
@@ -461,7 +461,7 @@ Three key personas must all approve adoption:
 - **Decision Criteria:** "Will this make my life easier or harder?"
 - **Persuasion Level:** 6/10 - Interested but cautious
 
-### 2. **The Pastoral Associate** (Maria Rodriguez)
+### 2. **The Pastoral Associate** (Teresa Rodriguez)
 - **Role:** Operational manager, primary day-to-day user
 - **Pain Points:** Perfectionism, anxiety, needs control and organization
 - **Decision Criteria:** "Can I maintain quality while reducing stress?"
@@ -473,7 +473,7 @@ Three key personas must all approve adoption:
 - **Decision Criteria:** "What's the total cost of ownership and ROI?"
 - **Persuasion Level:** 5/10 - Skeptical but open-minded
 
-**Critical Insight:** All three must be convinced. If Carmen blocks it for budget/risk reasons, Fr. Michael won't override her. If Maria thinks it's too complicated, Fr. Michael won't push adoption.
+**Critical Insight:** All three must be convinced. If Carmen blocks it for budget/risk reasons, Fr. Michael won't override her. If Teresa thinks it's too complicated, Fr. Michael won't push adoption.
 
 ---
 
@@ -494,7 +494,7 @@ Three key personas must all approve adoption:
 - "What's the catch?" → Transparent explanation of open-source model
 - "Is anyone using this?" → Testimonials from other priests
 
-### For Pastoral Associates (Maria)
+### For Pastoral Associates (Teresa)
 
 **Primary Message:** "Control + Organization Without the Burnout"
 

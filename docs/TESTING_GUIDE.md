@@ -153,7 +153,7 @@ test.describe('Weddings Module', () => {
 
     // Add bride (using PeoplePicker)
     await page.getByTestId('bride-picker-trigger').click();
-    await page.getByLabel('Search people').fill('Maria');
+    await page.getByLabel('Search people').fill('Teresa');
     await page.getByTestId('person-option-123').click();
 
     // Submit the form
@@ -402,7 +402,7 @@ test.describe('Weddings Module', () => {
 
     // Fill form
     await weddingPage.fillWeddingNotes('Beautiful outdoor ceremony')
-    await weddingPage.selectBride('Maria Garcia')
+    await weddingPage.selectBride('Teresa Garcia')
 
     // Submit
     await weddingPage.submitForm()

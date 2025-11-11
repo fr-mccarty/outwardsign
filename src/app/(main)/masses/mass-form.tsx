@@ -179,6 +179,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={event.showPicker}
             onShowPickerChange={event.setShowPicker}
             defaultEventType="MASS"
+            defaultName="Holy Mass"
             openToNewEvent={!event.value}
           />
 
@@ -235,7 +236,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onValueChange={presider.setValue}
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
-            openToNewPerson={!isEditing}
+            openToNewPerson={!presider.value}
           />
 
           <PersonPickerField

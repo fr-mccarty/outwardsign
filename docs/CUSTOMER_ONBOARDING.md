@@ -422,7 +422,7 @@ Generate liturgy script and print for presider.
 
 **Pro Tip:** Have your pastoral associate create a test wedding and walk through it together (15 minutes) so you both understand the workflow.
 
-### For Pastoral Associates (Maria)
+### For Pastoral Associates (Teresa)
 
 **Your Role:** Primary event coordinator, detail manager
 

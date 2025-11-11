@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, User, Church } from 'lucide-react'
 import { getMasses, createMass, updateMass, type MassWithNames } from '@/lib/actions/masses'
@@ -26,6 +26,9 @@ interface MassPickerProps {
   editMode?: boolean // Open directly to edit form
   massToEdit?: MassWithNames | null // Mass being edited
 }
+
+// Define constant outside component to prevent re-creation on every render
+const EMPTY_FORM_DATA = {}
 
 export function MassPicker({
   open,
@@ -100,8 +103,8 @@ export function MassPicker({
     ? masses.find((m) => m.id === selectedMassId)
     : null
 
-  // Build create fields configuration
-  const createFields: PickerFieldConfig[] = [
+  // Build create fields configuration - memoized to prevent infinite re-renders
+  const createFields: PickerFieldConfig[] = useMemo(() => [
     {
       key: 'event_id',
       label: 'Event (Date/Time)',
@@ -222,7 +225,7 @@ export function MassPicker({
       required: false,
       placeholder: 'Add any notes about this mass...',
     },
-  ]
+  ], [selectedEvent, selectedPresider, eventOnChange, presiderOnChange])
 
   // Handle creating a new mass
   const handleCreateMass = async (data: any): Promise<MassWithNames> => {
@@ -354,6 +357,7 @@ export function MassPicker({
         onCreateSubmit={handleCreateMass}
         createButtonLabel="Save Mass"
         addNewButtonLabel="Add New Mass"
+        defaultCreateFormData={EMPTY_FORM_DATA}
         emptyMessage={emptyMessage}
         noResultsMessage="No masses match your search"
         isLoading={loading}

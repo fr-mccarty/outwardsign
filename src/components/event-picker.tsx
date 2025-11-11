@@ -270,7 +270,7 @@ export function EventPicker({
       noResultsMessage="No events match your search"
       isLoading={loading}
       autoOpenCreateForm={openToNewEvent || autoOpenCreateForm}
-      defaultCreateFormData={{ ...DEFAULT_FORM_DATA, ...defaultCreateFormData }}
+      defaultCreateFormData={{ ...DEFAULT_FORM_DATA, name: defaultName, ...defaultCreateFormData }}
       editMode={editMode}
       entityToEdit={eventToEdit}
       onUpdateSubmit={handleUpdateEvent}

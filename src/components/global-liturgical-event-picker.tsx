@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from 'lucide-react'
 import { getGlobalLiturgicalEvents, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
@@ -20,6 +20,16 @@ interface GlobalLiturgicalEventPickerProps {
   year?: number
 }
 
+// Extend GlobalLiturgicalEvent with searchable name field
+type SearchableGlobalLiturgicalEvent = GlobalLiturgicalEvent & {
+  searchable_name: string
+}
+
+// Define constants outside component to prevent re-creation on every render
+const SEARCH_FIELDS = ['searchable_name', 'date'] as const
+const EMPTY_CREATE_FIELDS: never[] = []
+const EMPTY_FORM_DATA = {}
+
 export function GlobalLiturgicalEventPicker({
   open,
   onOpenChange,
@@ -31,17 +41,18 @@ export function GlobalLiturgicalEventPicker({
   locale = 'en',
   year,
 }: GlobalLiturgicalEventPickerProps) {
-  const [events, setEvents] = useState<GlobalLiturgicalEvent[]>([])
+  const [events, setEvents] = useState<SearchableGlobalLiturgicalEvent[]>([])
   const [loading, setLoading] = useState(false)
 
-  const currentYear = year || new Date().getFullYear()
+  // Memoize currentYear to prevent infinite re-renders
+  const currentYear = useMemo(() => year || new Date().getFullYear(), [year])
 
   // Load events when dialog opens
   useEffect(() => {
     if (open) {
       loadEvents()
     }
-  }, [open, currentYear, locale])
+  }, [open])
 
   const loadEvents = async () => {
     try {
@@ -49,7 +60,12 @@ export function GlobalLiturgicalEventPicker({
       const startDate = `${currentYear}-01-01`
       const endDate = `${currentYear}-12-31`
       const results = await getGlobalLiturgicalEvents(startDate, endDate, locale)
-      setEvents(results)
+      // Add searchable_name field for CorePicker search
+      const searchableResults = results.map(event => ({
+        ...event,
+        searchable_name: event.event_data?.name || ''
+      }))
+      setEvents(searchableResults)
     } catch (error) {
       console.error('Error loading liturgical events:', error)
       toast.error('Failed to load liturgical events')
@@ -103,8 +119,11 @@ export function GlobalLiturgicalEventPicker({
     ? events.find((e) => e.id === selectedEventId)
     : null
 
+  // Memoize title to prevent re-renders
+  const title = useMemo(() => `Liturgical Events - ${currentYear}`, [currentYear])
+
   // Custom render for liturgical event list items
-  const renderEventItem = (event: GlobalLiturgicalEvent) => {
+  const renderEventItem = (event: SearchableGlobalLiturgicalEvent) => {
     const isSelected = selectedEventId === event.id
 
     return (
@@ -139,19 +158,21 @@ export function GlobalLiturgicalEventPicker({
   }
 
   return (
-    <CorePicker<GlobalLiturgicalEvent>
+    <CorePicker<SearchableGlobalLiturgicalEvent>
       open={open}
       onOpenChange={onOpenChange}
       items={events}
       selectedItem={selectedEvent}
       onSelect={onSelect}
-      title={`Liturgical Events - ${currentYear}`}
+      title={title}
       searchPlaceholder={placeholder}
-      searchFields={['date']}
+      searchFields={SEARCH_FIELDS}
       getItemLabel={(event) => event.event_data?.name || 'Unnamed Event'}
       getItemId={(event) => event.id}
       renderItem={renderEventItem}
       enableCreate={false}
+      createFields={EMPTY_CREATE_FIELDS}
+      defaultCreateFormData={EMPTY_FORM_DATA}
       emptyMessage={emptyMessage}
       noResultsMessage="No liturgical events match your search"
       isLoading={loading}

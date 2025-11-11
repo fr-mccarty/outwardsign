@@ -258,7 +258,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
             placeholder="Select Presider"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!presider.value}
           />
         </CardContent>
       </Card>

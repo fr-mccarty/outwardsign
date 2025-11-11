@@ -157,7 +157,7 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 - `placeholder`: Search placeholder text
 - `emptyMessage`: Empty state message
 - `visibleFields`: Array of optional fields to show: `['email', 'phone_number', 'sex', 'note']`
-- `openToNewPerson`: Auto-open create form (for create mode)
+- `openToNewPerson`: Auto-open create form when no person is selected (use `!value`)
 
 **Usage:**
 ```tsx
@@ -168,7 +168,7 @@ const bride = usePickerState<Person>()
   onOpenChange={bride.setShowPicker}
   onSelect={bride.setValue}
   selectedPersonId={bride.value?.id}
-  openToNewPerson={!isEditing}
+  openToNewPerson={!bride.value}
 />
 ```
 
@@ -191,7 +191,7 @@ const bride = usePickerState<Person>()
 - `onOpenChange`: Modal state handler
 - `onSelect`: Callback when event is selected
 - `selectedEventId`: Highlight selected event
-- `openToNewEvent`: Auto-open create form (for create mode)
+- `openToNewEvent`: Auto-open create form when no event is selected (use `!value`)
 
 **Usage:**
 ```tsx
@@ -202,7 +202,7 @@ const event = usePickerState<Event>()
   onOpenChange={event.setShowPicker}
   onSelect={event.setValue}
   selectedEventId={event.value?.id}
-  openToNewEvent={!isEditing}
+  openToNewEvent={!event.value}
 />
 ```
 
@@ -336,7 +336,7 @@ const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 - `onShowPickerChange`: Picker visibility handler
 - `placeholder`: Button text when no person selected
 - `required`: Show required indicator
-- `openToNewPerson`: Auto-open create form (default: false)
+- `openToNewPerson`: Auto-open create form when no person is selected (use `!value`, default: false)
 - `visibleFields`: Array of optional fields to show: `['email', 'phone_number', 'sex', 'note']`
 - `error`: Validation error message
 
@@ -354,7 +354,7 @@ const bride = usePickerState<Person>()
   showPicker={bride.showPicker}
   onShowPickerChange={bride.setShowPicker}
   placeholder="Select Bride"
-  openToNewPerson={!isEditing}
+  openToNewPerson={!bride.value}
 />
 ```
 
@@ -373,17 +373,21 @@ const bride = usePickerState<Person>()
 - `onShowPickerChange`: Picker visibility handler
 - `placeholder`: Button text when no event selected
 - `required`: Show required indicator
-- `openToNewEvent`: Auto-open create form (default: false)
-- `defaultEventType`: Default event type for creation
-- `defaultName`: Default event name for creation
+- `openToNewEvent`: Auto-open create form when no event is selected (use `!value`, default: false)
+- `defaultEventType`: Default event type for creation (e.g., "MASS", "WEDDING", "FUNERAL")
+- `defaultName`: Pre-fills the event name field in create form - useful for module-specific defaults like "Holy Mass" for masses
 - `disableSearch`: Disable search functionality
 - `error`: Validation error message
+- `visibleFields`: Optional fields to show in create form (e.g., `['location', 'note']`)
+- `requiredFields`: Fields that should be marked as required
+- `defaultCreateFormData`: Additional default values for create form
 
 **Usage with usePickerState:**
 ```tsx
 import { usePickerState } from '@/hooks/use-picker-state'
 import { EventPickerField } from '@/components/event-picker-field'
 
+// Example 1: Wedding event
 const weddingEvent = usePickerState<Event>()
 
 <EventPickerField
@@ -393,10 +397,25 @@ const weddingEvent = usePickerState<Event>()
   showPicker={weddingEvent.showPicker}
   onShowPickerChange={weddingEvent.setShowPicker}
   placeholder="Select Wedding Event"
-  openToNewEvent={!isEditing}
+  openToNewEvent={!weddingEvent.value}
   defaultEventType="WEDDING"
   defaultName="Wedding Ceremony"
   disableSearch={true}
+/>
+
+// Example 2: Mass event with default name
+const massEvent = usePickerState<Event>()
+
+<EventPickerField
+  label="Mass Event"
+  description="Date, time, and location of the Mass"
+  value={massEvent.value}
+  onValueChange={massEvent.setValue}
+  showPicker={massEvent.showPicker}
+  onShowPickerChange={massEvent.setShowPicker}
+  defaultEventType="MASS"
+  defaultName="Holy Mass"
+  openToNewEvent={!massEvent.value}
 />
 ```
 
@@ -416,7 +435,7 @@ const weddingEvent = usePickerState<Event>()
 - `placeholder`: Button text when no location selected
 - `description`: Optional help text
 - `required`: Show required indicator
-- `openToNewLocation`: Auto-open create form (default: false)
+- `openToNewLocation`: Auto-open create form when no location is selected (use `!value`, default: false)
 
 **Usage with usePickerState:**
 ```tsx
@@ -433,7 +452,7 @@ const location = usePickerState<Location>()
   onShowPickerChange={location.setShowPicker}
   placeholder="Select Location"
   description="Where the event will take place"
-  openToNewLocation={!isEditing}
+  openToNewLocation={!location.value}
 />
 ```
 
@@ -485,7 +504,7 @@ weddingEvent.setShowPicker(false)  // Close picker
 **✅ DO:**
 1. Always use `usePickerState` hook for state management
 2. Always use wrapper components (`PersonPickerField`, `EventPickerField`, `LocationPickerField`)
-3. Pass `openToNewPerson/openToNewEvent/openToNewLocation={!isEditing}` to auto-open create forms in create mode
+3. Pass `openToNewPerson/openToNewEvent/openToNewLocation={!value}` to auto-open create forms when field is empty (e.g., `openToNewPerson={!presider.value}`)
 4. Access selected values via `.value` property (e.g., `bride.value?.id`)
 5. Use defensive event handling in picker forms (already implemented in base components)
 
@@ -541,7 +560,7 @@ export function MyForm({ initialData }: MyFormProps) {
         showPicker={bride.showPicker}
         onShowPickerChange={bride.setShowPicker}
         placeholder="Select Bride"
-        openToNewPerson={!isEditing}
+        openToNewPerson={!bride.value}
       />
 
       <PersonPickerField
@@ -551,7 +570,7 @@ export function MyForm({ initialData }: MyFormProps) {
         showPicker={groom.showPicker}
         onShowPickerChange={groom.setShowPicker}
         placeholder="Select Groom"
-        openToNewPerson={!isEditing}
+        openToNewPerson={!groom.value}
       />
 
       <EventPickerField
@@ -561,7 +580,7 @@ export function MyForm({ initialData }: MyFormProps) {
         showPicker={weddingEvent.showPicker}
         onShowPickerChange={weddingEvent.setShowPicker}
         placeholder="Select Wedding Event"
-        openToNewEvent={!isEditing}
+        openToNewEvent={!weddingEvent.value}
         defaultEventType="WEDDING"
         defaultName="Wedding Ceremony"
       />
@@ -599,7 +618,7 @@ const bride = usePickerState<Person>()
   showPicker={bride.showPicker}
   onShowPickerChange={bride.setShowPicker}
   placeholder="Select Bride"
-  openToNewPerson={!isEditing}
+  openToNewPerson={!bride.value}
 />
 ```
 

@@ -51,10 +51,7 @@ export function LiturgicalEventPickerField({
       <GlobalLiturgicalEventPicker
         open={showPicker}
         onOpenChange={onShowPickerChange}
-        onSelect={(event) => {
-          onValueChange(event)
-          onShowPickerChange(false)
-        }}
+        onSelect={onValueChange}
       />
     </PickerField>
   )

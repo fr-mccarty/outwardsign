@@ -327,7 +327,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={presider.showPicker}
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!presider.value}
             />
             <PersonPickerField
               label="Homilist"

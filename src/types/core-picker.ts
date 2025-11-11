@@ -77,7 +77,16 @@ export interface CorePickerProps<T> {
   // Inline creation
   /** Whether to show inline creation form */
   enableCreate?: boolean
-  /** Field configuration for inline creation form */
+  /**
+   * Field configuration for inline creation form.
+   *
+   * ⚠️ IMPORTANT: To prevent infinite re-renders, define this outside your component:
+   * ```ts
+   * const EMPTY_CREATE_FIELDS: PickerFieldConfig[] = []
+   * // or for dynamic fields:
+   * const createFields = useMemo(() => [...], [deps])
+   * ```
+   */
   createFields?: PickerFieldConfig[]
   /** Callback when creating a new item */
   onCreateSubmit?: (data: any) => Promise<T>
@@ -87,7 +96,14 @@ export interface CorePickerProps<T> {
   addNewButtonLabel?: string
   /** Auto-open the create form when the picker opens */
   autoOpenCreateForm?: boolean
-  /** Default values for the create form fields */
+  /**
+   * Default values for the create form fields.
+   *
+   * ⚠️ IMPORTANT: To prevent infinite re-renders, define this outside your component:
+   * ```ts
+   * const EMPTY_FORM_DATA = {}
+   * ```
+   */
   defaultCreateFormData?: Record<string, any>
   /** Custom form component that replaces the default form fields rendering */
   CustomFormComponent?: React.ComponentType<{

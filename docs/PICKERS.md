@@ -15,6 +15,8 @@
   - [Memoization Best Practices](#memoization-best-practices)
   - [Empty Form Data Constants](#empty-form-data-constants)
   - [Context-Aware Suggested Event Names](#context-aware-suggested-event-names)
+  - [Custom Form Components](#custom-form-components)
+- [🔴 CRITICAL: Preventing Infinite Re-Render Loops](#-critical-preventing-infinite-re-render-loops)
 
 ---
 
@@ -27,6 +29,7 @@ The picker system provides a unified, reusable pattern for modal selection dialo
 - **Inline creation forms** for creating new entities without leaving the picker
 - **Custom field types** including support for nested pickers
 - **Flexible field configuration** with support for text, email, date, select, textarea, and custom fields
+- **Custom form components** for complete control over form rendering and logic
 - **Validation** using Zod schemas
 - **Type-safe** with TypeScript generics
 
@@ -104,6 +107,7 @@ CorePicker<T>
 | `onCreateSubmit` | `(data: any) => Promise<T>` | Handle creating new item |
 | `autoOpenCreateForm` | `boolean` | Auto-open create form when picker opens |
 | `defaultCreateFormData` | `Record<string, any>` | Default values for create form |
+| `CustomFormComponent` | `React.ComponentType` | Custom component to replace default form rendering |
 
 **Full props documentation:** See `src/types/core-picker.ts`
 
@@ -449,6 +453,19 @@ Useful when you know the user needs to create a new item:
 Pass default values to the create form:
 
 ```typescript
+// Option 1: Using defaultName prop (recommended for simple event name defaults)
+<EventPickerField
+  label="Mass Event"
+  value={event.value}
+  onValueChange={event.setValue}
+  showPicker={event.showPicker}
+  onShowPickerChange={event.setShowPicker}
+  defaultEventType="MASS"
+  defaultName="Holy Mass" // Pre-fills the name field
+  openToNewEvent={true}
+/>
+
+// Option 2: Using defaultCreateFormData for multiple fields
 <EventPicker
   open={showPicker}
   onOpenChange={setShowPicker}
@@ -460,6 +477,8 @@ Pass default values to the create form:
   }}
 />
 ```
+
+**Note:** When both `defaultName` and `defaultCreateFormData.name` are provided, `defaultCreateFormData.name` takes precedence (spread order: `{ name: defaultName, ...defaultCreateFormData }`).
 
 ---
 
@@ -603,12 +622,17 @@ interface EventPickerProps {
   onSelect: (event: Event) => void
   selectedEventId?: string
   defaultEventType?: string // Default: 'EVENT'
+  defaultName?: string // Pre-fill event name field
   visibleFields?: string[] // ['location', 'note']
   requiredFields?: string[] // ['location']
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
 }
 ```
+
+**Key Props:**
+- `defaultName` - Pre-fills the event name field in the create form. Useful for setting module-specific defaults (e.g., "Holy Mass" for masses, "Wedding" for weddings)
+- `defaultEventType` - Sets the event type (e.g., "MASS", "WEDDING", "FUNERAL")
 
 **Visible Fields:**
 - `location` - Nested LocationPicker (custom field)
@@ -795,7 +819,7 @@ const suggestedEventName = useMemo(() => {
 | **Weddings** | `{Bride}-{Groom} Wedding` | "Smith-Jones Wedding" |
 | **Funerals** | `{FirstName} {LastName} Funeral` | "John Doe Funeral" |
 | **Baptisms** | `{FirstName} {LastName} Baptism` | "Mary Smith Baptism" |
-| **Presentations** | `{FirstName} {LastName} Presentation` | "Maria Garcia Presentation" |
+| **Presentations** | `{FirstName} {LastName} Presentation` | "Teresa Garcia Presentation" |
 | **Quinceañeras** | `{FirstName} {LastName} Quinceañera` | "Sofia Martinez Quinceañera" |
 
 **Implementation Notes:**
@@ -804,6 +828,361 @@ const suggestedEventName = useMemo(() => {
 - Falls back to generic names (e.g., "Wedding") when no people are selected yet
 - Works seamlessly with `defaultCreateFormData` prop in EventPickerField
 - Applied to all event pickers in module forms (ceremonies, receptions, meals, etc.)
+
+---
+
+### Custom Form Components
+
+**Feature:** Replace the default field rendering with a fully custom form component for maximum control.
+
+When the default `createFields` configuration isn't flexible enough (e.g., when you need complex form logic, nested modals, or custom state management), you can provide a `CustomFormComponent` that replaces the entire form field rendering.
+
+**Use Cases:**
+- Forms with complex interdependencies between fields
+- Forms that need to manage multiple nested modals (e.g., Time picker with common times modal)
+- Forms requiring custom validation logic beyond Zod schemas
+- Forms with dynamic field generation based on external state
+
+**Implementation Pattern:**
+
+```typescript
+// Step 1: Create a custom form component
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { CommonTimesModal } from '@/components/common-times-modal'
+
+interface EventFormFieldsProps {
+  formData: Record<string, any>
+  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  errors: Record<string, string>
+  isEditMode: boolean
+}
+
+export function EventFormFields({
+  formData,
+  setFormData,
+  errors,
+  isEditMode,
+}: EventFormFieldsProps) {
+  const [showCommonTimesModal, setShowCommonTimesModal] = useState(false)
+
+  const updateField = (key: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [key]: value }))
+  }
+
+  return (
+    <>
+      {/* Regular form fields */}
+      <div className="space-y-2">
+        <Label htmlFor="name">Event Name</Label>
+        <Input
+          id="name"
+          value={formData.name || ''}
+          onChange={(e) => updateField('name', e.target.value)}
+        />
+        {errors.name && <p className="text-destructive">{errors.name}</p>}
+      </div>
+
+      {/* Time field with custom button */}
+      <div className="space-y-2">
+        <Label htmlFor="start_time">Time</Label>
+        <div className="flex gap-2">
+          <Input
+            id="start_time"
+            type="time"
+            value={formData.start_time || ''}
+            onChange={(e) => updateField('start_time', e.target.value)}
+          />
+          <Button
+            type="button"
+            onClick={() => setShowCommonTimesModal(true)}
+          >
+            Common Times
+          </Button>
+        </div>
+      </div>
+
+      {/* Custom modal */}
+      <CommonTimesModal
+        open={showCommonTimesModal}
+        onOpenChange={setShowCommonTimesModal}
+        onSelectTime={(time) => updateField('start_time', time)}
+      />
+    </>
+  )
+}
+
+// Step 2: Use in your picker
+import { EventFormFields } from '@/components/event-form-fields'
+
+<CorePicker<Event>
+  open={open}
+  onOpenChange={onOpenChange}
+  items={events}
+  onSelect={onSelect}
+  enableCreate={true}
+  createFields={createFields} // Still required for validation
+  onCreateSubmit={handleCreateEvent}
+  CustomFormComponent={EventFormFields} // Custom form replaces default rendering
+/>
+
+// Step 3: Or pass inline with props
+<CorePicker<Event>
+  // ... other props
+  CustomFormComponent={(props) => (
+    <EventFormFields
+      {...props}
+      visibleFields={visibleFields}
+      requiredFields={requiredFields}
+    />
+  )}
+/>
+```
+
+**How It Works:**
+
+1. **CorePicker receives `CustomFormComponent` prop** - A React component that receives form state
+2. **Custom component gets full control** - Receives `formData`, `setFormData`, `errors`, `isEditMode`
+3. **Custom component renders fields** - Can render any UI, manage modals, handle complex logic
+4. **Form state updates directly** - Calling `setFormData` updates CorePicker's internal form state
+5. **Validation still runs** - CorePicker validates using `createFields` configuration
+6. **Submit works normally** - `onCreateSubmit` receives the form data as usual
+
+**Props Passed to CustomFormComponent:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `formData` | `Record<string, any>` | Current form field values |
+| `setFormData` | `React.Dispatch<SetStateAction<Record<string, any>>>` | Function to update form state |
+| `errors` | `Record<string, string>` | Validation errors by field key |
+| `isEditMode` | `boolean` | Whether form is in edit mode (true) or create mode (false) |
+
+**Important Notes:**
+
+- **`createFields` still required** - CorePicker uses this for validation, even with custom rendering
+- **Direct state access** - Custom component updates form state directly via `setFormData`
+- **No ref gymnastics** - No need for complex ref passing or callback chaining
+- **Clean separation** - Form logic is isolated in the custom component
+- **Full React features** - Can use hooks, context, nested components, anything React supports
+
+**Example: EventPicker with Common Times Modal**
+
+The EventPicker uses this pattern to provide a time input with a "common times" button that opens a modal of frequently-used liturgical service times (7 AM, 8 AM, 9 AM, etc.):
+
+```typescript
+// EventPicker passes custom component
+<CorePicker<Event>
+  // ... standard props
+  CustomFormComponent={(props) => (
+    <EventFormFields
+      {...props}
+      visibleFields={visibleFields}
+      requiredFields={requiredFields}
+    />
+  )}
+/>
+
+// EventFormFields manages time field + common times modal
+export function EventFormFields({ formData, setFormData, errors }) {
+  const [showCommonTimesModal, setShowCommonTimesModal] = useState(false)
+
+  return (
+    <>
+      <div className="flex gap-2">
+        <Input
+          type="time"
+          value={formData.start_time || ''}
+          onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
+        />
+        <Button onClick={() => setShowCommonTimesModal(true)}>
+          <Clock />
+        </Button>
+      </div>
+
+      <CommonTimesModal
+        open={showCommonTimesModal}
+        onOpenChange={setShowCommonTimesModal}
+        onSelectTime={(time) => {
+          setFormData(prev => ({ ...prev, start_time: time }))
+        }}
+      />
+    </>
+  )
+}
+```
+
+**When to Use Custom Form Components:**
+
+✅ **Use when:**
+- You need complex UI that default fields can't provide
+- Managing multiple nested modals or pickers
+- Form logic requires custom hooks or state management
+- Fields have complex interdependencies
+
+❌ **Don't use when:**
+- Standard `createFields` configuration is sufficient
+- Only need basic text, select, date, or textarea fields
+- Using the `custom` field type with `render` prop works fine
+
+---
+
+## 🔴 CRITICAL: Preventing Infinite Re-Render Loops
+
+### The Problem
+
+CorePicker has a `useEffect` that depends on several props including `createFields` and `defaultCreateFormData`. If these props receive **new references on every render**, it triggers an infinite loop:
+
+```
+Render → New array/object → useEffect runs → State update → Render → New array/object → ...
+```
+
+This manifests as the error:
+```
+Maximum update depth exceeded. This can happen when a component repeatedly
+calls setState inside componentWillUpdate or componentDidUpdate.
+```
+
+### The Solution
+
+**Define constants OUTSIDE the component** to ensure stable references across renders.
+
+### ✅ CORRECT Pattern
+
+```typescript
+'use client'
+
+import { useState, useEffect, useMemo } from 'react'
+import { CorePicker } from '@/components/core-picker'
+import type { MyEntity } from '@/lib/types'
+
+// 🔴 CRITICAL: Define constants OUTSIDE component
+const SEARCH_FIELDS = ['name', 'email'] as const
+const EMPTY_CREATE_FIELDS: never[] = []  // For pickers without inline creation
+const EMPTY_FORM_DATA = {}
+
+export function MyPicker({ open, onOpenChange, onSelect }: MyPickerProps) {
+  const [items, setItems] = useState<MyEntity[]>([])
+
+  return (
+    <CorePicker<MyEntity>
+      open={open}
+      onOpenChange={onOpenChange}
+      items={items}
+      onSelect={onSelect}
+      searchFields={SEARCH_FIELDS}  // ✅ Stable reference
+      enableCreate={false}
+      createFields={EMPTY_CREATE_FIELDS}  // ✅ Stable reference
+      defaultCreateFormData={EMPTY_FORM_DATA}  // ✅ Stable reference
+      // ... other props
+    />
+  )
+}
+```
+
+### ❌ INCORRECT Patterns
+
+```typescript
+// ❌ BAD: Inline array (new reference every render)
+<CorePicker
+  searchFields={['name', 'email']}
+  // Creates new array on every render!
+/>
+
+// ❌ BAD: Inline empty array
+<CorePicker
+  createFields={[]}
+  // Creates new array on every render!
+/>
+
+// ❌ BAD: Inline empty object
+<CorePicker
+  defaultCreateFormData={{}}
+  // Creates new object on every render!
+/>
+
+// ❌ BAD: Constants inside component
+export function MyPicker() {
+  const SEARCH_FIELDS = ['name', 'email']  // Recreated every render!
+  const EMPTY_FORM_DATA = {}  // Recreated every render!
+
+  return <CorePicker searchFields={SEARCH_FIELDS} />
+}
+```
+
+### Special Case: Dynamic createFields
+
+If your `createFields` needs to be computed dynamically, use `useMemo`:
+
+```typescript
+'use client'
+
+import { useState, useEffect, useMemo } from 'react'
+
+// Define constant outside for stable parts
+const EMPTY_FORM_DATA = {}
+
+export function MyPicker({ visibleFields, requiredFields }: Props) {
+  // ✅ Memoize dynamic createFields
+  const createFields = useMemo(() => {
+    const fields: PickerFieldConfig[] = [
+      { key: 'name', label: 'Name', type: 'text', required: true },
+    ]
+
+    // Add conditional fields
+    if (visibleFields?.includes('email')) {
+      fields.push({
+        key: 'email',
+        label: 'Email',
+        type: 'email',
+        required: requiredFields?.includes('email'),
+      })
+    }
+
+    return fields
+  }, [visibleFields, requiredFields])  // Only recompute when dependencies change
+
+  return (
+    <CorePicker
+      createFields={createFields}  // ✅ Memoized reference
+      defaultCreateFormData={EMPTY_FORM_DATA}  // ✅ Stable reference
+      // ... other props
+    />
+  )
+}
+```
+
+### Checklist for New Pickers
+
+When creating a new picker, ensure:
+
+- [ ] `searchFields` defined outside component as `const`
+- [ ] `createFields` either defined outside OR wrapped in `useMemo`
+- [ ] `defaultCreateFormData` defined outside as `const EMPTY_FORM_DATA = {}`
+- [ ] No inline arrays `[]` passed to CorePicker
+- [ ] No inline objects `{}` passed to CorePicker
+- [ ] If picker has no inline creation: pass `createFields={EMPTY_CREATE_FIELDS}`
+- [ ] If picker has no default form data: pass `defaultCreateFormData={EMPTY_FORM_DATA}`
+
+### Why CorePicker Defaults Are Safe Now
+
+CorePicker's default parameters are now defined outside the component:
+
+```typescript
+// In core-picker.tsx - STABLE DEFAULTS
+const EMPTY_CREATE_FIELDS: PickerFieldConfig[] = []
+const EMPTY_FORM_DATA: Record<string, any> = {}
+
+export function CorePicker<T>({
+  createFields = EMPTY_CREATE_FIELDS,  // ✅ Stable default
+  defaultCreateFormData = EMPTY_FORM_DATA,  // ✅ Stable default
+  // ...
+}) {
+  // ...
+}
+```
+
+However, **it's still best practice to explicitly pass these props** for clarity and to avoid relying on defaults.
 
 ---
 
@@ -891,10 +1270,11 @@ The CorePicker system provides:
 - ✅ **Consistency** - Unified UX across all picker modals
 - ✅ **Reusability** - Write picker logic once, reuse everywhere
 - ✅ **Type Safety** - Full TypeScript support with generics
-- ✅ **Flexibility** - Support for simple to complex use cases
+- ✅ **Flexibility** - Support for simple to complex use cases with custom form components
 - ✅ **Validation** - Built-in Zod validation support
 - ✅ **Nested Pickers** - Custom fields enable picker-in-picker patterns
 - ✅ **Auto-selection** - Newly created items are automatically selected
 - ✅ **Performance** - Memoization patterns prevent unnecessary re-renders
+- ✅ **Extensibility** - Custom form components for maximum control
 
 For questions or additions to the picker system, consult `src/components/core-picker.tsx` and `src/types/core-picker.ts`.
