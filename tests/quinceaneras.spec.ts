@@ -9,13 +9,13 @@ test.describe('Quinceaneras Module', () => {
     await page.goto('/quinceaneras');
     await expect(page).toHaveURL('/quinceaneras');
 
-    // Click "New Quinceanera" button
-    const newQuinceaneraLink = page.getByRole('link', { name: /New Quinceanera/i }).first();
+    // Click "New Quinceañera" button
+    const newQuinceaneraLink = page.getByRole('link', { name: /New Quincea.*era/i }).first();
     await newQuinceaneraLink.click();
 
     // Verify we're on the create page
     await expect(page).toHaveURL('/quinceaneras/create', { timeout: TEST_TIMEOUTS.NAVIGATION });
-    await expect(page.getByRole('heading', { name: 'Create Quinceanera' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Create Quincea.*era/i })).toBeVisible();
 
     // Fill in minimal quinceanera form
     // Select a status (dropdown)
@@ -24,7 +24,7 @@ test.describe('Quinceaneras Module', () => {
 
     // Add some notes
     const initialNotes = 'Initial quinceanera planning notes for celebration';
-    await page.fill('textarea#notes', initialNotes);
+    await page.fill('textarea#note', initialNotes);
 
     // Scroll to bottom to ensure submit button is visible
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -44,16 +44,16 @@ test.describe('Quinceaneras Module', () => {
     console.log(`Created quinceanera with ID: ${quinceaneraId}`);
 
     // Verify we're on the view page
-    await expect(page.getByRole('heading', { name: /Quinceanera/i }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Quincea.*era/i }).first()).toBeVisible();
 
     // Navigate to edit page
     await page.goto(`/quinceaneras/${quinceaneraId}/edit`);
     await expect(page).toHaveURL(`/quinceaneras/${quinceaneraId}/edit`, { timeout: TEST_TIMEOUTS.NAVIGATION });
-    await expect(page.getByRole('heading', { name: 'Edit Quinceanera' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Edit Quincea.*era/i })).toBeVisible();
 
     // Edit the quinceanera - add more information
     const updatedNotes = 'Updated notes: Celebration scheduled for Saturday evening. Reception to follow.';
-    await page.fill('textarea#notes', updatedNotes);
+    await page.fill('textarea#note', updatedNotes);
 
     // Scroll to bottom and submit
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -69,7 +69,7 @@ test.describe('Quinceaneras Module', () => {
     await expect(page).toHaveURL(`/quinceaneras/${quinceaneraId}`);
 
     // Verify we're on the quinceanera view page
-    await expect(page.getByRole('heading', { name: /Quinceanera/i }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Quincea.*era/i }).first()).toBeVisible();
 
     // Test print view - verify it exists and loads
     console.log(`Testing print view for quinceanera: ${quinceaneraId}`);
@@ -89,10 +89,10 @@ test.describe('Quinceaneras Module', () => {
     await page.goto('/quinceaneras');
 
     // Should show the page title
-    await expect(page.getByRole('heading', { name: 'Quinceaneras' }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Our Quincea.*eras/i }).first()).toBeVisible();
 
     // Should have a create button
-    const createButton = page.getByRole('link', { name: /New Quinceanera/i }).first();
+    const createButton = page.getByRole('link', { name: /New Quincea.*era/i }).first();
     await expect(createButton).toBeVisible();
   });
 
@@ -113,7 +113,7 @@ test.describe('Quinceaneras Module', () => {
     await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify we're on a quinceanera detail page
-    await expect(page.getByRole('heading', { name: /Quinceanera/i }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Quincea.*era/i }).first()).toBeVisible();
   });
 
   test('should navigate through breadcrumbs', async ({ page }) => {
@@ -130,10 +130,10 @@ test.describe('Quinceaneras Module', () => {
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
     await expect(breadcrumbNav.getByRole('link', { name: 'Dashboard' })).toBeVisible();
-    await expect(breadcrumbNav.getByRole('link', { name: 'Quinceaneras' })).toBeVisible();
+    await expect(breadcrumbNav.getByRole('link', { name: /Our Quincea.*eras/i })).toBeVisible();
 
-    // Click on "Quinceaneras" breadcrumb
-    await breadcrumbNav.getByRole('link', { name: 'Quinceaneras' }).click();
+    // Click on "Our Quinceañeras" breadcrumb
+    await breadcrumbNav.getByRole('link', { name: /Our Quincea.*eras/i }).click();
 
     // Should navigate back to quinceaneras list
     await expect(page).toHaveURL('/quinceaneras');
@@ -151,7 +151,7 @@ test.describe('Quinceaneras Module', () => {
     await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify action buttons exist
-    await expect(page.getByRole('link', { name: /Edit Quinceanera/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Edit Quincea.*era/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Print View/i })).toBeVisible();
     await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();

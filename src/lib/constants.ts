@@ -464,6 +464,62 @@ export const MASS_TEMPLATE_LABELS: Record<MassTemplate, { en: string; es: string
   'mass-readings-only': { en: 'Readings Only', es: 'Solo Lecturas' }
 }
 
+// Wedding Template Constants
+export const WEDDING_TEMPLATE_VALUES = ['wedding-full-script-english', 'wedding-full-script-spanish'] as const
+export type WeddingTemplate = typeof WEDDING_TEMPLATE_VALUES[number]
+
+export const WEDDING_TEMPLATE_LABELS: Record<WeddingTemplate, { en: string; es: string }> = {
+  'wedding-full-script-english': { en: 'Full Ceremony Script (English)', es: 'Guión Completo de la Ceremonia (Inglés)' },
+  'wedding-full-script-spanish': { en: 'Full Ceremony Script (Spanish)', es: 'Guión Completo de la Ceremonia (Español)' }
+}
+
+// Quinceañera Template Constants
+export const QUINCEANERA_TEMPLATE_VALUES = ['quinceanera-full-script-english', 'quinceanera-full-script-spanish'] as const
+export type QuinceaneraTemplate = typeof QUINCEANERA_TEMPLATE_VALUES[number]
+
+export const QUINCEANERA_TEMPLATE_LABELS: Record<QuinceaneraTemplate, { en: string; es: string }> = {
+  'quinceanera-full-script-english': { en: 'Full Ceremony Script (English)', es: 'Guión Completo de la Ceremonia (Inglés)' },
+  'quinceanera-full-script-spanish': { en: 'Full Ceremony Script (Spanish)', es: 'Guión Completo de la Ceremonia (Español)' }
+}
+
+// Funeral Template Constants
+export const FUNERAL_TEMPLATE_VALUES = ['funeral-full-script-english', 'funeral-full-script-spanish'] as const
+export type FuneralTemplate = typeof FUNERAL_TEMPLATE_VALUES[number]
+
+export const FUNERAL_TEMPLATE_LABELS: Record<FuneralTemplate, { en: string; es: string }> = {
+  'funeral-full-script-english': { en: 'Full Funeral Liturgy Script (English)', es: 'Guión Completo de la Liturgia Fúnebre (Inglés)' },
+  'funeral-full-script-spanish': { en: 'Full Funeral Liturgy Script (Spanish)', es: 'Guión Completo de la Liturgia Fúnebre (Español)' }
+}
+
+// Baptism Template Constants
+export const BAPTISM_TEMPLATE_VALUES = ['baptism-summary-english', 'baptism-summary-spanish'] as const
+export type BaptismTemplate = typeof BAPTISM_TEMPLATE_VALUES[number]
+
+export const BAPTISM_TEMPLATE_LABELS: Record<BaptismTemplate, { en: string; es: string }> = {
+  'baptism-summary-english': { en: 'Baptism Summary (English)', es: 'Resumen del Bautismo (Inglés)' },
+  'baptism-summary-spanish': { en: 'Baptism Summary (Spanish)', es: 'Resumen del Bautismo (Español)' }
+}
+
+// Presentation Template Constants
+export const PRESENTATION_TEMPLATE_VALUES = ['presentation-english', 'presentation-spanish', 'presentation-simple-english', 'presentation-simple-spanish', 'presentation-bilingual'] as const
+export type PresentationTemplate = typeof PRESENTATION_TEMPLATE_VALUES[number]
+
+export const PRESENTATION_TEMPLATE_LABELS: Record<PresentationTemplate, { en: string; es: string }> = {
+  'presentation-english': { en: 'Presentation in the Temple (English)', es: 'Presentación en el Templo (Inglés)' },
+  'presentation-spanish': { en: 'Presentation in the Temple (Spanish)', es: 'Presentación en el Templo (Español)' },
+  'presentation-simple-english': { en: 'Simple Presentation (English)', es: 'Presentación Simple (Inglés)' },
+  'presentation-simple-spanish': { en: 'Simple Presentation (Spanish)', es: 'Presentación Simple (Español)' },
+  'presentation-bilingual': { en: 'Bilingual Presentation (English & Spanish)', es: 'Presentación Bilingüe (Inglés y Español)' }
+}
+
+// Mass Intention Template Constants
+export const MASS_INTENTION_TEMPLATE_VALUES = ['mass-intention-summary'] as const
+export type MassIntentionTemplate = typeof MASS_INTENTION_TEMPLATE_VALUES[number]
+
+export const MASS_INTENTION_TEMPLATE_LABELS: Record<MassIntentionTemplate, { en: string; es: string }> = {
+  'mass-intention-summary': { en: 'Mass Intention Summary', es: 'Resumen de Intención de Misa' }
+}
+
 // Mass Intention Status Constants
 export const MASS_INTENTION_STATUS_VALUES = ['REQUESTED', 'CONFIRMED', 'FULFILLED', 'CANCELLED'] as const
 export type MassIntentionStatus = typeof MASS_INTENTION_STATUS_VALUES[number]

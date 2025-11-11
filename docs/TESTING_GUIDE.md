@@ -543,12 +543,54 @@ npm test
 # Run specific test file
 npm run test:headed tests/events.spec.ts
 
-# Run specific test by name
-npm run test:headed -- --grep "should create"
+# Run specific test by name (BEST for fixing individual failing tests)
+npm run test:headed -- --grep "should create, view, edit, and verify print view"
 
 # Run multiple test files
 npm run test:headed tests/events.spec.ts tests/readings.spec.ts
 ```
+
+### 🔧 Efficient Test Fixing Workflow
+
+**When fixing multiple failing tests, follow this workflow to save time:**
+
+1. **Identify failing tests** from the test run output
+2. **Fix ONE test at a time** in the code
+3. **Verify the fix** by running ONLY that specific test:
+   ```bash
+   npm run test:headed -- --grep "exact test name"
+   ```
+4. **Repeat** for each failing test
+5. **Final verification** - run the full suite once all fixes are complete:
+   ```bash
+   npm test
+   ```
+
+**Example workflow:**
+```bash
+# First test run shows 3 failures:
+# - baptisms: "should create, view, edit..."
+# - funerals: "should create, view, edit..."
+# - quinceaneras: "should show empty state..."
+
+# Fix baptisms test, then verify ONLY that test:
+npm run test:headed -- --grep "Baptisms Module.*should create, view, edit"
+
+# Fix funerals test, then verify ONLY that test:
+npm run test:headed -- --grep "Funerals Module.*should create, view, edit"
+
+# Fix quinceaneras test, then verify ONLY that test:
+npm run test:headed -- --grep "should show empty state when no quinceaneras"
+
+# All individual tests passing? Run full suite:
+npm test
+```
+
+**Why this approach?**
+- ⚡ Faster feedback loop (5-10 seconds vs 60+ seconds)
+- 🎯 Focused debugging on one issue at a time
+- 💰 Saves compute time and resources
+- ✅ Validates each fix before moving on
 
 ### Debug Tests
 
@@ -679,6 +721,7 @@ await expect(element).toHaveAttribute('aria-label', 'Delete')
 - Test the happy path first, then edge cases
 - Use Page Object Model for complex modules
 - Use centralized timeout constants
+- **When fixing failing tests:** Run ONLY the specific failing test to verify the fix, then move on to the next failing test. Only run the full suite after ALL fixes are complete.
 
 ❌ **DON'T:**
 - Don't create authentication functions (already handled)
@@ -687,6 +730,7 @@ await expect(element).toHaveAttribute('aria-label', 'Delete')
 - Don't use overly generic selectors (`page.locator('button')`)
 - Don't hardcode timeout values everywhere
 - Don't test for toast messages after successful form submissions (see TESTING_ARCHITECTURE.md)
+- **Don't re-run the entire test suite after each fix** - validate individual tests first to save time
 
 ---
 

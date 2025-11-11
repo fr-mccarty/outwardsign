@@ -7,6 +7,7 @@
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptEnglish } from './templates/full-script-english'
+import { buildFullScriptSpanish } from './templates/full-script-spanish'
 
 /**
  * Template Registry
@@ -20,9 +21,13 @@ export const QUINCEANERA_TEMPLATES: Record<string, LiturgyTemplate<QuinceaneraWi
     supportedLanguages: ['en'],
     builder: buildFullScriptEnglish,
   },
-  // Future templates:
-  // 'quinceanera-full-script-spanish': { ... },
-  // 'quinceanera-readings-only-english': { ... },
+  'quinceanera-full-script-spanish': {
+    id: 'quinceanera-full-script-spanish',
+    name: 'Guión Completo de la Ceremonia (Español)',
+    description: 'Liturgia completa de quinceañera con todas las lecturas, respuestas e instrucciones',
+    supportedLanguages: ['es'],
+    builder: buildFullScriptSpanish,
+  },
 }
 
 /**

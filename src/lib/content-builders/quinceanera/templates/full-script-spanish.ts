@@ -1,7 +1,7 @@
 /**
- * Quinceañera Full Script (English) Template
+ * Quinceañera Full Script (Spanish) Template
  *
- * Complete quinceañera liturgy with all readings, responses, and directions
+ * Complete quinceañera liturgy with all readings, responses, and directions in Spanish
  */
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
@@ -15,7 +15,7 @@ import {
 } from '@/lib/content-builders/shared/script-sections'
 
 /**
- * Build summary section (quinceañera celebration info)
+ * Build summary section (quinceañera celebration info) in Spanish
  */
 function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSection {
   const elements: ContentElement[] = []
@@ -23,7 +23,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   // Quinceañera Celebration subsection
   elements.push({
     type: 'section-title',
-    text: 'Quinceañera Celebration',
+    text: 'Celebración de Quinceañera',
   })
 
   if (quinceanera.quinceanera) {
@@ -37,7 +37,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.family_contact) {
     elements.push({
       type: 'info-row',
-      label: 'Family Contact:',
+      label: 'Contacto Familiar:',
       value: formatPersonWithPhone(quinceanera.family_contact),
     })
   }
@@ -45,7 +45,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.coordinator) {
     elements.push({
       type: 'info-row',
-      label: 'Coordinator:',
+      label: 'Coordinador(a):',
       value: formatPersonName(quinceanera.coordinator),
     })
   }
@@ -53,7 +53,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.presider) {
     elements.push({
       type: 'info-row',
-      label: 'Presider:',
+      label: 'Celebrante:',
       value: formatPersonName(quinceanera.presider),
     })
   }
@@ -61,7 +61,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.homilist) {
     elements.push({
       type: 'info-row',
-      label: 'Homilist:',
+      label: 'Homilista:',
       value: formatPersonName(quinceanera.homilist),
     })
   }
@@ -69,7 +69,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.lead_musician) {
     elements.push({
       type: 'info-row',
-      label: 'Lead Musician:',
+      label: 'Músico Principal:',
       value: formatPersonName(quinceanera.lead_musician),
     })
   }
@@ -77,7 +77,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.cantor) {
     elements.push({
       type: 'info-row',
-      label: 'Cantor:',
+      label: 'Cantor(a):',
       value: formatPersonName(quinceanera.cantor),
     })
   }
@@ -90,7 +90,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
         '')
     elements.push({
       type: 'info-row',
-      label: 'Celebration Location:',
+      label: 'Lugar de la Celebración:',
       value: locationText,
     })
   }
@@ -98,7 +98,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.quinceanera_event?.start_date) {
     elements.push({
       type: 'info-row',
-      label: 'Celebration Date & Time:',
+      label: 'Fecha y Hora de la Celebración:',
       value: formatEventDateTime(quinceanera.quinceanera_event),
     })
   }
@@ -111,7 +111,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
         '')
     elements.push({
       type: 'info-row',
-      label: 'Reception Location:',
+      label: 'Lugar de la Recepción:',
       value: locationText,
     })
   }
@@ -119,7 +119,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.note) {
     elements.push({
       type: 'info-row',
-      label: 'Note:',
+      label: 'Nota:',
       value: quinceanera.note,
     })
   }
@@ -127,13 +127,13 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   // Sacred Liturgy subsection
   elements.push({
     type: 'section-title',
-    text: 'Sacred Liturgy',
+    text: 'Sagrada Liturgia',
   })
 
   if (quinceanera.first_reading) {
     elements.push({
       type: 'info-row',
-      label: 'First Reading:',
+      label: 'Primera Lectura:',
       value: quinceanera.first_reading.pericope || '',
     })
   }
@@ -141,7 +141,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.first_reader) {
     elements.push({
       type: 'info-row',
-      label: 'First Reading Lector:',
+      label: 'Lector de la Primera Lectura:',
       value: formatPersonName(quinceanera.first_reader),
     })
   }
@@ -149,7 +149,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.psalm) {
     elements.push({
       type: 'info-row',
-      label: 'Psalm:',
+      label: 'Salmo:',
       value: quinceanera.psalm.pericope || '',
     })
   }
@@ -157,13 +157,13 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.psalm_is_sung) {
     elements.push({
       type: 'info-row',
-      label: 'Psalm Choice:',
-      value: 'Sung',
+      label: 'Elección del Salmo:',
+      value: 'Cantado',
     })
   } else if (quinceanera.psalm_reader) {
     elements.push({
       type: 'info-row',
-      label: 'Psalm Lector:',
+      label: 'Lector del Salmo:',
       value: formatPersonName(quinceanera.psalm_reader),
     })
   }
@@ -171,7 +171,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.second_reading) {
     elements.push({
       type: 'info-row',
-      label: 'Second Reading:',
+      label: 'Segunda Lectura:',
       value: quinceanera.second_reading.pericope || '',
     })
   }
@@ -179,7 +179,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.second_reader) {
     elements.push({
       type: 'info-row',
-      label: 'Second Reading Lector:',
+      label: 'Lector de la Segunda Lectura:',
       value: formatPersonName(quinceanera.second_reader),
     })
   }
@@ -187,7 +187,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (quinceanera.gospel_reading) {
     elements.push({
       type: 'info-row',
-      label: 'Gospel Reading:',
+      label: 'Lectura del Evangelio:',
       value: quinceanera.gospel_reading.pericope || '',
     })
   }
@@ -202,7 +202,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   if (petitionsReader) {
     elements.push({
       type: 'info-row',
-      label: 'Petitions Read By:',
+      label: 'Peticiones Leídas Por:',
       value: petitionsReader,
     })
   }
@@ -215,17 +215,17 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
 }
 
 /**
- * Build full quinceañera script (English)
+ * Build full quinceañera script (Spanish)
  */
-export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): LiturgyDocument {
+export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): LiturgyDocument {
   const quinceaneraTitle = quinceanera.quinceanera
-    ? `Quinceañera Celebration for ${formatPersonName(quinceanera.quinceanera)}`
-    : 'Quinceañera Celebration'
+    ? `Celebración de Quinceañera para ${formatPersonName(quinceanera.quinceanera)}`
+    : 'Celebración de Quinceañera'
 
   const eventDateTime =
     quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event?.start_time
       ? formatEventDateTime(quinceanera.quinceanera_event)
-      : 'Missing Date and Time'
+      : 'Falta Fecha y Hora'
 
   const sections: ContentSection[] = []
 
@@ -249,10 +249,10 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   sections.push(
     buildReadingSection({
       id: 'first-reading',
-      title: 'LITURGY OF THE WORD',
+      title: 'LITURGIA DE LA PALABRA',
       reading: quinceanera.first_reading,
       reader: quinceanera.first_reader,
-      responseText: 'Thanks be to God.',
+      responseText: 'Te alabamos, Señor.',
       showNoneSelected: true,
     })
   )
@@ -268,10 +268,10 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   sections.push(
     buildReadingSection({
       id: 'second-reading',
-      title: 'SECOND READING',
+      title: 'SEGUNDA LECTURA',
       reading: quinceanera.second_reading,
       reader: quinceanera.second_reader,
-      responseText: 'Thanks be to God.',
+      responseText: 'Te alabamos, Señor.',
       pageBreakBefore: !!quinceanera.second_reading,
     })
   )
@@ -279,7 +279,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   sections.push(
     buildReadingSection({
       id: 'gospel',
-      title: 'GOSPEL',
+      title: 'EVANGELIO',
       reading: quinceanera.gospel_reading,
       reader: quinceanera.presider,
       includeGospelAcclamations: true,
@@ -301,12 +301,12 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   // Add Act of Thanksgiving and Personal Commitment
   sections.push({
     id: 'act-of-thanksgiving',
-    title: 'Act of Thanksgiving and Personal Commitment',
+    title: 'Acto de Acción de Gracias y Compromiso Personal',
     pageBreakBefore: true,
     elements: [
       {
         type: 'section-title',
-        text: 'Act of Thanksgiving and Personal Commitment',
+        text: 'Acto de Acción de Gracias y Compromiso Personal',
         alignment: 'center',
       },
       {
@@ -315,7 +315,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
       },
       {
         type: 'rubric',
-        text: 'Before the final blessing, the priest invites the quinceañera to make an act of thanksgiving and of a personal commitment to lead a Christian life. The quinceañera may do so in these or similar words:',
+        text: 'Antes de la bendición final, el sacerdote invita a la quinceañera a hacer un acto de acción de gracias y de compromiso personal para llevar una vida cristiana. La quinceañera puede hacerlo con estas o similares palabras:',
       },
       {
         type: 'spacer',
@@ -323,31 +323,31 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
       },
       {
         type: 'prayer-text',
-        text: `Heavenly Father,
-I thank you for the gift of life
-for creating me in your image and likeness
-and for calling me to be your daughter through baptism.
+        text: `Padre celestial,
+te doy gracias por el don de la vida,
+por crearme a tu imagen y semejanza
+y por llamarme a ser tu hija por medio del bautismo.
 
-Thank you for sending your Son Jesus to save me
-and your Holy Spirit to sanctify me.
+Gracias por enviar a tu Hijo Jesús para salvarme
+y a tu Espíritu Santo para santificarme.
 
-To that which in your goodness and love
-you will for me, I say "yes,"
-With your grace I commit myself
-to serve my brothers and sisters all my life.
+A lo que en tu bondad y amor
+quieras para mí, digo "sí".
+Con tu gracia me comprometo
+a servir a mis hermanos y hermanas toda mi vida.
 
-Mary, Mother of Jesus and our Mother,
-I dedicate myself to you.
-Since you are my model of faith,
-help me to continue learning from you what I need
-to be a Christian woman.
+María, Madre de Jesús y Madre nuestra,
+me dedico a ti.
+Ya que tú eres mi modelo de fe,
+ayúdame a seguir aprendiendo de ti lo que necesito
+para ser una mujer cristiana.
 
-Help me to hear the Word of God as you did,
-holding it in my heart and loving others,
-so that, as I walk with Jesus in this life,
-I may worship Him with you in all eternity.
+Ayúdame a escuchar la Palabra de Dios como tú lo hiciste,
+guardándola en mi corazón y amando a los demás,
+para que, mientras camino con Jesús en esta vida,
+pueda adorarlo contigo en la eternidad.
 
-Amen.`,
+Amén.`,
         preserveLineBreaks: true,
         alignment: 'left',
       },
@@ -357,7 +357,7 @@ Amen.`,
       },
       {
         type: 'rubric',
-        text: 'The priest responds:',
+        text: 'El sacerdote responde:',
       },
       {
         type: 'spacer',
@@ -365,7 +365,7 @@ Amen.`,
       },
       {
         type: 'priest-text',
-        text: `${quinceanera.quinceanera ? formatPersonName(quinceanera.quinceanera) : 'N.'}, may God who has begun this good work in you bring it to completion.`,
+        text: `${quinceanera.quinceanera ? formatPersonName(quinceanera.quinceanera) : 'N.'}, que Dios, que ha comenzado esta buena obra en ti, la lleve a su cumplimiento.`,
       },
     ],
   })
@@ -379,8 +379,8 @@ Amen.`,
   return {
     id: quinceanera.id,
     type: 'quinceanera',
-    language: 'en',
-    template: 'quinceanera-full-script-english',
+    language: 'es',
+    template: 'quinceanera-full-script-spanish',
     title: quinceaneraTitle,
     subtitle: eventDateTime,
     sections,

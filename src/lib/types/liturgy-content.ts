@@ -163,6 +163,34 @@ export interface PetitionElement extends BaseElement {
 }
 
 /**
+ * Rubric (liturgical instruction/direction in italics)
+ */
+export interface RubricElement extends BaseElement {
+  type: 'rubric'
+  text: string
+  alignment?: TextAlignment
+}
+
+/**
+ * Prayer text (formatted prayer content)
+ */
+export interface PrayerTextElement extends BaseElement {
+  type: 'prayer-text'
+  text: string
+  preserveLineBreaks?: boolean
+  alignment?: TextAlignment
+}
+
+/**
+ * Priest text (priest's response or dialogue)
+ */
+export interface PriestTextElement extends BaseElement {
+  type: 'priest-text'
+  text: string
+  alignment?: TextAlignment
+}
+
+/**
  * Info grid row (label: value pairs for summary section)
  */
 export interface InfoRowElement extends BaseElement {
@@ -197,6 +225,9 @@ export type ContentElement =
   | ResponseElement
   | PriestDialogueElement
   | PetitionElement
+  | RubricElement
+  | PrayerTextElement
+  | PriestTextElement
   | InfoRowElement
   | SpacerElement
 

@@ -21,11 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { quinceaneraTemplates, buildQuinceaneraPetitions } from "@/lib/petition-templates/quinceanera"
-import { QUINCEANERA_TEMPLATES } from "@/lib/content-builders/quinceanera"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
@@ -607,9 +606,9 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(QUINCEANERA_TEMPLATES).map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
+                {QUINCEANERA_TEMPLATE_VALUES.map((templateId) => (
+                  <SelectItem key={templateId} value={templateId}>
+                    {QUINCEANERA_TEMPLATE_LABELS[templateId].en}
                   </SelectItem>
                 ))}
               </SelectContent>

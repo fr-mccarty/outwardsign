@@ -17,9 +17,8 @@ import {
 } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, BAPTISM_TEMPLATE_VALUES, BAPTISM_TEMPLATE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
-import { BAPTISM_TEMPLATES } from "@/lib/content-builders/baptism"
 import { usePickerState } from "@/hooks/use-picker-state"
 import type { Person, Event } from "@/lib/types"
 
@@ -155,9 +154,9 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent>
-                {BAPTISM_TEMPLATES.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
+                {BAPTISM_TEMPLATE_VALUES.map((templateId) => (
+                  <SelectItem key={templateId} value={templateId}>
+                    {BAPTISM_TEMPLATE_LABELS[templateId].en}
                   </SelectItem>
                 ))}
               </SelectContent>

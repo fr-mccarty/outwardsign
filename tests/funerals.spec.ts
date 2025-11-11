@@ -24,7 +24,7 @@ test.describe('Funerals Module', () => {
 
     // Add some notes
     const initialNotes = 'Initial funeral planning notes for memorial service';
-    await page.fill('textarea#notes', initialNotes);
+    await page.fill('textarea#note', initialNotes);
 
     // Scroll to bottom to ensure submit button is visible
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -53,7 +53,7 @@ test.describe('Funerals Module', () => {
 
     // Edit the funeral - add more information
     const updatedNotes = 'Updated notes: Memorial service scheduled for Saturday. Family gathering afterward.';
-    await page.fill('textarea#notes', updatedNotes);
+    await page.fill('textarea#note', updatedNotes);
 
     // Scroll to bottom and submit
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));

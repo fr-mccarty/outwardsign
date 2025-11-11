@@ -21,11 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, FUNERAL_TEMPLATE_VALUES, FUNERAL_TEMPLATE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { funeralTemplates, buildFuneralPetitions } from "@/lib/petition-templates/funeral"
-import { FUNERAL_TEMPLATES } from "@/lib/content-builders/funeral"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
@@ -607,9 +606,9 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(FUNERAL_TEMPLATES).map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
+                {FUNERAL_TEMPLATE_VALUES.map((templateId) => (
+                  <SelectItem key={templateId} value={templateId}>
+                    {FUNERAL_TEMPLATE_LABELS[templateId].en}
                   </SelectItem>
                 ))}
               </SelectContent>

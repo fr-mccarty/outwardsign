@@ -26,9 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
-import { PRESENTATION_TEMPLATES } from "@/lib/content-builders/presentation"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
@@ -264,9 +263,9 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(PRESENTATION_TEMPLATES).map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
+                {PRESENTATION_TEMPLATE_VALUES.map((templateId) => (
+                  <SelectItem key={templateId} value={templateId}>
+                    {PRESENTATION_TEMPLATE_LABELS[templateId].en}
                   </SelectItem>
                 ))}
               </SelectContent>

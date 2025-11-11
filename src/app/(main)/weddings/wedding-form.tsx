@@ -22,11 +22,10 @@ import {
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
-import { WEDDING_TEMPLATES } from "@/lib/content-builders/wedding"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { Button } from "@/components/ui/button"
 
@@ -677,9 +676,9 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(WEDDING_TEMPLATES).map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
+                {WEDDING_TEMPLATE_VALUES.map((templateId) => (
+                  <SelectItem key={templateId} value={templateId}>
+                    {WEDDING_TEMPLATE_LABELS[templateId].en}
                   </SelectItem>
                 ))}
               </SelectContent>

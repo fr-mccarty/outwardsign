@@ -250,7 +250,7 @@ export default function UserSettingsPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-muted-foreground">Full Name</Label>
-                <p className="mt-1 font-medium">{userSettings?.full_name || 'Not set'}</p>
+                <p className="mt-1 font-medium truncate">{userSettings?.full_name || 'Not set'}</p>
               </div>
 
               <div>
