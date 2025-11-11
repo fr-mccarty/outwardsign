@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -155,6 +155,35 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     description: t.description,
   }))
 
+  // Compute suggested event names based on bride and groom
+  const suggestedWeddingName = useMemo(() => {
+    const brideLastName = bride.value?.last_name
+    const groomLastName = groom.value?.last_name
+
+    if (brideLastName && groomLastName) {
+      return `${brideLastName}-${groomLastName} Wedding`
+    } else if (brideLastName) {
+      return `${brideLastName} Wedding`
+    } else if (groomLastName) {
+      return `${groomLastName} Wedding`
+    }
+    return EVENT_TYPE_LABELS.WEDDING.en
+  }, [bride.value, groom.value])
+
+  const suggestedReceptionName = useMemo(() => {
+    const brideLastName = bride.value?.last_name
+    const groomLastName = groom.value?.last_name
+
+    if (brideLastName && groomLastName) {
+      return `${brideLastName}-${groomLastName} Reception`
+    } else if (brideLastName) {
+      return `${brideLastName} Reception`
+    } else if (groomLastName) {
+      return `${groomLastName} Reception`
+    }
+    return "Reception"
+  }, [bride.value, groom.value])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -248,6 +277,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               defaultEventType="WEDDING"
               defaultName={EVENT_TYPE_LABELS.WEDDING.en}
               disableSearch={true}
+              defaultCreateFormData={{ name: suggestedWeddingName }}
             />
             <EventPickerField
               label="Reception"
@@ -260,6 +290,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               defaultEventType="OTHER"
               defaultName="Reception"
               disableSearch={true}
+              defaultCreateFormData={{ name: suggestedReceptionName }}
             />
           </div>
 

@@ -10,6 +10,11 @@
 - [Field Wrappers](#field-wrappers)
 - [Existing Pickers](#existing-pickers)
 - [Advanced Features](#advanced-features)
+  - [Dynamic Field Visibility](#dynamic-field-visibility)
+  - [Validation with Zod](#validation-with-zod)
+  - [Memoization Best Practices](#memoization-best-practices)
+  - [Empty Form Data Constants](#empty-form-data-constants)
+  - [Context-Aware Suggested Event Names](#context-aware-suggested-event-names)
 
 ---
 
@@ -735,6 +740,70 @@ const EMPTY_FORM_DATA = {}
 
 <CorePicker defaultCreateFormData={EMPTY_FORM_DATA} />
 ```
+
+---
+
+### Context-Aware Suggested Event Names
+
+**Feature:** Automatically suggest meaningful event names based on form context.
+
+When creating events from module forms (weddings, funerals, baptisms, etc.), the EventPicker can pre-fill the event name field with contextually relevant suggestions based on the people already selected in the form.
+
+**Implementation Pattern:**
+
+```typescript
+import { useMemo } from 'react'
+
+// In your form component:
+const suggestedEventName = useMemo(() => {
+  const brideLastName = bride.value?.last_name
+  const groomLastName = groom.value?.last_name
+
+  if (brideLastName && groomLastName) {
+    return `${brideLastName}-${groomLastName} Wedding`
+  } else if (brideLastName) {
+    return `${brideLastName} Wedding`
+  } else if (groomLastName) {
+    return `${groomLastName} Wedding`
+  }
+  return 'Wedding' // Fallback
+}, [bride.value, groom.value])
+
+// Use in EventPickerField:
+<EventPickerField
+  label="Wedding Ceremony"
+  value={weddingEvent.value}
+  onValueChange={weddingEvent.setValue}
+  showPicker={weddingEvent.showPicker}
+  onShowPickerChange={weddingEvent.setShowPicker}
+  openToNewEvent={!isEditing}
+  defaultEventType="WEDDING"
+  defaultCreateFormData={{ name: suggestedEventName }}
+/>
+```
+
+**Benefits:**
+- Saves user time by pre-filling sensible defaults
+- Maintains naming consistency across events
+- Updates dynamically as users select people
+- Users can still edit the suggested name if needed
+
+**Module-Specific Examples:**
+
+| Module | Suggested Name Pattern | Example |
+|--------|------------------------|---------|
+| **Weddings** | `{Bride}-{Groom} Wedding` | "Smith-Jones Wedding" |
+| **Funerals** | `{FirstName} {LastName} Funeral` | "John Doe Funeral" |
+| **Baptisms** | `{FirstName} {LastName} Baptism` | "Mary Smith Baptism" |
+| **Presentations** | `{FirstName} {LastName} Presentation` | "Maria Garcia Presentation" |
+| **Quinceañeras** | `{FirstName} {LastName} Quinceañera` | "Sofia Martinez Quinceañera" |
+
+**Implementation Notes:**
+- Uses `useMemo` to compute suggested names based on selected people
+- Recomputes automatically when people selections change
+- Falls back to generic names (e.g., "Wedding") when no people are selected yet
+- Works seamlessly with `defaultCreateFormData` prop in EventPickerField
+- Applied to all event pickers in module forms (ceremonies, receptions, meals, etc.)
 
 ---
 

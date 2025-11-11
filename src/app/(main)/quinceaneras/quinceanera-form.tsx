@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -146,6 +146,35 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     description: t.description,
   }))
 
+  // Compute suggested event names based on quinceañera girl
+  const suggestedQuinceaneraName = useMemo(() => {
+    const girlFirstName = quinceaneraGirl.value?.first_name
+    const girlLastName = quinceaneraGirl.value?.last_name
+
+    if (girlFirstName && girlLastName) {
+      return `${girlFirstName} ${girlLastName} Quinceañera`
+    } else if (girlFirstName) {
+      return `${girlFirstName} Quinceañera`
+    } else if (girlLastName) {
+      return `${girlLastName} Quinceañera`
+    }
+    return EVENT_TYPE_LABELS.QUINCEANERA.en
+  }, [quinceaneraGirl.value])
+
+  const suggestedReceptionName = useMemo(() => {
+    const girlFirstName = quinceaneraGirl.value?.first_name
+    const girlLastName = quinceaneraGirl.value?.last_name
+
+    if (girlFirstName && girlLastName) {
+      return `${girlFirstName} ${girlLastName} Reception`
+    } else if (girlFirstName) {
+      return `${girlFirstName} Reception`
+    } else if (girlLastName) {
+      return `${girlLastName} Reception`
+    }
+    return "Quinceañera Reception"
+  }, [quinceaneraGirl.value])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -235,6 +264,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               defaultEventType="QUINCEANERA"
               defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
               disableSearch={true}
+              defaultCreateFormData={{ name: suggestedQuinceaneraName }}
             />
             <EventPickerField
               label="Reception"
@@ -247,6 +277,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               defaultEventType="OTHER"
               defaultName="Quinceañera Reception"
               disableSearch={true}
+              defaultCreateFormData={{ name: suggestedReceptionName }}
             />
           </div>
         </CardContent>

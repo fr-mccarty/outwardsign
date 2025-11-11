@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormField } from "@/components/ui/form-field"
@@ -114,6 +114,21 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
     setValue("coordinator_id", coordinator.value?.id || null)
   }, [coordinator.value, setValue])
 
+  // Compute suggested event name based on child
+  const suggestedPresentationName = useMemo(() => {
+    const childFirstName = child.value?.first_name
+    const childLastName = child.value?.last_name
+
+    if (childFirstName && childLastName) {
+      return `${childFirstName} ${childLastName} Presentation`
+    } else if (childFirstName) {
+      return `${childFirstName} Presentation`
+    } else if (childLastName) {
+      return `${childLastName} Presentation`
+    }
+    return EVENT_TYPE_LABELS.PRESENTATION.en
+  }, [child.value])
+
   const onSubmit = async (data: CreatePresentationData) => {
     try {
       if (isEditing) {
@@ -151,6 +166,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             defaultEventType="PRESENTATION"
             defaultName={EVENT_TYPE_LABELS.PRESENTATION.en}
             disableSearch={true}
+            defaultCreateFormData={{ name: suggestedPresentationName }}
           />
         </CardContent>
       </Card>

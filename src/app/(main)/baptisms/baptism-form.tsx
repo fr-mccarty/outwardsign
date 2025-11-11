@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -69,6 +69,21 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       if (baptism.presider) presider.setValue(baptism.presider)
     }
   }, [baptism])
+
+  // Compute suggested event name based on child
+  const suggestedBaptismName = useMemo(() => {
+    const childFirstName = child.value?.first_name
+    const childLastName = child.value?.last_name
+
+    if (childFirstName && childLastName) {
+      return `${childFirstName} ${childLastName} Baptism`
+    } else if (childFirstName) {
+      return `${childFirstName} Baptism`
+    } else if (childLastName) {
+      return `${childLastName} Baptism`
+    }
+    return "Baptism"
+  }, [child.value])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -163,6 +178,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             defaultEventType="BAPTISM"
             defaultName="Baptism"
             disableSearch={true}
+            defaultCreateFormData={{ name: suggestedBaptismName }}
           />
         </CardContent>
       </Card>

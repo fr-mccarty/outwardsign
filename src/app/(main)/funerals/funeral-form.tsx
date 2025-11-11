@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -146,6 +146,35 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
     description: t.description,
   }))
 
+  // Compute suggested event names based on deceased
+  const suggestedFuneralName = useMemo(() => {
+    const deceasedFirstName = deceased.value?.first_name
+    const deceasedLastName = deceased.value?.last_name
+
+    if (deceasedFirstName && deceasedLastName) {
+      return `${deceasedFirstName} ${deceasedLastName} Funeral`
+    } else if (deceasedLastName) {
+      return `${deceasedLastName} Funeral`
+    } else if (deceasedFirstName) {
+      return `${deceasedFirstName} Funeral`
+    }
+    return EVENT_TYPE_LABELS.FUNERAL.en
+  }, [deceased.value])
+
+  const suggestedFuneralMealName = useMemo(() => {
+    const deceasedFirstName = deceased.value?.first_name
+    const deceasedLastName = deceased.value?.last_name
+
+    if (deceasedFirstName && deceasedLastName) {
+      return `${deceasedFirstName} ${deceasedLastName} Funeral Meal`
+    } else if (deceasedLastName) {
+      return `${deceasedLastName} Funeral Meal`
+    } else if (deceasedFirstName) {
+      return `${deceasedFirstName} Funeral Meal`
+    }
+    return "Funeral Meal"
+  }, [deceased.value])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -235,6 +264,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               defaultEventType="FUNERAL"
               defaultName={EVENT_TYPE_LABELS.FUNERAL.en}
               disableSearch={true}
+              defaultCreateFormData={{ name: suggestedFuneralName }}
             />
             <EventPickerField
               label="Funeral Meal / Reception"
@@ -247,6 +277,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               defaultEventType="OTHER"
               defaultName="Funeral Meal"
               disableSearch={true}
+              defaultCreateFormData={{ name: suggestedFuneralMealName }}
             />
           </div>
         </CardContent>

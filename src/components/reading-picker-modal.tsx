@@ -341,10 +341,6 @@ export function ReadingPickerModal({
                     </div>
                   </div>
 
-                  <div className="text-sm text-muted-foreground mb-2">
-                    {reading.category}
-                  </div>
-
                   {reading.text && (
                     <div className="text-sm text-gray-700 line-clamp-2">
                       {reading.text.substring(0, 120)}
@@ -403,15 +399,10 @@ export function ReadingPickerModal({
           <div className="flex-1 overflow-y-auto pr-2">
             {previewReading && (
               <div className="space-y-4">
-                {/* Title and Category */}
+                {/* Title */}
                 <div className="space-y-1">
                   {previewReading.title && (
                     <h2 className="text-lg font-semibold">{previewReading.title}</h2>
-                  )}
-                  {previewReading.category && (
-                    <div className="text-sm text-muted-foreground">
-                      {previewReading.category}
-                    </div>
                   )}
                 </div>
 
