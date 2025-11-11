@@ -54,12 +54,12 @@ const translations = {
       freeOpenSource: "Free & Open Source",
       title: "Plan, Communicate, and Celebrate",
       titleHighlight: "Sacraments & Sacramentals with Excellence",
-      subtitle: "The Sacraments and Sacramentals are the core activity of your parish. Stop juggling scattered documents, endless email chains, and last-minute scrambling. Prepare beautiful celebrations—together.",
+      subtitle: "The Sacraments and Sacramentals are the core activity of your parish. Stop juggling scattered documents, endless email chains, and last-minute scrambling. Prepare beautiful celebrations.",
       getStartedFree: "Get Started Free",
       seeHowItWorks: "See How It Works",
       disclaimer: "Free forever • No credit card required • Open source",
       problemStatement: "An outward sign instituted by Christ to give grace.",
-      problemDescription: "This is the traditional Catholic definition of a sacrament. From weddings to funerals, baptisms to quinceañeras—when parish staff, presiders, and families work together with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
+      problemDescription: "This is the traditional Catholic definition of a sacrament. From weddings to funerals, baptisms to quinceañeras—with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
     },
     features: {
       sectionTitle: "Everything You Need in One Place",
@@ -71,16 +71,6 @@ const translations = {
           "Custom forms for each sacrament type",
           "Track participants and family details",
           "Organize readings and liturgical elements"
-        ]
-      },
-      collaboration: {
-        title: "Staff & Family Collaboration",
-        description: "Work together seamlessly with presiders, parish staff, and families throughout the entire preparation process.",
-        features: [
-          "Parish directory with role management",
-          "Download parish directory as CSV",
-          "Shared access to event details",
-          "Clear communication channels"
         ]
       },
       scriptGeneration: {
@@ -166,8 +156,8 @@ const translations = {
       sectionTitle: "From Planning to Celebration",
       sectionSubtitle: "A simple, three-step process that takes you from initial planning to a beautifully prepared celebration.",
       step1: {
-        title: "Plan Together",
-        description: "Create the event, add participants, assign roles. Parish staff and families collaborate in real-time with shared access."
+        title: "Plan Your Event",
+        description: "Create the event, add participants, select readings and prayers. Build a complete celebration from start to finish."
       },
       step2: {
         title: "Prepare the Liturgy",
@@ -218,10 +208,6 @@ const translations = {
       liturgicalDirectors: {
         title: "Liturgical Directors",
         description: "Manage all parish liturgies from one platform"
-      },
-      parishStaff: {
-        title: "Parish Staff",
-        description: "Collaborate seamlessly across the entire team"
       }
     },
     gettingStarted: {
@@ -278,12 +264,12 @@ const translations = {
       freeOpenSource: "Gratis y de Código Abierto",
       title: "Planifica, Comunica y Celebra",
       titleHighlight: "Sacramentos y Sacramentales con Excelencia",
-      subtitle: "Los Sacramentos y Sacramentales son la actividad central de tu parroquia. Deja de hacer malabarismos con documentos dispersos, cadenas interminables de correos electrónicos y preparativos de último minuto. Prepara celebraciones hermosas—juntos.",
+      subtitle: "Los Sacramentos y Sacramentales son la actividad central de tu parroquia. Deja de hacer malabarismos con documentos dispersos, cadenas interminables de correos electrónicos y preparativos de último minuto. Prepara celebraciones hermosas.",
       getStartedFree: "Comenzar Gratis",
       seeHowItWorks: "Ver Cómo Funciona",
       disclaimer: "Gratis para siempre • No se requiere tarjeta de crédito • Código abierto",
       problemStatement: "Un signo visible instituido por Cristo para dar la gracia.",
-      problemDescription: "Esta es la definición católica tradicional de un sacramento. Desde bodas hasta funerales, bautismos hasta quinceañeras—cuando el personal parroquial, los presidentes y las familias trabajan juntos con comunicación clara y preparación adecuada, crean momentos de profundo significado espiritual para los individuos y toda la comunidad."
+      problemDescription: "Esta es la definición católica tradicional de un sacramento. Desde bodas hasta funerales, bautismos hasta quinceañeras—con comunicación clara y preparación adecuada, creas momentos de profundo significado espiritual para los individuos y toda la comunidad."
     },
     features: {
       sectionTitle: "Todo lo que Necesitas en un Solo Lugar",
@@ -295,16 +281,6 @@ const translations = {
           "Formularios personalizados para cada tipo de sacramento",
           "Seguimiento de participantes y detalles familiares",
           "Organización de lecturas y elementos litúrgicos"
-        ]
-      },
-      collaboration: {
-        title: "Colaboración entre Personal y Familias",
-        description: "Trabaja en conjunto sin problemas con presidentes, personal parroquial y familias durante todo el proceso de preparación.",
-        features: [
-          "Directorio parroquial con gestión de roles",
-          "Descarga el directorio parroquial como CSV",
-          "Acceso compartido a detalles de eventos",
-          "Canales de comunicación claros"
         ]
       },
       scriptGeneration: {
@@ -390,8 +366,8 @@ const translations = {
       sectionTitle: "Desde la Planificación hasta la Celebración",
       sectionSubtitle: "Un proceso simple de tres pasos que te lleva desde la planificación inicial hasta una celebración bellamente preparada.",
       step1: {
-        title: "Planifica Juntos",
-        description: "Crea el evento, añade participantes, asigna roles. El personal parroquial y las familias colaboran en tiempo real con acceso compartido."
+        title: "Planifica tu Evento",
+        description: "Crea el evento, añade participantes, selecciona lecturas y oraciones. Construye una celebración completa de principio a fin."
       },
       step2: {
         title: "Prepara la Liturgia",
@@ -442,10 +418,6 @@ const translations = {
       liturgicalDirectors: {
         title: "Directores Litúrgicos",
         description: "Gestiona todas las liturgias parroquiales desde una plataforma"
-      },
-      parishStaff: {
-        title: "Personal Parroquial",
-        description: "Colabora sin problemas en todo el equipo"
       }
     },
     gettingStarted: {
@@ -715,7 +687,10 @@ function HomeContent() {
       <TestingBanner />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-12">
+      <div>
+        {/* Hero & Features Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="space-y-20">
         {/* Hero Section */}
         <div className="text-center space-y-8 py-12 md:py-20">
           <div className="flex justify-center gap-3 mb-6 flex-wrap">
@@ -796,31 +771,6 @@ function HomeContent() {
                 </p>
                 <ul className="text-sm space-y-2 text-muted-foreground">
                   {t.features.sacramentManagement.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Collaboration */}
-            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                  {t.features.collaboration.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {t.features.collaboration.description}
-                </p>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  {t.features.collaboration.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                       <span>{feature}</span>
@@ -961,15 +911,19 @@ function HomeContent() {
             </div>
           </div>
         </div>
-
-        {/* Sacraments & Sacramentals Showcase */}
-        <div id="sacraments" className="space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">{t.sacraments.sectionTitle}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t.sacraments.sectionSubtitle}
-            </p>
           </div>
+        </div>
+
+        {/* Sacraments & Sacramentals Showcase - Full Width */}
+        <div id="sacraments" className="bg-secondary text-secondary-foreground py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-bold">{t.sacraments.sectionTitle}</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.sacraments.sectionSubtitle}
+              </p>
+            </div>
 
           {/* Catechism Quote Banner */}
           <div className="max-w-4xl mx-auto">
@@ -1036,8 +990,13 @@ function HomeContent() {
               </CardContent>
             </Card>
           </div>
+            </div>
+          </div>
         </div>
 
+        {/* How It Works & Print Feature Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="space-y-20">
         {/* How It Works */}
         <div id="how-it-works" className="space-y-12">
           <div className="text-center space-y-4">
@@ -1189,17 +1148,21 @@ function HomeContent() {
             </div>
           </div>
         </div>
-
-        {/* Who It's For */}
-        <div className="space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">{t.whoItsFor.sectionTitle}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t.whoItsFor.sectionSubtitle}
-            </p>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Who It's For - Full Width */}
+        <div className="bg-secondary text-secondary-foreground py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-bold">{t.whoItsFor.sectionTitle}</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.whoItsFor.sectionSubtitle}
+              </p>
+            </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <Card className="bg-card text-card-foreground text-center border">
               <CardContent className="pt-8 pb-8">
                 <Church className="h-10 w-10 text-primary mx-auto mb-3" />
@@ -1229,27 +1192,21 @@ function HomeContent() {
                 </p>
               </CardContent>
             </Card>
-
-            <Card className="bg-card text-card-foreground text-center border">
-              <CardContent className="pt-8 pb-8">
-                <Heart className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">{t.whoItsFor.parishStaff.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t.whoItsFor.parishStaff.description}
-                </p>
-              </CardContent>
-            </Card>
+          </div>
+            </div>
           </div>
         </div>
 
-        {/* Getting Started Section */}
-        <div className="space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">{t.gettingStarted.title}</h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              {t.gettingStarted.subtitle}
-            </p>
-          </div>
+        {/* Getting Started Section - Full Width */}
+        <div className="bg-secondary text-secondary-foreground py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-bold">{t.gettingStarted.title}</h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                {t.gettingStarted.subtitle}
+              </p>
+            </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Step 1 */}
@@ -1344,9 +1301,12 @@ function HomeContent() {
               </Link>
             </Button>
           </div>
+            </div>
+          </div>
         </div>
 
-        {/* Final CTA */}
+        {/* Final CTA Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <Card className="bg-card text-card-foreground border-2 border-primary/20 rounded-2xl p-12 md:p-16 text-center space-y-8">
           <div className="space-y-4">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
@@ -1375,10 +1335,11 @@ function HomeContent() {
             {t.finalCTA.disclaimer}
           </p>
         </Card>
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="border-t mt-20">
+      <footer className="border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center space-y-4">
             <div className="text-sm text-muted-foreground">

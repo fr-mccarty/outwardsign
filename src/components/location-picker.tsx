@@ -165,7 +165,11 @@ export function LocationPicker({
     setShowAddForm(true)
   }
 
-  const onSubmitNewLocation = async (data: NewLocationFormData) => {
+  const onSubmitNewLocation = async (data: NewLocationFormData, e?: React.BaseSyntheticEvent) => {
+    // Prevent event from bubbling up to parent forms
+    e?.preventDefault()
+    e?.stopPropagation()
+
     try {
       const newLocation = await createLocation({
         name: data.name,
@@ -334,7 +338,13 @@ export function LocationPicker({
             Create a new location record. Fill in the details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmitNewLocation)} className="flex flex-col flex-1 min-h-0">
+        <form
+          onSubmit={(e) => {
+            e.stopPropagation()
+            handleSubmit(onSubmitNewLocation)(e)
+          }}
+          className="flex flex-col flex-1 min-h-0"
+        >
           <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="name" className="text-right pt-2">

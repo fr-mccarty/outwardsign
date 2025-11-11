@@ -139,10 +139,20 @@ The following components should be used in all forms for consistency:
 - **`EventDisplay`** - Display event date/time/location in forms
 
 ### Picker Components:
-- **`PeoplePicker`** - Select person from parish directory with search and inline creation
-- **`EventPicker`** - Select or create events with date/time/location
-- **`ReadingPickerModal`** - Select scripture readings with category filters
+
+**Available Pickers (7 total):**
+1. **`PeoplePicker`** - Select person from parish directory with search and inline creation
+2. **`EventPicker`** - Select or create events with date/time/location
+3. **`LocationPicker`** - Select or create locations (churches, venues, halls)
+4. **`ReadingPickerModal`** - Select scripture readings with category filters (Wedding, Funeral, Baptism, etc.)
+5. **`MassPicker`** - Select scheduled masses with search and date display
+6. **`RolePicker`** - Select liturgical ministry roles (Lector, EMHC, Altar Server, Cantor, Usher, etc.)
+7. **`GlobalLiturgicalEventPicker`** - Select global liturgical calendar events (feasts, solemnities, holy days)
+
+**Additional Components:**
 - **`PetitionEditor`** - Edit petitions with template insertion
+
+**Note:** For detailed documentation on each picker including props, features, and usage examples, see [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md#picker-components).
 
 ### Utility Hooks:
 - **`usePickerState`** (`src/hooks/use-picker-state.ts`)

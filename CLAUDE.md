@@ -6,6 +6,7 @@
 
 ## Table of Contents
 
+- [📚 Detailed Documentation](#-detailed-documentation)
 - [Project Description](#project-description)
 - [📖 User Personas](#-user-personas)
 - [🔴 Database](#-database)
@@ -26,7 +27,22 @@
 - [🔴 Design Principles](#-design-principles)
 - [🔴 Creating New Modules](#-creating-new-modules)
 - [Known Issues](#known-issues)
-- [🔴 Permissions & Automation](#-permissions--automation)
+
+---
+
+## 📚 Detailed Documentation
+
+The `AGENT_RESOURCES/` directory contains comprehensive, in-depth documentation files that provide detailed guidance on specific topics:
+
+- **Forms** - Complete form patterns, validation, styling rules
+- **Styling** - Dark mode support, color tokens, CSS patterns
+- **Components** - Component registry with usage examples
+- **Modules** - Module creation checklist and patterns
+- **Testing** - Test architecture and best practices
+- **Liturgy** - Liturgical script system documentation
+- **And more...**
+
+**When you need detailed information on a topic, search the `AGENT_RESOURCES/` directory.** Files are named descriptively (e.g., `FORMS.md`, `STYLES.md`, `COMPONENT_REGISTRY.md`). This main CLAUDE.md file provides overviews and links to these resources where appropriate.
 
 ---
 
@@ -82,11 +98,20 @@ During initial development, modify existing migrations instead of creating new m
 - Keep migrations focused and atomic for better version control and rollback capability
 
 ## Testing
-For testing instructions and commands, refer to the [README.md](../README.md#testing) file.
 
-**Test Architecture & Testability:** For comprehensive guidance on making components testable, selector strategies, test ID conventions, accessibility patterns, and Page Object Model, see [tests/TEST_ARCHITECTURE.md](tests/TEST_ARCHITECTURE.md). This includes key testing principles for selector priority, component testability, and timeout management.
+**For quick setup and running tests:** See [TESTING_QUICKSTART.md](./AGENT_RESOURCES/TESTING_QUICKSTART.md)
 
-**Authentication in Tests:** For information on how to use authentication in tests (setting up test users, authenticated requests, etc.), refer to the authentication testing section in the [README.md](../README.md#testing) file.
+**For AI agents writing tests:** See [TESTING_GUIDE.md](./AGENT_RESOURCES/TESTING_GUIDE.md) - Comprehensive guide including authentication patterns, file structure, writing tests, Page Object Model, debugging techniques, and command reference.
+
+**For testability standards and code review:** See [TESTING_ARCHITECTURE.md](./AGENT_RESOURCES/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, test ID conventions, accessibility requirements, and anti-patterns to avoid.
+
+**Key Points:**
+- Tests are pre-authenticated automatically - no manual auth setup needed in test files
+- Use role-based selectors first (`getByRole`), then labels (`getByLabel`), then test IDs (`getByTestId`)
+- All form inputs must have proper `<Label>` with `htmlFor` for testability
+- Add `data-testid` to complex components (pickers, dynamic lists, cards with entity IDs)
+- Follow Page Object Model for modules with multiple tests
+- Do not test for toast messages after successful form submissions - test navigation instead
 
 ## Tools
 Supabase MCP Server - for all actions related to the database
@@ -809,7 +834,3 @@ These core design principles guide all development decisions in Outward Sign. Ev
 
 ## Known Issues
 (Document any existing bugs or performance concerns here)
-
-## 🔴 Permissions & Automation
-You are never allowed to make a commit.
-Neither are you allowed to add files to the repository.

@@ -3,12 +3,10 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { User, Calendar } from "lucide-react"
 import {
   createPresentation,
   updatePresentation,
@@ -28,12 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { PeoplePicker } from "@/components/people-picker"
-import { EventPicker } from "@/components/event-picker"
-import { EventDisplay } from "@/components/event-display"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PRESENTATION_TEMPLATES } from "@/lib/content-builders/presentation"
+import { usePickerState } from "@/hooks/use-picker-state"
+import { PersonPickerField } from "@/components/person-picker-field"
+import { EventPickerField } from "@/components/event-picker-field"
 
 interface PresentationFormProps {
   presentation?: PresentationWithRelations
@@ -72,31 +70,49 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
     onLoadingChange?.(isSubmitting)
   }, [isSubmitting, onLoadingChange])
 
-  // Watch form values for pickers
-  const presentationEventId = watch("presentation_event_id")
-  const childId = watch("child_id")
-  const motherId = watch("mother_id")
-  const fatherId = watch("father_id")
-  const coordinatorId = watch("coordinator_id")
+  // Watch form values
   const isBaptized = watch("is_baptized")
   const status = watch("status")
   const presentationTemplateId = watch("presentation_template_id")
 
-  // State for picker modals
-  const [showPresentationEventPicker, setShowPresentationEventPicker] = useState(false)
-  const [showChildPicker, setShowChildPicker] = useState(false)
-  const [showMotherPicker, setShowMotherPicker] = useState(false)
-  const [showFatherPicker, setShowFatherPicker] = useState(false)
-  const [showCoordinatorPicker, setShowCoordinatorPicker] = useState(false)
+  // Picker states using usePickerState hook
+  const presentationEvent = usePickerState<Event>()
+  const child = usePickerState<Person>()
+  const mother = usePickerState<Person>()
+  const father = usePickerState<Person>()
+  const coordinator = usePickerState<Person>()
 
-  // State for selected entities (for display purposes)
-  const [presentationEvent, setPresentationEvent] = useState<Event | null>(
-    presentation?.presentation_event || null
-  )
-  const [child, setChild] = useState<Person | null>(presentation?.child || null)
-  const [mother, setMother] = useState<Person | null>(presentation?.mother || null)
-  const [father, setFather] = useState<Person | null>(presentation?.father || null)
-  const [coordinator, setCoordinator] = useState<Person | null>(presentation?.coordinator || null)
+  // Initialize picker states when editing
+  useEffect(() => {
+    if (presentation) {
+      if (presentation.presentation_event) presentationEvent.setValue(presentation.presentation_event)
+      if (presentation.child) child.setValue(presentation.child)
+      if (presentation.mother) mother.setValue(presentation.mother)
+      if (presentation.father) father.setValue(presentation.father)
+      if (presentation.coordinator) coordinator.setValue(presentation.coordinator)
+    }
+  }, [presentation])
+
+  // Sync picker values to form when they change
+  useEffect(() => {
+    setValue("presentation_event_id", presentationEvent.value?.id || null)
+  }, [presentationEvent.value, setValue])
+
+  useEffect(() => {
+    setValue("child_id", child.value?.id || null)
+  }, [child.value, setValue])
+
+  useEffect(() => {
+    setValue("mother_id", mother.value?.id || null)
+  }, [mother.value, setValue])
+
+  useEffect(() => {
+    setValue("father_id", father.value?.id || null)
+  }, [father.value, setValue])
+
+  useEffect(() => {
+    setValue("coordinator_id", coordinator.value?.id || null)
+  }, [coordinator.value, setValue])
 
   const onSubmit = async (data: CreatePresentationData) => {
     try {
@@ -120,179 +136,77 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       {/* Event Information */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            <CardTitle>Event Information</CardTitle>
-          </div>
+          <CardTitle>Event Information</CardTitle>
           <CardDescription>Schedule and location details for the presentation</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label>Presentation Event</Label>
-            <div className="mt-2">
-              {presentationEvent ? (
-                <div className="space-y-2">
-                  <EventDisplay event={presentationEvent} placeholder="No presentation event selected" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPresentationEventPicker(true)}
-                  >
-                    Change Event
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowPresentationEventPicker(true)}
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Select Event
-                </Button>
-              )}
-            </div>
-            {errors.presentation_event_id && (
-              <p className="text-sm text-destructive mt-1">{errors.presentation_event_id.message}</p>
-            )}
-          </div>
+          <EventPickerField
+            label="Presentation Event"
+            value={presentationEvent.value}
+            onValueChange={presentationEvent.setValue}
+            showPicker={presentationEvent.showPicker}
+            onShowPickerChange={presentationEvent.setShowPicker}
+            placeholder="Select Presentation Event"
+            openToNewEvent={!isEditing}
+            defaultEventType="PRESENTATION"
+            defaultName={EVENT_TYPE_LABELS.PRESENTATION.en}
+            disableSearch={true}
+            error={errors.presentation_event_id?.message}
+          />
         </CardContent>
       </Card>
 
       {/* People Information */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            <CardTitle>People</CardTitle>
-          </div>
+          <CardTitle>People</CardTitle>
           <CardDescription>Select the child and family members</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Child {child?.sex && <span className="text-muted-foreground">({child.sex})</span>}</Label>
-              <div className="mt-2">
-                {child ? (
-                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                    <span className="text-sm">{child.first_name} {child.last_name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowChildPicker(true)}
-                    >
-                      Change
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowChildPicker(true)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Select Child
-                  </Button>
-                )}
-              </div>
-              {errors.child_id && (
-                <p className="text-sm text-destructive mt-1">{errors.child_id.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label>Mother</Label>
-              <div className="mt-2">
-                {mother ? (
-                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                    <span className="text-sm">{mother.first_name} {mother.last_name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowMotherPicker(true)}
-                    >
-                      Change
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowMotherPicker(true)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Select Mother
-                  </Button>
-                )}
-              </div>
-              {errors.mother_id && (
-                <p className="text-sm text-destructive mt-1">{errors.mother_id.message}</p>
-              )}
-            </div>
+            <PersonPickerField
+              label="Child"
+              value={child.value}
+              onValueChange={child.setValue}
+              showPicker={child.showPicker}
+              onShowPickerChange={child.setShowPicker}
+              placeholder="Select Child"
+              openToNewPerson={!isEditing}
+              showSexField={true}
+              error={errors.child_id?.message}
+            />
+            <PersonPickerField
+              label="Mother"
+              value={mother.value}
+              onValueChange={mother.setValue}
+              showPicker={mother.showPicker}
+              onShowPickerChange={mother.setShowPicker}
+              placeholder="Select Mother"
+              openToNewPerson={!isEditing}
+              error={errors.mother_id?.message}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Father</Label>
-              <div className="mt-2">
-                {father ? (
-                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                    <span className="text-sm">{father.first_name} {father.last_name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowFatherPicker(true)}
-                    >
-                      Change
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowFatherPicker(true)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Select Father
-                  </Button>
-                )}
-              </div>
-              {errors.father_id && (
-                <p className="text-sm text-destructive mt-1">{errors.father_id.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label>Coordinator (Optional)</Label>
-              <div className="mt-2">
-                {coordinator ? (
-                  <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                    <span className="text-sm">{coordinator.first_name} {coordinator.last_name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowCoordinatorPicker(true)}
-                    >
-                      Change
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowCoordinatorPicker(true)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Select Coordinator
-                  </Button>
-                )}
-              </div>
-            </div>
+            <PersonPickerField
+              label="Father"
+              value={father.value}
+              onValueChange={father.setValue}
+              showPicker={father.showPicker}
+              onShowPickerChange={father.setShowPicker}
+              placeholder="Select Father"
+              openToNewPerson={!isEditing}
+              error={errors.father_id?.message}
+            />
+            <PersonPickerField
+              label="Coordinator (Optional)"
+              value={coordinator.value}
+              onValueChange={coordinator.setValue}
+              showPicker={coordinator.showPicker}
+              onShowPickerChange={coordinator.setShowPicker}
+              placeholder="Select Coordinator"
+              openToNewPerson={!isEditing}
+            />
           </div>
         </CardContent>
       </Card>
@@ -396,69 +310,6 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         isLoading={isSubmitting}
         cancelHref={isEditing ? `/presentations/${presentation.id}` : '/presentations'}
         saveLabel={isEditing ? 'Update Presentation' : 'Save Presentation'}
-      />
-
-      {/* Event Picker Modals */}
-      <EventPicker
-        open={showPresentationEventPicker}
-        onOpenChange={setShowPresentationEventPicker}
-        onSelect={(event) => {
-          setPresentationEvent(event)
-          setValue("presentation_event_id", event.id)
-          setShowPresentationEventPicker(false)
-        }}
-        selectedEventId={presentationEvent?.id}
-        selectedEvent={presentationEvent}
-        defaultEventType="PRESENTATION"
-        defaultName={EVENT_TYPE_LABELS.PRESENTATION.en}
-        openToNewEvent={!isEditing}
-        disableSearch={true}
-      />
-
-      {/* People Picker Modals */}
-      <PeoplePicker
-        open={showChildPicker}
-        onOpenChange={setShowChildPicker}
-        onSelect={(person) => {
-          setChild(person)
-          setValue("child_id", person.id)
-          setShowChildPicker(false)
-        }}
-        showSexField={true}
-        openToNewPerson={!isEditing}
-      />
-
-      <PeoplePicker
-        open={showMotherPicker}
-        onOpenChange={setShowMotherPicker}
-        onSelect={(person) => {
-          setMother(person)
-          setValue("mother_id", person.id)
-          setShowMotherPicker(false)
-        }}
-        openToNewPerson={!isEditing}
-      />
-
-      <PeoplePicker
-        open={showFatherPicker}
-        onOpenChange={setShowFatherPicker}
-        onSelect={(person) => {
-          setFather(person)
-          setValue("father_id", person.id)
-          setShowFatherPicker(false)
-        }}
-        openToNewPerson={!isEditing}
-      />
-
-      <PeoplePicker
-        open={showCoordinatorPicker}
-        onOpenChange={setShowCoordinatorPicker}
-        onSelect={(person) => {
-          setCoordinator(person)
-          setValue("coordinator_id", person.id)
-          setShowCoordinatorPicker(false)
-        }}
-        openToNewPerson={!isEditing}
       />
     </form>
   )

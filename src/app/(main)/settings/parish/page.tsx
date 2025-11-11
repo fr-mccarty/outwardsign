@@ -16,10 +16,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { PageContainer } from '@/components/page-container'
-import { Save, Church, RefreshCw, Users, Mail, MoreVertical, Trash2, UserCog, Settings, Plus, DollarSign } from "lucide-react"
+import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, UserCog, Settings, Plus, DollarSign } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getCurrentParish } from '@/lib/auth/parish'
-import { updateParish, getParishMembers, inviteStaff, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
+import { updateParish, getParishMembers, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
 import { Parish, ParishSettings } from '@/lib/types'
 import { toast } from 'sonner'
 
@@ -48,11 +48,8 @@ export default function ParishSettingsPage() {
     { amount: 500, label: '$5' }
   ])
   const [members, setMembers] = useState<ParishMember[]>([])
-  const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState('staff')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [inviting, setInviting] = useState(false)
   const [loadingMembers, setLoadingMembers] = useState(false)
   const { setBreadcrumbs } = useBreadcrumbs()
 
@@ -183,36 +180,6 @@ export default function ParishSettingsPage() {
     loadParishData()
   }
 
-  const handleInviteMember = async () => {
-    if (!currentParish) {
-      toast.error('No parish selected')
-      return
-    }
-
-    if (!inviteEmail.trim()) {
-      toast.error('Please enter an email address')
-      return
-    }
-
-    setInviting(true)
-    try {
-      const result = await inviteStaff(currentParish.id, inviteEmail, [inviteRole])
-      toast.success(result.message)
-
-      // Clear form and reload members if user was added
-      setInviteEmail('')
-      setInviteRole('staff')
-      if (result.userExists) {
-        await loadMembers(currentParish.id)
-      }
-    } catch (error) {
-      console.error('Error inviting member:', error)
-      toast.error('Failed to invite member')
-    } finally {
-      setInviting(false)
-    }
-  }
-
   const handleRemoveMember = async (userId: string, email: string) => {
     if (!currentParish) return
 
@@ -296,7 +263,7 @@ export default function ParishSettingsPage() {
       </div>
 
       <Tabs defaultValue="settings" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Parish Settings
@@ -308,10 +275,6 @@ export default function ParishSettingsPage() {
           <TabsTrigger value="members" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Members ({members.length})
-          </TabsTrigger>
-          <TabsTrigger value="invite" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Invite Member
           </TabsTrigger>
         </TabsList>
 
@@ -554,63 +517,6 @@ export default function ParishSettingsPage() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="invite" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <Mail className="h-5 w-5" />
-                Invite New Member
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <FormField
-                  id="invite-email"
-                  label="Email Address"
-                  inputType="email"
-                  value={inviteEmail}
-                  onChange={(value) => setInviteEmail(value)}
-                  placeholder="member@example.com"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="invite-role">
-                  Initial Role
-                </Label>
-                <Select value={inviteRole} onValueChange={setInviteRole}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="minister">Minister</SelectItem>
-                    <SelectItem value="lector">Lector</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="pt-4">
-                <Button onClick={handleInviteMember} disabled={inviting}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  {inviting ? 'Inviting...' : 'Send Invitation'}
-                </Button>
-              </div>
-
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">How it works:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• If the email belongs to an existing user, they&apos;ll be added immediately</li>
-                  <li>• If the email is new, an invitation will be sent (feature coming soon)</li>
-                  <li>• Only parish admins can invite new members</li>
-                </ul>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -227,9 +227,14 @@ function renderSection(section: ContentSection, index: number): React.ReactNode 
   const className = section.pageBreakAfter ? 'print:break-after-page' : ''
 
   return (
-    <div key={section.id || index} className={className}>
-      {section.elements.map((element, elemIndex) => renderElement(element, elemIndex))}
-    </div>
+    <React.Fragment key={section.id || index}>
+      <div className={className}>
+        {section.elements.map((element, elemIndex) => renderElement(element, elemIndex))}
+      </div>
+      {section.pageBreakAfter && (
+        <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/30" />
+      )}
+    </React.Fragment>
   )
 }
 

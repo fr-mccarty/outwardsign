@@ -172,7 +172,11 @@ export function PeoplePicker({
     setShowAddForm(true)
   }
 
-  const onSubmitNewPerson = async (data: NewPersonFormData) => {
+  const onSubmitNewPerson = async (data: NewPersonFormData, e?: React.BaseSyntheticEvent) => {
+    // Prevent event from bubbling up to parent forms
+    e?.preventDefault()
+    e?.stopPropagation()
+
     try {
       const newPerson = await createPerson({
         first_name: data.first_name,
@@ -334,7 +338,13 @@ export function PeoplePicker({
             Create a new person record. Fill in their details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmitNewPerson)} className="flex flex-col flex-1 min-h-0">
+        <form
+          onSubmit={(e) => {
+            e.stopPropagation()
+            handleSubmit(onSubmitNewPerson)(e)
+          }}
+          className="flex flex-col flex-1 min-h-0"
+        >
           <div className="space-y-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
             <FormField
               id="first_name"

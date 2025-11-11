@@ -1,32 +1,33 @@
 # Test Architecture & Testability Guide
 
-This document defines how to structure the application to be testable and maintainable. These patterns ensure that both human developers and AI agents can write reliable, stable tests.
+This document defines standards for building testable components and writing reliable tests.
+
+## Table of Contents
+
+- [Key Testing Principles](#key-testing-principles)
+- [Selector Strategy](#selector-strategy)
+- [Test ID Conventions](#test-id-conventions)
+- [Component Testability Patterns](#component-testability-patterns)
+- [Accessibility & Testing](#accessibility--testing)
+- [Common Patterns by Component Type](#common-patterns-by-component-type)
+- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+- [Testability Checklist](#testability-checklist)
+
+---
 
 ## Key Testing Principles
 
 **Quick Reference - Follow these principles when writing tests:**
 
-1. **Use role-based selectors first** → `getByRole('button', { name: 'Save' })` > `getByLabel('Name')` > `getByTestId('form-submit')` ([Details](#selector-strategy))
+1. **Use role-based selectors first** → `getByRole('button', { name: 'Save' })` > `getByLabel('Name')` > `getByTestId('form-submit')`
 
-2. **Add `data-testid` to complex components** → Pickers, dynamic lists, cards with entity IDs, calendar events ([Details](#test-id-conventions))
+2. **Add `data-testid` to complex components** → Pickers, dynamic lists, cards with entity IDs, calendar events
 
-3. **All form inputs must have proper labels** → `<Label htmlFor="name">` + `<Input id="name">` for accessibility and testability ([Details](#component-testability-patterns))
+3. **All form inputs must have proper labels** → `<Label htmlFor="name">` + `<Input id="name">` for accessibility and testability
 
-4. **Use centralized timeout constants** → Import from `tests/utils/test-config.ts` instead of hardcoding values ([Details](#anti-patterns-to-avoid))
+4. **Use centralized timeout constants** → Import from `tests/utils/test-config.ts` instead of hardcoding values
 
-5. **Follow Page Object Model for complex modules** → Encapsulate page interactions for modules with multiple tests ([Details](#page-object-model))
-
----
-
-## Table of Contents
-
-- [Selector Strategy](#selector-strategy)
-- [Test ID Conventions](#test-id-conventions)
-- [Component Testability Patterns](#component-testability-patterns)
-- [Page Object Model](#page-object-model)
-- [Accessibility & Testing](#accessibility--testing)
-- [Common Patterns by Component Type](#common-patterns-by-component-type)
-- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+5. **Follow Page Object Model for complex modules** → Encapsulate page interactions for modules with multiple tests
 
 ---
 
@@ -132,80 +133,110 @@ data-testid="event-date-display"
 - Headings and static text (use role or text content)
 - Links with descriptive text (use role + name)
 
-### Implementation
-
-```tsx
-// ✅ CORRECT - Add to complex components
-export function WeddingCard({ wedding }: { wedding: Wedding }) {
-  return (
-    <Card data-testid={`wedding-card-${wedding.id}`}>
-      <CardHeader>
-        <CardTitle>{wedding.bride?.last_name} - {wedding.groom?.last_name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Button
-          data-testid={`wedding-view-${wedding.id}`}
-          asChild
-        >
-          <Link href={`/weddings/${wedding.id}`}>View</Link>
-        </Button>
-      </CardContent>
-    </Card>
-  )
-}
-
-// ✅ CORRECT - Simple buttons don't need test IDs
-<Button type="submit">Save Wedding</Button> // Use getByRole('button', { name: 'Save Wedding' })
-
-// ✅ CORRECT - Form fields with labels don't need test IDs
-<Label htmlFor="bride-name">Bride Name</Label>
-<Input id="bride-name" /> // Use getByLabel('Bride Name')
-```
-
 ---
 
 ## Component Testability Patterns
 
-### Forms
+### 1. Forms
 
 **Requirements:**
 - All inputs must have proper labels (`<Label>` + `htmlFor`)
 - Submit buttons must have descriptive text
-- Form should have `id` attribute if used in wrapper
-- Critical action buttons should have `data-testid`
+- Critical action buttons should have `data-testid` if ambiguous
+
+#### ❌ Before - Hard to Test
 
 ```tsx
-// ✅ CORRECT - Testable form
+export function WeddingForm() {
+  const [notes, setNotes] = useState('')
+  const [date, setDate] = useState('')
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <div className="text-sm font-medium mb-1">Wedding Notes</div>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          className="w-full border rounded p-2"
+        />
+      </div>
+
+      <div>
+        <div className="text-sm font-medium mb-1">Date</div>
+        <input
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+        />
+      </div>
+
+      <div onClick={handleSubmit} className="bg-blue-500 text-white px-4 py-2">
+        Submit
+      </div>
+    </form>
+  )
+}
+```
+
+**Problems:**
+- No `<Label>` elements with `htmlFor` - can't use `getByLabel()`
+- Submit button is a `<div>` - can't use `getByRole('button')`
+- No IDs on inputs - harder to target
+- Not accessible for screen readers
+
+#### ✅ After - Easy to Test
+
+```tsx
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+
 export function WeddingForm({ wedding }: { wedding?: WeddingWithRelations }) {
+  const [notes, setNotes] = useState('')
+  const [date, setDate] = useState('')
+
   return (
     <form onSubmit={handleSubmit}>
       <FormField>
         <Label htmlFor="notes">Wedding Notes</Label>
-        <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} />
+        <Textarea
+          id="notes"
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+        />
       </FormField>
 
       <FormField>
-        <Label htmlFor="bride">Bride</Label>
-        <PeoplePicker
-          value={bride.value}
-          onSelect={bride.setValue}
-          placeholder="Select bride"
-          data-testid="bride-picker-trigger"
+        <Label htmlFor="wedding-date">Date</Label>
+        <Input
+          id="wedding-date"
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
         />
       </FormField>
 
       <Button type="submit">
         {wedding ? 'Update Wedding' : 'Create Wedding'}
       </Button>
-      <Button type="button" variant="outline" onClick={() => router.back()}>
-        Cancel
-      </Button>
     </form>
   )
 }
 ```
 
-### List Pages
+**Test code:**
+```typescript
+// Stable, semantic selectors
+await page.getByLabel('Wedding Notes').fill('Beautiful ceremony')
+await page.getByLabel('Date').fill('2025-06-15')
+await page.getByRole('button', { name: 'Create Wedding' }).click()
+```
+
+---
+
+### 2. List Pages
 
 **Requirements:**
 - Each card/item should have `data-testid` with entity ID
@@ -213,13 +244,57 @@ export function WeddingForm({ wedding }: { wedding?: WeddingWithRelations }) {
 - Empty state should have clear, testable text
 - Search/filter inputs should have labels or placeholders
 
+#### ❌ Before - Hard to Test
+
 ```tsx
-// ✅ CORRECT - Testable list page
-export function WeddingsListClient({ initialData }: { initialData: Wedding[] }) {
+export function WeddingsListClient({ weddings }: { weddings: Wedding[] }) {
   return (
-    <>
+    <div>
+      <div className="flex justify-between mb-4">
+        <h2 className="text-2xl font-bold">Weddings</h2>
+        <a href="/weddings/create" className="bg-blue-500 text-white px-4 py-2">
+          Add New
+        </a>
+      </div>
+
+      {weddings.length === 0 ? (
+        <div>No results</div>
+      ) : (
+        <div className="grid gap-4">
+          {weddings.map(wedding => (
+            <div key={wedding.id} className="border rounded p-4">
+              <div className="font-semibold">
+                {wedding.bride?.last_name} - {wedding.groom?.last_name}
+              </div>
+              <a href={`/weddings/${wedding.id}`}>View</a>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+**Problems:**
+- Heading is a styled `<h2>` but should be `<h1>` (main page heading)
+- "Add New" link has generic text
+- No test IDs on cards
+- Empty state is too generic
+- Links have no descriptive text
+
+#### ✅ After - Easy to Test
+
+```tsx
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export function WeddingsListClient({ weddings }: { weddings: Wedding[] }) {
+  return (
+    <div>
       <div className="flex justify-between items-center mb-6">
-        <h1>Our Weddings</h1>
+        <h1 className="text-2xl font-bold">Our Weddings</h1>
         <Button asChild>
           <Link href="/weddings/create">New Wedding</Link>
         </Button>
@@ -227,9 +302,11 @@ export function WeddingsListClient({ initialData }: { initialData: Wedding[] }) 
 
       {weddings.length === 0 ? (
         <Card>
-          <CardContent>
-            <p>No weddings yet. Create your first wedding to get started.</p>
-            <Button asChild>
+          <CardContent className="py-8">
+            <p className="text-center text-muted-foreground mb-4">
+              No weddings yet. Create your first wedding to get started.
+            </p>
+            <Button asChild className="mx-auto">
               <Link href="/weddings/create">Create Wedding</Link>
             </Button>
           </CardContent>
@@ -238,17 +315,42 @@ export function WeddingsListClient({ initialData }: { initialData: Wedding[] }) 
         <div className="grid gap-4">
           {weddings.map(wedding => (
             <Card key={wedding.id} data-testid={`wedding-card-${wedding.id}`}>
-              {/* Card content */}
+              <CardHeader>
+                <CardTitle>
+                  {wedding.bride?.last_name} - {wedding.groom?.last_name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/weddings/${wedding.id}`}>View Wedding</Link>
+                </Button>
+              </CardContent>
             </Card>
           ))}
         </div>
       )}
-    </>
+    </div>
   )
 }
 ```
 
-### Picker Modals
+**Test code:**
+```typescript
+// Stable, semantic selectors
+await expect(page.getByRole('heading', { name: 'Our Weddings' })).toBeVisible()
+await page.getByRole('link', { name: 'New Wedding' }).click()
+
+// Can target specific cards
+await expect(page.getByTestId(`wedding-card-${weddingId}`)).toBeVisible()
+
+// Empty state
+await expect(page.locator('text=/No weddings yet/i')).toBeVisible()
+await page.getByRole('link', { name: 'Create Wedding' }).click()
+```
+
+---
+
+### 3. Picker Modals
 
 **Requirements:**
 - Trigger button should have `data-testid`
@@ -256,28 +358,115 @@ export function WeddingsListClient({ initialData }: { initialData: Wedding[] }) 
 - Create form should have testable submit button
 - List items should have `data-testid` or be selectable by role
 
+#### ❌ Before - Hard to Test
+
 ```tsx
-// ✅ CORRECT - Testable picker
-export function PeoplePicker({ value, onSelect, dataTestId }: PickerProps) {
+export function PeoplePicker({ value, onSelect }: PickerProps) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+
   return (
-    <Dialog open={showPicker} onOpenChange={setShowPicker}>
+    <>
+      <div
+        onClick={() => setOpen(true)}
+        className="border rounded px-3 py-2 cursor-pointer"
+      >
+        {value ? value.name : 'Select person'}
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 bg-black/50">
+          <div className="bg-white rounded p-4">
+            <div className="font-bold mb-2">Select Person</div>
+
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border rounded px-2 py-1 w-full mb-4"
+            />
+
+            <div>
+              {people.map(person => (
+                <div
+                  key={person.id}
+                  onClick={() => handleSelect(person)}
+                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  {person.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+```
+
+**Problems:**
+- Trigger is a `<div>` not a `<Button>`
+- No test ID on trigger
+- Search input has no label or aria-label
+- Person options have no test IDs or semantic roles
+- Not accessible (can't tab to elements)
+
+#### ✅ After - Easy to Test
+
+```tsx
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
+interface PeoplePickerProps {
+  value?: Person
+  onSelect: (person: Person) => void
+  dataTestId?: string
+}
+
+export function PeoplePicker({ value, onSelect, dataTestId }: PeoplePickerProps) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+
+  const handleSelect = (person: Person) => {
+    onSelect(person)
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           data-testid={dataTestId || 'people-picker-trigger'}
         >
           {value ? value.name : 'Select person'}
         </Button>
       </DialogTrigger>
+
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Select Person</DialogTitle>
+          <DialogDescription>
+            Choose a person from the parish directory
+          </DialogDescription>
         </DialogHeader>
 
         <Input
+          type="search"
           placeholder="Search people..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
           aria-label="Search people"
         />
 
@@ -285,159 +474,41 @@ export function PeoplePicker({ value, onSelect, dataTestId }: PickerProps) {
           {people.map(person => (
             <Button
               key={person.id}
-              data-testid={`person-option-${person.id}`}
+              variant="ghost"
+              className="w-full justify-start"
               onClick={() => handleSelect(person)}
+              data-testid={`person-option-${person.id}`}
             >
               {person.name}
             </Button>
           ))}
         </div>
-
-        {showCreateForm && (
-          <form onSubmit={handleCreatePerson}>
-            <Input id="person-name" placeholder="Full name" />
-            <Button type="submit" data-testid="person-create-submit">
-              Create Person
-            </Button>
-          </form>
-        )}
       </DialogContent>
     </Dialog>
   )
 }
 ```
 
----
-
-## Page Object Model
-
-### What is it?
-
-Page Object Model (POM) encapsulates page interactions into reusable classes. This reduces duplication and makes tests more maintainable.
-
-### When to Use
-
-- **Use POM for:** Modules with multiple tests (weddings, funerals, events, readings)
-- **Skip POM for:** Simple one-off tests or very small modules
-
-### Structure
-
-```
-tests/
-├── page-objects/
-│   ├── wedding.page.ts
-│   ├── event.page.ts
-│   └── base.page.ts
-├── utils/
-│   └── test-config.ts
-└── weddings.spec.ts
-```
-
-### Example Implementation
-
+**Test code:**
 ```typescript
-// tests/page-objects/wedding.page.ts
-import { Page, expect } from '@playwright/test'
-import { TEST_TIMEOUTS, TEST_SELECTORS } from '../utils/test-config'
+// Stable, semantic selectors
+await page.getByTestId('people-picker-trigger').click()
+await page.getByRole('dialog').waitFor()
+await page.getByLabel('Search people').fill('John')
+await page.getByTestId(`person-option-${personId}`).click()
 
-export class WeddingPage {
-  constructor(private page: Page) {}
-
-  // Navigation
-  async goto() {
-    await this.page.goto('/weddings')
-  }
-
-  async gotoCreate() {
-    await this.page.goto('/weddings/create')
-  }
-
-  async gotoEdit(id: string) {
-    await this.page.goto(`/weddings/${id}/edit`)
-  }
-
-  async gotoView(id: string) {
-    await this.page.goto(`/weddings/${id}`)
-  }
-
-  // Actions
-  async clickNewWedding() {
-    await this.page.getByRole('link', { name: /New Wedding/i }).first().click()
-  }
-
-  async fillWeddingNotes(notes: string) {
-    await this.page.fill('#notes', notes)
-  }
-
-  async selectBride(brideName: string) {
-    await this.page.getByTestId('bride-picker-trigger').click()
-    await this.page.fill('[aria-label="Search people"]', brideName)
-    await this.page.getByRole('button', { name: brideName }).click()
-  }
-
-  async submitForm() {
-    await this.page.getByRole('button', { name: /Create Wedding|Update Wedding/i }).click()
-  }
-
-  async waitForSuccessToast() {
-    await this.page.waitForSelector(TEST_SELECTORS.TOAST_SUCCESS, {
-      timeout: TEST_TIMEOUTS.TOAST
-    })
-  }
-
-  async waitForViewPage(id?: string) {
-    const pattern = id ? `/weddings/${id}` : /\/weddings\/[a-f0-9-]+$/
-    await this.page.waitForURL(pattern, { timeout: TEST_TIMEOUTS.FORM_SUBMIT })
-  }
-
-  // Assertions
-  async expectToBeOnListPage() {
-    await expect(this.page).toHaveURL('/weddings')
-  }
-
-  async expectToBeOnCreatePage() {
-    await expect(this.page).toHaveURL('/weddings/create')
-  }
-
-  async expectWeddingCardVisible(id: string) {
-    await expect(this.page.getByTestId(`wedding-card-${id}`)).toBeVisible()
-  }
-
-  async expectEmptyState() {
-    await expect(this.page.locator('text=/No weddings yet/i')).toBeVisible()
-  }
-}
+// Or use role-based
+await page.getByRole('button', { name: 'Select person' }).click()
 ```
 
-### Usage in Tests
-
-```typescript
-// tests/weddings.spec.ts
-import { test, expect } from '@playwright/test'
-import { WeddingPage } from './page-objects/wedding.page'
-
-test.describe('Weddings Module', () => {
-  test('should create a new wedding', async ({ page }) => {
-    const weddingPage = new WeddingPage(page)
-
-    // Navigation
-    await weddingPage.goto()
-    await weddingPage.clickNewWedding()
-    await weddingPage.expectToBeOnCreatePage()
-
-    // Fill form
-    await weddingPage.fillWeddingNotes('Beautiful outdoor ceremony')
-    await weddingPage.selectBride('Maria Garcia')
-
-    // Submit
-    await weddingPage.submitForm()
-    await weddingPage.waitForSuccessToast()
-    await weddingPage.waitForViewPage()
-
-    // Verify
-    await expect(page.locator('text=Beautiful outdoor ceremony')).toBeVisible()
-  })
-})
+**Usage in forms:**
+```tsx
+<Label htmlFor="bride">Bride</Label>
+<PeoplePicker
+  value={bride}
+  onSelect={setBride}
+  dataTestId="bride-picker-trigger"
+/>
 ```
 
 ---
@@ -526,15 +597,15 @@ Test with: `page.getByRole('link', { name: /New Wedding/i })`
     {/* Content */}
   </DialogContent>
 </Dialog>
-
-// Test with: page.getByRole('dialog')
 ```
+
+Test with: `page.getByRole('dialog')`
 
 ---
 
 ## Common Patterns by Component Type
 
-### 1. Submit Buttons
+### Submit Buttons
 
 ```tsx
 // Component
@@ -546,19 +617,7 @@ Test with: `page.getByRole('link', { name: /New Wedding/i })`
 await page.getByRole('button', { name: /Create Wedding|Update Wedding/i }).click()
 ```
 
-### 2. Cancel/Back Buttons
-
-```tsx
-// Component
-<Button type="button" variant="outline" onClick={() => router.back()}>
-  Cancel
-</Button>
-
-// Test
-await page.getByRole('button', { name: 'Cancel' }).click()
-```
-
-### 3. Search Inputs
+### Search Inputs
 
 ```tsx
 // Component
@@ -574,7 +633,7 @@ await page.getByRole('button', { name: 'Cancel' }).click()
 await page.getByLabel('Search weddings').fill('Garcia')
 ```
 
-### 4. Select Dropdowns
+### Select Dropdowns
 
 ```tsx
 // Component (using shadcn Select)
@@ -593,7 +652,7 @@ await page.locator('#status').click()
 await page.getByRole('option', { name: 'Active' }).click()
 ```
 
-### 5. Date Inputs
+### Date Inputs
 
 ```tsx
 // Component
@@ -611,25 +670,7 @@ await page.fill('#wedding-date', '2025-06-15')
 await page.getByLabel('Wedding Date').fill('2025-06-15')
 ```
 
-### 6. Textareas
-
-```tsx
-// Component
-<Label htmlFor="notes">Notes</Label>
-<Textarea
-  id="notes"
-  value={notes}
-  onChange={e => setNotes(e.target.value)}
-  placeholder="Add any special notes..."
-/>
-
-// Test
-await page.fill('#notes', 'Beautiful outdoor ceremony')
-// OR
-await page.getByLabel('Notes').fill('Beautiful outdoor ceremony')
-```
-
-### 7. Checkboxes
+### Checkboxes
 
 ```tsx
 // Component
@@ -644,18 +685,6 @@ await page.getByLabel('Notes').fill('Beautiful outdoor ceremony')
 
 // Test
 await page.getByRole('checkbox', { name: 'Include Rehearsal' }).check()
-```
-
-### 8. Status Badges
-
-```tsx
-// Component
-<Badge data-testid={`wedding-status-${wedding.id}`}>
-  {wedding.status}
-</Badge>
-
-// Test
-await expect(page.getByTestId(`wedding-status-${weddingId}`)).toHaveText('Active')
 ```
 
 ---
@@ -721,17 +750,7 @@ await page.click('button[type="submit"]')
 await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT })
 ```
 
-### ❌ 6. Testing Implementation Details
-
-```typescript
-// ❌ WRONG - Testing internal state
-expect(component.state.isLoading).toBe(true)
-
-// ✅ CORRECT - Testing user-visible behavior
-await expect(page.getByRole('button', { name: 'Saving...' })).toBeVisible()
-```
-
-### ❌ 7. Testing Toast Notifications
+### ❌ 6. Testing Toast Notifications
 
 **IMPORTANT: Do not test for toast/notification messages after successful form submissions.**
 
@@ -774,7 +793,7 @@ await expect(page).toHaveURL('/events/create') // Still on form page
 
 ---
 
-## Summary Checklist
+## Testability Checklist
 
 When building a new component or module, ensure:
 
@@ -808,6 +827,48 @@ When building a new component or module, ensure:
   - Can view entity details
   - Empty state is tested
   - Validation errors are tested
+
+---
+
+## Summary: Quick Wins for Testability
+
+### 1. Add Labels to All Inputs
+```tsx
+// Before: <input id="name" />
+// After:
+<Label htmlFor="name">Full Name</Label>
+<Input id="name" />
+```
+
+### 2. Use Semantic Buttons
+```tsx
+// Before: <div onClick={handleClick}>Click me</div>
+// After: <Button onClick={handleClick}>Save Changes</Button>
+```
+
+### 3. Add Test IDs to Dynamic Content
+```tsx
+// Before: <Card>{wedding.name}</Card>
+// After: <Card data-testid={`wedding-card-${wedding.id}`}>{wedding.name}</Card>
+```
+
+### 4. Make Button Text Descriptive
+```tsx
+// Before: <Button>Submit</Button>
+// After: <Button>{wedding ? 'Update Wedding' : 'Create Wedding'}</Button>
+```
+
+### 5. Add aria-label to Icon Buttons
+```tsx
+// Before: <Button><TrashIcon /></Button>
+// After: <Button aria-label="Delete wedding"><TrashIcon /></Button>
+```
+
+### 6. Use Proper Headings
+```tsx
+// Before: <div className="text-2xl font-bold">Our Weddings</div>
+// After: <h1 className="text-2xl font-bold">Our Weddings</h1>
+```
 
 ---
 

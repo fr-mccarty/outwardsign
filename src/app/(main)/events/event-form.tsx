@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PeoplePicker } from "@/components/people-picker"
-import { LocationPicker } from "@/components/location-picker"
+import { LocationPickerField } from "@/components/location-picker-field"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
@@ -244,36 +244,16 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              {location.value ? (
-                <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                  <span className="text-sm">
-                    {location.value.name}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => location.setValue(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => location.setShowPicker(true)}
-                  className="w-full"
-                >
-                  Select Location
-                </Button>
-              )}
-              <p className="text-sm text-muted-foreground">
-                Where the event will take place
-              </p>
-            </div>
+            <LocationPickerField
+              label="Location"
+              value={location.value}
+              onValueChange={location.setValue}
+              showPicker={location.showPicker}
+              onShowPickerChange={location.setShowPicker}
+              description="Where the event will take place"
+              placeholder="Select Location"
+              openToNewLocation={!isEditing}
+            />
 
             <FormField
               id="language"
@@ -283,12 +263,6 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
               placeholder="e.g., English, Spanish"
             />
           </div>
-
-          <LocationPicker
-            open={location.showPicker}
-            onOpenChange={location.setShowPicker}
-            onSelect={(loc) => location.setValue(loc)}
-          />
         </CardContent>
       </Card>
 

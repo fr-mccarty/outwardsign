@@ -243,7 +243,11 @@ export function EventPicker({
     setShowAddForm(true)
   }
 
-  const onSubmitNewEvent = async (data: NewEventFormData) => {
+  const onSubmitNewEvent = async (data: NewEventFormData, e?: React.BaseSyntheticEvent) => {
+    // Prevent event from bubbling up to parent forms
+    e?.preventDefault()
+    e?.stopPropagation()
+
     try {
       let updatedEvent: Event
 
@@ -442,7 +446,13 @@ export function EventPicker({
             {isEditMode ? 'Update the event details below.' : 'Create a new event. Fill in the details below.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmitNewEvent)} className="flex flex-col flex-1 min-h-0">
+        <form
+          onSubmit={(e) => {
+            e.stopPropagation()
+            handleSubmit(onSubmitNewEvent)(e)
+          }}
+          className="flex flex-col flex-1 min-h-0"
+        >
           <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="name" className="text-right pt-2">

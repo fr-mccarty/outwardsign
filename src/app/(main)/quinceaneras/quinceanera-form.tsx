@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { User, BookOpen, Calendar } from "lucide-react"
+import { BookOpen } from "lucide-react"
 import { createQuinceanera, updateQuinceanera, type CreateQuinceaneraData, type QuinceaneraWithRelations } from "@/lib/actions/quinceaneras"
 import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Person, IndividualReading, Event } from "@/lib/types"
@@ -20,15 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { PeoplePicker } from "@/components/people-picker"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { EventPicker } from "@/components/event-picker"
-import { EventDisplay } from "@/components/event-display"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { quinceaneraTemplates, buildQuinceaneraPetitions } from "@/lib/petition-templates/quinceanera"
 import { QUINCEANERA_TEMPLATES } from "@/lib/content-builders/quinceanera"
+import { usePickerState } from "@/hooks/use-picker-state"
+import { PersonPickerField } from "@/components/person-picker-field"
+import { EventPickerField } from "@/components/event-picker-field"
 
 interface QuinceaneraFormProps {
   quinceanera?: QuinceaneraWithRelations
@@ -57,41 +57,23 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   const [psalmIsSung, setPsalmIsSung] = useState(quinceanera?.psalm_is_sung || false)
   const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(quinceanera?.petitions_read_by_second_reader || false)
 
-  // Event picker states
-  const [showQuinceaneraEventPicker, setShowQuinceaneraEventPicker] = useState(false)
-  const [showQuinceaneraReceptionPicker, setShowQuinceaneraReceptionPicker] = useState(false)
+  // Picker states using usePickerState hook - Events
+  const quinceaneraEvent = usePickerState<Event>()
+  const quinceaneraReception = usePickerState<Event>()
 
-  // People picker states
-  const [showQuinceaneraPicker, setShowQuinceaneraPicker] = useState(false)
-  const [showFamilyContactPicker, setShowFamilyContactPicker] = useState(false)
-  const [showCoordinatorPicker, setShowCoordinatorPicker] = useState(false)
-  const [showPresiderPicker, setShowPresiderPicker] = useState(false)
-  const [showHomilistPicker, setShowHomilistPicker] = useState(false)
-  const [showLeadMusicianPicker, setShowLeadMusicianPicker] = useState(false)
-  const [showCantorPicker, setShowCantorPicker] = useState(false)
-  const [showFirstReaderPicker, setShowFirstReaderPicker] = useState(false)
-  const [showSecondReaderPicker, setShowSecondReaderPicker] = useState(false)
-  const [showPsalmReaderPicker, setShowPsalmReaderPicker] = useState(false)
-  const [showGospelReaderPicker, setShowGospelReaderPicker] = useState(false)
-  const [showPetitionReaderPicker, setShowPetitionReaderPicker] = useState(false)
-
-  // Selected events
-  const [quinceaneraEvent, setQuinceaneraEvent] = useState<Event | null>(null)
-  const [quinceaneraReception, setQuinceaneraReception] = useState<Event | null>(null)
-
-  // Selected people
-  const [quinceaneraGirl, setQuinceaneraGirl] = useState<Person | null>(null)
-  const [familyContact, setFamilyContact] = useState<Person | null>(null)
-  const [coordinator, setCoordinator] = useState<Person | null>(null)
-  const [presider, setPresider] = useState<Person | null>(null)
-  const [homilist, setHomilist] = useState<Person | null>(null)
-  const [leadMusician, setLeadMusician] = useState<Person | null>(null)
-  const [cantor, setCantor] = useState<Person | null>(null)
-  const [firstReader, setFirstReader] = useState<Person | null>(null)
-  const [secondReader, setSecondReader] = useState<Person | null>(null)
-  const [psalmReader, setPsalmReader] = useState<Person | null>(null)
-  const [gospelReader, setGospelReader] = useState<Person | null>(null)
-  const [petitionReader, setPetitionReader] = useState<Person | null>(null)
+  // Picker states using usePickerState hook - People
+  const quinceaneraGirl = usePickerState<Person>()
+  const familyContact = usePickerState<Person>()
+  const coordinator = usePickerState<Person>()
+  const presider = usePickerState<Person>()
+  const homilist = usePickerState<Person>()
+  const leadMusician = usePickerState<Person>()
+  const cantor = usePickerState<Person>()
+  const firstReader = usePickerState<Person>()
+  const secondReader = usePickerState<Person>()
+  const psalmReader = usePickerState<Person>()
+  const gospelReader = usePickerState<Person>()
+  const petitionReader = usePickerState<Person>()
 
   // Reading picker states
   const [showFirstReadingPicker, setShowFirstReadingPicker] = useState(false)
@@ -124,22 +106,22 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   useEffect(() => {
     if (quinceanera) {
       // Set events
-      if (quinceanera.quinceanera_event) setQuinceaneraEvent(quinceanera.quinceanera_event)
-      if (quinceanera.quinceanera_reception) setQuinceaneraReception(quinceanera.quinceanera_reception)
+      if (quinceanera.quinceanera_event) quinceaneraEvent.setValue(quinceanera.quinceanera_event)
+      if (quinceanera.quinceanera_reception) quinceaneraReception.setValue(quinceanera.quinceanera_reception)
 
       // Set people
-      if (quinceanera.quinceanera) setQuinceaneraGirl(quinceanera.quinceanera)
-      if (quinceanera.family_contact) setFamilyContact(quinceanera.family_contact)
-      if (quinceanera.coordinator) setCoordinator(quinceanera.coordinator)
-      if (quinceanera.presider) setPresider(quinceanera.presider)
-      if (quinceanera.homilist) setHomilist(quinceanera.homilist)
-      if (quinceanera.lead_musician) setLeadMusician(quinceanera.lead_musician)
-      if (quinceanera.cantor) setCantor(quinceanera.cantor)
-      if (quinceanera.first_reader) setFirstReader(quinceanera.first_reader)
-      if (quinceanera.second_reader) setSecondReader(quinceanera.second_reader)
-      if (quinceanera.psalm_reader) setPsalmReader(quinceanera.psalm_reader)
-      if (quinceanera.gospel_reader) setGospelReader(quinceanera.gospel_reader)
-      if (quinceanera.petition_reader) setPetitionReader(quinceanera.petition_reader)
+      if (quinceanera.quinceanera) quinceaneraGirl.setValue(quinceanera.quinceanera)
+      if (quinceanera.family_contact) familyContact.setValue(quinceanera.family_contact)
+      if (quinceanera.coordinator) coordinator.setValue(quinceanera.coordinator)
+      if (quinceanera.presider) presider.setValue(quinceanera.presider)
+      if (quinceanera.homilist) homilist.setValue(quinceanera.homilist)
+      if (quinceanera.lead_musician) leadMusician.setValue(quinceanera.lead_musician)
+      if (quinceanera.cantor) cantor.setValue(quinceanera.cantor)
+      if (quinceanera.first_reader) firstReader.setValue(quinceanera.first_reader)
+      if (quinceanera.second_reader) secondReader.setValue(quinceanera.second_reader)
+      if (quinceanera.psalm_reader) psalmReader.setValue(quinceanera.psalm_reader)
+      if (quinceanera.gospel_reader) gospelReader.setValue(quinceanera.gospel_reader)
+      if (quinceanera.petition_reader) petitionReader.setValue(quinceanera.petition_reader)
 
       // Set readings
       if (quinceanera.first_reading) setFirstReading(quinceanera.first_reading)
@@ -151,7 +133,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
 
   // Handle inserting template petitions
   const handleInsertTemplate = (templateId: string): string[] => {
-    const quinceaneraName = quinceaneraGirl?.first_name || ''
+    const quinceaneraName = quinceaneraGirl.value?.first_name || ''
 
     // Build petitions from selected template
     return buildQuinceaneraPetitions(templateId, quinceaneraName)
@@ -171,20 +153,20 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     try {
       const quinceaneraData: CreateQuinceaneraData = {
         status: status || undefined,
-        quinceanera_event_id: quinceaneraEvent?.id,
-        quinceanera_reception_id: quinceaneraReception?.id,
-        quinceanera_id: quinceaneraGirl?.id,
-        family_contact_id: familyContact?.id,
-        coordinator_id: coordinator?.id,
-        presider_id: presider?.id,
-        homilist_id: homilist?.id,
-        lead_musician_id: leadMusician?.id,
-        cantor_id: cantor?.id,
-        first_reader_id: firstReader?.id,
-        second_reader_id: secondReader?.id,
-        psalm_reader_id: psalmReader?.id,
-        gospel_reader_id: gospelReader?.id,
-        petition_reader_id: petitionReader?.id,
+        quinceanera_event_id: quinceaneraEvent.value?.id,
+        quinceanera_reception_id: quinceaneraReception.value?.id,
+        quinceanera_id: quinceaneraGirl.value?.id,
+        family_contact_id: familyContact.value?.id,
+        coordinator_id: coordinator.value?.id,
+        presider_id: presider.value?.id,
+        homilist_id: homilist.value?.id,
+        lead_musician_id: leadMusician.value?.id,
+        cantor_id: cantor.value?.id,
+        first_reader_id: firstReader.value?.id,
+        second_reader_id: secondReader.value?.id,
+        psalm_reader_id: psalmReader.value?.id,
+        gospel_reader_id: gospelReader.value?.id,
+        petition_reader_id: petitionReader.value?.id,
         first_reading_id: firstReading?.id,
         psalm_id: psalm?.id,
         second_reading_id: secondReading?.id,
@@ -242,30 +224,30 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
           <Separator />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Quinceañera Ceremony</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start text-left h-auto py-3"
-                onClick={() => setShowQuinceaneraEventPicker(true)}
-              >
-                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                <EventDisplay event={quinceaneraEvent} placeholder="Add Quinceañera Ceremony" />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Reception</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start text-left h-auto py-3"
-                onClick={() => setShowQuinceaneraReceptionPicker(true)}
-              >
-                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                <EventDisplay event={quinceaneraReception} placeholder="Add Reception" />
-              </Button>
-            </div>
+            <EventPickerField
+              label="Quinceañera Ceremony"
+              value={quinceaneraEvent.value}
+              onValueChange={quinceaneraEvent.setValue}
+              showPicker={quinceaneraEvent.showPicker}
+              onShowPickerChange={quinceaneraEvent.setShowPicker}
+              placeholder="Add Quinceañera Ceremony"
+              openToNewEvent={!isEditing}
+              defaultEventType="QUINCEANERA"
+              defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
+              disableSearch={true}
+            />
+            <EventPickerField
+              label="Reception"
+              value={quinceaneraReception.value}
+              onValueChange={quinceaneraReception.setValue}
+              showPicker={quinceaneraReception.showPicker}
+              onShowPickerChange={quinceaneraReception.setShowPicker}
+              placeholder="Add Reception"
+              openToNewEvent={!isEditing}
+              defaultEventType="OTHER"
+              defaultName="Quinceañera Reception"
+              disableSearch={true}
+            />
           </div>
         </CardContent>
       </Card>
@@ -278,30 +260,24 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Quinceañera</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowQuinceaneraPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {quinceaneraGirl ? `${quinceaneraGirl.first_name} ${quinceaneraGirl.last_name}` : 'Select Quinceañera'}
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Family Contact</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowFamilyContactPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {familyContact ? `${familyContact.first_name} ${familyContact.last_name}` : 'Select Family Contact'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="Quinceañera"
+              value={quinceaneraGirl.value}
+              onValueChange={quinceaneraGirl.setValue}
+              showPicker={quinceaneraGirl.showPicker}
+              onShowPickerChange={quinceaneraGirl.setShowPicker}
+              placeholder="Select Quinceañera"
+              openToNewPerson={!isEditing}
+            />
+            <PersonPickerField
+              label="Family Contact"
+              value={familyContact.value}
+              onValueChange={familyContact.setValue}
+              showPicker={familyContact.showPicker}
+              onShowPickerChange={familyContact.setShowPicker}
+              placeholder="Select Family Contact"
+              openToNewPerson={!isEditing}
+            />
           </div>
         </CardContent>
       </Card>
@@ -314,30 +290,24 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Presider</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowPresiderPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {presider ? `${presider.first_name} ${presider.last_name}` : 'Select Presider'}
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Homilist</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowHomilistPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {homilist ? `${homilist.first_name} ${homilist.last_name}` : 'Select Homilist'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="Presider"
+              value={presider.value}
+              onValueChange={presider.setValue}
+              showPicker={presider.showPicker}
+              onShowPickerChange={presider.setShowPicker}
+              placeholder="Select Presider"
+              openToNewPerson={!isEditing}
+            />
+            <PersonPickerField
+              label="Homilist"
+              value={homilist.value}
+              onValueChange={homilist.setValue}
+              showPicker={homilist.showPicker}
+              onShowPickerChange={homilist.setShowPicker}
+              placeholder="Select Homilist"
+              openToNewPerson={!isEditing}
+            />
           </div>
         </CardContent>
       </Card>
@@ -350,30 +320,24 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Lead Musician</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowLeadMusicianPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {leadMusician ? `${leadMusician.first_name} ${leadMusician.last_name}` : 'Select Lead Musician'}
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label>Cantor</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowCantorPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {cantor ? `${cantor.first_name} ${cantor.last_name}` : 'Select Cantor'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="Lead Musician"
+              value={leadMusician.value}
+              onValueChange={leadMusician.setValue}
+              showPicker={leadMusician.showPicker}
+              onShowPickerChange={leadMusician.setShowPicker}
+              placeholder="Select Lead Musician"
+              openToNewPerson={!isEditing}
+            />
+            <PersonPickerField
+              label="Cantor"
+              value={cantor.value}
+              onValueChange={cantor.setValue}
+              showPicker={cantor.showPicker}
+              onShowPickerChange={cantor.setShowPicker}
+              placeholder="Select Cantor"
+              openToNewPerson={!isEditing}
+            />
           </div>
         </CardContent>
       </Card>
@@ -385,18 +349,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
           <CardDescription>Quinceañera coordinator</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Coordinator</Label>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => setShowCoordinatorPicker(true)}
-            >
-              <User className="h-4 w-4 mr-2" />
-              {coordinator ? `${coordinator.first_name} ${coordinator.last_name}` : 'Select Coordinator'}
-            </Button>
-          </div>
+          <PersonPickerField
+            label="Coordinator"
+            value={coordinator.value}
+            onValueChange={coordinator.setValue}
+            showPicker={coordinator.showPicker}
+            onShowPickerChange={coordinator.setShowPicker}
+            placeholder="Select Coordinator"
+            openToNewPerson={!isEditing}
+          />
         </CardContent>
       </Card>
 
@@ -420,18 +381,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 {firstReading ? firstReading.pericope : 'Select First Reading'}
               </Button>
             </div>
-            <div className="space-y-2">
-              <Label>First Reader</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowFirstReaderPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {firstReader ? `${firstReader.first_name} ${firstReader.last_name}` : 'Select First Reader'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="First Reader"
+              value={firstReader.value}
+              onValueChange={firstReader.setValue}
+              showPicker={firstReader.showPicker}
+              onShowPickerChange={firstReader.setShowPicker}
+              placeholder="Select First Reader"
+              openToNewPerson={!isEditing}
+            />
           </div>
 
           <Separator />
@@ -450,18 +408,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               </Button>
             </div>
             {!psalmIsSung && (
-              <div className="space-y-2">
-                <Label>Psalm Reader</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => setShowPsalmReaderPicker(true)}
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  {psalmReader ? `${psalmReader.first_name} ${psalmReader.last_name}` : 'Select Psalm Reader'}
-                </Button>
-              </div>
+              <PersonPickerField
+                label="Psalm Reader"
+                value={psalmReader.value}
+                onValueChange={psalmReader.setValue}
+                showPicker={psalmReader.showPicker}
+                onShowPickerChange={psalmReader.setShowPicker}
+                placeholder="Select Psalm Reader"
+                openToNewPerson={!isEditing}
+              />
             )}
           </div>
 
@@ -494,18 +449,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 {secondReading ? secondReading.pericope : 'Select Second Reading'}
               </Button>
             </div>
-            <div className="space-y-2">
-              <Label>Second Reader</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowSecondReaderPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {secondReader ? `${secondReader.first_name} ${secondReader.last_name}` : 'Select Second Reader'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="Second Reader"
+              value={secondReader.value}
+              onValueChange={secondReader.setValue}
+              showPicker={secondReader.showPicker}
+              onShowPickerChange={secondReader.setShowPicker}
+              placeholder="Select Second Reader"
+              openToNewPerson={!isEditing}
+            />
           </div>
 
           <Separator />
@@ -523,18 +475,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 {gospelReading ? gospelReading.pericope : 'Select Gospel'}
               </Button>
             </div>
-            <div className="space-y-2">
-              <Label>Gospel Reader</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowGospelReaderPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {gospelReader ? `${gospelReader.first_name} ${gospelReader.last_name}` : 'Select Gospel Reader'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="Gospel Reader"
+              value={gospelReader.value}
+              onValueChange={gospelReader.setValue}
+              showPicker={gospelReader.showPicker}
+              onShowPickerChange={gospelReader.setShowPicker}
+              placeholder="Select Gospel Reader"
+              openToNewPerson={!isEditing}
+            />
           </div>
         </CardContent>
       </Card>
@@ -569,18 +518,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
           </div>
 
           {!petitionsReadBySecondReader && (
-            <div className="space-y-2">
-              <Label>Petition Reader</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowPetitionReaderPicker(true)}
-              >
-                <User className="h-4 w-4 mr-2" />
-                {petitionReader ? `${petitionReader.first_name} ${petitionReader.last_name}` : 'Select Petition Reader'}
-              </Button>
-            </div>
+            <PersonPickerField
+              label="Petition Reader"
+              value={petitionReader.value}
+              onValueChange={petitionReader.setValue}
+              showPicker={petitionReader.showPicker}
+              onShowPickerChange={petitionReader.setShowPicker}
+              placeholder="Select Petition Reader"
+              openToNewPerson={!isEditing}
+            />
           )}
         </CardContent>
       </Card>
@@ -647,116 +593,6 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         isLoading={isLoading}
         cancelHref={isEditing ? `/quinceaneras/${quinceanera.id}` : '/quinceaneras'}
         saveLabel={isEditing ? 'Update Quinceañera' : 'Save Quinceañera'}
-      />
-
-      {/* Event Pickers */}
-      <EventPicker
-        open={showQuinceaneraEventPicker}
-        onOpenChange={setShowQuinceaneraEventPicker}
-        onSelect={(event) => setQuinceaneraEvent(event)}
-        selectedEventId={quinceaneraEvent?.id}
-        selectedEvent={quinceaneraEvent}
-        defaultEventType="QUINCEANERA"
-        defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
-        openToNewEvent={!quinceaneraEvent}
-        disableSearch={true}
-      />
-      <EventPicker
-        open={showQuinceaneraReceptionPicker}
-        onOpenChange={setShowQuinceaneraReceptionPicker}
-        onSelect={(event) => setQuinceaneraReception(event)}
-        selectedEventId={quinceaneraReception?.id}
-        selectedEvent={quinceaneraReception}
-        defaultEventType="OTHER"
-        defaultName="Reception"
-        openToNewEvent={!quinceaneraReception}
-        disableSearch={true}
-      />
-
-      {/* People Pickers */}
-      <PeoplePicker
-        open={showQuinceaneraPicker}
-        onOpenChange={setShowQuinceaneraPicker}
-        onSelect={(person) => setQuinceaneraGirl(person)}
-        selectedPersonId={quinceaneraGirl?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showFamilyContactPicker}
-        onOpenChange={setShowFamilyContactPicker}
-        onSelect={(person) => setFamilyContact(person)}
-        selectedPersonId={familyContact?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showCoordinatorPicker}
-        onOpenChange={setShowCoordinatorPicker}
-        onSelect={(person) => setCoordinator(person)}
-        selectedPersonId={coordinator?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showPresiderPicker}
-        onOpenChange={setShowPresiderPicker}
-        onSelect={(person) => setPresider(person)}
-        selectedPersonId={presider?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showHomilistPicker}
-        onOpenChange={setShowHomilistPicker}
-        onSelect={(person) => setHomilist(person)}
-        selectedPersonId={homilist?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showLeadMusicianPicker}
-        onOpenChange={setShowLeadMusicianPicker}
-        onSelect={(person) => setLeadMusician(person)}
-        selectedPersonId={leadMusician?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showCantorPicker}
-        onOpenChange={setShowCantorPicker}
-        onSelect={(person) => setCantor(person)}
-        selectedPersonId={cantor?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showFirstReaderPicker}
-        onOpenChange={setShowFirstReaderPicker}
-        onSelect={(person) => setFirstReader(person)}
-        selectedPersonId={firstReader?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showSecondReaderPicker}
-        onOpenChange={setShowSecondReaderPicker}
-        onSelect={(person) => setSecondReader(person)}
-        selectedPersonId={secondReader?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showPsalmReaderPicker}
-        onOpenChange={setShowPsalmReaderPicker}
-        onSelect={(person) => setPsalmReader(person)}
-        selectedPersonId={psalmReader?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showGospelReaderPicker}
-        onOpenChange={setShowGospelReaderPicker}
-        onSelect={(person) => setGospelReader(person)}
-        selectedPersonId={gospelReader?.id}
-        openToNewPerson={!isEditing}
-      />
-      <PeoplePicker
-        open={showPetitionReaderPicker}
-        onOpenChange={setShowPetitionReaderPicker}
-        onSelect={(person) => setPetitionReader(person)}
-        selectedPersonId={petitionReader?.id}
-        openToNewPerson={!isEditing}
       />
 
       {/* Reading Pickers */}
