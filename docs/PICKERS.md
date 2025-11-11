@@ -1,411 +1,831 @@
-# Pickers
+# Picker System Documentation
 
-## Current Picker Inventory (7 Total)
+## Table of Contents
 
-### Command/CommandDialog Pattern (6 Pickers)
-1. **PeoplePicker** - Search people + inline creation form + `visibleFields`
-2. **EventPicker** - Search events + inline creation form + `visibleFields`
-3. **LocationPicker** - Search locations + inline creation form + `visibleFields`
-4. **RolePicker** - Search roles + inline creation form
-5. **MassPicker** - Search masses (no inline creation)
-6. **GlobalLiturgicalEventPicker** - Search liturgical events (no inline creation)
-
-### Different Pattern (1 Picker)
-7. **ReadingPickerModal** - Uses regular Dialog with filters (not Command/CommandDialog)
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Core Components](#core-components)
+- [Creating a New Picker](#creating-a-new-picker)
+- [Usage Patterns](#usage-patterns)
+- [Field Wrappers](#field-wrappers)
+- [Existing Pickers](#existing-pickers)
+- [Advanced Features](#advanced-features)
 
 ---
 
-## Complete Props Documentation
+## Overview
 
-### 1. PeoplePicker
-**Path:** `src/components/people-picker.tsx`
+The picker system provides a unified, reusable pattern for modal selection dialogs throughout the application. Pickers allow users to search, select, and optionally create entities (people, events, locations, etc.) in a consistent, user-friendly interface.
 
-**Props:**
-- `open: boolean` - Control modal visibility
-- `onOpenChange: (open: boolean) => void` - Modal state handler
-- `onSelect: (person: Person) => void` - Callback when person is selected
-- `placeholder?: string` - Search placeholder text (default: "Search for a person...")
-- `emptyMessage?: string` - Empty state message (default: "No people found.")
-- `selectedPersonId?: string` - Highlight selected person
-- `className?: string` - Additional CSS classes
-- `visibleFields?: string[]` - Optional fields to show: `['email', 'phone_number', 'sex', 'note']` (default: all fields)
-- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['sex', 'email']`)
-- `openToNewPerson?: boolean` - Auto-open create form (default: false)
+**Key Features:**
+- **Client-side search** across multiple fields
+- **Inline creation forms** for creating new entities without leaving the picker
+- **Custom field types** including support for nested pickers
+- **Flexible field configuration** with support for text, email, date, select, textarea, and custom fields
+- **Validation** using Zod schemas
+- **Type-safe** with TypeScript generics
 
 ---
 
-### 2. EventPicker
-**Path:** `src/components/event-picker.tsx`
+## Architecture
 
-**Props:**
-- `open: boolean` - Control modal visibility
-- `onOpenChange: (open: boolean) => void` - Modal state handler
-- `onSelect: (event: Event) => void` - Callback when event is selected
-- `placeholder?: string` - Search placeholder text (default: "Search for an event...")
-- `emptyMessage?: string` - Empty state message (default: "No events found.")
-- `selectedEventId?: string` - Highlight selected event
-- `selectedEvent?: Event | null` - Currently selected event object
-- `className?: string` - Additional CSS classes
-- `defaultEventType?: string` - Default event type for creation (default: "EVENT")
-- `defaultName?: string` - Default event name for creation (default: "")
-- `openToNewEvent?: boolean` - Auto-open create form (default: false)
-- `disableSearch?: boolean` - Disable search functionality (default: false)
-- `visibleFields?: string[]` - Optional fields to show: `['location', 'note']` (default: all fields)
-- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['location', 'note']`)
+The picker system consists of three layers:
 
----
-
-### 3. LocationPicker
-**Path:** `src/components/location-picker.tsx`
-
-**Props:**
-- `open: boolean` - Control modal visibility
-- `onOpenChange: (open: boolean) => void` - Modal state handler
-- `onSelect: (location: Location) => void` - Callback when location is selected
-- `placeholder?: string` - Search placeholder text (default: "Search for a location...")
-- `emptyMessage?: string` - Empty state message (default: "No locations found.")
-- `selectedLocationId?: string` - Highlight selected location
-- `className?: string` - Additional CSS classes
-- `openToNewLocation?: boolean` - Auto-open create form (default: false)
-- `visibleFields?: string[]` - Optional fields to show: `['description', 'street', 'city', 'state', 'country', 'phone_number']` (default: all fields)
-- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['street', 'city', 'state']`)
-
----
-
-### 4. RolePicker
-**Path:** `src/components/role-picker.tsx`
-
-**Props:**
-- `open: boolean` - Control modal visibility
-- `onOpenChange: (open: boolean) => void` - Modal state handler
-- `onSelect: (role: Role) => void` - Callback when role is selected
-- `placeholder?: string` - Search placeholder text (default: "Search for a role...")
-- `emptyMessage?: string` - Empty state message (default: "No roles found.")
-- `selectedRoleId?: string` - Highlight selected role
-- `className?: string` - Additional CSS classes
-- `visibleFields?: string[]` - Optional fields to show: `['description', 'note']` (default: all fields)
-- `requiredFields?: string[]` - Fields to mark as required in the form (e.g., `['description']`)
-
----
-
-### 5. MassPicker
-**Path:** `src/components/mass-picker.tsx`
-
-**Props:**
-- `open: boolean` - Control modal visibility
-- `onOpenChange: (open: boolean) => void` - Modal state handler
-- `onSelect: (mass: MassWithNames) => void` - Callback when mass is selected
-- `placeholder?: string` - Search placeholder text (default: "Search for a mass...")
-- `emptyMessage?: string` - Empty state message (default: "No masses found.")
-- `selectedMassId?: string` - Highlight selected mass
-- `className?: string` - Additional CSS classes
-
-**Note:** No inline creation form (masses are created separately).
-
----
-
-### 6. GlobalLiturgicalEventPicker
-**Path:** `src/components/global-liturgical-event-picker.tsx`
-
-**Props:**
-- `open: boolean` - Control modal visibility
-- `onOpenChange: (open: boolean) => void` - Modal state handler
-- `onSelect: (event: GlobalLiturgicalEvent) => void` - Callback when event is selected
-- `placeholder?: string` - Search placeholder text (default: "Search for a liturgical event...")
-- `emptyMessage?: string` - Empty state message (default: "No liturgical events found.")
-- `selectedEventId?: string` - Highlight selected event
-- `className?: string` - Additional CSS classes
-- `locale?: string` - Language/locale for events (default: 'en')
-- `year?: number` - Year to fetch events for (default: current year)
-
-**Note:** No inline creation form (global liturgical events are read-only data).
-
----
-
-### 7. ReadingPickerModal
-**Path:** `src/components/reading-picker-modal.tsx`
-
-**Props:**
-- `isOpen: boolean` - Control modal visibility (Note: Different from other pickers which use `open`)
-- `onClose: () => void` - Modal close handler (Note: Different from other pickers which use `onOpenChange`)
-- `onSelect: (reading: IndividualReading | null) => void` - Callback when reading is selected
-- `selectedReading?: IndividualReading | null` - Currently selected reading
-- `readings: IndividualReading[]` - Array of readings to choose from
-- `title: string` - Modal title
-- `preselectedCategories?: string[]` - Pre-filter by categories (default: [])
-
-**Note:** Uses regular Dialog pattern (not Command/CommandDialog). Has category filters, language filters, and preview modal.
-
----
-
-## Common Patterns Identified
-
-### ✅ Patterns Already in Use
-
-1. **useDebounce Hook**
-   - ✅ **COMPLETED:** Extracted to `src/hooks/use-debounce.ts`
-   - ✅ All 5 pickers that use debouncing now import from central location
-   - ✅ Eliminated ~100 lines of duplicated code
-
-2. **Base Picker Types**
-   - ✅ **COMPLETED:** Created `src/types/picker.ts` with base interfaces
-   - ✅ `BasePickerProps<T>` - Base interface for all pickers
-   - ✅ `BasePickerWithFormProps<T>` - Extended interface for pickers with inline forms
-   - ✅ Helper functions: `isFieldVisible()`, `isFieldRequired()`
-   - Used by: PeoplePicker, EventPicker, LocationPicker, RolePicker
-
-3. **visibleFields Pattern**
-   - ✅ **COMPLETED:** Implemented in PeoplePicker, EventPicker, LocationPicker, RolePicker
-   - Controls which optional fields appear in inline creation forms
-   - Default: Show all fields if not specified
-   - Example: `visibleFields={['email', 'phone_number']}` for PeoplePicker
-
-4. **requiredFields Pattern**
-   - ✅ **COMPLETED:** Implemented in PeoplePicker, EventPicker, LocationPicker, RolePicker
-   - Marks specific fields as required in different contexts
-   - Adds visual required indicator (`*`) to labels
-   - Adds HTML `required` attribute to form inputs
-   - Example: `requiredFields={['sex', 'email']}` for child in baptism
-
-5. **Props Interface Structure**
-   - All pickers (except ReadingPickerModal) share similar base props:
-     - `open: boolean` (ReadingPickerModal uses `isOpen`)
-     - `onOpenChange: (open: boolean) => void` (ReadingPickerModal uses `onClose: () => void`)
-     - `onSelect: (item: T) => void`
-     - `placeholder?: string` (not used by ReadingPickerModal)
-     - `emptyMessage?: string` (not used by ReadingPickerModal)
-     - `selectedId?: string` (various names: `selectedPersonId`, `selectedEventId`, etc.)
-     - `className?: string` (not used by ReadingPickerModal)
-   - See "Complete Props Documentation" section above for full details of each picker's interface
-
-6. **State Management**
-   - All pickers use similar state:
-     - `searchQuery` (string)
-     - `items` (array of entities)
-     - `loading` (boolean)
-     - `showAddForm` (boolean, for pickers with inline creation)
-
-7. **Search/Loading Pattern**
-   - Debounced search
-   - Loading state during fetch
-   - useEffect to load data when picker opens
-   - useCallback for search function
-
----
-
-## Refactoring Opportunities
-
-### ✅ COMPLETED: Extract useDebounce Hook
-
-**Impact:** Reduced code duplication across 6 files
-
-**Status:** ✅ DONE - Created `src/hooks/use-debounce.ts` and updated all pickers to import from it
-
-**Files Updated:**
-- ✅ people-picker.tsx
-- ✅ event-picker.tsx
-- ✅ location-picker.tsx
-- ✅ role-picker.tsx
-- ✅ mass-picker.tsx
-- ✅ global-liturgical-event-picker.tsx (doesn't use debounce)
-
-**Result:** Eliminated ~100 lines of duplicated code!
-
----
-
-### ✅ COMPLETED: Create Base Picker Props Interface
-
-**Impact:** Ensures consistency and type safety across all pickers
-
-**Status:** ✅ DONE - Created `src/types/picker.ts` with base interfaces and helper functions
-
-**Implementation:**
-```tsx
-// src/types/picker.ts
-export interface BasePickerProps<T> {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSelect: (item: T) => void
-  placeholder?: string
-  emptyMessage?: string
-  selectedId?: string
-  className?: string
-}
-
-export interface BasePickerWithFormProps<T> extends BasePickerProps<T> {
-  openToNewItem?: boolean
-  visibleFields?: string[]
-  requiredFields?: string[]
-}
-
-// Helper functions
-export function isFieldVisible(fieldName, visibleFields, defaultVisibleFields)
-export function isFieldRequired(fieldName, requiredFields)
+```
+┌─────────────────────────────────────────────┐
+│  Application Forms (e.g., wedding-form.tsx) │
+│  Uses: PersonPickerField, EventPickerField  │
+└────────────────┬────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────┐
+│   Field Wrappers (e.g., PersonPickerField)  │
+│   - PickerField: Display selected value     │
+│   - Manages modal state (showPicker)        │
+└────────────────┬────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────┐
+│  Specific Pickers (e.g., PeoplePicker)      │
+│  - Fetches data from server actions         │
+│  - Defines create form fields               │
+│  - Custom list item rendering               │
+└────────────────┬────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────┐
+│         CorePicker (Generic Component)      │
+│  - Modal dialog with search                 │
+│  - List rendering                           │
+│  - Inline creation form                     │
+└─────────────────────────────────────────────┘
 ```
 
-**Files Updated:**
-- ✅ Created `src/types/picker.ts`
-- ✅ PeoplePicker imports and uses base types
-- ✅ EventPicker imports and uses base types
-- ✅ LocationPicker imports and uses base types
-- ✅ RolePicker imports and uses base types
+---
+
+## Core Components
+
+### 1. CorePicker (`src/components/core-picker.tsx`)
+
+The foundational generic picker component that all pickers use. It handles:
+- Modal state management
+- Client-side search across specified fields
+- List rendering with custom item display
+- Inline creation form with dynamic field configuration
+- Form validation
+- Auto-selection of newly created items
+
+**Type Signature:**
+```typescript
+CorePicker<T>
+```
+
+**Key Props:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Controls modal visibility |
+| `onOpenChange` | `(open: boolean) => void` | Callback when modal state changes |
+| `items` | `T[]` | Array of items to search and select from |
+| `selectedItem` | `T \| null` | Currently selected item |
+| `onSelect` | `(item: T) => void` | Callback when item is selected |
+| `title` | `string` | Modal title |
+| `searchFields` | `(keyof T)[]` | Fields to search across |
+| `getItemLabel` | `(item: T) => string` | Extract display label from item |
+| `getItemId` | `(item: T) => string` | Extract unique ID from item |
+| `renderItem` | `(item: T) => ReactNode` | Custom render for list items |
+| `enableCreate` | `boolean` | Show inline creation form |
+| `createFields` | `PickerFieldConfig[]` | Configuration for creation form fields |
+| `onCreateSubmit` | `(data: any) => Promise<T>` | Handle creating new item |
+| `autoOpenCreateForm` | `boolean` | Auto-open create form when picker opens |
+| `defaultCreateFormData` | `Record<string, any>` | Default values for create form |
+
+**Full props documentation:** See `src/types/core-picker.ts`
 
 ---
 
-### ✅ COMPLETED: Standardize visibleFields Pattern
+### 2. CorePickerField (`src/components/core-picker-field.tsx`)
 
-**Status:** ✅ DONE - All pickers with inline forms now support `visibleFields`
+A React Hook Form wrapper for CorePicker that integrates with form validation and state management.
 
-**Implementation:**
-- ✅ PeoplePicker has `visibleFields`
-- ✅ EventPicker has `visibleFields`
-- ✅ LocationPicker has `visibleFields`
-- ✅ RolePicker has `visibleFields`
+**Features:**
+- Integrates with React Hook Form
+- Displays selected value in trigger button
+- Shows validation errors with red border
+- Manages modal open state internally
 
----
+**Type Signature:**
+```typescript
+CorePickerField<T>
+```
 
-### ✅ COMPLETED: Add requiredFields Pattern
-
-**Impact:** Enables context-specific required fields across all pickers
-
-**Status:** ✅ DONE - All pickers with inline forms now support `requiredFields`
-
-**Implementation:**
-- ✅ PeoplePicker has `requiredFields`
-- ✅ EventPicker has `requiredFields`
-- ✅ LocationPicker has `requiredFields`
-- ✅ RolePicker has `requiredFields`
-- ✅ Required indicator (`*`) added to labels
-- ✅ HTML `required` attribute added to inputs
-
----
-
-### 🟢 LOW PRIORITY: Extract Common CommandDialog Layout
-
-**Impact:** Reduces structural duplication
-
-**Concept:**
-Create a reusable `BaseCommandPicker` component that provides:
-- CommandDialog wrapper with DialogTitle
-- CommandInput with search
-- CommandList with loading state
-- CommandEmpty with empty message
-- CommandGroup for results
-
-**Note:** This is complex and may reduce flexibility. Recommend waiting until more pickers are needed.
+**Usage with React Hook Form:**
+```typescript
+<CorePickerField<Person>
+  name="bride_id"
+  label="Bride"
+  required
+  items={people}
+  title="Select Bride"
+  searchFields={['first_name', 'last_name', 'email']}
+  getItemLabel={(person) => `${person.first_name} ${person.last_name}`}
+  getItemId={(person) => person.id}
+  enableCreate={true}
+  createFields={personCreateFields}
+  onCreateSubmit={createPerson}
+/>
+```
 
 ---
 
-## Consistency Checklist
+### 3. PickerField (`src/components/picker-field.tsx`)
 
-### Props Naming
-- ✅ All use `open` (not `isOpen`)
-- ✅ All use `onOpenChange` (not `onClose`, `setOpen`, etc.)
-- ✅ All use `onSelect` (not `onChange`, `onSelectItem`, etc.)
+A generic field wrapper that displays the selected value and manages picker modal state. Used for non-React Hook Form implementations.
 
-### State Naming
-- ✅ Most use `searchQuery` (GlobalLiturgicalEventPicker uses `searchQuery`)
-- ✅ Most use `loading` consistently
-- ✅ All use `showAddForm` for inline creation state
+**Features:**
+- Display selected value with icon
+- Clear button (X) to remove selection
+- Open picker button when no value selected
+- Support for description text
+- Single-line or multi-line layout
 
-### Function Naming
-- 🟡 Mixed patterns:
-  - `handlePersonSelect`, `handleEventSelect`, `handleLocationSelect` ✅
-  - `handleMassSelect`, `handleEventSelect` (GlobalLiturgicalEventPicker) ✅
-  - Should standardize to: `handle[Entity]Select`
+**Props:**
 
-### Search Function Naming
-- 🟡 Mixed patterns:
-  - `searchPeopleCallback`, `searchMassesCallback` ✅
-  - Some pickers use `loadEvents`, `loadEvents` ❌
-  - Should standardize to: `search[Entities]Callback` or `load[Entities]`
-
----
-
-## Picker-Specific Features
-
-### Inline Creation Forms
-**Pickers with inline forms:**
-1. PeoplePicker ✅
-2. EventPicker ✅
-3. LocationPicker ✅
-4. RolePicker ✅
-
-**Pickers without inline forms:**
-5. MassPicker - Makes sense (masses are complex)
-6. GlobalLiturgicalEventPicker - Makes sense (read-only data)
-7. ReadingPickerModal - Makes sense (uses different pattern)
-
-### Special Features
-- **EventPicker:** Location sub-picker (nested picker)
-- **ReadingPickerModal:** Category filters, language filters, preview modal
-- **GlobalLiturgicalEventPicker:** Year filter, locale filter
-- **PeoplePicker, EventPicker, LocationPicker:** `visibleFields` pattern
+| Prop | Type | Description |
+|------|------|-------------|
+| `label` | `string` | Field label |
+| `value` | `T \| null` | Currently selected value |
+| `onValueChange` | `(value: T \| null) => void` | Callback when value changes |
+| `showPicker` | `boolean` | Whether picker modal is open |
+| `onShowPickerChange` | `(show: boolean) => void` | Callback to change picker state |
+| `icon` | `LucideIcon` | Icon to display in trigger button |
+| `renderValue` | `(value: T) => ReactNode` | How to display selected value |
+| `children` | `ReactNode` | Picker modal component |
 
 ---
 
-## Recommended Refactoring Steps
+## Creating a New Picker
 
-### ✅ Phase 1: Extract Shared Utilities (COMPLETED)
-1. ✅ Extract `useDebounce` to `src/hooks/use-debounce.ts`
-2. ✅ Update all 6 pickers to import from central location
-3. ✅ Remove `showSexField` (COMPLETED)
+### Step 1: Define Your Field Configuration
 
-### ✅ Phase 2: Implement Base Types and Patterns (COMPLETED)
-1. ✅ Create `BasePickerProps<T>` interface in `src/types/picker.ts`
-2. ✅ Create `BasePickerWithFormProps<T>` interface
-3. ✅ Add helper functions: `isFieldVisible()`, `isFieldRequired()`
-4. ✅ Update all pickers to import and use base types
+```typescript
+import { PickerFieldConfig } from '@/types/core-picker'
+import { z } from 'zod'
 
-### ✅ Phase 3: Add visibleFields and requiredFields (COMPLETED)
-1. ✅ Implement `visibleFields` in PeoplePicker, EventPicker, LocationPicker, RolePicker
-2. ✅ Implement `requiredFields` in PeoplePicker, EventPicker, LocationPicker, RolePicker
-3. ✅ Update all PickerField wrappers to pass through props
-4. ✅ Add required indicators to labels and form inputs
+const createFields: PickerFieldConfig[] = [
+  {
+    key: 'first_name',
+    label: 'First Name',
+    type: 'text',
+    required: true,
+    placeholder: 'John',
+    validation: z.string().min(1, 'First name is required'),
+  },
+  {
+    key: 'last_name',
+    label: 'Last Name',
+    type: 'text',
+    required: true,
+    placeholder: 'Doe',
+    validation: z.string().min(1, 'Last name is required'),
+  },
+  {
+    key: 'email',
+    label: 'Email',
+    type: 'email',
+    required: false,
+    placeholder: 'john@example.com',
+  },
+  {
+    key: 'role',
+    label: 'Role',
+    type: 'select',
+    required: true,
+    options: [
+      { value: 'priest', label: 'Priest' },
+      { value: 'deacon', label: 'Deacon' },
+    ],
+  },
+  {
+    key: 'bio',
+    label: 'Biography',
+    type: 'textarea',
+    placeholder: 'Tell us about yourself...',
+  },
+]
+```
 
-### ✅ Phase 4: Documentation (COMPLETED)
-1. ✅ Update PICKERS.md with complete props documentation
-2. ✅ Document visibleFields arrays for each picker
-3. ✅ Document requiredFields pattern
-4. 🟡 TODO: Update COMPONENT_REGISTRY.md with standardized patterns
+**Supported Field Types:**
+- `text` - Standard text input
+- `email` - Email input with validation
+- `tel` - Phone number input
+- `date` - Date picker
+- `time` - Time picker
+- `datetime-local` - Date and time picker
+- `select` - Dropdown with options
+- `textarea` - Multi-line text input
+- `custom` - Custom render function (for nested pickers, etc.)
 
 ---
 
-## Notes
+### Step 2: Create Your Picker Component
 
-### Why Not Create a Single Generic Picker?
-While tempting, a single generic picker component would:
-- Be extremely complex with too many conditional branches
-- Reduce type safety
-- Make debugging harder
-- Limit flexibility for picker-specific features
+```typescript
+'use client'
 
-**Current approach is better:** Consistent patterns across similar components with shared utilities (like `useDebounce`).
+import { useState, useEffect } from 'react'
+import { CorePicker } from '@/components/core-picker'
+import { getPeople, createPerson } from '@/lib/actions/people'
+import type { Person } from '@/lib/types'
+import { toast } from 'sonner'
 
-### ReadingPickerModal Exception
-ReadingPickerModal intentionally uses a different pattern because:
-- It needs category/language filters (not simple search)
-- It has a preview modal
-- It's selecting from a filtered list, not searching a database
-- Command/CommandDialog pattern doesn't fit this use case
+interface PeoplePickerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (person: Person) => void
+  selectedPersonId?: string
+}
 
-This exception is acceptable and follows the "use the right tool for the job" principle.
+export function PeoplePicker({
+  open,
+  onOpenChange,
+  onSelect,
+  selectedPersonId,
+}: PeoplePickerProps) {
+  const [people, setPeople] = useState<Person[]>([])
+  const [loading, setLoading] = useState(false)
+
+  // Load people when picker opens
+  useEffect(() => {
+    if (open) {
+      loadPeople()
+    }
+  }, [open])
+
+  const loadPeople = async () => {
+    try {
+      setLoading(true)
+      const results = await getPeople()
+      setPeople(results)
+    } catch (error) {
+      console.error('Error loading people:', error)
+      toast.error('Failed to load people')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreatePerson = async (data: any): Promise<Person> => {
+    const newPerson = await createPerson(data)
+    setPeople((prev) => [newPerson, ...prev]) // Add to local list
+    return newPerson
+  }
+
+  const selectedPerson = selectedPersonId
+    ? people.find((p) => p.id === selectedPersonId)
+    : null
+
+  return (
+    <CorePicker<Person>
+      open={open}
+      onOpenChange={onOpenChange}
+      items={people}
+      selectedItem={selectedPerson}
+      onSelect={onSelect}
+      title="Select Person"
+      searchPlaceholder="Search for a person..."
+      searchFields={['first_name', 'last_name', 'email']}
+      getItemLabel={(person) => `${person.first_name} ${person.last_name}`}
+      getItemId={(person) => person.id}
+      enableCreate={true}
+      createFields={createFields} // From Step 1
+      onCreateSubmit={handleCreatePerson}
+      createButtonLabel="Save Person"
+      addNewButtonLabel="Add New Person"
+      isLoading={loading}
+    />
+  )
+}
+```
+
+---
+
+### Step 3: Create a Field Wrapper (Optional)
+
+For consistent usage in forms:
+
+```typescript
+'use client'
+
+import { PeoplePicker } from '@/components/people-picker'
+import { PickerField } from '@/components/picker-field'
+import { User } from 'lucide-react'
+import type { Person } from '@/lib/types'
+
+interface PersonPickerFieldProps {
+  label: string
+  value: Person | null
+  onValueChange: (person: Person | null) => void
+  showPicker: boolean
+  onShowPickerChange: (show: boolean) => void
+  description?: string
+  required?: boolean
+}
+
+export function PersonPickerField({
+  label,
+  value,
+  onValueChange,
+  showPicker,
+  onShowPickerChange,
+  description,
+  required = false,
+}: PersonPickerFieldProps) {
+  return (
+    <PickerField
+      label={label}
+      value={value}
+      onValueChange={onValueChange}
+      showPicker={showPicker}
+      onShowPickerChange={onShowPickerChange}
+      description={description}
+      required={required}
+      icon={User}
+      renderValue={(person) => `${person.first_name} ${person.last_name}`}
+    >
+      <PeoplePicker
+        open={showPicker}
+        onOpenChange={onShowPickerChange}
+        onSelect={onValueChange}
+        selectedPersonId={value?.id}
+      />
+    </PickerField>
+  )
+}
+```
+
+---
+
+## Usage Patterns
+
+### Pattern 1: Basic Usage in Forms
+
+```typescript
+import { PersonPickerField } from '@/components/person-picker-field'
+import { usePickerState } from '@/hooks/use-picker-state'
+
+function WeddingForm() {
+  const bride = usePickerState<Person>()
+
+  return (
+    <form>
+      <PersonPickerField
+        label="Bride"
+        value={bride.value}
+        onValueChange={bride.setValue}
+        showPicker={bride.showPicker}
+        onShowPickerChange={bride.setShowPicker}
+        required
+      />
+    </form>
+  )
+}
+```
+
+---
+
+### Pattern 2: React Hook Form Integration
+
+```typescript
+import { CorePickerField } from '@/components/core-picker-field'
+import { useForm, FormProvider } from 'react-hook-form'
+
+function WeddingForm() {
+  const form = useForm()
+
+  return (
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <CorePickerField<Person>
+          name="bride_id"
+          label="Bride"
+          required
+          items={people}
+          title="Select Bride"
+          searchFields={['first_name', 'last_name']}
+          getItemLabel={(p) => `${p.first_name} ${p.last_name}`}
+          getItemId={(p) => p.id}
+        />
+      </form>
+    </FormProvider>
+  )
+}
+```
+
+---
+
+### Pattern 3: Auto-Open Create Form
+
+Useful when you know the user needs to create a new item:
+
+```typescript
+<PeoplePicker
+  open={showPicker}
+  onOpenChange={setShowPicker}
+  onSelect={handleSelect}
+  autoOpenCreateForm={true} // Opens create form immediately
+/>
+```
+
+---
+
+### Pattern 4: Pre-fill Create Form
+
+Pass default values to the create form:
+
+```typescript
+<EventPicker
+  open={showPicker}
+  onOpenChange={setShowPicker}
+  onSelect={handleSelect}
+  autoOpenCreateForm={true}
+  defaultCreateFormData={{
+    name: 'Smith-Jones Wedding',
+    timezone: 'America/New_York',
+  }}
+/>
+```
+
+---
+
+### Pattern 5: Nested Pickers (Custom Fields)
+
+Create form fields can include nested pickers using the `custom` field type:
+
+```typescript
+const createFields: PickerFieldConfig[] = [
+  // ... other fields
+  {
+    key: 'location_id',
+    label: 'Location',
+    type: 'custom',
+    required: true,
+    render: ({ value, onChange, error }) => (
+      <div>
+        {selectedLocation ? (
+          <div className="flex items-center justify-between p-2 border rounded-md">
+            <span>{selectedLocation.name}</span>
+            <Button onClick={() => onChange(null)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={() => setShowLocationPicker(true)}>
+            <MapPin className="mr-2 h-4 w-4" />
+            Select Location
+          </Button>
+        )}
+
+        <LocationPicker
+          open={showLocationPicker}
+          onOpenChange={setShowLocationPicker}
+          onSelect={(loc) => {
+            setSelectedLocation(loc)
+            onChange(loc.id)
+          }}
+        />
+      </div>
+    ),
+  },
+]
+```
+
+---
+
+### Pattern 6: Custom List Item Rendering
+
+Customize how items appear in the selection list:
+
+```typescript
+const renderPersonItem = (person: Person) => (
+  <div className="flex items-center gap-3">
+    <Avatar className="h-8 w-8">
+      <AvatarFallback>{person.first_name[0]}{person.last_name[0]}</AvatarFallback>
+    </Avatar>
+    <div className="flex-1">
+      <div className="font-medium">{person.first_name} {person.last_name}</div>
+      <div className="text-sm text-muted-foreground">{person.email}</div>
+    </div>
+  </div>
+)
+
+<CorePicker<Person>
+  renderItem={renderPersonItem}
+  // ... other props
+/>
+```
+
+---
+
+## Field Wrappers
+
+### usePickerState Hook
+
+Reduces boilerplate for managing picker state:
+
+```typescript
+import { usePickerState } from '@/hooks/use-picker-state'
+
+const bride = usePickerState<Person>()
+// Returns: { value, setValue, showPicker, setShowPicker }
+
+<PersonPickerField
+  value={bride.value}
+  onValueChange={bride.setValue}
+  showPicker={bride.showPicker}
+  onShowPickerChange={bride.setShowPicker}
+/>
+```
+
+---
+
+## Existing Pickers
+
+### Available Pickers
+
+| Picker | Entity | Inline Creation | Special Features |
+|--------|--------|-----------------|------------------|
+| **PeoplePicker** | Person | ✅ Yes | Optional fields: email, phone, sex, note |
+| **EventPicker** | Event | ✅ Yes | Nested LocationPicker, timezone selection |
+| **LocationPicker** | Location | ✅ Yes | Address fields (street, city, state) |
+| **MassPicker** | Mass | ❌ No | Read-only selection |
+| **GlobalLiturgicalEventPicker** | GlobalLiturgicalEvent | ❌ No | Year/locale filters |
+| **ReadingPickerModal** | Reading | ❌ No | Category/language filters, preview modal |
+| **RolePicker** | Role | ✅ Yes | Description and note fields |
+
+### PeoplePicker Props
+
+```typescript
+interface PeoplePickerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (person: Person) => void
+  selectedPersonId?: string
+  visibleFields?: string[] // ['email', 'phone_number', 'sex', 'note']
+  requiredFields?: string[] // ['email', 'sex']
+  autoOpenCreateForm?: boolean
+  defaultCreateFormData?: Record<string, any>
+}
+```
+
+**Visible Fields:**
+- `email` - Email input
+- `phone_number` - Phone number input
+- `sex` - Gender select (Male/Female)
+- `note` - Notes textarea
+
+**Required Fields:**
+Any field from `visibleFields` can be marked as required.
+
+---
+
+### EventPicker Props
+
+```typescript
+interface EventPickerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (event: Event) => void
+  selectedEventId?: string
+  defaultEventType?: string // Default: 'EVENT'
+  visibleFields?: string[] // ['location', 'note']
+  requiredFields?: string[] // ['location']
+  autoOpenCreateForm?: boolean
+  defaultCreateFormData?: Record<string, any>
+}
+```
+
+**Visible Fields:**
+- `location` - Nested LocationPicker (custom field)
+- `note` - Notes textarea
+
+**Always Visible:**
+- `name` - Event name (required)
+- `start_date` - Date (required)
+- `start_time` - Time (required)
+- `timezone` - Timezone select (required)
+
+---
+
+### LocationPicker Props
+
+```typescript
+interface LocationPickerProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (location: Location) => void
+  selectedLocationId?: string
+  visibleFields?: string[] // ['description', 'street', 'city', 'state', 'country', 'phone_number']
+  requiredFields?: string[] // ['street', 'city', 'state']
+  autoOpenCreateForm?: boolean
+}
+```
+
+**Visible Fields:**
+- `description` - Description textarea
+- `street` - Street address
+- `city` - City
+- `state` - State
+- `country` - Country
+- `phone_number` - Phone number
+
+**Always Visible:**
+- `name` - Location name (required)
+
+---
+
+## Advanced Features
+
+### Dynamic Field Visibility
+
+Control which optional fields appear based on context:
+
+```typescript
+// For baptism child - require sex field
+<PersonPickerField
+  label="Child"
+  visibleFields={['email', 'phone_number', 'sex', 'note']}
+  requiredFields={['sex']} // Sex required for child
+  {...pickerProps}
+/>
+
+// For godparent - don't require sex
+<PersonPickerField
+  label="Godparent"
+  visibleFields={['email', 'phone_number', 'note']}
+  // sex field not visible, so not required
+  {...pickerProps}
+/>
+```
+
+---
+
+### Validation with Zod
+
+Add validation to form fields:
+
+```typescript
+import { z } from 'zod'
+
+const createFields: PickerFieldConfig[] = [
+  {
+    key: 'email',
+    label: 'Email',
+    type: 'email',
+    required: true,
+    validation: z.string().email('Invalid email address'),
+  },
+  {
+    key: 'phone_number',
+    label: 'Phone',
+    type: 'tel',
+    validation: z.string().regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Format: (555) 123-4567'),
+  },
+]
+```
+
+---
+
+### Memoization Best Practices
+
+Prevent infinite re-renders by memoizing field configurations:
+
+```typescript
+const createFields = useMemo(() => {
+  const fields: PickerFieldConfig[] = [
+    { key: 'first_name', label: 'First Name', type: 'text', required: true },
+    { key: 'last_name', label: 'Last Name', type: 'text', required: true },
+  ]
+
+  if (isFieldVisible('email')) {
+    fields.push({
+      key: 'email',
+      label: 'Email',
+      type: 'email',
+      required: isFieldRequired('email'),
+    })
+  }
+
+  return fields
+}, [isFieldVisible, isFieldRequired])
+```
+
+---
+
+### Empty Form Data Constants
+
+Prevent object re-creation on every render:
+
+```typescript
+// ❌ BAD - Creates new object every render
+<CorePicker defaultCreateFormData={{}} />
+
+// ✅ GOOD - Reuses same object reference
+const EMPTY_FORM_DATA = {}
+
+<CorePicker defaultCreateFormData={EMPTY_FORM_DATA} />
+```
+
+---
+
+## Best Practices
+
+### 1. Always Load Data When Picker Opens
+
+```typescript
+useEffect(() => {
+  if (open) {
+    loadData()
+  }
+}, [open])
+```
+
+### 2. Add Newly Created Items to Local List
+
+```typescript
+const handleCreate = async (data: any): Promise<T> => {
+  const newItem = await createItem(data)
+  setItems((prev) => [newItem, ...prev]) // Add to list
+  return newItem
+}
+```
+
+### 3. Use TypeScript Generics
+
+```typescript
+// Define picker as generic component
+export function MyPicker<T extends { id: string }>({ ... }) {
+  return <CorePicker<T> ... />
+}
+```
+
+### 4. Provide Meaningful Labels
+
+```typescript
+// ❌ Generic
+createButtonLabel="Save"
+
+// ✅ Specific
+createButtonLabel="Save Person"
+addNewButtonLabel="Add New Person"
+```
+
+### 5. Use Consistent Search Fields
+
+Include all fields users might search by:
+
+```typescript
+searchFields={['first_name', 'last_name', 'email', 'phone_number']}
+```
+
+---
+
+## Migration from Old Patterns
+
+If you encounter older pickers using `Command`/`CommandDialog`:
+
+1. Replace `Command` components with `CorePicker`
+2. Move inline form logic into `createFields` configuration
+3. Consolidate `handleCreate` logic into `onCreateSubmit`
+4. Remove manual search filtering (CorePicker handles this)
+5. Simplify state management
+
+**Before (Old Pattern):**
+```typescript
+// Complex command dialog with manual state management
+```
+
+**After (CorePicker):**
+```typescript
+<CorePicker<T>
+  items={items}
+  createFields={fields}
+  onCreateSubmit={handleCreate}
+/>
+```
 
 ---
 
 ## Summary
 
-**Completed Work:**
-- ✅ Removed `showSexField` completely
-- ✅ Implemented `visibleFields` pattern in all 4 main pickers (PeoplePicker, EventPicker, LocationPicker, RolePicker)
-- ✅ Implemented `requiredFields` pattern in all 4 main pickers
-- ✅ Created base picker types (`BasePickerProps<T>`, `BasePickerWithFormProps<T>`) in `src/types/picker.ts`
-- ✅ Created helper functions (`isFieldVisible()`, `isFieldRequired()`)
-- ✅ Extracted `useDebounce` hook to eliminate ~100 lines of duplication
-- ✅ Consistent prop naming across all pickers
-- ✅ All pickers follow similar structure
-- ✅ Comprehensive documentation in PICKERS.md
+The CorePicker system provides:
+- ✅ **Consistency** - Unified UX across all picker modals
+- ✅ **Reusability** - Write picker logic once, reuse everywhere
+- ✅ **Type Safety** - Full TypeScript support with generics
+- ✅ **Flexibility** - Support for simple to complex use cases
+- ✅ **Validation** - Built-in Zod validation support
+- ✅ **Nested Pickers** - Custom fields enable picker-in-picker patterns
+- ✅ **Auto-selection** - Newly created items are automatically selected
+- ✅ **Performance** - Memoization patterns prevent unnecessary re-renders
 
-**Remaining Work:**
-- 🟡 Update COMPONENT_REGISTRY.md with standardized patterns
-- 🟢 Consider standardizing function naming conventions (low priority)
+For questions or additions to the picker system, consult `src/components/core-picker.tsx` and `src/types/core-picker.ts`.

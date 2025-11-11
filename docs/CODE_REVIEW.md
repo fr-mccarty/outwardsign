@@ -14,3 +14,7 @@ This document contains a checklist of items to verify during code review. Use th
 
 - [ ] **All elements use CSS variables for colors** - Verify that all components, pages, and modules use semantic CSS variable tokens instead of hardcoded colors. According to [STYLES.md](./STYLES.md) § Dark Mode Support, ensure compatibility with light, dark, and system themes. **PROHIBITED:** Hardcoded colors (`bg-white`, `bg-gray-100`, `text-gray-900`, `text-black`, hex colors like `#ffffff`), standalone `dark:` utility classes for basic colors. **REQUIRED:** Semantic color tokens (`bg-background`, `text-foreground`, `bg-card`, `text-card-foreground`, `text-muted-foreground`, `bg-muted`, `border`), always pair backgrounds with foregrounds (`bg-card text-card-foreground`). **EXCEPTION:** Print views (`app/print/`) can use custom styling for PDF generation. Check all view pages, module components, and UI elements for compliance.
 
+[ ] Check for unused imports and delete the ones that are not being used 
+
+
+
