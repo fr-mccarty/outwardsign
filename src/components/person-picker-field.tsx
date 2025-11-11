@@ -1,9 +1,8 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { PeoplePicker } from '@/components/people-picker'
-import { X, User } from 'lucide-react'
+import { PickerField } from '@/components/picker-field'
+import { User } from 'lucide-react'
 import type { Person } from '@/lib/types'
 
 interface PersonPickerFieldProps {
@@ -30,41 +29,18 @@ export function PersonPickerField({
   openToNewPerson = false,
 }: PersonPickerFieldProps) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase().replace(/\s+/g, '-')}>
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      {value ? (
-        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-          <span className="text-sm">
-            {value.first_name} {value.last_name}
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onValueChange(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onShowPickerChange(true)}
-          className="w-full justify-start"
-        >
-          <User className="h-4 w-4 mr-2" />
-          {placeholder}
-        </Button>
-      )}
-      {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
-      )}
-
-      {/* People Picker Modal */}
+    <PickerField
+      label={label}
+      value={value}
+      onValueChange={onValueChange}
+      showPicker={showPicker}
+      onShowPickerChange={onShowPickerChange}
+      description={description}
+      placeholder={placeholder}
+      required={required}
+      icon={User}
+      renderValue={(person) => `${person.first_name} ${person.last_name}`}
+    >
       <PeoplePicker
         open={showPicker}
         onOpenChange={onShowPickerChange}
@@ -72,6 +48,6 @@ export function PersonPickerField({
         selectedPersonId={value?.id}
         openToNewPerson={openToNewPerson}
       />
-    </div>
+    </PickerField>
   )
 }

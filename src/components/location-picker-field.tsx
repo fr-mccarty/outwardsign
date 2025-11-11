@@ -1,9 +1,8 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { LocationPicker } from '@/components/location-picker'
-import { X, MapPin } from 'lucide-react'
+import { PickerField } from '@/components/picker-field'
+import { MapPin } from 'lucide-react'
 import type { Location } from '@/lib/types'
 
 interface LocationPickerFieldProps {
@@ -37,39 +36,18 @@ export function LocationPickerField({
   }
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase().replace(/\s+/g, '-')}>
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      {value ? (
-        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-          <span className="text-sm">{getLocationDisplay(value)}</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onValueChange(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onShowPickerChange(true)}
-          className="w-full justify-start"
-        >
-          <MapPin className="h-4 w-4 mr-2" />
-          {placeholder}
-        </Button>
-      )}
-      {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
-      )}
-
-      {/* Location Picker Modal */}
+    <PickerField
+      label={label}
+      value={value}
+      onValueChange={onValueChange}
+      showPicker={showPicker}
+      onShowPickerChange={onShowPickerChange}
+      description={description}
+      placeholder={placeholder}
+      required={required}
+      icon={MapPin}
+      renderValue={getLocationDisplay}
+    >
       <LocationPicker
         open={showPicker}
         onOpenChange={onShowPickerChange}
@@ -77,6 +55,6 @@ export function LocationPickerField({
         selectedLocationId={value?.id}
         openToNewLocation={openToNewLocation}
       />
-    </div>
+    </PickerField>
   )
 }

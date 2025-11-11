@@ -160,7 +160,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         start_time: data.start_time || null,
         end_date: data.end_date || null,
         end_time: data.end_time || null,
-        timezone: data.timezone || null,
+        timezone: data.timezone || 'UTC',
         location_id: data.location_id || null,
         language: data.language || null,
         note: data.note || null,

@@ -28,7 +28,8 @@ import {
   Edit3,
   Monitor,
   Moon,
-  Sun
+  Sun,
+  Languages
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -278,6 +279,22 @@ export function ParishUserMenu() {
               <Monitor className="h-4 w-4" />
               <span>System</span>
               {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex items-center gap-2">
+            <Languages className="h-4 w-4" />
+            <span>Language</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem className="flex items-center gap-2">
+              <span>English</span>
+              <Check className="ml-auto h-4 w-4" />
+            </DropdownMenuItem>
+            <DropdownMenuItem className="flex items-center gap-2" disabled>
+              <span>Español (Coming Soon)</span>
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>

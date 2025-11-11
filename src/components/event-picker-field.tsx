@@ -1,9 +1,8 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { EventPicker } from '@/components/event-picker'
-import { X, Calendar } from 'lucide-react'
+import { PickerField } from '@/components/picker-field'
+import { Calendar } from 'lucide-react'
 import type { Event } from '@/lib/types'
 
 interface EventPickerFieldProps {
@@ -65,39 +64,20 @@ export function EventPickerField({
   disableSearch = false,
 }: EventPickerFieldProps) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase().replace(/\s+/g, '-')}>
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      {value ? (
-        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-          <span className="text-sm leading-tight">{formatEventDateTime(value)}</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onValueChange(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onShowPickerChange(true)}
-          className="w-full justify-start"
-        >
-          <Calendar className="h-4 w-4 mr-2" />
-          {placeholder}
-        </Button>
+    <PickerField
+      label={label}
+      value={value}
+      onValueChange={onValueChange}
+      showPicker={showPicker}
+      onShowPickerChange={onShowPickerChange}
+      description={description}
+      placeholder={placeholder}
+      required={required}
+      icon={Calendar}
+      renderValue={(event) => (
+        <span className="leading-tight">{formatEventDateTime(event)}</span>
       )}
-      {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
-      )}
-
-      {/* Event Picker Modal */}
+    >
       <EventPicker
         open={showPicker}
         onOpenChange={onShowPickerChange}
@@ -109,6 +89,6 @@ export function EventPickerField({
         defaultName={defaultName}
         disableSearch={disableSearch}
       />
-    </div>
+    </PickerField>
   )
 }

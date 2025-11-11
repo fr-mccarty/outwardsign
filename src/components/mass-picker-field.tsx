@@ -1,9 +1,8 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { MassPicker } from '@/components/mass-picker'
-import { X, Calendar } from 'lucide-react'
+import { PickerField } from '@/components/picker-field'
+import { Calendar } from 'lucide-react'
 import type { MassWithNames } from '@/lib/actions/masses'
 
 interface MassPickerFieldProps {
@@ -36,52 +35,34 @@ export function MassPickerField({
   }
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase().replace(/\s+/g, '-')}>
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      {value ? (
-        <div className="flex items-center gap-2">
-          <div className="flex-1 p-3 border rounded-md bg-muted/50">
-            <p className="text-sm font-medium">
-              {formatMassDisplay(value)}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {value.status}
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onValueChange(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onShowPickerChange(true)}
-          className="w-full justify-start"
-        >
-          <Calendar className="h-4 w-4 mr-2" />
-          {placeholder}
-        </Button>
+    <PickerField
+      label={label}
+      value={value}
+      onValueChange={onValueChange}
+      showPicker={showPicker}
+      onShowPickerChange={onShowPickerChange}
+      description={description}
+      placeholder={placeholder}
+      required={required}
+      icon={Calendar}
+      displayLayout="multi-line"
+      renderValue={(mass) => (
+        <>
+          <p className="text-sm font-medium">
+            {formatMassDisplay(mass)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {mass.status}
+          </p>
+        </>
       )}
-      {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
-      )}
-
-      {/* Mass Picker Modal */}
+    >
       <MassPicker
         open={showPicker}
         onOpenChange={onShowPickerChange}
         onSelect={onValueChange}
         selectedMassId={value?.id}
       />
-    </div>
+    </PickerField>
   )
 }

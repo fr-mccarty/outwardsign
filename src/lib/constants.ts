@@ -7,6 +7,74 @@ export const HOME_LANGUAGES = ['en', 'es'] as const
 export type HomeLanguage = typeof HOME_LANGUAGES[number]
 export const DEFAULT_HOME_LANGUAGE: HomeLanguage = 'en'
 
+// ============================================================================
+// PRIMARY MODULES
+// ============================================================================
+// Core sacramental modules in Outward Sign
+
+export const PRIMARY_MODULE_VALUES = [
+  'WEDDINGS',
+  'FUNERALS',
+  'BAPTISMS',
+  // 'CONFIRMATIONS', // Planned - not yet implemented
+  'PRESENTATIONS',
+  'QUINCEANERAS',
+  'MASSES',
+  'MASS_INTENTIONS'
+] as const
+
+export type PrimaryModule = typeof PRIMARY_MODULE_VALUES[number]
+
+export const PRIMARY_MODULE_LABELS: Record<PrimaryModule, { en: string; es: string }> = {
+  WEDDINGS: {
+    en: 'Weddings',
+    es: 'Bodas'
+  },
+  FUNERALS: {
+    en: 'Funerals',
+    es: 'Funerales'
+  },
+  BAPTISMS: {
+    en: 'Baptisms',
+    es: 'Bautismos'
+  },
+  // CONFIRMATIONS: {
+  //   en: 'Confirmations',
+  //   es: 'Confirmaciones'
+  // },
+  PRESENTATIONS: {
+    en: 'Presentations',
+    es: 'Presentaciones'
+  },
+  QUINCEANERAS: {
+    en: 'Quinceañeras',
+    es: 'Quinceañeras'
+  },
+  MASSES: {
+    en: 'Masses',
+    es: 'Misas'
+  },
+  MASS_INTENTIONS: {
+    en: 'Mass Intentions',
+    es: 'Intenciones de Misa'
+  }
+}
+
+export const PRIMARY_MODULE_ROUTES: Record<PrimaryModule, string> = {
+  WEDDINGS: '/weddings',
+  FUNERALS: '/funerals',
+  BAPTISMS: '/baptisms',
+  // CONFIRMATIONS: '/confirmations',
+  PRESENTATIONS: '/presentations',
+  QUINCEANERAS: '/quinceaneras',
+  MASSES: '/masses',
+  MASS_INTENTIONS: '/mass-intentions'
+}
+
+// ============================================================================
+// PETITION CONTEXTS
+// ============================================================================
+
 export const DEFAULT_PETITION_CONTEXT_SUNDAY_ENGLISH = `For our Holy Father, Pope Leo, our Bishop, and all the clergy.
 For our nation's leaders and all who serve in public office.
 For peace in our world and protection of the innocent.

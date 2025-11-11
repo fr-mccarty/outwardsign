@@ -3,6 +3,13 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import {
   Church,
@@ -217,6 +224,32 @@ const translations = {
         description: "Collaborate seamlessly across the entire team"
       }
     },
+    gettingStarted: {
+      title: "Ready to Get Started?",
+      subtitle: "Join parishes across the country making sacrament preparation simple and beautiful. Here's how easy it is:",
+      step1: {
+        title: "Create Your Account",
+        description: "Sign up with your email. No credit card needed, ever.",
+        time: "2 minutes"
+      },
+      step2: {
+        title: "Set Up Your Parish",
+        description: "Add your parish name and basic information.",
+        time: "5 minutes"
+      },
+      step3: {
+        title: "Create Your First Event",
+        description: "Follow the simple form to plan a wedding, funeral, or baptism.",
+        time: "20 minutes"
+      },
+      step4: {
+        title: "Print & Celebrate",
+        description: "Export a beautiful script, print it, and you're ready for the celebration.",
+        time: "2 minutes"
+      },
+      totalTime: "Total: 30 minutes from signup to your first printed script",
+      ctaButton: "Start Now - It's Free"
+    },
     finalCTA: {
       title: "Beautiful Celebrations Are Evangelization",
       subtitle: "Join parishes who are creating moments of profound spiritual significance through careful preparation, clear communication, and beautiful celebrations of these outward signs instituted by Christ to give grace.",
@@ -415,6 +448,32 @@ const translations = {
         description: "Colabora sin problemas en todo el equipo"
       }
     },
+    gettingStarted: {
+      title: "¿Listo para Comenzar?",
+      subtitle: "Únete a parroquias en todo el país que hacen que la preparación sacramental sea simple y hermosa. Así de fácil es:",
+      step1: {
+        title: "Crea tu Cuenta",
+        description: "Regístrate con tu correo electrónico. No necesitas tarjeta de crédito, nunca.",
+        time: "2 minutos"
+      },
+      step2: {
+        title: "Configura tu Parroquia",
+        description: "Añade el nombre de tu parroquia e información básica.",
+        time: "5 minutos"
+      },
+      step3: {
+        title: "Crea tu Primer Evento",
+        description: "Sigue el formulario simple para planificar una boda, funeral o bautismo.",
+        time: "20 minutos"
+      },
+      step4: {
+        title: "Imprime y Celebra",
+        description: "Exporta un guion hermoso, imprímelo y estás listo para la celebración.",
+        time: "2 minutos"
+      },
+      totalTime: "Total: 30 minutos desde el registro hasta tu primer guion impreso",
+      ctaButton: "Comenzar Ahora - Es Gratis"
+    },
     finalCTA: {
       title: "Las Celebraciones Hermosas Son Evangelización",
       subtitle: "Únete a las parroquias que están creando momentos de profundo significado espiritual a través de una preparación cuidadosa, comunicación clara y celebraciones hermosas de estos signos visibles instituidos por Cristo para dar la gracia.",
@@ -438,6 +497,7 @@ function HomeContent() {
   const { theme, setTheme } = useTheme()
   const [language, setLanguage] = useState<HomeLanguage>(DEFAULT_HOME_LANGUAGE)
   const [mounted, setMounted] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = translations[language]
 
   // Read language from URL on mount
@@ -489,7 +549,7 @@ function HomeContent() {
               {/* Theme Toggle */}
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+                className="hidden lg:block p-2 rounded-lg border border-border hover:bg-accent transition-colors"
                 aria-label="Toggle theme"
               >
                 {mounted && theme === 'dark' ? (
@@ -500,7 +560,7 @@ function HomeContent() {
               </button>
 
               {/* Language Selector */}
-              <div className="flex items-center gap-2 border border-border rounded-lg p-1">
+              <div className="hidden lg:flex items-center gap-2 border border-border rounded-lg p-1">
                 <button
                   onClick={() => handleLanguageChange('en')}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
@@ -523,19 +583,133 @@ function HomeContent() {
                 </button>
               </div>
 
-              <Button asChild variant="ghost">
+              <Button asChild variant="ghost" className="hidden md:inline-flex">
                 <Link href="/login">{t.nav.login}</Link>
               </Button>
-              <Button asChild>
+              <Button asChild className="hidden md:inline-flex">
                 <Link href="/signup">{t.nav.getStarted}</Link>
               </Button>
-              <Button variant="ghost" size="sm" className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(true)}
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Flower className="h-6 w-6 text-primary" />
+              {APP_NAME}
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="flex flex-col gap-6 mt-8">
+            {/* Navigation Links */}
+            <nav className="flex flex-col gap-4">
+              <Link
+                href="#features"
+                className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.features}
+              </Link>
+              <Link
+                href="#sacraments"
+                className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.sacraments}
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.howItWorks}
+              </Link>
+            </nav>
+
+            <Separator />
+
+            {/* Theme Picker */}
+            <div className="space-y-3">
+              <div className="text-sm font-medium text-muted-foreground">Theme</div>
+              <div className="flex gap-2">
+                <Button
+                  variant={theme === 'light' ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setTheme('light')}
+                >
+                  <Sun className="h-4 w-4 mr-2" />
+                  Light
+                </Button>
+                <Button
+                  variant={theme === 'dark' ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setTheme('dark')}
+                >
+                  <Moon className="h-4 w-4 mr-2" />
+                  Dark
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Language Picker */}
+            <div className="space-y-3">
+              <div className="text-sm font-medium text-muted-foreground">Language</div>
+              <div className="flex gap-2">
+                <Button
+                  variant={language === 'en' ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    handleLanguageChange('en')
+                  }}
+                >
+                  <Languages className="h-4 w-4 mr-2" />
+                  English
+                </Button>
+                <Button
+                  variant={language === 'es' ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    handleLanguageChange('es')
+                  }}
+                >
+                  <Languages className="h-4 w-4 mr-2" />
+                  Español
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-3">
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/login">{t.nav.login}</Link>
+              </Button>
+              <Button asChild className="w-full">
+                <Link href="/signup">{t.nav.getStarted}</Link>
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Testing Banner */}
       <TestingBanner />
@@ -1065,6 +1239,110 @@ function HomeContent() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Getting Started Section */}
+        <div className="space-y-12">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold">{t.gettingStarted.title}</h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              {t.gettingStarted.subtitle}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {/* Step 1 */}
+            <Card className="bg-card text-card-foreground border relative">
+              <CardContent className="pt-8 pb-6">
+                <div className="absolute -top-4 left-6 bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">
+                  1
+                </div>
+                <div className="mt-4 space-y-3">
+                  <h3 className="font-semibold text-lg">{t.gettingStarted.step1.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t.gettingStarted.step1.description}
+                  </p>
+                  <div className="pt-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {t.gettingStarted.step1.time}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 2 */}
+            <Card className="bg-card text-card-foreground border relative">
+              <CardContent className="pt-8 pb-6">
+                <div className="absolute -top-4 left-6 bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">
+                  2
+                </div>
+                <div className="mt-4 space-y-3">
+                  <h3 className="font-semibold text-lg">{t.gettingStarted.step2.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t.gettingStarted.step2.description}
+                  </p>
+                  <div className="pt-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {t.gettingStarted.step2.time}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 3 */}
+            <Card className="bg-card text-card-foreground border relative">
+              <CardContent className="pt-8 pb-6">
+                <div className="absolute -top-4 left-6 bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">
+                  3
+                </div>
+                <div className="mt-4 space-y-3">
+                  <h3 className="font-semibold text-lg">{t.gettingStarted.step3.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t.gettingStarted.step3.description}
+                  </p>
+                  <div className="pt-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {t.gettingStarted.step3.time}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 4 */}
+            <Card className="bg-card text-card-foreground border relative">
+              <CardContent className="pt-8 pb-6">
+                <div className="absolute -top-4 left-6 bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold shadow-lg">
+                  4
+                </div>
+                <div className="mt-4 space-y-3">
+                  <h3 className="font-semibold text-lg">{t.gettingStarted.step4.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t.gettingStarted.step4.description}
+                  </p>
+                  <div className="pt-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {t.gettingStarted.step4.time}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center space-y-6">
+            <p className="text-lg font-medium text-muted-foreground">
+              {t.gettingStarted.totalTime}
+            </p>
+            <Button asChild size="lg" className="text-lg px-8 h-12">
+              <Link href="/signup">
+                <ArrowRight className="h-5 w-5 mr-2" />
+                {t.gettingStarted.ctaButton}
+              </Link>
+            </Button>
           </div>
         </div>
 
