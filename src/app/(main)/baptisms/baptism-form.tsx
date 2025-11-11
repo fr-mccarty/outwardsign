@@ -197,7 +197,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={child.showPicker}
             onShowPickerChange={child.setShowPicker}
             placeholder="Select Child"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!child.value}
           />
 
           <Separator />
@@ -210,7 +210,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={mother.showPicker}
             onShowPickerChange={mother.setShowPicker}
             placeholder="Select Mother"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!mother.value}
           />
 
           {/* Father */}
@@ -221,7 +221,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={father.showPicker}
             onShowPickerChange={father.setShowPicker}
             placeholder="Select Father"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!father.value}
           />
 
           <Separator />
@@ -234,7 +234,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={sponsor1.showPicker}
             onShowPickerChange={sponsor1.setShowPicker}
             placeholder="Select Sponsor 1"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!sponsor1.value}
           />
 
           {/* Sponsor 2 */}
@@ -245,7 +245,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={sponsor2.showPicker}
             onShowPickerChange={sponsor2.setShowPicker}
             placeholder="Select Sponsor 2"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!sponsor2.value}
           />
 
           <Separator />

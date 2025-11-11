@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { UserCog } from 'lucide-react'
-import { getRoles, createRole, updateRole } from '@/lib/actions/roles'
+import { getRolesPaginated, createRole, updateRole } from '@/lib/actions/roles'
 import type { Role } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -50,6 +50,10 @@ export function RolePicker({
 }: RolePickerProps) {
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const PAGE_SIZE = 10
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -61,18 +65,23 @@ export function RolePicker({
     [requiredFields]
   )
 
-  // Load roles when dialog opens
+  // Load roles when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadRoles()
+      loadRoles(currentPage, searchQuery)
     }
-  }, [open])
+  }, [open, currentPage, searchQuery])
 
-  const loadRoles = async () => {
+  const loadRoles = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const results = await getRoles()
-      setRoles(results)
+      const result = await getRolesPaginated({
+        page,
+        limit: PAGE_SIZE,
+        search,
+      })
+      setRoles(result.items)
+      setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading roles:', error)
       toast.error('Failed to load roles')
@@ -151,6 +160,17 @@ export function RolePicker({
     return updatedRole
   }
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
   // Custom render for role list items
   const renderRoleItem = (role: Role) => {
     const isSelected = selectedRoleId === role.id
@@ -206,6 +226,12 @@ export function RolePicker({
       entityToEdit={roleToEdit}
       onUpdateSubmit={handleUpdateRole}
       updateButtonLabel="Update Role"
+      enablePagination={true}
+      totalCount={totalCount}
+      currentPage={currentPage}
+      pageSize={PAGE_SIZE}
+      onPageChange={handlePageChange}
+      onSearch={handleSearchChange}
     />
   )
 }

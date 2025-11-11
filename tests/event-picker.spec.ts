@@ -24,13 +24,14 @@ test.describe('Event Picker Component', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
     await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Event/i })).toBeVisible();
 
-    // Click "Add New" to open create form
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+    // Form should auto-open when no event is selected (openToNewEvent=true)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Fill in event details
     await page.locator('[role="dialog"]').getByLabel('Name').fill('Wedding Ceremony');
     await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-12-25');
-    await page.locator('[role="dialog"]').getByLabel('Time').fill('14:00');
+    await page.locator('[role="dialog"]').getByLabel('Time', { exact: true }).fill('14:00');
 
     // Click "Select Location" button to open nested LocationPicker
     await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
@@ -82,14 +83,15 @@ test.describe('Event Picker Component', () => {
     // Wait for Event Picker dialog
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Click "Add New" to open event create form
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+    // Form should auto-open when no event is selected (openToNewEvent=true)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Fill in event details
     const eventName = `TestEvent${Date.now()}`;
     await page.locator('[role="dialog"]').getByLabel('Name').fill(eventName);
     await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-06-15');
-    await page.locator('[role="dialog"]').getByLabel('Time').fill('10:30');
+    await page.locator('[role="dialog"]').getByLabel('Time', { exact: true }).fill('10:30');
 
     // Open nested LocationPicker
     await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
@@ -145,13 +147,14 @@ test.describe('Event Picker Component', () => {
     await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
-    // Open create form
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+    // Form should auto-open when no event is selected (openToNewEvent=true)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Fill event
     await page.locator('[role="dialog"]').getByLabel('Name').fill('PreserveContextEvent');
     await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-08-20');
-    await page.locator('[role="dialog"]').getByLabel('Time').fill('15:00');
+    await page.locator('[role="dialog"]').getByLabel('Time', { exact: true }).fill('15:00');
 
     // Open nested location picker and create location
     await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
@@ -191,16 +194,17 @@ test.describe('Event Picker Component', () => {
     await page.goto('/weddings/create');
 
     // Open event picker
-    await page.locator('main').locator('div').filter({ has: page.locator('label', { hasText: 'Wedding Ceremony' }) }).getByRole('button').click();
+    await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
-    // Open create form
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+    // Form should auto-open when no event is selected (openToNewEvent=true)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Fill event
     await page.locator('[role="dialog"]').getByLabel('Name').fill('Saturday Evening Mass');
     await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-11-01');
-    await page.locator('[role="dialog"]').getByLabel('Time').fill('17:30');
+    await page.locator('[role="dialog"]').getByLabel('Time', { exact: true }).fill('17:30');
 
     // Open location picker
     await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
@@ -229,11 +233,12 @@ test.describe('Event Picker Component', () => {
     await page.goto('/weddings/create');
 
     // Open event picker
-    await page.locator('main').locator('div').filter({ has: page.locator('label', { hasText: 'Wedding Ceremony' }) }).getByRole('button').click();
+    await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
-    // Open create form
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+    // Form should auto-open when no event is selected (openToNewEvent=true)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Try to submit without filling required fields
     await page.locator('[role="dialog"]').getByRole('button', { name: /Create/i }).click();
@@ -245,7 +250,7 @@ test.describe('Event Picker Component', () => {
     // Now fill required fields
     await page.locator('[role="dialog"]').getByLabel('Name').fill('ValidEvent');
     await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-09-10');
-    await page.locator('[role="dialog"]').getByLabel('Time').fill('12:00');
+    await page.locator('[role="dialog"]').getByLabel('Time', { exact: true }).fill('12:00');
 
     // Submit should work now
     await page.locator('[role="dialog"]').getByRole('button', { name: /Create/i }).click();

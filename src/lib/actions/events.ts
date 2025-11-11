@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Event, Location } from '@/lib/types'
+import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface EventWithRelations extends Event {
   location?: Location | null
@@ -80,6 +81,53 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
   }
 
   return data || []
+}
+
+export async function getEventsPaginated(params?: PaginatedParams): Promise<PaginatedResult<Event>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query
+  let query = supabase
+    .from('events')
+    .select('*', { count: 'exact' })
+
+  // Apply search filter
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('start_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated events:', error)
+    throw new Error('Failed to fetch paginated events')
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: data || [],
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 export async function getEvent(id: string): Promise<Event | null> {

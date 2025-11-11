@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock } from 'lucide-react'
-import { getEvents, createEvent, updateEvent } from '@/lib/actions/events'
+import { getEventsPaginated, createEvent, updateEvent } from '@/lib/actions/events'
 import type { Event } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -75,6 +75,10 @@ export function EventPicker({
 }: EventPickerProps) {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const PAGE_SIZE = 10
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -86,18 +90,23 @@ export function EventPicker({
     [requiredFields]
   )
 
-  // Load events when dialog opens
+  // Load events when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadEvents()
+      loadEvents(currentPage, searchQuery)
     }
-  }, [open])
+  }, [open, currentPage, searchQuery])
 
-  const loadEvents = async () => {
+  const loadEvents = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const results = await getEvents()
-      setEvents(results)
+      const result = await getEventsPaginated({
+        page,
+        limit: PAGE_SIZE,
+        search,
+      })
+      setEvents(result.items)
+      setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading events:', error)
       toast.error('Failed to load events')
@@ -221,6 +230,17 @@ export function EventPicker({
     return updatedEvent
   }
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
   // Custom render for event list items
   const renderEventItem = (event: Event) => {
     const isSelected = selectedEventId === event.id
@@ -275,6 +295,12 @@ export function EventPicker({
       entityToEdit={eventToEdit}
       onUpdateSubmit={handleUpdateEvent}
       updateButtonLabel="Update Event"
+      enablePagination={true}
+      totalCount={totalCount}
+      currentPage={currentPage}
+      pageSize={PAGE_SIZE}
+      onPageChange={handlePageChange}
+      onSearch={handleSearchChange}
       CustomFormComponent={(props) => (
         <EventFormFields
           {...props}

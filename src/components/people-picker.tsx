@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Mail, Phone } from 'lucide-react'
-import { getPeople, createPerson, updatePerson } from '@/lib/actions/people'
+import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -53,6 +53,10 @@ export function PeoplePicker({
 }: PeoplePickerProps) {
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const PAGE_SIZE = 10
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -64,18 +68,23 @@ export function PeoplePicker({
     [requiredFields]
   )
 
-  // Load people when dialog opens
+  // Load people when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadPeople()
+      loadPeople(currentPage, searchQuery)
     }
-  }, [open])
+  }, [open, currentPage, searchQuery])
 
-  const loadPeople = async () => {
+  const loadPeople = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const results = await getPeople()
-      setPeople(results)
+      const result = await getPeoplePaginated({
+        page,
+        limit: PAGE_SIZE,
+        search,
+      })
+      setPeople(result.items)
+      setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading people:', error)
       toast.error('Failed to load people')
@@ -97,6 +106,17 @@ export function PeoplePicker({
   const selectedPerson = selectedPersonId
     ? people.find((p) => p.id === selectedPersonId)
     : null
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
 
   // Build create fields configuration dynamically - memoized to prevent infinite re-renders
   const createFields: PickerFieldConfig[] = useMemo(() => {
@@ -269,6 +289,12 @@ export function PeoplePicker({
       entityToEdit={personToEdit}
       onUpdateSubmit={handleUpdatePerson}
       updateButtonLabel="Update Person"
+      enablePagination={true}
+      totalCount={totalCount}
+      currentPage={currentPage}
+      pageSize={PAGE_SIZE}
+      onPageChange={handlePageChange}
+      onSearch={handleSearchChange}
     />
   )
 }

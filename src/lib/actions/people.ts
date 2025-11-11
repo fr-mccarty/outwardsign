@@ -36,6 +36,20 @@ export interface PersonFilterParams {
   search?: string
 }
 
+export interface PaginatedParams {
+  page?: number
+  limit?: number
+  search?: string
+}
+
+export interface PaginatedResult<T> {
+  items: T[]
+  totalCount: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 export async function getPeople(filters?: PersonFilterParams): Promise<Person[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -62,6 +76,53 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
   }
 
   return data || []
+}
+
+export async function getPeoplePaginated(params?: PaginatedParams): Promise<PaginatedResult<Person>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query
+  let query = supabase
+    .from('people')
+    .select('*', { count: 'exact' })
+
+  // Apply search filter
+  if (search) {
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone_number.ilike.%${search}%`)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('last_name', { ascending: true })
+    .order('first_name', { ascending: true })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated people:', error)
+    throw new Error('Failed to fetch paginated people')
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: data || [],
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 export async function getPerson(id: string): Promise<Person | null> {

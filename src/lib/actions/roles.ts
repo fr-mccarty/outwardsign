@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Role, MassRole, Person } from '@/lib/types'
+import type { PaginatedParams, PaginatedResult } from './people'
 
 // ========== ROLES ==========
 
@@ -37,6 +38,53 @@ export async function getRoles(): Promise<Role[]> {
   }
 
   return data || []
+}
+
+export async function getRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<Role>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query
+  let query = supabase
+    .from('roles')
+    .select('*', { count: 'exact' })
+    .eq('parish_id', selectedParishId)
+
+  // Apply search filter
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('name', { ascending: true })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated roles:', error)
+    throw new Error('Failed to fetch paginated roles')
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: data || [],
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 export async function getRole(id: string): Promise<Role | null> {

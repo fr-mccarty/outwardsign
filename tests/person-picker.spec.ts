@@ -17,9 +17,8 @@ test.describe('Person Picker Component', () => {
     await page.goto('/weddings/create');
     await expect(page).toHaveURL('/weddings/create');
 
-    // Find and click the Bride picker button
-    // Find the container div that has a label with "Bride", then get the button
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Bride' }) }).getByRole('button').click();
+    // Find and click the Bride picker button using testId
+    await page.getByTestId('bride-trigger').click();
 
     // Wait for the dialog to open
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
@@ -27,7 +26,15 @@ test.describe('Person Picker Component', () => {
     // Verify dialog title
     await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Person/i })).toBeVisible();
 
-    // Search for the person we just created
+    // Form auto-opens when no person is selected (openToNewPerson=true in create mode)
+    // Click Cancel to close the auto-opened create form and return to list view
+    const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
+    if (await cancelButton.isVisible()) {
+      await cancelButton.click();
+      await page.waitForTimeout(300);
+    }
+
+    // Now search for the person we just created
     const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
     await searchInput.fill('Sarah');
 
@@ -52,15 +59,15 @@ test.describe('Person Picker Component', () => {
     await page.goto('/weddings/create');
     await expect(page).toHaveURL('/weddings/create');
 
-    // Open the Groom picker
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Groom' }) }).getByRole('button').click();
+    // Open the Groom picker using testId
+    await page.getByTestId('groom-trigger').click();
 
     // Wait for dialog
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Click "Add New" button to open create form
-    const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i });
-    await addNewButton.click();
+    // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Fill in the create form within the dialog
     const dialog = page.locator('[role="dialog"]');
@@ -96,11 +103,19 @@ test.describe('Person Picker Component', () => {
 
     await page.goto('/weddings/create');
 
-    // Open picker
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Presider' }) }).getByRole('button').click();
+    // Open picker using testId
+    await page.getByTestId('presider-trigger').click();
 
     // Wait for dialog
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    // Form auto-opens when no person is selected (openToNewPerson=true in create mode)
+    // Click Cancel to close the auto-opened create form and return to list view
+    const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
+    if (await cancelButton.isVisible()) {
+      await cancelButton.click();
+      await page.waitForTimeout(300);
+    }
 
     // Search for something that doesn't exist
     const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
@@ -132,9 +147,16 @@ test.describe('Person Picker Component', () => {
     // Go to wedding form
     await page.goto('/weddings/create');
 
-    // Select first person (Alice)
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Homilist' }) }).getByRole('button').click();
+    // Select first person (Alice) using testId
+    await page.getByTestId('homilist-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
+
+    // Form auto-opens when no person is selected - close it to search
+    const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
+    if (await cancelButton.isVisible()) {
+      await cancelButton.click();
+      await page.waitForTimeout(300);
+    }
 
     await page.locator('[role="dialog"]').getByPlaceholder(/Search/i).fill('Alice');
     await page.waitForTimeout(500);
@@ -142,8 +164,8 @@ test.describe('Person Picker Component', () => {
 
     await expect(page.locator('button:has-text("Alice Cooper")')).toBeVisible();
 
-    // Reopen picker and select different person (Bob)
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Homilist' }) }).getByRole('button').first().click();
+    // Reopen picker and select different person (Bob) using testId
+    await page.getByTestId('homilist-selected-value').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
     // Clear search and search for Bob
@@ -163,14 +185,15 @@ test.describe('Person Picker Component', () => {
 
     await page.goto('/weddings/create');
 
-    // Open picker
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Coordinator' }) }).getByRole('button').click();
+    // Open picker using testId
+    await page.getByTestId('coordinator-trigger').click();
 
     // Wait for dialog
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
-    // Open create form
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+    // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
 
     // Try to submit without filling required fields
     const createButton = page.locator('[role="dialog"]').getByRole('button', { name: /Create/i });
@@ -204,13 +227,15 @@ test.describe('Person Picker Component', () => {
     await page.locator('#status').click();
     await page.getByRole('option', { name: 'Active' }).first().click();
 
-    await page.fill('textarea#note', 'Important wedding notes that should not be lost');
+    await page.fill('textarea#notes', 'Important wedding notes that should not be lost');
 
-    // Now open picker and create a person
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Bride' }) }).getByRole('button').click();
+    // Now open picker and create a person using testId
+    await page.getByTestId('bride-trigger').click();
 
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Add New/i }).click();
+
+    // Form should auto-open when no person is selected - wait for it
+    await page.waitForTimeout(300);
 
     const firstName = `ContextTest${Date.now()}`;
     await page.locator('[role="dialog"]').getByLabel('First Name').fill(firstName);
@@ -223,7 +248,7 @@ test.describe('Person Picker Component', () => {
     await expect(page).toHaveURL('/weddings/create');
 
     // Verify our original form data is still there
-    await expect(page.locator('textarea#note')).toHaveValue('Important wedding notes that should not be lost');
+    await expect(page.locator('textarea#notes')).toHaveValue('Important wedding notes that should not be lost');
 
     // And the new person is selected
     await expect(page.locator(`button:has-text("${firstName} TestLast")`)).toBeVisible();
@@ -251,8 +276,8 @@ test.describe('Person Picker Component', () => {
     await page.goto('/weddings/create');
     await expect(page).toHaveURL('/weddings/create');
 
-    // Select the first person (Emily) for Lead Musician
-    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Lead Musician' }) }).getByRole('button').click();
+    // Select the first person (Emily) for Lead Musician using testId
+    await page.getByTestId('lead-musician-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     await page.locator('[role="dialog"]').getByPlaceholder(/Search/i).fill('Emily');

@@ -132,6 +132,20 @@ export interface CorePickerProps<T> {
   // Loading state
   /** Whether items are currently loading */
   isLoading?: boolean
+
+  // Pagination
+  /** Enable server-side pagination (default: false) */
+  enablePagination?: boolean
+  /** Total count of items across all pages */
+  totalCount?: number
+  /** Current page number (1-indexed) */
+  currentPage?: number
+  /** Number of items per page */
+  pageSize?: number
+  /** Callback when page changes */
+  onPageChange?: (page: number) => void
+  /** Callback when search query changes (for server-side search) */
+  onSearch?: (query: string) => void
 }
 
 /**

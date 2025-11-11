@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface Location {
   id: string
@@ -67,6 +68,52 @@ export async function getLocations(filters?: LocationFilterParams): Promise<Loca
   }
 
   return data || []
+}
+
+export async function getLocationsPaginated(params?: PaginatedParams): Promise<PaginatedResult<Location>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query
+  let query = supabase
+    .from('locations')
+    .select('*', { count: 'exact' })
+
+  // Apply search filter
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,city.ilike.%${search}%`)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('name', { ascending: true })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated locations:', error)
+    throw new Error('Failed to fetch paginated locations')
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: data || [],
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 export async function getLocation(id: string): Promise<Location | null> {

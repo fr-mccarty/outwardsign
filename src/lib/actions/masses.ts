@@ -7,6 +7,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Mass, Person, MassRolesTemplate, MassRole, Role } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface CreateMassData {
   event_id?: string
@@ -98,6 +99,74 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
   }
 
   return masses
+}
+
+export async function getMassesPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassWithNames>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query with relations
+  let query = supabase
+    .from('masses')
+    .select(`
+      *,
+      event:events!event_id(*,location:locations(*)),
+      presider:people!presider_id(*),
+      homilist:people!homilist_id(*)
+    `, { count: 'exact' })
+
+  // Apply ordering, pagination
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated masses:', error)
+    throw new Error('Failed to fetch paginated masses')
+  }
+
+  let masses = data || []
+
+  // Apply search filter in application layer (searching related table fields)
+  if (search) {
+    const searchTerm = search.toLowerCase()
+    masses = masses.filter(mass => {
+      const presiderFirstName = mass.presider?.first_name?.toLowerCase() || ''
+      const presiderLastName = mass.presider?.last_name?.toLowerCase() || ''
+      const homilistFirstName = mass.homilist?.first_name?.toLowerCase() || ''
+      const homilistLastName = mass.homilist?.last_name?.toLowerCase() || ''
+      const eventName = mass.event?.name?.toLowerCase() || ''
+
+      return (
+        presiderFirstName.includes(searchTerm) ||
+        presiderLastName.includes(searchTerm) ||
+        homilistFirstName.includes(searchTerm) ||
+        homilistLastName.includes(searchTerm) ||
+        eventName.includes(searchTerm)
+      )
+    })
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: masses,
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 export async function getMass(id: string): Promise<Mass | null> {

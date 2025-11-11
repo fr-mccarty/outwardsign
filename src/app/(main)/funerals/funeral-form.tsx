@@ -297,7 +297,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={deceased.showPicker}
               onShowPickerChange={deceased.setShowPicker}
               placeholder="Select Deceased"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!deceased.value}
             />
             <PersonPickerField
               label="Family Contact"
@@ -306,7 +306,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={familyContact.showPicker}
               onShowPickerChange={familyContact.setShowPicker}
               placeholder="Select Family Contact"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!familyContact.value}
             />
           </div>
         </CardContent>
@@ -336,7 +336,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={homilist.showPicker}
               onShowPickerChange={homilist.setShowPicker}
               placeholder="Select Homilist"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!homilist.value}
             />
           </div>
         </CardContent>
@@ -357,7 +357,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={leadMusician.showPicker}
               onShowPickerChange={leadMusician.setShowPicker}
               placeholder="Select Lead Musician"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!leadMusician.value}
             />
             <PersonPickerField
               label="Cantor"
@@ -366,7 +366,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={cantor.showPicker}
               onShowPickerChange={cantor.setShowPicker}
               placeholder="Select Cantor"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!cantor.value}
             />
           </div>
         </CardContent>
@@ -386,7 +386,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             showPicker={coordinator.showPicker}
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Coordinator"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!coordinator.value}
           />
         </CardContent>
       </Card>
@@ -418,7 +418,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={firstReader.showPicker}
               onShowPickerChange={firstReader.setShowPicker}
               placeholder="Select First Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!firstReader.value}
             />
           </div>
 
@@ -445,7 +445,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
                 showPicker={psalmReader.showPicker}
                 onShowPickerChange={psalmReader.setShowPicker}
                 placeholder="Select Psalm Reader"
-                openToNewPerson={!isEditing}
+                openToNewPerson={!psalmReader.value}
               />
             )}
           </div>
@@ -486,7 +486,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={secondReader.showPicker}
               onShowPickerChange={secondReader.setShowPicker}
               placeholder="Select Second Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!secondReader.value}
             />
           </div>
 
@@ -512,7 +512,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={gospelReader.showPicker}
               onShowPickerChange={gospelReader.setShowPicker}
               placeholder="Select Gospel Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!gospelReader.value}
             />
           </div>
         </CardContent>
@@ -555,7 +555,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={petitionReader.showPicker}
               onShowPickerChange={petitionReader.setShowPicker}
               placeholder="Select Petition Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!petitionReader.value}
             />
           )}
         </CardContent>

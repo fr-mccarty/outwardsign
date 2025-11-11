@@ -185,7 +185,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               showPicker={child.showPicker}
               onShowPickerChange={child.setShowPicker}
               placeholder="Select Child"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!child.value}
               visibleFields={['email', 'phone_number', 'sex', 'note']}
             />
             <PersonPickerField
@@ -195,7 +195,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               showPicker={mother.showPicker}
               onShowPickerChange={mother.setShowPicker}
               placeholder="Select Mother"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!mother.value}
               visibleFields={['email', 'phone_number', 'note']}
             />
           </div>
@@ -208,7 +208,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               showPicker={father.showPicker}
               onShowPickerChange={father.setShowPicker}
               placeholder="Select Father"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!father.value}
               visibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
@@ -218,7 +218,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               showPicker={coordinator.showPicker}
               onShowPickerChange={coordinator.setShowPicker}
               placeholder="Select Coordinator"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!coordinator.value}
               visibleFields={['email', 'phone_number', 'note']}
             />
           </div>

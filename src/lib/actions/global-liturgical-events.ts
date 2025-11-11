@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface GlobalLiturgicalEvent {
   id: string
@@ -78,6 +79,67 @@ export async function getGlobalLiturgicalEvents(
   }
 
   return data || []
+}
+
+/**
+ * Get paginated global liturgical events for a date range
+ * @param startDate - Start date (YYYY-MM-DD)
+ * @param endDate - End date (YYYY-MM-DD)
+ * @param locale - Locale code (default: 'en')
+ * @param params - Pagination parameters
+ */
+export async function getGlobalLiturgicalEventsPaginated(
+  startDate: string,
+  endDate: string,
+  locale: string = 'en',
+  params?: PaginatedParams
+): Promise<PaginatedResult<GlobalLiturgicalEvent>> {
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query
+  let query = supabase
+    .from('global_liturgical_events')
+    .select('*', { count: 'exact' })
+    .eq('locale', locale)
+    .gte('date', startDate)
+    .lte('date', endDate)
+
+  // Apply search filter (search in event_data->name)
+  if (search) {
+    // Note: This is a simplified search. For better search across JSONB fields,
+    // you might need to create a generated column or use full-text search
+    query = query.ilike('event_key', `%${search}%`)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('date', { ascending: true })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated global liturgical events:', error)
+    throw new Error('Failed to fetch paginated global liturgical events')
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: data || [],
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 /**

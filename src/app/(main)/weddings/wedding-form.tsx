@@ -337,7 +337,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={bride.showPicker}
               onShowPickerChange={bride.setShowPicker}
               placeholder="Select Bride"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!bride.value}
             />
             <PersonPickerField
               label="Groom"
@@ -346,7 +346,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={groom.showPicker}
               onShowPickerChange={groom.setShowPicker}
               placeholder="Select Groom"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!groom.value}
             />
           </div>
         </CardContent>
@@ -376,7 +376,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={homilist.showPicker}
               onShowPickerChange={homilist.setShowPicker}
               placeholder="Select Homilist"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!homilist.value}
             />
           </div>
         </CardContent>
@@ -397,7 +397,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={leadMusician.showPicker}
               onShowPickerChange={leadMusician.setShowPicker}
               placeholder="Select Lead Musician"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!leadMusician.value}
             />
             <PersonPickerField
               label="Cantor"
@@ -406,7 +406,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={cantor.showPicker}
               onShowPickerChange={cantor.setShowPicker}
               placeholder="Select Cantor"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!cantor.value}
             />
           </div>
         </CardContent>
@@ -427,7 +427,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={witness1.showPicker}
               onShowPickerChange={witness1.setShowPicker}
               placeholder="Select Witness 1"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!witness1.value}
             />
             <PersonPickerField
               label="Witness 2"
@@ -436,7 +436,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={witness2.showPicker}
               onShowPickerChange={witness2.setShowPicker}
               placeholder="Select Witness 2"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!witness2.value}
             />
           </div>
         </CardContent>
@@ -456,7 +456,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             showPicker={coordinator.showPicker}
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Coordinator"
-            openToNewPerson={!isEditing}
+            openToNewPerson={!coordinator.value}
           />
         </CardContent>
       </Card>
@@ -488,7 +488,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={firstReader.showPicker}
               onShowPickerChange={firstReader.setShowPicker}
               placeholder="Select First Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!firstReader.value}
             />
           </div>
 
@@ -515,7 +515,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
                 showPicker={psalmReader.showPicker}
                 onShowPickerChange={psalmReader.setShowPicker}
                 placeholder="Select Psalm Reader"
-                openToNewPerson={!isEditing}
+                openToNewPerson={!psalmReader.value}
               />
             )}
           </div>
@@ -556,7 +556,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={secondReader.showPicker}
               onShowPickerChange={secondReader.setShowPicker}
               placeholder="Select Second Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!secondReader.value}
             />
           </div>
 
@@ -582,7 +582,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={gospelReader.showPicker}
               onShowPickerChange={gospelReader.setShowPicker}
               placeholder="Select Gospel Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!gospelReader.value}
             />
           </div>
         </CardContent>
@@ -625,7 +625,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={petitionReader.showPicker}
               onShowPickerChange={petitionReader.setShowPicker}
               placeholder="Select Petition Reader"
-              openToNewPerson={!isEditing}
+              openToNewPerson={!petitionReader.value}
             />
           )}
         </CardContent>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from 'lucide-react'
-import { getGlobalLiturgicalEvents, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { getGlobalLiturgicalEventsPaginated, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { cn } from '@/lib/utils'
@@ -43,29 +43,38 @@ export function GlobalLiturgicalEventPicker({
 }: GlobalLiturgicalEventPickerProps) {
   const [events, setEvents] = useState<SearchableGlobalLiturgicalEvent[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const PAGE_SIZE = 10
 
   // Memoize currentYear to prevent infinite re-renders
   const currentYear = useMemo(() => year || new Date().getFullYear(), [year])
 
-  // Load events when dialog opens
+  // Load events when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadEvents()
+      loadEvents(currentPage, searchQuery)
     }
-  }, [open])
+  }, [open, currentPage, searchQuery])
 
-  const loadEvents = async () => {
+  const loadEvents = async (page: number, search: string) => {
     try {
       setLoading(true)
       const startDate = `${currentYear}-01-01`
       const endDate = `${currentYear}-12-31`
-      const results = await getGlobalLiturgicalEvents(startDate, endDate, locale)
+      const result = await getGlobalLiturgicalEventsPaginated(startDate, endDate, locale, {
+        page,
+        limit: PAGE_SIZE,
+        search,
+      })
       // Add searchable_name field for CorePicker search
-      const searchableResults = results.map(event => ({
+      const searchableResults = result.items.map(event => ({
         ...event,
         searchable_name: event.event_data?.name || ''
       }))
       setEvents(searchableResults)
+      setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading liturgical events:', error)
       toast.error('Failed to load liturgical events')
@@ -122,6 +131,17 @@ export function GlobalLiturgicalEventPicker({
   // Memoize title to prevent re-renders
   const title = useMemo(() => `Liturgical Events - ${currentYear}`, [currentYear])
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
   // Custom render for liturgical event list items
   const renderEventItem = (event: SearchableGlobalLiturgicalEvent) => {
     const isSelected = selectedEventId === event.id
@@ -176,6 +196,12 @@ export function GlobalLiturgicalEventPicker({
       emptyMessage={emptyMessage}
       noResultsMessage="No liturgical events match your search"
       isLoading={loading}
+      enablePagination={true}
+      totalCount={totalCount}
+      currentPage={currentPage}
+      pageSize={PAGE_SIZE}
+      onPageChange={handlePageChange}
+      onSearch={handleSearchChange}
     />
   )
 }

@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Plus, Loader2 } from 'lucide-react'
+import { Search, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { CorePickerProps, PickerFieldConfig } from '@/types/core-picker'
 import { cn } from '@/lib/utils'
@@ -77,6 +77,14 @@ export function CorePicker<T>({
 
   // Loading state
   isLoading = false,
+
+  // Pagination
+  enablePagination = false,
+  totalCount = 0,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
+  onSearch,
 }: CorePickerProps<T>) {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -124,8 +132,12 @@ export function CorePicker<T>({
     }
   }, [open, isEditMode, entityToEdit, defaultCreateFormData, createFields, getItemId])
 
-  // Client-side search across multiple fields
+  // Client-side search across multiple fields (only when pagination is disabled)
   const filteredItems = useMemo(() => {
+    // When pagination is enabled, parent handles filtering
+    if (enablePagination) return items
+
+    // Client-side filtering for non-paginated mode
     if (!searchQuery.trim()) return items
 
     const query = searchQuery.toLowerCase()
@@ -136,7 +148,17 @@ export function CorePicker<T>({
         return String(value).toLowerCase().includes(query)
       })
     })
-  }, [items, searchQuery, searchFields])
+  }, [items, searchQuery, searchFields, enablePagination])
+
+  // Handle search query change
+  const handleSearchChange = (newQuery: string) => {
+    setSearchQuery(newQuery)
+
+    // When pagination is enabled, notify parent of search change
+    if (enablePagination && onSearch) {
+      onSearch(newQuery)
+    }
+  }
 
   // Handle item selection
   const handleItemSelect = (item: T) => {
@@ -350,7 +372,7 @@ export function CorePicker<T>({
               type="text"
               placeholder={searchPlaceholder}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -434,9 +456,46 @@ export function CorePicker<T>({
           )}
         </div>
 
+        {/* Pagination controls */}
+        {enablePagination && !showCreateForm && onPageChange && (
+          <div className="flex-shrink-0 pt-4 border-t">
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage <= 1 || isLoading}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {Math.ceil(totalCount / pageSize) || 1}
+                {totalCount > 0 && ` (${totalCount} total)`}
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage >= Math.ceil(totalCount / pageSize) || isLoading}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Add new button (footer) - hide in edit mode */}
         {enableCreate && !showCreateForm && !isEditMode && (
-          <div className="flex-shrink-0 pt-4 border-t">
+          <div className={cn(
+            'flex-shrink-0 pt-4',
+            enablePagination ? '' : 'border-t'
+          )}>
             <Button
               type="button"
               variant="outline"

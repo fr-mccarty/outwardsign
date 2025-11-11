@@ -246,7 +246,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onValueChange={homilist.setValue}
             showPicker={homilist.showPicker}
             onShowPickerChange={homilist.setShowPicker}
-            openToNewPerson={!isEditing}
+            openToNewPerson={!homilist.value}
           />
         </CardContent>
       </Card>
@@ -267,7 +267,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onValueChange={preMassAnnouncementPerson.setValue}
             showPicker={preMassAnnouncementPerson.showPicker}
             onShowPickerChange={preMassAnnouncementPerson.setShowPicker}
-            openToNewPerson={!isEditing}
+            openToNewPerson={!preMassAnnouncementPerson.value}
           />
 
           <FormField

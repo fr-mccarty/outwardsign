@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Phone } from 'lucide-react'
-import { getLocations, createLocation, updateLocation, type Location } from '@/lib/actions/locations'
+import { getLocationsPaginated, createLocation, updateLocation, type Location } from '@/lib/actions/locations'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { CorePicker } from '@/components/core-picker'
@@ -49,6 +49,10 @@ export function LocationPicker({
 }: LocationPickerProps) {
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const PAGE_SIZE = 10
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -60,18 +64,23 @@ export function LocationPicker({
     [requiredFields]
   )
 
-  // Load locations when dialog opens
+  // Load locations when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadLocations()
+      loadLocations(currentPage, searchQuery)
     }
-  }, [open])
+  }, [open, currentPage, searchQuery])
 
-  const loadLocations = async () => {
+  const loadLocations = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const results = await getLocations()
-      setLocations(results)
+      const result = await getLocationsPaginated({
+        page,
+        limit: PAGE_SIZE,
+        search,
+      })
+      setLocations(result.items)
+      setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading locations:', error)
       toast.error('Failed to load locations')
@@ -211,6 +220,17 @@ export function LocationPicker({
     return updatedLocation
   }
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
   // Custom render for location list items
   const renderLocationItem = (location: Location) => {
     const address = getLocationAddress(location)
@@ -280,6 +300,12 @@ export function LocationPicker({
       entityToEdit={locationToEdit}
       onUpdateSubmit={handleUpdateLocation}
       updateButtonLabel="Update Location"
+      enablePagination={true}
+      totalCount={totalCount}
+      currentPage={currentPage}
+      pageSize={PAGE_SIZE}
+      onPageChange={handlePageChange}
+      onSearch={handleSearchChange}
     />
   )
 }

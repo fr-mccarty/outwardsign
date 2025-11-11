@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, User, Church } from 'lucide-react'
-import { getMasses, createMass, updateMass, type MassWithNames } from '@/lib/actions/masses'
+import { getMassesPaginated, createMass, updateMass, type MassWithNames } from '@/lib/actions/masses'
 import type { Event, Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -43,6 +43,10 @@ export function MassPicker({
 }: MassPickerProps) {
   const [masses, setMasses] = useState<MassWithNames[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const PAGE_SIZE = 10
 
   // State for nested pickers
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
@@ -54,18 +58,23 @@ export function MassPicker({
   const [eventOnChange, setEventOnChange] = useState<((value: any) => void) | null>(null)
   const [presiderOnChange, setPresiderOnChange] = useState<((value: any) => void) | null>(null)
 
-  // Load masses when dialog opens
+  // Load masses when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadMasses()
+      loadMasses(currentPage, searchQuery)
     }
-  }, [open])
+  }, [open, currentPage, searchQuery])
 
-  const loadMasses = async () => {
+  const loadMasses = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const results = await getMasses()
-      setMasses(results)
+      const result = await getMassesPaginated({
+        page,
+        limit: PAGE_SIZE,
+        search,
+      })
+      setMasses(result.items)
+      setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading masses:', error)
       toast.error('Failed to load masses')
@@ -283,6 +292,17 @@ export function MassPicker({
     return massWithRelations
   }
 
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
   // Custom render for mass list items
   const renderMassItem = (mass: MassWithNames) => {
     const isSelected = selectedMassId === mass.id
@@ -365,6 +385,12 @@ export function MassPicker({
         entityToEdit={massToEdit}
         onUpdateSubmit={handleUpdateMass}
         updateButtonLabel="Update Mass"
+        enablePagination={true}
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
+        onPageChange={handlePageChange}
+        onSearch={handleSearchChange}
       />
 
       {/* Nested Event Picker Modal */}

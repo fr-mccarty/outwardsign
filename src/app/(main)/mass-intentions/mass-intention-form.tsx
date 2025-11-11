@@ -144,7 +144,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             onValueChange={requestedBy.setValue}
             showPicker={requestedBy.showPicker}
             onShowPickerChange={requestedBy.setShowPicker}
-            openToNewPerson={!isEditing}
+            openToNewPerson={!requestedBy.value}
           />
 
           <MassPickerField
