@@ -1,6 +1,6 @@
-# TODO
+# Project Timeline
 
-> Project task tracking for Outward Sign
+> Project timeline and roadmap for Outward Sign
 
 **Last Updated:** 2025-11-10
 
@@ -214,7 +214,7 @@
 - Review and update priorities monthly
 
 ### Contributing
-When adding new TODOs:
+When adding new timeline items:
 1. Place in appropriate section
 2. Be specific about what needs to be done
 3. Add context if needed (why it's important)

@@ -7,8 +7,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, Heart, Calendar, Search, Filter, Edit, FileText, X, DollarSign } from "lucide-react"
+import { Plus, Heart, Calendar, Search, Filter, X, DollarSign } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
   SelectContent,
@@ -135,70 +136,51 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((intention) => (
-            <Card key={intention.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-2">
-                      {intention.mass_offered_for || 'No intention specified'}
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <Badge variant={getStatusVariant(intention.status || 'REQUESTED')} className="text-xs">
-                        {MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || intention.status}
-                      </Badge>
-                      {intention.stipend_in_cents && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <DollarSign className="h-3 w-3" />
-                          {formatStipend(intention.stipend_in_cents)}
-                        </div>
-                      )}
-                    </div>
+            <ListViewCard
+              key={intention.id}
+              title={intention.mass_offered_for || 'No intention specified'}
+              editHref={`/mass-intentions/${intention.id}/edit`}
+              viewHref={`/mass-intentions/${intention.id}`}
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant={getStatusVariant(intention.status || 'REQUESTED')} className="text-xs">
+                  {MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || intention.status}
+                </Badge>
+                {intention.stipend_in_cents && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <DollarSign className="h-3 w-3" />
+                    {formatStipend(intention.stipend_in_cents)}
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/mass-intentions/${intention.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm space-y-1">
-                  {intention.requested_by && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Requested by:</span>{' '}
-                      {intention.requested_by.first_name} {intention.requested_by.last_name}
-                    </p>
-                  )}
-                  {intention.date_requested && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Date requested:</span>{' '}
-                      {formatDate(intention.date_requested)}
-                    </p>
-                  )}
-                  {intention.date_received && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Date received:</span>{' '}
-                      {formatDate(intention.date_received)}
-                    </p>
-                  )}
-                </div>
+                )}
+              </div>
 
-                {intention.note && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {intention.note}
+              <div className="text-sm space-y-1">
+                {intention.requested_by && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Requested by:</span>{' '}
+                    {intention.requested_by.first_name} {intention.requested_by.last_name}
                   </p>
                 )}
+                {intention.date_requested && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Date requested:</span>{' '}
+                    {formatDate(intention.date_requested)}
+                  </p>
+                )}
+                {intention.date_received && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Date received:</span>{' '}
+                    {formatDate(intention.date_received)}
+                  </p>
+                )}
+              </div>
 
-                <div className="flex justify-end items-center pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/mass-intentions/${intention.id}`}>
-                      <FileText className="h-4 w-4 mr-1" />
-                      View Details
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {intention.note && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {intention.note}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       ) : (

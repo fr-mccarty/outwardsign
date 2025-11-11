@@ -161,7 +161,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             showPicker={presentationEvent.showPicker}
             onShowPickerChange={presentationEvent.setShowPicker}
             placeholder="Select Presentation Event"
-            openToNewEvent={!isEditing}
+            openToNewEvent={!presentationEvent.value}
             defaultEventType="PRESENTATION"
             defaultName={EVENT_TYPE_LABELS.PRESENTATION.en}
             disableSearch={true}

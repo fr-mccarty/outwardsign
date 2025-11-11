@@ -63,6 +63,10 @@ Follow the wedding module pattern exactly for all 8 main files:
   - [ ] Implement URL-based filters (search, status, etc.)
   - [ ] Use `router.push()` to update URL params (no client-side filtering)
   - [ ] Render: Search/Filters Card → Grid of entity cards → Empty state → Stats
+  - [ ] **Card Button Placement (CRITICAL):**
+    - [ ] **Edit icon** in upper right corner of card (Pencil icon, icon-only button)
+    - [ ] **View button** in bottom right corner of card (outlined button with text)
+    - [ ] Maintain consistent spacing and alignment across all modules
 
 - [ ] **Create Page** - `app/(main)/[entities]/create/page.tsx` (Server)
   - [ ] Auth check

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -48,15 +48,17 @@ function getDefaultTimezone() {
   if (usTimezones.includes(detected)) {
     return detected
   }
-  // Default to Eastern if not detected or not a US timezone
-  return 'America/New_York'
+  // Default to Central if not detected or not a US timezone
+  return 'America/Chicago'
 }
 
 // Default visible fields - defined outside component to prevent re-creation
 const DEFAULT_VISIBLE_FIELDS = ['location', 'note']
 
-// Empty object constant to prevent re-creation on every render
-const EMPTY_FORM_DATA = {}
+// Default form data with timezone preset to Central Time
+const DEFAULT_FORM_DATA = {
+  timezone: 'America/Chicago'
+}
 
 export function EventPicker({
   open,
@@ -80,6 +82,8 @@ export function EventPicker({
   const [loading, setLoading] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  // Store the onChange callback from the custom field to call when location is selected
+  const locationOnChangeRef = useRef<((value: any) => void) | null>(null)
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -177,46 +181,51 @@ export function EventPicker({
         label: 'Location',
         type: 'custom',
         required: isFieldRequired('location'),
-        render: ({ value, onChange, error }) => (
-          <div>
-            {selectedLocation ? (
-              <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
-                <span className="text-sm">
-                  {selectedLocation.name}
-                  {selectedLocation.city && `, ${selectedLocation.city}`}
-                  {selectedLocation.state && `, ${selectedLocation.state}`}
-                </span>
+        render: ({ value, onChange, error }) => {
+          // Store the onChange callback so it can be called when location is selected
+          locationOnChangeRef.current = onChange
+
+          return (
+            <div>
+              {selectedLocation ? (
+                <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+                  <span className="text-sm">
+                    {selectedLocation.name}
+                    {selectedLocation.city && `, ${selectedLocation.city}`}
+                    {selectedLocation.state && `, ${selectedLocation.state}`}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setSelectedLocation(null)
+                      onChange(null)
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    setSelectedLocation(null)
-                    onChange(null)
+                    setShowLocationPicker(true)
                   }}
+                  className={cn('w-full justify-start', error && 'border-destructive')}
                 >
-                  <X className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Select Location
                 </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowLocationPicker(true)
-                }}
-                className={cn('w-full justify-start', error && 'border-destructive')}
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                Select Location
-              </Button>
-            )}
-          </div>
-        ),
+              )}
+            </div>
+          )
+        },
       })
     }
 
@@ -305,7 +314,7 @@ export function EventPicker({
         noResultsMessage="No events match your search"
         isLoading={loading}
         autoOpenCreateForm={openToNewEvent || autoOpenCreateForm}
-        defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
+        defaultCreateFormData={{ ...DEFAULT_FORM_DATA, ...defaultCreateFormData }}
       />
 
       {/* Nested Location Picker Modal */}
@@ -314,6 +323,10 @@ export function EventPicker({
         onOpenChange={setShowLocationPicker}
         onSelect={(location) => {
           setSelectedLocation(location)
+          // Call the stored onChange callback to update CorePicker's form state
+          if (locationOnChangeRef.current) {
+            locationOnChangeRef.current(location.id)
+          }
           setShowLocationPicker(false)
         }}
         selectedLocationId={selectedLocation?.id}

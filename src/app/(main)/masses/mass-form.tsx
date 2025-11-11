@@ -179,7 +179,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={event.showPicker}
             onShowPickerChange={event.setShowPicker}
             defaultEventType="MASS"
-            openToNewEvent={!isEditing}
+            openToNewEvent={!event.value}
           />
 
           <FormField

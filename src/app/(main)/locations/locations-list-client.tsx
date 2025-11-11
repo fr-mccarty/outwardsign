@@ -5,8 +5,9 @@ import type { Location } from '@/lib/types'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Building, Eye, MapPin, Phone, Search, Filter } from "lucide-react"
+import { Plus, Building, MapPin, Phone, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 
 interface Stats {
   total: number
@@ -65,61 +66,39 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((location) => (
-            <Card key={location.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      {location.name}
-                    </CardTitle>
+            <ListViewCard
+              key={location.id}
+              title={location.name}
+              editHref={`/locations/${location.id}/edit`}
+              viewHref={`/locations/${location.id}`}
+            >
+              {location.description && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {location.description}
+                </p>
+              )}
+
+              <div className="text-sm space-y-1">
+                {(location.street || location.city || location.state) && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
+                    <span className="text-muted-foreground line-clamp-2">
+                      {[location.street, location.city, location.state]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </span>
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/locations/${location.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {location.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {location.description}
-                  </p>
                 )}
-
-                <div className="text-sm space-y-1">
-                  {(location.street || location.city || location.state) && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
-                      <span className="text-muted-foreground line-clamp-2">
-                        {[location.street, location.city, location.state]
-                          .filter(Boolean)
-                          .join(', ')}
-                      </span>
-                    </div>
-                  )}
-                  {location.phone_number && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {location.phone_number}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Created {new Date(location.created_at).toLocaleDateString()}
-                  </span>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/locations/${location.id}`}>
-                      View Details
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                {location.phone_number && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {location.phone_number}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </ListViewCard>
           ))}
         </div>
       ) : (

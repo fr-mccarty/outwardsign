@@ -7,8 +7,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, BookHeart, Calendar, Search, Filter, Edit, FileText, X } from "lucide-react"
+import { Plus, BookHeart, Calendar, Search, Filter, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
   SelectContent,
@@ -110,65 +111,47 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((quinceanera) => (
-            <Card key={quinceanera.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      Quinceañera
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      {quinceanera.status && (
-                        <Badge variant="outline" className="text-xs">
-                          {MODULE_STATUS_LABELS[quinceanera.status]?.en || quinceanera.status}
-                        </Badge>
-                      )}
-                      {quinceanera.quinceanera_event && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {quinceanera.quinceanera_event.start_date && new Date(quinceanera.quinceanera_event.start_date).toLocaleDateString()}
-                          {quinceanera.quinceanera_event.start_time && ` at ${quinceanera.quinceanera_event.start_time}`}
-                        </div>
-                      )}
-                    </div>
+            <ListViewCard
+              key={quinceanera.id}
+              title="Quinceañera"
+              editHref={`/quinceaneras/${quinceanera.id}/edit`}
+              viewHref={`/quinceaneras/${quinceanera.id}`}
+              viewButtonText="Preview"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                {quinceanera.status && (
+                  <Badge variant="outline" className="text-xs">
+                    {MODULE_STATUS_LABELS[quinceanera.status]?.en || quinceanera.status}
+                  </Badge>
+                )}
+                {quinceanera.quinceanera_event && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    {quinceanera.quinceanera_event.start_date && new Date(quinceanera.quinceanera_event.start_date).toLocaleDateString()}
+                    {quinceanera.quinceanera_event.start_time && ` at ${quinceanera.quinceanera_event.start_time}`}
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/quinceaneras/${quinceanera.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm space-y-1">
-                  {quinceanera.quinceanera && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Quinceañera:</span> {quinceanera.quinceanera.first_name} {quinceanera.quinceanera.last_name}
-                    </p>
-                  )}
-                  {quinceanera.family_contact && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Family Contact:</span> {quinceanera.family_contact.first_name} {quinceanera.family_contact.last_name}
-                    </p>
-                  )}
-                </div>
+                )}
+              </div>
 
-                {quinceanera.note && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {quinceanera.note}
+              <div className="text-sm space-y-1">
+                {quinceanera.quinceanera && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Quinceañera:</span> {quinceanera.quinceanera.first_name} {quinceanera.quinceanera.last_name}
                   </p>
                 )}
+                {quinceanera.family_contact && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Family Contact:</span> {quinceanera.family_contact.first_name} {quinceanera.family_contact.last_name}
+                  </p>
+                )}
+              </div>
 
-                <div className="flex justify-end items-center pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/quinceaneras/${quinceanera.id}`}>
-                      <FileText className="h-4 w-4 mr-1" />
-                      Preview
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {quinceanera.note && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {quinceanera.note}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       ) : (

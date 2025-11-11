@@ -7,8 +7,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, HandHeartIcon, Eye, Calendar, Search, Filter, Edit, FileText, X } from "lucide-react"
+import { Plus, HandHeartIcon, Calendar, Search, Filter, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
   SelectContent,
@@ -110,75 +111,57 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((presentation) => (
-            <Card key={presentation.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      Presentation
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      {presentation.status && (
-                        <Badge variant="outline" className="text-xs">
-                          {MODULE_STATUS_LABELS[presentation.status]?.en || presentation.status}
-                        </Badge>
-                      )}
-                      {presentation.is_baptized && (
-                        <Badge variant="secondary" className="text-xs">
-                          Baptized
-                        </Badge>
-                      )}
-                      {presentation.presentation_event && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {presentation.presentation_event.start_date && new Date(presentation.presentation_event.start_date).toLocaleDateString()}
-                          {presentation.presentation_event.start_time && ` at ${presentation.presentation_event.start_time}`}
-                        </div>
-                      )}
-                    </div>
+            <ListViewCard
+              key={presentation.id}
+              title="Presentation"
+              editHref={`/presentations/${presentation.id}/edit`}
+              viewHref={`/presentations/${presentation.id}`}
+              viewButtonText="Preview"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                {presentation.status && (
+                  <Badge variant="outline" className="text-xs">
+                    {MODULE_STATUS_LABELS[presentation.status]?.en || presentation.status}
+                  </Badge>
+                )}
+                {presentation.is_baptized && (
+                  <Badge variant="secondary" className="text-xs">
+                    Baptized
+                  </Badge>
+                )}
+                {presentation.presentation_event && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    {presentation.presentation_event.start_date && new Date(presentation.presentation_event.start_date).toLocaleDateString()}
+                    {presentation.presentation_event.start_time && ` at ${presentation.presentation_event.start_time}`}
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/presentations/${presentation.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm space-y-1">
-                  {presentation.child && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Child:</span> {presentation.child.first_name} {presentation.child.last_name}
-                    </p>
-                  )}
-                  {presentation.mother && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Mother:</span> {presentation.mother.first_name} {presentation.mother.last_name}
-                    </p>
-                  )}
-                  {presentation.father && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Father:</span> {presentation.father.first_name} {presentation.father.last_name}
-                    </p>
-                  )}
-                </div>
+                )}
+              </div>
 
-                {presentation.note && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {presentation.note}
+              <div className="text-sm space-y-1">
+                {presentation.child && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Child:</span> {presentation.child.first_name} {presentation.child.last_name}
                   </p>
                 )}
+                {presentation.mother && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Mother:</span> {presentation.mother.first_name} {presentation.mother.last_name}
+                  </p>
+                )}
+                {presentation.father && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Father:</span> {presentation.father.first_name} {presentation.father.last_name}
+                  </p>
+                )}
+              </div>
 
-                <div className="flex justify-end items-center pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/presentations/${presentation.id}`}>
-                      <FileText className="h-4 w-4 mr-1" />
-                      Preview
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {presentation.note && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {presentation.note}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       ) : (

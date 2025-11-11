@@ -48,7 +48,7 @@ export function PersonForm({ person }: PersonFormProps) {
       if (isEditing) {
         await updatePerson(person.id, personData)
         toast.success('Person updated successfully')
-        router.push(`/people/${person.id}`)
+        router.refresh() // Refresh to get updated data
       } else {
         const newPerson = await createPerson(personData)
         toast.success('Person created successfully!')

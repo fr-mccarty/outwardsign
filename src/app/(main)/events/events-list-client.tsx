@@ -6,8 +6,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, CalendarDays, Eye, Search, Filter } from "lucide-react"
+import { Plus, CalendarDays, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
   SelectContent,
@@ -118,67 +119,46 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
           {initialData.map((event) => {
             const isUpcoming = event.start_date && new Date(event.start_date) >= new Date()
             return (
-              <Card key={event.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg line-clamp-1">
-                        {event.name}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
-                        </Badge>
-                        {event.language && (
-                          <Badge variant="secondary" className="text-xs">
-                            {event.language}
-                          </Badge>
-                        )}
-                        {isUpcoming && (
-                          <Badge className="text-xs bg-green-100 text-green-800">
-                            Upcoming
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/events/${event.id}`}>
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {event.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {event.description}
-                    </p>
+              <ListViewCard
+                key={event.id}
+                title={event.name}
+                editHref={`/events/${event.id}/edit`}
+                viewHref={`/events/${event.id}`}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-xs">
+                    {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
+                  </Badge>
+                  {event.language && (
+                    <Badge variant="secondary" className="text-xs">
+                      {event.language}
+                    </Badge>
                   )}
+                  {isUpcoming && (
+                    <Badge className="text-xs bg-green-100 text-green-800">
+                      Upcoming
+                    </Badge>
+                  )}
+                </div>
 
-                  <div className="text-sm space-y-1">
-                    {event.start_date && (
-                      <div className="flex items-center gap-2">
-                        <CalendarDays className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {formatDate(event.start_date)}
-                          {event.start_time && ` at ${formatTime(event.start_time)}`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                {event.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {event.description}
+                  </p>
+                )}
 
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="text-xs text-muted-foreground">
-                      Created {new Date(event.created_at).toLocaleDateString()}
-                    </span>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/events/${event.id}`}>
-                        View Details
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="text-sm space-y-1">
+                  {event.start_date && (
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {formatDate(event.start_date)}
+                        {event.start_time && ` at ${formatTime(event.start_time)}`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </ListViewCard>
             )
           })}
         </div>

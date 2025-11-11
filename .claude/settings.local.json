@@ -18,7 +18,8 @@
       "Bash(npx playwright show-report)",
       "Bash(xargs cat:*)",
       "Bash(sed:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

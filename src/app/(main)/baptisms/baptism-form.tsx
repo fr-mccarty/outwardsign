@@ -173,7 +173,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={baptismEvent.showPicker}
             onShowPickerChange={baptismEvent.setShowPicker}
             placeholder="Add Baptism Event"
-            openToNewEvent={!isEditing}
+            openToNewEvent={!baptismEvent.value}
             defaultEventType="BAPTISM"
             defaultName="Baptism"
             disableSearch={true}

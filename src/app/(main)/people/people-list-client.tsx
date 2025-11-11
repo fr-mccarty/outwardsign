@@ -5,8 +5,9 @@ import type { Person } from '@/lib/types'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, User, Eye, Mail, Phone, MapPin, Search, Filter } from "lucide-react"
+import { Plus, User, Mail, Phone, MapPin, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 
 interface Stats {
   total: number
@@ -65,63 +66,41 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((person) => (
-            <Card key={person.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      {person.first_name} {person.last_name}
-                    </CardTitle>
+            <ListViewCard
+              key={person.id}
+              title={`${person.first_name} ${person.last_name}`}
+              editHref={`/people/${person.id}/edit`}
+              viewHref={`/people/${person.id}`}
+            >
+              <div className="text-sm space-y-2">
+                {person.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground line-clamp-1">{person.email}</span>
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/people/${person.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm space-y-2">
-                  {person.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <span className="text-muted-foreground line-clamp-1">{person.email}</span>
-                    </div>
-                  )}
-                  {person.phone_number && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <span className="text-muted-foreground">{person.phone_number}</span>
-                    </div>
-                  )}
-                  {(person.city || person.state) && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      <span className="text-muted-foreground line-clamp-1">
-                        {person.city}{person.city && person.state ? ', ' : ''}{person.state}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {person.note && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {person.note}
-                  </p>
                 )}
+                {person.phone_number && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">{person.phone_number}</span>
+                  </div>
+                )}
+                {(person.city || person.state) && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground line-clamp-1">
+                      {person.city}{person.city && person.state ? ', ' : ''}{person.state}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Added {new Date(person.created_at).toLocaleDateString()}
-                  </span>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/people/${person.id}`}>
-                      View Details
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {person.note && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {person.note}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       ) : (

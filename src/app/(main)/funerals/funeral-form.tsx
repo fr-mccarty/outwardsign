@@ -259,7 +259,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={funeralEvent.showPicker}
               onShowPickerChange={funeralEvent.setShowPicker}
               placeholder="Add Funeral Service"
-              openToNewEvent={!isEditing}
+              openToNewEvent={!funeralEvent.value}
               defaultEventType="FUNERAL"
               defaultName={EVENT_TYPE_LABELS.FUNERAL.en}
               disableSearch={true}
@@ -272,7 +272,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               showPicker={funeralMealEvent.showPicker}
               onShowPickerChange={funeralMealEvent.setShowPicker}
               placeholder="Add Funeral Meal"
-              openToNewEvent={!isEditing}
+              openToNewEvent={!funeralMealEvent.value}
               defaultEventType="OTHER"
               defaultName="Funeral Meal"
               disableSearch={true}

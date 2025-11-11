@@ -168,10 +168,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
                   </p>
                 )}
 
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Added {new Date(reading.created_at).toLocaleDateString()}
-                  </span>
+                <div className="flex justify-end items-center pt-2">
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/readings/${reading.id}`}>
                       View Reading

@@ -7,8 +7,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, Church, Calendar, Search, Filter, Edit, FileText, X, User } from "lucide-react"
+import { Plus, Church, Calendar, Search, Filter, X, User } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
   SelectContent,
@@ -132,68 +133,50 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((mass) => (
-            <Card key={mass.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      Mass
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <Badge variant={getStatusVariant(mass.status || 'PLANNING')} className="text-xs">
-                        {MASS_STATUS_LABELS[mass.status as keyof typeof MASS_STATUS_LABELS]?.en || mass.status}
-                      </Badge>
-                      {mass.event && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {formatEventDateTime(mass.event)}
-                        </div>
-                      )}
-                    </div>
+            <ListViewCard
+              key={mass.id}
+              title="Mass"
+              editHref={`/masses/${mass.id}/edit`}
+              viewHref={`/masses/${mass.id}`}
+              viewButtonText="Preview"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant={getStatusVariant(mass.status || 'PLANNING')} className="text-xs">
+                  {MASS_STATUS_LABELS[mass.status as keyof typeof MASS_STATUS_LABELS]?.en || mass.status}
+                </Badge>
+                {mass.event && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    {formatEventDateTime(mass.event)}
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/masses/${mass.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm space-y-1">
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Presider:</span>{' '}
-                    {mass.presider ? `${mass.presider.first_name} ${mass.presider.last_name}` : 'Not assigned'}
-                  </p>
-                  {mass.homilist && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Homilist:</span>{' '}
-                      {mass.homilist.first_name} {mass.homilist.last_name}
-                    </p>
-                  )}
-                  {mass.event?.location && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Location:</span>{' '}
-                      {mass.event.location.name}
-                    </p>
-                  )}
-                </div>
+                )}
+              </div>
 
-                {mass.note && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {mass.note}
+              <div className="text-sm space-y-1">
+                <p className="text-muted-foreground">
+                  <span className="font-medium">Presider:</span>{' '}
+                  {mass.presider ? `${mass.presider.first_name} ${mass.presider.last_name}` : 'Not assigned'}
+                </p>
+                {mass.homilist && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Homilist:</span>{' '}
+                    {mass.homilist.first_name} {mass.homilist.last_name}
                   </p>
                 )}
+                {mass.event?.location && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Location:</span>{' '}
+                    {mass.event.location.name}
+                  </p>
+                )}
+              </div>
 
-                <div className="flex justify-end items-center pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/masses/${mass.id}`}>
-                      <FileText className="h-4 w-4 mr-1" />
-                      Preview
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {mass.note && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {mass.note}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       ) : (

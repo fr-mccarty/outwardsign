@@ -272,7 +272,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={weddingEvent.showPicker}
               onShowPickerChange={weddingEvent.setShowPicker}
               placeholder="Add Wedding Ceremony"
-              openToNewEvent={!isEditing}
+              openToNewEvent={!weddingEvent.value}
               defaultEventType="WEDDING"
               defaultName={EVENT_TYPE_LABELS.WEDDING.en}
               disableSearch={true}
@@ -285,7 +285,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={receptionEvent.showPicker}
               onShowPickerChange={receptionEvent.setShowPicker}
               placeholder="Add Reception"
-              openToNewEvent={!isEditing}
+              openToNewEvent={!receptionEvent.value}
               defaultEventType="OTHER"
               defaultName="Reception"
               disableSearch={true}
@@ -301,7 +301,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={rehearsalEvent.showPicker}
               onShowPickerChange={rehearsalEvent.setShowPicker}
               placeholder="Add Rehearsal"
-              openToNewEvent={!isEditing}
+              openToNewEvent={!rehearsalEvent.value}
               defaultEventType="REHEARSAL"
               defaultName="Rehearsal"
               disableSearch={true}
@@ -313,7 +313,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={rehearsalDinnerEvent.showPicker}
               onShowPickerChange={rehearsalDinnerEvent.setShowPicker}
               placeholder="Add Rehearsal Dinner"
-              openToNewEvent={!isEditing}
+              openToNewEvent={!rehearsalDinnerEvent.value}
               defaultEventType="OTHER"
               defaultName="Rehearsal Dinner"
               disableSearch={true}
