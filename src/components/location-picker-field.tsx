@@ -15,6 +15,7 @@ interface LocationPickerFieldProps {
   placeholder?: string
   required?: boolean
   openToNewLocation?: boolean
+  visibleFields?: string[] // Optional fields to show: 'description', 'street', 'city', 'state', 'country', 'phone_number'
 }
 
 export function LocationPickerField({
@@ -27,6 +28,7 @@ export function LocationPickerField({
   placeholder = 'Select Location',
   required = false,
   openToNewLocation = false,
+  visibleFields,
 }: LocationPickerFieldProps) {
   const getLocationDisplay = (location: Location) => {
     const parts = [location.name]
@@ -54,6 +56,7 @@ export function LocationPickerField({
         onSelect={onValueChange}
         selectedLocationId={value?.id}
         openToNewLocation={openToNewLocation}
+        visibleFields={visibleFields}
       />
     </PickerField>
   )

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   Command,
   CommandDialog,
@@ -51,7 +52,7 @@ const newPersonSchema = z.object({
   last_name: z.string().min(1, 'Last name is required'),
   email: z.string().optional(),
   phone_number: z.string().optional(),
-  sex: z.enum(['Male', 'Female', '']).optional(),
+  sex: z.enum(['Male', 'Female']).optional(),
   note: z.string().optional(),
 })
 
@@ -65,25 +66,8 @@ interface PeoplePickerProps {
   emptyMessage?: string
   selectedPersonId?: string
   className?: string
-  showSexField?: boolean
+  visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
   openToNewPerson?: boolean
-}
-
-// Custom hook for debounced search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
 }
 
 export function PeoplePicker({
@@ -94,13 +78,24 @@ export function PeoplePicker({
   emptyMessage = "No people found.",
   selectedPersonId,
   className,
-  showSexField = false,
+  visibleFields,
   openToNewPerson = false,
 }: PeoplePickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // Determine which fields should be visible
+  // If visibleFields is not provided, show all fields by default
+  const defaultVisibleFields = ['email', 'phone_number', 'sex', 'note']
+  const isFieldVisible = (fieldName: string) => {
+    if (!visibleFields) {
+      // If not specified, show all fields
+      return defaultVisibleFields.includes(fieldName)
+    }
+    return visibleFields.includes(fieldName)
+  }
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -117,7 +112,7 @@ export function PeoplePicker({
       last_name: '',
       email: '',
       phone_number: '',
-      sex: '',
+      sex: undefined,
       note: '',
     },
   })
@@ -368,47 +363,53 @@ export function PeoplePicker({
               error={errors.last_name?.message}
             />
 
-            <FormField
-              id="email"
-              label="Email"
-              inputType="email"
-              value={watch('email') || ''}
-              onChange={(value) => setValue('email', value)}
-              placeholder="john.doe@example.com"
-            />
+            {isFieldVisible('email') && (
+              <FormField
+                id="email"
+                label="Email"
+                inputType="email"
+                value={watch('email') || ''}
+                onChange={(value) => setValue('email', value)}
+                placeholder="john.doe@example.com"
+              />
+            )}
 
-            <FormField
-              id="phone_number"
-              label="Phone"
-              inputType="tel"
-              value={watch('phone_number') || ''}
-              onChange={(value) => setValue('phone_number', value)}
-              placeholder="(555) 123-4567"
-            />
+            {isFieldVisible('phone_number') && (
+              <FormField
+                id="phone_number"
+                label="Phone"
+                inputType="tel"
+                value={watch('phone_number') || ''}
+                onChange={(value) => setValue('phone_number', value)}
+                placeholder="(555) 123-4567"
+              />
+            )}
 
-            {showSexField && (
+            {isFieldVisible('sex') && (
               <FormField
                 id="sex"
                 label="Sex"
                 inputType="select"
                 value={sexValue || ''}
-                onChange={(value) => setValue('sex', value as 'Male' | 'Female' | '')}
+                onChange={(value) => setValue('sex', value as 'Male' | 'Female')}
+                placeholder="Select sex (optional)"
               >
-                <SelectItem value="">Not specified</SelectItem>
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
               </FormField>
             )}
 
-            <FormField
-              id="note"
-              label="Note"
-              inputType="textarea"
-              value={watch('note') || ''}
-              onChange={(value) => setValue('note', value)}
-              placeholder="Additional note..."
-              rows={3}
-            />
+            {isFieldVisible('note') && (
+              <FormField
+                id="note"
+                label="Note"
+                inputType="textarea"
+                value={watch('note') || ''}
+                onChange={(value) => setValue('note', value)}
+                placeholder="Additional note..."
+                rows={3}
+              />
+            )}
           </div>
           <DialogFooter className="flex-shrink-0">
             <Button

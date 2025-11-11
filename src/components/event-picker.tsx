@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   Command,
   CommandDialog,
@@ -74,23 +75,7 @@ interface EventPickerProps {
   defaultName?: string
   openToNewEvent?: boolean
   disableSearch?: boolean
-}
-
-// Custom hook for debounced search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
+  visibleFields?: string[] // Optional fields to show: 'location', 'note'
 }
 
 // Helper function to get default timezone
@@ -118,6 +103,7 @@ export function EventPicker({
   defaultName = "",
   openToNewEvent = false,
   disableSearch = false,
+  visibleFields,
 }: EventPickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [events, setEvents] = useState<Event[]>([])
@@ -127,6 +113,17 @@ export function EventPicker({
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+
+  // Determine which fields should be visible
+  // If visibleFields is not provided, show all optional fields by default
+  const defaultVisibleFields = ['location', 'note']
+  const isFieldVisible = (fieldName: string) => {
+    if (!visibleFields) {
+      // If not specified, show all fields
+      return defaultVisibleFields.includes(fieldName)
+    }
+    return visibleFields.includes(fieldName)
+  }
 
   // Initialize React Hook Form
   const {
@@ -529,58 +526,62 @@ export function EventPicker({
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="location" className="text-right">
-                Location
-              </Label>
-              <div className="col-span-3">
-                {selectedLocation ? (
-                  <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
-                    <span className="text-sm">
-                      {selectedLocation.name}
-                      {selectedLocation.city && `, ${selectedLocation.city}`}
-                      {selectedLocation.state && `, ${selectedLocation.state}`}
-                    </span>
+            {isFieldVisible('location') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="location" className="text-right">
+                  Location
+                </Label>
+                <div className="col-span-3">
+                  {selectedLocation ? (
+                    <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+                      <span className="text-sm">
+                        {selectedLocation.name}
+                        {selectedLocation.city && `, ${selectedLocation.city}`}
+                        {selectedLocation.state && `, ${selectedLocation.state}`}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedLocation(null)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedLocation(null)}
+                      variant="outline"
+                      onClick={() => setShowLocationPicker(true)}
+                      className="w-full justify-start"
                     >
-                      <X className="h-4 w-4" />
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Select Location
                     </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowLocationPicker(true)}
-                    className="w-full justify-start"
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Select Location
-                  </Button>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="note" className="text-right pt-2">
-                Note
-              </Label>
-              <div className="col-span-3">
-                <Textarea
-                  id="note"
-                  value={watch('note') || ''}
-                  onChange={(e) => setValue('note', e.target.value)}
-                  className={cn(errors.note && "border-red-500")}
-                  placeholder="Add any notes about this event..."
-                  rows={3}
-                />
-                {errors.note && (
-                  <p className="text-sm text-red-500 mt-1">{errors.note.message}</p>
-                )}
+            )}
+            {isFieldVisible('note') && (
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="note" className="text-right pt-2">
+                  Note
+                </Label>
+                <div className="col-span-3">
+                  <Textarea
+                    id="note"
+                    value={watch('note') || ''}
+                    onChange={(e) => setValue('note', e.target.value)}
+                    className={cn(errors.note && "border-red-500")}
+                    placeholder="Add any notes about this event..."
+                    rows={3}
+                  />
+                  {errors.note && (
+                    <p className="text-sm text-red-500 mt-1">{errors.note.message}</p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <DialogFooter className="flex-shrink-0">
             <Button

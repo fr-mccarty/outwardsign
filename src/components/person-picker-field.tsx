@@ -15,6 +15,7 @@ interface PersonPickerFieldProps {
   placeholder?: string
   required?: boolean
   openToNewPerson?: boolean
+  visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
 }
 
 export function PersonPickerField({
@@ -27,6 +28,7 @@ export function PersonPickerField({
   placeholder = 'Select Person',
   required = false,
   openToNewPerson = false,
+  visibleFields,
 }: PersonPickerFieldProps) {
   return (
     <PickerField
@@ -47,6 +49,7 @@ export function PersonPickerField({
         onSelect={onValueChange}
         selectedPersonId={value?.id}
         openToNewPerson={openToNewPerson}
+        visibleFields={visibleFields}
       />
     </PickerField>
   )

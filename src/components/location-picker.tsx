@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   Command,
   CommandDialog,
@@ -62,23 +63,7 @@ interface LocationPickerProps {
   selectedLocationId?: string
   className?: string
   openToNewLocation?: boolean
-}
-
-// Custom hook for debounced search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
+  visibleFields?: string[] // Optional fields to show: 'description', 'street', 'city', 'state', 'country', 'phone_number'
 }
 
 export function LocationPicker({
@@ -90,11 +75,23 @@ export function LocationPicker({
   selectedLocationId,
   className,
   openToNewLocation = false,
+  visibleFields,
 }: LocationPickerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // Determine which fields should be visible
+  // If visibleFields is not provided, show all optional fields by default
+  const defaultVisibleFields = ['description', 'street', 'city', 'state', 'country', 'phone_number']
+  const isFieldVisible = (fieldName: string) => {
+    if (!visibleFields) {
+      // If not specified, show all fields
+      return defaultVisibleFields.includes(fieldName)
+    }
+    return visibleFields.includes(fieldName)
+  }
 
   // Initialize React Hook Form
   const {
@@ -363,80 +360,92 @@ export function LocationPicker({
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                value={watch('description') || ''}
-                onChange={(e) => setValue('description', e.target.value)}
-                className="col-span-3"
-                placeholder="Brief description..."
-                rows={2}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="street" className="text-right">
-                Street
-              </Label>
-              <Input
-                id="street"
-                value={watch('street') || ''}
-                onChange={(e) => setValue('street', e.target.value)}
-                className="col-span-3"
-                placeholder="123 Main St"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="city" className="text-right">
-                City
-              </Label>
-              <Input
-                id="city"
-                value={watch('city') || ''}
-                onChange={(e) => setValue('city', e.target.value)}
-                className="col-span-3"
-                placeholder="Springfield"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="state" className="text-right">
-                State
-              </Label>
-              <Input
-                id="state"
-                value={watch('state') || ''}
-                onChange={(e) => setValue('state', e.target.value)}
-                className="col-span-3"
-                placeholder="IL"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="country" className="text-right">
-                Country
-              </Label>
-              <Input
-                id="country"
-                value={watch('country') || ''}
-                onChange={(e) => setValue('country', e.target.value)}
-                className="col-span-3"
-                placeholder="USA"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone_number" className="text-right">
-                Phone
-              </Label>
-              <Input
-                id="phone_number"
-                type="tel"
-                value={watch('phone_number') || ''}
-                onChange={(e) => setValue('phone_number', e.target.value)}
-                className="col-span-3"
-                placeholder="(555) 123-4567"
-              />
-            </div>
+            {isFieldVisible('description') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={watch('description') || ''}
+                  onChange={(e) => setValue('description', e.target.value)}
+                  className="col-span-3"
+                  placeholder="Brief description..."
+                  rows={2}
+                />
+              </div>
+            )}
+            {isFieldVisible('street') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="street" className="text-right">
+                  Street
+                </Label>
+                <Input
+                  id="street"
+                  value={watch('street') || ''}
+                  onChange={(e) => setValue('street', e.target.value)}
+                  className="col-span-3"
+                  placeholder="123 Main St"
+                />
+              </div>
+            )}
+            {isFieldVisible('city') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="city" className="text-right">
+                  City
+                </Label>
+                <Input
+                  id="city"
+                  value={watch('city') || ''}
+                  onChange={(e) => setValue('city', e.target.value)}
+                  className="col-span-3"
+                  placeholder="Springfield"
+                />
+              </div>
+            )}
+            {isFieldVisible('state') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="state" className="text-right">
+                  State
+                </Label>
+                <Input
+                  id="state"
+                  value={watch('state') || ''}
+                  onChange={(e) => setValue('state', e.target.value)}
+                  className="col-span-3"
+                  placeholder="IL"
+                />
+              </div>
+            )}
+            {isFieldVisible('country') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="country" className="text-right">
+                  Country
+                </Label>
+                <Input
+                  id="country"
+                  value={watch('country') || ''}
+                  onChange={(e) => setValue('country', e.target.value)}
+                  className="col-span-3"
+                  placeholder="USA"
+                />
+              </div>
+            )}
+            {isFieldVisible('phone_number') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phone_number" className="text-right">
+                  Phone
+                </Label>
+                <Input
+                  id="phone_number"
+                  type="tel"
+                  value={watch('phone_number') || ''}
+                  onChange={(e) => setValue('phone_number', e.target.value)}
+                  className="col-span-3"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+            )}
           </div>
           <DialogFooter className="flex-shrink-0">
             <Button

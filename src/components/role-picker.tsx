@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   Command,
   CommandDialog,
@@ -50,23 +51,6 @@ interface RolePickerProps {
   emptyMessage?: string
   selectedRoleId?: string
   className?: string
-}
-
-// Custom hook for debounced search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
 }
 
 export function RolePicker({

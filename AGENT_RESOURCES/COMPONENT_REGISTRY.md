@@ -156,7 +156,7 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 - `selectedPersonId`: Highlight selected person
 - `placeholder`: Search placeholder text
 - `emptyMessage`: Empty state message
-- `showSexField`: Show sex field in create form
+- `visibleFields`: Array of optional fields to show: `['email', 'phone_number', 'sex', 'note']`
 - `openToNewPerson`: Auto-open create form (for create mode)
 
 **Usage:**
@@ -337,7 +337,7 @@ const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 - `placeholder`: Button text when no person selected
 - `required`: Show required indicator
 - `openToNewPerson`: Auto-open create form (default: false)
-- `showSexField`: Show sex field in create form (default: false)
+- `visibleFields`: Array of optional fields to show: `['email', 'phone_number', 'sex', 'note']`
 - `error`: Validation error message
 
 **Usage with usePickerState:**

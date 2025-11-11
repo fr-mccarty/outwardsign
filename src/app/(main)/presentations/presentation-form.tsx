@@ -151,7 +151,6 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             defaultEventType="PRESENTATION"
             defaultName={EVENT_TYPE_LABELS.PRESENTATION.en}
             disableSearch={true}
-            error={errors.presentation_event_id?.message}
           />
         </CardContent>
       </Card>
@@ -172,8 +171,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               onShowPickerChange={child.setShowPicker}
               placeholder="Select Child"
               openToNewPerson={!isEditing}
-              showSexField={true}
-              error={errors.child_id?.message}
+              visibleFields={['email', 'phone_number', 'sex', 'note']}
             />
             <PersonPickerField
               label="Mother"
@@ -183,7 +181,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               onShowPickerChange={mother.setShowPicker}
               placeholder="Select Mother"
               openToNewPerson={!isEditing}
-              error={errors.mother_id?.message}
+              visibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -196,7 +194,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               onShowPickerChange={father.setShowPicker}
               placeholder="Select Father"
               openToNewPerson={!isEditing}
-              error={errors.father_id?.message}
+              visibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Coordinator (Optional)"
@@ -206,6 +204,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               onShowPickerChange={coordinator.setShowPicker}
               placeholder="Select Coordinator"
               openToNewPerson={!isEditing}
+              visibleFields={['email', 'phone_number', 'note']}
             />
           </div>
         </CardContent>

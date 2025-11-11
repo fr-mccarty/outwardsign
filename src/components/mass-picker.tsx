@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
   Command,
   CommandDialog,
@@ -27,23 +28,6 @@ interface MassPickerProps {
   emptyMessage?: string
   selectedMassId?: string
   className?: string
-}
-
-// Custom hook for debounced search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
 }
 
 export function MassPicker({
