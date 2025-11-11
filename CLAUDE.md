@@ -1,6 +1,14 @@
 # CLAUDE.md
 
 > **Documentation Structure Note:** This file should remain as a single document until its content exceeds 1000 lines. The current priority markers (🔴 for critical, 📖 for reference) and table of contents provide sufficient navigation. Only split into separate files when the size truly impedes usability.
+>
+> **When CLAUDE.md Gets Too Large:**
+> - **Move detailed documentation to `docs/` directory** - Offload comprehensive guides, implementation details, and reference material to separate files
+> - **Keep critical overviews in CLAUDE.md** - Retain high-level guidance, quick references, and pointers to detailed docs
+> - **What to offload:** Testing guides, styling details, form patterns, component documentation, module checklists, architecture deep-dives
+> - **What to keep:** Project description, tech stack, critical patterns (🔴 markers), database rules, design principles, table of contents with links to docs
+> - **Always update references** - When moving content to docs/, add a reference link in CLAUDE.md (e.g., "**For detailed X, see [X.md](./docs/X.md)**")
+> - **Maintain discoverability** - Files in docs/ should have descriptive names and be referenced from relevant sections in CLAUDE.md
 
 > **🔴 CRITICAL - Forms Context:** When creating or editing ANY form component, you MUST include [FORMS.md](./docs/FORMS.md) in your context. This file contains critical form patterns, validation rules, styling requirements, and component usage guidelines that are essential for maintaining consistency across the application.
 
@@ -322,260 +330,60 @@ api/[entity-plural]/
 
 ### 🔴 Constants Pattern (Critical)
 
+**For detailed constants pattern documentation, see [CONSTANTS_PATTERN.md](./docs/CONSTANTS_PATTERN.md).**
+
 **Location:** `src/lib/constants.ts`
 
-The application uses a **dual-constant pattern** for all dropdown values, status fields, and enumerated types. This pattern separates database storage from UI display and enables bilingual support.
+The application uses a **dual-constant pattern** for all dropdown values, status fields, and enumerated types:
 
-#### **Pattern Structure**
-
-Every constant follows this three-part structure:
-
-1. **VALUES array** - Uppercase keys stored in database
+1. **VALUES array** - Uppercase keys stored in database (e.g., `['ACTIVE', 'INACTIVE', 'COMPLETED']`)
 2. **Type definition** - TypeScript type for type safety
 3. **LABELS object** - Bilingual display labels (English + Spanish)
 
-#### **Example: Module Status**
-
+**Quick Example:**
 ```typescript
-// 1. VALUES array - what gets stored in the database
 export const MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE', 'COMPLETED'] as const
-
-// 2. TypeScript type derived from VALUES
 export type ModuleStatus = typeof MODULE_STATUS_VALUES[number]
-
-// 3. LABELS object - what users see in the UI
 export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string }> = {
-  ACTIVE: {
-    en: 'Active',
-    es: 'Activo'
-  },
-  INACTIVE: {
-    en: 'Inactive',
-    es: 'Inactivo'
-  },
-  COMPLETED: {
-    en: 'Completed',
-    es: 'Completado'
-  }
+  ACTIVE: { en: 'Active', es: 'Activo' },
+  INACTIVE: { en: 'Inactive', es: 'Inactivo' },
+  COMPLETED: { en: 'Completed', es: 'Completado' }
 }
 ```
 
-#### **Usage in Forms**
+**Why:** Database consistency, bilingual support, type safety, centralized maintenance.
 
-```tsx
-// Render dropdown options
-<Select value={status} onValueChange={setStatus}>
-  <SelectTrigger>
-    <SelectValue placeholder="Select status" />
-  </SelectTrigger>
-  <SelectContent>
-    {MODULE_STATUS_VALUES.map((statusOption) => (
-      <SelectItem key={statusOption} value={statusOption}>
-        {MODULE_STATUS_LABELS[statusOption].en}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-```
-
-#### **Usage in Display/View Components**
-
-```tsx
-// Display the label in the current language
-<p>Status: {MODULE_STATUS_LABELS[entity.status].en}</p>
-```
-
-#### **Why This Pattern?**
-
-1. **Database Consistency**: Uppercase keys (`ACTIVE`, `INACTIVE`) stored in database are stable and language-independent
-2. **Bilingual Support**: Labels support both English (`.en`) and Spanish (`.es`) without changing database values
-3. **Type Safety**: TypeScript ensures only valid values can be used
-4. **Centralized**: All constants in one file (`constants.ts`) for easy maintenance
-5. **Future-Proof**: Easy to add new languages by adding properties to label objects
-
-#### **Standard Constant Types**
-
-All constants in `src/lib/constants.ts` follow this pattern:
-
-- **Module Status**: `MODULE_STATUS_VALUES` + `MODULE_STATUS_LABELS`
-- **Event Types**: `EVENT_TYPE_VALUES` + `EVENT_TYPE_LABELS`
-- **Reading Categories**: `READING_CATEGORIES` + `READING_CATEGORY_LABELS`
-- **Languages**: `LANGUAGE_VALUES` + `LANGUAGE_LABELS`
-- **Template IDs** (All Primary Modules):
-  - `WEDDING_TEMPLATE_VALUES` + `WEDDING_TEMPLATE_LABELS`
-  - `QUINCEANERA_TEMPLATE_VALUES` + `QUINCEANERA_TEMPLATE_LABELS`
-  - `FUNERAL_TEMPLATE_VALUES` + `FUNERAL_TEMPLATE_LABELS`
-  - `BAPTISM_TEMPLATE_VALUES` + `BAPTISM_TEMPLATE_LABELS`
-  - `PRESENTATION_TEMPLATE_VALUES` + `PRESENTATION_TEMPLATE_LABELS`
-  - `MASS_TEMPLATE_VALUES` + `MASS_TEMPLATE_LABELS`
-  - `MASS_INTENTION_TEMPLATE_VALUES` + `MASS_INTENTION_TEMPLATE_LABELS`
-- **Mass-specific Status**:
-  - `MASS_STATUS_VALUES` + `MASS_STATUS_LABELS`
-  - `MASS_INTENTION_STATUS_VALUES` + `MASS_INTENTION_STATUS_LABELS`
-
-#### **Adding New Constants**
-
-When adding a new constant type, follow this checklist:
-
-1. **Create VALUES array** with uppercase keys (what goes in database)
-2. **Create TypeScript type** using `typeof VALUES[number]`
-3. **Create LABELS object** with bilingual labels for each value
-4. **Export all three** from `src/lib/constants.ts`
-5. **Update forms** to use `VALUES` for options and `LABELS` for display
-6. **Update database migration** if creating new columns
-
-**Example: Adding a new constant type**
-
-```typescript
-// Step 1: VALUES array
-export const CEREMONY_TYPE_VALUES = ['MASS', 'LITURGY', 'BLESSING'] as const
-
-// Step 2: TypeScript type
-export type CeremonyType = typeof CEREMONY_TYPE_VALUES[number]
-
-// Step 3: LABELS object
-export const CEREMONY_TYPE_LABELS: Record<CeremonyType, { en: string; es: string }> = {
-  MASS: { en: 'Mass', es: 'Misa' },
-  LITURGY: { en: 'Liturgy of the Word', es: 'Liturgia de la Palabra' },
-  BLESSING: { en: 'Blessing', es: 'Bendición' }
-}
-```
-
-#### **Important Notes**
-
-- **Always use UPPERCASE** for database values (e.g., `ACTIVE`, not `active`)
-- **Always provide both `.en` and `.es`** labels, even if the Spanish translation is the same
-- **Use descriptive constant names** that indicate the domain (e.g., `MASS_STATUS`, not just `STATUS`)
-- **Group related constants** together in `constants.ts` with comment headers
-- **Never hardcode status strings** in components - always use constants
-
-This pattern standardizes database storage while enabling multilingual UI display across all modules.
+**See [CONSTANTS_PATTERN.md](./docs/CONSTANTS_PATTERN.md) for full usage examples, standard constant types, and adding new constants.**
 
 ### Reusable Module Components
 
-**ModuleViewPanel Component** (`src/components/module-view-panel.tsx`)
-- Generic view panel for all modules (weddings, funerals, baptisms, etc.)
-- Handles: Edit button, Print view, PDF/Word downloads, Status/Location/Created date display
-- Props:
-  - `entity` - The entity being viewed (must have id, status, created_at)
-  - `entityType` - Display name (e.g., "Wedding", "Funeral")
-  - `modulePath` - URL path (e.g., "weddings", "funerals")
-  - `mainEvent` - Optional event for location display
-  - `generateFilename` - Function to generate download filenames
-  - `printViewPath` - Optional custom print path
+**For complete component documentation, see [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md).**
 
-**Example Usage:**
-```tsx
-<ModuleViewPanel
-  entity={wedding}
-  entityType="Wedding"
-  modulePath="weddings"
-  mainEvent={wedding.wedding_event}
-  generateFilename={(ext) => `wedding-${wedding.id}.${ext}`}
-/>
-```
+Key reusable components for module view pages:
 
-**ModuleViewContainer Component** (`src/components/module-view-container.tsx`)
-- Reusable container for all liturgy-based module view pages (weddings, funerals, presentations, quinceañeras, baptisms, etc.)
-- Handles: Layout (side panel + main content), liturgy building, and HTML rendering
-- Uses callback pattern for module-specific logic (filename generation, template selection, liturgy building)
-- Props:
-  - `entity` - The entity being viewed (with relations)
-  - `entityType` - Display name (e.g., "Wedding", "Funeral")
-  - `modulePath` - URL path (e.g., "weddings", "funerals")
-  - `mainEvent` - Optional event for location display
-  - `generateFilename` - Function to generate download filenames
-  - `buildLiturgy` - Function to build liturgy document (e.g., `buildWeddingLiturgy`)
-  - `getTemplateId` - Function to extract template ID from entity
-  - `printViewPath` - Optional custom print path
+- **ModuleViewPanel** - Side panel with Edit button, Print view, PDF/Word downloads, metadata
+- **ModuleViewContainer** - Complete view page container with side panel + liturgy content rendering
+- **usePickerState Hook** - Standardized state management for picker modals
 
-**Example Usage:**
-```tsx
-// In [entity]-view-client.tsx
-export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
-  const generateFilename = (extension: string) => {
-    const brideLastName = wedding.bride?.last_name || 'Bride'
-    const groomLastName = wedding.groom?.last_name || 'Groom'
-    const weddingDate = wedding.wedding_event?.start_date
-      ? new Date(wedding.wedding_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `${brideLastName}-${groomLastName}-${weddingDate}.${extension}`
-  }
-
-  const getTemplateId = (wedding: WeddingWithRelations) => {
-    return wedding.wedding_template_id || 'wedding-full-script-english'
-  }
-
-  return (
-    <ModuleViewContainer
-      entity={wedding}
-      entityType="Wedding"
-      modulePath="weddings"
-      mainEvent={wedding.wedding_event}
-      generateFilename={generateFilename}
-      buildLiturgy={buildWeddingLiturgy}
-      getTemplateId={getTemplateId}
-    />
-  )
-}
-```
+See COMPONENT_REGISTRY.md for full props, usage examples, and all available components.
 
 ### 🔴 Component Registry (CRITICAL)
 
 **ALWAYS consult [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md) before using or creating components.**
 
-The Component Registry is a comprehensive catalog of all reusable components in the application. It provides:
-- Component purpose and description
-- Props and usage examples
-- File paths
-- Important patterns and restrictions
+The Component Registry contains comprehensive documentation on all reusable components including:
+- Picker components (PeoplePicker, EventPicker, LocationPicker)
+- Form components (FormField, SaveButton, CancelButton)
+- Layout components (PageContainer, ModuleViewPanel, ModuleViewContainer)
+- Hooks (usePickerState)
 
-This registry enables fast component lookup without reading source code, ensuring correct component usage and preventing duplicate component creation.
-
-**Quick Reference:**
-
-**usePickerState Hook** (`src/hooks/use-picker-state.ts`)
-- Reduces boilerplate for managing modal picker state (people, events, readings)
-- Returns: `{ value, setValue, showPicker, setShowPicker }`
-- Usage: `const bride = usePickerState<Person>()`
-
-**Available Picker Components:**
-- `PeoplePicker` - Select person from parish directory with search and inline creation
-- `EventPicker` - Select or create events with date/time/location
-- `ReadingPickerModal` - Select scripture readings with category filters
-- `PetitionEditor` - Edit petitions with template insertion
-
-**Shared Form Components:**
-- `SaveButton` - Handles loading state, shows spinner while saving
-- `CancelButton` - Standard cancel button with routing
-- `FormField` - Standardized form field wrapper (**REQUIRED** for all inputs/selects/textareas - see [FORMS.md](./docs/FORMS.md))
-- `EventDisplay` - Display event date/time/location in forms
-
-**For detailed component documentation, see [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md).**
-**For detailed FormField usage patterns, validation, and form event handling, see [FORMS.md](./docs/FORMS.md).**
+**For picker behavior patterns (auto-select, no redirect), see [PICKER_PATTERNS.md](./docs/PICKER_PATTERNS.md).**
 
 **Content Builders & Renderers:**
 
-**For comprehensive documentation on the liturgical script system, including content builder interfaces, template structure, styling, and export functionality, see [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md).**
+**For comprehensive documentation on the liturgical script system, see [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md).**
 
-Content builders create liturgy document structures that can be rendered in multiple formats:
-
-- **Content Builders** (`lib/content-builders/[entity].ts`):
-  - `build[Entity]Liturgy(entity, templateId)` - Creates structured document
-  - Returns array of sections with headings, paragraphs, formatted text
-  - Single source of truth for liturgy content across all output formats
-
-- **HTML Renderer** (`lib/renderers/html-renderer.ts`):
-  - `renderHTML(document)` - Converts structure to HTML/React elements
-  - Used for view pages and print pages
-
-- **Usage Pattern**:
-  ```tsx
-  // In view client or print page
-  const liturgyDocument = buildWeddingLiturgy(wedding, 'wedding-full-script-english')
-  const liturgyContent = renderHTML(liturgyDocument)
-  // Returns React elements ready to render
-  ```
+Content builders create liturgy document structures that can be rendered in multiple formats. See LITURGICAL_SCRIPT_SYSTEM.md for interfaces, template structure, styling, and export functionality.
 
 ### Type Patterns
 
@@ -678,83 +486,15 @@ if (!user) redirect('/login')
 
 ### 🔴 Picker Modal Behavior (Critical)
 
-**CRITICAL RULE:** When creating new entities from ANY picker modal (PeoplePicker, EventPicker, ReadingPickerModal), the behavior MUST follow this exact pattern:
+**For detailed picker behavior patterns, see [PICKER_PATTERNS.md](./docs/PICKER_PATTERNS.md).**
 
-1. **Save immediately**: Entity is created and persisted to database via server action
-2. **Auto-select**: Newly created entity is automatically selected in the parent form field
-3. **Close modal**: Picker dialog closes automatically after selection
-4. **NO REDIRECT**: The current page must NOT navigate away - user stays on the form they were working on
+**CRITICAL RULE:** When creating entities from picker modals (PeoplePicker, EventPicker), follow this pattern:
+1. Save immediately to database
+2. Auto-select newly created entity
+3. Close modal
+4. **NO REDIRECT** - stay on parent form
 
-**Why this matters:**
-- Users are in the middle of creating/editing a main entity (wedding, funeral, presentation)
-- Creating a related entity (person, event, reading) is a sub-task within that workflow
-- Redirecting would lose the user's context and any unsaved work in the parent form
-- Auto-selecting improves UX by eliminating an extra click
-
-**Implementation Pattern:**
-
-```tsx
-// In picker component (e.g., PeoplePicker, EventPicker)
-const handleCreateEntity = async (e: React.FormEvent) => {
-  e.preventDefault()
-  e.stopPropagation() // Prevent parent form submission
-
-  try {
-    // 1. Create entity via server action
-    const newEntity = await createEntity({...formData})
-
-    // 2. Show success feedback
-    toast.success('Entity created successfully')
-
-    // 3. Reset internal form state
-    setFormData(initialState)
-    setShowAddForm(false)
-
-    // 4. Auto-select newly created entity (calls onSelect callback)
-    handleEntitySelect(newEntity)
-
-    // ✅ CORRECT: No router.push(), no navigation
-    // ❌ WRONG: router.push('/entities/...')
-  } catch (error) {
-    toast.error('Failed to create entity')
-  }
-}
-
-// handleEntitySelect implementation
-const handleEntitySelect = (entity: Entity) => {
-  onSelect(entity)      // Pass to parent via callback
-  onOpenChange(false)   // Close the modal
-  // ✅ CORRECT: Only select and close
-  // ❌ WRONG: router.push() anywhere in this flow
-}
-```
-
-**Affected Components:**
-- `PeoplePicker` (`src/components/people-picker.tsx`) - For creating persons from wedding/funeral/presentation forms
-- `EventPicker` (`src/components/event-picker.tsx`) - For creating events from module forms
-- `ReadingPickerModal` (if inline creation exists) - For adding readings
-
-**Verification Checklist:**
-When implementing or modifying picker components, verify:
-- [ ] Server action creates entity and returns it (no redirect in action)
-- [ ] `handleCreate[Entity]` function does NOT call `router.push()`
-- [ ] New entity is passed to `handleEntitySelect()` or equivalent
-- [ ] `handleEntitySelect()` only calls `onSelect(entity)` and `onOpenChange(false)`
-- [ ] Parent component receives entity via `onSelect` callback prop
-- [ ] Parent component updates its state with selected entity
-- [ ] Modal closes after selection
-- [ ] User remains on the current form page
-
-**Common Mistakes to Avoid:**
-- ❌ Adding `router.push()` after entity creation
-- ❌ Adding `redirect()` in server action for picker entities
-- ❌ Not auto-selecting the newly created entity
-- ❌ Requiring user to manually search and select what they just created
-- ❌ Different behavior between different picker modals (be consistent)
-
-**Reference Implementations:**
-- Correct pattern: `src/components/people-picker.tsx` lines 151-191
-- Correct pattern: `src/components/event-picker.tsx` lines 206-265
+See PICKER_PATTERNS.md for implementation details, verification checklist, and common mistakes to avoid.
 
 ### Performance Patterns
 **Server-side filtering:** List pages accept searchParams prop. Pass these to get[Entities]() functions to filter on the server, not the client.
@@ -810,130 +550,24 @@ Client Component (BreadcrumbSetter):
 
 ## 🔴 Design Principles
 
-These core design principles guide all development decisions in Outward Sign. Every feature, component, and interaction should embody these virtues:
+**For comprehensive design principles, see [DESIGN_PRINCIPLES.md](./docs/DESIGN_PRINCIPLES.md).**
 
-### Simplicity
-- Remove unnecessary elements and complexity
-- Make common tasks easy and straightforward
-- Avoid feature bloat - focus on essential sacramental workflows
-- Prefer clear, direct solutions over clever abstractions
+These core principles guide all development decisions in Outward Sign:
 
-### Clarity
-- No ambiguity about what UI elements do or what will happen when interacting with them
-- Use clear, descriptive labels and button text
-- Ensure form fields clearly indicate what input is expected
-- Status indicators and states should be immediately obvious
+- **Simplicity** - Remove unnecessary complexity, focus on essential workflows
+- **Clarity** - No ambiguity about what UI elements do
+- **Feedback** - System responds to every user action appropriately
+- **Affordances** - Things should look like what they do
+- **Recognition over Recall** - Show options, don't require memorization
+- **Forgiving Design** - Make actions reversible, handle errors gracefully
+- **Progressive Disclosure** - Show basics first, reveal complexity as needed
+- **Efficiency** - Minimize clicks, support keyboard navigation
+- **Content & Communication** - Clear microcopy, helpful empty states, contextual help
+- **Specific Patterns** - Familiarity, proximity, continuity, closure
 
-### Feedback
-- System responds to every user action with appropriate feedback
-- Show loading states for all asynchronous operations (use `SaveButton`, spinners)
-- Display success messages after successful operations (use `toast.success()`)
-- Show clear error messages when operations fail (use `toast.error()` with actionable guidance)
-- Real-time validation feedback on forms where appropriate
+**When implementing features, ask:** Is this simple? Is it clear? Does it provide feedback? Can users recover from mistakes?
 
-### Affordances
-- Things should look like what they do
-- Buttons must look clickable (proper hover states, cursor changes)
-- Disabled elements should appear visually disabled
-- Interactive elements should have clear visual indicators (icons, colors, borders)
-- Form fields should look like form fields
-
-### Recognition over Recall
-- Show available options rather than requiring users to remember or type them
-- Use picker modals (PeoplePicker, EventPicker) instead of free-text input where possible
-- Display recently used items, suggestions, or defaults
-- Breadcrumbs show current location in the app hierarchy
-- Pre-fill forms with sensible defaults when editing
-
-### Forgiving Design
-- Make destructive actions reversible where possible
-- Require confirmation for irreversible destructive actions (deletions)
-- Implement autosave for long forms or critical workflows (where appropriate)
-- Allow users to cancel operations and return to previous state
-- Gracefully handle errors without losing user data
-
-### Progressive Disclosure
-- Show basic, most commonly used options first
-- Reveal advanced features and complexity only as needed
-- Use collapsible sections for optional or advanced settings
-- Don't overwhelm users with all options at once
-- Organize forms logically from essential to optional fields
-
-### Efficiency
-- Provide keyboard shortcuts for power users where appropriate
-- Enable bulk actions when users need to operate on multiple items
-- Support keyboard navigation throughout the application
-- Minimize clicks required for common workflows
-- Allow inline editing and creation (e.g., creating people/events from within forms)
-- Use server-side filtering and pagination for performance
-
-### Content & Communication
-
-#### Microcopy
-- Use helpful, human labels and instructions throughout the interface
-- Write in plain language - avoid jargon unless essential to sacramental context
-- Button text should clearly describe the action (e.g., "Save Wedding" not just "Save")
-- Error messages should explain what went wrong AND how to fix it
-- Labels should be concise but descriptive
-
-#### Empty States
-- Never show a blank screen - always provide helpful guidance
-- Empty lists should explain what would go here and how to add the first item
-- Include a clear call-to-action button to create the first entry
-- Use encouraging, welcoming language for new users
-- Example: "No weddings yet. Click 'Create Wedding' to plan your first celebration."
-
-#### Onboarding
-- Provide smooth, gradual introduction for new users and new features
-- First-time experiences should guide users to initial setup steps
-- Use progressive disclosure - don't overwhelm with all features at once
-- Consider tooltips or brief inline help for complex workflows
-- Make it easy to skip or dismiss onboarding for experienced users
-
-#### Help & Documentation
-- Provide contextual help where users might need it
-- Complex forms should include helpful tooltips or info icons
-- Link to relevant documentation when available
-- Guidelines and best practices should be visible but not intrusive
-- Consider inline examples for complex fields (e.g., formatting patterns)
-
-### Specific Patterns
-
-#### Similarity/Familiarity
-- Use established UI patterns that users already know from other applications
-- Follow web conventions for common interactions (links, buttons, forms)
-- Maintain consistency with the wedding module pattern across all modules
-- Reuse existing components (PeoplePicker, EventPicker) for similar tasks
-- Don't reinvent common patterns - leverage user's existing mental models
-
-#### Proximity
-- Group related items together visually and spatially
-- Keep form labels close to their inputs
-- Group related form fields in logical sections
-- Place actions (buttons) near the content they affect
-- Use whitespace to separate unrelated groups
-
-#### Continuity
-- Create natural flow from one step to the next in multi-step processes
-- Maintain context as users navigate through workflows
-- Breadcrumbs show the path users have taken
-- After creating an entity, smoothly transition to viewing it
-- Preserve user input when navigating between related forms/pages
-
-#### Closure
-- Provide clear endings and confirmations when tasks complete
-- Success messages confirm that actions were successful
-- Redirect to appropriate next page after creating/editing
-- Show final state after bulk operations complete
-- Allow users to clearly understand that a workflow is finished
-
-**Application:** When implementing new features or reviewing code, ask:
-- Is this the simplest solution that could work?
-- Will users clearly understand what this does?
-- Does the UI provide appropriate feedback?
-- Can users easily undo or recover from mistakes?
-- Are we showing too much complexity upfront?
-- Could this common task be made more efficient?
+See DESIGN_PRINCIPLES.md for detailed explanations and examples of each principle.
 
 ## 🔴 Creating New Modules
 

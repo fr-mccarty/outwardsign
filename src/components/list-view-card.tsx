@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { FilePenLine } from "lucide-react"
+import { SquarePen } from "lucide-react"
 import { ReactNode } from "react"
 
 interface ListViewCardProps {
@@ -33,7 +33,7 @@ export function ListViewCard({ title, editHref, viewHref, viewButtonText = "View
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link href={editHref}>
-              <FilePenLine className="h-4 w-4" />
+              <SquarePen className="h-4 w-4" />
             </Link>
           </Button>
         </div>

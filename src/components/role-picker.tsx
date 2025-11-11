@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { UserCog } from 'lucide-react'
-import { getRoles, createRole } from '@/lib/actions/roles'
+import { getRoles, createRole, updateRole } from '@/lib/actions/roles'
 import type { Role } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -23,6 +23,8 @@ interface RolePickerProps {
   requiredFields?: string[] // Fields that should be marked as required
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
+  editMode?: boolean // Open directly to edit form
+  roleToEdit?: Role | null // Role being edited
 }
 
 // Default visible fields - defined outside component to prevent re-creation
@@ -43,6 +45,8 @@ export function RolePicker({
   requiredFields,
   autoOpenCreateForm = false,
   defaultCreateFormData,
+  editMode = false,
+  roleToEdit = null,
 }: RolePickerProps) {
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(false)
@@ -131,6 +135,22 @@ export function RolePicker({
     return newRole
   }
 
+  // Handle updating an existing role
+  const handleUpdateRole = async (id: string, data: any): Promise<Role> => {
+    const updatedRole = await updateRole(id, {
+      name: data.name,
+      description: data.description || undefined,
+      note: data.note || undefined,
+    })
+
+    // Update local list
+    setRoles((prev) =>
+      prev.map(r => r.id === updatedRole.id ? updatedRole : r)
+    )
+
+    return updatedRole
+  }
+
   // Custom render for role list items
   const renderRoleItem = (role: Role) => {
     const isSelected = selectedRoleId === role.id
@@ -182,6 +202,10 @@ export function RolePicker({
       isLoading={loading}
       autoOpenCreateForm={autoOpenCreateForm}
       defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
+      editMode={editMode}
+      entityToEdit={roleToEdit}
+      onUpdateSubmit={handleUpdateRole}
+      updateButtonLabel="Update Role"
     />
   )
 }

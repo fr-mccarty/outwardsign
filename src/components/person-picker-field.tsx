@@ -53,6 +53,8 @@ export function PersonPickerField({
         openToNewPerson={openToNewPerson}
         visibleFields={visibleFields}
         requiredFields={requiredFields}
+        editMode={value !== null}
+        personToEdit={value}
       />
     </PickerField>
   )

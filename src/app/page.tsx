@@ -31,7 +31,13 @@ import {
   Github,
   Languages,
   Sun,
-  Moon
+  Moon,
+  Sparkles,
+  Mail,
+  BarChart3,
+  UserCog,
+  AlertCircle,
+  CalendarCheck
 } from "lucide-react"
 import { APP_NAME, APP_TAGLINE, GITHUB_URL, HomeLanguage, DEFAULT_HOME_LANGUAGE } from "@/lib/constants"
 import { useState, useEffect, Suspense } from "react"
@@ -210,6 +216,34 @@ const translations = {
         description: "Manage all parish liturgies from one platform"
       }
     },
+    comingSoon: {
+      sectionTitle: "Coming Soon",
+      sectionSubtitle: "We're continuously improving Outward Sign with new features requested by parishes like yours.",
+      coreSacraments: {
+        title: "Additional Sacraments",
+        description: "Confirmations, First Communion, and Anointing of the Sick modules"
+      },
+      ministryScheduling: {
+        title: "Ministry Scheduling",
+        description: "Assign lectors, altar servers, music ministers, and other liturgical roles to masses and sacramental celebrations with automatic conflict detection"
+      },
+      calendarEnhancements: {
+        title: "Advanced Calendar",
+        description: "Event conflict detection, recurring events, and improved parish calendar views"
+      },
+      notifications: {
+        title: "Communication Tools",
+        description: "Email and SMS notifications for families, staff, and participants"
+      },
+      reporting: {
+        title: "Reports & Analytics",
+        description: "Sacrament statistics dashboard and annual reports for parish planning"
+      },
+      parishionerPortal: {
+        title: "Parishioner Portal",
+        description: "Self-service portal for families to view and manage their sacrament information"
+      }
+    },
     gettingStarted: {
       title: "Ready to Get Started?",
       subtitle: "Join parishes across the country making sacrament preparation simple and beautiful. Here's how easy it is:",
@@ -237,7 +271,7 @@ const translations = {
       ctaButton: "Start Now - It's Free"
     },
     finalCTA: {
-      title: "Beautiful Celebrations Are Evangelization",
+      title: "Beautiful Liturgy Is Evangelization",
       subtitle: "Join parishes who are creating moments of profound spiritual significance through careful preparation, clear communication, and beautiful celebrations of these outward signs instituted by Christ to give grace.",
       getStartedFree: "Get Started Free",
       signInToYourParish: "Sign In to Your Parish",
@@ -245,6 +279,7 @@ const translations = {
     },
     footer: {
       madeWith: "Made with care for Catholic parishes",
+      collaboration: "A collaborative effort between CatholicOS and Lolek Productions",
       freeForever: "Free Forever",
       openSource: "Open Source",
       viewOnGithub: "View on GitHub",
@@ -420,6 +455,34 @@ const translations = {
         description: "Gestiona todas las liturgias parroquiales desde una plataforma"
       }
     },
+    comingSoon: {
+      sectionTitle: "Próximamente",
+      sectionSubtitle: "Estamos mejorando continuamente Outward Sign con nuevas funciones solicitadas por parroquias como la tuya.",
+      coreSacraments: {
+        title: "Sacramentos Adicionales",
+        description: "Módulos de Confirmaciones, Primera Comunión y Unción de los Enfermos"
+      },
+      ministryScheduling: {
+        title: "Programación de Ministerios",
+        description: "Asigna lectores, monaguillos, ministros de música y otros roles litúrgicos a misas y celebraciones sacramentales con detección automática de conflictos"
+      },
+      calendarEnhancements: {
+        title: "Calendario Avanzado",
+        description: "Detección de conflictos de eventos, eventos recurrentes y vistas mejoradas del calendario parroquial"
+      },
+      notifications: {
+        title: "Herramientas de Comunicación",
+        description: "Notificaciones por correo electrónico y SMS para familias, personal y participantes"
+      },
+      reporting: {
+        title: "Informes y Análisis",
+        description: "Panel de estadísticas de sacramentos e informes anuales para la planificación parroquial"
+      },
+      parishionerPortal: {
+        title: "Portal de Feligreses",
+        description: "Portal de autoservicio para que las familias vean y gestionen su información sacramental"
+      }
+    },
     gettingStarted: {
       title: "¿Listo para Comenzar?",
       subtitle: "Únete a parroquias en todo el país que hacen que la preparación sacramental sea simple y hermosa. Así de fácil es:",
@@ -447,7 +510,7 @@ const translations = {
       ctaButton: "Comenzar Ahora - Es Gratis"
     },
     finalCTA: {
-      title: "Las Celebraciones Hermosas Son Evangelización",
+      title: "La Liturgia Hermosa Es Evangelización",
       subtitle: "Únete a las parroquias que están creando momentos de profundo significado espiritual a través de una preparación cuidadosa, comunicación clara y celebraciones hermosas de estos signos visibles instituidos por Cristo para dar la gracia.",
       getStartedFree: "Comenzar Gratis",
       signInToYourParish: "Inicia Sesión en tu Parroquia",
@@ -455,6 +518,7 @@ const translations = {
     },
     footer: {
       madeWith: "Hecho con cuidado para parroquias católicas",
+      collaboration: "Un esfuerzo colaborativo entre CatholicOS y Lolek Productions",
       freeForever: "Gratis Para Siempre",
       openSource: "Código Abierto",
       viewOnGithub: "Ver en GitHub",
@@ -1197,6 +1261,140 @@ function HomeContent() {
           </div>
         </div>
 
+        {/* Coming Soon Section - Full Width */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="space-y-12">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Sparkles className="h-8 w-8 text-primary" />
+                <h2 className="text-3xl md:text-4xl font-bold">{t.comingSoon.sectionTitle}</h2>
+                <Sparkles className="h-8 w-8 text-primary" />
+              </div>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.comingSoon.sectionSubtitle}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Additional Sacraments */}
+              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
+                    <Church className="h-8 w-8 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="mb-3 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.coreSacraments.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.comingSoon.coreSacraments.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Ministry Scheduling */}
+              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
+                    <CalendarCheck className="h-8 w-8 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="mb-3 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.ministryScheduling.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.comingSoon.ministryScheduling.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Advanced Calendar */}
+              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
+                    <Calendar className="h-8 w-8 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="mb-3 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.calendarEnhancements.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.comingSoon.calendarEnhancements.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Communication Tools */}
+              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
+                    <Mail className="h-8 w-8 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="mb-3 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.notifications.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.comingSoon.notifications.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Reports & Analytics */}
+              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
+                    <BarChart3 className="h-8 w-8 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="mb-3 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.reporting.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.comingSoon.reporting.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Parishioner Portal */}
+              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
+                    <UserCog className="h-8 w-8 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="mb-3 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.parishionerPortal.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.comingSoon.parishionerPortal.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* CTA to provide feedback */}
+            <div className="text-center pt-6">
+              <p className="text-sm text-muted-foreground mb-4">
+                <AlertCircle className="h-4 w-4 inline mr-1" />
+                Have a feature request or suggestion? We'd love to hear from you!
+              </p>
+              <Button asChild variant="outline">
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                  <Github className="h-4 w-4 mr-2" />
+                  Share Your Ideas on GitHub
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+
         {/* Getting Started Section - Full Width */}
         <div className="bg-secondary text-secondary-foreground py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1346,6 +1544,7 @@ function HomeContent() {
               <p className="mb-2">
                 <span className="font-semibold text-foreground">{APP_NAME}</span> • <span className="italic">{APP_TAGLINE}</span> • {t.footer.madeWith}
               </p>
+              <p className="mb-2 text-xs">{t.footer.collaboration}</p>
               <p className="mb-3">outwardsign.church</p>
               <div className="flex items-center justify-center gap-4 text-xs">
                 <Badge variant="outline" className="gap-1">

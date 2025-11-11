@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Mail, Phone } from 'lucide-react'
-import { getPeople, createPerson } from '@/lib/actions/people'
+import { getPeople, createPerson, updatePerson } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -25,6 +25,8 @@ interface PeoplePickerProps {
   openToNewPerson?: boolean
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
+  editMode?: boolean // Open directly to edit form
+  personToEdit?: Person | null // Person being edited
 }
 
 // Default visible fields - defined outside component to prevent re-creation
@@ -46,6 +48,8 @@ export function PeoplePicker({
   openToNewPerson = false,
   autoOpenCreateForm = false,
   defaultCreateFormData,
+  editMode = false,
+  personToEdit = null,
 }: PeoplePickerProps) {
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
@@ -178,6 +182,25 @@ export function PeoplePicker({
     return newPerson
   }
 
+  // Handle updating an existing person
+  const handleUpdatePerson = async (id: string, data: any): Promise<Person> => {
+    const updatedPerson = await updatePerson(id, {
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email || undefined,
+      phone_number: data.phone_number || undefined,
+      sex: data.sex || undefined,
+      note: data.note || undefined,
+    })
+
+    // Update local list
+    setPeople((prev) =>
+      prev.map(p => p.id === updatedPerson.id ? updatedPerson : p)
+    )
+
+    return updatedPerson
+  }
+
   // Custom render for person list items
   const renderPersonItem = (person: Person) => {
     const isSelected = selectedPersonId === person.id
@@ -242,6 +265,10 @@ export function PeoplePicker({
       isLoading={loading}
       autoOpenCreateForm={autoOpenCreateForm || openToNewPerson}
       defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
+      editMode={editMode}
+      entityToEdit={personToEdit}
+      onUpdateSubmit={handleUpdatePerson}
+      updateButtonLabel="Update Person"
     />
   )
 }

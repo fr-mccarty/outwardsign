@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { X } from 'lucide-react'
+import { X, Pencil } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
@@ -52,27 +52,45 @@ export function PickerField<T>({
 
       {value ? (
         displayLayout === 'single-line' ? (
-          <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-            <span className="text-sm">{renderValue(value)}</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onShowPickerChange(true)}
+              className="flex-1 flex items-center justify-between p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left"
+              data-testid={`${labelId}-selected-value`}
+            >
+              <span className="text-sm">{renderValue(value)}</span>
+              <Pencil className="h-4 w-4 text-muted-foreground ml-2" />
+            </button>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => onValueChange(null)}
+              data-testid={`${labelId}-clear`}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="flex-1 p-3 border rounded-md bg-muted/50">
-              {renderValue(value)}
-            </div>
+            <button
+              type="button"
+              onClick={() => onShowPickerChange(true)}
+              className="flex-1 p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left"
+              data-testid={`${labelId}-selected-value`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">{renderValue(value)}</div>
+                <Pencil className="h-4 w-4 text-muted-foreground ml-2" />
+              </div>
+            </button>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => onValueChange(null)}
+              data-testid={`${labelId}-clear`}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -84,6 +102,7 @@ export function PickerField<T>({
           variant="outline"
           onClick={() => onShowPickerChange(true)}
           className="w-full justify-start"
+          data-testid={`${labelId}-trigger`}
         >
           <Icon className="h-4 w-4 mr-2" />
           {placeholder}

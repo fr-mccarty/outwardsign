@@ -89,6 +89,23 @@ export interface CorePickerProps<T> {
   autoOpenCreateForm?: boolean
   /** Default values for the create form fields */
   defaultCreateFormData?: Record<string, any>
+  /** Custom form component that replaces the default form fields rendering */
+  CustomFormComponent?: React.ComponentType<{
+    formData: Record<string, any>
+    setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>
+    errors: Record<string, string>
+    isEditMode: boolean
+  }>
+
+  // Inline editing
+  /** Whether to open in edit mode (skips selection list, goes straight to form) */
+  editMode?: boolean
+  /** The entity being edited */
+  entityToEdit?: T | null
+  /** Callback when updating an existing item */
+  onUpdateSubmit?: (id: string, data: any) => Promise<T>
+  /** Label for the update button */
+  updateButtonLabel?: string
 
   // Empty states
   /** Message to show when no items exist */

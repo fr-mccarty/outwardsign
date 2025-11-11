@@ -1,24 +1,15 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Calendar, Clock, MapPin, X } from 'lucide-react'
-import { getEvents, createEvent } from '@/lib/actions/events'
-import type { Event, Location } from '@/lib/types'
+import { Calendar, Clock } from 'lucide-react'
+import { getEvents, createEvent, updateEvent } from '@/lib/actions/events'
+import type { Event } from '@/lib/types'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { CorePicker } from '@/components/core-picker'
-import { PickerFieldConfig } from '@/types/core-picker'
-import { LocationPicker } from '@/components/location-picker'
+import { EventFormFields } from '@/components/event-form-fields'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 
 interface EventPickerProps {
@@ -38,6 +29,8 @@ interface EventPickerProps {
   requiredFields?: string[] // Fields that should be marked as required: 'location', 'note'
   autoOpenCreateForm?: boolean // Auto-open the create form when picker opens
   defaultCreateFormData?: Record<string, any> // Default values for the create form (e.g., { name: "Smith-Jones Wedding" })
+  editMode?: boolean // Open directly to edit form
+  eventToEdit?: Event | null // Event being edited
 }
 
 // Helper function to get default timezone
@@ -77,13 +70,11 @@ export function EventPicker({
   requiredFields,
   autoOpenCreateForm = false,
   defaultCreateFormData,
+  editMode = false,
+  eventToEdit = null,
 }: EventPickerProps) {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
-  const [showLocationPicker, setShowLocationPicker] = useState(false)
-  // Store the onChange callback from the custom field to call when location is selected
-  const locationOnChangeRef = useRef<((value: any) => void) | null>(null)
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -134,114 +125,63 @@ export function EventPicker({
     ? events.find((evt) => evt.id === selectedEventId)
     : null
 
-  // Build create fields configuration dynamically - memoized to prevent infinite re-renders
-  const createFields: PickerFieldConfig[] = useMemo(() => {
-    const fields: PickerFieldConfig[] = [
+  // Validation configuration for CorePicker - memoized to prevent infinite re-renders
+  const createFields = useMemo(() => {
+    const fields = [
       {
         key: 'name',
         label: 'Name',
-        type: 'text',
+        type: 'text' as const,
         required: true,
-        placeholder: 'Wedding Ceremony',
         validation: z.string().min(1, 'Event name is required'),
       },
       {
         key: 'start_date',
         label: 'Date',
-        type: 'date',
+        type: 'date' as const,
         required: true,
         validation: z.string().min(1, 'Date is required'),
       },
       {
         key: 'start_time',
         label: 'Time',
-        type: 'time',
+        type: 'time' as const,
         required: true,
         validation: z.string().min(1, 'Time is required'),
       },
       {
         key: 'timezone',
         label: 'Time Zone',
-        type: 'select',
+        type: 'select' as const,
         required: true,
-        options: [
-          { value: 'America/New_York', label: 'Eastern (ET)' },
-          { value: 'America/Chicago', label: 'Central (CT)' },
-          { value: 'America/Denver', label: 'Mountain (MT)' },
-          { value: 'America/Los_Angeles', label: 'Pacific (PT)' },
-        ],
         validation: z.string().min(1, 'Timezone is required'),
       },
     ]
 
-    // Add location field if visible (custom field with nested picker)
-    if (isFieldVisible('location')) {
+    // Add location validation if visible and required
+    if (isFieldVisible('location') && isFieldRequired('location')) {
       fields.push({
         key: 'location_id',
         label: 'Location',
-        type: 'custom',
-        required: isFieldRequired('location'),
-        render: ({ value, onChange, error }) => {
-          // Store the onChange callback so it can be called when location is selected
-          locationOnChangeRef.current = onChange
-
-          return (
-            <div>
-              {selectedLocation ? (
-                <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
-                  <span className="text-sm">
-                    {selectedLocation.name}
-                    {selectedLocation.city && `, ${selectedLocation.city}`}
-                    {selectedLocation.state && `, ${selectedLocation.state}`}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setSelectedLocation(null)
-                      onChange(null)
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setShowLocationPicker(true)
-                  }}
-                  className={cn('w-full justify-start', error && 'border-destructive')}
-                >
-                  <MapPin className="h-4 w-4 mr-2" />
-                  Select Location
-                </Button>
-              )}
-            </div>
-          )
-        },
+        type: 'text' as const,
+        required: true,
+        validation: z.string().min(1, 'Location is required'),
       })
     }
 
-    // Add note field if visible
-    if (isFieldVisible('note')) {
+    // Add note validation if required
+    if (isFieldVisible('note') && isFieldRequired('note')) {
       fields.push({
         key: 'note',
         label: 'Note',
-        type: 'textarea',
-        required: isFieldRequired('note'),
-        placeholder: 'Add any notes about this event...',
+        type: 'textarea' as const,
+        required: true,
+        validation: z.string().min(1, 'Note is required'),
       })
     }
 
     return fields
-  }, [selectedLocation, isFieldVisible, isFieldRequired])
+  }, [isFieldVisible, isFieldRequired])
 
   // Handle creating a new event
   const handleCreateEvent = async (data: any): Promise<Event> => {
@@ -251,17 +191,34 @@ export function EventPicker({
       start_date: data.start_date,
       start_time: data.start_time,
       timezone: data.timezone || getDefaultTimezone(),
-      location_id: selectedLocation?.id || undefined,
+      location_id: data.location_id || undefined,
       note: data.note || undefined,
     })
-
-    // Reset location after creation
-    setSelectedLocation(null)
 
     // Add to local list
     setEvents((prev) => [newEvent, ...prev])
 
     return newEvent
+  }
+
+  // Handle updating an existing event
+  const handleUpdateEvent = async (id: string, data: any): Promise<Event> => {
+    const updatedEvent = await updateEvent(id, {
+      name: data.name,
+      event_type: data.event_type || defaultEventType,
+      start_date: data.start_date,
+      start_time: data.start_time,
+      timezone: data.timezone || getDefaultTimezone(),
+      location_id: data.location_id || undefined,
+      note: data.note || undefined,
+    })
+
+    // Update local list
+    setEvents((prev) =>
+      prev.map(e => e.id === updatedEvent.id ? updatedEvent : e)
+    )
+
+    return updatedEvent
   }
 
   // Custom render for event list items
@@ -292,46 +249,40 @@ export function EventPicker({
   }
 
   return (
-    <>
-      <CorePicker<Event>
-        open={open}
-        onOpenChange={onOpenChange}
-        items={events}
-        selectedItem={currentSelectedEvent}
-        onSelect={onSelect}
-        title="Select Event"
-        searchPlaceholder={placeholder}
-        searchFields={['name', 'event_type', 'start_date']}
-        getItemLabel={(event) => event.name}
-        getItemId={(event) => event.id}
-        renderItem={renderEventItem}
-        enableCreate={true}
-        createFields={createFields}
-        onCreateSubmit={handleCreateEvent}
-        createButtonLabel="Save Event"
-        addNewButtonLabel="Add New Event"
-        emptyMessage={emptyMessage}
-        noResultsMessage="No events match your search"
-        isLoading={loading}
-        autoOpenCreateForm={openToNewEvent || autoOpenCreateForm}
-        defaultCreateFormData={{ ...DEFAULT_FORM_DATA, ...defaultCreateFormData }}
-      />
-
-      {/* Nested Location Picker Modal */}
-      <LocationPicker
-        open={showLocationPicker}
-        onOpenChange={setShowLocationPicker}
-        onSelect={(location) => {
-          setSelectedLocation(location)
-          // Call the stored onChange callback to update CorePicker's form state
-          if (locationOnChangeRef.current) {
-            locationOnChangeRef.current(location.id)
-          }
-          setShowLocationPicker(false)
-        }}
-        selectedLocationId={selectedLocation?.id}
-      />
-    </>
+    <CorePicker<Event>
+      open={open}
+      onOpenChange={onOpenChange}
+      items={events}
+      selectedItem={currentSelectedEvent}
+      onSelect={onSelect}
+      title="Select Event"
+      searchPlaceholder={placeholder}
+      searchFields={['name', 'event_type', 'start_date']}
+      getItemLabel={(event) => event.name}
+      getItemId={(event) => event.id}
+      renderItem={renderEventItem}
+      enableCreate={true}
+      createFields={createFields}
+      onCreateSubmit={handleCreateEvent}
+      createButtonLabel="Save Event"
+      addNewButtonLabel="Add New Event"
+      emptyMessage={emptyMessage}
+      noResultsMessage="No events match your search"
+      isLoading={loading}
+      autoOpenCreateForm={openToNewEvent || autoOpenCreateForm}
+      defaultCreateFormData={{ ...DEFAULT_FORM_DATA, ...defaultCreateFormData }}
+      editMode={editMode}
+      entityToEdit={eventToEdit}
+      onUpdateSubmit={handleUpdateEvent}
+      updateButtonLabel="Update Event"
+      CustomFormComponent={(props) => (
+        <EventFormFields
+          {...props}
+          visibleFields={visibleFields}
+          requiredFields={requiredFields}
+        />
+      )}
+    />
   )
 }
 

@@ -54,6 +54,13 @@ export function CorePicker<T>({
   addNewButtonLabel = 'Add New',
   autoOpenCreateForm = false,
   defaultCreateFormData = {},
+  CustomFormComponent,
+
+  // Inline editing
+  editMode = false,
+  entityToEdit = null,
+  onUpdateSubmit,
+  updateButtonLabel = 'Update',
 
   // Empty states
   emptyMessage = 'No items found',
@@ -67,21 +74,46 @@ export function CorePicker<T>({
   const [createFormData, setCreateFormData] = useState<Record<string, any>>(defaultCreateFormData)
   const [createFormErrors, setCreateFormErrors] = useState<Record<string, string>>({})
   const [isCreating, setIsCreating] = useState(false)
+  const [entityIdBeingEdited, setEntityIdBeingEdited] = useState<string | null>(null)
 
-  // Auto-open create form when picker opens
-  useEffect(() => {
-    if (open && autoOpenCreateForm && enableCreate) {
-      setShowCreateForm(true)
-    }
-  }, [open, autoOpenCreateForm, enableCreate])
+  // Determine if we're in edit mode
+  const isEditMode = editMode && entityToEdit !== null
 
-  // Reset form data to defaults when picker opens or defaults change
+  // Auto-open create form when picker opens (or edit form in edit mode)
   useEffect(() => {
     if (open) {
-      setCreateFormData(defaultCreateFormData)
+      if (isEditMode) {
+        // Edit mode: auto-open form with entity data
+        setShowCreateForm(true)
+      } else if (autoOpenCreateForm && enableCreate) {
+        // Create mode: auto-open empty form
+        setShowCreateForm(true)
+      }
+    }
+  }, [open, autoOpenCreateForm, enableCreate, isEditMode])
+
+  // Initialize form data when picker opens
+  useEffect(() => {
+    if (open) {
+      if (isEditMode && entityToEdit) {
+        // Edit mode: pre-populate form with entity data
+        const entityData: Record<string, any> = {}
+        createFields.forEach((field) => {
+          const value = (entityToEdit as any)[field.key]
+          if (value !== undefined && value !== null) {
+            entityData[field.key] = value
+          }
+        })
+        setCreateFormData(entityData)
+        setEntityIdBeingEdited(getItemId(entityToEdit))
+      } else {
+        // Create mode: use default form data
+        setCreateFormData(defaultCreateFormData)
+        setEntityIdBeingEdited(null)
+      }
       setCreateFormErrors({})
     }
-  }, [open, defaultCreateFormData])
+  }, [open, isEditMode, entityToEdit, defaultCreateFormData, createFields, getItemId])
 
   // Client-side search across multiple fields
   const filteredItems = useMemo(() => {
@@ -144,7 +176,7 @@ export function CorePicker<T>({
     return Object.keys(errors).length === 0
   }
 
-  // Handle create form submission
+  // Handle create/update form submission
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation() // Prevent parent form submission
@@ -154,23 +186,34 @@ export function CorePicker<T>({
       return
     }
 
-    if (!onCreateSubmit) return
-
     try {
       setIsCreating(true)
-      const newItem = await onCreateSubmit(createFormData)
-      toast.success(`${title} created successfully`)
+
+      let resultItem: T
+
+      if (isEditMode && entityIdBeingEdited && onUpdateSubmit) {
+        // Update existing item
+        resultItem = await onUpdateSubmit(entityIdBeingEdited, createFormData)
+        toast.success(`${title} updated successfully`)
+      } else if (onCreateSubmit) {
+        // Create new item
+        resultItem = await onCreateSubmit(createFormData)
+        toast.success(`${title} created successfully`)
+      } else {
+        return
+      }
 
       // Reset form to default values
       setCreateFormData(defaultCreateFormData)
       setCreateFormErrors({})
       setShowCreateForm(false)
+      setEntityIdBeingEdited(null)
 
-      // Auto-select the newly created item
-      handleItemSelect(newItem)
+      // Auto-select the created/updated item
+      handleItemSelect(resultItem)
     } catch (error) {
-      console.error('Error creating item:', error)
-      toast.error(`Failed to create ${title.toLowerCase()}`)
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} item:`, error)
+      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} ${title.toLowerCase()}`)
     } finally {
       setIsCreating(false)
     }
@@ -309,7 +352,16 @@ export function CorePicker<T>({
           {showCreateForm ? (
             /* Inline creation form */
             <form onSubmit={handleCreateSubmit} className="space-y-4 py-1">
-              {createFields.map((field) => renderFormField(field))}
+              {CustomFormComponent ? (
+                <CustomFormComponent
+                  formData={createFormData}
+                  setFormData={setCreateFormData}
+                  errors={createFormErrors}
+                  isEditMode={isEditMode}
+                />
+              ) : (
+                createFields.map((field) => renderFormField(field))
+              )}
 
               <div className="flex gap-2 pt-4">
                 <Button
@@ -318,7 +370,7 @@ export function CorePicker<T>({
                   className="flex-1"
                 >
                   {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {createButtonLabel}
+                  {isEditMode ? updateButtonLabel : createButtonLabel}
                 </Button>
                 <Button
                   type="button"
@@ -327,6 +379,7 @@ export function CorePicker<T>({
                     setShowCreateForm(false)
                     setCreateFormData(defaultCreateFormData)
                     setCreateFormErrors({})
+                    setEntityIdBeingEdited(null)
                   }}
                   disabled={isCreating}
                 >
@@ -372,8 +425,8 @@ export function CorePicker<T>({
           )}
         </div>
 
-        {/* Add new button (footer) */}
-        {enableCreate && !showCreateForm && (
+        {/* Add new button (footer) - hide in edit mode */}
+        {enableCreate && !showCreateForm && !isEditMode && (
           <div className="flex-shrink-0 pt-4 border-t">
             <Button
               type="button"

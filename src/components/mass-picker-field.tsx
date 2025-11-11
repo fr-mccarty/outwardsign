@@ -62,6 +62,8 @@ export function MassPickerField({
         onOpenChange={onShowPickerChange}
         onSelect={onValueChange}
         selectedMassId={value?.id}
+        editMode={value !== null}
+        massToEdit={value}
       />
     </PickerField>
   )

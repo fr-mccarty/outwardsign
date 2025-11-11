@@ -97,6 +97,8 @@ export function EventPickerField({
         visibleFields={visibleFields}
         requiredFields={requiredFields}
         defaultCreateFormData={defaultCreateFormData}
+        editMode={value !== null}
+        eventToEdit={value}
       />
     </PickerField>
   )

@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Phone } from 'lucide-react'
-import { getLocations, createLocation, type Location } from '@/lib/actions/locations'
+import { getLocations, createLocation, updateLocation, type Location } from '@/lib/actions/locations'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { CorePicker } from '@/components/core-picker'
@@ -23,6 +23,8 @@ interface LocationPickerProps {
   openToNewLocation?: boolean
   visibleFields?: string[] // Optional fields to show: 'description', 'street', 'city', 'state', 'country', 'phone_number'
   requiredFields?: string[] // Fields that should be marked as required
+  editMode?: boolean // Open directly to edit form
+  locationToEdit?: Location | null // Location being edited
 }
 
 // Default visible fields - defined outside component to prevent re-creation
@@ -42,6 +44,8 @@ export function LocationPicker({
   openToNewLocation = false,
   visibleFields,
   requiredFields,
+  editMode = false,
+  locationToEdit = null,
 }: LocationPickerProps) {
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
@@ -187,6 +191,26 @@ export function LocationPicker({
     return newLocation
   }
 
+  // Handle updating an existing location
+  const handleUpdateLocation = async (id: string, data: any): Promise<Location> => {
+    const updatedLocation = await updateLocation(id, {
+      name: data.name,
+      description: data.description || undefined,
+      street: data.street || undefined,
+      city: data.city || undefined,
+      state: data.state || undefined,
+      country: data.country || undefined,
+      phone_number: data.phone_number || undefined,
+    })
+
+    // Update local list
+    setLocations((prev) =>
+      prev.map(loc => loc.id === updatedLocation.id ? updatedLocation : loc)
+    )
+
+    return updatedLocation
+  }
+
   // Custom render for location list items
   const renderLocationItem = (location: Location) => {
     const address = getLocationAddress(location)
@@ -252,6 +276,10 @@ export function LocationPicker({
       isLoading={loading}
       autoOpenCreateForm={openToNewLocation}
       defaultCreateFormData={EMPTY_FORM_DATA}
+      editMode={editMode}
+      entityToEdit={locationToEdit}
+      onUpdateSubmit={handleUpdateLocation}
+      updateButtonLabel="Update Location"
     />
   )
 }

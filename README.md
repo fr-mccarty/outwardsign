@@ -511,6 +511,15 @@ The `docs/` directory contains in-depth documentation on specialized topics:
 - **[Next.js Documentation](https://nextjs.org/docs)** - Framework documentation
 - **[Playwright Documentation](https://playwright.dev/docs/intro)** - Testing framework reference
 
+## 🤝 A Collaborative Effort
+
+**Outward Sign** is a collaborative project between **[CatholicOS](https://catholicos.org)** and **[Lolek Productions](https://lolek.com)**.
+
+- **CatholicOS** - Building open-source software for Catholic parishes
+- **Lolek Productions** - Creating digital tools that serve the Church
+
+Together, we're working to provide parishes worldwide with excellent, free, and open-source tools for celebrating the sacraments with beauty and excellence.
+
 ## 🙏 Acknowledgments
 
 - Liturgical calendar data provided by [John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com)

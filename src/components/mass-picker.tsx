@@ -3,10 +3,17 @@
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, User, Church } from 'lucide-react'
-import { getMasses, type MassWithNames } from '@/lib/actions/masses'
+import { getMasses, createMass, updateMass, type MassWithNames } from '@/lib/actions/masses'
+import type { Event, Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
-import { MASS_STATUS_LABELS } from '@/lib/constants'
+import { PickerFieldConfig } from '@/types/core-picker'
+import { MASS_STATUS_VALUES, MASS_STATUS_LABELS } from '@/lib/constants'
+import { EventPicker } from '@/components/event-picker'
+import { PeoplePicker } from '@/components/people-picker'
+import { Button } from '@/components/ui/button'
+import { X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface MassPickerProps {
   open: boolean
@@ -16,6 +23,8 @@ interface MassPickerProps {
   emptyMessage?: string
   selectedMassId?: string
   className?: string
+  editMode?: boolean // Open directly to edit form
+  massToEdit?: MassWithNames | null // Mass being edited
 }
 
 export function MassPicker({
@@ -23,12 +32,24 @@ export function MassPicker({
   onOpenChange,
   onSelect,
   placeholder = 'Search for a mass...',
-  emptyMessage = 'No masses found. Create a mass from the Masses page.',
+  emptyMessage = 'No masses found.',
   selectedMassId,
   className,
+  editMode = false,
+  massToEdit = null,
 }: MassPickerProps) {
   const [masses, setMasses] = useState<MassWithNames[]>([])
   const [loading, setLoading] = useState(false)
+
+  // State for nested pickers
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [showEventPicker, setShowEventPicker] = useState(false)
+  const [selectedPresider, setSelectedPresider] = useState<Person | null>(null)
+  const [showPresiderPicker, setShowPresiderPicker] = useState(false)
+
+  // Store onChange callbacks from CorePicker's custom fields
+  const [eventOnChange, setEventOnChange] = useState<((value: any) => void) | null>(null)
+  const [presiderOnChange, setPresiderOnChange] = useState<((value: any) => void) | null>(null)
 
   // Load masses when dialog opens
   useEffect(() => {
@@ -78,6 +99,186 @@ export function MassPicker({
   const selectedMass = selectedMassId
     ? masses.find((m) => m.id === selectedMassId)
     : null
+
+  // Build create fields configuration
+  const createFields: PickerFieldConfig[] = [
+    {
+      key: 'event_id',
+      label: 'Event (Date/Time)',
+      type: 'custom',
+      required: false,
+      render: ({ value, onChange, error }) => {
+        // Store the onChange callback
+        if (onChange !== eventOnChange) {
+          setEventOnChange(() => onChange)
+        }
+
+        return (
+          <div>
+            {selectedEvent ? (
+              <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+                <span className="text-sm">
+                  {selectedEvent.start_date && new Date(selectedEvent.start_date).toLocaleDateString()}
+                  {selectedEvent.start_time && ` at ${selectedEvent.start_time}`}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setSelectedEvent(null)
+                    onChange(null)
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowEventPicker(true)
+                }}
+                className={cn('w-full justify-start', error && 'border-destructive')}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Select Event
+              </Button>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      key: 'presider_id',
+      label: 'Presider',
+      type: 'custom',
+      required: false,
+      render: ({ value, onChange, error }) => {
+        // Store the onChange callback
+        if (onChange !== presiderOnChange) {
+          setPresiderOnChange(() => onChange)
+        }
+
+        return (
+          <div>
+            {selectedPresider ? (
+              <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+                <span className="text-sm">
+                  {selectedPresider.first_name} {selectedPresider.last_name}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setSelectedPresider(null)
+                    onChange(null)
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowPresiderPicker(true)
+                }}
+                className={cn('w-full justify-start', error && 'border-destructive')}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Select Presider
+              </Button>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      required: false,
+      options: MASS_STATUS_VALUES.map((status) => ({
+        value: status,
+        label: MASS_STATUS_LABELS[status].en,
+      })),
+    },
+    {
+      key: 'note',
+      label: 'Note',
+      type: 'textarea',
+      required: false,
+      placeholder: 'Add any notes about this mass...',
+    },
+  ]
+
+  // Handle creating a new mass
+  const handleCreateMass = async (data: any): Promise<MassWithNames> => {
+    const newMass = await createMass({
+      event_id: selectedEvent?.id || undefined,
+      presider_id: selectedPresider?.id || undefined,
+      status: data.status || 'PLANNING',
+      note: data.note || undefined,
+    })
+
+    // Reset nested selections
+    setSelectedEvent(null)
+    setSelectedPresider(null)
+
+    // Fetch the mass with relations for display
+    const massWithRelations: MassWithNames = {
+      ...newMass,
+      event: selectedEvent || null,
+      presider: selectedPresider || null,
+      homilist: null,
+    }
+
+    // Add to local list
+    setMasses((prev) => [massWithRelations, ...prev])
+
+    return massWithRelations
+  }
+
+  // Handle updating an existing mass
+  const handleUpdateMass = async (id: string, data: any): Promise<MassWithNames> => {
+    const updatedMass = await updateMass(id, {
+      event_id: selectedEvent?.id || null,
+      presider_id: selectedPresider?.id || null,
+      status: data.status || null,
+      note: data.note || null,
+    })
+
+    // Reset nested selections
+    setSelectedEvent(null)
+    setSelectedPresider(null)
+
+    // Fetch the mass with relations for display
+    const massWithRelations: MassWithNames = {
+      ...updatedMass,
+      event: selectedEvent || null,
+      presider: selectedPresider || null,
+      homilist: null,
+    }
+
+    // Update local list
+    setMasses((prev) =>
+      prev.map(m => m.id === massWithRelations.id ? massWithRelations : m)
+    )
+
+    return massWithRelations
+  }
 
   // Custom render for mass list items
   const renderMassItem = (mass: MassWithNames) => {
@@ -135,23 +336,66 @@ export function MassPicker({
   }
 
   return (
-    <CorePicker<MassWithNames>
-      open={open}
-      onOpenChange={onOpenChange}
-      items={masses}
-      selectedItem={selectedMass}
-      onSelect={onSelect}
-      title="Select Mass"
-      searchPlaceholder={placeholder}
-      searchFields={['presider', 'homilist', 'status']}
-      getItemLabel={getMassDisplayName}
-      getItemId={(mass) => mass.id}
-      renderItem={renderMassItem}
-      enableCreate={false}
-      emptyMessage={emptyMessage}
-      noResultsMessage="No masses match your search"
-      isLoading={loading}
-    />
+    <>
+      <CorePicker<MassWithNames>
+        open={open}
+        onOpenChange={onOpenChange}
+        items={masses}
+        selectedItem={selectedMass}
+        onSelect={onSelect}
+        title="Select Mass"
+        searchPlaceholder={placeholder}
+        searchFields={['presider', 'homilist', 'status']}
+        getItemLabel={getMassDisplayName}
+        getItemId={(mass) => mass.id}
+        renderItem={renderMassItem}
+        enableCreate={true}
+        createFields={createFields}
+        onCreateSubmit={handleCreateMass}
+        createButtonLabel="Save Mass"
+        addNewButtonLabel="Add New Mass"
+        emptyMessage={emptyMessage}
+        noResultsMessage="No masses match your search"
+        isLoading={loading}
+        editMode={editMode}
+        entityToEdit={massToEdit}
+        onUpdateSubmit={handleUpdateMass}
+        updateButtonLabel="Update Mass"
+      />
+
+      {/* Nested Event Picker Modal */}
+      <EventPicker
+        open={showEventPicker}
+        onOpenChange={setShowEventPicker}
+        onSelect={(event) => {
+          setSelectedEvent(event)
+          // Call the stored onChange callback to update CorePicker's form state
+          if (eventOnChange) {
+            eventOnChange(event.id)
+          }
+          setShowEventPicker(false)
+        }}
+        selectedEventId={selectedEvent?.id}
+        defaultEventType="MASS"
+        visibleFields={['location', 'note']}
+      />
+
+      {/* Nested Presider Picker Modal */}
+      <PeoplePicker
+        open={showPresiderPicker}
+        onOpenChange={setShowPresiderPicker}
+        onSelect={(person) => {
+          setSelectedPresider(person)
+          // Call the stored onChange callback to update CorePicker's form state
+          if (presiderOnChange) {
+            presiderOnChange(person.id)
+          }
+          setShowPresiderPicker(false)
+        }}
+        selectedPersonId={selectedPresider?.id}
+        visibleFields={['email', 'phone_number']}
+      />
+    </>
   )
 }
 

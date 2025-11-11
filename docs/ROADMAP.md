@@ -1,8 +1,8 @@
-# TIMELINE.md
+# ROADMAP.md
 
-> **Development Roadmap & Feature Timeline**
+> **Development Roadmap**
 >
-> This document tracks current limitations, planned features, and the phased development approach for Outward Sign.
+> This document tracks current state, planned features, and the phased development approach for Outward Sign.
 
 ---
 
@@ -57,10 +57,12 @@
 - No automated notifications
 - No event reminders
 
-**❌ Mass Roles:**
+**❌ Ministry Scheduling:**
 - Mass roles not yet implemented
 - Cannot assign lectors, EMHCs, altar servers to specific masses
-- No role scheduling system
+- No ministry scheduling for sacraments (weddings, funerals, baptisms, etc.)
+- No unified ministry schedule view across all sacraments
+- No conflict detection for ministry assignments
 
 ---
 
@@ -156,7 +158,41 @@
 - Mass role schedule report page
 - Calendar view showing role assignments
 
-### 4. Communication System (Email & SMS)
+### 4. Ministry Scheduling for Sacraments & Sacramentals
+
+**Description:** Extend ministry role assignment beyond masses to all sacramental celebrations.
+
+**Features:**
+- Assign liturgical ministers to weddings, funerals, baptisms, presentations, quinceañeras
+- Role types vary by sacrament:
+  - **Weddings:** Presider, Deacon, Lector(s), EMHC(s), Altar Server(s), Cantor, Music Minister, Usher
+  - **Funerals:** Presider, Deacon, Lector(s), EMHC(s), Altar Server(s), Cantor, Music Minister, Pallbearers
+  - **Baptisms:** Presider, Deacon, Lector, Altar Server(s), Cantor, Music Minister
+  - **Presentations:** Presider, Deacon, Lector, Music Minister
+  - **Quinceañeras:** Presider, Deacon, Lector(s), Altar Server(s), Cantor, Music Minister, Damas, Chambelanes
+- Ministry schedule reports by person (who is serving when and where)
+- Ministry schedule reports by sacrament type
+- Conflict detection (same person scheduled for multiple events at same time)
+- Export ministry schedules (print, PDF)
+
+**Database Requirements:**
+- Extend existing role tables or create unified `liturgical_roles` table
+- Link roles to module types (wedding_id, funeral_id, baptism_id, etc.)
+- RLS policies for role assignments across all modules
+
+**UI Components:**
+- Ministry assignment in each module's form
+- Unified ministry schedule view across all sacraments
+- Ministry availability/conflict management
+- Calendar integration showing ministry commitments
+
+**Use Cases:**
+- Assign regular lector to wedding on Saturday
+- Schedule altar servers for funeral on weekday morning
+- Assign music minister to multiple quinceañeras in a month
+- View all ministry commitments for a specific person across all events
+
+### 5. Communication System (Email & SMS)
 
 **Goal:** Enable communication without requiring expensive services initially.
 
@@ -190,7 +226,7 @@
 - Cost considerations: Paid services required
 - Future decision based on user demand and budget
 
-### 5. Member Contribution Pathways
+### 6. Member Contribution Pathways
 
 **Description:** Allow non-staff members to contribute to parish events without full team access.
 
@@ -316,4 +352,6 @@
 
 ## Update History
 
-- **2025-01-11** - Initial timeline created based on current state and Phase II planning discussions
+- **2025-01-11** - Added Phase II feature: Ministry Scheduling for Sacraments & Sacramentals
+- **2025-01-11** - Renamed from TIMELINE.md to ROADMAP.md for clarity
+- **2025-01-11** - Initial document created based on current state and Phase II planning discussions

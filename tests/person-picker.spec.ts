@@ -228,4 +228,61 @@ test.describe('Person Picker Component', () => {
     // And the new person is selected
     await expect(page.locator(`button:has-text("${firstName} TestLast")`)).toBeVisible();
   });
+
+  test('should reopen picker in edit mode when clicking on selected person field', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json
+
+    // Create two test people that we can select between
+    await page.goto('/people/create');
+    await page.getByLabel('First Name').fill('Emily');
+    await page.getByLabel('Last Name').fill('Watson');
+    await page.getByLabel('Email').fill('emily.watson@test.com');
+    await page.getByRole('button', { name: /Create Person/i }).click();
+    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    await page.goto('/people/create');
+    await page.getByLabel('First Name').fill('Michael');
+    await page.getByLabel('Last Name').fill('Chen');
+    await page.getByLabel('Email').fill('michael.chen@test.com');
+    await page.getByRole('button', { name: /Create Person/i }).click();
+    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    // Go to wedding form
+    await page.goto('/weddings/create');
+    await expect(page).toHaveURL('/weddings/create');
+
+    // Select the first person (Emily) for Lead Musician
+    await page.locator('div').filter({ has: page.locator('label', { hasText: 'Lead Musician' }) }).getByRole('button').click();
+    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    await page.locator('[role="dialog"]').getByPlaceholder(/Search/i).fill('Emily');
+    await page.waitForTimeout(500);
+    await page.locator('[role="dialog"]').getByRole('button', { name: /Emily Watson/i }).click();
+
+    // Dialog should close and Emily should be selected
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+    await expect(page.getByTestId('lead-musician-selected-value')).toContainText('Emily Watson');
+
+    // NOW: Click on the selected person field itself (not the X button) to reopen picker
+    await page.getByTestId('lead-musician-selected-value').click();
+
+    // Dialog should open
+    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Person/i })).toBeVisible();
+
+    // The picker should show Emily as currently selected (highlighted/marked)
+    // Search for and select Michael instead
+    const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
+    await searchInput.clear();
+    await searchInput.fill('Michael');
+    await page.waitForTimeout(500);
+    await page.locator('[role="dialog"]').getByRole('button', { name: /Michael Chen/i }).click();
+
+    // Dialog should close and Michael should now be selected instead of Emily
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+    await expect(page.getByTestId('lead-musician-selected-value')).toContainText('Michael Chen');
+
+    // Emily should no longer be displayed in the Lead Musician field
+    await expect(page.getByTestId('lead-musician-selected-value')).not.toContainText('Emily Watson');
+  });
 });
