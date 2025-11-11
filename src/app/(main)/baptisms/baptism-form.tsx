@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { createBaptism, updateBaptism, createBaptismSchema, type CreateBaptismData, type BaptismWithRelations } from "@/lib/actions/baptisms"
+import { createBaptism, updateBaptism, type CreateBaptismData, type BaptismWithRelations } from "@/lib/actions/baptisms"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import {
@@ -41,7 +41,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(baptism?.status || "ACTIVE")
+  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE" | "ARCHIVED">(baptism?.status as any || "ACTIVE")
   const [note, setNote] = useState(baptism?.note || "")
   const [baptismTemplateId, setBaptismTemplateId] = useState(baptism?.baptism_template_id || "")
 
@@ -84,34 +84,17 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
         sponsor_1_id: sponsor1.value?.id,
         sponsor_2_id: sponsor2.value?.id,
         presider_id: presider.value?.id,
-        status,
+        status: status || undefined,
         baptism_template_id: baptismTemplateId || undefined,
         note: note || undefined,
       }
 
-      // Client-side validation (optional, for instant feedback)
-      const result = createBaptismSchema.safeParse(formData)
-
-      if (!result.success) {
-        // Convert Zod errors to field errors
-        const fieldErrors: Record<string, string> = {}
-        result.error.errors.forEach((err) => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0].toString()] = err.message
-          }
-        })
-        setValidationErrors(fieldErrors)
-        toast.error('Please fix the validation errors')
-        setIsLoading(false)
-        return
-      }
-
       if (isEditing && baptism) {
-        await updateBaptism(baptism.id, result.data)
+        await updateBaptism(baptism.id, formData)
         toast.success('Baptism updated successfully')
         router.refresh()
       } else {
-        const newBaptism = await createBaptism(result.data)
+        const newBaptism = await createBaptism(formData)
         toast.success('Baptism created successfully')
         router.push(`/baptisms/${newBaptism.id}`)
       }
@@ -135,7 +118,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
           {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(value) => setStatus(value as "ACTIVE" | "INACTIVE" | "ARCHIVED")}>
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>

@@ -374,3 +374,46 @@ export const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
     es: 'Latín'
   }
 }
+
+// Mass Status Constants
+export const MASS_STATUS_VALUES = ['PLANNING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'] as const
+export type MassStatus = typeof MASS_STATUS_VALUES[number]
+
+export const MASS_STATUS_LABELS: Record<MassStatus, { en: string; es: string }> = {
+  PLANNING: { en: 'Planning', es: 'Planificación' },
+  SCHEDULED: { en: 'Scheduled', es: 'Programado' },
+  COMPLETED: { en: 'Completed', es: 'Completado' },
+  CANCELLED: { en: 'Cancelled', es: 'Cancelado' }
+}
+
+// Mass Template Constants
+export const MASS_TEMPLATE_VALUES = ['mass-full-script-english', 'mass-full-script-spanish', 'mass-readings-only'] as const
+export type MassTemplate = typeof MASS_TEMPLATE_VALUES[number]
+
+export const MASS_TEMPLATE_LABELS: Record<MassTemplate, { en: string; es: string }> = {
+  'mass-full-script-english': { en: 'Full Script (English)', es: 'Guion Completo (Inglés)' },
+  'mass-full-script-spanish': { en: 'Full Script (Spanish)', es: 'Guion Completo (Español)' },
+  'mass-readings-only': { en: 'Readings Only', es: 'Solo Lecturas' }
+}
+
+// Mass Intention Status Constants
+export const MASS_INTENTION_STATUS_VALUES = ['REQUESTED', 'CONFIRMED', 'FULFILLED', 'CANCELLED'] as const
+export type MassIntentionStatus = typeof MASS_INTENTION_STATUS_VALUES[number]
+
+export const MASS_INTENTION_STATUS_LABELS: Record<MassIntentionStatus, { en: string; es: string }> = {
+  REQUESTED: { en: 'Requested', es: 'Solicitado' },
+  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
+  FULFILLED: { en: 'Fulfilled', es: 'Cumplido' },
+  CANCELLED: { en: 'Cancelled', es: 'Cancelado' }
+}
+
+// Role Labels (for display purposes)
+export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
+  LECTOR: { en: 'Lector', es: 'Lector' },
+  EMHC: { en: 'Extraordinary Minister of Holy Communion', es: 'Ministro Extraordinario de la Comunión' },
+  ALTAR_SERVER: { en: 'Altar Server', es: 'Monaguillo' },
+  CANTOR: { en: 'Cantor', es: 'Cantor' },
+  USHER: { en: 'Usher', es: 'Ujier' },
+  SACRISTAN: { en: 'Sacristan', es: 'Sacristán' },
+  MUSIC_MINISTER: { en: 'Music Minister', es: 'Ministro de Música' }
+}

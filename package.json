@@ -12,8 +12,7 @@
     "seed": "tsx scripts/seed.ts",
     "seed:liturgical:2025": "tsx scripts/import-liturgical-events.ts --year=2025 --locale=en",
     "seed:liturgical:2026": "tsx scripts/import-liturgical-events.ts --year=2026 --locale=en",
-    "seed:liturgical": "tsx scripts/import-liturgical-events.ts",
-    "db:reset": "tsx scripts/reset-database.ts"
+    "seed:liturgical": "tsx scripts/import-liturgical-events.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",

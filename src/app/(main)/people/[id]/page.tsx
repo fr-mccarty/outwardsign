@@ -113,14 +113,14 @@ export default async function PersonDetailPage({ params }: PageProps) {
           )}
 
           {/* Notes */}
-          {person.notes && (
+          {person.note && (
             <Card>
               <CardHeader>
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm whitespace-pre-wrap">
-                  {person.notes}
+                  {person.note}
                 </p>
               </CardContent>
             </Card>

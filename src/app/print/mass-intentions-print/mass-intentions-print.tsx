@@ -8,10 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Printer, ArrowLeft } from 'lucide-react'
-import { 
-  getMassIntentionsByDateRange,
-  getMassIntentionsByStatus,
-  type MassIntentionWithDetails
+import {
+  getMassIntentions,
+  type MassIntentionWithNames
 } from '@/lib/actions/mass-intentions'
 import { toast } from 'sonner'
 
@@ -20,7 +19,7 @@ type PrintFormat = 'all' | 'scheduled' | 'unscheduled' | 'date-range'
 export function MassIntentionsPrint() {
   const searchParams = useSearchParams()
   console.log('searchParams:', searchParams) // Using searchParams to avoid unused variable warning
-  const [intentions, setIntentions] = useState<MassIntentionWithDetails[]>([])
+  const [intentions, setIntentions] = useState<MassIntentionWithNames[]>([])
   const [loading, setLoading] = useState(false)
   const [printFormat, setPrintFormat] = useState<PrintFormat>('all')
   const [startDate, setStartDate] = useState('')
@@ -40,29 +39,38 @@ export function MassIntentionsPrint() {
   const loadIntentions = async () => {
     try {
       setLoading(true)
-      let data: MassIntentionWithDetails[] = []
+      let data: MassIntentionWithNames[] = []
 
+      // Fetch all mass intentions (filtering will be done client-side for this bulk print view)
+      data = await getMassIntentions()
+
+      // Apply client-side filtering based on print format
       switch (printFormat) {
         case 'all':
-          const [scheduled, unscheduled] = await Promise.all([
-            getMassIntentionsByStatus('scheduled'),
-            getMassIntentionsByStatus('unscheduled')
-          ])
-          data = [...scheduled, ...unscheduled].sort((a, b) => {
-            const dateA = new Date(a.scheduled_at || a.date_requested || 0)
-            const dateB = new Date(b.scheduled_at || b.date_requested || 0)
+          // Keep all data
+          data = data.sort((a, b) => {
+            const dateA = new Date(a.date_requested || 0)
+            const dateB = new Date(b.date_requested || 0)
             return dateA.getTime() - dateB.getTime()
           })
           break
         case 'scheduled':
-          data = await getMassIntentionsByStatus('scheduled')
+          // Filter for mass intentions that have a mass assigned
+          data = data.filter(intention => intention.mass_id != null)
           break
         case 'unscheduled':
-          data = await getMassIntentionsByStatus('unscheduled')
+          // Filter for mass intentions without a mass assigned
+          data = data.filter(intention => intention.mass_id == null)
           break
         case 'date-range':
           if (startDate && endDate) {
-            data = await getMassIntentionsByDateRange(startDate, endDate)
+            const start = new Date(startDate)
+            const end = new Date(endDate)
+            data = data.filter(intention => {
+              if (!intention.date_requested) return false
+              const intentionDate = new Date(intention.date_requested)
+              return intentionDate >= start && intentionDate <= end
+            })
           }
           break
       }
@@ -240,7 +248,7 @@ export function MassIntentionsPrint() {
           </div>
           <div className="border rounded p-3">
             <div className="text-2xl font-bold text-blue-600">
-              {intentions.reduce((sum, i) => sum + (i.amount_donated || 0), 0) / 100}
+              {intentions.reduce((sum, i) => sum + (i.stipend_in_cents || 0), 0) / 100}
             </div>
             <div className="text-sm text-muted-foreground">Total Offerings ($)</div>
           </div>
@@ -263,13 +271,9 @@ export function MassIntentionsPrint() {
               {intentions.map((intention, index) => (
                 <tr key={intention.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}>
                   <td className="p-3 border-b align-top">
-                    {intention.event_date ? (
+                    {intention.mass ? (
                       <div>
-                        <div className="font-medium">{formatDate(intention.event_date)}</div>
-                        <div className="text-muted-foreground">{formatTime(intention.start_time)}</div>
-                        {intention.event_name && (
-                          <div className="text-xs text-muted-foreground">{intention.event_name}</div>
-                        )}
+                        <div className="font-medium">Scheduled</div>
                       </div>
                     ) : (
                       <div className="text-muted-foreground">
@@ -291,13 +295,13 @@ export function MassIntentionsPrint() {
                     )}
                   </td>
                   <td className="p-3 border-b align-top">
-                    {intention.donor_name || '-'}
+                    {intention.requested_by ? `${intention.requested_by.first_name} ${intention.requested_by.last_name}` : '-'}
                   </td>
                   <td className="p-3 border-b align-top">
-                    {intention.celebrant_name || '-'}
+                    {intention.mass ? 'Assigned' : '-'}
                   </td>
                   <td className="p-3 border-b align-top">
-                    {formatCurrency(intention.amount_donated)}
+                    {formatCurrency(intention.stipend_in_cents ?? null)}
                   </td>
                   <td className="p-3 border-b align-top">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${

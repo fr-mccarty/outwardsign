@@ -61,7 +61,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       father_id: presentation?.father_id || null,
       coordinator_id: presentation?.coordinator_id || null,
       is_baptized: presentation?.is_baptized || false,
-      status: presentation?.status || "ACTIVE",
+      status: (presentation?.status as "ACTIVE" | "INACTIVE" | "ARCHIVED") || "ACTIVE",
       note: presentation?.note || null,
       presentation_template_id: presentation?.presentation_template_id || "presentation-spanish",
     },

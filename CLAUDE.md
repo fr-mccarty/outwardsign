@@ -2,6 +2,8 @@
 
 > **Documentation Structure Note:** This file should remain as a single document until its content exceeds 1000 lines. The current priority markers (🔴 for critical, 📖 for reference) and table of contents provide sufficient navigation. Only split into separate files when the size truly impedes usability.
 
+> **🔴 CRITICAL - Forms Context:** When creating or editing ANY form component, you MUST include [FORMS.md](./AGENT_RESOURCES/FORMS.md) in your context. This file contains critical form patterns, validation rules, styling requirements, and component usage guidelines that are essential for maintaining consistency across the application.
+
 ## Table of Contents
 
 - [Project Description](#project-description)
@@ -14,6 +16,7 @@
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [📖 Styling](#-styling)
+- [🔴 Forms](#-forms)
 - [🔴 Module Structure (Main Files)](#-module-structure-main-files)
 - [📖 Additional Module Essentials](#-additional-module-essentials)
 - [📖 Data Flow Pattern](#-data-flow-pattern)
@@ -53,7 +56,7 @@ Plan, Communicate, and Celebrate Sacraments and Sacramentals in a Catholic Paris
 
 User personas have been created to guide development and evaluate the application from the perspective of real parish users. These personas represent the primary users of Outward Sign and help ensure the application meets their needs.
 
-**Reference File:** [PERSONAS.md](./PERSONAS.md)
+**Reference File:** [PERSONA.md](./AGENT_RESOURCES/PERSONA.md)
 
 When implementing features or evaluating the application, refer to the personas file to ensure the design, functionality, and user experience align with the needs of priests, deacons, pastoral associates, liturgical directors, parish staff, and parishioners.
 
@@ -122,11 +125,15 @@ The ideal way that we want to access the records is by using the RLS feature on 
 - Database tables: plural form (e.g., `petitions`, `baptisms`)
 - Database columns: singular form (e.g., `note`, not `notes`)
 - TypeScript interfaces: singular form (e.g., `Petition`, `Baptism`)
+- **React state variables**: Match database column names (singular form)
+  - State variable: `note` (not `notes`)
+  - Setter function: `setNote` (not `setNotes`)
+  - Example: `const [note, setNote] = useState('')` for a `note` column
 - **Special Case:** For simplification, "Quinceañeras" is spelled without the ñ in all programming contexts (file names, variables, types, routes, etc.). Use "Quinceanera" in code, "Quinceañera" in user-facing text only.
 
 ## 📖 Styling
 
-**For detailed styling guidelines, patterns, and examples, see [STYLES.md](./STYLES.md).**
+**For detailed styling guidelines, patterns, and examples, see [STYLES.md](./AGENT_RESOURCES/STYLES.md).**
 
 ### General Principles
 
@@ -144,45 +151,25 @@ The ideal way that we want to access the records is by using the RLS feature on 
 3. **Semantic Color Tokens**
    - Use tokens like `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`
    - Never use `dark:` utility classes for basic colors (CSS variables handle this automatically)
-   - See [STYLES.md](./STYLES.md) for complete token reference
-
-### 🔴 Form Input Styling (CRITICAL)
-
-**NEVER modify font-family, font style, font weight, borders, or backgrounds in form inputs.** All form inputs (Input, Textarea, Select) must use the default component styling from shadcn/ui.
-
-**PROHIBITED in form inputs:**
-- ❌ `font-mono` - Monospace fonts
-- ❌ `font-serif` - Serif fonts
-- ❌ `font-sans` - Explicit sans-serif (use default instead)
-- ❌ `italic` - Italicized text
-- ❌ `font-light`, `font-bold`, `font-semibold`, etc. - Custom font weights
-- ❌ `border`, `border-*`, `rounded-*` - Border customizations
-- ❌ `bg-*` - Background color changes
-- ❌ Any `font-family` or `style={{fontFamily: ...}}` properties
-
-**ALLOWED styling for form inputs:**
-- ✅ Text sizes: `text-xs`, `text-sm`, `text-base`, `text-lg` (size adjustments are fine)
-- ✅ Layout: `w-full`, `min-h-[300px]`, `max-w-*`, padding, margin, spacing
-- ✅ Standard component defaults from shadcn/ui (borders, backgrounds come from the base component)
-
-**Example:**
-```tsx
-// ❌ WRONG - Never apply font-family, font style, borders, or backgrounds to inputs
-<Textarea className="min-h-[300px] font-mono text-sm" />
-<Input className="font-serif italic bg-gray-100" />
-<Input className="font-bold border-2 rounded-lg" />
-
-// ✅ CORRECT - Only layout and text size
-<Textarea className="min-h-[300px] text-sm" />
-<Input className="w-full text-base" />
-<Input className="max-w-md" />
-```
-
-**Why this matters:** Form inputs must maintain consistent styling across the application. The shadcn/ui components already provide proper borders, backgrounds, and focus states that work with dark mode. Only layout and text size should be adjusted.
+   - See [STYLES.md](./AGENT_RESOURCES/STYLES.md) for complete token reference
 
 ### Print Views Exception
 
 For views within a print folder (`app/print/`), custom styling is allowed to optimize for printing and PDF generation. These views are not interactive and do not need to follow the standard form input rules.
+
+## 🔴 Forms
+
+**For comprehensive form implementation guidelines, see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
+
+This includes:
+- 🔴 **Form Input Styling** - Critical rules for styling form inputs (NEVER modify font-family, borders, or backgrounds)
+- 🔴 **Form Component Structure** - Unified form pattern, isEditing pattern, redirection pattern
+- 🔴 **FormField Usage** - REQUIRED component wrapper for all inputs/selects/textareas
+- **Shared Form Components** - SaveButton, CancelButton, picker components
+- **Form Event Handling** - Nested forms and event propagation (e.stopPropagation)
+- **Validation** - Dual validation with Zod pattern
+
+**IMPORTANT:** Always include FORMS.md in context when creating or editing forms.
 
 ## 🔴 Module Structure (Main Files)
 **CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
@@ -243,15 +230,11 @@ export default async function Page({ searchParams }: PageProps) {
 - FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel at BOTTOM)
 - Uses SaveButton and CancelButton components at the bottom of the form
 - Calls `create[Entity]()` or `update[Entity]()` Server Action
-- **isEditing Pattern:**
-  - Always compute `isEditing = !!entity` at the top of the form
-  - Use `isEditing` for ALL mode detection throughout the form (button text, navigation, conditional logic)
-  - For EventPicker components, use `openToNewEvent={!isEditing}` (not `!entity` or `!event`)
-  - For PeoplePicker components, use `openToNewPerson={!isEditing}` (not `!entity` or `!person`)
-  - This creates consistent behavior: create mode always opens to new entity creation forms, edit mode always opens to search/picker view
-- **Redirection Pattern:**
-  - After UPDATE: `router.refresh()` (stays on edit page to show updated data)
-  - After CREATE: `router.push(\`/[entities]/\${newEntity.id}\`)` (goes to view page)
+- **See [FORMS.md](./AGENT_RESOURCES/FORMS.md) for:**
+  - isEditing Pattern (how to handle create vs edit mode)
+  - Redirection Pattern (where to navigate after submit)
+  - FormField usage requirements (REQUIRED for all inputs)
+  - Form event handling (nested forms, e.stopPropagation)
 
 8. **View Client** - `[id]/[entity]-view-client.tsx`
 - Renders the ModuleViewPanel with entity data
@@ -314,6 +297,8 @@ api/[entity-plural]/
 - PDF endpoint converts HTML to PDF
 - Word endpoint generates .docx file
 - Both endpoints fetch entity with relations and use `build[Entity]Liturgy()` function
+
+**For detailed implementation patterns for print pages and export endpoints, see [LITURGICAL_SCRIPT_SYSTEM.md](./AGENT_RESOURCES/LITURGICAL_SCRIPT_SYSTEM.md).**
 
 ### Constants Pattern
 The application uses a dual-constant pattern where `*_VALUES` arrays contain uppercase keys stored in the database (e.g., `MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE']`), and `*_LABELS` objects map those keys to localized display strings in both English and Spanish (e.g., `MODULE_STATUS_LABELS.ACTIVE.en = 'Active'`). This standardizes database storage while enabling multilingual UI display across all modules.
@@ -387,6 +372,20 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 }
 ```
 
+### 🔴 Component Registry (CRITICAL)
+
+**ALWAYS consult [COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md) before using or creating components.**
+
+The Component Registry is a comprehensive catalog of all reusable components in the application. It provides:
+- Component purpose and description
+- Props and usage examples
+- File paths
+- Important patterns and restrictions
+
+This registry enables fast component lookup without reading source code, ensuring correct component usage and preventing duplicate component creation.
+
+**Quick Reference:**
+
 **usePickerState Hook** (`src/hooks/use-picker-state.ts`)
 - Reduces boilerplate for managing modal picker state (people, events, readings)
 - Returns: `{ value, setValue, showPicker, setShowPicker }`
@@ -401,10 +400,16 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
 **Shared Form Components:**
 - `SaveButton` - Handles loading state, shows spinner while saving
 - `CancelButton` - Standard cancel button with routing
-- `FormField` - Standardized form field wrapper
+- `FormField` - Standardized form field wrapper (**REQUIRED** for all inputs/selects/textareas - see [FORMS.md](./AGENT_RESOURCES/FORMS.md))
 - `EventDisplay` - Display event date/time/location in forms
 
+**For detailed component documentation, see [COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md).**
+**For detailed FormField usage patterns, validation, and form event handling, see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
+
 **Content Builders & Renderers:**
+
+**For comprehensive documentation on the liturgical script system, including content builder interfaces, template structure, styling, and export functionality, see [LITURGICAL_SCRIPT_SYSTEM.md](./AGENT_RESOURCES/LITURGICAL_SCRIPT_SYSTEM.md).**
+
 Content builders create liturgy document structures that can be rendered in multiple formats:
 
 - **Content Builders** (`lib/content-builders/[entity].ts`):
@@ -521,26 +526,7 @@ if (!user) redirect('/login')
 - Context: UI state only (theme, breadcrumbs, modals) - NEVER for data fetching
 - No prop drilling: Use Server Actions for data operations
 
-### Form Event Handling
-**CRITICAL:** When creating forms inside dialogs/modals that are rendered within other forms (nested forms), always prevent event propagation:
-
-```tsx
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  e.stopPropagation() // ← REQUIRED to prevent bubbling to parent form
-
-  // ... form submission logic
-}
-```
-
-**Why:** Dialog forms (like EventPicker, PeoplePicker with inline creation) are often rendered while a parent form is active. Without `e.stopPropagation()`, submitting the dialog form will also trigger the parent form's submission, causing unintended saves.
-
-**Where to apply:**
-- EventPicker: Already implemented in `handleCreateEvent`
-- PeoplePicker: Apply if adding inline creation forms
-- Any custom picker/modal components with forms
-
-**Reference:** See `/components/event-picker.tsx` line 208 for the canonical implementation.
+**For form event handling (nested forms, e.stopPropagation), see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
 
 ### 🔴 Picker Modal Behavior (Critical)
 
@@ -630,8 +616,7 @@ When implementing or modifying picker components, verify:
 ### Loading and Error States
 **Pattern:** Create reusable skeleton and error components in components/ directory. Route-level loading.tsx and error.tsx files import and render these reusable components. This ensures consistent UX across modules.
 
-### Validation
-**Dual validation with Zod:** Define schemas in Server Action files. Client forms use .safeParse() for instant feedback. Server Actions use .parse() as security boundary. Export schema types with z.infer<>.
+**For form validation patterns with Zod, see [FORMS.md](./AGENT_RESOURCES/FORMS.md).**
 
 ## Breadcrumbs
 Client Component (BreadcrumbSetter):
@@ -804,11 +789,11 @@ These core design principles guide all development decisions in Outward Sign. Ev
 
 ## 🔴 Creating New Modules
 
-**IMPORTANT:** When the user requests creation of a new module (Funerals, Baptisms, Presentations, etc.), you MUST read the [MODULE_CHECKLIST.md](MODULE_CHECKLIST.md) file first to ensure you follow the complete checklist and avoid common mistakes.
+**IMPORTANT:** When the user requests creation of a new module (Funerals, Baptisms, Presentations, etc.), you MUST read the [MODULE_CHECKLIST.md](AGENT_RESOURCES/MODULE_CHECKLIST.md) file first to ensure you follow the complete checklist and avoid common mistakes.
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
 
-**Complete Checklist:** See [MODULE_CHECKLIST.md](MODULE_CHECKLIST.md) for the comprehensive step-by-step guide including:
+**Complete Checklist:** See [MODULE_CHECKLIST.md](AGENT_RESOURCES/MODULE_CHECKLIST.md) for the comprehensive step-by-step guide including:
 - Detailed phase-by-phase checklist (Database → Server Actions → Module Structure → Print/Export → Testing)
 - Common mistakes to avoid
 - Validation checklist

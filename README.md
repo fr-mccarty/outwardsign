@@ -40,6 +40,7 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 - **Shared Preparation:** Collaborate with presiders, staff, and families throughout the entire preparation process
 - **Calendar Integration:** Export events to .ics feeds for seamless scheduling across parish systems
 - **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word)
+- **Data Export:** Download parish directory as CSV from the People page for easy data management and backup
 - **Multilingual Support:** Full English and Spanish language support throughout the application, including the public homepage with language selector, liturgical content, and all user interfaces for diverse parish communities
 - **Liturgical Calendar:** Integration with global Catholic liturgical calendar data
 
@@ -183,7 +184,6 @@ On first visit, you'll be directed to the authentication page. You can:
 - `npm run test:headed` - Run tests in headed mode (see browser)
 - `npm run test:ui` - Run tests with Playwright UI (for debugging)
 - `npm run seed` - Run all database seeders
-- `npm run db:reset` - **⚠️ DESTRUCTIVE:** Reset database (requires service role key)
 
 ### Testing
 
@@ -482,7 +482,12 @@ For detailed development guidelines, see [CLAUDE.md](./CLAUDE.md).
 ## 📚 Documentation
 
 - **[CLAUDE.md](./CLAUDE.md)** - Comprehensive development guide with architecture, patterns, and conventions
-- **[MODULE_CHECKLIST.md](./MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules
+- **[AGENT_RESOURCES/](./AGENT_RESOURCES/)** - Additional development resources:
+  - **[MODULE_CHECKLIST.md](./AGENT_RESOURCES/MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules
+  - **[FORMS.md](./AGENT_RESOURCES/FORMS.md)** - Form implementation guidelines and patterns
+  - **[COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
+  - **[STYLES.md](./AGENT_RESOURCES/STYLES.md)** - Styling guidelines and theme tokens
+  - **[PERSONA.md](./AGENT_RESOURCES/PERSONA.md)** - User personas and use cases
 - **[Supabase Documentation](https://supabase.com/docs)** - Database and authentication reference
 - **[Next.js Documentation](https://nextjs.org/docs)** - Framework documentation
 

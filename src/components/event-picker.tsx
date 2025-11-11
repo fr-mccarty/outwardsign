@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import {
   Command,
   CommandDialog,
@@ -44,6 +47,19 @@ import type { Event, Location } from '@/lib/types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { LocationPicker } from '@/components/location-picker'
+import { FormField } from '@/components/ui/form-field'
+
+// Zod schema for inline "Add New Event" form
+const newEventSchema = z.object({
+  name: z.string().min(1, 'Event name is required'),
+  event_type: z.string().min(1, 'Event type is required'),
+  start_date: z.string().min(1, 'Date is required'),
+  start_time: z.string().min(1, 'Time is required'),
+  timezone: z.string().min(1, 'Timezone is required'),
+  note: z.string().optional(),
+})
+
+type NewEventFormData = z.infer<typeof newEventSchema>
 
 interface EventPickerProps {
   open: boolean
@@ -107,18 +123,29 @@ export function EventPicker({
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [savingEvent, setSavingEvent] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
-  const [newEventForm, setNewEventForm] = useState({
-    name: defaultName,
-    event_type: defaultEventType,
-    start_date: '',
-    start_time: '',
-    timezone: getDefaultTimezone(),
-    note: '',
+
+  // Initialize React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = useForm<NewEventFormData>({
+    resolver: zodResolver(newEventSchema),
+    defaultValues: {
+      name: defaultName,
+      event_type: defaultEventType,
+      start_date: '',
+      start_time: '',
+      timezone: getDefaultTimezone(),
+      note: '',
+    },
   })
 
   // Debounce search query to avoid too many API calls
@@ -153,12 +180,9 @@ export function EventPicker({
 
   // Update form defaults when they change
   useEffect(() => {
-    setNewEventForm(prev => ({
-      ...prev,
-      name: defaultName,
-      event_type: defaultEventType,
-    }))
-  }, [defaultName, defaultEventType])
+    setValue('name', defaultName)
+    setValue('event_type', defaultEventType)
+  }, [defaultName, defaultEventType, setValue])
 
   // Automatically show add form when openToNewEvent is true and dialog opens
   // OR when selectedEvent is provided (edit mode)
@@ -171,7 +195,7 @@ export function EventPicker({
           // Edit mode: pre-fill form with selected event
           setIsEditMode(true)
           setEditingEventId(selectedEvent.id)
-          setNewEventForm({
+          reset({
             name: selectedEvent.name,
             event_type: selectedEvent.event_type || defaultEventType,
             start_date: selectedEvent.start_date || '',
@@ -190,6 +214,14 @@ export function EventPicker({
           setIsEditMode(false)
           setEditingEventId(null)
           setSelectedLocation(null)
+          reset({
+            name: defaultName,
+            event_type: defaultEventType,
+            start_date: '',
+            start_time: '',
+            timezone: getDefaultTimezone(),
+            note: '',
+          })
         }
         setShowAddForm(true)
       } else {
@@ -198,7 +230,7 @@ export function EventPicker({
         setEditingEventId(null)
       }
     }
-  }, [open, selectedEvent, openToNewEvent, disableSearch, defaultEventType])
+  }, [open, selectedEvent, openToNewEvent, disableSearch, defaultEventType, defaultName, reset])
 
   const handleEventSelect = (event: Event) => {
     onSelect(event)
@@ -211,52 +243,38 @@ export function EventPicker({
     setShowAddForm(true)
   }
 
-  const handleNewEventFormChange = (field: string, value: string) => {
-    setNewEventForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleCreateEvent = async (e: React.FormEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!newEventForm.name.trim() || !newEventForm.start_date || !newEventForm.start_time) {
-      toast.error('Name, date, and time are required')
-      return
-    }
-
+  const onSubmitNewEvent = async (data: NewEventFormData) => {
     try {
-      setSavingEvent(true)
-
       let updatedEvent: Event
 
       if (isEditMode && editingEventId) {
         // Update existing event
         updatedEvent = await updateEvent(editingEventId, {
-          name: newEventForm.name,
-          event_type: newEventForm.event_type,
-          start_date: newEventForm.start_date,
-          start_time: newEventForm.start_time,
-          timezone: newEventForm.timezone,
+          name: data.name,
+          event_type: data.event_type,
+          start_date: data.start_date,
+          start_time: data.start_time,
+          timezone: data.timezone,
           location_id: selectedLocation?.id || undefined,
-          note: newEventForm.note || undefined,
+          note: data.note || undefined,
         })
         toast.success('Event updated successfully')
       } else {
         // Create new event
         updatedEvent = await createEvent({
-          name: newEventForm.name,
-          event_type: newEventForm.event_type,
-          start_date: newEventForm.start_date,
-          start_time: newEventForm.start_time,
-          timezone: newEventForm.timezone,
+          name: data.name,
+          event_type: data.event_type,
+          start_date: data.start_date,
+          start_time: data.start_time,
+          timezone: data.timezone,
           location_id: selectedLocation?.id || undefined,
-          note: newEventForm.note || undefined,
+          note: data.note || undefined,
         })
         toast.success('Event created successfully')
       }
 
       // Reset form
-      setNewEventForm({
+      reset({
         name: defaultName,
         event_type: defaultEventType,
         start_date: '',
@@ -274,8 +292,6 @@ export function EventPicker({
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} event:`, error)
       toast.error(`Failed to ${isEditMode ? 'update' : 'add'} event`)
-    } finally {
-      setSavingEvent(false)
     }
   }
 
@@ -284,7 +300,7 @@ export function EventPicker({
     setIsEditMode(false)
     setEditingEventId(null)
     setSelectedLocation(null)
-    setNewEventForm({
+    reset({
       name: defaultName,
       event_type: defaultEventType,
       start_date: '',
@@ -426,65 +442,82 @@ export function EventPicker({
             {isEditMode ? 'Update the event details below.' : 'Create a new event. Fill in the details below.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleCreateEvent} className="flex flex-col flex-1 min-h-0">
+        <form onSubmit={handleSubmit(onSubmitNewEvent)} className="flex flex-col flex-1 min-h-0">
           <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="name" className="text-right pt-2">
                 Name *
               </Label>
-              <Input
-                id="name"
-                value={newEventForm.name}
-                onChange={(e) => handleNewEventFormChange('name', e.target.value)}
-                className="col-span-3"
-                placeholder="Wedding Ceremony"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="name"
+                  value={watch('name')}
+                  onChange={(e) => setValue('name', e.target.value)}
+                  className={cn(errors.name && "border-red-500")}
+                  placeholder="Wedding Ceremony"
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="start_date" className="text-right">
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="start_date" className="text-right pt-2">
                 Date *
               </Label>
-              <Input
-                id="start_date"
-                type="date"
-                value={newEventForm.start_date}
-                onChange={(e) => handleNewEventFormChange('start_date', e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={watch('start_date')}
+                  onChange={(e) => setValue('start_date', e.target.value)}
+                  className={cn(errors.start_date && "border-red-500")}
+                />
+                {errors.start_date && (
+                  <p className="text-sm text-red-500 mt-1">{errors.start_date.message}</p>
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="start_time" className="text-right">
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="start_time" className="text-right pt-2">
                 Time *
               </Label>
-              <Input
-                id="start_time"
-                type="time"
-                value={newEventForm.start_time}
-                onChange={(e) => handleNewEventFormChange('start_time', e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="start_time"
+                  type="time"
+                  value={watch('start_time')}
+                  onChange={(e) => setValue('start_time', e.target.value)}
+                  className={cn(errors.start_time && "border-red-500")}
+                />
+                {errors.start_time && (
+                  <p className="text-sm text-red-500 mt-1">{errors.start_time.message}</p>
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="timezone" className="text-right">
-                Time Zone
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="timezone" className="text-right pt-2">
+                Time Zone *
               </Label>
-              <Select
-                value={newEventForm.timezone}
-                onValueChange={(value) => handleNewEventFormChange('timezone', value)}
-              >
-                <SelectTrigger id="timezone" className="col-span-3">
-                  <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="America/New_York">Eastern (ET)</SelectItem>
-                  <SelectItem value="America/Chicago">Central (CT)</SelectItem>
-                  <SelectItem value="America/Denver">Mountain (MT)</SelectItem>
-                  <SelectItem value="America/Los_Angeles">Pacific (PT)</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="col-span-3">
+                <Select
+                  value={watch('timezone')}
+                  onValueChange={(value) => setValue('timezone', value)}
+                >
+                  <SelectTrigger id="timezone" className={cn(errors.timezone && "border-red-500")}>
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="America/New_York">Eastern (ET)</SelectItem>
+                    <SelectItem value="America/Chicago">Central (CT)</SelectItem>
+                    <SelectItem value="America/Denver">Mountain (MT)</SelectItem>
+                    <SelectItem value="America/Los_Angeles">Pacific (PT)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.timezone && (
+                  <p className="text-sm text-red-500 mt-1">{errors.timezone.message}</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="location" className="text-right">
@@ -524,14 +557,19 @@ export function EventPicker({
               <Label htmlFor="note" className="text-right pt-2">
                 Note
               </Label>
-              <Textarea
-                id="note"
-                value={newEventForm.note}
-                onChange={(e) => handleNewEventFormChange('note', e.target.value)}
-                className="col-span-3"
-                placeholder="Add any notes about this event..."
-                rows={3}
-              />
+              <div className="col-span-3">
+                <Textarea
+                  id="note"
+                  value={watch('note') || ''}
+                  onChange={(e) => setValue('note', e.target.value)}
+                  className={cn(errors.note && "border-red-500")}
+                  placeholder="Add any notes about this event..."
+                  rows={3}
+                />
+                {errors.note && (
+                  <p className="text-sm text-red-500 mt-1">{errors.note.message}</p>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter className="flex-shrink-0">
@@ -539,12 +577,12 @@ export function EventPicker({
               type="button"
               variant="outline"
               onClick={handleCancelAddEvent}
-              disabled={savingEvent}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={savingEvent}>
-              {savingEvent ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
                   {isEditMode ? 'Updating...' : 'Saving...'}

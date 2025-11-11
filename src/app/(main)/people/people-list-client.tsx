@@ -104,9 +104,9 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
                   )}
                 </div>
 
-                {person.notes && (
+                {person.note && (
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {person.notes}
+                    {person.note}
                   </p>
                 )}
 

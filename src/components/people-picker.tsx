@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { 
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import {
   Command,
   CommandDialog,
   CommandEmpty,
@@ -14,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -22,9 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { FormField } from '@/components/ui/form-field'
 import {
   Select,
   SelectContent,
@@ -32,17 +33,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { 
-  User, 
-  UserPlus, 
-  Mail, 
-  Phone, 
+import {
+  User,
+  UserPlus,
+  Mail,
+  Phone,
   Save
 } from 'lucide-react'
 import { getPeople, createPerson } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+
+// Zod schema for new person form validation
+const newPersonSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  email: z.string().optional(),
+  phone_number: z.string().optional(),
+  sex: z.enum(['Male', 'Female', '']).optional(),
+  note: z.string().optional(),
+})
+
+type NewPersonFormData = z.infer<typeof newPersonSchema>
 
 interface PeoplePickerProps {
   open: boolean
@@ -88,22 +101,28 @@ export function PeoplePicker({
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [savingPerson, setSavingPerson] = useState(false)
-  const [newPersonForm, setNewPersonForm] = useState<{
-    first_name: string
-    last_name: string
-    email: string
-    phone_number: string
-    sex: '' | 'Male' | 'Female'
-    note: string
-  }>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone_number: '',
-    sex: '',
-    note: ''
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = useForm<NewPersonFormData>({
+    resolver: zodResolver(newPersonSchema),
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone_number: '',
+      sex: '',
+      note: '',
+    },
   })
+
+  const sexValue = watch('sex')
 
   // Debounce search query to avoid too many API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
@@ -153,41 +172,21 @@ export function PeoplePicker({
     setShowAddForm(true)
   }
 
-  const handleNewPersonFormChange = (field: string, value: string) => {
-    setNewPersonForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleCreatePerson = async (e: React.FormEvent) => {
-    e.preventDefault()
-    e.stopPropagation() // Prevent bubbling to parent form
-
-    if (!newPersonForm.first_name.trim() || !newPersonForm.last_name.trim()) {
-      toast.error('First and last name are required')
-      return
-    }
-
+  const onSubmitNewPerson = async (data: NewPersonFormData) => {
     try {
-      setSavingPerson(true)
       const newPerson = await createPerson({
-        first_name: newPersonForm.first_name,
-        last_name: newPersonForm.last_name,
-        email: newPersonForm.email || undefined,
-        phone_number: newPersonForm.phone_number || undefined,
-        sex: newPersonForm.sex || undefined,
-        note: newPersonForm.note || undefined
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email || undefined,
+        phone_number: data.phone_number || undefined,
+        sex: data.sex || undefined,
+        note: data.note || undefined
       })
 
       toast.success('Person created successfully')
 
       // Reset form
-      setNewPersonForm({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone_number: '',
-        sex: '',
-        note: ''
-      })
+      reset()
       setShowAddForm(false)
 
       // Select the newly created person (this will close the picker)
@@ -195,21 +194,12 @@ export function PeoplePicker({
     } catch (error) {
       console.error('Error creating person:', error)
       toast.error('Failed to add person')
-    } finally {
-      setSavingPerson(false)
     }
   }
 
   const handleCancelAddPerson = () => {
     setShowAddForm(false)
-    setNewPersonForm({
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone_number: '',
-      sex: '',
-      note: ''
-    })
+    reset()
   }
 
   const getPersonDisplayName = (person: Person) => {
@@ -344,104 +334,83 @@ export function PeoplePicker({
             Create a new person record. Fill in their details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleCreatePerson} className="flex flex-col flex-1 min-h-0">
-          <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="first_name" className="text-right">
-                First Name *
-              </Label>
-              <Input
-                id="first_name"
-                value={newPersonForm.first_name}
-                onChange={(e) => handleNewPersonFormChange('first_name', e.target.value)}
-                className="col-span-3"
-                placeholder="John"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="last_name" className="text-right">
-                Last Name *
-              </Label>
-              <Input
-                id="last_name"
-                value={newPersonForm.last_name}
-                onChange={(e) => handleNewPersonFormChange('last_name', e.target.value)}
-                className="col-span-3"
-                placeholder="Doe"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={newPersonForm.email}
-                onChange={(e) => handleNewPersonFormChange('email', e.target.value)}
-                className="col-span-3"
-                placeholder="john.doe@example.com"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone_number" className="text-right">
-                Phone
-              </Label>
-              <Input
-                id="phone_number"
-                type="tel"
-                value={newPersonForm.phone_number}
-                onChange={(e) => handleNewPersonFormChange('phone_number', e.target.value)}
-                className="col-span-3"
-                placeholder="(555) 123-4567"
-              />
-            </div>
+        <form onSubmit={handleSubmit(onSubmitNewPerson)} className="flex flex-col flex-1 min-h-0">
+          <div className="space-y-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
+            <FormField
+              id="first_name"
+              label="First Name"
+              inputType="text"
+              value={watch('first_name') || ''}
+              onChange={(value) => setValue('first_name', value)}
+              placeholder="John"
+              required
+              error={errors.first_name?.message}
+            />
+
+            <FormField
+              id="last_name"
+              label="Last Name"
+              inputType="text"
+              value={watch('last_name') || ''}
+              onChange={(value) => setValue('last_name', value)}
+              placeholder="Doe"
+              required
+              error={errors.last_name?.message}
+            />
+
+            <FormField
+              id="email"
+              label="Email"
+              inputType="email"
+              value={watch('email') || ''}
+              onChange={(value) => setValue('email', value)}
+              placeholder="john.doe@example.com"
+            />
+
+            <FormField
+              id="phone_number"
+              label="Phone"
+              inputType="tel"
+              value={watch('phone_number') || ''}
+              onChange={(value) => setValue('phone_number', value)}
+              placeholder="(555) 123-4567"
+            />
+
             {showSexField && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="sex" className="text-right">
-                  Sex
-                </Label>
-                <Select
-                  value={newPersonForm.sex}
-                  onValueChange={(value: 'Male' | 'Female') => handleNewPersonFormChange('sex', value)}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select sex" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <FormField
+                id="sex"
+                label="Sex"
+                inputType="select"
+                value={sexValue || ''}
+                onChange={(value) => setValue('sex', value as 'Male' | 'Female' | '')}
+              >
+                <SelectItem value="">Not specified</SelectItem>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </FormField>
             )}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="note" className="text-right">
-                Note
-              </Label>
-              <Textarea
-                id="note"
-                value={newPersonForm.note}
-                onChange={(e) => handleNewPersonFormChange('note', e.target.value)}
-                className="col-span-3"
-                placeholder="Additional note..."
-                rows={3}
-              />
-            </div>
+
+            <FormField
+              id="note"
+              label="Note"
+              inputType="textarea"
+              value={watch('note') || ''}
+              onChange={(value) => setValue('note', value)}
+              placeholder="Additional note..."
+              rows={3}
+            />
           </div>
           <DialogFooter className="flex-shrink-0">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancelAddPerson}
-              disabled={savingPerson}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={savingPerson}>
-              {savingPerson ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
                   Saving...

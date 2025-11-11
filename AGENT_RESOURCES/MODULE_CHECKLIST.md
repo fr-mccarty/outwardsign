@@ -92,6 +92,7 @@ Follow the wedding module pattern exactly for all 8 main files:
   - [ ] Accept optional `entity?: [Entity]WithRelations` prop
   - [ ] Compute `isEditing = !!entity` at top
   - [ ] Use `isEditing` for all mode detection
+  - [ ] **CRITICAL:** ALL inputs, selects, and textareas MUST use `FormField` component
   - [ ] Implement form fields with pickers (PeoplePicker, EventPicker, etc.)
   - [ ] Use `openToNewEvent={!isEditing}` for EventPicker
   - [ ] Use `openToNewPerson={!isEditing}` for PeoplePicker
@@ -201,6 +202,20 @@ Use the validation checklist below to verify your implementation.
 - Use exact same naming patterns (`[entities]-list-client.tsx` with plural)
 - Follow exact same component structure and props
 
+#### 6. Not Using FormField Component
+
+**CRITICAL:** ALL form inputs, selects, and textareas MUST use the `FormField` component.
+
+- ✅ **CORRECT**: `<FormField id="name" label="Name" value={name} onChange={setName} />`
+- ❌ **WRONG**: `<Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} />`
+- ❌ **WRONG**: Using bare `<Input />`, `<Select />`, or `<Textarea />` components
+
+**Why:** FormField provides consistent styling, labels, descriptions, and layout across all forms.
+
+**Exceptions:**
+- Picker components (PeoplePicker, EventPicker) have their own internal structure
+- **If you need to use a bare input/select/textarea, ALWAYS ask the user first**
+
 ---
 
 ## Validation Checklist
@@ -208,6 +223,7 @@ Use the validation checklist below to verify your implementation.
 Before completing a new module, verify:
 
 - [ ] **Form wrapper** exists and matches wedding pattern
+- [ ] **FormField component** is used for ALL inputs, selects, and textareas
 - [ ] **Redirections** match wedding module (refresh on update, push on create)
 - [ ] **Types** use `WithRelations` interfaces
 - [ ] **Template ID** is read from database and used in liturgy builder

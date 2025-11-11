@@ -26,7 +26,7 @@ export function PersonForm({ person }: PersonFormProps) {
   const [city, setCity] = useState(person?.city || "")
   const [state, setState] = useState(person?.state || "")
   const [zipcode, setZipcode] = useState(person?.zipcode || "")
-  const [notes, setNotes] = useState(person?.notes || "")
+  const [note, setNote] = useState(person?.note || "")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,7 +42,7 @@ export function PersonForm({ person }: PersonFormProps) {
         city: city || undefined,
         state: state || undefined,
         zipcode: zipcode || undefined,
-        note: notes || undefined,
+        note: note || undefined,
       }
 
       if (isEditing) {
@@ -139,11 +139,11 @@ export function PersonForm({ person }: PersonFormProps) {
       </div>
 
       <FormField
-        id="notes"
+        id="note"
         label="Notes (Optional)"
         inputType="textarea"
-        value={notes}
-        onChange={setNotes}
+        value={note}
+        onChange={setNote}
         placeholder="Enter any additional notes..."
         rows={4}
       />

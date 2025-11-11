@@ -598,19 +598,27 @@ Three key personas must all approve adoption:
 
 ### Phase 2: Direct Outreach (Months 3-6)
 
-**1. Email Outreach**
+**1. Personal Network & Warm Introductions**
+- Start with friends and contacts in parish ministry
+- Authentic, personal approach (not sales-focused)
+- Ask for honest feedback, not just adoption
+- Example text message: "Hey Carmen, been building something for parishes to manage weddings/funerals better. Would love your honest take on it when you have time."
+- Leverage relationships for introductions to other parishes
+- Word-of-mouth is most powerful early marketing
+
+**2. Email Outreach**
 - Target: Parish business offices, pastoral staff emails
 - Personalized messages addressing specific pain points
 - Free trial offer (no credit card, easy exit)
 - Follow-up sequences for different personas
 
-**2. Catholic Media & Publications**
+**3. Catholic Media & Publications**
 - Articles in diocesan newspapers and newsletters
 - Features in Catholic tech blogs/podcasts
 - Guest posts on parish management blogs
 - Press releases for major milestones
 
-**3. Diocese & Archdiocese Partnerships**
+**4. Diocese & Archdiocese Partnerships**
 - Present at diocesan pastoral planning meetings
 - Offer workshops at diocesan conferences
 - Seek endorsements from diocesan offices

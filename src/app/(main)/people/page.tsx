@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, Download } from "lucide-react"
 import { getPeople, type PersonFilterParams } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -51,12 +51,20 @@ export default async function PeoplePage({ searchParams }: PageProps) {
       description="Manage people in your parish."
       maxWidth="7xl"
       actions={
-        <Button asChild>
-          <Link href="/people/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Person
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/api/people/csv">
+              <Download className="h-4 w-4 mr-2" />
+              Download CSV
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/people/create">
+              <Plus className="h-4 w-4 mr-2" />
+              New Person
+            </Link>
+          </Button>
+        </div>
       }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 
 interface BaseFormFieldProps {
   id: string
@@ -12,6 +13,7 @@ interface BaseFormFieldProps {
   disabled?: boolean
   className?: string
   formFieldClassName?: string
+  error?: string  // Validation error message
 }
 
 interface InputFieldProps extends BaseFormFieldProps {
@@ -45,9 +47,12 @@ interface SelectFieldProps extends BaseFormFieldProps {
 type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps
 
 export function FormField(props: FormFieldProps) {
-  const { id, label, description, required = false, disabled = false, className = '' } = props
+  const { id, label, description, required = false, disabled = false, className = '', error } = props
+  const errorId = error ? `${id}-error` : undefined
 
   const renderInput = () => {
+    const hasError = !!error
+
     switch (props.inputType) {
       case 'textarea':
         const rows = (props as TextareaFieldProps).rows || 12
@@ -58,15 +63,24 @@ export function FormField(props: FormFieldProps) {
             onChange={(e) => props.onChange(e.target.value)}
             placeholder={(props as TextareaFieldProps).placeholder}
             rows={rows}
-            className={`${(props as TextareaFieldProps).resize ? 'resize-y' : 'resize-none'}`}
+            className={cn(
+              (props as TextareaFieldProps).resize ? 'resize-y' : 'resize-none',
+              hasError && 'border-red-500 focus-visible:ring-red-500'
+            )}
             required={required}
             disabled={disabled}
+            aria-describedby={errorId}
+            aria-invalid={hasError}
           />
         )
       case 'select':
         return (
           <Select value={props.value} onValueChange={props.onChange} disabled={disabled}>
-            <SelectTrigger>
+            <SelectTrigger
+              className={cn(hasError && 'border-red-500 focus:ring-red-500')}
+              aria-describedby={errorId}
+              aria-invalid={hasError}
+            >
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
@@ -94,8 +108,11 @@ export function FormField(props: FormFieldProps) {
             max={(props as InputFieldProps).max}
             step={(props as InputFieldProps).step}
             maxLength={(props as InputFieldProps).maxLength}
+            className={cn(hasError && 'border-red-500 focus-visible:ring-red-500')}
             required={required}
             disabled={disabled}
+            aria-describedby={errorId}
+            aria-invalid={hasError}
           />
         )
     }
@@ -103,11 +120,19 @@ export function FormField(props: FormFieldProps) {
 
   return (
     <div className={className}>
-      <Label htmlFor={id} className={`text-sm font-medium ${description ? '' : 'mb-1'}`}>{label}</Label>
+      <Label htmlFor={id} className={`text-sm font-medium ${description ? '' : 'mb-1'}`}>
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
       {description && (
         <p className="text-xs text-muted-foreground mb-1.5">{description}</p>
       )}
       {renderInput()}
+      {error && (
+        <p id={errorId} className="text-sm text-red-500 mt-1">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

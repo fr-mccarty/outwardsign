@@ -43,7 +43,7 @@ export function PersonFormActions({ person }: PersonFormActionsProps) {
   }
 
   const handleCopyInfo = () => {
-    const info = `${person.first_name} ${person.last_name}${person.email ? `\nEmail: ${person.email}` : ''}${person.phone_number ? `\nPhone: ${person.phone_number}` : ''}${person.street ? `\nAddress: ${person.street}` : ''}${person.city || person.state || person.zipcode ? `\n${person.city}${person.city && (person.state || person.zipcode) ? ', ' : ''}${person.state} ${person.zipcode}` : ''}${person.notes ? `\n\nNotes: ${person.notes}` : ''}`
+    const info = `${person.first_name} ${person.last_name}${person.email ? `\nEmail: ${person.email}` : ''}${person.phone_number ? `\nPhone: ${person.phone_number}` : ''}${person.street ? `\nAddress: ${person.street}` : ''}${person.city || person.state || person.zipcode ? `\n${person.city}${person.city && (person.state || person.zipcode) ? ', ' : ''}${person.state} ${person.zipcode}` : ''}${person.note ? `\n\nNotes: ${person.note}` : ''}`
     navigator.clipboard.writeText(info)
     toast.success('Person information copied to clipboard')
   }

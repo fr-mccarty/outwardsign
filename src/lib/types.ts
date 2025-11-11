@@ -369,7 +369,7 @@ export interface Person {
   state?: string
   zipcode?: string
   sex?: 'Male' | 'Female'
-  notes?: string
+  note?: string
   created_at: string
   updated_at: string
 }

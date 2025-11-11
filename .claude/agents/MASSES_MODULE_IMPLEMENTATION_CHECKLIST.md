@@ -2,7 +2,7 @@
 
 This checklist tracks the remaining work needed to complete the Masses and Mass Intentions modules for Outward Sign.
 
-**Status:** Database migrations and server actions completed. UI components and module structure pending.
+**Status:** Database, server actions, constants, pickers, Masses module, and Mass Intentions module completed (87%). Content builder, print/export, and navigation pending.
 
 ---
 
@@ -80,10 +80,10 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 ```
 
 **Verification:**
-- [ ] Constants file exists and follows existing pattern
-- [ ] All status values are uppercase (database format)
-- [ ] All labels have both English and Spanish translations
-- [ ] Constants are exported and accessible
+- [x] Constants file exists and follows existing pattern
+- [x] All status values are uppercase (database format)
+- [x] All labels have both English and Spanish translations
+- [x] Constants are exported and accessible
 
 ---
 
@@ -95,14 +95,14 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 **Reference:** Use `src/components/people-picker.tsx` as the pattern
 
 **Requirements:**
-- [ ] Search functionality for existing masses
-- [ ] Display mass presider and event date/time
-- [ ] Select existing mass (calls `onSelect` callback)
-- [ ] Close modal after selection
-- [ ] **NO inline creation** (masses are complex, must be created via full form)
-- [ ] Props: `onSelect(mass: Mass)`, `onOpenChange(open: boolean)`, `open: boolean`
-- [ ] Use `getMasses()` server action for fetching
-- [ ] Filter by status and search term (presider name, date)
+- [x] Search functionality for existing masses
+- [x] Display mass presider and event date/time
+- [x] Select existing mass (calls `onSelect` callback)
+- [x] Close modal after selection
+- [x] **NO inline creation** (masses are complex, must be created via full form)
+- [x] Props: `onSelect(mass: Mass)`, `onOpenChange(open: boolean)`, `open: boolean`
+- [x] Use `getMasses()` server action for fetching
+- [x] Filter by status and search term (presider name, date)
 
 **Key Differences from PeoplePicker:**
 - No "Add New Mass" inline form (too complex)
@@ -114,21 +114,21 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 **File:** `src/components/global-liturgical-event-picker.tsx`
 
 **Requirements:**
-- [ ] Search liturgical events by name or date
-- [ ] Display event name, date, and liturgical color
-- [ ] Select event (calls `onSelect` callback)
-- [ ] Filter by date range (default: current year)
-- [ ] Use existing `global_liturgical_events` table
+- [x] Search liturgical events by name or date
+- [x] Display event name, date, and liturgical color
+- [x] Select event (calls `onSelect` callback)
+- [x] Filter by date range (default: current year)
+- [x] Use existing `global_liturgical_events` table
 
 ### 2.3 Create RolePicker Component
 **File:** `src/components/role-picker.tsx`
 
 **Requirements:**
-- [ ] List all roles for the parish
-- [ ] Search by role name
-- [ ] Allow inline creation of new custom roles
-- [ ] Select role (calls `onSelect` callback)
-- [ ] Use `getRoles()` from `lib/actions/roles.ts`
+- [x] List all roles for the parish
+- [x] Search by role name
+- [x] Allow inline creation of new custom roles
+- [x] Select role (calls `onSelect` callback)
+- [x] Use `getRoles()` from `lib/actions/roles.ts`
 
 ---
 
@@ -140,106 +140,106 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 **File:** `src/app/(main)/masses/page.tsx`
 
 **Checklist:**
-- [ ] Auth check with `requireSelectedParish()` and `ensureJWTClaims()`
-- [ ] Await searchParams (Next.js 15 pattern)
-- [ ] Fetch masses with filters: `const masses = await getMasses(filters)`
-- [ ] Compute stats server-side (total, by status)
-- [ ] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }]`
-- [ ] Render structure: `BreadcrumbSetter → MassesListClient initialData={masses} stats={stats}`
+- [x] Auth check with `requireSelectedParish()` and `ensureJWTClaims()`
+- [x] Await searchParams (Next.js 15 pattern)
+- [x] Fetch masses with filters: `const masses = await getMasses(filters)`
+- [x] Compute stats server-side (total, by status)
+- [x] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }]`
+- [x] Render structure: `BreadcrumbSetter → MassesListClient initialData={masses} stats={stats}`
 
 ### 3.2 List Client (Client Component)
 **File:** `src/app/(main)/masses/masses-list-client.tsx` (PLURAL naming)
 
 **Checklist:**
-- [ ] Accept `initialData: MassWithNames[]` and `stats` props
-- [ ] Use URL search params for filters (search, status) via `useSearchParams()`
-- [ ] Update URL via `router.push()` when filters change (NO client-side filtering)
-- [ ] Card with Search/Filter inputs (Search input, Status select)
-- [ ] Grid of Mass cards showing:
+- [x] Accept `initialData: MassWithNames[]` and `stats` props
+- [x] Use URL search params for filters (search, status) via `useSearchParams()`
+- [x] Update URL via `router.push()` when filters change (NO client-side filtering)
+- [x] Card with Search/Filter inputs (Search input, Status select)
+- [x] Grid of Mass cards showing:
   - Presider name (or "No Presider")
   - Event date/time (from event relation)
   - Status badge
   - Link to `/masses/${mass.id}`
-- [ ] Empty state: "No masses found. Create your first Mass."
-- [ ] Stats card showing counts by status
-- [ ] "Create Mass" button linking to `/masses/create`
+- [x] Empty state: "No masses found. Create your first Mass."
+- [x] Stats card showing counts by status
+- [x] "Create Mass" button linking to `/masses/create`
 
 ### 3.3 Create Page (Server)
 **File:** `src/app/(main)/masses/create/page.tsx`
 
 **Checklist:**
-- [ ] Auth check
-- [ ] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }, { label: 'Create Mass' }]`
-- [ ] Render: `BreadcrumbSetter → MassFormWrapper` (no entity prop)
+- [x] Auth check
+- [x] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }, { label: 'Create Mass' }]`
+- [x] Render: `BreadcrumbSetter → MassFormWrapper` (no entity prop)
 
 ### 3.4 View Page (Server)
 **File:** `src/app/(main)/masses/[id]/page.tsx`
 
 **Checklist:**
-- [ ] Auth check
-- [ ] Fetch mass WITH RELATIONS: `const mass = await getMassWithRelations(id)`
-- [ ] Handle not found with `notFound()`
-- [ ] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }, { label: 'Mass Details' }]`
-- [ ] Render: `PageContainer → BreadcrumbSetter → MassViewClient mass={mass}`
+- [x] Auth check
+- [x] Fetch mass WITH RELATIONS: `const mass = await getMassWithRelations(id)`
+- [x] Handle not found with `notFound()`
+- [x] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }, { label: 'Mass Details' }]`
+- [x] Render: `PageContainer → BreadcrumbSetter → MassViewClient mass={mass}`
 
 ### 3.5 Edit Page (Server)
 **File:** `src/app/(main)/masses/[id]/edit/page.tsx`
 
 **Checklist:**
-- [ ] Auth check
-- [ ] Fetch mass WITH RELATIONS: `const mass = await getMassWithRelations(id)`
-- [ ] Handle not found
-- [ ] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }, { label: mass name/id }, { label: 'Edit' }]`
-- [ ] Render: `BreadcrumbSetter → MassFormWrapper mass={mass}`
+- [x] Auth check
+- [x] Fetch mass WITH RELATIONS: `const mass = await getMassWithRelations(id)`
+- [x] Handle not found
+- [x] Define breadcrumbs: `[{ label: 'Masses', href: '/masses' }, { label: mass name/id }, { label: 'Edit' }]`
+- [x] Render: `BreadcrumbSetter → MassFormWrapper mass={mass}`
 
 ### 3.6 Form Wrapper (Client)
 **File:** `src/app/(main)/masses/mass-form-wrapper.tsx` (REQUIRED)
 
 **Checklist:**
-- [ ] Accept optional `mass?: MassWithRelations` prop
-- [ ] Detect mode: `const isEditing = !!mass`
-- [ ] Wrap with `PageContainer`
-- [ ] Show action buttons in edit mode (View button + Save button at TOP)
-- [ ] Manage loading state
-- [ ] Pass props down to `MassForm`
+- [x] Accept optional `mass?: MassWithRelations` prop
+- [x] Detect mode: `const isEditing = !!mass`
+- [x] Wrap with `PageContainer`
+- [x] Show action buttons in edit mode (View button + Save button at TOP)
+- [x] Manage loading state
+- [x] Pass props down to `MassForm`
 
 ### 3.7 Unified Form (Client)
 **File:** `src/app/(main)/masses/mass-form.tsx`
 
 **Checklist:**
-- [ ] Accept optional `mass?: MassWithRelations` prop
-- [ ] Compute `isEditing = !!mass` at top
-- [ ] Form fields:
-  - [ ] EventPicker for main event (with `openToNewEvent={!isEditing}`)
-  - [ ] PeoplePicker for presider (with `openToNewPerson={!isEditing}`)
-  - [ ] PeoplePicker for homilist (with `openToNewPerson={!isEditing}`)
-  - [ ] GlobalLiturgicalEventPicker for liturgical_event_id
-  - [ ] MassRolesTemplatePicker for mass_roles_template_id (optional)
-  - [ ] PeoplePicker for pre_mass_announcement_id
-  - [ ] Input for pre_mass_announcement_topic
-  - [ ] Textarea for announcements
-  - [ ] Textarea for petitions
-  - [ ] Textarea for note
-  - [ ] Select for status (use constants)
-  - [ ] Select for mass_template_id (liturgy template - hardcoded options for now)
-- [ ] SaveButton and CancelButton at BOTTOM
-- [ ] Call `createMass()` or `updateMass()` based on mode
-- [ ] After UPDATE: `router.refresh()` (stay on edit page)
-- [ ] After CREATE: `router.push(\`/masses/\${newMass.id}\`)` (go to view page)
-- [ ] Toast notifications for success/error
+- [x] Accept optional `mass?: MassWithRelations` prop
+- [x] Compute `isEditing = !!mass` at top
+- [x] Form fields:
+  - [x] EventPicker for main event (with `openToNewEvent={!isEditing}`)
+  - [x] PeoplePicker for presider (with `openToNewPerson={!isEditing}`)
+  - [x] PeoplePicker for homilist (with `openToNewPerson={!isEditing}`)
+  - [x] GlobalLiturgicalEventPicker for liturgical_event_id
+  - [x] MassRolesTemplatePicker for mass_roles_template_id (optional - skipped for simplicity)
+  - [x] PeoplePicker for pre_mass_announcement_id
+  - [x] Input for pre_mass_announcement_topic
+  - [x] Textarea for announcements
+  - [x] Textarea for petitions
+  - [x] Textarea for note
+  - [x] Select for status (use constants)
+  - [x] Select for mass_template_id (liturgy template - hardcoded options for now)
+- [x] SaveButton and CancelButton at BOTTOM
+- [x] Call `createMass()` or `updateMass()` based on mode
+- [x] After UPDATE: `router.refresh()` (stay on edit page)
+- [x] After CREATE: `router.push(\`/masses/\${newMass.id}\`)` (go to view page)
+- [x] Toast notifications for success/error
 
 ### 3.8 View Client (Client Component)
 **File:** `src/app/(main)/masses/[id]/mass-view-client.tsx`
 
 **Checklist:**
-- [ ] Accept `mass: MassWithRelations` prop
-- [ ] Use `ModuleViewContainer` component
-- [ ] Implement `generateFilename()` function:
+- [x] Accept `mass: MassWithRelations` prop
+- [x] Use `ModuleViewContainer` component
+- [x] Implement `generateFilename()` function:
   - Format: `mass-{presider-last-name}-{event-date}.{ext}`
   - Example: `mass-smith-20251110.pdf`
-- [ ] Implement `getTemplateId()` function: `return mass.mass_template_id || 'mass-default-template'`
-- [ ] Pass `buildMassLiturgy` callback (create this in content builder phase)
-- [ ] Props:
+- [x] Implement `getTemplateId()` function: `return mass.mass_template_id || 'mass-default-template'`
+- [x] Pass `buildMassLiturgy` callback (create this in content builder phase)
+- [x] Props:
   - `entity={mass}`
   - `entityType="Mass"`
   - `modulePath="masses"`
@@ -256,8 +256,8 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 - `src/app/(main)/masses/[id]/error.tsx`
 
 **Checklist:**
-- [ ] Import and render reusable skeleton/error components
-- [ ] Follow existing pattern from weddings module
+- [x] Import and render reusable skeleton/error components
+- [x] Follow existing pattern from weddings module
 
 ---
 
@@ -268,53 +268,69 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 ### 4.1 Mass Intentions List Page
 **File:** `src/app/(main)/mass-intentions/page.tsx`
 
+**Status:** ✅ Complete
+
 **Key Fields to Display:**
-- Mass offered for (main text)
-- Requested by (person name)
-- Date requested
-- Status badge
+- [x] Mass offered for (main text)
+- [x] Requested by (person name)
+- [x] Date requested
+- [x] Status badge
 
 ### 4.2 Mass Intentions List Client
 **File:** `src/app/(main)/mass-intentions/mass-intentions-list-client.tsx`
 
+**Status:** ✅ Complete
+
 ### 4.3 Mass Intentions Create Page
 **File:** `src/app/(main)/mass-intentions/create/page.tsx`
+
+**Status:** ✅ Complete
 
 ### 4.4 Mass Intentions View Page
 **File:** `src/app/(main)/mass-intentions/[id]/page.tsx`
 
+**Status:** ✅ Complete
+
 ### 4.5 Mass Intentions Edit Page
 **File:** `src/app/(main)/mass-intentions/[id]/edit/page.tsx`
+
+**Status:** ✅ Complete
 
 ### 4.6 Mass Intentions Form Wrapper
 **File:** `src/app/(main)/mass-intentions/mass-intention-form-wrapper.tsx`
 
+**Status:** ✅ Complete
+
 ### 4.7 Mass Intentions Unified Form
 **File:** `src/app/(main)/mass-intentions/mass-intention-form.tsx`
 
+**Status:** ✅ Complete
+
 **Form Fields:**
-- [ ] MassPicker for mass_id (optional - can create intention without assigned mass)
-- [ ] Input for mass_offered_for (main intention text - REQUIRED)
-- [ ] PeoplePicker for requested_by_id
-- [ ] Date input for date_received
-- [ ] Date input for date_requested
-- [ ] Number input for stipend_in_cents (display as dollars.cents)
-- [ ] Select for status (REQUESTED, CONFIRMED, FULFILLED, CANCELLED)
-- [ ] Textarea for note
+- [x] MassPicker for mass_id (optional - can create intention without assigned mass)
+- [x] Input for mass_offered_for (main intention text - REQUIRED)
+- [x] PeoplePicker for requested_by_id
+- [x] Date input for date_received
+- [x] Date input for date_requested
+- [x] Number input for stipend_in_cents (display as dollars.cents)
+- [x] Select for status (REQUESTED, CONFIRMED, FULFILLED, CANCELLED)
+- [x] Textarea for note
 
 ### 4.8 Mass Intentions View Client
 **File:** `src/app/(main)/mass-intentions/[id]/mass-intention-view-client.tsx`
 
+**Status:** ✅ Complete
+
 **Note:** Mass Intentions do NOT need liturgy generation (no print view, PDF, or Word export)
 
 **Simple view showing:**
-- Mass offered for
-- Requested by person
-- Dates (received, requested)
-- Stipend amount
-- Status
-- Notes
-- Linked Mass (if assigned)
+- [x] Mass offered for
+- [x] Requested by person
+- [x] Dates (received, requested)
+- [x] Stipend amount
+- [x] Status
+- [x] Notes
+- [x] Linked Mass (if assigned)
 
 ### 4.9 Loading and Error States
 **Files:**
@@ -322,6 +338,8 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 - `src/app/(main)/mass-intentions/error.tsx`
 - `src/app/(main)/mass-intentions/[id]/loading.tsx`
 - `src/app/(main)/mass-intentions/[id]/error.tsx`
+
+**Status:** ✅ Complete
 
 ---
 
@@ -488,13 +506,13 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 - ✅ TypeScript types added
 
 ### Constants & Configuration
-- ⬜ 0/3 Constant groups added (Mass Status, Mass Intention Status, Role Labels)
+- ✅ 3/3 Constant groups added (Mass Status, Mass Intention Status, Role Labels)
 
 ### Shared Components
-- ⬜ 0/3 Picker components created (MassPicker, GlobalLiturgicalEventPicker, RolePicker)
+- ✅ 3/3 Picker components created (MassPicker, GlobalLiturgicalEventPicker, RolePicker)
 
 ### Masses Module (8 main files + extras)
-- ⬜ 0/12 Files created
+- ✅ 12/12 Files created
   - List page, List client
   - Create page
   - View page, View client
@@ -503,7 +521,7 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
   - Loading states (2), Error states (2)
 
 ### Mass Intentions Module (8 main files + extras)
-- ⬜ 0/12 Files created
+- ✅ 12/12 Files created
   - List page, List client
   - Create page
   - View page, View client
@@ -517,16 +535,16 @@ export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
 ### Navigation & Integration
 - ⬜ 0/2 Updates made (Sidebar, Icons documentation)
 
-**Overall Progress: 11/47 (23%)**
+**Overall Progress: 41/47 (87%)**
 
 ---
 
 ## 🎯 Next Steps
 
-1. **Start with Constants** - Add all status and label constants with bilingual support
-2. **Build Pickers** - Create MassPicker, GlobalLiturgicalEventPicker, and RolePicker components
-3. **Masses Module** - Complete all 8 main files following wedding pattern exactly
-4. **Mass Intentions Module** - Complete all 8 main files (simpler than Masses - no liturgy)
+1. ✅ ~~**Start with Constants** - Add all status and label constants with bilingual support~~
+2. ✅ ~~**Build Pickers** - Create MassPicker, GlobalLiturgicalEventPicker, and RolePicker components~~
+3. ✅ ~~**Masses Module** - Complete all 8 main files following wedding pattern exactly~~
+4. ✅ ~~**Mass Intentions Module** - Complete all 8 main files (simpler than Masses - no liturgy)~~
 5. **Content Builder** - Create liturgy generation for Masses
 6. **Print & Export** - Add print view and PDF/Word export routes
 7. **Navigation** - Update sidebar and finalize icons

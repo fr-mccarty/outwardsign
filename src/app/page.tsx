@@ -30,6 +30,7 @@ import { APP_NAME, APP_TAGLINE, GITHUB_URL, HomeLanguage, DEFAULT_HOME_LANGUAGE 
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
+import { TestingBanner } from "@/components/testing-banner"
 
 // Translations for the homepage
 const translations = {
@@ -70,6 +71,7 @@ const translations = {
         description: "Work together seamlessly with presiders, parish staff, and families throughout the entire preparation process.",
         features: [
           "Parish directory with role management",
+          "Download parish directory as CSV",
           "Shared access to event details",
           "Clear communication channels"
         ]
@@ -267,6 +269,7 @@ const translations = {
         description: "Trabaja en conjunto sin problemas con presidentes, personal parroquial y familias durante todo el proceso de preparación.",
         features: [
           "Directorio parroquial con gestión de roles",
+          "Descarga el directorio parroquial como CSV",
           "Acceso compartido a detalles de eventos",
           "Canales de comunicación claros"
         ]
@@ -533,6 +536,9 @@ function HomeContent() {
           </div>
         </div>
       </nav>
+
+      {/* Testing Banner */}
+      <TestingBanner />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-12">

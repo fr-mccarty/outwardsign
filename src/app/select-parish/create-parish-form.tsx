@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createParish } from '@/lib/actions/setup'
 import { setSelectedParish } from '@/lib/auth/parish'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { FormField } from '@/components/ui/form-field'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 
@@ -68,42 +67,33 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Parish Name</Label>
-            <Input
-              id="name"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="St. Mary's Catholic Church"
-              required
-            />
-          </div>
+          <FormField
+            id="name"
+            label="Parish Name"
+            value={formData.name}
+            onChange={(value) => handleChange('name', value)}
+            placeholder="St. Mary's Catholic Church"
+            required
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              type="text"
-              value={formData.city}
-              onChange={(e) => handleChange('city', e.target.value)}
-              placeholder="New York"
-              required
-            />
-          </div>
+          <FormField
+            id="city"
+            label="City"
+            value={formData.city}
+            onChange={(value) => handleChange('city', value)}
+            placeholder="New York"
+            required
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="state">State</Label>
-            <Input
-              id="state"
-              type="text"
-              value={formData.state}
-              onChange={(e) => handleChange('state', e.target.value)}
-              placeholder="NY"
-              maxLength={2}
-              required
-            />
-          </div>
+          <FormField
+            id="state"
+            label="State"
+            value={formData.state}
+            onChange={(value) => handleChange('state', value)}
+            placeholder="NY"
+            maxLength={2}
+            required
+          />
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={creating} className="flex-1">

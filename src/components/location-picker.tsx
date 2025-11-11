@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import {
   Command,
   CommandDialog,
@@ -36,6 +39,19 @@ import { getLocations, createLocation } from '@/lib/actions/locations'
 import type { Location } from '@/lib/types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+
+// Zod schema for inline "Add New Location" form
+const newLocationSchema = z.object({
+  name: z.string().min(1, 'Location name is required'),
+  description: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  phone_number: z.string().optional(),
+})
+
+type NewLocationFormData = z.infer<typeof newLocationSchema>
 
 interface LocationPickerProps {
   open: boolean
@@ -79,23 +95,26 @@ export function LocationPicker({
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [savingLocation, setSavingLocation] = useState(false)
-  const [newLocationForm, setNewLocationForm] = useState<{
-    name: string
-    description: string
-    street: string
-    city: string
-    state: string
-    country: string
-    phone_number: string
-  }>({
-    name: '',
-    description: '',
-    street: '',
-    city: '',
-    state: '',
-    country: '',
-    phone_number: '',
+
+  // Initialize React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = useForm<NewLocationFormData>({
+    resolver: zodResolver(newLocationSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      street: '',
+      city: '',
+      state: '',
+      country: '',
+      phone_number: '',
+    },
   })
 
   // Debounce search query to avoid too many API calls
@@ -146,43 +165,22 @@ export function LocationPicker({
     setShowAddForm(true)
   }
 
-  const handleNewLocationFormChange = (field: string, value: string) => {
-    setNewLocationForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleCreateLocation = async (e: React.FormEvent) => {
-    e.preventDefault()
-    e.stopPropagation() // Prevent bubbling to parent form
-
-    if (!newLocationForm.name.trim()) {
-      toast.error('Location name is required')
-      return
-    }
-
+  const onSubmitNewLocation = async (data: NewLocationFormData) => {
     try {
-      setSavingLocation(true)
       const newLocation = await createLocation({
-        name: newLocationForm.name,
-        description: newLocationForm.description || undefined,
-        street: newLocationForm.street || undefined,
-        city: newLocationForm.city || undefined,
-        state: newLocationForm.state || undefined,
-        country: newLocationForm.country || undefined,
-        phone_number: newLocationForm.phone_number || undefined,
+        name: data.name,
+        description: data.description || undefined,
+        street: data.street || undefined,
+        city: data.city || undefined,
+        state: data.state || undefined,
+        country: data.country || undefined,
+        phone_number: data.phone_number || undefined,
       })
 
       toast.success('Location created successfully')
 
       // Reset form
-      setNewLocationForm({
-        name: '',
-        description: '',
-        street: '',
-        city: '',
-        state: '',
-        country: '',
-        phone_number: '',
-      })
+      reset()
       setShowAddForm(false)
 
       // Select the newly created location (this will close the picker)
@@ -190,22 +188,12 @@ export function LocationPicker({
     } catch (error) {
       console.error('Error creating location:', error)
       toast.error('Failed to add location')
-    } finally {
-      setSavingLocation(false)
     }
   }
 
   const handleCancelAddLocation = () => {
     setShowAddForm(false)
-    setNewLocationForm({
-      name: '',
-      description: '',
-      street: '',
-      city: '',
-      state: '',
-      country: '',
-      phone_number: '',
-    })
+    reset()
   }
 
   const getLocationInitials = (location: Location) => {
@@ -346,20 +334,24 @@ export function LocationPicker({
             Create a new location record. Fill in the details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleCreateLocation} className="flex flex-col flex-1 min-h-0">
+        <form onSubmit={handleSubmit(onSubmitNewLocation)} className="flex flex-col flex-1 min-h-0">
           <div className="grid gap-4 py-4 overflow-y-auto flex-1 -mx-6 px-6">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="name" className="text-right pt-2">
                 Name *
               </Label>
-              <Input
-                id="name"
-                value={newLocationForm.name}
-                onChange={(e) => handleNewLocationFormChange('name', e.target.value)}
-                className="col-span-3"
-                placeholder="St. Mary's Church"
-                required
-              />
+              <div className="col-span-3">
+                <Input
+                  id="name"
+                  value={watch('name')}
+                  onChange={(e) => setValue('name', e.target.value)}
+                  className={cn(errors.name && "border-red-500")}
+                  placeholder="St. Mary's Church"
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">
@@ -367,8 +359,8 @@ export function LocationPicker({
               </Label>
               <Textarea
                 id="description"
-                value={newLocationForm.description}
-                onChange={(e) => handleNewLocationFormChange('description', e.target.value)}
+                value={watch('description') || ''}
+                onChange={(e) => setValue('description', e.target.value)}
                 className="col-span-3"
                 placeholder="Brief description..."
                 rows={2}
@@ -380,8 +372,8 @@ export function LocationPicker({
               </Label>
               <Input
                 id="street"
-                value={newLocationForm.street}
-                onChange={(e) => handleNewLocationFormChange('street', e.target.value)}
+                value={watch('street') || ''}
+                onChange={(e) => setValue('street', e.target.value)}
                 className="col-span-3"
                 placeholder="123 Main St"
               />
@@ -392,8 +384,8 @@ export function LocationPicker({
               </Label>
               <Input
                 id="city"
-                value={newLocationForm.city}
-                onChange={(e) => handleNewLocationFormChange('city', e.target.value)}
+                value={watch('city') || ''}
+                onChange={(e) => setValue('city', e.target.value)}
                 className="col-span-3"
                 placeholder="Springfield"
               />
@@ -404,8 +396,8 @@ export function LocationPicker({
               </Label>
               <Input
                 id="state"
-                value={newLocationForm.state}
-                onChange={(e) => handleNewLocationFormChange('state', e.target.value)}
+                value={watch('state') || ''}
+                onChange={(e) => setValue('state', e.target.value)}
                 className="col-span-3"
                 placeholder="IL"
               />
@@ -416,8 +408,8 @@ export function LocationPicker({
               </Label>
               <Input
                 id="country"
-                value={newLocationForm.country}
-                onChange={(e) => handleNewLocationFormChange('country', e.target.value)}
+                value={watch('country') || ''}
+                onChange={(e) => setValue('country', e.target.value)}
                 className="col-span-3"
                 placeholder="USA"
               />
@@ -429,8 +421,8 @@ export function LocationPicker({
               <Input
                 id="phone_number"
                 type="tel"
-                value={newLocationForm.phone_number}
-                onChange={(e) => handleNewLocationFormChange('phone_number', e.target.value)}
+                value={watch('phone_number') || ''}
+                onChange={(e) => setValue('phone_number', e.target.value)}
                 className="col-span-3"
                 placeholder="(555) 123-4567"
               />
@@ -441,12 +433,12 @@ export function LocationPicker({
               type="button"
               variant="outline"
               onClick={handleCancelAddLocation}
-              disabled={savingLocation}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={savingLocation}>
-              {savingLocation ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
                   Saving...
