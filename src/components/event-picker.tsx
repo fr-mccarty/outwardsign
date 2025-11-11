@@ -174,7 +174,7 @@ export function EventPicker({
       fields.push({
         key: 'note',
         label: 'Note',
-        type: 'textarea' as const,
+        type: 'text' as const,
         required: true,
         validation: z.string().min(1, 'Note is required'),
       })
