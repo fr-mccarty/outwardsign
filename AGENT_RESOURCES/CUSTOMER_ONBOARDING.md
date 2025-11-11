@@ -25,15 +25,15 @@
 
 By the end of this 30-minute session, you will have:
 - ✅ Created your parish account
-- ✅ Invited your team members
+- ✅ Set up your parish information
 - ✅ Created your first sacramental event
 - ✅ Generated and printed a liturgy script
 
 **Time Breakdown:**
 - Account setup: 2 minutes
 - Parish setup: 5 minutes
-- Add team members: 3 minutes
 - Create first event: 20 minutes
+- View and export script: 3 minutes
 - **Total: 30 minutes**
 
 ### Step 1: Create Your Account (2 minutes)
@@ -41,8 +41,7 @@ By the end of this 30-minute session, you will have:
 1. Go to [outwardsign.church](https://outwardsign.church)
 2. Click **"Get Started Free"**
 3. Enter your email and create a password
-4. Verify your email (check spam if needed)
-5. You're in!
+4. You're in!
 
 **No credit card required. Ever.**
 
@@ -57,29 +56,7 @@ After login, you'll be prompted to create your parish:
 
 **That's it!** You now have a parish workspace.
 
-### Step 3: Invite Your Team (3 minutes)
-
-**Why invite team members?**
-- Collaborate on events together
-- Share preparation responsibilities
-- Everyone stays on the same page
-
-**How to invite:**
-
-1. Click **"Settings"** in the sidebar
-2. Navigate to **"Team Members"**
-3. Click **"Invite Team Member"**
-4. Enter their email and select role:
-   - **Staff** (default) - Can create, edit, and manage events
-   - **Admin** - Can manage parish settings and team
-   - **Parishioner** - View-only access (for families)
-5. Click **"Send Invitation"**
-
-They'll receive an email with a link to join your parish.
-
-**Pro Tip:** Start with just 1-2 key people (e.g., priest and pastoral associate). You can add more later.
-
-### Step 4: Create Your First Event (20 minutes)
+### Step 3: Create Your First Event (20 minutes)
 
 Let's walk through creating a simple wedding:
 
@@ -94,7 +71,7 @@ Let's walk through creating a simple wedding:
 
 **You did it!** Your first event is created.
 
-### Step 5: View & Print Your Script (2 minutes)
+### Step 4: View & Print Your Script (3 minutes)
 
 1. From the wedding you just created, click **"View"**
 2. You'll see a preview of the liturgy script
@@ -366,13 +343,13 @@ Generate liturgy script and print for presider.
 
 **Goals:**
 - ✅ Complete account and parish setup
-- ✅ Invite 1-2 key team members
 - ✅ Create your first sacramental event
 - ✅ Print your first liturgy script
+- ✅ Familiarize yourself with the main features
 
 **Tasks:**
 - Follow the 30-minute quick start guide
-- Add 3-5 key people to your directory (priest, deacon, music director)
+- Add 3-5 key people to your directory (celebrants, families, godparents)
 - Add 2-3 locations (church, chapel, cemetery)
 - Create one real upcoming event (wedding, funeral, or baptism)
 
@@ -393,20 +370,20 @@ Generate liturgy script and print for presider.
 
 **Success Metric:** You've created 3+ events total and feel comfortable with the workflow
 
-### Week 3: Team Collaboration (Days 15-21)
+### Week 3: Advanced Features (Days 15-21)
 
 **Goals:**
-- ✅ Get team members actively using Outward Sign
-- ✅ Establish workflow for who creates/edits events
-- ✅ Start using advanced features (petitions, custom guidelines)
+- ✅ Master advanced features and customization
+- ✅ Establish efficient workflows
+- ✅ Customize content for your parish needs
 
 **Tasks:**
-- Check in with invited team members—are they using it?
-- Assign one team member to create an event from start to finish
 - Add custom petitions or prayers to an event
 - Experiment with Word export for customization
+- Create reading templates for commonly used combinations
+- Customize guidelines text for different celebration types
 
-**Success Metric:** At least one other team member has created or edited an event
+**Success Metric:** You've created at least 5 events and feel confident with the full feature set
 
 ### Week 4: Optimize & Scale (Days 22-30)
 
@@ -419,7 +396,7 @@ Generate liturgy script and print for presider.
 - Identify your most common event types and create templates
 - Export .ics calendar feed and add to parish website or Google Calendar
 - Add all known events for next 2-3 months
-- Review and refine team permissions and roles
+- Document your workflow for future reference
 
 **Success Metric:** You have a full 2-3 month calendar and your workflow is efficient
 
@@ -556,33 +533,19 @@ A: Currently, create two separate events (one in English, one in Spanish). Bilin
 **Q: How do I handle a wedding with a visiting priest from another diocese?**
 A: Add the visiting priest to your People directory. Assign him as celebrant on that specific event.
 
-### Permissions & Security
+### Security & Privacy
 
 **Q: Who can see our parish's events?**
-A: Only team members you invite. Events are completely private to your parish.
+A: Only you and any authorized users with access to your parish account. Events are completely private to your parish.
 
-**Q: What's the difference between Admin and Staff roles?**
-A:
-- **Staff:** Can create, edit, delete events. Cannot manage parish settings or invite users.
-- **Admin:** Can do everything Staff can do, plus manage parish settings and team members.
-
-**Q: Can I remove someone from my parish team?**
-A: Yes. Go to Settings → Team Members → click "Remove" next to their name.
-
-**Q: What if someone leaves our parish staff?**
-A: Remove them from the team immediately. Their access will be revoked.
+**Q: Is my parish data secure?**
+A: Yes. All data is encrypted and stored securely. We follow industry best practices for data protection.
 
 ---
 
 ## Troubleshooting
 
 ### Login & Account Issues
-
-**Problem: I didn't receive the verification email**
-- Check your spam/junk folder
-- Wait 5 minutes (sometimes delayed)
-- Click "Resend verification email" on login page
-- Still having trouble? Email support@outwardsign.church
 
 **Problem: I forgot my password**
 - Click "Forgot Password" on login page
@@ -625,23 +588,6 @@ A: Remove them from the team immediately. Their access will be revoked.
 **Problem: Printed script is cut off or doesn't fit on page**
 - Check your printer settings: Select "Fit to page" or "Shrink to fit"
 - Make sure paper size is set to Letter (8.5" × 11")
-
-### Team Collaboration Issues
-
-**Problem: Team member says they didn't receive invitation**
-- Check spam folder
-- Verify email address is correct in Settings → Team Members
-- Resend invitation
-
-**Problem: Team member can't edit events**
-- Check their role: Parishioner role is view-only
-- Make sure they're logged in to the correct account
-- Verify they're part of the right parish (if they work at multiple parishes)
-
-**Problem: Changes aren't showing up for other team members**
-- Make sure you clicked "Save" after editing
-- Have them refresh the page (F5 or Cmd+R)
-- If still not working, log out and back in
 
 ---
 
@@ -687,14 +633,14 @@ We review all feedback and prioritize based on what serves parishes best.
 1. ✅ **Complete the 30-minute Quick Start** (if you haven't already)
 2. ✅ **Create 2-3 real upcoming events** (weddings, funerals, baptisms)
 3. ✅ **Print your first liturgy script** and use it for an actual celebration
-4. ✅ **Invite 1-2 team members** and get them creating events
+4. ✅ **Build your parish directory** with key people and locations
 5. ✅ **Follow the First 30 Days Roadmap** to build momentum
 
 ### After 30 Days:
 
 - **Share your experience** - Email us your success story! (feedback@outwardsign.church)
 - **Calculate your ROI** - Use Carmen's ROI template to measure time/cost savings
-- **Invite more team members** - Expand usage across your parish
+- **Expand your usage** - Add more event types and customize templates
 - **Explore advanced features** - Custom petitions, multiple locations, calendar export
 
 ### Remember:

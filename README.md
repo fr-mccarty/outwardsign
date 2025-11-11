@@ -1,5 +1,9 @@
 # Outward Sign
 
+> **For New Developers:** This README helps you understand what Outward Sign is, why it exists, and how to set up a local development environment to start contributing. Jump to [Getting Started](#-getting-started) to begin.
+
+---
+
 > Plan, Communicate, and Celebrate Sacraments and Sacramentals in a Catholic Parish
 
 Outward Sign is a comprehensive sacrament and sacramental management tool designed to help Catholic parishes plan, prepare, and celebrate liturgical events with excellence and beauty.
@@ -24,25 +28,25 @@ The name "Outward Sign" directly references this theological definition, highlig
 
 The Sacraments and Sacramentals are the core activity of the Catholic Parish—their proper celebration at every step is the evangelizing work of parishes. However, coordinating these sacred moments often involves juggling multiple tools, endless email chains, scattered documents, and last-minute scrambling to ensure everything is ready for the celebration.
 
-Outward Sign addresses this challenge by providing a unified platform where parish staff, presiders, and families can collaborate seamlessly throughout the entire preparation process. From the initial planning stages through to having a beautifully formatted script ready in the sacristy, every detail is organized, accessible, and designed to serve the beauty and sanctity of each sacramental celebration.
+Outward Sign addresses this challenge by providing a unified platform for organizing every aspect of sacramental preparation. From the initial planning stages through to having a beautifully formatted script ready in the sacristy, every detail is organized, accessible, and designed to serve the beauty and sanctity of each sacramental celebration.
 
 This tool recognizes that when we prepare sacraments and sacramentals with care, attention to detail, and clear communication, we create moments of profound spiritual significance—not just for the individuals participating in the celebration, but for the entire parish community and as a witness to the world.
 
 ## 🌟 Philosophy
 
-- **Collaboration is Essential:** Working together as a parish staff and with the participants in each sacrament and sacramental creates joy for individuals and beauty for the world
-- **Communication Builds Beauty:** Clear communication with individuals, staff, support staff, and the broader community enhances every sacramental experience
+- **Organization is Essential:** Careful organization of each sacrament and sacramental creates joy for individuals and beauty for the world
+- **Communication Builds Beauty:** Clear communication with individuals and the broader community enhances every sacramental experience
 - **Preparation Enables Excellence:** Being fully prepared means having the summary and script printed and ready in the sacristy for the presider to confidently lead the celebration
 
 ## ✨ Features
 
 - **Sacrament & Sacramental Planning:** Manage weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type
-- **Shared Preparation:** Collaborate with presiders, staff, and families throughout the entire preparation process
-- **Calendar Integration:** Export events to .ics feeds for seamless scheduling across parish systems
-- **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word)
+- **Complete Preparation Tools:** Organize all aspects of sacramental preparation from initial planning to printed scripts
+- **Parish Calendar:** Unified calendar view showing all sacramental events and parish activities
+- **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word export for all sacraments)
 - **Data Export:** Download parish directory as CSV from the People page for easy data management and backup
 - **Multilingual Support:** Full English and Spanish language support throughout the application, including the public homepage with language selector, liturgical content, and all user interfaces for diverse parish communities
-- **Liturgical Calendar:** Integration with global Catholic liturgical calendar data
+- **Liturgical Calendar Integration:** Built-in Catholic liturgical calendar data with global observances, feasts, and solemnities
 
 ## 🎨 Sacrament & Sacramental Icons
 
@@ -481,15 +485,31 @@ For detailed development guidelines, see [CLAUDE.md](./CLAUDE.md).
 
 ## 📚 Documentation
 
+### Core Documentation
+
 - **[CLAUDE.md](./CLAUDE.md)** - Comprehensive development guide with architecture, patterns, and conventions
-- **[AGENT_RESOURCES/](./AGENT_RESOURCES/)** - Additional development resources:
-  - **[MODULE_CHECKLIST.md](./AGENT_RESOURCES/MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules
-  - **[FORMS.md](./AGENT_RESOURCES/FORMS.md)** - Form implementation guidelines and patterns
-  - **[COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
-  - **[STYLES.md](./AGENT_RESOURCES/STYLES.md)** - Styling guidelines and theme tokens
-  - **[PERSONA.md](./AGENT_RESOURCES/PERSONA.md)** - User personas and use cases
+
+### Development Resources
+
+The `AGENT_RESOURCES/` directory contains in-depth documentation on specialized topics:
+
+- **[MODULE_CHECKLIST.md](./AGENT_RESOURCES/MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules
+- **[FORMS.md](./AGENT_RESOURCES/FORMS.md)** - Form implementation guidelines and patterns
+- **[COMPONENT_REGISTRY.md](./AGENT_RESOURCES/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
+- **[STYLES.md](./AGENT_RESOURCES/STYLES.md)** - Styling guidelines and theme tokens
+- **[PERSONA.md](./AGENT_RESOURCES/PERSONA.md)** - User personas and use cases
+
+### Testing Documentation
+
+- **[TESTING_QUICKSTART.md](./AGENT_RESOURCES/TESTING_QUICKSTART.md)** - Quick setup guide for running tests
+- **[TESTING_GUIDE.md](./AGENT_RESOURCES/TESTING_GUIDE.md)** - Comprehensive guide for writing tests
+- **[TESTING_ARCHITECTURE.md](./AGENT_RESOURCES/TESTING_ARCHITECTURE.md)** - Testability patterns and standards
+
+### External Resources
+
 - **[Supabase Documentation](https://supabase.com/docs)** - Database and authentication reference
 - **[Next.js Documentation](https://nextjs.org/docs)** - Framework documentation
+- **[Playwright Documentation](https://playwright.dev/docs/intro)** - Testing framework reference
 
 ## 🙏 Acknowledgments
 

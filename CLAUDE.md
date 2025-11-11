@@ -32,17 +32,11 @@
 
 ## 📚 Detailed Documentation
 
-The `AGENT_RESOURCES/` directory contains comprehensive, in-depth documentation files that provide detailed guidance on specific topics:
+**The `AGENT_RESOURCES/` directory contains comprehensive, in-depth documentation files on specialized topics.**
 
-- **Forms** - Complete form patterns, validation, styling rules
-- **Styling** - Dark mode support, color tokens, CSS patterns
-- **Components** - Component registry with usage examples
-- **Modules** - Module creation checklist and patterns
-- **Testing** - Test architecture and best practices
-- **Liturgy** - Liturgical script system documentation
-- **And more...**
+When you need detailed information on forms, styling, components, modules, testing, or other specific topics, search the `AGENT_RESOURCES/` directory. Files are named descriptively to make them easy to discover.
 
-**When you need detailed information on a topic, search the `AGENT_RESOURCES/` directory.** Files are named descriptively (e.g., `FORMS.md`, `STYLES.md`, `COMPONENT_REGISTRY.md`). This main CLAUDE.md file provides overviews and links to these resources where appropriate.
+This main CLAUDE.md file provides overviews and references these detailed resources where appropriate.
 
 ---
 
