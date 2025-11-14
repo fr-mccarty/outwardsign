@@ -29,8 +29,8 @@ This will run all configured seeders defined in `scripts/seed.ts`, including:
 The application uses global liturgical calendar data from [John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com).
 
 **Current Migrations:**
-- `20251109000002_seed_global_liturgical_events_2025_en.sql` - 538 events for 2025
-- `20251109000003_seed_global_liturgical_events_2026_en.sql` - 547 events for 2026
+- `20251109000002_seed_global_liturgical_events_2025_en_US.sql` - 538 events for 2025
+- `20251109000003_seed_global_liturgical_events_2026_en_US.sql` - 547 events for 2026
 
 ### Creating New Liturgical Calendar Migrations
 
@@ -69,7 +69,7 @@ To create a migration file for a new year (e.g., 2027), use the Task tool with t
 
 6. **Reference existing file** for exact format:
    ```
-   supabase/migrations/20251109000002_seed_global_liturgical_events_2025_en.sql
+   supabase/migrations/20251109000002_seed_global_liturgical_events_2025_en_US.sql
    ```
 
 ### Alternative: Dynamic API Seeding (Future Use)

@@ -76,9 +76,9 @@ export function PetitionEditor({
           </div>
 
           {!readOnly && templates.length > 0 && onInsertTemplate && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                <SelectTrigger className="w-[250px]">
+                <SelectTrigger className="w-full sm:w-[250px]">
                   <SelectValue placeholder="Select template..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -89,7 +89,7 @@ export function PetitionEditor({
                   ))}
                 </SelectContent>
               </Select>
-              <Button type="button" variant="outline" size="sm" onClick={insertTemplate}>
+              <Button type="button" variant="outline" size="sm" onClick={insertTemplate} className="w-full sm:w-auto">
                 <FileText className="h-4 w-4 mr-2" />
                 Insert Template
               </Button>

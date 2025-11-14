@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Edit, Trash2, Building } from "lucide-react"
+import { MapPin, Phone, Edit, Trash2 } from "lucide-react"
 import type { Location } from '@/lib/types'
 import Link from 'next/link'
 import { PageContainer } from '@/components/page-container'
@@ -166,7 +166,7 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
           <DialogHeader>
             <DialogTitle>Delete Location</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{location.name}"? This action cannot be undone.
+              Are you sure you want to delete &ldquo;{location.name}&rdquo;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

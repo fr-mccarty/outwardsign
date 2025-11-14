@@ -66,7 +66,7 @@ export interface CorePickerProps<T> {
   /** Search input placeholder */
   searchPlaceholder?: string
   /** Fields to include in search (array of property keys) */
-  searchFields: (keyof T)[]
+  searchFields: readonly (keyof T)[]
   /** Function to get display label for an item */
   getItemLabel: (item: T) => string
   /** Function to get unique ID for an item */

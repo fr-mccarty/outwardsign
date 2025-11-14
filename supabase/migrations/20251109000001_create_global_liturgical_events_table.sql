@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS global_liturgical_events (
   event_key TEXT NOT NULL,
   date DATE NOT NULL,
   year INTEGER NOT NULL,
-  locale TEXT NOT NULL DEFAULT 'en',
+  locale TEXT NOT NULL DEFAULT 'en_US',
 
   -- Full event data as JSON
   event_data JSONB NOT NULL,
@@ -100,5 +100,5 @@ COMMENT ON TABLE global_liturgical_events IS 'Global liturgical calendar events 
 COMMENT ON COLUMN global_liturgical_events.event_key IS 'Event identifier from the liturgical calendar API (e.g., "Advent1", "StFrancisXavier")';
 COMMENT ON COLUMN global_liturgical_events.date IS 'Date of the liturgical event (extracted from event_data for indexing)';
 COMMENT ON COLUMN global_liturgical_events.year IS 'Year of the event (extracted from event_data for filtering)';
-COMMENT ON COLUMN global_liturgical_events.locale IS 'Language/locale code (e.g., "en", "es")';
+COMMENT ON COLUMN global_liturgical_events.locale IS 'Language/locale code (e.g., "en_US", "es")';
 COMMENT ON COLUMN global_liturgical_events.event_data IS 'Full event object from the API as JSONB';

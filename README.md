@@ -81,10 +81,14 @@ Before you begin, ensure you have the following installed:
 - **Node.js** 20.x or higher ([Download](https://nodejs.org/))
 - **npm** 10.x or higher (comes with Node.js)
 - **Git** ([Download](https://git-scm.com/downloads))
-- **Supabase Account** ([Sign up](https://supabase.com))
+- **Docker Desktop** ([Download](https://docs.docker.com/desktop/)) - Required for running local Supabase
 - **Supabase CLI** ([Installation Guide](https://supabase.com/docs/guides/cli/getting-started))
 
+> **Note:** You do NOT need a Supabase cloud account to contribute. All development is done locally using Docker.
+
 ## 🚀 Getting Started
+
+This guide will help you set up a local development environment to contribute to Outward Sign. All development and testing is done locally using Docker—no cloud setup required.
 
 ### 1. Clone the Repository
 
@@ -99,50 +103,49 @@ cd outwardsign
 npm install
 ```
 
-### 3. Set Up Supabase Project
+### 3. Start Local Supabase Instance
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **Project Settings** > **API** in your Supabase dashboard
-3. Copy your **Project URL** and **anon/public key**
+Make sure Docker Desktop is running, then start Supabase services:
+
+```bash
+# Start all Supabase services in Docker containers
+supabase start
+```
+
+> **First time?** The `supabase start` command will download Docker images (this may take a few minutes). The `supabase` folder already exists in the repo with configuration and migrations, so you don't need to run `supabase init`.
+
+Once complete, you'll see output with your local credentials:
+
+```
+Started supabase local development setup.
+
+         API URL: http://localhost:54321
+          DB URL: postgresql://postgres:postgres@localhost:54322/postgres
+      Studio URL: http://localhost:54323
+    Inbucket URL: http://localhost:54324
+        anon key: eyJh......
+service_role key: eyJh......
+```
 
 ### 4. Configure Environment Variables
 
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and add your Supabase credentials:
+Edit `.env.local` and add your **local** Supabase credentials from the output above:
 
 ```env
-# Update these with your Supabase details from your project settings > API
-# https://app.supabase.com/project/_/settings/api
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
+# Local Supabase instance (from supabase start output)
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-local-anon-key
 ```
 
-### 5. Link to Supabase Project
+> **Tip:** Run `supabase status` at any time to see your local credentials.
 
-Link your local project to your Supabase project:
-
-```bash
-supabase link --project-ref your-project-ref
-```
-
-You can find your project reference ID in your Supabase project settings.
-
-### 6. Run Database Migrations
-
-Push the database migrations to your Supabase project:
-
-```bash
-supabase db push
-```
-
-This will create all necessary tables, functions, and Row-Level Security (RLS) policies.
-
-### 7. Start the Development Server
+### 5. Start the Development Server
 
 ```bash
 npm run dev
@@ -150,19 +153,39 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 8. Create Your First User
+### 6. Create Your First User
 
-On first visit, you'll be directed to the authentication page. You can:
+On first visit to [http://localhost:3000](http://localhost:3000), you'll be directed to the authentication page:
 
-1. **Sign up** with an email and password
-2. Your first user will need to be assigned appropriate roles through the Supabase dashboard
-3. Navigate to **Authentication** > **Users** in Supabase to manage user roles and permissions
+1. **Sign up** with any email and password (emails are caught by the local mail catcher at [http://localhost:54324](http://localhost:54324))
+2. Your user is automatically created in the local database
+3. Navigate to [http://localhost:54323](http://localhost:54323) (Supabase Studio) > **Authentication** > **Users** to manage roles
 
 **Role Hierarchy:**
 - `super-admin` - Billing settings, parish ownership
 - `admin` - Parish settings and management
 - `staff` - Create, read, update, delete records (default role)
 - `parishioner` - Read-only access to their own records
+
+### 7. Explore Supabase Studio
+
+Visit [http://localhost:54323](http://localhost:54323) to access the Supabase Studio dashboard for your local instance. Here you can:
+- View and edit database tables
+- Manage authentication users
+- Run SQL queries
+- View logs and monitor performance
+
+### 8. Stopping Local Supabase
+
+When you're done developing:
+
+```bash
+# Stop services (preserves your local database)
+supabase stop
+
+# Stop and reset all data (clean slate for next session)
+supabase stop --no-backup
+```
 
 ## 🔧 Development
 
@@ -305,15 +328,43 @@ For detailed information on database management, migrations, resets, seeding, an
 
 **Issue: `supabase: command not found`**
 - Solution: Install the Supabase CLI following the [installation guide](https://supabase.com/docs/guides/cli/getting-started)
+- Verify installation: `supabase --version`
+
+**Issue: Docker not running**
+- Make sure Docker Desktop is installed and running before executing `supabase start`
+- Check Docker Desktop's status in your system tray/menu bar
+- Try restarting Docker Desktop if containers fail to start
+
+**Issue: `supabase start` fails or containers are unhealthy**
+- Run `supabase stop --no-backup` to clean up
+- Restart Docker Desktop
+- Run `supabase start` again
+- If issues persist, run `docker ps` to check container status
+
+**Issue: Port conflicts (54321, 54322, 54323, 54324)**
+- Check if you have other Supabase instances running: `supabase stop`
+- Check what's using the ports: `lsof -i :54321` (macOS/Linux) or `netstat -ano | findstr :54321` (Windows)
+- Stop conflicting services or use different ports by editing `supabase/config.toml`
 
 **Issue: Authentication errors on localhost**
 - Verify that your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are correct
-- Check that your Supabase project is active and not paused
+- Check `supabase status` to get the correct local credentials
 - Ensure you're using `.env.local` (not just `.env`)
+- Restart your Next.js dev server after changing environment variables
 
 **Issue: Port 3000 already in use**
 - Stop other applications using port 3000
 - Or run on a different port: `npm run dev -- -p 3001`
+
+**Issue: Database migrations not applied**
+- Run `supabase db reset` to reset and reapply all migrations
+- Check migration files in `supabase/migrations/` for syntax errors
+- Verify Supabase is running: `supabase status`
+
+**Issue: Tests failing with authentication errors**
+- Make sure Supabase is running locally: `supabase start`
+- Verify `.env.local` has correct local credentials
+- Try running `npm test` (not `npx playwright test` directly)
 
 For database-related issues (migrations, seeding), see **[DATABASE.md](./docs/DATABASE.md)**.
 
@@ -341,21 +392,78 @@ The sacraments are at the heart of Catholic parish life. We believe tools that s
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to contribute to Outward Sign:
+Contributions are welcome! Outward Sign is built by and for the Catholic community. Whether you're fixing bugs, adding features, improving documentation, or writing tests, your contributions help parishes worldwide.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### How to Contribute
 
-**Development Guidelines:**
-- Follow the TypeScript patterns established in existing components
-- Maintain responsive design across all new components
-- Write tests for new features
-- Update documentation as needed
+#### 1. Set Up Your Development Environment
 
-For detailed development guidelines, see [CLAUDE.md](./CLAUDE.md).
+Follow the [Getting Started](#-getting-started) guide above to:
+- Clone the repository
+- Install dependencies
+- Start local Supabase with Docker
+- Run the development server
+- Run tests to verify everything works
+
+#### 2. Make Your Changes
+
+1. **Fork the repository** to your GitHub account
+2. **Create a feature branch** from `main`:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Make your changes** following our development guidelines:
+   - Follow TypeScript patterns from existing components
+   - Maintain responsive design across all new components
+   - Write tests for new features (see [Testing](#testing) section)
+   - Update documentation as needed
+4. **Test your changes** locally:
+   ```bash
+   npm test           # Run all tests
+   npm run build      # Verify production build
+   npm run lint       # Check code style
+   ```
+
+#### 3. Submit Your Pull Request
+
+1. **Commit your changes** with clear, descriptive messages:
+   ```bash
+   git add .
+   git commit -m "Add feature: Brief description of what you did"
+   ```
+2. **Push to your fork**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+3. **Open a Pull Request** on GitHub:
+   - Provide a clear title and description
+   - Reference any related issues
+   - Explain what changes you made and why
+   - Include screenshots for UI changes
+
+#### 4. Review Process
+
+- Maintainers will review your PR and may request changes
+- Make any requested updates by pushing new commits to your branch
+- Once approved, maintainers will merge your PR
+- Your contribution will be included in the next release!
+
+### Development Guidelines
+
+- **Follow existing patterns** - Review similar features before implementing
+- **Write tests** - All new features should include Playwright tests
+- **Document your work** - Update README.md, CLAUDE.md, or docs/ as needed
+- **Keep PRs focused** - One feature or fix per pull request
+- **Test locally** - Always run tests and verify your changes work before submitting
+- **Ask questions** - Open an issue if you're unsure about an approach
+
+### Need Help?
+
+- **Development Guide:** See [CLAUDE.md](./CLAUDE.md) for comprehensive development patterns
+- **Questions:** Open a [GitHub Discussion](https://github.com/yourusername/outwardsign/discussions)
+- **Bugs:** Report issues on [GitHub Issues](https://github.com/yourusername/outwardsign/issues)
+
+**Note:** All development and testing is done locally. You don't need a cloud Supabase account to contribute—just Docker and the Supabase CLI.
 
 ## 📚 Documentation
 

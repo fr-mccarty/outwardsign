@@ -9,13 +9,6 @@ import type { Person, Event } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
@@ -23,12 +16,6 @@ import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMP
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "lucide-react"
-import { GlobalLiturgicalEventPicker } from "@/components/global-liturgical-event-picker"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 
 interface MassFormProps {
   mass?: MassWithRelations
@@ -149,14 +136,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       toast.error(isEditing ? 'Failed to update mass' : 'Failed to create mass')
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleCancel = () => {
-    if (isEditing) {
-      router.push(`/masses/${mass.id}`)
-    } else {
-      router.push('/masses')
     }
   }
 

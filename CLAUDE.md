@@ -12,6 +12,8 @@
 
 > **🔴 CRITICAL - Forms Context:** When creating or editing ANY form component, you MUST include [FORMS.md](./docs/FORMS.md) in your context. This file contains critical form patterns, validation rules, styling requirements, and component usage guidelines that are essential for maintaining consistency across the application.
 
+> **🔴 GREENFIELD DEVELOPMENT:** This is an early-stage, greenfield application. When making changes, **modify original files and existing context directly** rather than creating new implementations for backward compatibility. The priority is establishing the right patterns and architecture, not maintaining legacy code. Make breaking changes as needed to improve the codebase—we are not concerned with backward compatibility at this stage.
+
 ## Table of Contents
 
 - [📚 Detailed Documentation](#-detailed-documentation)
@@ -43,7 +45,9 @@
 
 **The `docs/` directory contains comprehensive, in-depth documentation files on specialized topics.**
 
-When you need detailed information on forms, styling, components, modules, testing, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.
+When you need detailed information on forms, styling, components, modules, testing, liturgical calendar system, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.
+
+**Liturgical Calendar:** See [LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md) for liturgical calendar API integration, import scripts, and database structure.
 
 This main CLAUDE.md file provides overviews and references these detailed resources where appropriate.
 

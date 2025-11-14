@@ -4,26 +4,16 @@ import { useState, useEffect } from "react"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createMassIntention, updateMassIntention, type CreateMassIntentionData, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
-import type { Person, Mass } from "@/lib/types"
+import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { SelectItem } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { MassPickerField } from "@/components/mass-picker-field"
 import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "lucide-react"
 import { MassPicker } from "@/components/mass-picker"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { MassWithNames } from "@/lib/actions/masses"
 
@@ -105,14 +95,6 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
       toast.error(isEditing ? 'Failed to update Mass intention' : 'Failed to create Mass intention')
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleCancel = () => {
-    if (isEditing) {
-      router.push(`/mass-intentions/${intention.id}`)
-    } else {
-      router.push('/mass-intentions')
     }
   }
 
