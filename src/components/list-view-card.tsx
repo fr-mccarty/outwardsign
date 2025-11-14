@@ -25,13 +25,13 @@ export function ListViewCard({ title, editHref, viewHref, viewButtonText = "View
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 overflow-hidden">
             <CardTitle className="text-lg line-clamp-1">
               {title}
             </CardTitle>
           </div>
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="outline" size="sm" asChild>
             <Link href={editHref}>
               <SquarePen className="h-4 w-4" />
             </Link>
