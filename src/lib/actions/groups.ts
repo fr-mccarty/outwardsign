@@ -146,7 +146,7 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
 export async function updateGroup(id: string, data: UpdateGroupData): Promise<Group> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
 
   const updateData: Record<string, unknown> = {}
@@ -167,6 +167,7 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
   }
 
   revalidatePath('/groups')
+  revalidatePath(`/groups/${id}`)
   return group
 }
 
@@ -192,7 +193,7 @@ export async function deleteGroup(id: string): Promise<void> {
 export async function addGroupMember(groupId: string, personId: string, role?: string): Promise<GroupMember> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
 
   // Verify group exists (RLS will handle access control)
@@ -227,13 +228,14 @@ export async function addGroupMember(groupId: string, personId: string, role?: s
   }
 
   revalidatePath('/groups')
+  revalidatePath(`/groups/${groupId}`)
   return member
 }
 
 export async function removeGroupMember(groupId: string, personId: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
 
   // Verify group exists (RLS will handle access control)
@@ -259,12 +261,13 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
   }
 
   revalidatePath('/groups')
+  revalidatePath(`/groups/${groupId}`)
 }
 
 export async function updateGroupMemberRole(groupId: string, personId: string, role?: string): Promise<GroupMember> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
 
   // Verify group exists (RLS will handle access control)
@@ -292,6 +295,7 @@ export async function updateGroupMemberRole(groupId: string, personId: string, r
   }
 
   revalidatePath('/groups')
+  revalidatePath(`/groups/${groupId}`)
   return member
 }
 

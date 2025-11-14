@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -127,8 +128,8 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
                 {funeral.funeral_event && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {funeral.funeral_event.start_date && new Date(funeral.funeral_event.start_date).toLocaleDateString()}
-                    {funeral.funeral_event.start_time && ` at ${funeral.funeral_event.start_time}`}
+                    {funeral.funeral_event.start_date && formatDatePretty(funeral.funeral_event.start_date)}
+                    {funeral.funeral_event.start_time && ` at ${formatTime(funeral.funeral_event.start_time)}`}
                   </div>
                 )}
               </div>

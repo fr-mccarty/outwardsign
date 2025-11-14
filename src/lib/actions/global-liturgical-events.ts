@@ -56,12 +56,12 @@ export interface GlobalLiturgicalEvent {
  * Get global liturgical events for a date range
  * @param startDate - Start date (YYYY-MM-DD)
  * @param endDate - End date (YYYY-MM-DD)
- * @param locale - Locale code (default: 'en')
+ * @param locale - Locale code (default: 'en_US')
  */
 export async function getGlobalLiturgicalEvents(
   startDate: string,
   endDate: string,
-  locale: string = 'en'
+  locale: string = 'en_US'
 ): Promise<GlobalLiturgicalEvent[]> {
   const supabase = await createClient()
 
@@ -85,13 +85,13 @@ export async function getGlobalLiturgicalEvents(
  * Get paginated global liturgical events for a date range
  * @param startDate - Start date (YYYY-MM-DD)
  * @param endDate - End date (YYYY-MM-DD)
- * @param locale - Locale code (default: 'en')
+ * @param locale - Locale code (default: 'en_US')
  * @param params - Pagination parameters
  */
 export async function getGlobalLiturgicalEventsPaginated(
   startDate: string,
   endDate: string,
-  locale: string = 'en',
+  locale: string = 'en_US',
   params?: PaginatedParams
 ): Promise<PaginatedResult<GlobalLiturgicalEvent>> {
   const supabase = await createClient()
@@ -146,12 +146,12 @@ export async function getGlobalLiturgicalEventsPaginated(
  * Get global liturgical events for a specific month
  * @param year - Year
  * @param month - Month (1-12)
- * @param locale - Locale code (default: 'en')
+ * @param locale - Locale code (default: 'en_US')
  */
 export async function getGlobalLiturgicalEventsByMonth(
   year: number,
   month: number,
-  locale: string = 'en'
+  locale: string = 'en_US'
 ): Promise<GlobalLiturgicalEvent[]> {
   // Calculate date range for the month
   const startDate = new Date(year, month - 1, 1)

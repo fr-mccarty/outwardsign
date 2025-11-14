@@ -337,11 +337,6 @@ export default function ParishSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-muted-foreground">Parish ID</Label>
-                <p className="mt-1 text-sm font-mono text-muted-foreground">{currentParish.id}</p>
-              </div>
-
-              <div>
                 <Label className="text-muted-foreground">Created</Label>
                 <p className="mt-1 text-sm">{new Date(currentParish.created_at).toLocaleDateString()}</p>
               </div>
@@ -465,14 +460,14 @@ export default function ParishSettingsPage() {
                     <div key={member.user_id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="font-medium">
-                          {member.users?.full_name || member.users?.email || `User ${member.user_id.substring(0, 8)}...`}
+                          {member.users?.full_name || member.users?.email || 'Parish Member'}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {member.users?.email && member.users?.full_name && member.users.email !== member.users.full_name
                             ? member.users.email
-                            : member.users?.created_at 
+                            : member.users?.created_at
                               ? `Member since ${new Date(member.users.created_at).toLocaleDateString()}`
-                              : `User ID: ${member.user_id}`
+                              : 'Parish team member'
                           }
                         </div>
                         <div className="flex gap-1 mt-2">

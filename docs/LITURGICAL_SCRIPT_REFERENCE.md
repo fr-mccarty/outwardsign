@@ -1,59 +1,52 @@
-# Liturgical Script Styling Guide
+# Liturgical Script Reference
 
-> **Quick reference for styling liturgical scripts**
+> **Daily reference for building liturgical script templates**
 >
-> **To edit styles:** See [STYLE_VALUES.md](./STYLE_VALUES.md) for easy-to-edit style values.
-> **For setup/architecture:** See [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md).
-
----
-
-## 🔴 CRITICAL - Calculation Placement for Reusability
-
-When building liturgical scripts, follow these rules for where calculations should live:
-
-1. **Most calculations belong in `helpers.ts`** (exported from `index.ts`)
-   - Name formatting, title building, conditional text logic
-   - Any logic used across multiple templates
-   - **Why:** Reusability across all templates (English, Spanish, Simple, Bilingual, etc.)
-
-2. **Exception: Sex-based calculations can be done in templates**
-   - Use the `gendered()` helper function OR inline sex checks
-   - Templates can check `person?.sex` directly when needed
-
-3. **Avoid duplicating logic across templates**
-   - If multiple templates need the same calculation, move it to `helpers.ts`
-   - Templates should focus on structure and styling, not complex logic
-
-**See [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md) for detailed examples and implementation guidance.**
+> This document provides a comprehensive reference for element types, usage rules, and styling patterns when building liturgical script content. For setup and architecture, see [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md).
 
 ---
 
 ## Table of Contents
 
-1. [Styling Overview](#styling-overview)
-2. [Page Breaks](#page-breaks)
-3. [Content Element Types](#content-element-types)
-4. [Section Structure](#section-structure)
+1. [Quick Element Types Reference](#quick-element-types-reference)
+2. [How Styling Works](#how-styling-works)
+3. [Page Breaks](#page-breaks)
+4. [Content Element Types](#content-element-types)
+5. [Usage Rules & Conventions](#usage-rules--conventions)
+6. [Section Structure](#section-structure)
+7. [Common Patterns & Examples](#common-patterns--examples)
 
 ---
 
-## Styling Overview
+## Quick Element Types Reference
 
-### Quick Style Reference
+**All element types at a glance:**
 
-**To change styles:** Edit `src/lib/styles/liturgical-script-styles.ts`
+| Element Type | Primary Use | Required Parameters | Auto-Styling |
+|-------------|-------------|---------------------|--------------|
+| `text` | General text | `text` | None |
+| `multi-part-text` | Mixed formatting | `parts[]` | None |
+| `event-title` | Main title | `text` | 18pt, bold, centered |
+| `event-datetime` | Event date/time | `text` | 14pt, centered |
+| `section-title` | Section heading | `text` | 16pt, bold, centered |
+| `reading-title` | Reading heading | `text` | 14pt, bold, red, right-aligned |
+| `pericope` | Scripture reference | `text` | 12pt, italic, right-aligned |
+| `reader-name` | Reader name | `text` | 11pt, red, right-aligned |
+| `introduction` | Reading intro | `text` | 11pt |
+| `reading-text` | Scripture passage | `text` | 11pt, preserves line breaks |
+| `conclusion` | Reading ending | `text` | 11pt |
+| `response` | Congregation response | `label`, `text` | Label bold |
+| `priest-dialogue` | Priest directions | `text` | 11pt |
+| `petition` | Petition text | `label`, `text` | Label bold + red |
+| `rubric` | Liturgical instruction | `text` | Italic, red |
+| `info-row` | Label-value pair | `label`, `value` | Label bold |
+| `spacer` | Empty line | (none) | Blank line |
 
-**Current style values:**
+---
 
-| Style Category | Key Values |
-|----------------|------------|
-| **Font Sizes** | Titles: 18pt/16pt/14pt, Body: 11pt |
-| **Spacing** | Small: 3pt, Medium: 6pt, Large: 9pt |
-| **Line Height** | Normal: 1.4 (recommended) |
-| **Colors** | Liturgy Red: `#c41e3a`, Black: `#000000` |
-| **Page Margins** | 60pt (~0.83 inches) |
+## How Styling Works
 
-### How Styling Works
+### Central Style Control
 
 **All styles are controlled centrally** in `src/lib/styles/liturgical-script-styles.ts`.
 
@@ -65,7 +58,23 @@ When building liturgical scripts, follow these rules for where calculations shou
 - `'response'` → Label bold, text normal
 - `'petition'` → Label bold + liturgy red
 
-**To change how an element type looks:** Edit the element's style definition in `liturgical-script-styles.ts`
+**To change how an element type looks:** Edit the element's style definition in `liturgical-script-styles.ts`.
+
+### Style Values Quick Reference
+
+**To edit styles:** See [STYLE_VALUES.md](./STYLE_VALUES.md) for easy-to-edit style values.
+
+**Current style values:**
+
+| Style Category | Key Values |
+|----------------|------------|
+| **Font Sizes** | Titles: 18pt/16pt/14pt, Body: 11pt |
+| **Spacing** | Small: 3pt, Medium: 6pt, Large: 9pt |
+| **Line Height** | Normal: 1.4 (recommended) |
+| **Colors** | Liturgy Red: `#c41e3a`, Black: `#000000` |
+| **Page Margins** | 60pt (~0.83 inches) |
+
+**Exception:** `multi-part-text` supports per-part formatting for complex mixed-format text.
 
 ---
 
@@ -119,18 +128,6 @@ Force the next section to a new page:
 }
 ```
 
-#### Both Together
-Isolate a section on its own page:
-
-```typescript
-{
-  id: 'special-instructions',
-  pageBreakBefore: true,   // Start on new page
-  pageBreakAfter: true,    // Next section starts on new page too
-  elements: [...]
-}
-```
-
 ### Common Page Break Patterns
 
 **Wedding Full Script:**
@@ -143,16 +140,6 @@ Isolate a section on its own page:
   { id: 'gospel', pageBreakBefore: true },           // Gospel new page
   { id: 'marriage-vows' },
   { id: 'petitions', pageBreakBefore: true },        // Petitions new page
-]
-```
-
-**Funeral Full Script:**
-```typescript
-[
-  { id: 'summary', pageBreakAfter: true },           // Summary page 1
-  { id: 'vigil', pageBreakBefore: true },            // Vigil page 2
-  { id: 'funeral-mass', pageBreakBefore: true },     // Mass new page
-  { id: 'committal', pageBreakBefore: true }         // Committal new page
 ]
 ```
 
@@ -213,7 +200,7 @@ Multiple text parts with individual formatting (e.g., "**Priest:** The Lord be w
 }
 ```
 
-**Note:** `multi-part-text` still supports per-part formatting for complex mixed-format text.
+**Note:** `multi-part-text` is the only element type that supports per-part formatting for complex mixed-format text.
 
 ---
 
@@ -391,6 +378,20 @@ Petition text (Prayer of the Faithful).
 }
 ```
 
+#### RubricElement
+Liturgical instruction or direction.
+
+```typescript
+{
+  type: 'rubric',
+  text: string
+}
+```
+
+**Style:** Italic, liturgy red
+
+**Usage:** Stage directions, celebrant actions, conditional instructions. See [Usage Rules](#rubric-elements) for important formatting guidelines.
+
 ---
 
 ### Layout Elements
@@ -418,6 +419,177 @@ Empty line for spacing.
 ```
 
 **Default style:** Single blank line
+
+---
+
+## Usage Rules & Conventions
+
+### 🔴 Rubric Elements
+
+**Purpose:** Liturgical instructions and stage directions for the celebrant, readers, or assembly.
+
+**Styling:** Italic text in liturgical red (#c41e3a)
+
+### ❌ INCORRECT - Do not use brackets
+
+```typescript
+liturgyElements.push({
+  type: 'rubric',
+  text: '[Después de la Homilía]',  // WRONG - brackets included
+})
+```
+
+### ✅ CORRECT - Text without brackets
+
+```typescript
+liturgyElements.push({
+  type: 'rubric',
+  text: 'Después de la Homilía',  // CORRECT - no brackets
+})
+```
+
+**Rationale:** The rubric element type already provides visual distinction through italic formatting and liturgical red color. Brackets are redundant and create visual clutter.
+
+### Rubric Examples
+
+```typescript
+// Stage directions
+{
+  type: 'rubric',
+  text: 'Walk to the front of the altar',
+}
+
+// Celebrant actions
+{
+  type: 'rubric',
+  text: 'Celebrant and parents sign the child with the cross',
+}
+
+// Conditional instructions
+{
+  type: 'rubric',
+  text: 'Bless religious articles if presented',
+}
+
+// Timing/sequence
+{
+  type: 'rubric',
+  text: 'After the Homily',
+}
+```
+
+---
+
+### General Principles
+
+#### 1. Use Semantic Element Types
+
+Always choose the most semantically appropriate element type:
+
+- **`rubric`** - Liturgical instructions/directions
+- **`multi-part-text`** - Speaker + dialogue
+- **`response`** - Assembly responses
+- **`text`** - General content
+- **`reading-text`** - Scripture passages
+- **`petition`** - Prayer intentions
+
+#### 2. Consistency in Formatting
+
+**Speaker Labels:**
+- Always bold: `formatting: ['bold']`
+- Follow with colon and space: `'CELEBRANT: '`
+- Use ALL CAPS for role names
+
+**Language Labels:**
+- Bilingual: `'CELEBRANT / CELEBRANTE: '`
+- Keep consistent throughout document
+
+#### 3. Liturgical Red Usage
+
+Use liturgical red (`color: 'liturgy-red'`) for:
+- Rubrics (automatic via element type)
+- Reading titles (automatic)
+- Pericopes (automatic)
+- Reader names (automatic)
+- Special emphasis in petitions (manual via color property)
+
+**Never use for:**
+- Regular dialogue
+- Assembly responses
+- General text content
+
+#### 4. Spacing
+
+Use `spacer` elements for vertical spacing:
+
+```typescript
+// Small space (default)
+{ type: 'spacer' }
+
+// Medium space
+{ type: 'spacer', size: 'medium' }
+
+// Large space
+{ type: 'spacer', size: 'large' }
+```
+
+---
+
+### Common Mistakes to Avoid
+
+#### ❌ Don't Add Brackets to Rubrics
+
+```typescript
+// WRONG
+{ type: 'rubric', text: '[After the Homily]' }
+
+// CORRECT
+{ type: 'rubric', text: 'After the Homily' }
+```
+
+#### ❌ Don't Use Text Type for Rubrics
+
+```typescript
+// WRONG - misses semantic meaning and styling
+{ type: 'text', text: 'After the Homily', formatting: ['italic'] }
+
+// CORRECT
+{ type: 'rubric', text: 'After the Homily' }
+```
+
+#### ❌ Don't Forget Speaker Formatting
+
+```typescript
+// WRONG - no bold on speaker
+{
+  type: 'multi-part-text',
+  parts: [
+    { text: 'CELEBRANT: The Lord be with you.' }
+  ]
+}
+
+// CORRECT
+{
+  type: 'multi-part-text',
+  parts: [
+    { text: 'CELEBRANT: ', formatting: ['bold'] },
+    { text: 'The Lord be with you.' }
+  ]
+}
+```
+
+#### ❌ Don't Mix Element Types Incorrectly
+
+```typescript
+// WRONG - rubric content in multi-part-text
+{
+  type: 'multi-part-text',
+  parts: [{ text: '[Walk to the altar]', formatting: ['italic'] }]
+}
+
+// CORRECT
+{ type: 'rubric', text: 'Walk to the altar' }
+```
 
 ---
 
@@ -558,7 +730,7 @@ const petitions = buildPetitionsSection({
 
 ---
 
-## Quick Examples
+## Common Patterns & Examples
 
 ### Simple Title and Text
 
@@ -647,35 +819,40 @@ He leads me beside still waters.`
 ]
 ```
 
----
+### Mixed Formatting Dialogue
 
-## All Element Types at a Glance
+```typescript
+{
+  type: 'multi-part-text',
+  parts: [
+    {
+      text: 'CELEBRANT: ',
+      formatting: ['bold'],
+      color: 'liturgy-red'
+    },
+    {
+      text: 'The Lord be with you.'
+    }
+  ]
+}
+```
 
-| Element Type | Primary Use | Required Parameters |
-|-------------|-------------|---------------------|
-| `text` | General text | `text` |
-| `multi-part-text` | Mixed formatting | `parts[]` |
-| `event-title` | Main title | `text` |
-| `event-datetime` | Event date/time | `text` |
-| `section-title` | Section heading | `text` |
-| `reading-title` | Reading heading | `text` |
-| `pericope` | Scripture reference | `text` |
-| `reader-name` | Reader name | `text` |
-| `introduction` | Reading intro | `text` |
-| `reading-text` | Scripture passage | `text` |
-| `conclusion` | Reading ending | `text` |
-| `response` | Congregation response | `label`, `text` |
-| `priest-dialogue` | Priest directions | `text` |
-| `petition` | Petition text | `label`, `text` |
-| `rubric` | Liturgical instruction | `text` |
-| `info-row` | Label-value pair | `label`, `value` |
-| `spacer` | Empty line | (none) |
+### Bilingual Response
 
-**Note:** All styling (alignment, color, formatting, line breaks) is controlled by `liturgical-script-styles.ts`, not by element properties.
+```typescript
+{
+  type: 'response',
+  label: 'ASSEMBLY / ASAMBLEA:',
+  text: 'Amen. / Amén.'
+}
+```
 
 ---
 
 ## Related Documentation
 
-- **[LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)** - Setup and architecture
+- **[LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)** - Setup and architecture for new modules
+- **[STYLE_VALUES.md](./STYLE_VALUES.md)** - Easy-to-edit style value reference
 - **[liturgical-script-styles.ts](../src/lib/styles/liturgical-script-styles.ts)** - Central styling configuration
+- **[CLAUDE.md](../CLAUDE.md)** - Module structure and patterns
+- **[MODULE_CHECKLIST.md](./MODULE_CHECKLIST.md)** - Complete module creation checklist

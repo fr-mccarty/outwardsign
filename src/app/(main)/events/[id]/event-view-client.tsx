@@ -148,15 +148,6 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
                 )}
               </div>
             )}
-            <div>
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Responsible Party ID
-              </h4>
-              <p className="text-xs font-mono text-muted-foreground">
-                {event.responsible_party_id}
-              </p>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -196,14 +187,6 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
               </h4>
               <p className="text-sm">
                 {new Date(event.updated_at).toLocaleString()}
-              </p>
-            </div>
-            <div className="md:col-span-2">
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                Event ID
-              </h4>
-              <p className="text-xs font-mono text-muted-foreground">
-                {event.id}
               </p>
             </div>
           </div>

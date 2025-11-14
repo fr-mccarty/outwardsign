@@ -55,6 +55,18 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
     router.push('/readings')
   }
 
+  // Normalize category for display (handle both uppercase and lowercase with suffixes)
+  const normalizeCategory = (category: string): string => {
+    // Remove numeric suffixes and convert to uppercase (baptism-1 → BAPTISM)
+    return category.replace(/-\d+$/, '').toUpperCase()
+  }
+
+  // Get display label for a category
+  const getCategoryLabel = (category: string): string => {
+    const normalized = normalizeCategory(category)
+    return READING_CATEGORY_LABELS[normalized]?.en || category
+  }
+
   const getCategoryColor = (category: string) => {
     const colors = [
       'bg-blue-100 text-blue-800',
@@ -78,7 +90,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search readings by pericope, text, or lectionary ID..."
+                placeholder="Search readings by pericope or text..."
                 defaultValue={searchTerm}
                 onChange={(e) => updateFilters('search', e.target.value)}
                 className="pl-10"
@@ -133,11 +145,6 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
                           {LANGUAGE_LABELS[reading.language]?.en || reading.language}
                         </Badge>
                       )}
-                      {reading.lectionary_id && (
-                        <Badge variant="secondary" className="text-xs">
-                          {reading.lectionary_id}
-                        </Badge>
-                      )}
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {new Date(reading.created_at).toLocaleDateString()}
@@ -156,7 +163,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
                   <div className="flex flex-wrap gap-1">
                     {reading.categories.map(category => (
                       <Badge key={category} className={getCategoryColor(category) + " text-xs"}>
-                        {READING_CATEGORY_LABELS[category]?.en || category}
+                        {getCategoryLabel(category)}
                       </Badge>
                     ))}
                   </div>

@@ -33,7 +33,6 @@ export function ReadingForm({ reading }: ReadingFormProps) {
   const [introduction, setIntroduction] = useState(reading?.introduction || "")
   const [conclusion, setConclusion] = useState(reading?.conclusion || "")
   const [language, setLanguage] = useState(reading?.language || "")
-  const [lectionaryId, setLectionaryId] = useState(reading?.lectionary_id || "")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,8 +45,7 @@ export function ReadingForm({ reading }: ReadingFormProps) {
         introduction,
         conclusion,
         categories: selectedCategories,
-        language,
-        lectionary_id: lectionaryId
+        language
       }
 
       if (isEditing) {
@@ -77,26 +75,15 @@ export function ReadingForm({ reading }: ReadingFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          id="pericope"
-          label="Pericope"
-          value={pericope}
-          onChange={setPericope}
-          required
-          placeholder="e.g., Matthew 5:1-12, Genesis 1:1-2:4"
-          description="The scripture reference or title of the reading"
-        />
-
-        <FormField
-          id="lectionary_id"
-          label="Lectionary ID"
-          value={lectionaryId}
-          onChange={setLectionaryId}
-          placeholder="e.g., 1A, 25B, Easter Vigil"
-          description="Optional lectionary cycle reference"
-        />
-      </div>
+      <FormField
+        id="pericope"
+        label="Pericope"
+        value={pericope}
+        onChange={setPericope}
+        required
+        placeholder="e.g., Matthew 5:1-12, Genesis 1:1-2:4"
+        description="The scripture reference or title of the reading"
+      />
 
       <div className="space-y-2">
         <Label htmlFor="language">Language</Label>
@@ -180,7 +167,6 @@ export function ReadingForm({ reading }: ReadingFormProps) {
           <li>• Include paragraph breaks and formatting in the main text as needed</li>
           <li>• Conclusion usually includes response cues (e.g., &quot;The Word of the Lord&quot;)</li>
           <li>• Categories help organize readings by type, season, or occasion</li>
-          <li>• Lectionary ID helps reference specific liturgical cycles</li>
         </ul>
       </div>
 

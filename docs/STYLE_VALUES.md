@@ -178,5 +178,5 @@ After making changes, test these scenarios:
 ## Related Files
 
 - **Source of truth:** `src/lib/styles/liturgy-styles.ts` (edit this to apply changes)
-- **Style guide:** [LITURGICAL_SCRIPT_STYLING_GUIDE.md](./LITURGICAL_SCRIPT_STYLING_GUIDE.md) (reference)
+- **Reference guide:** [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md) (element types and usage)
 - **System setup:** [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md) (architecture)

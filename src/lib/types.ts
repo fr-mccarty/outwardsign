@@ -420,7 +420,6 @@ export interface Reading {
   introduction?: string
   conclusion?: string
   language?: string
-  lectionary_id?: string
   categories?: string[]
   created_at: string
   updated_at: string

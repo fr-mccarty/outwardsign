@@ -149,14 +149,6 @@ export default async function PersonDetailPage({ params }: PageProps) {
                     {new Date(person.updated_at).toLocaleString()}
                   </p>
                 </div>
-                <div className="md:col-span-2">
-                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                    Person ID
-                  </h4>
-                  <p className="text-xs font-mono text-muted-foreground">
-                    {person.id}
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>

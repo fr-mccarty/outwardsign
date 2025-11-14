@@ -51,7 +51,7 @@ export default async function ReadingDetailPage({ params }: PageProps) {
   return (
     <PageContainer
       title={reading.pericope || 'Reading'}
-      description={reading.lectionary_id || 'Scripture reading details'}
+      description="Scripture reading details"
       maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
@@ -63,11 +63,6 @@ export default async function ReadingDetailPage({ params }: PageProps) {
             {reading.language && (
               <Badge variant="outline">
                 {reading.language}
-              </Badge>
-            )}
-            {reading.lectionary_id && (
-              <Badge variant="secondary">
-                {reading.lectionary_id}
               </Badge>
             )}
             <div className="flex items-center gap-1 text-sm text-muted-foreground">

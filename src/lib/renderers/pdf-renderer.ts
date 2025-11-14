@@ -10,27 +10,26 @@ import {
   ContentSection,
   ContentElement,
 } from '@/lib/types/liturgy-content'
-import { ELEMENT_STYLES, LITURGY_COLORS } from '@/lib/styles/liturgical-script-styles'
+import {
+  ELEMENT_STYLES,
+  resolveElementStyle,
+  type ResolvedStyle,
+} from '@/lib/styles/liturgical-script-styles'
 
 // ============================================================================
 // STYLE HELPERS
 // ============================================================================
 
 /**
- * Convert element style to pdfmake format (using points directly)
+ * Apply resolved style properties to pdfmake format
+ * Pure converter - no style lookups or decisions
  */
-function getElementStyle(elementType: keyof typeof ELEMENT_STYLES) {
-  if (elementType === 'spacer') {
-    return {} // Spacer handled separately
-  }
-
-  const style = ELEMENT_STYLES[elementType]
-
+function applyResolvedStyle(style: ResolvedStyle) {
   return {
     fontSize: style.fontSize,
     bold: style.bold,
     italics: style.italic,
-    color: style.color === 'liturgy-red' ? LITURGY_COLORS.liturgyRed : undefined,
+    color: style.color,
     alignment: style.alignment as 'left' | 'center' | 'right' | 'justify',
     margin: [0, style.marginTop, 0, style.marginBottom] as [number, number, number, number],
     lineHeight: style.lineHeight,
@@ -47,128 +46,196 @@ function getElementStyle(elementType: keyof typeof ELEMENT_STYLES) {
  */
 function renderElement(element: ContentElement): Content {
   switch (element.type) {
-    case 'event-title':
-      return {
+    case 'event-title': {
+      const style = resolveElementStyle('event-title')
+      return style ? {
         text: element.text,
-        ...getElementStyle('event-title'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'event-datetime':
-      return {
+    case 'event-datetime': {
+      const style = resolveElementStyle('event-datetime')
+      return style ? {
         text: element.text,
-        ...getElementStyle('event-datetime'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'section-title':
-      return {
+    case 'section-title': {
+      const style = resolveElementStyle('section-title')
+      return style ? {
         text: element.text,
-        ...getElementStyle('section-title'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'reading-title':
-      return {
+    case 'reading-title': {
+      const style = resolveElementStyle('reading-title')
+      return style ? {
         text: element.text,
-        ...getElementStyle('reading-title'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'pericope':
-      return {
+    case 'pericope': {
+      const style = resolveElementStyle('pericope')
+      return style ? {
         text: element.text,
-        ...getElementStyle('pericope'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'reader-name':
-      return {
+    case 'reader-name': {
+      const style = resolveElementStyle('reader-name')
+      return style ? {
         text: element.text,
-        ...getElementStyle('reader-name'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'introduction':
-      return {
+    case 'introduction': {
+      const style = resolveElementStyle('introduction')
+      return style ? {
         text: element.text,
-        ...getElementStyle('introduction'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'reading-text':
-      return {
+    case 'reading-text': {
+      const style = resolveElementStyle('reading-text')
+      return style ? {
         text: element.text,
-        ...getElementStyle('reading-text'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'conclusion':
-      return {
+    case 'conclusion': {
+      const style = resolveElementStyle('conclusion')
+      return style ? {
         text: element.text,
-        ...getElementStyle('conclusion'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'response':
-      const responseStyle = getElementStyle('response')
-      return {
+    case 'response': {
+      const containerStyle = resolveElementStyle('response')
+      const labelStyle = resolveElementStyle('response-label')
+      const textStyle = resolveElementStyle('response-text')
+      return containerStyle && labelStyle && textStyle ? {
         text: [
-          { text: element.label || '', bold: true },
-          { text: ' ' + (element.text || '') },
+          {
+            text: element.label || '',
+            bold: labelStyle.bold,
+            italics: labelStyle.italic,
+            color: labelStyle.color,
+            fontSize: labelStyle.fontSize,
+          },
+          {
+            text: ' ' + (element.text || ''),
+            bold: textStyle.bold,
+            italics: textStyle.italic,
+            color: textStyle.color,
+            fontSize: textStyle.fontSize,
+          },
         ],
-        ...responseStyle,
-      }
+        ...applyResolvedStyle(containerStyle),
+      } : { text: '' }
+    }
 
-    case 'priest-dialogue':
-      return {
+    case 'priest-dialogue': {
+      const style = resolveElementStyle('priest-dialogue')
+      return style ? {
         text: element.text,
-        ...getElementStyle('priest-dialogue'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'petition':
-      const petitionStyle = getElementStyle('petition')
-      return {
+    case 'petition': {
+      const containerStyle = resolveElementStyle('petition')
+      const labelStyle = resolveElementStyle('petition-label')
+      const textStyle = resolveElementStyle('petition-text')
+      return containerStyle && labelStyle && textStyle ? {
         text: [
-          { text: element.label || '', bold: true, color: LITURGY_COLORS.liturgyRed },
-          { text: ' ' + (element.text || '') },
+          {
+            text: element.label || '',
+            bold: labelStyle.bold,
+            italics: labelStyle.italic,
+            color: labelStyle.color,
+            fontSize: labelStyle.fontSize,
+          },
+          {
+            text: ' ' + (element.text || ''),
+            bold: textStyle.bold,
+            italics: textStyle.italic,
+            color: textStyle.color,
+            fontSize: textStyle.fontSize,
+          },
         ],
-        ...petitionStyle,
-      }
+        ...applyResolvedStyle(containerStyle),
+      } : { text: '' }
+    }
 
-    case 'text':
-      return {
+    case 'text': {
+      const style = resolveElementStyle('text')
+      return style ? {
         text: element.text,
-        ...getElementStyle('text'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'rubric':
-      return {
+    case 'rubric': {
+      const style = resolveElementStyle('rubric')
+      return style ? {
         text: element.text,
-        ...getElementStyle('rubric'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'prayer-text':
-      return {
+    case 'prayer-text': {
+      const style = resolveElementStyle('prayer-text')
+      return style ? {
         text: element.text,
-        ...getElementStyle('prayer-text'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'priest-text':
-      return {
+    case 'priest-text': {
+      const style = resolveElementStyle('priest-text')
+      return style ? {
         text: element.text,
-        ...getElementStyle('priest-text'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
-    case 'info-row':
-      const infoStyle = getElementStyle('info-row')
-      return {
+    case 'info-row': {
+      const containerStyle = resolveElementStyle('info-row')
+      const labelStyle = resolveElementStyle('info-row-label')
+      const valueStyle = resolveElementStyle('info-row-value')
+      return containerStyle && labelStyle && valueStyle ? {
         columns: [
           {
             text: element.label,
-            bold: true,
-            width: 150,
+            bold: labelStyle.bold,
+            italics: labelStyle.italic,
+            width: labelStyle.width,
+            color: labelStyle.color,
+            fontSize: labelStyle.fontSize,
           },
           {
             text: element.value,
             width: '*',
+            bold: valueStyle.bold,
+            italics: valueStyle.italic,
+            color: valueStyle.color,
+            fontSize: valueStyle.fontSize,
           },
         ],
-        margin: infoStyle.margin,
-      }
+        margin: containerStyle.marginTop ? [0, containerStyle.marginTop, 0, containerStyle.marginBottom] : undefined,
+      } : { text: '' }
+    }
 
-    case 'spacer':
+    case 'spacer': {
       const spacerSize = element.size === 'large'
         ? ELEMENT_STYLES.spacer.large
         : element.size === 'medium'
@@ -178,13 +245,16 @@ function renderElement(element: ContentElement): Content {
         text: '',
         margin: [0, 0, 0, spacerSize],
       }
+    }
 
-    case 'multi-part-text':
+    case 'multi-part-text': {
       // Deprecated - render as plain text
-      return {
+      const style = resolveElementStyle('text')
+      return style ? {
         text: element.parts.map((part) => part.text).join(''),
-        ...getElementStyle('text'),
-      }
+        ...applyResolvedStyle(style),
+      } : { text: '' }
+    }
 
     default:
       return { text: '' }

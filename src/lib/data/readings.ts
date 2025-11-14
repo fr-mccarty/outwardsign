@@ -6,7 +6,6 @@ export interface ReadingData {
   language: string
   introduction?: string
   conclusion?: string
-  lectionary_id?: string
 }
 
 export const readingsData: ReadingData[] = [

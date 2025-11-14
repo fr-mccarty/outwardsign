@@ -10,27 +10,28 @@ import {
   ContentSection,
   ContentElement,
 } from '@/lib/types/liturgy-content'
-import { ELEMENT_STYLES, LITURGY_COLORS, LITURGY_FONT, convert } from '@/lib/styles/liturgical-script-styles'
+import {
+  LITURGY_FONT,
+  convert,
+  resolveElementStyle,
+  resolveSpacerSize,
+  type ResolvedStyle,
+} from '@/lib/styles/liturgical-script-styles'
 
 // ============================================================================
 // STYLE HELPERS
 // ============================================================================
 
 /**
- * Convert element style to HTML CSS properties
+ * Apply resolved style properties to HTML CSS
+ * Pure converter - no style lookups or decisions
  */
-function getElementStyle(elementType: keyof typeof ELEMENT_STYLES): React.CSSProperties {
-  if (elementType === 'spacer') {
-    return {} // Spacer handled separately
-  }
-
-  const style = ELEMENT_STYLES[elementType]
-
+function applyResolvedStyle(style: ResolvedStyle): React.CSSProperties {
   return {
     fontSize: `${convert.pointsToPx(style.fontSize)}px`,
     fontWeight: style.bold ? 'bold' : 'normal',
     fontStyle: style.italic ? 'italic' : 'normal',
-    color: style.color === 'liturgy-red' ? LITURGY_COLORS.liturgyRed : LITURGY_COLORS.black,
+    color: style.color,
     textAlign: style.alignment,
     marginTop: `${convert.pointsToPx(style.marginTop)}px`,
     marginBottom: `${convert.pointsToPx(style.marginBottom)}px`,
@@ -49,147 +50,189 @@ function getElementStyle(elementType: keyof typeof ELEMENT_STYLES): React.CSSPro
  */
 function renderElement(element: ContentElement, index: number): React.ReactNode {
   switch (element.type) {
-    case 'event-title':
-      return (
-        <div key={index} style={getElementStyle('event-title')}>
+    case 'event-title': {
+      const style = resolveElementStyle('event-title')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'event-datetime':
-      return (
-        <div key={index} style={getElementStyle('event-datetime')}>
+    case 'event-datetime': {
+      const style = resolveElementStyle('event-datetime')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'section-title':
-      return (
-        <div key={index} style={getElementStyle('section-title')}>
+    case 'section-title': {
+      const style = resolveElementStyle('section-title')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'reading-title':
-      return (
-        <div key={index} style={getElementStyle('reading-title')}>
+    case 'reading-title': {
+      const style = resolveElementStyle('reading-title')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'pericope':
-      return (
-        <div key={index} style={getElementStyle('pericope')}>
+    case 'pericope': {
+      const style = resolveElementStyle('pericope')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'reader-name':
-      return (
-        <div key={index} style={getElementStyle('reader-name')}>
+    case 'reader-name': {
+      const style = resolveElementStyle('reader-name')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'introduction':
-      return (
-        <div key={index} style={getElementStyle('introduction')}>
+    case 'introduction': {
+      const style = resolveElementStyle('introduction')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'reading-text':
-      return (
-        <div key={index} style={getElementStyle('reading-text')}>
+    case 'reading-text': {
+      const style = resolveElementStyle('reading-text')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'conclusion':
-      return (
-        <div key={index} style={getElementStyle('conclusion')}>
+    case 'conclusion': {
+      const style = resolveElementStyle('conclusion')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'response':
-      return (
-        <div key={index} style={getElementStyle('response')}>
-          <span style={{ fontWeight: 'bold' }}>{element.label}</span>
+    case 'response': {
+      const containerStyle = resolveElementStyle('response')
+      const labelStyle = resolveElementStyle('response-label')
+      const textStyle = resolveElementStyle('response-text')
+      return containerStyle && labelStyle && textStyle ? (
+        <div key={index} style={applyResolvedStyle(containerStyle)}>
+          <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
           {' '}
+          <span style={applyResolvedStyle(textStyle)}>{element.text}</span>
+        </div>
+      ) : null
+    }
+
+    case 'priest-dialogue': {
+      const style = resolveElementStyle('priest-dialogue')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'priest-dialogue':
-      return (
-        <div key={index} style={getElementStyle('priest-dialogue')}>
-          {element.text}
-        </div>
-      )
-
-    case 'petition':
-      return (
-        <div key={index} style={getElementStyle('petition')}>
-          <span style={{ fontWeight: 'bold', color: LITURGY_COLORS.liturgyRed }}>
-            {element.label}
-          </span>
+    case 'petition': {
+      const containerStyle = resolveElementStyle('petition')
+      const labelStyle = resolveElementStyle('petition-label')
+      const textStyle = resolveElementStyle('petition-text')
+      return containerStyle && labelStyle && textStyle ? (
+        <div key={index} style={applyResolvedStyle(containerStyle)}>
+          <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
           {' '}
+          <span style={applyResolvedStyle(textStyle)}>{element.text}</span>
+        </div>
+      ) : null
+    }
+
+    case 'text': {
+      const style = resolveElementStyle('text')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'text':
-      return (
-        <div key={index} style={getElementStyle('text')}>
+    case 'rubric': {
+      const style = resolveElementStyle('rubric')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'rubric':
-      return (
-        <div key={index} style={getElementStyle('rubric')}>
+    case 'prayer-text': {
+      const style = resolveElementStyle('prayer-text')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'prayer-text':
-      return (
-        <div key={index} style={getElementStyle('prayer-text')}>
+    case 'priest-text': {
+      const style = resolveElementStyle('priest-text')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.text}
         </div>
-      )
+      ) : null
+    }
 
-    case 'priest-text':
-      return (
-        <div key={index} style={getElementStyle('priest-text')}>
-          {element.text}
-        </div>
-      )
-
-    case 'info-row':
-      return (
+    case 'info-row': {
+      const labelStyle = resolveElementStyle('info-row-label')
+      const valueStyle = resolveElementStyle('info-row-value')
+      return labelStyle && valueStyle ? (
         <div key={index} className="liturgy-info-grid">
-          <div className="liturgy-info-label">{element.label}</div>
-          <div>{element.value}</div>
+          <div className="liturgy-info-label" style={applyResolvedStyle(labelStyle)}>
+            {element.label}
+          </div>
+          <div style={applyResolvedStyle(valueStyle)}>{element.value}</div>
         </div>
-      )
+      ) : null
+    }
 
-    case 'spacer':
+    case 'spacer': {
       const spacerSize = element.size === 'large'
         ? ELEMENT_STYLES.spacer.large
         : element.size === 'medium'
         ? ELEMENT_STYLES.spacer.medium
         : ELEMENT_STYLES.spacer.small
       return <div key={index} style={{ marginBottom: `${convert.pointsToPx(spacerSize)}px` }} />
+    }
 
-    case 'multi-part-text':
+    case 'multi-part-text': {
       // Deprecated - render as plain text
-      return (
-        <div key={index} style={getElementStyle('text')}>
+      const style = resolveElementStyle('text')
+      return style ? (
+        <div key={index} style={applyResolvedStyle(style)}>
           {element.parts.map((part) => part.text).join('')}
         </div>
-      )
+      ) : null
+    }
 
     default:
       return null
@@ -200,10 +243,16 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
  * Render a content section to React JSX
  */
 function renderSection(section: ContentSection, index: number): React.ReactNode {
-  const className = section.pageBreakAfter ? 'print:break-after-page' : ''
+  const classes = []
+  if (section.pageBreakBefore) classes.push('print:break-before-page')
+  if (section.pageBreakAfter) classes.push('print:break-after-page')
+  const className = classes.join(' ')
 
   return (
     <React.Fragment key={section.id || index}>
+      {section.pageBreakBefore && (
+        <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/30" />
+      )}
       <div className={className}>
         {section.elements.map((element, elemIndex) => renderElement(element, elemIndex))}
       </div>

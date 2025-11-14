@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -127,8 +128,8 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
                 {baptism.baptism_event && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {baptism.baptism_event.start_date && new Date(baptism.baptism_event.start_date).toLocaleDateString()}
-                    {baptism.baptism_event.start_time && ` at ${baptism.baptism_event.start_time}`}
+                    {baptism.baptism_event.start_date && formatDatePretty(baptism.baptism_event.start_date)}
+                    {baptism.baptism_event.start_time && ` at ${formatTime(baptism.baptism_event.start_time)}`}
                   </div>
                 )}
               </div>

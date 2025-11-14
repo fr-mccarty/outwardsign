@@ -129,21 +129,40 @@ service_role key: eyJh......
 
 ### 4. Configure Environment Variables
 
-Create a `.env.local` file:
+Your local Supabase instance generates credentials automatically—you just need to plug them into the right spots.
+
+Create a `.env.local` file in the project root:
 
 ```bash
-cp .env.production.example .env.production.local
+touch .env.local
 ```
 
-Edit `.env.local` and add your **local** Supabase credentials from the output above:
+Now grab your local credentials:
+
+```bash
+supabase status -o env
+```
+
+This outputs your local Supabase configuration. **Map these values** to your `.env.local` file:
 
 ```env
-# Local Supabase instance (from supabase start output)
-NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-local-anon-key
+# Local Supabase credentials (from `supabase status -o env`)
+# Map the keys as follows:
+#   ANON_KEY → NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   API_URL → NEXT_PUBLIC_SUPABASE_URL
+#   SERVICE_ROLE_KEY → SUPABASE_SERVICE_ROLE_KEY
+
+NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:54321"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGci...your-anon-key-here"
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGci...your-service-role-key-here"
 ```
 
-> **Tip:** Run `supabase status` at any time to see your local credentials.
+> **What are these keys?**
+> - **Anon Key** - Used by the frontend for authenticated requests (respects Row Level Security policies)
+> - **Service Role Key** - Used by server-side code to bypass RLS when needed (use carefully!)
+> - **API URL** - Points to your local Supabase API endpoint
+
+> **Tip:** Run `supabase status -o env` anytime to retrieve your local credentials. The keys are stable across restarts (unless you reset with `--no-backup`).
 
 ### 5. Start the Development Server
 

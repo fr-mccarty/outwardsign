@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react'
 import { PageContainer } from "@/components/page-container"
 import { Loading } from '@/components/loading'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { UserPlus, User, Trash2, Save, X, Users } from "lucide-react"
+import { UserPlus, User, Trash2, Save, X, Users, Edit } from "lucide-react"
 import { getGroup, addGroupMember, removeGroupMember, updateGroupMemberRole, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
+import { GroupFormDialog } from '@/components/groups/group-form-dialog'
 import { getPeople } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
@@ -26,6 +28,7 @@ export default function GroupDetailPage({ params }: PageProps) {
   const [group, setGroup] = useState<GroupWithMembers | null>(null)
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState<string>('')
   const [memberRole, setMemberRole] = useState('')
@@ -127,7 +130,7 @@ export default function GroupDetailPage({ params }: PageProps) {
     try {
       await updateGroupMemberRole(groupId, member.person_id, newRole || undefined)
       toast.success('Role updated successfully')
-      
+
       // Reload group data
       const updatedGroup = await getGroup(groupId)
       if (updatedGroup) {
@@ -136,6 +139,19 @@ export default function GroupDetailPage({ params }: PageProps) {
     } catch (error) {
       console.error('Failed to update role:', error)
       toast.error('Failed to update role')
+    }
+  }
+
+  const handleEditSuccess = async (updatedGroupId: string) => {
+    // Reload group data after edit
+    const updatedGroup = await getGroup(updatedGroupId)
+    if (updatedGroup) {
+      setGroup(updatedGroup)
+      setBreadcrumbs([
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Groups", href: "/groups" },
+        { label: updatedGroup.name }
+      ])
     }
   }
 
@@ -164,10 +180,38 @@ export default function GroupDetailPage({ params }: PageProps) {
   }
 
   return (
-    <PageContainer 
+    <PageContainer
       title={group.name}
       description={group.description || "Manage group members and their roles"}
     >
+      {/* Group Details Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <CardTitle>{group.name}</CardTitle>
+                {!group.is_active && (
+                  <Badge variant="secondary">Inactive</Badge>
+                )}
+              </div>
+              {group.description && (
+                <CardDescription>{group.description}</CardDescription>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditDialogOpen(true)}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Group
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Member Management */}
       <div className="flex items-center justify-between mb-6">
         <div></div>
         <Button onClick={() => setAddMemberDialogOpen(true)}>
@@ -258,6 +302,14 @@ export default function GroupDetailPage({ params }: PageProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Group Dialog */}
+      <GroupFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        group={group}
+        onSuccess={handleEditSuccess}
+      />
 
       {/* Add Member Dialog */}
       <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
+import { formatDatePretty } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -64,11 +65,6 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
   const formatStipend = (cents: number | null | undefined) => {
     if (!cents) return 'No stipend'
     return `$${(cents / 100).toFixed(2)}`
-  }
-
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return 'No date'
-    return new Date(dateString).toLocaleDateString()
   }
 
   const getStatusVariant = (status: string) => {
@@ -164,13 +160,13 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
                 {intention.date_requested && (
                   <p className="text-muted-foreground">
                     <span className="font-medium">Date requested:</span>{' '}
-                    {formatDate(intention.date_requested)}
+                    {formatDatePretty(intention.date_requested)}
                   </p>
                 )}
                 {intention.date_received && (
                   <p className="text-muted-foreground">
                     <span className="font-medium">Date received:</span>{' '}
-                    {formatDate(intention.date_received)}
+                    {formatDatePretty(intention.date_received)}
                   </p>
                 )}
               </div>

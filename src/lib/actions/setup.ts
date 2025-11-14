@@ -563,8 +563,7 @@ export async function populateInitialParishData(parishId: string) {
       categories: reading.categories,
       language: reading.language,
       introduction: reading.introduction ?? null,
-      conclusion: reading.conclusion ?? null,
-      lectionary_id: reading.lectionary_id ?? null
+      conclusion: reading.conclusion ?? null
     }))
 
     const { data: readings, error: readingsError } = await supabase

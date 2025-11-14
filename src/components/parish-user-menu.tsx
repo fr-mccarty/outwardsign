@@ -179,22 +179,22 @@ export function ParishUserMenu() {
           variant="ghost"
           className="w-full justify-start gap-2 px-2 py-2 h-auto"
         >
-          <div className="flex items-center gap-2 flex-1">
-            <Avatar className="h-8 w-8">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarFallback className="text-xs">
                 {currentParish ? getParishInitials(currentParish) : getInitials(user.email)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col items-start overflow-hidden text-left">
-              <span className="text-sm font-medium truncate w-full">
+            <div className="flex flex-col items-start min-w-0 flex-1">
+              <span className="text-sm font-medium truncate max-w-full block">
                 {currentParish ? currentParish.name : user.email}
               </span>
-              <span className="text-xs text-muted-foreground truncate w-full">
+              <span className="text-xs text-muted-foreground truncate max-w-full block">
                 {currentParish ? `${currentParish.city}, ${currentParish.state}` : 'No parish selected'}
               </span>
             </div>
           </div>
-          <ChevronUp className="h-4 w-4 ml-auto" />
+          <ChevronUp className="h-4 w-4 flex-shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">

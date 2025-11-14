@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -127,8 +128,8 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
                 {quinceanera.quinceanera_event && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {quinceanera.quinceanera_event.start_date && new Date(quinceanera.quinceanera_event.start_date).toLocaleDateString()}
-                    {quinceanera.quinceanera_event.start_time && ` at ${quinceanera.quinceanera_event.start_time}`}
+                    {quinceanera.quinceanera_event.start_date && formatDatePretty(quinceanera.quinceanera_event.start_date)}
+                    {quinceanera.quinceanera_event.start_time && ` at ${formatTime(quinceanera.quinceanera_event.start_time)}`}
                   </div>
                 )}
               </div>

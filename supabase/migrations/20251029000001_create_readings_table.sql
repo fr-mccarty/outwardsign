@@ -7,7 +7,6 @@ CREATE TABLE readings (
   introduction TEXT,
   conclusion TEXT,
   language TEXT DEFAULT 'ENGLISH',
-  lectionary_id TEXT,
   categories TEXT[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -25,7 +24,6 @@ GRANT ALL ON readings TO service_role;
 CREATE INDEX idx_readings_parish_id ON readings(parish_id);
 CREATE INDEX idx_readings_pericope ON readings(pericope);
 CREATE INDEX idx_readings_language ON readings(language);
-CREATE INDEX idx_readings_lectionary_id ON readings(lectionary_id);
 CREATE INDEX idx_readings_categories ON readings USING GIN(categories);
 
 -- RLS Policies for readings

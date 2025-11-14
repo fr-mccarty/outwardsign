@@ -13,7 +13,6 @@ export interface Reading {
   created_at: string
   introduction: string | null
   language: string | null
-  lectionary_id: string | null
   pericope: string | null
   text: string | null
   parish_id: string | null
@@ -24,7 +23,6 @@ export interface CreateReadingData {
   conclusion?: string
   introduction?: string
   language?: string
-  lectionary_id?: string
   pericope: string
   text: string
 }
@@ -50,7 +48,6 @@ export async function createReading(data: CreateReadingData): Promise<Reading> {
         conclusion: data.conclusion || null,
         introduction: data.introduction || null,
         language: data.language || null,
-        lectionary_id: data.lectionary_id || null,
         pericope: data.pericope,
         text: data.text,
       },
@@ -88,7 +85,7 @@ export async function getReadings(filters?: ReadingFilterParams): Promise<Readin
 
   if (filters?.search) {
     // Use OR condition for search across multiple fields
-    query = query.or(`pericope.ilike.%${filters.search}%,text.ilike.%${filters.search}%,lectionary_id.ilike.%${filters.search}%`)
+    query = query.or(`pericope.ilike.%${filters.search}%,text.ilike.%${filters.search}%`)
   }
 
   query = query.order('created_at', { ascending: false })
@@ -134,7 +131,6 @@ export async function updateReading(id: string, data: CreateReadingData): Promis
       conclusion: data.conclusion || null,
       introduction: data.introduction || null,
       language: data.language || null,
-      lectionary_id: data.lectionary_id || null,
       pericope: data.pericope,
       text: data.text,
     })

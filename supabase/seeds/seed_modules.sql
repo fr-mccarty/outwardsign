@@ -768,175 +768,141 @@ BEGIN
   RAISE NOTICE 'Created % events', 12;
 
   -- ============================================================
-  -- READINGS: Create liturgical readings
+  -- READINGS: Create liturgical readings from canonical library
+  -- (First 10 readings from readingsData)
   -- ============================================================
 
-  -- Marriage First Reading
+  -- Reading 1: Matthew 5:1-12a
   INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
+    parish_id, pericope, text, categories, language, introduction, conclusion
   ) VALUES (
     v_parish_id,
-    'Genesis 1:26-28, 31a',
-    E'Then God said: Let us make human beings in our image, after our likeness. Let them have dominion over the fish of the sea, the birds of the air, the tame animals, all the wild animals, and all the creatures that crawl on the earth.\n\nGod created mankind in his image; in the image of God he created them; male and female he created them.\n\nGod blessed them and God said to them: Be fertile and multiply; fill the earth and subdue it. Have dominion over the fish of the sea, the birds of the air, and all the living things that crawl on the earth.\n\nGod looked at everything he had made, and found it very good.',
-    'A reading from the Book of Genesis',
-    'The word of the Lord.',
+    'Matthew 5:1-12a',
+    'When Jesus saw the crowds, he went up the mountain, and after he had sat down, his disciples came to him. He began to teach them, saying: Blessed are the poor in spirit, for theirs is the Kingdom of heaven. Blessed are they who mourn, for they will be comforted. Blessed are the meek, for they will inherit the land. Blessed are they who hunger and thirst for righteousness, for they will be satisfied. Blessed are the merciful, for they will be shown mercy. Blessed are the clean of heart, for they will see God. Blessed are the peacemakers, for they will be called children of God. Blessed are they who are persecuted for the sake of righteousness, for theirs is the Kingdom of heaven. Blessed are you when they insult you and persecute you and utter every kind of evil against you falsely because of me. Rejoice and be glad, for your reward will be great in heaven.',
+    ARRAY['FUNERAL', 'GOSPEL'],
     'ENGLISH',
-    'marriage-1-a',
-    ARRAY['marriage-1']
-  ) RETURNING id INTO v_first_reading_marriage_id;
-
-  -- Marriage Psalm
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Psalm 128:1-2, 3, 4-5',
-    E'R. Blessed are those who fear the Lord.\n\nBlessed are you who fear the LORD,\nwho walk in his ways!\nFor you shall eat the fruit of your handiwork;\nblessed shall you be, and favored.\n\nR. Blessed are those who fear the Lord.\n\nYour wife shall be like a fruitful vine\nin the recesses of your home;\nYour children like olive plants\naround your table.\n\nR. Blessed are those who fear the Lord.\n\nBehold, thus is the man blessed\nwho fears the LORD.\nThe LORD bless you from Zion:\nmay you see the prosperity of Jerusalem\nall the days of your life.\n\nR. Blessed are those who fear the Lord.',
-    'Responsorial Psalm',
-    NULL,
-    'ENGLISH',
-    'marriage-psalm-1',
-    ARRAY['marriage-psalm']
-  ) RETURNING id INTO v_psalm_marriage_id;
-
-  -- Marriage Second Reading
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    '1 Corinthians 13:4-13',
-    E'Brothers and sisters:\nLove is patient, love is kind. It is not jealous, love is not pompous, it is not inflated, it is not rude, it does not seek its own interests, it is not quick-tempered, it does not brood over injury, it does not rejoice over wrongdoing but rejoices with the truth. It bears all things, believes all things, hopes all things, endures all things.\n\nLove never fails. If there are prophecies, they will be brought to nothing; if tongues, they will cease; if knowledge, it will be brought to nothing. For we know partially and we prophesy partially, but when the perfect comes, the partial will pass away. When I was a child, I used to talk as a child, think as a child, reason as a child; when I became a man, I put aside childish things. At present we see indistinctly, as in a mirror, but then face to face. At present I know partially; then I shall know fully, as I am fully known. So faith, hope, love remain, these three; but the greatest of these is love.',
-    'A reading from the first Letter of Saint Paul to the Corinthians',
-    'The word of the Lord.',
-    'ENGLISH',
-    'marriage-2-b',
-    ARRAY['marriage-2']
-  ) RETURNING id INTO v_second_reading_marriage_id;
-
-  -- Marriage Gospel
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'John 15:9-12',
-    E'Jesus said to his disciples:\n"As the Father loves me, so I also love you. Remain in my love. If you keep my commandments, you will remain in my love, just as I have kept my Father''s commandments and remain in his love.\n\n"I have told you this so that my joy might be in you and your joy might be complete. This is my commandment: love one another as I love you."',
-    'A reading from the holy Gospel according to John',
-    'The Gospel of the Lord.',
-    'ENGLISH',
-    'marriage-gospel-4',
-    ARRAY['marriage-gospel']
-  ) RETURNING id INTO v_gospel_marriage_id;
-
-  -- Funeral First Reading
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Wisdom 3:1-6, 9',
-    E'The souls of the just are in the hand of God,\nand no torment shall touch them.\nThey seemed, in the view of the foolish, to be dead;\nand their passing away was thought an affliction\nand their going forth from us, utter destruction.\nBut they are in peace.\nFor if before men, indeed, they be punished,\nyet is their hope full of immortality;\nChastised a little, they shall be greatly blessed,\nbecause God tried them\nand found them worthy of himself.\nAs gold in the furnace, he proved them,\nand as sacrificial offerings he took them to himself.\nThose who trust in him shall understand truth,\nand the faithful shall abide with him in love:\nBecause grace and mercy are with his holy ones,\nand his care is with his elect.',
-    'A reading from the Book of Wisdom',
-    'The word of the Lord.',
-    'ENGLISH',
-    'funeral-1-a',
-    ARRAY['funeral-1']
-  ) RETURNING id INTO v_first_reading_funeral_id;
-
-  -- Funeral Psalm
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Psalm 23:1-3, 4, 5, 6',
-    E'R. The Lord is my shepherd; there is nothing I shall want.\n\nThe LORD is my shepherd; I shall not want.\nIn verdant pastures he gives me repose;\nBeside restful waters he leads me;\nhe refreshes my soul.\n\nR. The Lord is my shepherd; there is nothing I shall want.\n\nHe guides me in right paths\nfor his name''s sake.\nEven though I walk in the dark valley\nI fear no evil; for you are at my side\nWith your rod and your staff\nthat give me courage.\n\nR. The Lord is my shepherd; there is nothing I shall want.\n\nYou spread the table before me\nin the sight of my foes;\nYou anoint my head with oil;\nmy cup overflows.\n\nR. The Lord is my shepherd; there is nothing I shall want.\n\nOnly goodness and kindness follow me\nall the days of my life;\nAnd I shall dwell in the house of the LORD\nfor years to come.\n\nR. The Lord is my shepherd; there is nothing I shall want.',
-    'Responsorial Psalm',
-    NULL,
-    'ENGLISH',
-    'funeral-psalm-1',
-    ARRAY['funeral-psalm']
-  ) RETURNING id INTO v_psalm_funeral_id;
-
-  -- Funeral Gospel
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'John 11:21-27',
-    E'Martha said to Jesus,\n"Lord, if you had been here,\nmy brother would not have died.\nBut even now I know that whatever you ask of God,\nGod will give you."\nJesus said to her,\n"Your brother will rise."\nMartha said,\n"I know he will rise,\nin the resurrection on the last day."\nJesus told her,\n"I am the resurrection and the life;\nwhoever believes in me, even if he dies, will live,\nand everyone who lives and believes in me will never die.\nDo you believe this?"\nShe said to him, "Yes, Lord.\nI have come to believe that you are the Christ, the Son of God,\nthe one who is coming into the world."',
-    'A reading from the holy Gospel according to John',
-    'The Gospel of the Lord.',
-    'ENGLISH',
-    'funeral-gospel-3',
-    ARRAY['funeral-gospel']
-  ) RETURNING id INTO v_gospel_funeral_id;
-
-  -- Baptism First Reading
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Ezekiel 36:24-28',
-    E'Thus says the Lord GOD:\nI will take you away from among the nations,\ngather you from all the foreign lands,\nand bring you back to your own land.\nI will sprinkle clean water upon you\nto cleanse you from all your impurities,\nand from all your idols I will cleanse you.\nI will give you a new heart and place a new spirit within you,\ntaking from your bodies your stony hearts\nand giving you natural hearts.\nI will put my spirit within you and make you live by my statutes,\ncareful to observe my decrees.\nYou shall live in the land I gave your fathers;\nyou shall be my people, and I will be your God.',
-    'A reading from the Book of the Prophet Ezekiel',
-    'The word of the Lord.',
-    'ENGLISH',
-    'baptism-1-a',
-    ARRAY['baptism-1']
-  ) RETURNING id INTO v_first_reading_baptism_id;
-
-  -- Baptism Psalm
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Psalm 23:1-3a, 3b-4, 5, 6',
-    E'R. The Lord is my shepherd; there is nothing I shall want.\n\nThe LORD is my shepherd; I shall not want.\nIn verdant pastures he gives me repose;\nBeside restful waters he leads me;\nhe refreshes my soul.\n\nR. The Lord is my shepherd; there is nothing I shall want.\n\nHe guides me in right paths\nfor his name''s sake.\nEven though I walk in the dark valley\nI fear no evil; for you are at my side\nWith your rod and your staff\nthat give me courage.\n\nR. The Lord is my shepherd; there is nothing I shall want.\n\nYou spread the table before me\nin the sight of my foes;\nYou anoint my head with oil;\nmy cup overflows.\n\nR. The Lord is my shepherd; there is nothing I shall want.\n\nOnly goodness and kindness follow me\nall the days of my life;\nAnd I shall dwell in the house of the LORD\nfor years to come.\n\nR. The Lord is my shepherd; there is nothing I shall want.',
-    'Responsorial Psalm',
-    NULL,
-    'ENGLISH',
-    'baptism-psalm-1',
-    ARRAY['baptism-psalm']
-  ) RETURNING id INTO v_psalm_baptism_id;
-
-  -- Baptism Second Reading
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Romans 6:3-5',
-    E'Brothers and sisters:\nAre you unaware that we who were baptized into Christ Jesus\nwere baptized into his death?\nWe were indeed buried with him through baptism into death,\nso that, just as Christ was raised from the dead\nby the glory of the Father,\nwe too might live in newness of life.\n\nFor if we have grown into union with him through a death like his,\nwe shall also be united with him in the resurrection.',
-    'A reading from the Letter of Saint Paul to the Romans',
-    'The word of the Lord.',
-    'ENGLISH',
-    'baptism-2-a',
-    ARRAY['baptism-2']
-  ) RETURNING id INTO v_second_reading_baptism_id;
-
-  -- Baptism Gospel
-  INSERT INTO readings (
-    parish_id, pericope, text, introduction, conclusion,
-    language, lectionary_id, categories
-  ) VALUES (
-    v_parish_id,
-    'Matthew 28:18-20',
-    E'Jesus approached and said to his disciples:\n"All power in heaven and on earth has been given to me.\nGo, therefore, and make disciples of all nations,\nbaptizing them in the name of the Father,\nand of the Son, and of the Holy Spirit,\nteaching them to observe all that I have commanded you.\nAnd behold, I am with you always, until the end of the age."',
     'A reading from the holy Gospel according to Matthew',
-    'The Gospel of the Lord.',
-    'ENGLISH',
-    'baptism-gospel-1',
-    ARRAY['baptism-gospel']
-  ) RETURNING id INTO v_gospel_baptism_id;
+    'The Gospel of the Lord.'
+  );
 
-  RAISE NOTICE 'Created % readings', 11;
+  -- Reading 2: Matthew 11:25-30
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Matthew 11:25-30',
+    'At that time Jesus answered; I give praise to you, Father, Lord of heaven and earth, for although you have hidden these things from the wise and the learned you have revealed them to the childlike. Yes, Father, such has been your gracious will. All things have been handed over to me by my Father. No one knows the Son except the Father, and no one knows the Father except the Son and anyone to whom the Son wishes to reveal him. Come to me, all you who labor and are burdened, and I will give you rest. Take my yoke upon you and learn from me, for I am meek and humble of heart; and you will find rest for yourselves. For my yoke is easy, and my burden light.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Matthew',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 3: Matthew 25:1-13
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Matthew 25:1-13',
+    'Jesus told his disciples this parable: The Kingdom of heaven will be like ten virgins who took their lamps and went out to meet the bridegroom. Five of them were foolish and five were wise. The foolish ones, when taking their lamps, brought no oil with them, but the wise brought flasks of oil with their lamps. Since the bridegroom was long delayed, they all became drowsy and fell asleep. At midnight, there was a cry, Behold, the bridegroom! Come out to meet him! Then all those virgins got up and trimmed their lamps. The foolish ones said to the wise, Give us some of your oil, for our lamps are going out. But the wise ones replied, No, for there may not be enough for us and you. Go instead to the merchants and buy some for yourselves. While they went off to buy it, the bridegroom came and those who were ready went to the wedding feast with him. Then the door was locked. Afterwards the other virgins came and said, Lord, Lord, open the door for us! But he said in reply, Amen, I say to you, I do not know you. Therefore, stay awake, for you know neither the day nor the hour.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Matthew',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 4: Matthew 25:31-46
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Matthew 25:31-46',
+    'Jesus said to his disciples: When the Son of Man comes in his glory, and all the angels with him, he will sit upon his glorious throne, and all the nations will be assembled before him. And he will separate them one from another, as a shepherd separates the sheep from the goats. He will place the sheep on his right and the goats on his left. Then the king will say to those on his right, Come, you who are blessed by my Father. Inherit the kingdom prepared for you from the foundation of the world. For I was hungry and you gave me food. I was thirsty and you gave me drink, a stranger and you welcomed me, naked and you clothed me, ill and you cared for me, in prison and you visited me. Then the righteous will answer him and say, Lord, when did we see you hungry and feed you, or thirsty and give you drink? When did we see you a stranger and welcome you, or naked and clothe you? When did we see you ill or in prison, and visit you? And the king will say to them in reply, Amen, I say to you, whatever you did for one of these least brothers of mine, you did for me. Then he will say to those on his left, Depart from me, you accursed, into the eternal fire prepared for the Devil and his angels. For I was hungry and you gave me no food, I was thirsty and you gave me no drink, a stranger and you gave me no welcome, naked and you gave me no clothing, ill and in prison, and you did not care for me. Then they will answer and say, Lord, when did we see you hungry or thirsty or a stranger or naked or ill or in prison, and not minister to your needs? He will answer them, Amen, I say to you, what you did not do for one of these least ones, you did not do for me. And these will go off to eternal punishment, but the righteous to eternal life.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Matthew',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 5: Mark 15:33-39;16:1-6
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Mark 15:33-39;16:1-6',
+    'At noon darkness came over the whole land until three in the afternoon. And at three oclock Jesus cried out in a loud voice, Eloi, Eloi, lema sabachthani? which is translated, My God, my God, why have you forsaken me? Some of the bystanders who heard it said, Look, he is calling Elijah. One of them ran, soaked a sponge with wine, put it on a reed, and gave it to him to drink, saying, Wait, let us see if Elijah comes to take him down. Jesus gave a loud cry and breathed his last. The veil of the sanctuary was torn in two from top to bottom. When the centurion who stood facing him saw how he breathed his last he said, Truly this man was the Son of God! When the Sabbath was over, Mary Magdalene, Mary, the mother of James, and Salome bought spices so that they might go and anoint him. Very early when the sun had risen, on the first day of the week, they came to the tomb. They were saying to one another, Who will roll back the stone for us from the entrance to the tomb? When they looked up, they saw that the stone had been rolled back; it was very large. On entering the tomb they saw a young man sitting on the right side, clothed in a white robe, and they were utterly amazed. He said to them, Do not be amazed! You seek Jesus of Nazareth, the crucified. He has been raised; he is not here. Behold the place where they laid him.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Mark',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 6: Luke 7:11-17
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Luke 7:11-17',
+    'Jesus journeyed to a city called Nain, and his disciples and a large crowd accompanied him. As he drew near to the gate of the city, a man who had died was being carried out, the only son of his mother, and she was a widow. A large crowd from the city was with her. When the Lord saw her, he was moved with pity for her and said to her, Do not weep. He stepped forward and touched the coffin; at this the bearers halted, and he said, Young man, I tell you, arise! The dead man sat up and began to speak, and Jesus gave him to his mother. Fear seized them all, and they glorified God, exclaiming, A great prophet has arisen in our midst, and God has visited his people. This report about him spread through the whole of Judea and in all the surrounding region.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Luke',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 7: Luke 12:35-40
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Luke 12:35-40',
+    'Jesus said to his disciples: Gird your loins and light your lamps and be like servants who await their master return from a wedding, ready to open immediately when he comes and knocks. Blessed are those servants whom the master finds vigilant on his arrival. Amen, I say to you, he will gird himself, have them recline at table, and proceed to wait on them. And should he come in the second or third watch and find them prepared in this way, blessed are those servants. Be sure of this: if the master of the house had known the hour when the thief was coming, he would not have let his house be broken into. You also must be prepared, for at an hour you do not expect, the Son of Man will come.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Luke',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 8: Luke 23:33,39-43
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Luke 23:33,39-43',
+    'When the soldiers came to the place called the Skull, they crucified Jesus and the criminals there, one on his right, the other on his left. Now one of the criminals hanging there reviled Jesus, saying, Are you not the Christ? Save yourself and us. The other man, however, rebuking him, said in reply, Have you no fear of God, for you are subject to the same condemnation? And indeed, we have been condemned justly, for the sentence we received corresponds to our crimes, but this man has done nothing criminal. Then he said, Jesus, remember me when you come into your Kingdom. He replied to him, Amen, I say to you, today you will be with me in Paradise.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Luke',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 9: Luke 23:44-46,50,52;24:1-6a
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Luke 23:44-46,50,52;24:1-6a',
+    'It was about noon and darkness came over the whole land until three in the afternoon because of an eclipse of the sun. Then the veil of the temple was torn down the middle. Jesus cried out in a loud voice, Father, into your hands I commend my spirit; and when he had said this he breathed his last. Now there was a virtuous and righteous man named Joseph who, though he was a member of the council, went to Pilate and asked for the Body of Jesus. After he had taken the Body down, he wrapped it in a linen cloth and laid him in a rock-hewn tomb in which no one had yet been buried. At daybreak on the first day of the week the women took the spices they had prepared and went to the tomb. They found the stone rolled away from the tomb; but when they entered, they did not find the Body of the Lord Jesus. While they were puzzling over this, behold, two men in dazzling garments appeared to them. They were terrified and bowed their faces to the ground. They said to them, Why do you seek the living one among the dead? He is not here, but he has been raised.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Luke',
+    'The Gospel of the Lord.'
+  );
+
+  -- Reading 10: Luke 24:13-35
+  INSERT INTO readings (
+    parish_id, pericope, text, categories, language, introduction, conclusion
+  ) VALUES (
+    v_parish_id,
+    'Luke 24:13-35',
+    'That very day, the first day of the week, two of the disciples of Jesus were going to a village called Emmaus, seven miles from Jerusalem, and they were conversing about all the things that had occurred. And it happened that while they were conversing and debating, Jesus himself drew near and walked with them, but their eyes were prevented from recognizing him. He asked them, What are you discussing as you walk along? They stopped, looking downcast. One of them, named Cleopas, said to him in reply, Are you the only visitor to Jerusalem who does not know of the things that have taken place there in these days? And he replied to them, What sort of things? They said to him, The things that happened to Jesus the Nazarene, who was a prophet mighty in deed and word before God and all the people, how our chief priests and rulers both handed him over to a sentence of death and crucified him. But we were hoping that he would be the one to redeem Israel; and besides all this, it is now the third day since this took place. Some women from our group, however, have astounded us; they were at the tomb early in the morning and did not find his Body; they came back and reported that they had indeed seen a vision of angels who announced that he was alive. Then some of those with us went to the tomb and found things just as the women had described, but him they did not see. And he said to them, Oh, how foolish you are! How slow of heart to believe all that the prophets spoke! Was it not necessary that the Christ should suffer these things and enter into his glory? Then beginning with Moses and all the prophets, Jesus interpreted to them what referred to him in all the Scriptures. As they approached the village to which they were going, Jesus gave the impression that he was going on farther. But they urged him, Stay with us, for it is nearly evening and the day is almost over. So he went in to stay with them. And it happened that, while he was with them at table, he took bread, said the blessing, broke it, and gave it to them. With that their eyes were opened and they recognized him, but he vanished from their sight. Then they said to each other, Were not our hearts burning within us while he spoke to us on the way and opened the Scriptures to us? So they set out at once and returned to Jerusalem where they found gathered together the Eleven and those with them, who were saying, The Lord has truly been raised and has appeared to Simon! Then the two recounted what had taken place on the way and how he was made known to them in the breaking of the bread.',
+    ARRAY['FUNERAL', 'GOSPEL'],
+    'ENGLISH',
+    'A reading from the holy Gospel according to Luke',
+    'The Gospel of the Lord.'
+  );
+
+  RAISE NOTICE 'Created % readings', 10;
 
   -- ============================================================
   -- Get a liturgical event for mass (if available)

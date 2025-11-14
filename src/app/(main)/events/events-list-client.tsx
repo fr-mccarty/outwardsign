@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -57,16 +58,6 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   }
 
   const hasActiveFilters = searchTerm || selectedEventType !== 'all' || selectedLanguage !== 'all'
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null
-    return new Date(dateString).toLocaleDateString()
-  }
-
-  const formatTime = (timeString?: string) => {
-    if (!timeString) return null
-    return timeString
-  }
 
   return (
     <div className="space-y-6">
@@ -152,7 +143,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                     <div className="flex items-center gap-2">
                       <CalendarDays className="h-3 w-3 text-muted-foreground" />
                       <span className="text-muted-foreground">
-                        {formatDate(event.start_date)}
+                        {formatDatePretty(event.start_date)}
                         {event.start_time && ` at ${formatTime(event.start_time)}`}
                       </span>
                     </div>

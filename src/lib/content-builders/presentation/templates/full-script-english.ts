@@ -9,7 +9,7 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName } from '@/lib/utils/formatters'
+import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
 import {
   getChildName,
   getChildSex,

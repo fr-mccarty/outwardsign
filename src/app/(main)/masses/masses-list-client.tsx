@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MASS_STATUS_VALUES, MASS_STATUS_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -60,13 +61,6 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
   }
 
   const hasActiveFilters = searchValue || selectedStatus !== 'all'
-
-  const formatEventDateTime = (event: any) => {
-    if (!event) return 'No event scheduled'
-    const date = event.start_date ? new Date(event.start_date).toLocaleDateString() : 'No date'
-    const time = event.start_time || ''
-    return time ? `${date} at ${time}` : date
-  }
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -147,7 +141,8 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
                 {mass.event && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {formatEventDateTime(mass.event)}
+                    {mass.event.start_date && formatDatePretty(mass.event.start_date)}
+                    {mass.event.start_time && ` at ${formatTime(mass.event.start_time)}`}
                   </div>
                 )}
               </div>

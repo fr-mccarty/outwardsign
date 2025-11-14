@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
   total: number
@@ -132,8 +133,8 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
                 {presentation.presentation_event && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {presentation.presentation_event.start_date && new Date(presentation.presentation_event.start_date).toLocaleDateString()}
-                    {presentation.presentation_event.start_time && ` at ${presentation.presentation_event.start_time}`}
+                    {presentation.presentation_event.start_date && formatDatePretty(presentation.presentation_event.start_date)}
+                    {presentation.presentation_event.start_time && ` at ${formatTime(presentation.presentation_event.start_time)}`}
                   </div>
                 )}
               </div>

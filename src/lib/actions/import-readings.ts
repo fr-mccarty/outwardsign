@@ -62,7 +62,6 @@ export async function importReadings(): Promise<ImportResult> {
             text: reading.text,
             categories: reading.categories,
             language: reading.language || 'English',
-            lectionary_id: reading.lectionary_id || null,
             introduction: reading.introduction || null,
             conclusion: reading.conclusion || null
           })

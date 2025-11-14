@@ -1,31 +1,24 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { PageContainer } from "@/components/page-container"
 import { Loading } from '@/components/loading'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FormField } from "@/components/ui/form-field"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { Plus, Edit, Trash2, Users, Save, X, UserPlus } from "lucide-react"
-import { getGroups, createGroup, updateGroup, deleteGroup, type Group, type CreateGroupData, type UpdateGroupData } from '@/lib/actions/groups'
+import { Plus, Edit, Trash2, Users, UserPlus } from "lucide-react"
+import { getGroups, deleteGroup, type Group } from '@/lib/actions/groups'
+import { GroupFormDialog } from '@/components/groups/group-form-dialog'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function GroupsPage() {
+  const router = useRouter()
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    is_active: true
-  })
-  const [saving, setSaving] = useState(false)
   const { setBreadcrumbs } = useBreadcrumbs()
 
   useEffect(() => {
@@ -51,28 +44,24 @@ export default function GroupsPage() {
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      is_active: true
-    })
-  }
-
   const handleCreate = () => {
-    resetForm()
     setEditingGroup(null)
-    setCreateDialogOpen(true)
+    setDialogOpen(true)
   }
 
   const handleEdit = (group: Group) => {
-    setFormData({
-      name: group.name,
-      description: group.description || '',
-      is_active: group.is_active
-    })
     setEditingGroup(group)
-    setCreateDialogOpen(true)
+    setDialogOpen(true)
+  }
+
+  const handleSuccess = async (groupId: string) => {
+    if (editingGroup) {
+      // Edit mode - reload the list
+      await loadGroups()
+    } else {
+      // Create mode - redirect to view page
+      router.push(`/groups/${groupId}`)
+    }
   }
 
   const handleDelete = async (group: Group) => {
@@ -87,43 +76,6 @@ export default function GroupsPage() {
     } catch (error) {
       console.error('Failed to delete group:', error)
       toast.error('Failed to delete group')
-    }
-  }
-
-  const handleSubmit = async () => {
-    if (!formData.name.trim()) {
-      toast.error('Group name is required')
-      return
-    }
-
-    setSaving(true)
-    try {
-      if (editingGroup) {
-        const updateData: UpdateGroupData = {}
-        if (formData.name !== editingGroup.name) updateData.name = formData.name
-        if (formData.description !== (editingGroup.description || '')) updateData.description = formData.description || undefined
-        if (formData.is_active !== editingGroup.is_active) updateData.is_active = formData.is_active
-
-        await updateGroup(editingGroup.id, updateData)
-        toast.success('Group updated successfully')
-      } else {
-        const createData: CreateGroupData = {
-          name: formData.name,
-          description: formData.description || undefined,
-          is_active: formData.is_active
-        }
-        await createGroup(createData)
-        toast.success('Group created successfully')
-      }
-      
-      setCreateDialogOpen(false)
-      resetForm()
-      await loadGroups()
-    } catch (error) {
-      console.error('Failed to save group:', error)
-      toast.error('Failed to save group')
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -229,60 +181,12 @@ export default function GroupsPage() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingGroup ? 'Edit Group' : 'Create New Group'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <FormField
-              id="name"
-              label="Group Name"
-              value={formData.name}
-              onChange={(value) => setFormData({...formData, name: value})}
-              placeholder="e.g., Choir, Youth Servers, Wedding Team"
-              required
-            />
-            
-            <FormField
-              id="description"
-              label="Description"
-              inputType="textarea"
-              value={formData.description}
-              onChange={(value) => setFormData({...formData, description: value})}
-              description="Optional description of the group's purpose or special notes"
-            />
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({...formData, is_active: checked})}
-              />
-              <Label htmlFor="is_active">Active</Label>
-            </div>
-            
-            <div className="flex gap-2 justify-end">
-              <Button 
-                variant="outline" 
-                onClick={() => setCreateDialogOpen(false)}
-                disabled={saving}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
-                {saving ? 'Saving...' : editingGroup ? 'Update' : 'Create'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <GroupFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        group={editingGroup}
+        onSuccess={handleSuccess}
+      />
     </PageContainer>
   )
 }

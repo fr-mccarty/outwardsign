@@ -201,9 +201,6 @@ export function MassIntentionViewClient({ intention }: MassIntentionViewClientPr
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">
-                    Mass ID: {intention.mass.id}
-                  </p>
                   <p className="text-sm text-muted-foreground">
                     Status: {intention.mass.status}
                   </p>

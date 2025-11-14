@@ -10,7 +10,13 @@ import {
   ContentSection,
   ContentElement,
 } from '@/lib/types/liturgy-content'
-import { ELEMENT_STYLES, LITURGY_COLORS, LITURGY_FONT, convert } from '@/lib/styles/liturgical-script-styles'
+import {
+  ELEMENT_STYLES,
+  LITURGY_FONT,
+  convert,
+  resolveElementStyle,
+  type ResolvedStyle,
+} from '@/lib/styles/liturgical-script-styles'
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -18,6 +24,7 @@ import { ELEMENT_STYLES, LITURGY_COLORS, LITURGY_FONT, convert } from '@/lib/sty
 
 /**
  * Convert alignment string to docx AlignmentType
+ * Pure converter - no style lookups
  */
 function getAlignmentType(alignment: 'left' | 'center' | 'right' | 'justify'): typeof AlignmentType[keyof typeof AlignmentType] {
   switch (alignment) {
@@ -33,27 +40,13 @@ function getAlignmentType(alignment: 'left' | 'center' | 'right' | 'justify'): t
 }
 
 /**
- * Get color in Word format (without # prefix)
+ * Apply resolved style to create a Word paragraph
+ * Pure converter - no style lookups
  */
-function getColor(color: 'black' | 'liturgy-red'): string {
-  return color === 'liturgy-red'
-    ? LITURGY_COLORS.liturgyRed.replace('#', '')
-    : LITURGY_COLORS.black.replace('#', '')
-}
-
-/**
- * Create a Word paragraph from element style
- */
-function createStyledParagraph(
-  elementType: keyof typeof ELEMENT_STYLES,
+function applyResolvedStyleToParagraph(
+  style: ResolvedStyle,
   textRuns: TextRun[]
 ): Paragraph {
-  if (elementType === 'spacer') {
-    return new Paragraph({ children: [] })
-  }
-
-  const style = ELEMENT_STYLES[elementType]
-
   return new Paragraph({
     children: textRuns,
     alignment: getAlignmentType(style.alignment),
@@ -66,27 +59,20 @@ function createStyledParagraph(
 }
 
 /**
- * Create a TextRun with element style
+ * Apply resolved style to create a Word TextRun
+ * Pure converter - no style lookups
  */
-function createStyledTextRun(
-  elementType: keyof typeof ELEMENT_STYLES,
-  text: string,
-  overrides?: { bold?: boolean; italics?: boolean; color?: string }
+function applyResolvedStyleToTextRun(
+  style: ResolvedStyle,
+  text: string
 ): TextRun {
-  const style = ELEMENT_STYLES[elementType]
-
-  // Spacer doesn't have fontSize, so check for it
-  if (!('fontSize' in style)) {
-    throw new Error(`Element type ${elementType} does not support text runs`)
-  }
-
   return new TextRun({
     font: LITURGY_FONT,
     text: text,
     size: convert.pointsToHalfPoints(style.fontSize),
-    bold: overrides?.bold !== undefined ? overrides.bold : style.bold,
-    italics: overrides?.italics !== undefined ? overrides.italics : style.italic,
-    color: overrides?.color || getColor(style.color as 'black' | 'liturgy-red'),
+    bold: style.bold,
+    italics: style.italic,
+    color: convert.colorToWord(style.color),
   })
 }
 
@@ -146,8 +132,8 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
 
     case 'response':
       return createStyledParagraph('response', [
-        createStyledTextRun('response', element.label || '', { bold: true }),
-        createStyledTextRun('response', ' ' + (element.text || '')),
+        createStyledTextRun('response-label', element.label || ''),
+        createStyledTextRun('response-text', ' ' + (element.text || '')),
       ])
 
     case 'priest-dialogue':
@@ -157,11 +143,8 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
 
     case 'petition':
       return createStyledParagraph('petition', [
-        createStyledTextRun('petition', element.label || '', {
-          bold: true,
-          color: LITURGY_COLORS.liturgyRed.replace('#', ''),
-        }),
-        createStyledTextRun('petition', ' ' + (element.text || '')),
+        createStyledTextRun('petition-label', element.label || ''),
+        createStyledTextRun('petition-text', ' ' + (element.text || '')),
       ])
 
     case 'text':
@@ -188,17 +171,8 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
       const infoStyle = ELEMENT_STYLES['info-row']
       return new Paragraph({
         children: [
-          new TextRun({
-            font: LITURGY_FONT,
-            text: element.label,
-            size: convert.pointsToHalfPoints(infoStyle.fontSize),
-            bold: true,
-          }),
-          new TextRun({
-            font: LITURGY_FONT,
-            text: ' ' + element.value,
-            size: convert.pointsToHalfPoints(infoStyle.fontSize),
-          }),
+          createStyledTextRun('info-row-label', element.label),
+          createStyledTextRun('info-row-value', ' ' + element.value),
         ],
         spacing: {
           before: convert.pointsToTwips(infoStyle.marginTop),

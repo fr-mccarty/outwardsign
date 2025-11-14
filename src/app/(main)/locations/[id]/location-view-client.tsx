@@ -147,14 +147,6 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
                     {new Date(location.updated_at).toLocaleString()}
                   </p>
                 </div>
-                <div className="md:col-span-2">
-                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                    Location ID
-                  </h4>
-                  <p className="text-xs font-mono text-muted-foreground">
-                    {location.id}
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>

@@ -21,12 +21,10 @@ test.describe('Readings Module', () => {
     const testPericope = 'John 3:16-17';
     const testText = 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.';
     const testLanguage = 'English';
-    const testLectionaryId = 'Test-1A';
     const testIntroduction = 'A reading from the Gospel of John';
     const testConclusion = 'The Gospel of the Lord';
 
     await page.fill('input#pericope', testPericope);
-    await page.fill('input#lectionary_id', testLectionaryId);
 
     // Select language from dropdown
     await page.click('#language');
@@ -46,7 +44,6 @@ test.describe('Readings Module', () => {
     await expect(page.getByRole('heading', { name: testPericope }).first()).toBeVisible();
     await expect(page.locator(`text=${testText}`).first()).toBeVisible();
     await expect(page.locator(`text=${testLanguage}`).first()).toBeVisible();
-    await expect(page.locator(`text=${testLectionaryId}`).first()).toBeVisible();
 
     // Get the reading ID from URL for later use
     const readingUrl = page.url();

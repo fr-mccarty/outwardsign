@@ -2,7 +2,7 @@
 
 > **Documentation for Setting Up Liturgical Scripts**
 >
-> This file documents how to set up the liturgical script system for a new module (templates, print pages, PDF/Word exports). For daily reference on content elements and styling, see [LITURGICAL_SCRIPT_QUICK_REFERENCE.md](./LITURGICAL_SCRIPT_QUICK_REFERENCE.md).
+> This file documents how to set up the liturgical script system for a new module (templates, print pages, PDF/Word exports). For daily reference on content elements and styling, see [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md).
 
 ## Table of Contents
 
@@ -33,7 +33,7 @@
 - Renderers: `src/lib/renderers/` (html-renderer.tsx, pdf-renderer.ts, word-renderer.ts)
 - Shared builders: `src/lib/content-builders/shared/script-sections.ts`
 
-**For element types and styling parameters, see [LITURGICAL_SCRIPT_QUICK_REFERENCE.md](./LITURGICAL_SCRIPT_QUICK_REFERENCE.md).**
+**For element types and styling parameters, see [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md).**
 
 ---
 
@@ -942,6 +942,7 @@ When adding liturgical scripts to a new module:
 
 ## Related Documentation
 
-- **[LITURGICAL_SCRIPT_QUICK_REFERENCE.md](./LITURGICAL_SCRIPT_QUICK_REFERENCE.md)** - Element types, styling parameters, examples
+- **[LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md)** - Element types, usage rules, styling parameters, examples
+- **[STYLE_VALUES.md](./STYLE_VALUES.md)** - Easy-to-edit style value reference
 - **[CLAUDE.md](../CLAUDE.md)** - Module structure and patterns
 - **[MODULE_CHECKLIST.md](./MODULE_CHECKLIST.md)** - Complete module creation checklist

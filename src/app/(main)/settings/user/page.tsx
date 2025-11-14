@@ -46,11 +46,9 @@ export default function UserSettingsPage() {
       // Only send the fields that are managed by this form
       // Don't send selected_parish_id since it's not part of this form
       const updateData = {
-        language: formData.language || userSettings.language,
-        full_name: formData.full_name,
-        avatar_url: formData.avatar_url
+        language: formData.language || userSettings.language
       }
-      
+
       await updateSettings(updateData)
       toast.success('Settings saved successfully!')
     } catch (error) {
@@ -134,20 +132,10 @@ export default function UserSettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label>Full Name</Label>
-                  <Input
-                    className="mt-1"
-                    placeholder="Enter your full name"
-                    value={formData.full_name || ''}
-                    onChange={(e) => updateFormData({ full_name: e.target.value })}
-                  />
-                </div>
-
-                <div>
                   <Label>Preferred Language</Label>
-                  <Select 
-                    value={formData.language} 
-                    onValueChange={(value: 'en' | 'es' | 'fr' | 'la') => 
+                  <Select
+                    value={formData.language}
+                    onValueChange={(value: 'en' | 'es' | 'fr' | 'la') =>
                       updateFormData({ language: value })
                     }
                   >
@@ -248,11 +236,6 @@ export default function UserSettingsPage() {
               <CardTitle>Account Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label className="text-muted-foreground">Full Name</Label>
-                <p className="mt-1 font-medium truncate">{userSettings?.full_name || 'Not set'}</p>
-              </div>
-
               <div>
                 <Label className="text-muted-foreground">Email</Label>
                 <p className="mt-1 font-medium">{user.email}</p>
