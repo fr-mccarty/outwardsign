@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { z } from "zod"
 import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +22,20 @@ import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, BAPTISM_TEMPLATE_VALUES, BA
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import type { Person, Event } from "@/lib/types"
+
+// Zod validation schema
+const baptismSchema = z.object({
+  baptism_event_id: z.string().optional(),
+  child_id: z.string().optional(),
+  mother_id: z.string().optional(),
+  father_id: z.string().optional(),
+  sponsor_1_id: z.string().optional(),
+  sponsor_2_id: z.string().optional(),
+  presider_id: z.string().optional(),
+  status: z.string().optional(),
+  baptism_template_id: z.string().optional(),
+  note: z.string().optional()
+})
 
 interface BaptismFormProps {
   baptism?: BaptismWithRelations
@@ -92,7 +107,8 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
     setValidationErrors({})
 
     try {
-      const formData: CreateBaptismData = {
+      // Validate with Zod
+      const formData = baptismSchema.parse({
         baptism_event_id: baptismEvent.value?.id,
         child_id: child.value?.id,
         mother_id: mother.value?.id,
@@ -103,20 +119,24 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
         status: status || undefined,
         baptism_template_id: baptismTemplateId || undefined,
         note: note || undefined,
-      }
+      })
 
       if (isEditing && baptism) {
         await updateBaptism(baptism.id, formData)
         toast.success('Baptism updated successfully')
-        router.refresh()
+        router.push(`/baptisms/${baptism.id}`)
       } else {
         const newBaptism = await createBaptism(formData)
         toast.success('Baptism created successfully')
         router.push(`/baptisms/${newBaptism.id}`)
       }
     } catch (error) {
-      console.error('Error saving baptism:', error)
-      toast.error('Failed to save baptism. Please try again.')
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)
+      } else {
+        console.error('Error saving baptism:', error)
+        toast.error('Failed to save baptism. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }

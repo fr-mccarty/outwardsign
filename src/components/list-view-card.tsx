@@ -24,7 +24,7 @@ interface ListViewCardProps {
 export function ListViewCard({ title, editHref, viewHref, viewButtonText = "View Details", children }: ListViewCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 overflow-hidden">
             <CardTitle className="text-lg line-clamp-1">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -38,6 +38,16 @@ export function EventFormFields({
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [showCommonTimesModal, setShowCommonTimesModal] = useState(false)
+
+  // Initialize selectedLocation from formData.location if it exists
+  useEffect(() => {
+    if (formData.location && typeof formData.location === 'object') {
+      setSelectedLocation(formData.location as Location)
+    } else if (!formData.location_id) {
+      // If there's no location_id, clear the selected location
+      setSelectedLocation(null)
+    }
+  }, [formData.location, formData.location_id])
 
   const isFieldVisible = (fieldName: string) => {
     if (!visibleFields) return true
@@ -226,11 +236,9 @@ export function EventFormFields({
         onSelect={(location) => {
           setSelectedLocation(location)
           updateField('location_id', location.id)
-          setShowLocationPicker(false)
         }}
         selectedLocationId={selectedLocation?.id}
-        editMode={selectedLocation !== null}
-        locationToEdit={selectedLocation}
+        openToNewLocation={!selectedLocation}
       />
     </>
   )

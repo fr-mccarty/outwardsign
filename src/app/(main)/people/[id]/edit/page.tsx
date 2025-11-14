@@ -1,9 +1,8 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getPerson } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { PersonForm } from '../../person-form'
+import { PersonFormWrapper } from '../../person-form-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -35,14 +34,14 @@ export default async function EditPersonPage({ params }: PageProps) {
   ]
 
   return (
-    <PageContainer
-      title="Edit Person"
-      description="Update the person details."
-      cardTitle="Person Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <PersonForm person={person} />
-    </PageContainer>
+      <PersonFormWrapper
+        person={person}
+        title="Edit Person"
+        description="Update the person details."
+        saveButtonLabel="Save Person"
+      />
+    </>
   )
 }

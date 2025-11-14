@@ -158,4 +158,127 @@ test.describe('Masses Module', () => {
     await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
   });
+
+  test('should create mass with new event and new location via nested pickers', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Navigate to mass creation page
+    await page.goto('/masses/create');
+    await expect(page).toHaveURL('/masses/create');
+    await expect(page.getByRole('heading', { name: 'Create Mass' })).toBeVisible();
+
+    // Click "Select Event" button to open EventPicker
+    await page.getByRole('button', { name: /Select Event/i }).click();
+
+    // Wait for Event Picker dialog
+    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Event/i })).toBeVisible();
+
+    // Form should auto-open when no event is selected (openToNewEvent=true)
+    // Wait a moment for form to be ready
+    await page.waitForTimeout(300);
+
+    // Fill in event details
+    const eventName = `Holy Mass ${Date.now()}`;
+    await page.locator('[role="dialog"]').getByLabel('Name').fill(eventName);
+    await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-12-08');
+
+    // Time field - use input#start_time since label includes asterisk
+    await page.locator('[role="dialog"]').locator('input#start_time').fill('10:00');
+
+    // Click "Select Location" button to open nested LocationPicker
+    await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
+
+    // Wait for nested location picker to appear
+    await page.waitForTimeout(500);
+
+    // Location form should auto-open (openToNewLocation behavior)
+    // Wait for form to be ready
+    await page.waitForTimeout(300);
+
+    // Fill in location details - clear the name field first (has default value)
+    const locationName = `Sacred Heart Church ${Date.now()}`;
+    const nameInput = page.locator('[role="dialog"]').last().getByRole('textbox').first();
+    await nameInput.clear();
+    await nameInput.fill(locationName);
+
+    // Fill optional location fields
+    const streetInput = page.locator('[role="dialog"]').last().getByLabel('Street');
+    if (await streetInput.isVisible()) {
+      await streetInput.fill('789 Parish Boulevard');
+    }
+
+    const cityInput = page.locator('[role="dialog"]').last().getByLabel('City');
+    if (await cityInput.isVisible()) {
+      await cityInput.fill('Springfield');
+    }
+
+    const stateInput = page.locator('[role="dialog"]').last().getByLabel('State');
+    if (await stateInput.isVisible()) {
+      await stateInput.fill('IL');
+    }
+
+    // Submit location creation (button text is "Save Location")
+    await page.locator('[role="dialog"]').last().getByRole('button', { name: /Save Location/i }).click();
+
+    // Wait for location picker to close (but event picker should still be open)
+    await page.waitForTimeout(2000);
+
+    // Verify location picker closed - should now only have 1 dialog (the event picker)
+    const dialogsAfterLocation = await page.locator('[role="dialog"]').count();
+    expect(dialogsAfterLocation).toBe(1);
+
+    // Verify we're still in the event picker (has "Select Event" heading)
+    await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Event/i })).toBeVisible();
+
+    // Now submit the event creation (button text is "Save Event")
+    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await page.waitForTimeout(2000);
+
+    // Event picker should close - now there should be no dialogs
+    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+
+    // Event should be auto-selected and visible in the mass form
+    // The event displays as a formatted date/time button (e.g., "Mon, Dec 8, 2025 at 10:00 AM")
+    await expect(page.getByRole('button', { name: /Dec 8, 2025 at 10:00/i })).toBeVisible();
+
+    // Verify we're still on the mass create page (no redirect)
+    await expect(page).toHaveURL('/masses/create');
+
+    // Add some notes to the mass
+    const massNotes = `Mass created with new event and location - Test ${Date.now()}`;
+    await page.fill('textarea#note', massNotes);
+
+    // Scroll to bottom and submit the mass form
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const submitButton = page.locator('button[type="submit"]').last();
+    await submitButton.scrollIntoViewIfNeeded();
+    await submitButton.click();
+
+    // Should redirect to the mass detail page (navigation proves success)
+    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    // Get the mass ID from URL
+    const massUrl = page.url();
+    const massId = massUrl.split('/').pop();
+    console.log(`Created mass with ID: ${massId}`);
+
+    // Verify we're on the mass view page
+    await expect(page.getByRole('heading', { name: /Mass/i }).first()).toBeVisible();
+
+    // Verify the event appears on the view page (displayed as text with date/time)
+    await expect(page.getByText(/December 8, 2025 at 10:00/i)).toBeVisible();
+
+    // Navigate to edit page to verify all data was saved correctly
+    await page.goto(`/masses/${massId}/edit`);
+    await expect(page).toHaveURL(`/masses/${massId}/edit`);
+
+    // Verify the notes field contains our text
+    await expect(page.locator('textarea#note')).toHaveValue(massNotes);
+
+    // Verify event is still selected (formatted as date/time button)
+    await expect(page.getByRole('button', { name: /Dec 8, 2025 at 10:00/i })).toBeVisible();
+
+    console.log(`Successfully verified mass ${massId} with event and location created via nested pickers`);
+  });
 });

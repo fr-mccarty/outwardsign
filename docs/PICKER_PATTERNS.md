@@ -1,6 +1,13 @@
 # Picker Modal Patterns
 
-This document describes the critical behavioral patterns for picker modal components in Outward Sign.
+> **Purpose:** Critical behavioral rules and patterns that ALL picker modals must follow.
+>
+> **See Also:**
+> - **[PICKERS.md](./PICKERS.md)** - Comprehensive picker system architecture and implementation guide
+> - **[PICKER_EDIT_MODE.md](./PICKER_EDIT_MODE.md)** - Inline editing of related entities
+> - **[COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md)** - Quick reference for picker props
+
+This document describes the **critical behavioral patterns** for picker modal components in Outward Sign. These rules apply to ALL pickers (PeoplePicker, EventPicker, LocationPicker, etc.).
 
 ## 🔴 Picker Modal Behavior (Critical)
 

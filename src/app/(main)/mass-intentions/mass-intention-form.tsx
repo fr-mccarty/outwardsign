@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createMassIntention, updateMassIntention, type CreateMassIntentionData, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
@@ -16,6 +17,18 @@ import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
 import { Textarea } from "@/components/ui/textarea"
 import type { MassWithNames } from "@/lib/actions/masses"
+
+// Zod validation schema
+const massIntentionSchema = z.object({
+  mass_offered_for: z.string().min(1, 'Please enter what the Mass is offered for'),
+  status: z.string().optional(),
+  date_requested: z.string().optional(),
+  date_received: z.string().optional(),
+  stipend_in_cents: z.number().optional(),
+  note: z.string().optional(),
+  requested_by_id: z.string().optional(),
+  mass_id: z.string().optional()
+})
 
 interface MassIntentionFormProps {
   intention?: MassIntentionWithRelations
@@ -60,17 +73,11 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
     setIsLoading(true)
 
     try {
-      // Validate required field
-      if (!massOfferedFor.trim()) {
-        toast.error('Please enter what the Mass is offered for')
-        setIsLoading(false)
-        return
-      }
-
       // Convert stipend from dollars to cents
       const stipendCents = stipendInCents ? Math.round(parseFloat(stipendInCents) * 100) : undefined
 
-      const intentionData: CreateMassIntentionData = {
+      // Validate with Zod
+      const intentionData = massIntentionSchema.parse({
         mass_id: assignedMass.value?.id,
         mass_offered_for: massOfferedFor || undefined,
         requested_by_id: requestedBy.value?.id,
@@ -79,7 +86,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         stipend_in_cents: stipendCents,
         status: status || undefined,
         note: note || undefined,
-      }
+      })
 
       if (isEditing) {
         await updateMassIntention(intention.id, intentionData)
@@ -91,8 +98,12 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         router.push(`/mass-intentions/${newIntention.id}`)
       }
     } catch (error) {
-      console.error('Error saving Mass intention:', error)
-      toast.error(isEditing ? 'Failed to update Mass intention' : 'Failed to create Mass intention')
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)
+      } else {
+        console.error('Error saving Mass intention:', error)
+        toast.error(isEditing ? 'Failed to update Mass intention' : 'Failed to create Mass intention')
+      }
     } finally {
       setIsLoading(false)
     }

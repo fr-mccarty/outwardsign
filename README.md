@@ -84,6 +84,8 @@ Before you begin, ensure you have the following installed:
 - **npm** 10.x or higher (comes with Node.js)
 - **Git** ([Download](https://git-scm.com/downloads))
 - **Docker Desktop** ([Download](https://docs.docker.com/desktop/)) - Required for running local Supabase
+  - After installation, **launch Docker Desktop** and keep it running during development
+  - Verify it's running by checking for the Docker icon in your system tray (Windows/Linux) or menu bar (macOS)
 - **Supabase CLI** ([Installation Guide](https://supabase.com/docs/guides/cli/getting-started))
 
 > **Note:** You do NOT need a Supabase cloud account to contribute. All development is done locally using Docker.

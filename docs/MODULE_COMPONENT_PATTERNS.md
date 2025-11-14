@@ -404,37 +404,57 @@ export default async function Edit[Entity]Page({ params }: PageProps) {
 import { useState } from 'react'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { Eye, Save } from 'lucide-react'
+import { SaveButton } from '@/components/save-button'
+import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import { [Entity]Form } from './[entity]-form'
-import type { [Entity]WithRelations } from '@/lib/actions/[entities]'
+import type { [Entity] } from '@/lib/types'
 
 interface [Entity]FormWrapperProps {
-  entity?: [Entity]WithRelations
+  [entity]?: [Entity]  // Base type, not WithRelations
+  title: string
+  description: string
+  saveButtonLabel: string
 }
 
-export function [Entity]FormWrapper({ entity }: [Entity]FormWrapperProps) {
-  const [isSaving, setIsSaving] = useState(false)
-  const isEditing = !!entity
+export function [Entity]FormWrapper({
+  [entity],
+  title,
+  description,
+  saveButtonLabel
+}: [Entity]FormWrapperProps) {
+  const formId = '[entity]-form'
+  const [isLoading, setIsLoading] = useState(false)
+  const isEditing = !![entity]
+
+  const actions = (
+    <>
+      {isEditing && (
+        <Button variant="outline" asChild>
+          <Link href={`/[entities]/${[entity].id}`}>
+            <Eye className="h-4 w-4 mr-2" />
+            View [Entity]
+          </Link>
+        </Button>
+      )}
+      <SaveButton isLoading={isLoading} form={formId}>
+        {saveButtonLabel}
+      </SaveButton>
+    </>
+  )
 
   return (
-    <PageContainer>
-      {isEditing && (
-        <div className="flex justify-end gap-2 mb-6">
-          <Button variant="outline" asChild>
-            <Link href={`/[entities]/${entity.id}`}>
-              <Eye className="h-4 w-4 mr-2" />
-              View
-            </Link>
-          </Button>
-          <Button type="submit" form="[entity]-form" disabled={isSaving}>
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
-        </div>
-      )}
-
-      <[Entity]Form entity={entity} setIsSaving={setIsSaving} />
+    <PageContainer
+      title={title}
+      description={description}
+      maxWidth="4xl"
+      actions={actions}
+    >
+      <[Entity]Form
+        [entity]={[entity]}
+        formId={formId}
+        onLoadingChange={setIsLoading}
+      />
     </PageContainer>
   )
 }
@@ -442,11 +462,14 @@ export function [Entity]FormWrapper({ entity }: [Entity]FormWrapperProps) {
 
 ### Key Points
 
-- ✅ Detects edit mode via `entity` prop
-- ✅ Shows View and Save buttons in edit mode
-- ✅ Manages `isSaving` state for the form
-- ✅ Wraps form in PageContainer
-- ✅ Save button targets form via `form` attribute
+- ✅ Uses **base type** (`[Entity]`), not `WithRelations` - wrapper doesn't need relations
+- ✅ Accepts `title`, `description`, `saveButtonLabel` props for dynamic page header
+- ✅ Detects edit mode via `entity` prop: `const isEditing = !!entity`
+- ✅ Shows View button in edit mode only
+- ✅ Uses `SaveButton` component connected to form via `formId`
+- ✅ Manages `isLoading` state for the form
+- ✅ Wraps form in `PageContainer` with `actions` prop
+- ✅ Passes `formId` and `onLoadingChange` to form
 
 **Reference:** `src/app/(main)/weddings/wedding-form-wrapper.tsx`
 
@@ -460,23 +483,21 @@ export function [Entity]FormWrapper({ entity }: [Entity]FormWrapperProps) {
 
 ### Structure
 
+**Note:** Forms can use either simple useState or Zod validation. The example below shows the recommended Zod pattern for type safety and validation.
+
 ```tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Form, FormField } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { SaveButton } from '@/components/save-button'
-import { CancelButton } from '@/components/cancel-button'
-import { Card } from '@/components/ui/card'
+import { FormField } from '@/components/ui/form-field'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormBottomActions } from '@/components/form-bottom-actions'
 import { toast } from 'sonner'
 import { create[Entity], update[Entity], type [Entity]WithRelations } from '@/lib/actions/[entities]'
 
+// Zod validation schema (recommended)
 const [entity]Schema = z.object({
   field1: z.string().min(1, 'Field is required'),
   field2: z.string().optional(),
@@ -487,28 +508,42 @@ type [Entity]FormValues = z.infer<typeof [entity]Schema>
 
 interface [Entity]FormProps {
   entity?: [Entity]WithRelations
-  setIsSaving?: (isSaving: boolean) => void
+  formId?: string
+  onLoadingChange?: (isLoading: boolean) => void
 }
 
-export function [Entity]Form({ entity, setIsSaving }: [Entity]FormProps) {
+export function [Entity]Form({
+  entity,
+  formId = '[entity]-form',
+  onLoadingChange
+}: [Entity]FormProps) {
   const router = useRouter()
   const isEditing = !!entity
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<[Entity]FormValues>({
-    resolver: zodResolver([entity]Schema),
-    defaultValues: {
-      field1: entity?.field1 || '',
-      field2: entity?.field2 || '',
-      // ... all fields
+  // Form state
+  const [field1, setField1] = useState(entity?.field1 || '')
+  const [field2, setField2] = useState(entity?.field2 || '')
+
+  // Sync loading state with wrapper
+  useEffect(() => {
+    if (onLoadingChange) {
+      onLoadingChange(isLoading)
     }
-  })
+  }, [isLoading, onLoadingChange])
 
-  async function onSubmit(values: [Entity]FormValues) {
-    setIsSubmitting(true)
-    setIsSaving?.(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
 
     try {
+      // Validate with Zod
+      const values = [entity]Schema.parse({
+        field1,
+        field2,
+        // ... all fields
+      })
+
       if (isEditing) {
         await update[Entity](entity.id, values)
         toast.success('[Entity] updated successfully')
@@ -519,60 +554,58 @@ export function [Entity]Form({ entity, setIsSaving }: [Entity]FormProps) {
         router.push(`/[entities]/${new[Entity].id}`)
       }
     } catch (error) {
-      console.error('Error saving [entity]:', error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} [entity]`)
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)  // Note: .issues (Zod v4)
+      } else {
+        console.error('Error saving [entity]:', error)
+        toast.error(`Failed to ${isEditing ? 'update' : 'create'} [entity]`)
+      }
     } finally {
-      setIsSubmitting(false)
-      setIsSaving?.(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <Form {...form}>
-      <form
-        id="[entity]-form"
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6"
-      >
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            {isEditing ? 'Edit [Entity]' : 'Create [Entity]'}
-          </h2>
+    <form
+      id="[entity]-form"
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>[Entity] Details</CardTitle>
+          <CardDescription>Basic information and fields</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <FormField
+            id="field1"
+            label="Field 1"
+            value={field1}
+            onChange={setField1}
+            required
+            placeholder="Enter field 1"
+          />
 
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="field1"
-              render={({ field }) => (
-                <div>
-                  <Label htmlFor="field1">Field 1</Label>
-                  <Input {...field} id="field1" />
-                  {form.formState.errors.field1 && (
-                    <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.field1.message}
-                    </p>
-                  )}
-                </div>
-              )}
-            />
+          <FormField
+            id="field2"
+            label="Field 2 (Optional)"
+            value={field2}
+            onChange={setField2}
+            placeholder="Enter field 2"
+          />
 
-            {/* More fields... */}
-          </div>
-        </Card>
+          {/* More fields... */}
+        </CardContent>
+      </Card>
 
-        {/* Submit Buttons (only shown in create mode) */}
-        {!isEditing && (
-          <div className="flex gap-3">
-            <SaveButton
-              type="submit"
-              disabled={isSubmitting}
-              isLoading={isSubmitting}
-            />
-            <CancelButton href="/[entities]" />
-          </div>
-        )}
-      </form>
-    </Form>
+      {/* Bottom Save/Cancel Buttons */}
+      <FormBottomActions
+        isEditing={isEditing}
+        isLoading={isLoading}
+        cancelHref={isEditing ? `/[entities]/${entity.id}` : "/[entities]"}
+        saveLabel={isEditing ? "Save [Entity]" : "Create [Entity]"}
+      />
+    </form>
   )
 }
 ```
@@ -580,14 +613,20 @@ export function [Entity]Form({ entity, setIsSaving }: [Entity]FormProps) {
 ### Key Points
 
 - ✅ Detects mode via `entity` prop
-- ✅ Uses Zod schema for validation
 - ✅ Form ID matches wrapper's `form` attribute
 - ✅ Redirects to view page after save
-- ✅ Shows submit buttons only in create mode (edit uses wrapper buttons)
-- ✅ Uses SaveButton and CancelButton components
-- ✅ All inputs wrapped in FormField component
+- ✅ **Zod validation recommended** for type safety and client-side validation
+- ✅ **Save buttons appear in TWO locations:**
+  - **Top:** In PageContainer actions (via wrapper - View + Save in edit mode, Save only in create mode)
+  - **Bottom:** FormBottomActions component (Save + Cancel in both modes)
+- ✅ All form fields wrapped in Card components with CardHeader/CardContent
+- ✅ Uses FormField component for all inputs
+- ✅ Syncs loading state with wrapper via `onLoadingChange` callback
+- ✅ Handles Zod validation errors with user-friendly toast messages
 
-**Reference:** `src/app/(main)/weddings/wedding-form.tsx`
+**Current Implementation:** `src/app/(main)/weddings/wedding-form.tsx` (uses useState pattern without Zod)
+
+**Recommended Pattern:** Use Zod validation as shown in example above for type safety
 
 **See Also:** [FORMS.md](./FORMS.md) for comprehensive form patterns
 

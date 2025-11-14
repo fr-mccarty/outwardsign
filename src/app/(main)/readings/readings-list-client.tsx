@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, BookOpen, Calendar, Search, Filter } from "lucide-react"
+import { Plus, BookOpen, Search, Filter } from "lucide-react"
 import { READING_CATEGORY_LABELS, LANGUAGE_LABELS } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
 import {
@@ -66,18 +66,6 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
   const getCategoryLabel = (category: string): string => {
     const normalized = normalizeCategory(category)
     return READING_CATEGORY_LABELS[normalized]?.en || category
-  }
-
-  const getCategoryColor = (category: string) => {
-    const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-green-100 text-green-800',
-      'bg-purple-100 text-purple-800',
-      'bg-orange-100 text-orange-800',
-      'bg-pink-100 text-pink-800',
-      'bg-indigo-100 text-indigo-800',
-    ]
-    return colors[Math.abs(category.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length]
   }
 
   const hasActiveFilters = searchTerm || selectedLanguage !== 'all' || selectedCategory !== 'all'
@@ -140,22 +128,18 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
               viewHref={`/readings/${reading.id}`}
               viewButtonText="View Reading"
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                {reading.language && (
+              {reading.language && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline" className="text-xs">
                     {LANGUAGE_LABELS[reading.language]?.en || reading.language}
                   </Badge>
-                )}
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  {new Date(reading.created_at).toLocaleDateString()}
                 </div>
-              </div>
+              )}
 
               {reading.categories && reading.categories.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {reading.categories.map(category => (
-                    <Badge key={category} className={getCategoryColor(category) + " text-xs"}>
+                    <Badge key={category} variant="secondary" className="text-xs">
                       {getCategoryLabel(category)}
                     </Badge>
                   ))}

@@ -1,9 +1,8 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getReading } from "@/lib/actions/readings"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { ReadingForm } from '../../reading-form'
+import { ReadingFormWrapper } from '../../reading-form-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -35,14 +34,14 @@ export default async function EditReadingPage({ params }: PageProps) {
   ]
 
   return (
-    <PageContainer
-      title="Edit Reading"
-      description="Update the scripture reading or liturgical text details."
-      cardTitle="Reading Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <ReadingForm reading={reading} />
-    </PageContainer>
+      <ReadingFormWrapper
+        reading={reading}
+        title="Edit Reading"
+        description="Update the scripture reading or liturgical text details."
+        saveButtonLabel="Save Reading"
+      />
+    </>
   )
 }

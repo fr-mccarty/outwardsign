@@ -1,8 +1,7 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { ReadingForm } from '../reading-form'
+import { ReadingFormWrapper } from '../reading-form-wrapper'
 
 export default async function CreateReadingPage() {
   const supabase = await createClient()
@@ -16,18 +15,17 @@ export default async function CreateReadingPage() {
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Our Readings", href: "/readings" },
-    { label: "Create Reading" }
+    { label: "Create" }
   ]
 
   return (
-    <PageContainer
-      title="Create Reading"
-      description="Add a new scripture reading or liturgical text to your collection."
-      cardTitle="Reading Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <ReadingForm />
-    </PageContainer>
+      <ReadingFormWrapper
+        title="Create Reading"
+        description="Add a new scripture reading or liturgical text to your collection."
+        saveButtonLabel="Create Reading"
+      />
+    </>
   )
 }

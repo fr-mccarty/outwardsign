@@ -285,22 +285,6 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         </CardContent>
       </Card>
 
-      {/* Guidelines */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Event Guidelines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Provide a clear and descriptive event name</li>
-            <li>• Specify the event type for better organization</li>
-            <li>• Include start date and time for scheduling</li>
-            <li>• Add location information for attendees</li>
-            <li>• Assign a responsible party to manage the event</li>
-          </ul>
-        </CardContent>
-      </Card>
-
       <FormBottomActions
         isEditing={isEditing}
         isLoading={isLoading}

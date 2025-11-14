@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -16,6 +17,21 @@ import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMP
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
+
+// Zod validation schema
+const massSchema = z.object({
+  status: z.string().optional(),
+  event_id: z.string().optional(),
+  presider_id: z.string().optional(),
+  homilist_id: z.string().optional(),
+  liturgical_event_id: z.string().optional(),
+  pre_mass_announcement_id: z.string().optional(),
+  pre_mass_announcement_topic: z.string().optional(),
+  petitions: z.string().optional(),
+  announcements: z.string().optional(),
+  note: z.string().optional(),
+  mass_template_id: z.string().optional()
+})
 
 interface MassFormProps {
   mass?: MassWithRelations
@@ -108,7 +124,8 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     setIsLoading(true)
 
     try {
-      const massData: CreateMassData = {
+      // Validate with Zod
+      const massData = massSchema.parse({
         status: status || undefined,
         event_id: event.value?.id,
         presider_id: presider.value?.id,
@@ -120,20 +137,24 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         announcements: announcements || undefined,
         note: note || undefined,
         mass_template_id: massTemplateId || undefined,
-      }
+      })
 
       if (isEditing) {
         await updateMass(mass.id, massData)
         toast.success('Mass updated successfully')
-        router.refresh() // Refresh to get updated data
+        router.push(`/masses/${mass.id}`)
       } else {
         const newMass = await createMass(massData)
         toast.success('Mass created successfully')
         router.push(`/masses/${newMass.id}`)
       }
     } catch (error) {
-      console.error('Error saving mass:', error)
-      toast.error(isEditing ? 'Failed to update mass' : 'Failed to create mass')
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)
+      } else {
+        console.error('Error saving mass:', error)
+        toast.error(isEditing ? 'Failed to update mass' : 'Failed to create mass')
+      }
     } finally {
       setIsLoading(false)
     }

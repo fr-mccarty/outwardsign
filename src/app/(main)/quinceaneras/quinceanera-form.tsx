@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -28,6 +29,35 @@ import { quinceaneraTemplates, buildQuinceaneraPetitions } from "@/lib/petition-
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
+
+// Zod validation schema
+const quinceaneraSchema = z.object({
+  status: z.string().optional(),
+  quinceanera_event_id: z.string().optional(),
+  quinceanera_reception_id: z.string().optional(),
+  quinceanera_id: z.string().optional(),
+  family_contact_id: z.string().optional(),
+  coordinator_id: z.string().optional(),
+  presider_id: z.string().optional(),
+  homilist_id: z.string().optional(),
+  lead_musician_id: z.string().optional(),
+  cantor_id: z.string().optional(),
+  first_reader_id: z.string().optional(),
+  second_reader_id: z.string().optional(),
+  psalm_reader_id: z.string().optional(),
+  gospel_reader_id: z.string().optional(),
+  petition_reader_id: z.string().optional(),
+  first_reading_id: z.string().optional(),
+  psalm_id: z.string().optional(),
+  second_reading_id: z.string().optional(),
+  gospel_reading_id: z.string().optional(),
+  psalm_is_sung: z.boolean(),
+  petitions_read_by_second_reader: z.boolean(),
+  petitions: z.string().optional(),
+  announcements: z.string().optional(),
+  note: z.string().optional(),
+  quinceanera_template_id: z.string().optional()
+})
 
 interface QuinceaneraFormProps {
   quinceanera?: QuinceaneraWithRelations
@@ -179,7 +209,8 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     setIsLoading(true)
 
     try {
-      const quinceaneraData: CreateQuinceaneraData = {
+      // Validate with Zod
+      const quinceaneraData = quinceaneraSchema.parse({
         status: status || undefined,
         quinceanera_event_id: quinceaneraEvent.value?.id,
         quinceanera_reception_id: quinceaneraReception.value?.id,
@@ -205,20 +236,24 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         announcements: announcements || undefined,
         note: note || undefined,
         quinceanera_template_id: quinceaneraTemplateId || undefined,
-      }
+      })
 
       if (isEditing) {
         await updateQuinceanera(quinceanera.id, quinceaneraData)
         toast.success('Quinceañera updated successfully')
-        router.refresh() // Refresh to get updated data
+        router.push(`/quinceaneras/${quinceanera.id}`)
       } else {
         const newQuinceanera = await createQuinceanera(quinceaneraData)
         toast.success('Quinceañera created successfully!')
         router.push(`/quinceaneras/${newQuinceanera.id}`)
       }
     } catch (error) {
-      console.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera. Please try again.`)
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)
+      } else {
+        console.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera:`, error)
+        toast.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera. Please try again.`)
+      }
     } finally {
       setIsLoading(false)
     }

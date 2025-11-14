@@ -137,6 +137,11 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 
 ## Picker Components
 
+> **For detailed picker documentation:**
+> - **[PICKERS.md](./PICKERS.md)** - Architecture, creating new pickers, advanced patterns
+> - **[PICKER_PATTERNS.md](./PICKER_PATTERNS.md)** - Critical behavioral rules (no redirect, auto-select)
+> - **[PICKER_EDIT_MODE.md](./PICKER_EDIT_MODE.md)** - Inline editing pattern
+
 ### PeoplePicker
 **Path:** `src/components/people-picker.tsx`
 

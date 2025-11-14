@@ -1,5 +1,11 @@
 # Test Architecture & Testability Guide
 
+> **Purpose:** Standards for building testable components and writing reliable tests. Component patterns, selector strategies, and testability requirements.
+>
+> **See Also:**
+> - **[TESTING_QUICKSTART.md](./TESTING_QUICKSTART.md)** - Quick setup and run commands
+> - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Comprehensive guide for writing tests
+
 This document defines standards for building testable components and writing reliable tests.
 
 ## Table of Contents

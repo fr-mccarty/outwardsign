@@ -257,14 +257,44 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 ## Validation
 
-### Dual Validation with Zod
+> **For comprehensive validation documentation, see [VALIDATION.md](./VALIDATION.md)**
 
-**Pattern:** Define schemas in Server Action files. Client forms use `.safeParse()` for instant feedback. Server Actions use `.parse()` as security boundary. Export schema types with `z.infer<>`.
+### 🔴 Zod v4 Compatibility (CRITICAL)
+
+**This codebase uses Zod v4.1.12.** In Zod v4, the error property was renamed from `errors` to `issues`.
+
+**IMPORTANT:** Always use `error.issues` instead of `error.errors` when accessing validation errors:
+
+```tsx
+// ✅ CORRECT - Zod v4
+try {
+  const data = schema.parse(input)
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    toast.error(error.issues[0].message)  // Use .issues
+  }
+}
+
+// ❌ WRONG - This was Zod v3 syntax
+try {
+  const data = schema.parse(input)
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    toast.error(error.errors[0].message)  // Property 'errors' does not exist
+  }
+}
+```
+
+**Note:** This applies to all error handling code, including both `.parse()` and `.safeParse()` patterns.
+
+### Recommended Pattern: React Hook Form + Zod
+
+**Current Standard:** Use React Hook Form with `zodResolver` for automatic validation. This eliminates manual state management and `.safeParse()` calls.
 
 **Example:**
 
 ```tsx
-// In lib/actions/[entity].ts
+// 1. Define schema in lib/schemas/[entity].ts
 import { z } from 'zod'
 
 export const createEntitySchema = z.object({
@@ -276,31 +306,89 @@ export const createEntitySchema = z.object({
 
 export type CreateEntityData = z.infer<typeof createEntitySchema>
 
-// Server Action - use .parse() (throws on invalid)
+// 2. Server Action - use .parse() (throws on invalid)
+// In lib/actions/[entity].ts
+import { createEntitySchema } from '@/lib/schemas/[entity]'
+
 export async function createEntity(data: CreateEntityData): Promise<Entity> {
   const validated = createEntitySchema.parse(data) // Security boundary
   // ... create entity
 }
 
-// Client Form - use .safeParse() (returns result object)
+// 3. Client Form - use React Hook Form with zodResolver
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createEntitySchema } from '@/lib/schemas/[entity]'
+
+const {
+  handleSubmit,
+  formState: { errors, isSubmitting },
+  setValue,
+  watch,
+} = useForm<CreateEntityData>({
+  resolver: zodResolver(createEntitySchema), // Automatic validation
+  defaultValues: {
+    name: '',
+    status: 'ACTIVE',
+  },
+})
+
+const onSubmit = async (data: CreateEntityData) => {
+  // Data is already validated by React Hook Form
+  await createEntity(data)
+}
+
+// Use in form
+<form onSubmit={handleSubmit(onSubmit)}>
+  <FormField
+    id="name"
+    label="Name"
+    value={watch('name')}
+    onChange={(value) => setValue('name', value)}
+    error={errors.name?.message}
+  />
+</form>
+```
+
+**Benefits:**
+- ✅ **No manual state management** - React Hook Form handles all form state
+- ✅ **Automatic validation** - No manual `.safeParse()` calls needed
+- ✅ **Better UX** - Instant validation feedback as user types
+- ✅ **Less boilerplate** - Fewer useState declarations
+- ✅ **Server-side security** - Always validate with `.parse()` in server actions
+- ✅ **Type safety** - TypeScript types derived from Zod schemas
+
+**See [VALIDATION.md](./VALIDATION.md) for:**
+- Complete implementation guide
+- Schema definition patterns
+- FormField integration with validation errors
+- Picker component validation
+- Common validation rules
+
+---
+
+### Legacy Pattern: Manual .safeParse() (Not Recommended)
+
+This pattern was used before React Hook Form adoption. **Use React Hook Form instead for new code.**
+
+```tsx
+// ❌ OLD PATTERN - Not recommended for new code
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
 
   const result = createEntitySchema.safeParse(formData)
 
   if (!result.success) {
-    // Show validation errors
-    toast.error(result.error.errors[0].message)
+    toast.error(result.error.issues[0].message)  // Note: .issues (Zod v4)
     return
   }
 
-  // Proceed with submission
   await createEntity(result.data)
 }
 ```
 
-**Benefits:**
-- **Client-side:** Instant feedback, better UX
-- **Server-side:** Security boundary, never trust client
-- **Single source of truth:** Schema defined once, used everywhere
-- **Type safety:** TypeScript types derived from schema
+**Why this is outdated:**
+- Requires manual useState for each field
+- Manual error handling and display
+- More boilerplate code
+- No automatic validation feedback

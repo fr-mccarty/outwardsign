@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -28,6 +29,35 @@ import { funeralTemplates, buildFuneralPetitions } from "@/lib/petition-template
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
+
+// Zod validation schema
+const funeralSchema = z.object({
+  status: z.string().optional(),
+  funeral_event_id: z.string().optional(),
+  funeral_meal_event_id: z.string().optional(),
+  deceased_id: z.string().optional(),
+  family_contact_id: z.string().optional(),
+  coordinator_id: z.string().optional(),
+  presider_id: z.string().optional(),
+  homilist_id: z.string().optional(),
+  lead_musician_id: z.string().optional(),
+  cantor_id: z.string().optional(),
+  first_reader_id: z.string().optional(),
+  second_reader_id: z.string().optional(),
+  psalm_reader_id: z.string().optional(),
+  gospel_reader_id: z.string().optional(),
+  petition_reader_id: z.string().optional(),
+  first_reading_id: z.string().optional(),
+  psalm_id: z.string().optional(),
+  second_reading_id: z.string().optional(),
+  gospel_reading_id: z.string().optional(),
+  psalm_is_sung: z.boolean().optional(),
+  petitions_read_by_second_reader: z.boolean().optional(),
+  petitions: z.string().optional(),
+  announcements: z.string().optional(),
+  note: z.string().optional(),
+  funeral_template_id: z.string().optional()
+})
 
 interface FuneralFormProps {
   funeral?: FuneralWithRelations
@@ -179,7 +209,8 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
     setIsLoading(true)
 
     try {
-      const funeralData: CreateFuneralData = {
+      // Validate with Zod
+      const funeralData = funeralSchema.parse({
         status: status || undefined,
         funeral_event_id: funeralEvent.value?.id,
         funeral_meal_event_id: funeralMealEvent.value?.id,
@@ -205,20 +236,24 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         announcements: announcements || undefined,
         note: note || undefined,
         funeral_template_id: funeralTemplateId || undefined,
-      }
+      })
 
-      if (isEditing) {
+      if (isEditing && funeral) {
         await updateFuneral(funeral.id, funeralData)
         toast.success('Funeral updated successfully')
-        router.refresh() // Refresh to get updated data
+        router.push(`/funerals/${funeral.id}`)
       } else {
         const newFuneral = await createFuneral(funeralData)
         toast.success('Funeral created successfully!')
         router.push(`/funerals/${newFuneral.id}`)
       }
     } catch (error) {
-      console.error(`Failed to ${isEditing ? 'update' : 'create'} funeral:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} funeral. Please try again.`)
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)
+      } else {
+        console.error(`Failed to ${isEditing ? 'update' : 'create'} funeral:`, error)
+        toast.error(`Failed to ${isEditing ? 'update' : 'create'} funeral. Please try again.`)
+      }
     } finally {
       setIsLoading(false)
     }

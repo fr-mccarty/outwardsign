@@ -1,5 +1,11 @@
 # Testing Guide for Outward Sign
 
+> **Purpose:** Comprehensive guide for writing and maintaining end-to-end tests using Playwright.
+>
+> **See Also:**
+> - **[TESTING_QUICKSTART.md](./TESTING_QUICKSTART.md)** - Quick setup and run commands
+> - **[TESTING_ARCHITECTURE.md](./TESTING_ARCHITECTURE.md)** - Testability standards and component patterns
+
 Comprehensive guide for writing and maintaining end-to-end tests using Playwright.
 
 ## Table of Contents

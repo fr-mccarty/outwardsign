@@ -1,5 +1,12 @@
 # Picker System Documentation
 
+> **Purpose:** Comprehensive documentation on the CorePicker architecture, creating new pickers, and advanced patterns.
+>
+> **See Also:**
+> - **[PICKER_PATTERNS.md](./PICKER_PATTERNS.md)** - Critical behavioral rules (no redirect, auto-select, openToNew* pattern)
+> - **[PICKER_EDIT_MODE.md](./PICKER_EDIT_MODE.md)** - Inline editing of related entities from pickers
+> - **[COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md)** - Quick reference for all picker components and props
+
 ## Table of Contents
 
 - [Overview](#overview)

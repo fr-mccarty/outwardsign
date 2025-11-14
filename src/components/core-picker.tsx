@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -93,6 +93,10 @@ export function CorePicker<T>({
   const [isCreating, setIsCreating] = useState(false)
   const [entityIdBeingEdited, setEntityIdBeingEdited] = useState<string | null>(null)
 
+  // Track previous open state to detect transitions
+  // Initialize to false so first open triggers initialization
+  const previousOpenRef = useRef(false)
+
   // Determine if we're in edit mode
   const isEditMode = editMode && entityToEdit !== null
 
@@ -110,8 +114,15 @@ export function CorePicker<T>({
   }, [open, autoOpenCreateForm, enableCreate, isEditMode])
 
   // Initialize form data when picker opens
+  // CRITICAL: Only reset form data when picker transitions from closed to open
+  // Otherwise, nested pickers (like LocationPicker within EventPicker) will
+  // cause the parent form to reset when they open/close
   useEffect(() => {
-    if (open) {
+    const wasOpen = previousOpenRef.current
+    const isOpening = !wasOpen && open
+
+    // Only reset form data when transitioning from closed to open
+    if (isOpening) {
       if (isEditMode && entityToEdit) {
         // Edit mode: pre-populate form with entity data
         const entityData: Record<string, any> = {}
@@ -130,6 +141,9 @@ export function CorePicker<T>({
       }
       setCreateFormErrors({})
     }
+
+    // Update the ref for next render
+    previousOpenRef.current = open
   }, [open, isEditMode, entityToEdit, defaultCreateFormData, createFields, getItemId])
 
   // Client-side search across multiple fields (only when pagination is disabled)

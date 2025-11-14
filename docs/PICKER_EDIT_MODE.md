@@ -1,5 +1,12 @@
 # Picker Edit Mode Pattern
 
+> **Purpose:** Pattern for inline editing of related entities (people, events, locations) from within picker modals.
+>
+> **See Also:**
+> - **[PICKERS.md](./PICKERS.md)** - Main picker system documentation
+> - **[PICKER_PATTERNS.md](./PICKER_PATTERNS.md)** - Critical behavioral rules (no redirect, auto-select)
+> - **[COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md)** - Picker component props reference
+
 ## Overview
 
 This document describes the pattern for enabling **inline editing** of related entities (people, events, locations) from within module forms (weddings, funerals, presentations, etc.).

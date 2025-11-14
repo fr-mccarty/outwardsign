@@ -1,6 +1,33 @@
 # Validation Guide
 
-This document explains validation patterns and requirements in Outward Sign, including FormField usage, module form validation, and picker component validation.
+> **See Also:** [FORMS.md](./FORMS.md) for general form patterns, styling, event handling, and FormField usage
+
+This document explains **validation-specific patterns** in Outward Sign using React Hook Form + Zod, including:
+- FormField integration with validation errors
+- Module form validation patterns
+- Picker component validation
+
+## 🔴 Zod v4 Compatibility
+
+**This codebase uses Zod v4.1.12.** In Zod v4, the error array property was renamed from `errors` to `issues`.
+
+**When handling validation errors manually, always use `error.issues` instead of `error.errors`:**
+
+```tsx
+// ✅ CORRECT - Zod v4
+if (error instanceof z.ZodError) {
+  toast.error(error.issues[0].message)
+}
+
+// ❌ WRONG - Zod v3 syntax (will cause TypeScript errors)
+if (error instanceof z.ZodError) {
+  toast.error(error.errors[0].message)  // Property 'errors' does not exist
+}
+```
+
+**See [FORMS.md § Zod v4 Compatibility](./FORMS.md#-zod-v4-compatibility-critical) for more details.**
+
+---
 
 ## Table of Contents
 
@@ -12,171 +39,21 @@ This document explains validation patterns and requirements in Outward Sign, inc
 
 ## 1. FormField Component (CRITICAL)
 
+> **For comprehensive FormField documentation, see [FORMS.md § FormField Usage](./FORMS.md#-formfield-usage-critical---required)**
+
 **ALL form inputs, selects, and textareas MUST use the `FormField` component.** This is a non-negotiable requirement for consistency across the application.
 
-### What is FormField?
+This section focuses on **FormField's integration with validation** (React Hook Form + Zod). For general FormField usage, styling, props reference, and prohibited patterns, see FORMS.md.
 
-FormField is a wrapper component (`src/components/form-field.tsx`) that provides:
-- Consistent label styling and positioning
-- Optional description text for field guidance
-- Proper layout spacing
-- Standardized error display
-- Support for Input, Textarea, and Select components
+### FormField with Validation Errors
 
-### Required Usage Pattern
+FormField integrates seamlessly with React Hook Form validation by accepting an `error` prop:
 
 ```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { FormField } from '@/components/form-field'
 
-// Basic text input
-<FormField
-  id="first-name"
-  label="First Name"
-  description="Enter the person's legal first name"
-  value={firstName}
-  onChange={setFirstName}
-  required={true}
-/>
-
-// Textarea
-<FormField
-  id="notes"
-  label="Notes"
-  inputType="textarea"
-  value={notes}
-  onChange={setNotes}
-  rows={12}
-  resize={true}
-/>
-
-// Select with options array
-<FormField
-  id="status"
-  label="Status"
-  inputType="select"
-  value={status}
-  onChange={setStatus}
-  options={[
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' },
-    { value: 'ARCHIVED', label: 'Archived' }
-  ]}
-/>
-
-// Select with children
-<FormField
-  id="status"
-  label="Status"
-  inputType="select"
-  value={status}
-  onChange={setStatus}
->
-  <SelectItem value="ACTIVE">Active</SelectItem>
-  <SelectItem value="INACTIVE">Inactive</SelectItem>
-</FormField>
-
-// Number input
-<FormField
-  id="age"
-  label="Age"
-  inputType="number"
-  value={age}
-  onChange={setAge}
-  min="0"
-  max="120"
-/>
-
-// Date input
-<FormField
-  id="birth-date"
-  label="Date of Birth"
-  inputType="date"
-  value={birthDate}
-  onChange={setBirthDate}
-/>
-```
-
-### ❌ PROHIBITED Patterns
-
-**NEVER use bare Input, Select, or Textarea components directly:**
-
-```tsx
-// ❌ WRONG - Manual label + bare Input
-<Label htmlFor="name">Name</Label>
-<Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-
-// ❌ WRONG - Bare Select without FormField
-<Label>Status</Label>
-<Select value={status} onValueChange={setStatus}>
-  <SelectTrigger>
-    <SelectValue placeholder="Select status" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="ACTIVE">Active</SelectItem>
-  </SelectContent>
-</Select>
-
-// ❌ WRONG - Bare Textarea
-<Label>Notes</Label>
-<Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-```
-
-### Exceptions
-
-The following are the ONLY cases where you should NOT use FormField:
-
-1. **Picker Components** - PeoplePicker, EventPicker, ReadingPickerModal have their own internal structure
-2. **Special UI patterns** - Explicitly approved by the user for specific cases
-3. **Custom compound components** - Where FormField's structure doesn't fit (e.g., search bars, filters)
-
-**IMPORTANT:** If you encounter a situation where FormField cannot be used, **ALWAYS ask the user before proceeding** with an alternative approach.
-
-### FormField Props Reference
-
-```typescript
-interface BaseFormFieldProps {
-  id: string                    // Required: HTML id for the input
-  label: string                 // Required: Label text
-  description?: string          // Optional: Help text below label
-  required?: boolean            // Optional: Shows required indicator
-  className?: string            // Optional: Additional classes for wrapper
-  formFieldClassName?: string   // Optional: Classes for form field container
-}
-
-interface InputFieldProps extends BaseFormFieldProps {
-  inputType?: string            // 'text', 'email', 'number', 'date', etc.
-  value: string                 // Current value
-  onChange: (value: string) => void  // Change handler
-  placeholder?: string
-  min?: string                  // For number/date inputs
-  max?: string                  // For number/date inputs
-  step?: string                 // For number inputs
-  maxLength?: number            // Max character length
-}
-
-interface TextareaFieldProps extends BaseFormFieldProps {
-  inputType: 'textarea'
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  rows?: number                 // Number of rows (default: 12)
-  resize?: boolean              // Allow vertical resize (default: false)
-}
-
-interface SelectFieldProps extends BaseFormFieldProps {
-  inputType: 'select'
-  value: string
-  onChange: (value: string) => void
-  children?: React.ReactNode    // SelectItem children
-  options?: Array<{value: string; label: string}>  // Or use options array
-}
-```
-
-### Integration with React Hook Form
-
-When using React Hook Form with FormField:
-
-```tsx
 const { watch, setValue, formState: { errors } } = useForm<FormData>({
   resolver: zodResolver(schema),
   defaultValues: { firstName: '', status: 'ACTIVE' }
@@ -187,11 +64,13 @@ const status = watch('status')
 
 return (
   <form>
+    {/* Pass error message to FormField for validation display */}
     <FormField
       id="first-name"
       label="First Name"
       value={firstName}
       onChange={(value) => setValue('firstName', value)}
+      error={errors.firstName?.message}  // ← Shows validation errors
       required
     />
 
@@ -201,11 +80,18 @@ return (
       inputType="select"
       value={status}
       onChange={(value) => setValue('status', value)}
+      error={errors.status?.message}  // ← Shows validation errors
       options={statusOptions}
     />
   </form>
 )
 ```
+
+**Key Points:**
+- ✅ Pass `error={errors.fieldName?.message}` to display validation errors
+- ✅ FormField automatically adds red border when error is present
+- ✅ Error message displays below the input
+- ✅ Works with all input types (text, textarea, select, etc.)
 
 ---
 

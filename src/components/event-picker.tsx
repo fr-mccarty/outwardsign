@@ -192,6 +192,11 @@ export function EventPicker({
     return fields
   }, [isFieldVisible, isFieldRequired])
 
+  // Memoize merged default form data to prevent form resets on re-render
+  const mergedDefaultFormData = useMemo(() => {
+    return { ...DEFAULT_FORM_DATA, name: defaultName, ...defaultCreateFormData }
+  }, [defaultName, defaultCreateFormData])
+
   // Handle creating a new event
   const handleCreateEvent = async (data: any): Promise<Event> => {
     const newEvent = await createEvent({
@@ -290,7 +295,7 @@ export function EventPicker({
       noResultsMessage="No events match your search"
       isLoading={loading}
       autoOpenCreateForm={openToNewEvent || autoOpenCreateForm}
-      defaultCreateFormData={{ ...DEFAULT_FORM_DATA, name: defaultName, ...defaultCreateFormData }}
+      defaultCreateFormData={mergedDefaultFormData}
       editMode={editMode}
       entityToEdit={eventToEdit}
       onUpdateSubmit={handleUpdateEvent}

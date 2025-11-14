@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -28,6 +29,39 @@ import { PetitionEditor, type PetitionTemplate } from "@/components/petition-edi
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { Button } from "@/components/ui/button"
+
+// Zod validation schema
+const weddingSchema = z.object({
+  status: z.string().optional(),
+  wedding_event_id: z.string().optional(),
+  reception_event_id: z.string().optional(),
+  rehearsal_event_id: z.string().optional(),
+  rehearsal_dinner_event_id: z.string().optional(),
+  bride_id: z.string().optional(),
+  groom_id: z.string().optional(),
+  coordinator_id: z.string().optional(),
+  presider_id: z.string().optional(),
+  homilist_id: z.string().optional(),
+  lead_musician_id: z.string().optional(),
+  cantor_id: z.string().optional(),
+  witness_1_id: z.string().optional(),
+  witness_2_id: z.string().optional(),
+  first_reader_id: z.string().optional(),
+  second_reader_id: z.string().optional(),
+  psalm_reader_id: z.string().optional(),
+  gospel_reader_id: z.string().optional(),
+  petition_reader_id: z.string().optional(),
+  first_reading_id: z.string().optional(),
+  psalm_id: z.string().optional(),
+  second_reading_id: z.string().optional(),
+  gospel_reading_id: z.string().optional(),
+  psalm_is_sung: z.boolean().optional(),
+  petitions_read_by_second_reader: z.boolean().optional(),
+  petitions: z.string().optional(),
+  announcements: z.string().optional(),
+  notes: z.string().optional(),
+  wedding_template_id: z.string().optional()
+})
 
 interface WeddingFormProps {
   wedding?: WeddingWithRelations
@@ -188,7 +222,8 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     setIsLoading(true)
 
     try {
-      const weddingData: CreateWeddingData = {
+      // Validate with Zod
+      const weddingData = weddingSchema.parse({
         status: status || undefined,
         wedding_event_id: weddingEvent.value?.id,
         reception_event_id: receptionEvent.value?.id,
@@ -218,20 +253,24 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         announcements: announcements || undefined,
         notes: notes || undefined,
         wedding_template_id: weddingTemplateId || undefined,
-      }
+      })
 
-      if (isEditing) {
+      if (isEditing && wedding) {
         await updateWedding(wedding.id, weddingData)
         toast.success('Wedding updated successfully')
-        router.refresh() // Refresh to get updated data
+        router.push(`/weddings/${wedding.id}`)
       } else {
         const newWedding = await createWedding(weddingData)
         toast.success('Wedding created successfully!')
         router.push(`/weddings/${newWedding.id}`)
       }
     } catch (error) {
-      console.error(`Failed to ${isEditing ? 'update' : 'create'} wedding:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} wedding. Please try again.`)
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message)
+      } else {
+        console.error(`Failed to ${isEditing ? 'update' : 'create'} wedding:`, error)
+        toast.error(`Failed to ${isEditing ? 'update' : 'create'} wedding. Please try again.`)
+      }
     } finally {
       setIsLoading(false)
     }

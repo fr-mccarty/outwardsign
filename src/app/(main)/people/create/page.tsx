@@ -1,8 +1,7 @@
-import { PageContainer } from "@/components/page-container"
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { PersonForm } from '../person-form'
+import { PersonFormWrapper } from '../person-form-wrapper'
 
 export default async function CreatePersonPage() {
   const supabase = await createClient()
@@ -16,18 +15,17 @@ export default async function CreatePersonPage() {
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Our People", href: "/people" },
-    { label: "Create Person" }
+    { label: "Create" }
   ]
 
   return (
-    <PageContainer
-      title="Create Person"
-      description="Add a new person to your parish directory."
-      cardTitle="Person Details"
-      maxWidth="4xl"
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <PersonForm />
-    </PageContainer>
+      <PersonFormWrapper
+        title="Create Person"
+        description="Add a new person to your parish directory."
+        saveButtonLabel="Create Person"
+      />
+    </>
   )
 }

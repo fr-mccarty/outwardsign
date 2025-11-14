@@ -1,5 +1,11 @@
 # Testing Quick Start
 
+> **Purpose:** Get tests running in 5 minutes. Quick setup and essential commands.
+>
+> **See Also:**
+> - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Comprehensive guide for writing tests
+> - **[TESTING_ARCHITECTURE.md](./TESTING_ARCHITECTURE.md)** - Testability standards and best practices
+
 **Goal:** Get tests running in 5 minutes.
 
 ## Prerequisites
