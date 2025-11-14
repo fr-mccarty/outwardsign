@@ -135,7 +135,7 @@ export function OfferingAmountInput({
         const updatedQuickAmounts = [...quickAmounts, newQuickAmount]
         
         await updateParishSettings(parishId, {
-          mass_intention_offering_quick_amounts: updatedQuickAmounts
+          mass_intention_offering_quick_amount: updatedQuickAmounts
         })
         
         // Notify parent component about the new quick amount

@@ -2,9 +2,9 @@
 CREATE TABLE parish_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE UNIQUE,
-  mass_intention_offering_quick_amounts JSONB NOT NULL DEFAULT '[]'::JSONB,
-  donations_quick_amounts JSONB NOT NULL DEFAULT '[]'::JSONB,
-  liturgical_locale TEXT NOT NULL DEFAULT 'en',
+  mass_intention_offering_quick_amount JSONB NOT NULL DEFAULT '[]'::JSONB,
+  donations_quick_amount JSONB NOT NULL DEFAULT '[]'::JSONB,
+  liturgical_locale TEXT NOT NULL DEFAULT 'en_US',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -110,4 +110,4 @@ CREATE TRIGGER auto_create_parish_settings
   EXECUTE FUNCTION create_parish_settings();
 
 -- Column comments
-COMMENT ON COLUMN parish_settings.liturgical_locale IS 'Locale preference for liturgical calendar events (e.g., "en", "es")';
+COMMENT ON COLUMN parish_settings.liturgical_locale IS 'Locale preference for liturgical calendar events (e.g., "en_US", "es_MX")';

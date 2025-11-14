@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, BookOpen, Eye, Calendar, Search, Filter } from "lucide-react"
+import { Plus, BookOpen, Calendar, Search, Filter } from "lucide-react"
 import { READING_CATEGORY_LABELS, LANGUAGE_LABELS } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ListViewCard } from "@/components/list-view-card"
 
 interface Stats {
   total: number
@@ -132,58 +133,41 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
       {initialData.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((reading) => (
-            <Card key={reading.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      {reading.pericope || 'Untitled Reading'}
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      {reading.language && (
-                        <Badge variant="outline" className="text-xs">
-                          {LANGUAGE_LABELS[reading.language]?.en || reading.language}
-                        </Badge>
-                      )}
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(reading.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/readings/${reading.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {reading.categories && reading.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {reading.categories.map(category => (
-                      <Badge key={category} className={getCategoryColor(category) + " text-xs"}>
-                        {getCategoryLabel(category)}
-                      </Badge>
-                    ))}
-                  </div>
+            <ListViewCard
+              key={reading.id}
+              title={reading.pericope || 'Untitled Reading'}
+              editHref={`/readings/${reading.id}/edit`}
+              viewHref={`/readings/${reading.id}`}
+              viewButtonText="View Reading"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                {reading.language && (
+                  <Badge variant="outline" className="text-xs">
+                    {LANGUAGE_LABELS[reading.language]?.en || reading.language}
+                  </Badge>
                 )}
-
-                {reading.text && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {reading.text}
-                  </p>
-                )}
-
-                <div className="flex justify-end items-center pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/readings/${reading.id}`}>
-                      View Reading
-                    </Link>
-                  </Button>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(reading.created_at).toLocaleDateString()}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {reading.categories && reading.categories.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {reading.categories.map(category => (
+                    <Badge key={category} className={getCategoryColor(category) + " text-xs"}>
+                      {getCategoryLabel(category)}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {reading.text && (
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {reading.text}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       ) : (

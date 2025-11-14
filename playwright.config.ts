@@ -2,8 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load environment variables from .env.production.local for test credentials
-dotenv.config({ path: '.env.production.local' });
+// Load environment variables from .env.local for test credentials
+dotenv.config({ path: path.join(__dirname, '.env.local') });
 
 /**
  * See https://playwright.dev/docs/test-configuration.

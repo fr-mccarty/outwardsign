@@ -4,6 +4,8 @@ This checklist provides a comprehensive guide for creating new modules (Funerals
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
 
+**For detailed component patterns and code examples, see [MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md).**
+
 ---
 
 ## Quick Overview
@@ -12,7 +14,7 @@ When creating a new module, follow these major steps:
 
 1. **Database Layer** - Migration, RLS policies, base types
 2. **Server Actions** - CRUD operations with `WithRelations` interface
-3. **Module Structure** - 8 main files + 1 print page (follow wedding pattern exactly)
+3. **Module Structure** - 9 main files + 1 print page (follow wedding pattern exactly)
 4. **Reusable Components** - Use existing pickers and shared components
 5. **Content & Export** - Content builder + API routes for PDF/Word
 6. **Constants** - Status constants and sidebar navigation
@@ -49,7 +51,7 @@ When creating a new module, follow these major steps:
 
 ### Phase 3: Module Structure (Main Files)
 
-Follow the wedding module pattern exactly for all 8 main files:
+Follow the wedding module pattern exactly for all 9 main files:
 
 - [ ] **List Page** - `app/(main)/[entities]/page.tsx` (Server)
   - [ ] Auth check with redirect
@@ -111,6 +113,16 @@ Follow the wedding module pattern exactly for all 8 main files:
   - [ ] Implement `generateFilename()` function
   - [ ] Implement `getTemplateId()` function (read from `entity.[entity]_template_id`)
   - [ ] Pass `buildLiturgy` callback
+
+- [ ] **Form Actions** - `app/(main)/[entities]/[id]/[entity]-form-actions.tsx` (Client)
+  - [ ] Accept `entity: [Entity]WithRelations` prop
+  - [ ] Implement Copy Info button (copies entity details to clipboard)
+  - [ ] Implement Edit button (links to edit page)
+  - [ ] Implement Delete button with confirmation dialog
+  - [ ] Handle delete loading state (`isDeleting`)
+  - [ ] Call `delete[Entity](entity.id)` Server Action
+  - [ ] Redirect to list page after successful deletion (`router.push('/[entities]')`)
+  - [ ] Use toast notifications for user feedback
 
 ### Phase 4: Print & Export
 

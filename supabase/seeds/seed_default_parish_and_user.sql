@@ -20,12 +20,12 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Create parish settings for the default parish
-INSERT INTO parish_settings (parish_id, mass_intention_offering_quick_amounts, donations_quick_amounts, liturgical_locale, created_at, updated_at)
+INSERT INTO parish_settings (parish_id, mass_intention_offering_quick_amount, donations_quick_amount, liturgical_locale, created_at, updated_at)
 VALUES (
   '00000000-0000-0000-0000-000000000001'::UUID,
-  '[1000, 2000, 5000]'::JSONB, -- $10, $20, $50 in cents
-  '[1000, 2000, 5000, 10000]'::JSONB, -- $10, $20, $50, $100 in cents
-  'en',
+  '[{"amount": 1000, "label": "$10"}, {"amount": 2000, "label": "$20"}, {"amount": 5000, "label": "$50"}]'::JSONB,
+  '[{"amount": 1000, "label": "$10"}, {"amount": 2000, "label": "$20"}, {"amount": 5000, "label": "$50"}, {"amount": 10000, "label": "$100"}]'::JSONB,
+  'en_US',
   now(),
   now()
 )

@@ -40,7 +40,7 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 
 ## ✨ Features
 
-- **Sacrament & Sacramental Planning:** Manage weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type
+- **Sacrament & Sacramental Planning:** Manage Masses, weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type
 - **Complete Preparation Tools:** Organize all aspects of sacramental preparation from initial planning to printed scripts
 - **Parish Calendar:** Unified calendar view showing all sacramental events and parish activities
 - **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word export for all sacraments)
@@ -54,11 +54,13 @@ Each sacrament and sacramental type uses a consistent icon throughout the applic
 
 | Module | Lucide React Component |
 |--------|------------------------|
+| **Masses** | `CirclePlus` |
 | **Weddings** | `VenusAndMars` |
 | **Funerals** | `Cross` |
 | **Baptisms** | `Droplet` |
 | **Presentations** | `HandHeartIcon` |
 | **Quinceañeras** | `BookHeart` |
+| **Groups** | `Users` |
 | **Confirmations** | `Flame` *(future)* |
 
 **Source of Truth:** The main sidebar (`src/components/main-sidebar.tsx`) defines the official icon for each module. Always reference this file when creating new features or documentation to ensure consistency across the application.

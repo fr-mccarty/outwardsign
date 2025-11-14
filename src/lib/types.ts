@@ -217,8 +217,9 @@ export interface Parish {
 export interface ParishSettings {
   id: string
   parish_id: string
-  mass_intention_offering_quick_amounts: Array<{amount: number, label: string}>
-  donations_quick_amounts: Array<{amount: number, label: string}>
+  mass_intention_offering_quick_amount: Array<{amount: number, label: string}>
+  donations_quick_amount: Array<{amount: number, label: string}>
+  liturgical_locale: string
   created_at: string
   updated_at: string
 }

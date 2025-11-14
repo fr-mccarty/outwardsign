@@ -6,9 +6,8 @@
 
 import { MassWithRelations } from '@/lib/actions/masses'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
-import { buildFullScriptEnglish } from './templates/full-script-english'
-import { buildFullScriptSpanish } from './templates/full-script-spanish'
-import { buildReadingsOnly } from './templates/readings-only'
+import { buildMassEnglish } from './templates/english'
+import { buildMassSpanish } from './templates/spanish'
 
 // Export shared helpers for use in templates
 export * from './helpers'
@@ -18,26 +17,19 @@ export * from './helpers'
  * Add new Mass templates here as they are created
  */
 export const MASS_TEMPLATES: Record<string, LiturgyTemplate<MassWithRelations>> = {
-  'mass-full-script-english': {
-    id: 'mass-full-script-english',
-    name: 'Full Mass Script (English)',
-    description: 'Complete Mass liturgy with all readings, petitions, and directions',
+  'mass-english': {
+    id: 'mass-english',
+    name: 'Mass (English)',
+    description: 'Mass information, ministers, petitions, and announcements',
     supportedLanguages: ['en'],
-    builder: buildFullScriptEnglish,
+    builder: buildMassEnglish,
   },
-  'mass-full-script-spanish': {
-    id: 'mass-full-script-spanish',
-    name: 'Guión Completo de Misa (Español)',
-    description: 'Liturgia completa de Misa con todas las lecturas, peticiones e indicaciones',
+  'mass-spanish': {
+    id: 'mass-spanish',
+    name: 'Misa (Español)',
+    description: 'Información de la misa, ministros, peticiones y anuncios',
     supportedLanguages: ['es'],
-    builder: buildFullScriptSpanish,
-  },
-  'mass-readings-only': {
-    id: 'mass-readings-only',
-    name: 'Readings Only',
-    description: 'Mass readings and petitions without full liturgy script',
-    supportedLanguages: ['en', 'es'],
-    builder: buildReadingsOnly,
+    builder: buildMassSpanish,
   },
 }
 
@@ -46,8 +38,8 @@ export const MASS_TEMPLATES: Record<string, LiturgyTemplate<MassWithRelations>> 
  */
 export function buildMassLiturgy(
   mass: MassWithRelations,
-  templateId: string = 'mass-full-script-english'
+  templateId: string = 'mass-english'
 ): LiturgyDocument {
-  const template = MASS_TEMPLATES[templateId] || MASS_TEMPLATES['mass-full-script-english']
+  const template = MASS_TEMPLATES[templateId] || MASS_TEMPLATES['mass-english']
   return template.builder(mass)
 }

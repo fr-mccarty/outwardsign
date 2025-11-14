@@ -17,8 +17,8 @@ export async function GET(
     }
 
     // Build liturgy content using centralized content builder
-    // Use the template_id from the mass record, defaulting to 'mass-full-script-english'
-    const templateId = mass.mass_template_id || 'mass-full-script-english'
+    // Use the template_id from the mass record, defaulting to 'mass-english'
+    const templateId = mass.mass_template_id || 'mass-english'
     const liturgyDocument = buildMassLiturgy(mass, templateId)
 
     // Render to Word format
@@ -36,13 +36,11 @@ export async function GET(
     const buffer = await Packer.toBuffer(doc)
 
     // Generate filename
-    const massDate = mass.event?.start_date
+    const presiderLastName = mass.presider?.last_name || 'Presider'
+    const eventDate = mass.event?.start_date
       ? new Date(mass.event.start_date).toISOString().split('T')[0].replace(/-/g, '')
       : 'NoDate'
-    const liturgicalEventName = mass.liturgical_event
-      ? (mass.liturgical_event.event_data as any)?.name?.replace(/[^a-zA-Z0-9]/g, '-') || 'Mass'
-      : 'Mass'
-    const filename = `Mass-${liturgicalEventName}-${massDate}.docx`
+    const filename = `mass-${presiderLastName}-${eventDate}.docx`
 
     // Return Word document
     return new NextResponse(buffer as any, {

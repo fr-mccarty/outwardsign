@@ -42,10 +42,17 @@ export default function ParishSettingsPage() {
     city: '',
     state: ''
   })
+  const [liturgicalLocale, setLiturgicalLocale] = useState('en_US')
   const [quickAmountsData, setQuickAmountsData] = useState([
     { amount: 100, label: '$1' },
     { amount: 200, label: '$2' },
     { amount: 500, label: '$5' }
+  ])
+  const [donationsQuickAmountsData, setDonationsQuickAmountsData] = useState([
+    { amount: 500, label: '$5' },
+    { amount: 1000, label: '$10' },
+    { amount: 2500, label: '$25' },
+    { amount: 5000, label: '$50' }
   ])
   const [members, setMembers] = useState<ParishMember[]>([])
   const [loading, setLoading] = useState(true)
@@ -82,7 +89,9 @@ export default function ParishSettingsPage() {
         const settingsResult = await getParishSettings(parish.id)
         if (settingsResult.success) {
           setParishSettings(settingsResult.settings)
-          setQuickAmountsData(settingsResult.settings.mass_intention_offering_quick_amounts)
+          setQuickAmountsData(settingsResult.settings.mass_intention_offering_quick_amount)
+          setDonationsQuickAmountsData(settingsResult.settings.donations_quick_amount)
+          setLiturgicalLocale(settingsResult.settings.liturgical_locale)
         }
         
         await loadMembers(parish.id)
@@ -155,6 +164,23 @@ export default function ParishSettingsPage() {
     setQuickAmountsData(prev => prev.filter((_, i) => i !== index))
   }
 
+  const handleDonationsQuickAmountChange = (index: number, field: 'amount' | 'label', value: string | number) => {
+    setDonationsQuickAmountsData(prev => prev.map((item, i) =>
+      i === index ? { ...item, [field]: field === 'amount' ? Number(value) : value } : item
+    ))
+  }
+
+  const addDonationsQuickAmount = () => {
+    setDonationsQuickAmountsData(prev => [
+      ...prev,
+      { amount: 1000, label: '$10' }
+    ])
+  }
+
+  const removeDonationsQuickAmount = (index: number) => {
+    setDonationsQuickAmountsData(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSaveQuickAmounts = async () => {
     if (!currentParish) {
       toast.error('No parish selected')
@@ -164,12 +190,52 @@ export default function ParishSettingsPage() {
     setSaving(true)
     try {
       await updateParishSettings(currentParish.id, {
-        mass_intention_offering_quick_amounts: quickAmountsData
+        mass_intention_offering_quick_amount: quickAmountsData
       })
       toast.success('Mass intention quick amounts saved successfully!')
     } catch (error) {
       console.error('Error saving quick amounts:', error)
       toast.error('Failed to save quick amounts')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSaveDonationsQuickAmounts = async () => {
+    if (!currentParish) {
+      toast.error('No parish selected')
+      return
+    }
+
+    setSaving(true)
+    try {
+      await updateParishSettings(currentParish.id, {
+        donations_quick_amount: donationsQuickAmountsData
+      })
+      toast.success('Donations quick amounts saved successfully!')
+    } catch (error) {
+      console.error('Error saving donations quick amounts:', error)
+      toast.error('Failed to save donations quick amounts')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSaveLiturgicalLocale = async () => {
+    if (!currentParish) {
+      toast.error('No parish selected')
+      return
+    }
+
+    setSaving(true)
+    try {
+      await updateParishSettings(currentParish.id, {
+        liturgical_locale: liturgicalLocale
+      })
+      toast.success('Liturgical locale saved successfully!')
+    } catch (error) {
+      console.error('Error saving liturgical locale:', error)
+      toast.error('Failed to save liturgical locale')
     } finally {
       setSaving(false)
     }
@@ -263,7 +329,7 @@ export default function ParishSettingsPage() {
       </div>
 
       <Tabs defaultValue="settings" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Parish Settings
@@ -271,6 +337,10 @@ export default function ParishSettingsPage() {
           <TabsTrigger value="mass-intentions" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             Mass Intentions
+          </TabsTrigger>
+          <TabsTrigger value="donations" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Donations
           </TabsTrigger>
           <TabsTrigger value="members" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -327,6 +397,38 @@ export default function ParishSettingsPage() {
                     required
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Liturgical Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="liturgical-locale">Liturgical Calendar Locale</Label>
+                <Select value={liturgicalLocale} onValueChange={setLiturgicalLocale}>
+                  <SelectTrigger id="liturgical-locale">
+                    <SelectValue placeholder="Select locale" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en_US">English (United States)</SelectItem>
+                    <SelectItem value="es_MX">Spanish (Mexico)</SelectItem>
+                    <SelectItem value="es_ES">Spanish (Spain)</SelectItem>
+                    <SelectItem value="fr_FR">French (France)</SelectItem>
+                    <SelectItem value="pt_BR">Portuguese (Brazil)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This determines which liturgical calendar events are imported from the API
+                </p>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleSaveLiturgicalLocale} disabled={saving} size="sm">
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Locale'}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -428,6 +530,101 @@ export default function ParishSettingsPage() {
                 <h4 className="font-medium mb-2">Preview:</h4>
                 <div className="flex gap-2 flex-wrap">
                   {quickAmountsData.map((quickAmount, index) => (
+                    <Badge key={index} variant="outline">
+                      {quickAmount.label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        </TabsContent>
+
+        <TabsContent value="donations" className="space-y-6">
+          <div className="flex justify-end mb-4">
+            <Button onClick={handleSaveDonationsQuickAmounts} disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Quick Amounts'}
+            </Button>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <DollarSign className="h-5 w-5" />
+                Donation Quick Amounts
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-sm text-muted-foreground">
+                Configure the quick amount buttons that appear when entering donations.
+                Amounts are stored in cents for precise calculations.
+              </p>
+
+              <div className="space-y-4">
+                {donationsQuickAmountsData.map((quickAmount, index) => (
+                  <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
+                    <div className="flex-1 grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`donations-amount-${index}`}>
+                          Amount (cents)
+                        </Label>
+                        <Input
+                          id={`donations-amount-${index}`}
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={quickAmount.amount}
+                          onChange={(e) => handleDonationsQuickAmountChange(index, 'amount', parseInt(e.target.value) || 0)}
+                          placeholder="100"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ${(quickAmount.amount / 100).toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor={`donations-label-${index}`}>
+                          Display Label
+                        </Label>
+                        <Input
+                          id={`donations-label-${index}`}
+                          type="text"
+                          value={quickAmount.label}
+                          onChange={(e) => handleDonationsQuickAmountChange(index, 'label', e.target.value)}
+                          placeholder="$1"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeDonationsQuickAmount(index)}
+                      disabled={donationsQuickAmountsData.length <= 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addDonationsQuickAmount}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Quick Amount
+                </Button>
+              </div>
+
+              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium mb-2">Preview:</h4>
+                <div className="flex gap-2 flex-wrap">
+                  {donationsQuickAmountsData.map((quickAmount, index) => (
                     <Badge key={index} variant="outline">
                       {quickAmount.label}
                     </Badge>

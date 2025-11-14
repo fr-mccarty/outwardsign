@@ -47,7 +47,9 @@
 
 When you need detailed information on forms, styling, components, modules, testing, liturgical calendar system, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.
 
-**Liturgical Calendar:** See [LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md) for liturgical calendar API integration, import scripts, and database structure.
+**Key Documentation Files:**
+- **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
+- **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 
 This main CLAUDE.md file provides overviews and references these detailed resources where appropriate.
 
@@ -84,17 +86,23 @@ User personas have been created to guide development and evaluate the applicatio
 When implementing features or evaluating the application, refer to the personas file to ensure the design, functionality, and user experience align with the needs of priests, deacons, pastoral associates, liturgical directors, parish staff, and parishioners.
 
 ## 🔴 Database
-For making database changes, a migration file should first be created.
-Claude Code should NEVER use the supabase mcp server to make database changes.
 
-When ready, tell the user to push to remote using this command
-supabase db push
+**🔴 CRITICAL - Database Changes:**
+- For making database changes, a migration file should first be created
+- **NEVER use the Supabase MCP server to make database changes** during development
+- All database operations must go through migration files for proper version control
 
-Make sure to confirm at the end of a message when a new migration has been created. Ensure the user has run the push command before moving on.
+**Migration Workflow:**
+1. Create or modify migration files in `supabase/migrations/`
+2. Tell the user to push to remote using: `supabase db push`
+3. Confirm at the end of your message when a new migration has been created
+4. Ensure the user has run the push command before moving on
 
-Problems and policies need to be fixed at the migration level. Never try to fix a policy or a table or a function outside of a migration.
-
-According to Claude, the backend access the database at Supabaes using the Authenticated policy, and the frontend uses the Anon policy.
+**Important Notes:**
+- Problems and policies need to be fixed at the migration level
+- Never try to fix a policy, table, or function outside of a migration
+- The backend accesses the database at Supabase using the Authenticated policy
+- The frontend uses the Anon policy
 
 **Migration Strategy (Early Development):**
 During initial development, modify existing migrations instead of creating new migration files. When database changes are needed, update the relevant existing migration, then prompt the user to reset the database and re-run all migrations from scratch.
@@ -103,6 +111,15 @@ During initial development, modify existing migrations instead of creating new m
 - **One table per migration file** - Each migration file should create or modify only ONE table
 - Module tables should be named in **plural form** (e.g., `weddings`, `funerals`, `baptisms`)
 - Keep migrations focused and atomic for better version control and rollback capability
+
+## 🔴 Git Operations
+
+**🔴 CRITICAL - Git Permissions:**
+- **NEVER use `git add` or `git commit` commands directly**
+- You do NOT have permission to stage files or create commits
+- You may ONLY use read-only git commands: `git status`, `git log`, `git show`, `git diff`, `git branch`, `git remote`
+- When files need to be added to git, instruct the user to run the commands manually
+- Example: "Please run: `git add file1.txt file2.txt`"
 
 ## Testing
 
@@ -121,9 +138,9 @@ During initial development, modify existing migrations instead of creating new m
 - Do not test for toast messages after successful form submissions - test navigation instead
 
 ## Tools
-Supabase MCP Server - for all actions related to the database
-you may use query and select operations on supabase without asking for permission
-All other actions need permission
+
+**🔴 CRITICAL - Supabase MCP:**
+During development, **DO NOT use the Supabase MCP server** for any database operations. All database changes must be made through migration files and the Supabase CLI (`supabase db push`). This ensures proper version control and reproducibility of the database schema.
 
 ## 🔴 Accessing Records
 The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
@@ -206,72 +223,48 @@ This includes:
 ## 🔴 Module Structure (Main Files)
 **CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
 
-**Next.js 15 searchParams Pattern:**
-In Next.js 15, `searchParams` is now a Promise and must be awaited before accessing its properties.
+**For detailed implementation patterns, see [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md).**
 
+**Note on Groups Module:** The Groups module uses a different architecture pattern (dialog-based forms) rather than the standard 9-file structure. Groups is designed for managing collections of people (ministry groups, choirs, etc.) and uses inline editing with dialogs instead of separate create/edit pages. For new sacrament/sacramental modules, always follow the standard 9-file pattern.
+
+### The 9 Main Files
+
+Every module consists of 9 component files following a consistent pattern:
+
+1. **List Page (Server)** - `page.tsx` - Fetches entities with filters, passes to client
+2. **List Client** - `[entities]-list-client.tsx` - Search/filter UI, entity grid
+3. **Create Page (Server)** - `create/page.tsx` - Auth + breadcrumbs for create
+4. **View Page (Server)** - `[id]/page.tsx` - Fetches entity with relations for view
+5. **Edit Page (Server)** - `[id]/edit/page.tsx` - Fetches entity with relations for edit
+6. **Form Wrapper (Client)** - `[entity]-form-wrapper.tsx` - PageContainer + action buttons
+7. **Unified Form (Client)** - `[entity]-form.tsx` - Handles create and edit modes
+8. **View Client** - `[id]/[entity]-view-client.tsx` - Displays entity + liturgy content
+9. **Form Actions (Client)** - `[id]/[entity]-form-actions.tsx` - Copy/Edit/Delete buttons
+
+### Quick Reference
+
+**Next.js 15 searchParams Pattern:**
 ```tsx
 interface PageProps {
   searchParams: Promise<{ search?: string; status?: string }>
 }
 
 export default async function Page({ searchParams }: PageProps) {
-  const params = await searchParams
-  const filters = {
-    search: params.search,
-    status: params.status
-  }
-  // ... rest of page logic
+  const params = await searchParams  // Must await in Next.js 15
+  const filters = { search: params.search, status: params.status }
+  // ...
 }
 ```
 
-1. **List Page (Server)** - `page.tsx`
-- Auth check → fetch entities with filters from searchParams → compute stats server-side → define breadcrumbs
-- Structure: `BreadcrumbSetter → [Entity]ListClient initialData={entities} stats={stats}`
-- **IMPORTANT**: searchParams must be typed as `Promise<{...}>` and awaited before use
+**Key Patterns:**
+- All server pages: `page.tsx` (no 'use client')
+- List client file: PLURAL name (`weddings-list-client.tsx`)
+- Form wrapper: Shows action buttons in edit mode only
+- Unified form: Detects mode via `entity` prop, redirects to view page after save
+- View client: Integrates ModuleViewPanel + renders liturgy content
+- Form actions: Copy Info, Edit, Delete with confirmation dialog
 
-2. **List Client** - `[entity]-list-client.tsx` or `[entities]-list-client.tsx`
-- Uses URL search params for shareable, linkable state (search, filters, pagination)
-- Updates URL via router.push() when filters change - NO client-side filtering of data
-- Card (Search/Filters: Input, Select) → Grid of Cards → Empty state Card → Stats Card
-
-3. **Create Page (Server)** - `create/page.tsx`
-- Auth check → define breadcrumbs
-- Structure: `BreadcrumbSetter → [Entity]FormWrapper` with no entity prop
-- Uses FormWrapper to wrap the form with PageContainer
-
-4. **View Page (Server)** - `[id]/page.tsx`
-- Auth check → fetch entity WITH RELATIONS using `get[Entity]WithRelations(id)` → define breadcrumbs
-- Structure: `PageContainer → BreadcrumbSetter → [Entity]ViewClient entity={entity}`
-- View client renders: ModuleViewPanel + Liturgy content (using content builder and HTML renderer)
-
-5. **Edit Page (Server)** - `[id]/edit/page.tsx`
-- Auth check → fetch entity WITH RELATIONS server-side → define breadcrumbs
-- Structure: `BreadcrumbSetter → [Entity]FormWrapper entity={entity}`
-- Uses FormWrapper to wrap the form with PageContainer and action buttons
-
-6. **Form Wrapper (Client)** - `[entity]-form-wrapper.tsx`
-- Wraps the form with PageContainer
-- Manages form loading state
-- For edit mode: Shows action buttons (View button + Save button) at top of page
-- For create mode: No action buttons shown
-- Passes form props down to the actual form component
-
-7. **Unified Form (Client)** - `[entity]-form.tsx`
-- Detects mode: entity prop = edit, no prop = create
-- **Type**: Accepts `[Entity]WithRelations` for edit mode (not base [Entity] type)
-- FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel at BOTTOM)
-- Uses SaveButton and CancelButton components at the bottom of the form
-- Calls `create[Entity]()` or `update[Entity]()` Server Action
-- **See [FORMS.md](./docs/FORMS.md) for:**
-  - isEditing Pattern (how to handle create vs edit mode)
-  - Redirection Pattern (where to navigate after submit)
-  - FormField usage requirements (REQUIRED for all inputs)
-  - Form event handling (nested forms, e.stopPropagation)
-
-8. **View Client** - `[id]/[entity]-view-client.tsx`
-- Renders the ModuleViewPanel with entity data
-- Builds liturgy using `build[Entity]Liturgy(entity, templateId)` where templateId comes from `entity.[entity]_template_id`
-- Renders liturgy content using `renderHTML(liturgyDocument)`
+**See [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) for complete implementation details, code examples, and patterns for each file.**
 
 ## 📖 Additional Module Essentials
 
@@ -286,24 +279,25 @@ export default async function Page({ searchParams }: PageProps) {
 **Main Module Directory** (`app/(main)/[entity-plural]/`):
 ```
 [entity-plural]/
-├── page.tsx                       # List (Server)
+├── page.tsx                       # 1. List Page (Server)
 ├── loading.tsx                    # Suspense fallback (imports reusable component)
 ├── error.tsx                      # Error boundary (imports reusable component)
-├── [entities]-list-client.tsx     # List interactivity (Client) - note plural
-├── [entity]-form-wrapper.tsx      # Form wrapper with PageContainer (Client)
-├── [entity]-form.tsx              # Unified create/edit form (Client)
+├── [entities]-list-client.tsx     # 2. List Client - note PLURAL naming
+├── [entity]-form-wrapper.tsx      # 6. Form Wrapper (Client)
+├── [entity]-form.tsx              # 7. Unified Form (Client)
 ├── create/
-│   └── page.tsx                  # Create (Server)
+│   └── page.tsx                  # 3. Create Page (Server)
 └── [id]/
-    ├── page.tsx                  # View (Server)
-    ├── [entity]-view-client.tsx  # View display (Client)
+    ├── page.tsx                  # 4. View Page (Server)
+    ├── [entity]-view-client.tsx  # 8. View Client
+    ├── [entity]-form-actions.tsx # 9. Form Actions (Client)
     ├── loading.tsx               # Suspense fallback (imports reusable component)
     ├── error.tsx                 # Error boundary (imports reusable component)
     └── edit/
-        └── page.tsx              # Edit (Server)
+        └── page.tsx              # 5. Edit Page (Server)
 ```
 
-**IMPORTANT:** The `[entity]-form-wrapper.tsx` file is REQUIRED and must follow the wedding module pattern exactly.
+**IMPORTANT:** All 9 numbered files are REQUIRED and must follow the wedding module pattern exactly.
 
 **Print View Directory** (`app/print/[entity-plural]/`):
 ```

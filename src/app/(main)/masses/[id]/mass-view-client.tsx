@@ -21,7 +21,7 @@ export function MassViewClient({ mass }: MassViewClientProps) {
 
   // Extract template ID from mass record
   const getTemplateId = (mass: MassWithRelations) => {
-    return mass.mass_template_id || 'mass-full-script-english'
+    return mass.mass_template_id || 'mass-english'
   }
 
   return (

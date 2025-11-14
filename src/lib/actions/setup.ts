@@ -195,17 +195,18 @@ export async function getParishSettings(parishId: string) {
           .from('parish_settings')
           .insert({
             parish_id: parishId,
-            mass_intention_offering_quick_amounts: [
+            mass_intention_offering_quick_amount: [
               { amount: 100, label: '$1' },
               { amount: 200, label: '$2' },
               { amount: 500, label: '$5' }
             ],
-            donations_quick_amounts: [
+            donations_quick_amount: [
               { amount: 500, label: '$5' },
               { amount: 1000, label: '$10' },
               { amount: 2500, label: '$25' },
               { amount: 5000, label: '$50' }
-            ]
+            ],
+            liturgical_locale: 'en_US'
           })
           .select()
           .single()
@@ -227,11 +228,12 @@ export async function getParishSettings(parishId: string) {
 }
 
 export async function updateParishSettings(parishId: string, data: {
-  mass_intention_offering_quick_amounts?: Array<{amount: number, label: string}>
-  donations_quick_amounts?: Array<{amount: number, label: string}>
+  mass_intention_offering_quick_amount?: Array<{amount: number, label: string}>
+  donations_quick_amount?: Array<{amount: number, label: string}>
+  liturgical_locale?: string
 }) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
@@ -250,18 +252,15 @@ export async function updateParishSettings(parishId: string, data: {
       throw new Error('You do not have permission to update parish settings')
     }
 
-    // Prepare update data
-    const updateData: any = {
-      updated_at: new Date().toISOString()
-    }
-
-    if (data.mass_intention_offering_quick_amounts !== undefined) {
-      updateData.mass_intention_offering_quick_amounts = data.mass_intention_offering_quick_amounts
-    }
-
-    if (data.donations_quick_amounts !== undefined) {
-      updateData.donations_quick_amounts = data.donations_quick_amounts
-    }
+    // Prepare update data using simplified pattern
+    const updateData = Object.fromEntries(
+      Object.entries({
+        mass_intention_offering_quick_amount: data.mass_intention_offering_quick_amount,
+        donations_quick_amount: data.donations_quick_amount,
+        liturgical_locale: data.liturgical_locale,
+        updated_at: new Date().toISOString()
+      }).filter(([_, value]) => value !== undefined)
+    )
 
     // Update parish settings
     const { data: settings, error: settingsError } = await supabase
@@ -284,7 +283,7 @@ export async function updateParishSettings(parishId: string, data: {
 
 export async function getParishMembers(parishId: string) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
@@ -303,10 +302,10 @@ export async function getParishMembers(parishId: string) {
       throw new Error('You do not have access to this parish')
     }
 
-    // Get all members of the parish using the view
+    // Get all members of the parish with their profiles
     const { data: parishMembers, error: parishMembersError } = await supabase
-      .from('parish_members_view')
-      .select('*')
+      .from('parish_users')
+      .select('user_id, roles, created_at, profiles!inner(full_name)')
       .eq('parish_id', parishId)
 
     if (parishMembersError) {
@@ -317,22 +316,27 @@ export async function getParishMembers(parishId: string) {
     const members = await Promise.all(
       (parishMembers || []).map(async (parishMember) => {
         let userEmail = null
+        let userCreatedAt = parishMember.created_at
+
         try {
           // Get email from auth.users using admin API
           const { data: authUser } = await supabase.auth.admin.getUserById(parishMember.user_id)
-          userEmail = authUser.user?.email || null
+          if (authUser.user) {
+            userEmail = authUser.user.email || null
+            userCreatedAt = authUser.user.created_at
+          }
         } catch (error) {
           console.error(`Error fetching email for user ${parishMember.user_id}:`, error)
         }
-        
+
         return {
           user_id: parishMember.user_id,
           roles: parishMember.roles,
           users: {
             id: parishMember.user_id,
             email: userEmail,
-            full_name: parishMember.full_name,
-            created_at: parishMember.created_at
+            full_name: (parishMember.profiles as any)?.full_name || userEmail,
+            created_at: userCreatedAt
           }
         }
       })

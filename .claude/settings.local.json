@@ -20,7 +20,8 @@
       "Bash(sed:*)",
       "Bash(find:*)",
       "Bash(done)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

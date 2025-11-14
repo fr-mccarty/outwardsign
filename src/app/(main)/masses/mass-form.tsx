@@ -230,17 +230,17 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         </CardContent>
       </Card>
 
-      {/* Announcements and Petitions */}
+      {/* Pre-Mass Announcements */}
       <Card>
         <CardHeader>
-          <CardTitle>Announcements and Petitions</CardTitle>
+          <CardTitle>Pre-Mass Announcements</CardTitle>
           <CardDescription>
-            Pre-Mass announcements and Universal Prayer (Prayer of the Faithful)
+            Person and topic for announcements made before Mass begins
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <PersonPickerField
-            label="Pre-Mass Announcement Person"
+            label="Announcer"
             description="Person making pre-Mass announcements"
             value={preMassAnnouncementPerson.value}
             onValueChange={preMassAnnouncementPerson.setValue}
@@ -251,31 +251,50 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
           <FormField
             id="pre_mass_announcement_topic"
-            label="Pre-Mass Announcement Topic"
+            label="Announcement Topic"
             description="Brief topic or title for pre-Mass announcements"
             value={preMassAnnouncementTopic}
             onChange={setPreMassAnnouncementTopic}
             placeholder="Parish events, thank you notes, etc."
           />
+        </CardContent>
+      </Card>
 
-          <FormField
-            id="announcements"
-            label="Announcements"
-            description="Full text of announcements to be read before Mass"
-            inputType="textarea"
-            value={announcements}
-            onChange={setAnnouncements}
-            placeholder="Enter announcements here..."
-            rows={4}
-          />
-
-          <Separator />
-
+      {/* Petitions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Petitions</CardTitle>
+          <CardDescription>
+            Universal Prayer (Prayer of the Faithful)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <PetitionEditor
             value={petitions}
             onChange={setPetitions}
             templates={petitionTemplates}
             onInsertTemplate={handleInsertTemplate}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Announcements */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Announcements</CardTitle>
+          <CardDescription>
+            Full text of announcements to be read before Mass
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FormField
+            id="announcements"
+            label="Announcement Text"
+            inputType="textarea"
+            value={announcements}
+            onChange={setAnnouncements}
+            placeholder="Enter announcements here..."
+            rows={6}
           />
         </CardContent>
       </Card>

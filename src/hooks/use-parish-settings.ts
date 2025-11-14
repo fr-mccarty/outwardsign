@@ -42,12 +42,12 @@ export function useParishSettings(parishId: string | null) {
     settings,
     loading,
     error,
-    quickAmounts: settings?.mass_intention_offering_quick_amounts || [
+    quickAmounts: settings?.mass_intention_offering_quick_amount || [
       { amount: 100, label: '$1' },
       { amount: 200, label: '$2' },
       { amount: 500, label: '$5' }
     ],
-    donationsQuickAmounts: settings?.donations_quick_amounts || [
+    donationsQuickAmounts: settings?.donations_quick_amount || [
       { amount: 500, label: '$5' },
       { amount: 1000, label: '$10' },
       { amount: 2500, label: '$25' },

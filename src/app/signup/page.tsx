@@ -12,6 +12,7 @@ import { Flower, CheckCircle } from 'lucide-react'
 import {APP_NAME} from "@/lib/constants";
 
 function SignupForm() {
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -63,6 +64,11 @@ function SignupForm() {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
       })
 
       if (signUpError) {
@@ -164,6 +170,14 @@ function SignupForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
+            <FormField
+              id="fullName"
+              label="Full Name"
+              inputType="text"
+              value={fullName}
+              onChange={setFullName}
+              required
+            />
             <FormField
               id="email"
               label="Email"

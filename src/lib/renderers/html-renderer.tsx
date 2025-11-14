@@ -216,11 +216,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     }
 
     case 'spacer': {
-      const spacerSize = element.size === 'large'
-        ? ELEMENT_STYLES.spacer.large
-        : element.size === 'medium'
-        ? ELEMENT_STYLES.spacer.medium
-        : ELEMENT_STYLES.spacer.small
+      const spacerSize = resolveSpacerSize(element.size || 'small')
       return <div key={index} style={{ marginBottom: `${convert.pointsToPx(spacerSize)}px` }} />
     }
 

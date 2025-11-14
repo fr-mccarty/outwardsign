@@ -25,8 +25,8 @@ export default async function PrintMassPage({ params }: PageProps) {
   }
 
   // Build liturgy content using centralized content builder
-  // Use the template_id from the mass record, defaulting to 'mass-full-script-english'
-  const templateId = mass.mass_template_id || 'mass-full-script-english'
+  // Use the template_id from the mass record, defaulting to 'mass-english'
+  const templateId = mass.mass_template_id || 'mass-english'
   const liturgyDocument = buildMassLiturgy(mass, templateId)
 
   // Render to HTML

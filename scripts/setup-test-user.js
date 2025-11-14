@@ -9,7 +9,7 @@
  *
  * Credentials:
  * - When called from run-tests-with-temp-user.js: Uses dynamic credentials passed via environment variables
- * - When called standalone: Falls back to .env.production.local credentials
+ * - When called standalone: Falls back to .env.local credentials
  *
  * Usage:
  *   node scripts/setup-test-user.js
@@ -17,11 +17,11 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.production.local' });
-require('dotenv').config({ path: '.env.production' });
+const { TEST_ENV_PATH } = require('./test-env-config');
+require('dotenv').config({ path: TEST_ENV_PATH });
 
 // Configuration from environment
-// Priority: process.env (dynamic) > .env.production.local (fallback)
+// Priority: process.env (dynamic) > .env.local (fallback)
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'test-staff@outwardsign.test';
@@ -34,7 +34,7 @@ async function setupTestUser() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     console.error('Error: Missing required environment variables');
     console.error('Please ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set');
-    console.error('Add SUPABASE_SERVICE_ROLE_KEY to your .env.production.local file');
+    console.error('Add SUPABASE_SERVICE_ROLE_KEY to your .env.local file');
     process.exit(1);
   }
 
@@ -114,8 +114,8 @@ async function setupTestUser() {
       console.log(`   ✅ Parish created with ID: ${parishId}`);
     }
 
-    // Step 3: Link user to parish with staff role
-    console.log(`\n3️⃣  Linking user to parish with staff role...`);
+    // Step 3: Link user to parish with admin role
+    console.log(`\n3️⃣  Linking user to parish with admin role...`);
     const { data: existingLink } = await supabase
       .from('parish_users')
       .select('*')
@@ -124,17 +124,17 @@ async function setupTestUser() {
       .single();
 
     if (existingLink) {
-      // Update existing link to ensure staff role
+      // Update existing link to ensure admin role
       const { error: updateError } = await supabase
         .from('parish_users')
-        .update({ roles: ['staff'] })
+        .update({ roles: ['admin'] })
         .eq('user_id', userId)
         .eq('parish_id', parishId);
 
       if (updateError) {
         throw new Error(`Failed to update parish user link: ${updateError.message}`);
       }
-      console.log('   ✅ Updated existing parish user link with staff role');
+      console.log('   ✅ Updated existing parish user link with admin role');
     } else {
       // Create new link
       const { error: linkError } = await supabase
@@ -142,13 +142,13 @@ async function setupTestUser() {
         .insert({
           user_id: userId,
           parish_id: parishId,
-          roles: ['staff'],
+          roles: ['admin'],
         });
 
       if (linkError) {
         throw new Error(`Failed to link user to parish: ${linkError.message}`);
       }
-      console.log('   ✅ User linked to parish with staff role');
+      console.log('   ✅ User linked to parish with admin role');
     }
 
     // Step 4: Create or update user settings
