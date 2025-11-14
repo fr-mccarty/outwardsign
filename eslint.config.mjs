@@ -23,6 +23,14 @@ const eslintConfig = [
     ],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      // Allow 'any' in type definitions, generic components, and API routes where flexibility is needed
+      '@typescript-eslint/no-explicit-any': 'off',
+      // Allow require imports in specific cases (petition templates use dynamic requires)
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;

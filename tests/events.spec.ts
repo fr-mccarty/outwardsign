@@ -207,4 +207,68 @@ test.describe('Events Module - Standalone Events', () => {
     // Should still stay on the same page if event_type and responsible_party_id are required
     await expect(page).toHaveURL('/events/create');
   });
+
+  test('should create event and verify print view', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Navigate to events page
+    await page.goto('/events');
+    await expect(page).toHaveURL('/events');
+
+    // Click "New Event" button
+    const newEventLink = page.getByRole('link', { name: /New Event/i }).first();
+    await newEventLink.click();
+
+    // Verify we're on the create page
+    await expect(page).toHaveURL('/events/create', { timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    // Fill in event details
+    const eventName = 'Print View Test Event';
+    const eventDescription = 'Testing print view functionality for events module';
+
+    await page.fill('input#name', eventName);
+    await page.fill('textarea#description', eventDescription);
+
+    // Select event type
+    await page.locator('#event_type').click();
+    await page.getByRole('option', { name: 'Meeting' }).click();
+
+    // Fill in date
+    await page.fill('input#start_date', '2025-12-25');
+
+    // Scroll to bottom and submit
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const submitButton = page.locator('button[type="submit"]').last();
+    await submitButton.scrollIntoViewIfNeeded();
+    await submitButton.click();
+
+    // Should redirect to the event detail page (navigation proves success)
+    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    // Get the event ID from URL for later use
+    const eventUrl = page.url();
+    const eventId = eventUrl.split('/').pop();
+
+    console.log(`Created event with ID: ${eventId}`);
+
+    // Verify we're on the view page
+    await expect(page.getByRole('heading', { name: eventName }).first()).toBeVisible();
+
+    // Test print view - verify it exists and loads
+    console.log(`Testing print view for event: ${eventId}`);
+    await page.goto(`/print/events/${eventId}`);
+    await expect(page).toHaveURL(`/print/events/${eventId}`, { timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    // Verify print view loaded (check for common print view elements)
+    await expect(page.locator('body')).toBeVisible();
+
+    // Verify that the print view contains event-specific content (if available)
+    // Some print views may not have a specific content class, so just check body loaded
+    const eventContent = page.locator('.event-print-content');
+    if (await eventContent.count() > 0) {
+      await expect(eventContent).toBeVisible();
+    }
+
+    console.log(`Successfully tested event: ${eventId} - created and verified print view`);
+  });
 });

@@ -1,17 +1,45 @@
 /**
  * Presentation Bilingual Script - English & Spanish
  * A bilingual version of the Presentation in the Temple liturgy
+ *
+ * STRUCTURE:
+ * 1. Cover Page - Summary (page break after)
+ * 2. Liturgy Section - Complete bilingual ceremony script
  */
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatEventDateTime, formatPersonName } from '@/lib/utils/formatters'
+import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
+import {
+  getChildNameBilingual,
+  getMotherNameBilingual,
+  getFatherNameBilingual,
+  isBaptized,
+  gendered,
+  formatLocationText,
+  getEventSubtitleBilingual,
+} from '../helpers'
 
 /**
- * Build summary section (presentation info) in bilingual format
+ * Build cover page with presentation summary information
  */
-function buildSummarySection(presentation: PresentationWithRelations): ContentSection {
+function buildCoverPage(presentation: PresentationWithRelations): ContentSection {
   const elements: ContentElement[] = []
+
+  // Title and subtitle header
+  const childName = getChildNameBilingual(presentation)
+  const title = `Presentation in the Temple / Presentación en el Templo - ${childName}`
+  const subtitle = getEventSubtitleBilingual(presentation)
+
+  elements.push({
+    type: 'event-title',
+    text: title,
+  })
+
+  elements.push({
+    type: 'event-datetime',
+    text: subtitle,
+  })
 
   // Presentation Information subsection
   elements.push({
@@ -60,15 +88,10 @@ function buildSummarySection(presentation: PresentationWithRelations): ContentSe
   }
 
   if (presentation.presentation_event?.location) {
-    const location = presentation.presentation_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Location / Lugar:',
-      value: locationText,
+      value: formatLocationText(presentation.presentation_event.location),
     })
   }
 
@@ -87,41 +110,32 @@ function buildSummarySection(presentation: PresentationWithRelations): ContentSe
   }
 
   return {
-    id: 'summary',
+    id: 'cover',
     pageBreakAfter: true,
     elements,
   }
 }
 
-export function buildBilingual(presentation: PresentationWithRelations): LiturgyDocument {
-  const child = presentation.child
-  const mother = presentation.mother
-  const father = presentation.father
-  const childName = child ? `${child.first_name} ${child.last_name}` : '[Child\'s Name / Nombre del Niño/a]'
-  const childSex = child?.sex || 'Male'
-  const motherName = mother ? `${mother.first_name} ${mother.last_name}` : '[Mother\'s Name / Nombre de la Madre]'
-  const fatherName = father ? `${father.first_name} ${father.last_name}` : '[Father\'s Name / Nombre del Padre]'
-  const isBaptized = presentation.is_baptized
+/**
+ * Build liturgy section with complete bilingual ceremony script
+ */
+function buildLiturgySection(presentation: PresentationWithRelations): ContentSection {
+  // Get names using helpers
+  const childName = getChildNameBilingual(presentation)
+  const motherName = getMotherNameBilingual(presentation)
+  const fatherName = getFatherNameBilingual(presentation)
+  const baptized = isBaptized(presentation)
 
-  // Helper function for gendered text (returns both English and Spanish)
+  // Helper functions for gendered text
   const genderedEn = (maleText: string, femaleText: string) => {
-    return childSex === 'Male' ? maleText : femaleText
+    return gendered(presentation, maleText, femaleText)
   }
 
   const genderedEs = (maleText: string, femaleText: string) => {
-    return childSex === 'Male' ? maleText : femaleText
+    return gendered(presentation, maleText, femaleText)
   }
 
-  // Build title and subtitle
-  const title = `Presentation in the Temple / Presentación en el Templo - ${childName}`
-  const subtitle = presentation.presentation_event
-    ? formatEventDateTime(presentation.presentation_event)
-    : undefined
-
-  // Build sections
-  const sections: ContentSection[] = []
-
-  // Main Liturgy Section
+  // Build liturgy elements
   const liturgyElements: ContentElement[] = []
 
   // After the Homily
@@ -140,7 +154,6 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANT: ',
-        formatting: ['bold'],
       },
       {
         text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedEn('son', 'daughter')}, ${motherName} and ${fatherName} would like to present their ${genderedEn('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
@@ -158,7 +171,6 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
         text: `La vida es el mayor regalo de Dios para nosotros. Agradecidos por la vida de su ${genderedEs('hijo', 'hija')}, ${motherName} y ${fatherName} quisieran presentar a su ${genderedEs('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Les damos la bienvenida aquí al frente de la iglesia.`,
@@ -171,9 +183,8 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
   })
 
   liturgyElements.push({
-    type: 'text',
-    text: '[Walk to the front of the altar / Caminar al frente del altar]',
-    formatting: ['italic'],
+    type: 'rubric',
+    text: 'Walk to the front of the altar / Caminar al frente del altar',
   })
 
   liturgyElements.push({
@@ -186,10 +197,9 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANT (to the parents): ',
-        formatting: ['bold'],
       },
       {
-        text: `By presenting this ${genderedEn('boy', 'girl')} to the Lord and to this community today, you ${isBaptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedEn('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
+        text: `By presenting this ${genderedEn('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedEn('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
       },
     ],
   })
@@ -204,10 +214,9 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANTE (a los padres): ',
-        formatting: ['bold'],
       },
       {
-        text: `Al presentar a ${genderedEs('este niño', 'esta niña')} al Señor y a esta comunidad hoy, ${isBaptized ? 'renuevan su compromiso' : 'se comprometen'} a ${genderedEs('criarlo', 'criarla')} en los caminos de la fe. ¿Entienden y aceptan esta responsabilidad?`,
+        text: `Al presentar a ${genderedEs('este niño', 'esta niña')} al Señor y a esta comunidad hoy, ${baptized ? 'renuevan su compromiso' : 'se comprometen'} a ${genderedEs('criarlo', 'criarla')} en los caminos de la fe. ¿Entienden y aceptan esta responsabilidad?`,
       },
     ],
   })
@@ -219,15 +228,8 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
   // Parents' response - Bilingual
   liturgyElements.push({
     type: 'response',
-    parts: [
-      {
-        text: 'PARENTS / PADRES: ',
-        formatting: ['bold'],
-      },
-      {
-        text: 'Yes, we do. / Sí, aceptamos.',
-      },
-    ],
+    label: 'PARENTS / PADRES:',
+    text: 'Yes, we do. / Sí, aceptamos.',
   })
 
   liturgyElements.push({
@@ -240,10 +242,9 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: `CELEBRANT (to the ${genderedEn('boy', 'girl')}): `,
-        formatting: ['bold'],
       },
       {
-        text: `${isBaptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your parents to do the same.`,
+        text: `${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your parents to do the same.`,
       },
     ],
   })
@@ -258,10 +259,9 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: `CELEBRANTE (${genderedEs('al niño', 'a la niña')}): `,
-        formatting: ['bold'],
       },
       {
-        text: `${isBaptized ? 'Como el día de tu bautismo, te' : 'Te'} signo con la señal de la cruz, y pido a tus padres que hagan lo mismo.`,
+        text: `${baptized ? 'Como el día de tu bautismo, te' : 'Te'} signo con la señal de la cruz, y pido a tus padres que hagan lo mismo.`,
       },
     ],
   })
@@ -271,9 +271,8 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
   })
 
   liturgyElements.push({
-    type: 'text',
-    text: '[Celebrant and parents sign the child with the cross / El celebrante y los padres hacen la señal de la cruz]',
-    formatting: ['italic'],
+    type: 'rubric',
+    text: 'Celebrant and parents sign the child with the cross / El celebrante y los padres hacen la señal de la cruz',
   })
 
   liturgyElements.push({
@@ -286,7 +285,6 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANT: ',
-        formatting: ['bold'],
       },
       {
         text: `Heavenly Father, you are the giver of all life. You gave us this ${genderedEn('son', 'daughter')} and we present ${genderedEn('him', 'her')} to you, as Mary presented Jesus in the temple. We pray for these parents. Bless them in their efforts to raise this ${genderedEn('boy', 'girl')} as a good Christian and as a good Catholic. Bless this child. Give ${genderedEn('him', 'her')} good health, protect ${genderedEn('him', 'her')} from any danger of body and spirit, and help ${genderedEn('him', 'her')} to grow in age and in wisdom, always in your presence.`,
@@ -304,7 +302,6 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
         text: `Padre celestial, tú eres el dador de toda vida. Nos diste ${genderedEs('este hijo', 'esta hija')} y ${genderedEs('lo', 'la')} presentamos a ti, como María presentó a Jesús en el templo. Oramos por estos padres. Bendícelos en sus esfuerzos por criar a ${genderedEs('este niño', 'esta niña')} como ${genderedEs('un buen cristiano y un buen católico', 'una buena cristiana y una buena católica')}. Bendice a ${genderedEs('este niño', 'esta niña')}. Dale buena salud, ${genderedEs('protégelo', 'protégela')} de todo peligro del cuerpo y del espíritu, y ayúda${genderedEs('lo', 'la')} a crecer en edad y en sabiduría, siempre en tu presencia.`,
@@ -316,7 +313,7 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     type: 'spacer',
   })
 
-  // Prayer to Mary - Bilingual
+  // Prayer to Mary - English
   liturgyElements.push({
     type: 'text',
     text: `Holy Mary, Mother of God and our Mother, we ask your protection over this family and over this ${genderedEn('son', 'daughter')}. It is by following your example that this family brings this ${genderedEn('boy', 'girl')} to be presented to God, our creator, and to this community today. Help these parents to raise this child with word and example.`,
@@ -326,6 +323,7 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     type: 'spacer',
   })
 
+  // Prayer to Mary - Spanish
   liturgyElements.push({
     type: 'text',
     text: `Santa María, Madre de Dios y Madre nuestra, pedimos tu protección sobre esta familia y sobre ${genderedEs('este hijo', 'esta hija')}. Es siguiendo tu ejemplo que esta familia trae a ${genderedEs('este niño', 'esta niña')} para ser ${genderedEs('presentado', 'presentada')} a Dios, nuestro creador, y a esta comunidad hoy. Ayuda a estos padres a criar a ${genderedEs('este niño', 'esta niña')} con palabra y ejemplo.`,
@@ -347,15 +345,8 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
   // Assembly response - Bilingual
   liturgyElements.push({
     type: 'response',
-    parts: [
-      {
-        text: 'ASSEMBLY / ASAMBLEA: ',
-        formatting: ['bold'],
-      },
-      {
-        text: 'Amen. / Amén.',
-      },
-    ],
+    label: 'ASSEMBLY / ASAMBLEA:',
+    text: 'Amen. / Amén.',
   })
 
   liturgyElements.push({
@@ -364,9 +355,8 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
 
   // Blessing of religious articles
   liturgyElements.push({
-    type: 'text',
-    text: '[Bless religious articles / Bendecir artículos religiosos]',
-    formatting: ['italic'],
+    type: 'rubric',
+    text: 'Bless religious articles / Bendecir artículos religiosos',
   })
 
   liturgyElements.push({
@@ -379,7 +369,6 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     parts: [
       {
         text: 'CELEBRANT / CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
         text: 'Now we send you back to your places, as we show you our support with applause. / Ahora los enviamos de regreso a sus lugares, mientras les mostramos nuestro apoyo con un aplauso.',
@@ -387,29 +376,34 @@ export function buildBilingual(presentation: PresentationWithRelations): Liturgy
     ],
   })
 
-  // Add header to summary section
-  const summarySection = buildSummarySection(presentation)
-  summarySection.elements.unshift(
-    {
-      type: 'event-title',
-      text: title,
-      alignment: 'center',
-    },
-    {
-      type: 'event-datetime',
-      text: subtitle || 'No date/time / Sin fecha/hora',
-      alignment: 'center',
-    }
-  )
-  sections.push(summarySection)
-
-  // Add liturgy section
-  sections.push({
+  return {
     id: 'liturgy',
-    title: 'Presentation Liturgy / Liturgia de Presentación',
+    pageBreakBefore: true,
     elements: liturgyElements,
-  })
+  }
+}
 
+/**
+ * Build complete presentation liturgy document (Bilingual)
+ */
+export function buildBilingual(presentation: PresentationWithRelations): LiturgyDocument {
+  // Calculate title and subtitle
+  const childName = getChildNameBilingual(presentation)
+  const title = `Presentation in the Temple / Presentación en el Templo - ${childName}`
+  const subtitle = presentation.presentation_event
+    ? formatEventDateTime(presentation.presentation_event)
+    : undefined
+
+  // Build all sections in order
+  const sections: ContentSection[] = []
+
+  // PAGE 1: Cover page
+  sections.push(buildCoverPage(presentation))
+
+  // PAGE 2: Liturgy section
+  sections.push(buildLiturgySection(presentation))
+
+  // Return complete document
   return {
     id: presentation.id,
     type: 'presentation',

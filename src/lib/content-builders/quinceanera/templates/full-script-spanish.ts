@@ -13,6 +13,7 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { formatLocationText, getReadingPericope } from '../helpers'
 
 /**
  * Build summary section (quinceañera celebration info) in Spanish
@@ -83,15 +84,10 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   }
 
   if (quinceanera.quinceanera_event?.location) {
-    const location = quinceanera.quinceanera_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Celebración:',
-      value: locationText,
+      value: formatLocationText(quinceanera.quinceanera_event.location),
     })
   }
 
@@ -104,15 +100,10 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
   }
 
   if (quinceanera.quinceanera_reception?.location) {
-    const location = quinceanera.quinceanera_reception.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Recepción:',
-      value: locationText,
+      value: formatLocationText(quinceanera.quinceanera_reception.location),
     })
   }
 
@@ -134,7 +125,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Primera Lectura:',
-      value: quinceanera.first_reading.pericope || '',
+      value: getReadingPericope(quinceanera.first_reading),
     })
   }
 
@@ -150,7 +141,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Salmo:',
-      value: quinceanera.psalm.pericope || '',
+      value: getReadingPericope(quinceanera.psalm),
     })
   }
 
@@ -172,7 +163,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Segunda Lectura:',
-      value: quinceanera.second_reading.pericope || '',
+      value: getReadingPericope(quinceanera.second_reading),
     })
   }
 
@@ -188,7 +179,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Lectura del Evangelio:',
-      value: quinceanera.gospel_reading.pericope || '',
+      value: getReadingPericope(quinceanera.gospel_reading),
     })
   }
 
@@ -235,12 +226,10 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
     {
       type: 'event-title',
       text: quinceaneraTitle,
-      alignment: 'center',
     },
     {
       type: 'event-datetime',
       text: eventDateTime,
-      alignment: 'center',
     }
   )
   sections.push(summarySection)
@@ -307,7 +296,6 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
       {
         type: 'section-title',
         text: 'Acto de Acción de Gracias y Compromiso Personal',
-        alignment: 'center',
       },
       {
         type: 'spacer',
@@ -348,8 +336,6 @@ para que, mientras camino con Jesús en esta vida,
 pueda adorarlo contigo en la eternidad.
 
 Amén.`,
-        preserveLineBreaks: true,
-        alignment: 'left',
       },
       {
         type: 'spacer',

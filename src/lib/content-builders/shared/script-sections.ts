@@ -45,20 +45,17 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
     elements.push({
       type: 'reading-title',
       text: title,
-      alignment: 'right',
     })
 
     elements.push({
       type: 'pericope',
       text: reading.pericope || 'No pericope',
-      alignment: 'right',
     })
 
     if (reader) {
       elements.push({
         type: 'reader-name',
         text: formatPersonName(reader),
-        alignment: 'right',
       })
     }
 
@@ -71,10 +68,8 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
 
       elements.push({
         type: 'response',
-        parts: [
-          { text: 'People:', formatting: ['bold'] },
-          { text: ' And with your spirit.', formatting: ['italic'] },
-        ],
+        label: 'People:',
+        text: 'And with your spirit.',
       })
     }
 
@@ -82,10 +77,8 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
     if (includeGospelAcclamations) {
       elements.push({
         type: 'response',
-        parts: [
-          { text: 'People:', formatting: ['bold'] },
-          { text: ' Glory to you, O Lord.', formatting: ['italic'] },
-        ],
+        label: 'People:',
+        text: 'Glory to you, O Lord.',
       })
     }
 
@@ -99,7 +92,6 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
     elements.push({
       type: 'reading-text',
       text: reading.text || 'No reading text',
-      preserveLineBreaks: true,
     })
 
     if (reading.conclusion) {
@@ -112,10 +104,8 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
     if (responseText) {
       elements.push({
         type: 'response',
-        parts: [
-          { text: 'People:', formatting: ['bold'] },
-          { text: ` ${responseText}`, formatting: ['italic'] },
-        ],
+        label: 'People:',
+        text: responseText,
       })
     }
 
@@ -123,10 +113,8 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
     if (includeGospelAcclamations) {
       elements.push({
         type: 'response',
-        parts: [
-          { text: 'People:', formatting: ['bold'] },
-          { text: ' Praise to you, Lord Jesus Christ.', formatting: ['italic'] },
-        ],
+        label: 'People:',
+        text: 'Praise to you, Lord Jesus Christ.',
       })
     }
   } else if (showNoneSelected) {
@@ -163,26 +151,22 @@ export function buildPsalmSection(config: PsalmSectionConfig): ContentSection {
     elements.push({
       type: 'reading-title',
       text: 'Psalm',
-      alignment: 'right',
     })
 
     elements.push({
       type: 'pericope',
       text: psalm.pericope || 'No pericope',
-      alignment: 'right',
     })
 
     if (psalm_is_sung) {
       elements.push({
         type: 'reader-name',
         text: 'Sung',
-        alignment: 'right',
       })
     } else if (psalm_reader) {
       elements.push({
         type: 'reader-name',
         text: formatPersonName(psalm_reader),
-        alignment: 'right',
       })
     }
 
@@ -196,7 +180,6 @@ export function buildPsalmSection(config: PsalmSectionConfig): ContentSection {
     elements.push({
       type: 'reading-text',
       text: psalm.text || 'No psalm text',
-      preserveLineBreaks: true,
     })
 
     if (psalm.conclusion) {
@@ -244,14 +227,12 @@ export function buildPetitionsSection(config: PetitionsSectionConfig): ContentSe
   elements.push({
     type: 'reading-title',
     text: 'Petitions',
-    alignment: 'right',
   })
 
   if (petitionsReader) {
     elements.push({
       type: 'reader-name',
       text: petitionsReader,
-      alignment: 'right',
     })
   }
 
@@ -260,11 +241,8 @@ export function buildPetitionsSection(config: PetitionsSectionConfig): ContentSe
   // Introductory petition instruction
   elements.push({
     type: 'petition',
-    parts: [
-      { text: 'Reader:', formatting: ['bold'] },
-      { text: ' The response is "Lord, hear our prayer." ', formatting: ['bold'] },
-      { text: '[Pause]', formatting: ['bold'], color: 'liturgy-red' },
-    ],
+    label: 'Reader:',
+    text: 'The response is "Lord, hear our prayer." [Pause]',
   })
 
   // Petitions from database - just format what's saved
@@ -276,18 +254,14 @@ export function buildPetitionsSection(config: PetitionsSectionConfig): ContentSe
 
     elements.push({
       type: 'petition',
-      parts: [
-        { text: 'Reader:', formatting: ['bold'] },
-        { text: ` ${petitionText}, let us pray to the Lord.`, formatting: ['bold'] },
-      ],
+      label: 'Reader:',
+      text: `${petitionText}, let us pray to the Lord.`,
     })
 
     elements.push({
       type: 'response',
-      parts: [
-        { text: 'People:', formatting: ['bold'] },
-        { text: ' Lord, hear our prayer.', formatting: ['italic'] },
-      ],
+      label: 'People:',
+      text: 'Lord, hear our prayer.',
     })
   })
 
@@ -314,7 +288,6 @@ export function buildAnnouncementsSection(announcements?: string | null): Conten
       {
         type: 'reading-text',
         text: announcements,
-        preserveLineBreaks: true,
       },
     ],
   }

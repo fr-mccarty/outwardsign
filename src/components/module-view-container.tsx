@@ -94,7 +94,7 @@ export function ModuleViewContainer({
 
       {/* Main Content - appears second on mobile, first on desktop */}
       <div className="flex-1 order-2 md:order-1">
-        <Card>
+        <Card className="bg-white">
           <CardContent className="p-6 space-y-6">
             {liturgyContent}
           </CardContent>

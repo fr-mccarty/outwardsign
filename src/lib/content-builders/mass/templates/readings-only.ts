@@ -10,6 +10,7 @@ import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
 import {
   buildPetitionsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { formatLocationText } from '../helpers'
 
 /**
  * Build summary section
@@ -75,7 +76,6 @@ function buildReadingsSection(): ContentSection {
   elements.push({
     type: 'text',
     text: '[First reading from the Lectionary]',
-    formatting: ['italic'],
   })
 
   elements.push({
@@ -90,7 +90,6 @@ function buildReadingsSection(): ContentSection {
   elements.push({
     type: 'text',
     text: '[Responsorial psalm]',
-    formatting: ['italic'],
   })
 
   elements.push({
@@ -105,7 +104,6 @@ function buildReadingsSection(): ContentSection {
   elements.push({
     type: 'text',
     text: '[Second reading from the Lectionary]',
-    formatting: ['italic'],
   })
 
   elements.push({
@@ -120,7 +118,6 @@ function buildReadingsSection(): ContentSection {
   elements.push({
     type: 'text',
     text: '[Gospel reading]',
-    formatting: ['italic'],
   })
 
   return {

@@ -1,17 +1,44 @@
 /**
  * Presentation Simple Script - Spanish
  * A shorter, simplified version of the Presentation in the Temple liturgy
+ *
+ * STRUCTURE:
+ * 1. Cover Page - Summary (page break after)
+ * 2. Liturgy Section - Simplified ceremony script
  */
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatEventDateTime, formatPersonName } from '@/lib/utils/formatters'
+import { formatPersonName } from '@/lib/utils/formatters'
+import {
+  getChildNameSpanish,
+  getMotherNameSpanish,
+  getFatherNameSpanish,
+  gendered,
+  buildTitleSpanish,
+  formatLocationText,
+  getEventSubtitleSpanish,
+} from '../helpers'
 
 /**
- * Build summary section (presentation info) in Spanish
+ * Build cover page with presentation summary information
  */
-function buildSummarySection(presentation: PresentationWithRelations): ContentSection {
+function buildCoverPage(presentation: PresentationWithRelations): ContentSection {
   const elements: ContentElement[] = []
+
+  // Title and subtitle header
+  const title = buildTitleSpanish(presentation)
+  const subtitle = getEventSubtitleSpanish(presentation)
+
+  elements.push({
+    type: 'event-title',
+    text: title,
+  })
+
+  elements.push({
+    type: 'event-datetime',
+    text: subtitle,
+  })
 
   // Presentation Information subsection
   elements.push({
@@ -60,15 +87,10 @@ function buildSummarySection(presentation: PresentationWithRelations): ContentSe
   }
 
   if (presentation.presentation_event?.location) {
-    const location = presentation.presentation_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar:',
-      value: locationText,
+      value: formatLocationText(presentation.presentation_event.location),
     })
   }
 
@@ -87,37 +109,27 @@ function buildSummarySection(presentation: PresentationWithRelations): ContentSe
   }
 
   return {
-    id: 'summary',
+    id: 'cover',
     pageBreakAfter: true,
     elements,
   }
 }
 
-export function buildSimpleSpanish(presentation: PresentationWithRelations): LiturgyDocument {
-  const child = presentation.child
-  const mother = presentation.mother
-  const father = presentation.father
-  const childName = child ? `${child.first_name} ${child.last_name}` : '[Nombre del Niño/a]'
-  const childSex = child?.sex || 'Male'
-  const motherName = mother ? `${mother.first_name} ${mother.last_name}` : '[Nombre de la Madre]'
-  const fatherName = father ? `${father.first_name} ${father.last_name}` : '[Nombre del Padre]'
-  const isBaptized = presentation.is_baptized
+/**
+ * Build liturgy section with simplified ceremony script
+ */
+function buildLiturgySection(presentation: PresentationWithRelations): ContentSection {
+  // Get names using helpers
+  const childName = getChildNameSpanish(presentation)
+  const motherName = getMotherNameSpanish(presentation)
+  const fatherName = getFatherNameSpanish(presentation)
 
-  // Helper function for gendered text in Spanish
-  const gendered = (maleText: string, femaleText: string) => {
-    return childSex === 'Male' ? maleText : femaleText
+  // Helper function for gendered text
+  const genderedText = (maleText: string, femaleText: string) => {
+    return gendered(presentation, maleText, femaleText)
   }
 
-  // Build title and subtitle
-  const title = `Presentación en el Templo - ${childName}`
-  const subtitle = presentation.presentation_event
-    ? formatEventDateTime(presentation.presentation_event)
-    : undefined
-
-  // Build sections
-  const sections: ContentSection[] = []
-
-  // Main Liturgy Section
+  // Build liturgy elements
   const liturgyElements: ContentElement[] = []
 
   // After the Homily
@@ -136,10 +148,9 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
-        text: `${motherName} y ${fatherName} presentan a su ${gendered('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Por favor, pasen adelante.`,
+        text: `${motherName} y ${fatherName} presentan a su ${genderedText('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Por favor, pasen adelante.`,
       },
     ],
   })
@@ -149,9 +160,8 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
   })
 
   liturgyElements.push({
-    type: 'text',
-    text: '[La familia viene al frente del altar]',
-    formatting: ['italic'],
+    type: 'rubric',
+    text: 'La familia viene al frente del altar',
   })
 
   liturgyElements.push({
@@ -164,7 +174,6 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
         text: `¿Se comprometen a criar a ${childName} en la fe católica?`,
@@ -179,15 +188,8 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
   // Parents' response
   liturgyElements.push({
     type: 'response',
-    parts: [
-      {
-        text: 'PADRES: ',
-        formatting: ['bold'],
-      },
-      {
-        text: 'Sí, nos comprometemos.',
-      },
-    ],
+    label: 'PADRES:',
+    text: 'Sí, nos comprometemos.',
   })
 
   liturgyElements.push({
@@ -200,10 +202,9 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
-        text: `${gendered('Lo', 'La')} signo con la señal de la cruz. Padres, por favor hagan lo mismo.`,
+        text: `${genderedText('Lo', 'La')} signo con la señal de la cruz. Padres, por favor hagan lo mismo.`,
       },
     ],
   })
@@ -213,9 +214,8 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
   })
 
   liturgyElements.push({
-    type: 'text',
-    text: '[El celebrante y los padres hacen la señal de la cruz sobre el niño/a]',
-    formatting: ['italic'],
+    type: 'rubric',
+    text: 'El celebrante y los padres hacen la señal de la cruz sobre el niño/a',
   })
 
   liturgyElements.push({
@@ -228,10 +228,9 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
-        text: `Padre celestial, bendice a ${gendered('este niño', 'esta niña')} y a estos padres. Ayúdales a ${gendered('criarlo', 'criarla')} en la fe y el amor. Te lo pedimos por Cristo nuestro Señor.`,
+        text: `Padre celestial, bendice a ${genderedText('este niño', 'esta niña')} y a estos padres. Ayúdales a ${genderedText('criarlo', 'criarla')} en la fe y el amor. Te lo pedimos por Cristo nuestro Señor.`,
       },
     ],
   })
@@ -243,15 +242,8 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
   // Assembly response
   liturgyElements.push({
     type: 'response',
-    parts: [
-      {
-        text: 'ASAMBLEA: ',
-        formatting: ['bold'],
-      },
-      {
-        text: 'Amén.',
-      },
-    ],
+    label: 'ASAMBLEA:',
+    text: 'Amén.',
   })
 
   liturgyElements.push({
@@ -260,9 +252,8 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
 
   // Blessing of religious articles (if applicable)
   liturgyElements.push({
-    type: 'text',
-    text: '[Bendecir artículos religiosos si se presentan]',
-    formatting: ['italic'],
+    type: 'rubric',
+    text: 'Bendecir artículos religiosos si se presentan',
   })
 
   liturgyElements.push({
@@ -275,7 +266,6 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
     parts: [
       {
         text: 'CELEBRANTE: ',
-        formatting: ['bold'],
       },
       {
         text: 'Mostremos nuestro apoyo con un aplauso.',
@@ -283,29 +273,33 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
     ],
   })
 
-  // Add header to summary section
-  const summarySection = buildSummarySection(presentation)
-  summarySection.elements.unshift(
-    {
-      type: 'event-title',
-      text: title,
-      alignment: 'center',
-    },
-    {
-      type: 'event-datetime',
-      text: subtitle || 'Sin fecha/hora',
-      alignment: 'center',
-    }
-  )
-  sections.push(summarySection)
-
-  // Add liturgy section
-  sections.push({
+  return {
     id: 'liturgy',
-    title: 'Liturgia de Presentación',
+    pageBreakBefore: true,
     elements: liturgyElements,
-  })
+  }
+}
 
+/**
+ * Build complete presentation liturgy document (Simple Spanish)
+ */
+export function buildSimpleSpanish(presentation: PresentationWithRelations): LiturgyDocument {
+  // Calculate title and subtitle
+  const title = buildTitleSpanish(presentation)
+  const subtitle = presentation.presentation_event
+    ? formatEventDateTime(presentation.presentation_event)
+    : undefined
+
+  // Build all sections in order
+  const sections: ContentSection[] = []
+
+  // PAGE 1: Cover page
+  sections.push(buildCoverPage(presentation))
+
+  // PAGE 2: Liturgy section
+  sections.push(buildLiturgySection(presentation))
+
+  // Return complete document
   return {
     id: presentation.id,
     type: 'presentation',

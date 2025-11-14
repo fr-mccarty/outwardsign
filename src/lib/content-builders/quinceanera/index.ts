@@ -9,6 +9,9 @@ import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptEnglish } from './templates/full-script-english'
 import { buildFullScriptSpanish } from './templates/full-script-spanish'
 
+// Export shared helpers for use in templates
+export * from './helpers'
+
 /**
  * Template Registry
  * Add new quinceañera templates here as they are created

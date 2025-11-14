@@ -1,0 +1,10 @@
+# Supabase Configuration File
+# This file is used by the Supabase CLI to configure project settings
+
+[db.seed]
+# SQL files to run when executing 'supabase seed'
+# Run in order: parish/user first, then module data
+sql_paths = [
+  './seeds/seed_default_parish_and_user.sql',
+  './seeds/seed_modules.sql'
+]

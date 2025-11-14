@@ -19,12 +19,6 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
-import {
-  hasRehearsalEvents,
-  formatLocationText,
-  getReadingPericope,
-  getPetitionsReaderName,
-} from '../helpers'
 
 // ============================================================================
 // LANGUAGE STRINGS
@@ -81,7 +75,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
   // REHEARSAL SUBSECTION
-  if (hasRehearsalEvents(wedding)) {
+  if (wedding.rehearsal_event || wedding.rehearsal_dinner_event) {
     elements.push({
       type: 'section-title',
       text: CONTENT.labels.rehearsal,
@@ -96,18 +90,28 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     }
 
     if (wedding.rehearsal_event?.location) {
+      const location = wedding.rehearsal_event.location
+      const locationText = location.name +
+        (location.street || location.city
+          ? ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})`
+          : '')
       elements.push({
         type: 'info-row',
         label: CONTENT.labels.rehearsalLocation,
-        value: formatLocationText(wedding.rehearsal_event.location),
+        value: locationText,
       })
     }
 
     if (wedding.rehearsal_dinner_event?.location) {
+      const location = wedding.rehearsal_dinner_event.location
+      const locationText = location.name +
+        (location.street || location.city
+          ? ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})`
+          : '')
       elements.push({
         type: 'info-row',
         label: CONTENT.labels.rehearsalDinnerLocation,
-        value: formatLocationText(wedding.rehearsal_dinner_event.location),
+        value: locationText,
       })
     }
   }
@@ -159,18 +163,28 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
   }
 
   if (wedding.wedding_event?.location) {
+    const location = wedding.wedding_event.location
+    const locationText = location.name +
+      (location.street || location.city ?
+        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Boda:',
-      value: formatLocationText(wedding.wedding_event.location),
+      value: locationText,
     })
   }
 
   if (wedding.reception_event?.location) {
+    const location = wedding.reception_event.location
+    const locationText = location.name +
+      (location.street || location.city ?
+        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
+        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Recepción:',
-      value: formatLocationText(wedding.reception_event.location),
+      value: locationText,
     })
   }
 
@@ -208,7 +222,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Primera Lectura:',
-      value: getReadingPericope(wedding.first_reading),
+      value: wedding.first_reading.pericope || '',
     })
   }
 
@@ -224,7 +238,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Salmo:',
-      value: getReadingPericope(wedding.psalm),
+      value: wedding.psalm.pericope || '',
     })
   }
 
@@ -246,7 +260,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Segunda Lectura:',
-      value: getReadingPericope(wedding.second_reading),
+      value: wedding.second_reading.pericope || '',
     })
   }
 
@@ -262,12 +276,16 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Lectura del Evangelio:',
-      value: getReadingPericope(wedding.gospel_reading),
+      value: wedding.gospel_reading.pericope || '',
     })
   }
 
   // Determine petition reader
-  const petitionsReader = getPetitionsReaderName(wedding)
+  const petitionsReader = wedding.petitions_read_by_second_reader && wedding.second_reader
+    ? formatPersonName(wedding.second_reader)
+    : wedding.petition_reader
+    ? formatPersonName(wedding.petition_reader)
+    : ''
 
   if (petitionsReader) {
     elements.push({
@@ -284,152 +302,101 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
   }
 }
 
-// ============================================================================
-// SECTION 2: READINGS
-// ============================================================================
-
 /**
- * Build all reading sections (First, Psalm, Second, Gospel)
- * Each reading starts on a new page
+ * Build full wedding script (Spanish)
  */
-function buildReadings(wedding: WeddingWithRelations): ContentSection[] {
+export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDocument {
+  const weddingTitle =
+    wedding.bride && wedding.groom
+      ? `${wedding.bride.first_name} ${wedding.bride.last_name} & ${wedding.groom.first_name} ${wedding.groom.last_name}`
+      : 'Boda'
+
+  const eventDateTime =
+    wedding.wedding_event?.start_date && wedding.wedding_event?.start_time
+      ? formatEventDateTime(wedding.wedding_event)
+      : 'Falta Fecha y Hora'
+
   const sections: ContentSection[] = []
 
-  // First Reading (always include, show "None Selected" if missing)
+  // Add header to summary section
+  const summarySection = buildSummarySection(wedding)
+  summarySection.elements.unshift(
+    {
+      type: 'event-title',
+      text: weddingTitle,
+      alignment: 'center',
+    },
+    {
+      type: 'event-datetime',
+      text: eventDateTime,
+      alignment: 'center',
+    }
+  )
+  sections.push(summarySection)
+
+  // Add all reading sections
   sections.push(
     buildReadingSection({
       id: 'first-reading',
-      title: CONTENT.firstReading,
+      title: 'PRIMERA LECTURA',
       reading: wedding.first_reading,
       reader: wedding.first_reader,
       showNoneSelected: true,
-      pageBreakBefore: true, // Start on new page
     })
   )
 
-  // Psalm (only if present)
-  const psalmSection = buildPsalmSection({
-    psalm: wedding.psalm,
-    psalm_reader: wedding.psalm_reader,
-    psalm_is_sung: wedding.psalm_is_sung,
-  })
-  if (psalmSection.elements.length > 0) {
-    sections.push(psalmSection)
-  }
+  sections.push(
+    buildPsalmSection({
+      psalm: wedding.psalm,
+      psalm_reader: wedding.psalm_reader,
+      psalm_is_sung: wedding.psalm_is_sung,
+    })
+  )
 
-  // Second Reading (only if present)
-  if (wedding.second_reading) {
-    sections.push(
-      buildReadingSection({
-        id: 'second-reading',
-        title: CONTENT.secondReading,
-        reading: wedding.second_reading,
-        reader: wedding.second_reader,
-        pageBreakBefore: true, // Start on new page
-      })
-    )
-  }
+  sections.push(
+    buildReadingSection({
+      id: 'second-reading',
+      title: 'SEGUNDA LECTURA',
+      reading: wedding.second_reading,
+      reader: wedding.second_reader,
+      pageBreakBefore: !!wedding.second_reading,
+    })
+  )
 
-  // Gospel (only if present)
-  if (wedding.gospel_reading) {
-    sections.push(
-      buildReadingSection({
-        id: 'gospel',
-        title: CONTENT.gospel,
-        reading: wedding.gospel_reading,
-        includeGospelDialogue: false,
-        pageBreakBefore: true, // Start on new page
-      })
-    )
-  }
+  sections.push(
+    buildReadingSection({
+      id: 'gospel',
+      title: 'EVANGELIO',
+      reading: wedding.gospel_reading,
+      includeGospelDialogue: false,
+      pageBreakBefore: !!wedding.gospel_reading,
+    })
+  )
 
-  return sections
-}
-
-// ============================================================================
-// SECTION 3: PETITIONS
-// ============================================================================
-
-/**
- * Build petitions section (starts on new page if present)
- */
-function buildPetitions(wedding: WeddingWithRelations): ContentSection | null {
-  return buildPetitionsSection({
+  // Add petitions
+  const petitionsSection = buildPetitionsSection({
     petitions: wedding.petitions,
     petition_reader: wedding.petition_reader,
     second_reader: wedding.second_reader,
     petitions_read_by_second_reader: wedding.petitions_read_by_second_reader,
   })
-}
-
-// ============================================================================
-// SECTION 4: ANNOUNCEMENTS
-// ============================================================================
-
-/**
- * Build announcements section (no page break, continues after petitions)
- */
-function buildAnnouncements(wedding: WeddingWithRelations): ContentSection | null {
-  return buildAnnouncementsSection(wedding.announcements)
-}
-
-// ============================================================================
-// MAIN TEMPLATE BUILDER
-// ============================================================================
-
-/**
- * Build complete wedding liturgy document (Spanish)
- *
- * DOCUMENT STRUCTURE:
- * 1. Cover Page (title + date + summary) [PAGE BREAK]
- * 2. First Reading [PAGE BREAK]
- * 3. Psalm [PAGE BREAK]
- * 4. Second Reading (if present) [PAGE BREAK]
- * 5. Gospel (if present) [PAGE BREAK]
- * 6. Petitions (if present) [PAGE BREAK]
- * 7. Announcements (if present)
- */
-export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDocument {
-  // Calculate title and datetime
-  const title =
-    wedding.bride && wedding.groom
-      ? `${wedding.bride.first_name} ${wedding.bride.last_name} & ${wedding.groom.first_name} ${wedding.groom.last_name}`
-      : CONTENT.defaultTitle
-
-  const subtitle =
-    wedding.wedding_event?.start_date && wedding.wedding_event?.start_time
-      ? formatEventDateTime(wedding.wedding_event)
-      : CONTENT.defaultDateTime
-
-  // Build all sections in order
-  const sections: ContentSection[] = []
-
-  // 1. Cover page
-  sections.push(buildCoverPage(wedding))
-
-  // 2. Readings (first, psalm, second, gospel)
-  sections.push(...buildReadings(wedding))
-
-  // 3. Petitions (if present)
-  const petitions = buildPetitions(wedding)
-  if (petitions) {
-    sections.push(petitions)
+  if (petitionsSection) {
+    sections.push(petitionsSection)
   }
 
-  // 4. Announcements (if present)
-  const announcements = buildAnnouncements(wedding)
-  if (announcements) {
-    sections.push(announcements)
+  // Add announcements if present
+  const announcementsSection = buildAnnouncementsSection(wedding.announcements)
+  if (announcementsSection) {
+    sections.push(announcementsSection)
   }
 
-  // Return complete document
   return {
     id: wedding.id,
     type: 'wedding',
     language: 'es',
     template: 'wedding-full-script-spanish',
-    title,
-    subtitle,
+    title: weddingTitle,
+    subtitle: eventDateTime,
     sections,
   }
 }

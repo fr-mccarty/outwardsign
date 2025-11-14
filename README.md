@@ -132,7 +132,7 @@ service_role key: eyJh......
 Create a `.env.local` file:
 
 ```bash
-cp .env.example .env.local
+cp .env.production.example .env.production.local
 ```
 
 Edit `.env.local` and add your **local** Supabase credentials from the output above:

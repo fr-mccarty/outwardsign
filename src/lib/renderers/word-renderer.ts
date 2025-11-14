@@ -1,7 +1,7 @@
 /**
  * Word Document Renderer
  *
- * Converts LiturgyDocument to docx Paragraph format
+ * Converts LiturgyDocument to docx Paragraph format using global styles from liturgical-script-styles.ts
  */
 
 import { Paragraph, TextRun, PageBreak, AlignmentType } from 'docx'
@@ -9,9 +9,8 @@ import {
   LiturgyDocument,
   ContentSection,
   ContentElement,
-  TextAlignment,
 } from '@/lib/types/liturgy-content'
-import { wordStyles } from '@/lib/styles/liturgy-styles'
+import { ELEMENT_STYLES, LITURGY_COLORS, LITURGY_FONT, convert } from '@/lib/styles/liturgical-script-styles'
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -20,7 +19,7 @@ import { wordStyles } from '@/lib/styles/liturgy-styles'
 /**
  * Convert alignment string to docx AlignmentType
  */
-function getAlignment(alignment?: TextAlignment) {
+function getAlignmentType(alignment: 'left' | 'center' | 'right' | 'justify'): typeof AlignmentType[keyof typeof AlignmentType] {
   switch (alignment) {
     case 'center':
       return AlignmentType.CENTER
@@ -33,6 +32,64 @@ function getAlignment(alignment?: TextAlignment) {
   }
 }
 
+/**
+ * Get color in Word format (without # prefix)
+ */
+function getColor(color: 'black' | 'liturgy-red'): string {
+  return color === 'liturgy-red'
+    ? LITURGY_COLORS.liturgyRed.replace('#', '')
+    : LITURGY_COLORS.black.replace('#', '')
+}
+
+/**
+ * Create a Word paragraph from element style
+ */
+function createStyledParagraph(
+  elementType: keyof typeof ELEMENT_STYLES,
+  textRuns: TextRun[]
+): Paragraph {
+  if (elementType === 'spacer') {
+    return new Paragraph({ children: [] })
+  }
+
+  const style = ELEMENT_STYLES[elementType]
+
+  return new Paragraph({
+    children: textRuns,
+    alignment: getAlignmentType(style.alignment),
+    spacing: {
+      before: convert.pointsToTwips(style.marginTop),
+      after: convert.pointsToTwips(style.marginBottom),
+      line: style.lineHeight === 1.4 ? 280 : style.lineHeight === 1.2 ? 240 : 320,
+    },
+  })
+}
+
+/**
+ * Create a TextRun with element style
+ */
+function createStyledTextRun(
+  elementType: keyof typeof ELEMENT_STYLES,
+  text: string,
+  overrides?: { bold?: boolean; italics?: boolean; color?: string }
+): TextRun {
+  const style = ELEMENT_STYLES[elementType]
+
+  // Spacer doesn't have fontSize, so check for it
+  if (!('fontSize' in style)) {
+    throw new Error(`Element type ${elementType} does not support text runs`)
+  }
+
+  return new TextRun({
+    font: LITURGY_FONT,
+    text: text,
+    size: convert.pointsToHalfPoints(style.fontSize),
+    bold: overrides?.bold !== undefined ? overrides.bold : style.bold,
+    italics: overrides?.italics !== undefined ? overrides.italics : style.italic,
+    color: overrides?.color || getColor(style.color as 'black' | 'liturgy-red'),
+  })
+}
+
 // ============================================================================
 // ELEMENT RENDERERS
 // ============================================================================
@@ -43,261 +100,131 @@ function getAlignment(alignment?: TextAlignment) {
 function renderElement(element: ContentElement): Paragraph | Paragraph[] {
   switch (element.type) {
     case 'event-title':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            size: wordStyles.sizes.eventTitle,
-            bold: true,
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: { after: wordStyles.spacing.medium },
-      })
+      return createStyledParagraph('event-title', [
+        createStyledTextRun('event-title', element.text),
+      ])
 
     case 'event-datetime':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            size: wordStyles.sizes.eventDateTime,
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: { before: wordStyles.spacing.small, after: wordStyles.spacing.large },
-      })
+      return createStyledParagraph('event-datetime', [
+        createStyledTextRun('event-datetime', element.text),
+      ])
 
     case 'section-title':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            size: wordStyles.sizes.sectionTitle,
-            bold: true,
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: { before: wordStyles.spacing.beforeSection, after: wordStyles.spacing.afterSection },
-      })
+      return createStyledParagraph('section-title', [
+        createStyledTextRun('section-title', element.text),
+      ])
 
     case 'reading-title':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            size: wordStyles.sizes.readingTitle,
-            bold: true,
-            color: wordStyles.color,
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: { before: wordStyles.spacing.beforeReading, after: wordStyles.spacing.small },
-      })
+      return createStyledParagraph('reading-title', [
+        createStyledTextRun('reading-title', element.text),
+      ])
 
     case 'pericope':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            size: wordStyles.sizes.pericope,
-            bold: true,
-            italics: true,
-            color: wordStyles.color,
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: { before: wordStyles.spacing.small, after: wordStyles.spacing.tiny },
-      })
+      return createStyledParagraph('pericope', [
+        createStyledTextRun('pericope', element.text),
+      ])
 
     case 'reader-name':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            size: wordStyles.sizes.readerName,
-            bold: true,
-            color: wordStyles.color,
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: { after: wordStyles.spacing.afterResponse },
-      })
+      return createStyledParagraph('reader-name', [
+        createStyledTextRun('reader-name', element.text),
+      ])
 
     case 'introduction':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            bold: true,
-          }),
-        ],
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-          line: wordStyles.lineHeight.normal,
-        },
-      })
+      return createStyledParagraph('introduction', [
+        createStyledTextRun('introduction', element.text),
+      ])
 
     case 'reading-text':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-          }),
-        ],
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-          line: wordStyles.lineHeight.normal,
-        },
-      })
+      return createStyledParagraph('reading-text', [
+        createStyledTextRun('reading-text', element.text),
+      ])
 
     case 'conclusion':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            bold: true,
-          }),
-        ],
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-          line: wordStyles.lineHeight.normal,
-        },
-      })
+      return createStyledParagraph('conclusion', [
+        createStyledTextRun('conclusion', element.text),
+      ])
 
     case 'response':
-      return new Paragraph({
-        children: element.parts.map(
-          (part) =>
-            new TextRun({
-              font: wordStyles.fonts.primary,
-              text: part.text,
-              bold: part.formatting?.includes('bold'),
-              italics: part.formatting?.includes('italic'),
-            })
-        ),
-        spacing: {
-          before: wordStyles.spacing.beforeResponse,
-          after: wordStyles.spacing.afterResponse,
-          line: wordStyles.lineHeight.normal,
-        },
-      })
+      return createStyledParagraph('response', [
+        createStyledTextRun('response', element.label || '', { bold: true }),
+        createStyledTextRun('response', ' ' + (element.text || '')),
+      ])
 
     case 'priest-dialogue':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-          }),
-        ],
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-          line: wordStyles.lineHeight.normal,
-        },
-      })
+      return createStyledParagraph('priest-dialogue', [
+        createStyledTextRun('priest-dialogue', element.text),
+      ])
 
     case 'petition':
-      return new Paragraph({
-        children: element.parts.map(
-          (part) =>
-            new TextRun({
-              font: wordStyles.fonts.primary,
-              text: part.text,
-              bold: part.formatting?.includes('bold'),
-              italics: part.formatting?.includes('italic'),
-              color: part.color === 'liturgy-red' ? wordStyles.color : undefined,
-            })
-        ),
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-          line: wordStyles.lineHeight.normal,
-        },
-      })
+      return createStyledParagraph('petition', [
+        createStyledTextRun('petition', element.label || '', {
+          bold: true,
+          color: LITURGY_COLORS.liturgyRed.replace('#', ''),
+        }),
+        createStyledTextRun('petition', ' ' + (element.text || '')),
+      ])
+
+    case 'text':
+      return createStyledParagraph('text', [
+        createStyledTextRun('text', element.text),
+      ])
+
+    case 'rubric':
+      return createStyledParagraph('rubric', [
+        createStyledTextRun('rubric', element.text),
+      ])
+
+    case 'prayer-text':
+      return createStyledParagraph('prayer-text', [
+        createStyledTextRun('prayer-text', element.text),
+      ])
+
+    case 'priest-text':
+      return createStyledParagraph('priest-text', [
+        createStyledTextRun('priest-text', element.text),
+      ])
 
     case 'info-row':
+      const infoStyle = ELEMENT_STYLES['info-row']
       return new Paragraph({
         children: [
           new TextRun({
-            font: wordStyles.fonts.primary,
-            text: `${element.label} `,
+            font: LITURGY_FONT,
+            text: element.label,
+            size: convert.pointsToHalfPoints(infoStyle.fontSize),
             bold: true,
           }),
           new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.value,
+            font: LITURGY_FONT,
+            text: ' ' + element.value,
+            size: convert.pointsToHalfPoints(infoStyle.fontSize),
           }),
         ],
         spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-          line: wordStyles.lineHeight.normal,
+          before: convert.pointsToTwips(infoStyle.marginTop),
+          after: convert.pointsToTwips(infoStyle.marginBottom),
         },
       })
 
     case 'spacer':
-      const spacerSize =
-        element.size === 'large'
-          ? wordStyles.spacing.large
-          : element.size === 'medium'
-          ? wordStyles.spacing.medium
-          : wordStyles.spacing.small
+      const spacerSize = element.size === 'large'
+        ? ELEMENT_STYLES.spacer.large
+        : element.size === 'medium'
+        ? ELEMENT_STYLES.spacer.medium
+        : ELEMENT_STYLES.spacer.small
       return new Paragraph({
-        text: '',
-        spacing: { after: spacerSize },
-      })
-
-    case 'text':
-      return new Paragraph({
-        children: [
-          new TextRun({
-            font: wordStyles.fonts.primary,
-            text: element.text,
-            bold: element.formatting?.includes('bold'),
-            italics: element.formatting?.includes('italic'),
-          }),
-        ],
-        alignment: getAlignment(element.alignment),
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-        },
+        children: [],
+        spacing: { after: convert.pointsToTwips(spacerSize) },
       })
 
     case 'multi-part-text':
-      return new Paragraph({
-        children: element.parts.map(
-          (part) =>
-            new TextRun({
-              font: wordStyles.fonts.primary,
-              text: part.text,
-              bold: part.formatting?.includes('bold'),
-              italics: part.formatting?.includes('italic'),
-              color: part.color === 'liturgy-red' ? wordStyles.color : undefined,
-            })
-        ),
-        alignment: getAlignment(element.alignment),
-        spacing: {
-          before: wordStyles.spacing.beforeParagraph,
-          after: wordStyles.spacing.afterParagraph,
-        },
-      })
+      // Deprecated - render as plain text
+      return createStyledParagraph('text', [
+        createStyledTextRun('text', element.parts.map((part) => part.text).join('')),
+      ])
 
     default:
-      return new Paragraph({ text: '' })
+      return new Paragraph({ children: [] })
   }
 }
 
@@ -335,7 +262,7 @@ function renderSection(section: ContentSection): Paragraph[] {
 // ============================================================================
 
 /**
- * Render LiturgyDocument to docx Paragraph array
+ * Render LiturgyDocument to array of docx Paragraphs
  */
 export function renderWord(document: LiturgyDocument): Paragraph[] {
   const paragraphs: Paragraph[] = []

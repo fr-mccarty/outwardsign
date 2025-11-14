@@ -13,6 +13,12 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import {
+  hasRehearsalEvents,
+  formatLocationText,
+  getReadingPericope,
+  getPetitionsReaderName,
+} from '../helpers'
 
 /**
  * Build summary section (rehearsal, wedding info, sacred liturgy info)
@@ -21,7 +27,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
   // Rehearsal subsection
-  if (wedding.rehearsal_event || wedding.rehearsal_dinner_event) {
+  if (hasRehearsalEvents(wedding)) {
     elements.push({
       type: 'section-title',
       text: 'Rehearsal',
@@ -36,28 +42,18 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     }
 
     if (wedding.rehearsal_event?.location) {
-      const location = wedding.rehearsal_event.location
-      const locationText = location.name +
-        (location.street || location.city ?
-          ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-          '')
       elements.push({
         type: 'info-row',
         label: 'Rehearsal Location:',
-        value: locationText,
+        value: formatLocationText(wedding.rehearsal_event.location),
       })
     }
 
     if (wedding.rehearsal_dinner_event?.location) {
-      const location = wedding.rehearsal_dinner_event.location
-      const locationText = location.name +
-        (location.street || location.city ?
-          ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-          '')
       elements.push({
         type: 'info-row',
         label: 'Rehearsal Dinner Location:',
-        value: locationText,
+        value: formatLocationText(wedding.rehearsal_dinner_event.location),
       })
     }
   }
@@ -109,28 +105,18 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
   }
 
   if (wedding.wedding_event?.location) {
-    const location = wedding.wedding_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Wedding Location:',
-      value: locationText,
+      value: formatLocationText(wedding.wedding_event.location),
     })
   }
 
   if (wedding.reception_event?.location) {
-    const location = wedding.reception_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Reception Location:',
-      value: locationText,
+      value: formatLocationText(wedding.reception_event.location),
     })
   }
 
@@ -168,7 +154,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'First Reading:',
-      value: wedding.first_reading.pericope || '',
+      value: getReadingPericope(wedding.first_reading),
     })
   }
 
@@ -184,7 +170,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Psalm:',
-      value: wedding.psalm.pericope || '',
+      value: getReadingPericope(wedding.psalm),
     })
   }
 
@@ -206,7 +192,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Second Reading:',
-      value: wedding.second_reading.pericope || '',
+      value: getReadingPericope(wedding.second_reading),
     })
   }
 
@@ -222,16 +208,12 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Gospel Reading:',
-      value: wedding.gospel_reading.pericope || '',
+      value: getReadingPericope(wedding.gospel_reading),
     })
   }
 
   // Determine petition reader
-  const petitionsReader = wedding.petitions_read_by_second_reader && wedding.second_reader
-    ? formatPersonName(wedding.second_reader)
-    : wedding.petition_reader
-    ? formatPersonName(wedding.petition_reader)
-    : ''
+  const petitionsReader = getPetitionsReaderName(wedding)
 
   if (petitionsReader) {
     elements.push({
@@ -270,12 +252,10 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     {
       type: 'event-title',
       text: weddingTitle,
-      alignment: 'center',
     },
     {
       type: 'event-datetime',
       text: eventDateTime,
-      alignment: 'center',
     }
   )
   sections.push(summarySection)

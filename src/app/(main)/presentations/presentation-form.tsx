@@ -44,7 +44,6 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
 
   // Initialize React Hook Form with Zod validation
   const {
-    register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
@@ -90,6 +89,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       if (presentation.father) father.setValue(presentation.father)
       if (presentation.coordinator) coordinator.setValue(presentation.coordinator)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presentation])
 
   // Sync picker values to form when they change
@@ -147,15 +147,25 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {/* Event Information */}
+      {/* Key Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Event Information</CardTitle>
-          <CardDescription>Schedule and location details for the presentation</CardDescription>
+          <CardTitle>Key Information</CardTitle>
+          <CardDescription>Essential details about the recipient and event</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <PersonPickerField
+            label="Recipient"
+            value={child.value}
+            onValueChange={child.setValue}
+            showPicker={child.showPicker}
+            onShowPickerChange={child.setShowPicker}
+            placeholder="Select Child"
+            openToNewPerson={!child.value}
+            visibleFields={['email', 'phone_number', 'sex', 'note']}
+          />
           <EventPickerField
-            label="Presentation Event"
+            label="Event Information"
             value={presentationEvent.value}
             onValueChange={presentationEvent.setValue}
             showPicker={presentationEvent.showPicker}
@@ -170,37 +180,24 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         </CardContent>
       </Card>
 
-      {/* People Information */}
+      {/* Other People in the Family */}
       <Card>
         <CardHeader>
-          <CardTitle>People</CardTitle>
-          <CardDescription>Select the child and family members</CardDescription>
+          <CardTitle>Other People in the Family</CardTitle>
+          <CardDescription>Family members and contacts</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonPickerField
-              label="Child"
-              value={child.value}
-              onValueChange={child.setValue}
-              showPicker={child.showPicker}
-              onShowPickerChange={child.setShowPicker}
-              placeholder="Select Child"
-              openToNewPerson={!child.value}
-              visibleFields={['email', 'phone_number', 'sex', 'note']}
-            />
-            <PersonPickerField
-              label="Mother"
+              label="Family Contact"
               value={mother.value}
               onValueChange={mother.setValue}
               showPicker={mother.showPicker}
               onShowPickerChange={mother.setShowPicker}
-              placeholder="Select Mother"
+              placeholder="Select Family Contact"
               openToNewPerson={!mother.value}
               visibleFields={['email', 'phone_number', 'note']}
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonPickerField
               label="Father"
               value={father.value}
@@ -211,17 +208,60 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               openToNewPerson={!father.value}
               visibleFields={['email', 'phone_number', 'note']}
             />
-            <PersonPickerField
-              label="Coordinator (Optional)"
-              value={coordinator.value}
-              onValueChange={coordinator.setValue}
-              showPicker={coordinator.showPicker}
-              onShowPickerChange={coordinator.setShowPicker}
-              placeholder="Select Coordinator"
-              openToNewPerson={!coordinator.value}
-              visibleFields={['email', 'phone_number', 'note']}
-            />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Key Liturgical Roles */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Key Liturgical Roles</CardTitle>
+          <CardDescription>Primary liturgical ministers</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <PersonPickerField
+            label="Presider"
+            value={coordinator.value}
+            onValueChange={coordinator.setValue}
+            showPicker={coordinator.showPicker}
+            onShowPickerChange={coordinator.setShowPicker}
+            placeholder="Select Presider"
+            openToNewPerson={!coordinator.value}
+            visibleFields={['email', 'phone_number', 'note']}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Other Liturgical Roles and liturgical selections */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
+          <CardDescription>Additional ministers and ceremony options</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
+        </CardContent>
+      </Card>
+
+      {/* Petitions (If applicable) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Petitions</CardTitle>
+          <CardDescription>Special intentions and prayers (if applicable)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
+        </CardContent>
+      </Card>
+
+      {/* Announcements (If applicable) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Announcements</CardTitle>
+          <CardDescription>Special announcements (if applicable)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
         </CardContent>
       </Card>
 
@@ -231,28 +271,6 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           <CardTitle>Additional Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={status || ""}
-              onValueChange={(value) => setValue("status", value as any)}
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {MODULE_STATUS_VALUES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {MODULE_STATUS_LABELS[s].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.status && (
-              <p className="text-sm text-destructive">{errors.status.message}</p>
-            )}
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="template">Ceremony Template</Label>
             <Select
@@ -272,20 +290,6 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             </Select>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_baptized"
-              checked={isBaptized || false}
-              onCheckedChange={(checked) => setValue("is_baptized", checked as boolean)}
-            />
-            <label
-              htmlFor="is_baptized"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-            >
-              Child is baptized
-            </label>
-          </div>
-
           <FormField
             id="note"
             label="Notes (Optional)"
@@ -299,22 +303,43 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           {errors.note && (
             <p className="text-sm text-destructive">{errors.note.message}</p>
           )}
-        </CardContent>
-      </Card>
 
-      {/* Guidelines */}
-      <Card className="bg-muted/50">
-        <CardHeader>
-          <CardTitle className="text-base">Presentation Guidelines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Select the child who will be presented</li>
-            <li>• Include both parents in the ceremony</li>
-            <li>• Indicate whether the child has been baptized</li>
-            <li>• Assign a coordinator to help manage the presentation</li>
-            <li>• Add any special notes or considerations</li>
-          </ul>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={status || ""}
+
+              onValueChange={(value) => setValue("status", value as any)}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {MODULE_STATUS_VALUES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {MODULE_STATUS_LABELS[s].en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.status && (
+              <p className="text-sm text-destructive">{errors.status.message}</p>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_baptized"
+              checked={isBaptized || false}
+              onCheckedChange={(checked) => setValue("is_baptized", checked as boolean)}
+            />
+            <label
+              htmlFor="is_baptized"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Child is baptized
+            </label>
+          </div>
         </CardContent>
       </Card>
 

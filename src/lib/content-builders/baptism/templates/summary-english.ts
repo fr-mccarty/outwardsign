@@ -7,6 +7,7 @@
 import { BaptismWithRelations } from '@/lib/actions/baptisms'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatLocationText } from '../helpers'
 
 /**
  * Build summary section with all baptism data
@@ -29,15 +30,10 @@ function buildSummarySection(baptism: BaptismWithRelations): ContentSection {
   }
 
   if (baptism.baptism_event?.location) {
-    const location = baptism.baptism_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Location:',
-      value: locationText,
+      value: formatLocationText(baptism.baptism_event.location),
     })
   }
 

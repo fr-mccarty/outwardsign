@@ -10,6 +10,9 @@ import { buildFullScriptEnglish } from './templates/full-script-english'
 import { buildFullScriptSpanish } from './templates/full-script-spanish'
 import { buildReadingsOnly } from './templates/readings-only'
 
+// Export shared helpers for use in templates
+export * from './helpers'
+
 /**
  * Template Registry
  * Add new Mass templates here as they are created

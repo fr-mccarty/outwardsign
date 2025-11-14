@@ -9,7 +9,7 @@
  *
  * Credentials:
  * - When called from run-tests-with-temp-user.js: Uses dynamic credentials passed via environment variables
- * - When called standalone: Falls back to .env.local credentials
+ * - When called standalone: Falls back to .env.production.local credentials
  *
  * Usage:
  *   node scripts/setup-test-user.js
@@ -17,11 +17,11 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: '.env.production.local' });
+require('dotenv').config({ path: '.env.production' });
 
 // Configuration from environment
-// Priority: process.env (dynamic) > .env.local (fallback)
+// Priority: process.env (dynamic) > .env.production.local (fallback)
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'test-staff@outwardsign.test';
@@ -34,7 +34,7 @@ async function setupTestUser() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     console.error('Error: Missing required environment variables');
     console.error('Please ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set');
-    console.error('Add SUPABASE_SERVICE_ROLE_KEY to your .env.local file');
+    console.error('Add SUPABASE_SERVICE_ROLE_KEY to your .env.production.local file');
     process.exit(1);
   }
 

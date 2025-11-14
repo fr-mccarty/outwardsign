@@ -225,98 +225,86 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
+    <form id={formId} onSubmit={handleSubmit} className="space-y-8">
+      {/* Key Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>General details and event times</CardDescription>
+          <CardTitle>Key Information</CardTitle>
+          <CardDescription>Essential details about the quinceañera and mass event</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {MODULE_STATUS_VALUES.map((statusOption) => (
-                  <SelectItem key={statusOption} value={statusOption}>
-                    {MODULE_STATUS_LABELS[statusOption].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <EventPickerField
-              label="Quinceañera Ceremony"
-              value={quinceaneraEvent.value}
-              onValueChange={quinceaneraEvent.setValue}
-              showPicker={quinceaneraEvent.showPicker}
-              onShowPickerChange={quinceaneraEvent.setShowPicker}
-              placeholder="Add Quinceañera Ceremony"
-              openToNewEvent={!quinceaneraEvent.value}
-              defaultEventType="QUINCEANERA"
-              defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
-              disableSearch={true}
-              defaultCreateFormData={{ name: suggestedQuinceaneraName }}
-            />
-            <EventPickerField
-              label="Reception"
-              value={quinceaneraReception.value}
-              onValueChange={quinceaneraReception.setValue}
-              showPicker={quinceaneraReception.showPicker}
-              onShowPickerChange={quinceaneraReception.setShowPicker}
-              placeholder="Add Reception"
-              openToNewEvent={!quinceaneraReception.value}
-              defaultEventType="OTHER"
-              defaultName="Quinceañera Reception"
-              disableSearch={true}
-              defaultCreateFormData={{ name: suggestedReceptionName }}
-            />
-          </div>
+          <PersonPickerField
+            label="Quinceañera"
+            value={quinceaneraGirl.value}
+            onValueChange={quinceaneraGirl.setValue}
+            showPicker={quinceaneraGirl.showPicker}
+            onShowPickerChange={quinceaneraGirl.setShowPicker}
+            placeholder="Select Quinceañera"
+            openToNewPerson={!quinceaneraGirl.value}
+          />
+          <EventPickerField
+            label="Mass Event"
+            value={quinceaneraEvent.value}
+            onValueChange={quinceaneraEvent.setValue}
+            showPicker={quinceaneraEvent.showPicker}
+            onShowPickerChange={quinceaneraEvent.setShowPicker}
+            placeholder="Add Quinceañera Ceremony"
+            openToNewEvent={!quinceaneraEvent.value}
+            defaultEventType="QUINCEANERA"
+            defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
+            disableSearch={true}
+            defaultCreateFormData={{ name: suggestedQuinceaneraName }}
+          />
         </CardContent>
       </Card>
 
-      {/* Participant */}
+      {/* Other Events */}
       <Card>
         <CardHeader>
-          <CardTitle>Participant</CardTitle>
-          <CardDescription>Quinceañera and family contact information</CardDescription>
+          <CardTitle>Other Events</CardTitle>
+          <CardDescription>Related celebration events</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonPickerField
-              label="Quinceañera"
-              value={quinceaneraGirl.value}
-              onValueChange={quinceaneraGirl.setValue}
-              showPicker={quinceaneraGirl.showPicker}
-              onShowPickerChange={quinceaneraGirl.setShowPicker}
-              placeholder="Select Quinceañera"
-              openToNewPerson={!quinceaneraGirl.value}
-            />
-            <PersonPickerField
-              label="Family Contact"
-              value={familyContact.value}
-              onValueChange={familyContact.setValue}
-              showPicker={familyContact.showPicker}
-              onShowPickerChange={familyContact.setShowPicker}
-              placeholder="Select Family Contact"
-              openToNewPerson={!familyContact.value}
-            />
-          </div>
+          <EventPickerField
+            label="Reception"
+            value={quinceaneraReception.value}
+            onValueChange={quinceaneraReception.setValue}
+            showPicker={quinceaneraReception.showPicker}
+            onShowPickerChange={quinceaneraReception.setShowPicker}
+            placeholder="Add Reception"
+            openToNewEvent={!quinceaneraReception.value}
+            defaultEventType="OTHER"
+            defaultName="Quinceañera Reception"
+            disableSearch={true}
+            defaultCreateFormData={{ name: suggestedReceptionName }}
+          />
         </CardContent>
       </Card>
 
-      {/* Liturgical Roles */}
+      {/* Other People */}
       <Card>
         <CardHeader>
-          <CardTitle>Liturgical Roles</CardTitle>
-          <CardDescription>Ministers and liturgical participants</CardDescription>
+          <CardTitle>Other People</CardTitle>
+          <CardDescription>Family contacts</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <PersonPickerField
+            label="Family Contact"
+            value={familyContact.value}
+            onValueChange={familyContact.setValue}
+            showPicker={familyContact.showPicker}
+            onShowPickerChange={familyContact.setShowPicker}
+            placeholder="Select Family Contact"
+            openToNewPerson={!familyContact.value}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Key Liturgical Roles */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Key Liturgical Roles</CardTitle>
+          <CardDescription>Primary liturgical ministers</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -342,13 +330,17 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         </CardContent>
       </Card>
 
-      {/* Music Ministers */}
+      {/* Other Liturgical Roles and Liturgical Selections */}
       <Card>
         <CardHeader>
-          <CardTitle>Music Ministers</CardTitle>
-          <CardDescription>Musicians and singers</CardDescription>
+          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
+          <CardDescription>Additional ministers, readers, and scripture selections</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Music Ministers */}
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Music Ministers</Label>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonPickerField
               label="Lead Musician"
@@ -369,35 +361,13 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               openToNewPerson={!cantor.value}
             />
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Coordinator */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Coordination</CardTitle>
-          <CardDescription>Quinceañera coordinator</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
-            label="Coordinator"
-            value={coordinator.value}
-            onValueChange={coordinator.setValue}
-            showPicker={coordinator.showPicker}
-            onShowPickerChange={coordinator.setShowPicker}
-            placeholder="Select Coordinator"
-            openToNewPerson={!coordinator.value}
-          />
-        </CardContent>
-      </Card>
+          <Separator />
 
-      {/* Readings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Readings</CardTitle>
-          <CardDescription>Scripture readings for the quinceañera liturgy</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          {/* Scripture Readings */}
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Scripture Readings</Label>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>First Reading</Label>
@@ -421,8 +391,6 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               openToNewPerson={!firstReader.value}
             />
           </div>
-
-          <Separator />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -464,8 +432,6 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             </label>
           </div>
 
-          <Separator />
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Second Reading</Label>
@@ -489,8 +455,6 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               openToNewPerson={!secondReader.value}
             />
           </div>
-
-          <Separator />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -526,7 +490,6 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         templates={petitionTemplates}
       />
 
-      {/* Petition Reader */}
       <Card>
         <CardHeader>
           <CardTitle>Petition Reader</CardTitle>
@@ -561,11 +524,11 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         </CardContent>
       </Card>
 
-      {/* Announcements and Notes */}
+      {/* Announcements */}
       <Card>
         <CardHeader>
-          <CardTitle>Additional Information</CardTitle>
-          <CardDescription>Announcements and notes</CardDescription>
+          <CardTitle>Announcements</CardTitle>
+          <CardDescription>Special announcements for the end of the liturgy</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <FormField
@@ -578,27 +541,25 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             inputType="textarea"
             rows={3}
           />
-
-          <FormField
-            id="note"
-            label="Note"
-            description="These notes are just for reference and will not be printed in the script"
-            value={note}
-            onChange={setNote}
-            placeholder="Enter any additional notes..."
-            inputType="textarea"
-            rows={3}
-          />
         </CardContent>
       </Card>
 
-      {/* Template Selection */}
+      {/* Additional Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Quinceañera Template</CardTitle>
-          <CardDescription>Select the liturgy template for the quinceañera ceremony script</CardDescription>
+          <CardTitle>Additional Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <PersonPickerField
+            label="Coordinator"
+            value={coordinator.value}
+            onValueChange={coordinator.setValue}
+            showPicker={coordinator.showPicker}
+            onShowPickerChange={coordinator.setShowPicker}
+            placeholder="Select Coordinator"
+            openToNewPerson={!coordinator.value}
+          />
+
           <div className="space-y-2">
             <Label htmlFor="quinceanera_template_id">Liturgy Template</Label>
             <Select value={quinceaneraTemplateId} onValueChange={setQuinceaneraTemplateId}>
@@ -609,6 +570,33 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 {QUINCEANERA_TEMPLATE_VALUES.map((templateId) => (
                   <SelectItem key={templateId} value={templateId}>
                     {QUINCEANERA_TEMPLATE_LABELS[templateId].en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <FormField
+            id="note"
+            label="Notes (Optional)"
+            description="These notes are just for reference and will not be printed in the script"
+            value={note}
+            onChange={setNote}
+            placeholder="Enter any additional notes..."
+            inputType="textarea"
+            rows={3}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {MODULE_STATUS_VALUES.map((statusOption) => (
+                  <SelectItem key={statusOption} value={statusOption}>
+                    {MODULE_STATUS_LABELS[statusOption].en}
                   </SelectItem>
                 ))}
               </SelectContent>

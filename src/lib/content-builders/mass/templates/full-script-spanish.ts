@@ -10,6 +10,7 @@ import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
 import {
   buildPetitionsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { formatLocationText, hasAnnouncements, getHomilist } from '../helpers'
 
 /**
  * Build summary section (Mass info, liturgical event, ministers) - Spanish
@@ -32,15 +33,10 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
   }
 
   if (mass.event?.location) {
-    const location = mass.event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Lugar:',
-      value: locationText,
+      value: formatLocationText(mass.event.location),
     })
   }
 
@@ -107,7 +103,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[El sacerdote y los ministros entran en procesión]',
   })
 
@@ -118,7 +113,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Se canta el himno de entrada mientras la procesión entra]',
   })
 
@@ -148,7 +142,7 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
   })
 
   // Anuncios pre-Misa
-  if (mass.announcements || mass.pre_mass_announcement_person) {
+  if (hasAnnouncements(mass)) {
     elements.push({
       type: 'section-title',
       text: 'Anuncios',
@@ -157,7 +151,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
     if (mass.pre_mass_announcement_person) {
       elements.push({
         type: 'text',
-        formatting: ['italic'],
         text: `[Anuncios por ${formatPersonName(mass.pre_mass_announcement_person)}${mass.pre_mass_announcement_topic ? ` - ${mass.pre_mass_announcement_topic}` : ''}]`,
       })
     }
@@ -183,7 +176,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Breve pausa para el silencio]',
   })
 
@@ -210,7 +202,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Se canta o se dice el Gloria]',
   })
 
@@ -227,13 +218,11 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Breve pausa para la oración en silencio]',
   })
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[El sacerdote dice la Colecta del día]',
   })
 
@@ -250,7 +239,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Se proclama la primera lectura del Leccionario]',
   })
 
@@ -261,7 +249,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Se canta o se recita el salmo responsorial]',
   })
 
@@ -272,7 +259,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Se proclama la segunda lectura del Leccionario]',
   })
 
@@ -283,7 +269,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Todos de pie]',
   })
 
@@ -309,7 +294,6 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
 
   elements.push({
     type: 'text',
-    formatting: ['italic'],
     text: '[Se proclama el Evangelio]',
   })
 
@@ -319,17 +303,15 @@ function buildLiturgySection(mass: MassWithRelations): ContentSection {
     text: 'Homilía',
   })
 
-  const homilist = mass.homilist || mass.presider
+  const homilist = getHomilist(mass)
   if (homilist) {
     elements.push({
       type: 'text',
-      formatting: ['italic'],
       text: `[Homilía por ${formatPersonName(homilist)}]`,
     })
   } else {
     elements.push({
       type: 'text',
-      formatting: ['italic'],
       text: '[Homilía]',
     })
   }

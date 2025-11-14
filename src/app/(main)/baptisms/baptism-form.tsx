@@ -40,6 +40,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   }, [isLoading, onLoadingChange])
 
   // State for all fields
+   
   const [status, setStatus] = useState<"ACTIVE" | "INACTIVE" | "ARCHIVED">(baptism?.status as any || "ACTIVE")
   const [note, setNote] = useState(baptism?.note || "")
   const [baptismTemplateId, setBaptismTemplateId] = useState(baptism?.baptism_template_id || "")
@@ -67,6 +68,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       if (baptism.sponsor_2) sponsor2.setValue(baptism.sponsor_2)
       if (baptism.presider) presider.setValue(baptism.presider)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baptism])
 
   // Compute suggested event name based on child
@@ -121,51 +123,23 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   }
 
   return (
-    <form onSubmit={handleSubmit} id={formId} className="space-y-6">
-      {/* Basic Information */}
+    <form onSubmit={handleSubmit} id={formId} className="space-y-8">
+      {/* Key Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Baptism details and status</CardDescription>
+          <CardTitle>Key Information</CardTitle>
+          <CardDescription>Essential details about the child and baptism event</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as "ACTIVE" | "INACTIVE" | "ARCHIVED")}>
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {MODULE_STATUS_VALUES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {MODULE_STATUS_LABELS[s].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Template Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="baptism_template_id">Template</Label>
-            <Select value={baptismTemplateId} onValueChange={setBaptismTemplateId}>
-              <SelectTrigger id="baptism_template_id">
-                <SelectValue placeholder="Select template" />
-              </SelectTrigger>
-              <SelectContent>
-                {BAPTISM_TEMPLATE_VALUES.map((templateId) => (
-                  <SelectItem key={templateId} value={templateId}>
-                    {BAPTISM_TEMPLATE_LABELS[templateId].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
-          {/* Baptism Event */}
+          <PersonPickerField
+            label="Child"
+            value={child.value}
+            onValueChange={child.setValue}
+            showPicker={child.showPicker}
+            onShowPickerChange={child.setShowPicker}
+            placeholder="Select Child"
+            openToNewPerson={!child.value}
+          />
           <EventPickerField
             label="Baptism Event"
             value={baptismEvent.value}
@@ -182,75 +156,72 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
         </CardContent>
       </Card>
 
-      {/* People Section */}
+      {/* Other People */}
       <Card>
         <CardHeader>
-          <CardTitle>People</CardTitle>
-          <CardDescription>Child, parents, sponsors, and presider</CardDescription>
+          <CardTitle>Other People</CardTitle>
+          <CardDescription>Parents and godparents</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Child */}
-          <PersonPickerField
-            label="Child"
-            value={child.value}
-            onValueChange={child.setValue}
-            showPicker={child.showPicker}
-            onShowPickerChange={child.setShowPicker}
-            placeholder="Select Child"
-            openToNewPerson={!child.value}
-          />
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Parents</Label>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PersonPickerField
+              label="Mother"
+              value={mother.value}
+              onValueChange={mother.setValue}
+              showPicker={mother.showPicker}
+              onShowPickerChange={mother.setShowPicker}
+              placeholder="Select Mother"
+              openToNewPerson={!mother.value}
+            />
+            <PersonPickerField
+              label="Father"
+              value={father.value}
+              onValueChange={father.setValue}
+              showPicker={father.showPicker}
+              onShowPickerChange={father.setShowPicker}
+              placeholder="Select Father"
+              openToNewPerson={!father.value}
+            />
+          </div>
 
           <Separator />
 
-          {/* Mother */}
-          <PersonPickerField
-            label="Mother"
-            value={mother.value}
-            onValueChange={mother.setValue}
-            showPicker={mother.showPicker}
-            onShowPickerChange={mother.setShowPicker}
-            placeholder="Select Mother"
-            openToNewPerson={!mother.value}
-          />
+          <div className="space-y-2">
+            <Label className="text-base font-semibold">Godparents</Label>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PersonPickerField
+              label="Godparent 1"
+              value={sponsor1.value}
+              onValueChange={sponsor1.setValue}
+              showPicker={sponsor1.showPicker}
+              onShowPickerChange={sponsor1.setShowPicker}
+              placeholder="Select Godparent 1"
+              openToNewPerson={!sponsor1.value}
+            />
+            <PersonPickerField
+              label="Godparent 2"
+              value={sponsor2.value}
+              onValueChange={sponsor2.setValue}
+              showPicker={sponsor2.showPicker}
+              onShowPickerChange={sponsor2.setShowPicker}
+              placeholder="Select Godparent 2"
+              openToNewPerson={!sponsor2.value}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-          {/* Father */}
-          <PersonPickerField
-            label="Father"
-            value={father.value}
-            onValueChange={father.setValue}
-            showPicker={father.showPicker}
-            onShowPickerChange={father.setShowPicker}
-            placeholder="Select Father"
-            openToNewPerson={!father.value}
-          />
-
-          <Separator />
-
-          {/* Sponsor 1 */}
-          <PersonPickerField
-            label="Sponsor 1 (Godparent)"
-            value={sponsor1.value}
-            onValueChange={sponsor1.setValue}
-            showPicker={sponsor1.showPicker}
-            onShowPickerChange={sponsor1.setShowPicker}
-            placeholder="Select Sponsor 1"
-            openToNewPerson={!sponsor1.value}
-          />
-
-          {/* Sponsor 2 */}
-          <PersonPickerField
-            label="Sponsor 2 (Godparent)"
-            value={sponsor2.value}
-            onValueChange={sponsor2.setValue}
-            showPicker={sponsor2.showPicker}
-            onShowPickerChange={sponsor2.setShowPicker}
-            placeholder="Select Sponsor 2"
-            openToNewPerson={!sponsor2.value}
-          />
-
-          <Separator />
-
-          {/* Presider */}
+      {/* Key Liturgical Roles */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Key Liturgical Roles</CardTitle>
+          <CardDescription>Primary liturgical ministers</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <PersonPickerField
             label="Presider"
             value={presider.value}
@@ -263,23 +234,87 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
         </CardContent>
       </Card>
 
-      {/* Additional Information */}
+      {/* Other Liturgical Roles and Liturgical Selections */}
       <Card>
         <CardHeader>
-          <CardTitle>Additional Information</CardTitle>
-          <CardDescription>Note and special instructions</CardDescription>
+          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
+          <CardDescription>Additional ministers and ceremony options</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Note */}
+          <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
+        </CardContent>
+      </Card>
+
+      {/* Petitions (If applicable) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Petitions</CardTitle>
+          <CardDescription>Special intentions and prayers (if applicable)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
+        </CardContent>
+      </Card>
+
+      {/* Announcements (If applicable) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Announcements</CardTitle>
+          <CardDescription>Special announcements (if applicable)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
+        </CardContent>
+      </Card>
+
+      {/* Additional Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Additional Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="baptism_template_id">Ceremony Template</Label>
+            <Select value={baptismTemplateId} onValueChange={setBaptismTemplateId}>
+              <SelectTrigger id="baptism_template_id">
+                <SelectValue placeholder="Select template" />
+              </SelectTrigger>
+              <SelectContent>
+                {BAPTISM_TEMPLATE_VALUES.map((templateId) => (
+                  <SelectItem key={templateId} value={templateId}>
+                    {BAPTISM_TEMPLATE_LABELS[templateId].en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <FormField
             id="note"
-            label="Note"
+            label="Notes (Optional)"
             inputType="textarea"
             value={note}
             onChange={setNote}
             placeholder="Add any additional note or special instructions..."
             rows={4}
+            description="Additional information or special considerations"
           />
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select value={status} onValueChange={(value) => setStatus(value as "ACTIVE" | "INACTIVE" | "ARCHIVED")}>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {MODULE_STATUS_VALUES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {MODULE_STATUS_LABELS[s].en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 

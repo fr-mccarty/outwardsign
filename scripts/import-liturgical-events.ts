@@ -16,8 +16,8 @@
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 
-// Load environment variables from .env.local
-config({ path: '.env.local' })
+// Load environment variables from .env.production.local
+config({ path: '.env.production.local' })
 
 // Configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!

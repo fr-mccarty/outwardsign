@@ -12,6 +12,9 @@ import { buildSimpleSpanish } from './templates/simple-spanish'
 import { buildSimpleEnglish } from './templates/simple-english'
 import { buildBilingual } from './templates/bilingual'
 
+// Export shared helpers for use in templates
+export * from './helpers'
+
 /**
  * Template Registry
  * Add new presentation templates here as they are created

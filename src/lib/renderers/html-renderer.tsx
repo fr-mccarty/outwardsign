@@ -1,7 +1,7 @@
 /**
  * HTML/React Renderer
  *
- * Converts LiturgyDocument to React JSX
+ * Converts LiturgyDocument to React JSX using global styles from liturgical-script-styles.ts
  */
 
 import React from 'react'
@@ -10,7 +10,35 @@ import {
   ContentSection,
   ContentElement,
 } from '@/lib/types/liturgy-content'
-import { liturgyPatterns, htmlStyles, createHtmlStyle } from '@/lib/styles/liturgy-styles'
+import { ELEMENT_STYLES, LITURGY_COLORS, LITURGY_FONT, convert } from '@/lib/styles/liturgical-script-styles'
+
+// ============================================================================
+// STYLE HELPERS
+// ============================================================================
+
+/**
+ * Convert element style to HTML CSS properties
+ */
+function getElementStyle(elementType: keyof typeof ELEMENT_STYLES): React.CSSProperties {
+  if (elementType === 'spacer') {
+    return {} // Spacer handled separately
+  }
+
+  const style = ELEMENT_STYLES[elementType]
+
+  return {
+    fontSize: `${convert.pointsToPx(style.fontSize)}px`,
+    fontWeight: style.bold ? 'bold' : 'normal',
+    fontStyle: style.italic ? 'italic' : 'normal',
+    color: style.color === 'liturgy-red' ? LITURGY_COLORS.liturgyRed : LITURGY_COLORS.black,
+    textAlign: style.alignment,
+    marginTop: `${convert.pointsToPx(style.marginTop)}px`,
+    marginBottom: `${convert.pointsToPx(style.marginBottom)}px`,
+    lineHeight: style.lineHeight,
+    fontFamily: LITURGY_FONT,
+    whiteSpace: style.preserveLineBreaks ? 'pre-wrap' : 'normal',
+  }
+}
 
 // ============================================================================
 // ELEMENT RENDERERS
@@ -23,135 +51,119 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
   switch (element.type) {
     case 'event-title':
       return (
-        <div key={index} style={liturgyPatterns.html.eventTitle}>
+        <div key={index} style={getElementStyle('event-title')}>
           {element.text}
         </div>
       )
 
     case 'event-datetime':
       return (
-        <div key={index} style={liturgyPatterns.html.eventDateTime}>
+        <div key={index} style={getElementStyle('event-datetime')}>
           {element.text}
         </div>
       )
 
     case 'section-title':
       return (
-        <div
-          key={index}
-          style={createHtmlStyle({
-            fontSize: 'sectionTitle',
-            bold: true,
-            marginTop: 'large',
-            marginBottom: 'medium',
-          })}
-        >
+        <div key={index} style={getElementStyle('section-title')}>
           {element.text}
         </div>
       )
 
     case 'reading-title':
       return (
-        <div key={index} style={liturgyPatterns.html.readingTitle}>
+        <div key={index} style={getElementStyle('reading-title')}>
           {element.text}
         </div>
       )
 
     case 'pericope':
       return (
-        <div key={index} style={liturgyPatterns.html.pericope}>
+        <div key={index} style={getElementStyle('pericope')}>
           {element.text}
         </div>
       )
 
     case 'reader-name':
       return (
-        <div key={index} style={liturgyPatterns.html.readerName}>
+        <div key={index} style={getElementStyle('reader-name')}>
           {element.text}
         </div>
       )
 
     case 'introduction':
       return (
-        <div key={index} style={liturgyPatterns.html.introduction}>
+        <div key={index} style={getElementStyle('introduction')}>
           {element.text}
         </div>
       )
 
     case 'reading-text':
       return (
-        <div
-          key={index}
-          style={{
-            ...liturgyPatterns.html.readingText,
-            whiteSpace: element.preserveLineBreaks ? 'pre-wrap' : 'normal',
-          }}
-        >
+        <div key={index} style={getElementStyle('reading-text')}>
           {element.text}
         </div>
       )
 
     case 'conclusion':
       return (
-        <div key={index} style={liturgyPatterns.html.conclusion}>
+        <div key={index} style={getElementStyle('conclusion')}>
           {element.text}
         </div>
       )
 
     case 'response':
       return (
-        <div key={index} style={liturgyPatterns.html.response}>
-          {element.parts.map((part, partIndex) => (
-            <span
-              key={partIndex}
-              style={{
-                fontWeight: part.formatting?.includes('bold') ? 'bold' : 'normal',
-                fontStyle: part.formatting?.includes('italic') ? 'italic' : 'normal',
-              }}
-            >
-              {part.text}
-            </span>
-          ))}
+        <div key={index} style={getElementStyle('response')}>
+          <span style={{ fontWeight: 'bold' }}>{element.label}</span>
+          {' '}
+          {element.text}
         </div>
       )
 
     case 'priest-dialogue':
       return (
-        <div
-          key={index}
-          style={createHtmlStyle({
-            fontSize: 'priestDialogue',
-            marginTop: 'small',
-          })}
-        >
+        <div key={index} style={getElementStyle('priest-dialogue')}>
           {element.text}
         </div>
       )
 
     case 'petition':
       return (
-        <div
-          key={index}
-          style={createHtmlStyle({
-            fontSize: 'petition',
-            lineHeight: 'normal',
-            bold: true,
-            marginTop: 'small',
-            marginBottom: 'small',
-          })}
-        >
-          {element.parts.map((part, partIndex) => (
-            <span
-              key={partIndex}
-              style={{
-                fontWeight: part.formatting?.includes('bold') ? 'bold' : 'normal',
-                fontStyle: part.formatting?.includes('italic') ? 'italic' : 'normal',
-                color: part.color === 'liturgy-red' ? htmlStyles.color : undefined,
-              }}
-            >
-              {part.text}
-            </span>
-          ))}
+        <div key={index} style={getElementStyle('petition')}>
+          <span style={{ fontWeight: 'bold', color: LITURGY_COLORS.liturgyRed }}>
+            {element.label}
+          </span>
+          {' '}
+          {element.text}
+        </div>
+      )
+
+    case 'text':
+      return (
+        <div key={index} style={getElementStyle('text')}>
+          {element.text}
+        </div>
+      )
+
+    case 'rubric':
+      return (
+        <div key={index} style={getElementStyle('rubric')}>
+          {element.text}
+        </div>
+      )
+
+    case 'prayer-text':
+      return (
+        <div key={index} style={getElementStyle('prayer-text')}>
+          {element.text}
+        </div>
+      )
+
+    case 'priest-text':
+      return (
+        <div key={index} style={getElementStyle('priest-text')}>
+          {element.text}
         </div>
       )
 
@@ -164,54 +176,18 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       )
 
     case 'spacer':
-      const spacerSize =
-        element.size === 'large'
-          ? htmlStyles.spacing.large
-          : element.size === 'medium'
-          ? htmlStyles.spacing.medium
-          : htmlStyles.spacing.small
-      return <div key={index} style={{ marginBottom: spacerSize }} />
-
-    case 'text':
-      return (
-        <div
-          key={index}
-          style={{
-            fontWeight: element.formatting?.includes('bold') ? 'bold' : 'normal',
-            fontStyle: element.formatting?.includes('italic') ? 'italic' : 'normal',
-            textAlign: element.alignment || 'left',
-            marginTop: htmlStyles.spacing.small,
-            marginBottom: htmlStyles.spacing.small,
-            fontFamily: htmlStyles.fonts.primary,
-            whiteSpace: element.preserveLineBreaks ? 'pre-wrap' : 'normal',
-          }}
-        >
-          {element.text}
-        </div>
-      )
+      const spacerSize = element.size === 'large'
+        ? ELEMENT_STYLES.spacer.large
+        : element.size === 'medium'
+        ? ELEMENT_STYLES.spacer.medium
+        : ELEMENT_STYLES.spacer.small
+      return <div key={index} style={{ marginBottom: `${convert.pointsToPx(spacerSize)}px` }} />
 
     case 'multi-part-text':
+      // Deprecated - render as plain text
       return (
-        <div
-          key={index}
-          style={{
-            textAlign: element.alignment || 'left',
-            marginTop: htmlStyles.spacing.small,
-            marginBottom: htmlStyles.spacing.small,
-          }}
-        >
-          {element.parts.map((part, partIndex) => (
-            <span
-              key={partIndex}
-              style={{
-                fontWeight: part.formatting?.includes('bold') ? 'bold' : 'normal',
-                fontStyle: part.formatting?.includes('italic') ? 'italic' : 'normal',
-                color: part.color === 'liturgy-red' ? htmlStyles.color : undefined,
-              }}
-            >
-              {part.text}
-            </span>
-          ))}
+        <div key={index} style={getElementStyle('text')}>
+          {element.parts.map((part) => part.text).join('')}
         </div>
       )
 

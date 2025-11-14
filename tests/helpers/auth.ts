@@ -30,7 +30,7 @@ export function getTestCredentials() {
   const password = process.env.TEST_USER_PASSWORD;
 
   if (!email || !password) {
-    throw new Error('TEST_USER_EMAIL and TEST_USER_PASSWORD must be set in .env.local');
+    throw new Error('TEST_USER_EMAIL and TEST_USER_PASSWORD must be set in .env.production.local');
   }
 
   return { email, password };

@@ -92,7 +92,7 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
       try {
         const year = currentDate.getFullYear()
         const month = currentDate.getMonth() + 1
-        const events = await getGlobalLiturgicalEventsByMonth(year, month, 'en')
+        const events = await getGlobalLiturgicalEventsByMonth(year, month, 'en_US')
         setLiturgicalEvents(events)
       } catch (error) {
         console.error('Error fetching liturgical events:', error)

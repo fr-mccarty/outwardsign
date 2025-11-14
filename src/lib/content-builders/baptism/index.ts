@@ -9,6 +9,9 @@ import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildSummaryEnglish } from './templates/summary-english'
 import { buildSummarySpanish } from './templates/summary-spanish'
 
+// Export shared helpers for use in templates
+export * from './helpers'
+
 /**
  * Template Registry
  * Templates for baptism summaries

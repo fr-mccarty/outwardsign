@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, Heart, Calendar, Search, Filter, X, DollarSign } from "lucide-react"
+import { Plus, Heart, Search, Filter, X, DollarSign } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ListViewCard } from "@/components/list-view-card"
 import {

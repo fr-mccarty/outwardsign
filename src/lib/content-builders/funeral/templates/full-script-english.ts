@@ -13,6 +13,7 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { formatLocationText } from '../helpers'
 
 /**
  * Build summary section (funeral service info)
@@ -83,15 +84,10 @@ function buildSummarySection(funeral: FuneralWithRelations): ContentSection {
   }
 
   if (funeral.funeral_event?.location) {
-    const location = funeral.funeral_event.location
-    const locationText = location.name +
-      (location.street || location.city ?
-        ` (${[location.street, location.city, location.state].filter(Boolean).join(', ')})` :
-        '')
     elements.push({
       type: 'info-row',
       label: 'Service Location:',
-      value: locationText,
+      value: formatLocationText(funeral.funeral_event.location),
     })
   }
 
@@ -184,12 +180,10 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
     {
       type: 'event-title',
       text: funeralTitle,
-      alignment: 'center',
     },
     {
       type: 'event-datetime',
       text: eventDateTime,
-      alignment: 'center',
     }
   )
   sections.push(summarySection)

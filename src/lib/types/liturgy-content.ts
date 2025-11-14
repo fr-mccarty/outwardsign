@@ -3,17 +3,10 @@
  *
  * This provides a format-agnostic way to represent liturgical documents
  * that can be rendered to HTML, PDF, or Word with consistent styling.
+ *
+ * All styling is controlled globally via liturgical-script-styles.ts
+ * Elements only contain semantic content (text, labels), not style properties.
  */
-
-// ============================================================================
-// FORMATTING & ALIGNMENT
-// ============================================================================
-
-export type TextFormatting = 'bold' | 'italic' | 'bolditalic'
-
-export type TextAlignment = 'left' | 'center' | 'right' | 'justify'
-
-export type TextColor = 'default' | 'liturgy-red'
 
 // ============================================================================
 // CONTENT ELEMENT TYPES
@@ -28,28 +21,21 @@ export interface BaseElement {
 }
 
 /**
- * Simple text element with optional formatting
+ * Simple text element
  */
 export interface TextElement extends BaseElement {
   type: 'text'
   text: string
-  formatting?: TextFormatting[]
-  alignment?: TextAlignment
-  color?: TextColor
-  preserveLineBreaks?: boolean
 }
 
 /**
- * Multi-part text element (e.g., "People: Thanks be to God" with different formatting)
+ * Multi-part text element - DEPRECATED, use specific element types instead
  */
 export interface MultiPartTextElement extends BaseElement {
   type: 'multi-part-text'
   parts: Array<{
     text: string
-    formatting?: TextFormatting[]
-    color?: TextColor
   }>
-  alignment?: TextAlignment
 }
 
 /**
@@ -58,7 +44,6 @@ export interface MultiPartTextElement extends BaseElement {
 export interface EventTitleElement extends BaseElement {
   type: 'event-title'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -67,7 +52,6 @@ export interface EventTitleElement extends BaseElement {
 export interface EventDateTimeElement extends BaseElement {
   type: 'event-datetime'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -76,7 +60,6 @@ export interface EventDateTimeElement extends BaseElement {
 export interface SectionTitleElement extends BaseElement {
   type: 'section-title'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -85,7 +68,6 @@ export interface SectionTitleElement extends BaseElement {
 export interface ReadingTitleElement extends BaseElement {
   type: 'reading-title'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -94,7 +76,6 @@ export interface ReadingTitleElement extends BaseElement {
 export interface PericopeElement extends BaseElement {
   type: 'pericope'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -103,7 +84,6 @@ export interface PericopeElement extends BaseElement {
 export interface ReaderNameElement extends BaseElement {
   type: 'reader-name'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -120,7 +100,6 @@ export interface IntroductionElement extends BaseElement {
 export interface ReadingTextElement extends BaseElement {
   type: 'reading-text'
   text: string
-  preserveLineBreaks: boolean
 }
 
 /**
@@ -133,13 +112,12 @@ export interface ConclusionElement extends BaseElement {
 
 /**
  * Response (e.g., "People: Thanks be to God")
+ * Label is rendered bold, text is rendered normal
  */
 export interface ResponseElement extends BaseElement {
   type: 'response'
-  parts: Array<{
-    text: string
-    formatting?: TextFormatting[]
-  }>
+  label: string  // e.g., "People:"
+  text: string   // e.g., "Thanks be to God"
 }
 
 /**
@@ -152,14 +130,12 @@ export interface PriestDialogueElement extends BaseElement {
 
 /**
  * Petition text
+ * Label is rendered bold + liturgy red, text is rendered normal
  */
 export interface PetitionElement extends BaseElement {
   type: 'petition'
-  parts: Array<{
-    text: string
-    formatting?: TextFormatting[]
-    color?: TextColor
-  }>
+  label: string  // e.g., "Reader:"
+  text: string   // e.g., "For the Church, let us pray to the Lord"
 }
 
 /**
@@ -168,7 +144,6 @@ export interface PetitionElement extends BaseElement {
 export interface RubricElement extends BaseElement {
   type: 'rubric'
   text: string
-  alignment?: TextAlignment
 }
 
 /**
@@ -177,8 +152,6 @@ export interface RubricElement extends BaseElement {
 export interface PrayerTextElement extends BaseElement {
   type: 'prayer-text'
   text: string
-  preserveLineBreaks?: boolean
-  alignment?: TextAlignment
 }
 
 /**
@@ -187,7 +160,6 @@ export interface PrayerTextElement extends BaseElement {
 export interface PriestTextElement extends BaseElement {
   type: 'priest-text'
   text: string
-  alignment?: TextAlignment
 }
 
 /**

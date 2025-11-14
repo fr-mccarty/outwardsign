@@ -21,8 +21,8 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { execSync } = require('child_process');
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: '.env.production.local' });
+require('dotenv').config({ path: '.env.production' });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;

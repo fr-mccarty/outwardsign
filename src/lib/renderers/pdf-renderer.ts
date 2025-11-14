@@ -1,7 +1,7 @@
 /**
  * PDF Renderer
  *
- * Converts LiturgyDocument to pdfmake content format
+ * Converts LiturgyDocument to pdfmake content format using global styles from liturgical-script-styles.ts
  */
 
 import { Content } from 'pdfmake/interfaces'
@@ -10,7 +10,33 @@ import {
   ContentSection,
   ContentElement,
 } from '@/lib/types/liturgy-content'
-import { pdfStyles } from '@/lib/styles/liturgy-styles'
+import { ELEMENT_STYLES, LITURGY_COLORS } from '@/lib/styles/liturgical-script-styles'
+
+// ============================================================================
+// STYLE HELPERS
+// ============================================================================
+
+/**
+ * Convert element style to pdfmake format (using points directly)
+ */
+function getElementStyle(elementType: keyof typeof ELEMENT_STYLES) {
+  if (elementType === 'spacer') {
+    return {} // Spacer handled separately
+  }
+
+  const style = ELEMENT_STYLES[elementType]
+
+  return {
+    fontSize: style.fontSize,
+    bold: style.bold,
+    italics: style.italic,
+    color: style.color === 'liturgy-red' ? LITURGY_COLORS.liturgyRed : undefined,
+    alignment: style.alignment as 'left' | 'center' | 'right' | 'justify',
+    margin: [0, style.marginTop, 0, style.marginBottom] as [number, number, number, number],
+    lineHeight: style.lineHeight,
+    preserveLeadingSpaces: style.preserveLineBreaks,
+  }
+}
 
 // ============================================================================
 // ELEMENT RENDERERS
@@ -24,115 +50,109 @@ function renderElement(element: ContentElement): Content {
     case 'event-title':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.eventTitle,
-        bold: true,
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, 0, 0, pdfStyles.spacing.medium],
+        ...getElementStyle('event-title'),
       }
 
     case 'event-datetime':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.eventDateTime,
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.large],
+        ...getElementStyle('event-datetime'),
       }
 
     case 'section-title':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.sectionTitle,
-        bold: true,
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, pdfStyles.spacing.large, 0, pdfStyles.spacing.medium],
+        ...getElementStyle('section-title'),
       }
 
     case 'reading-title':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.readingTitle,
-        bold: true,
-        color: pdfStyles.color,
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, pdfStyles.spacing.beforeReading, 0, pdfStyles.spacing.small],
+        ...getElementStyle('reading-title'),
       }
 
     case 'pericope':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.pericope,
-        italics: true,
-        color: pdfStyles.color,
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.tiny],
+        ...getElementStyle('pericope'),
       }
 
     case 'reader-name':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.readerName,
-        color: pdfStyles.color,
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, 0, 0, pdfStyles.spacing.medium],
+        ...getElementStyle('reader-name'),
       }
 
     case 'introduction':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.introduction,
-        italics: true,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
+        ...getElementStyle('introduction'),
       }
 
     case 'reading-text':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.text,
-        lineHeight: pdfStyles.lineHeight.normal,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
-        preserveLeadingSpaces: element.preserveLineBreaks,
+        ...getElementStyle('reading-text'),
       }
 
     case 'conclusion':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.conclusion,
-        italics: true,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
+        ...getElementStyle('conclusion'),
       }
 
     case 'response':
+      const responseStyle = getElementStyle('response')
       return {
-        text: element.parts.map((part) => ({
-          text: part.text,
-          bold: part.formatting?.includes('bold'),
-          italics: part.formatting?.includes('italic'),
-        })),
-        fontSize: pdfStyles.sizes.response,
-        margin: [0, pdfStyles.spacing.beforeResponse, 0, pdfStyles.spacing.afterResponse],
+        text: [
+          { text: element.label || '', bold: true },
+          { text: ' ' + (element.text || '') },
+        ],
+        ...responseStyle,
       }
 
     case 'priest-dialogue':
       return {
         text: element.text,
-        fontSize: pdfStyles.sizes.priestDialogue,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
+        ...getElementStyle('priest-dialogue'),
       }
 
     case 'petition':
+      const petitionStyle = getElementStyle('petition')
       return {
-        text: element.parts.map((part) => ({
-          text: part.text,
-          bold: part.formatting?.includes('bold'),
-          italics: part.formatting?.includes('italic'),
-          color: part.color === 'liturgy-red' ? pdfStyles.color : undefined,
-        })),
-        fontSize: pdfStyles.sizes.petition,
-        lineHeight: pdfStyles.lineHeight.normal,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
+        text: [
+          { text: element.label || '', bold: true, color: LITURGY_COLORS.liturgyRed },
+          { text: ' ' + (element.text || '') },
+        ],
+        ...petitionStyle,
+      }
+
+    case 'text':
+      return {
+        text: element.text,
+        ...getElementStyle('text'),
+      }
+
+    case 'rubric':
+      return {
+        text: element.text,
+        ...getElementStyle('rubric'),
+      }
+
+    case 'prayer-text':
+      return {
+        text: element.text,
+        ...getElementStyle('prayer-text'),
+      }
+
+    case 'priest-text':
+      return {
+        text: element.text,
+        ...getElementStyle('priest-text'),
       }
 
     case 'info-row':
+      const infoStyle = getElementStyle('info-row')
       return {
         columns: [
           {
@@ -145,36 +165,25 @@ function renderElement(element: ContentElement): Content {
             width: '*',
           },
         ],
-        margin: [0, 2, 0, 2],
+        margin: infoStyle.margin,
       }
 
     case 'spacer':
-      const spacerSize = element.size === 'large' ? 20 : element.size === 'medium' ? 10 : 5
+      const spacerSize = element.size === 'large'
+        ? ELEMENT_STYLES.spacer.large
+        : element.size === 'medium'
+        ? ELEMENT_STYLES.spacer.medium
+        : ELEMENT_STYLES.spacer.small
       return {
         text: '',
         margin: [0, 0, 0, spacerSize],
       }
 
-    case 'text':
-      return {
-        text: element.text,
-        fontSize: element.formatting?.includes('bold') ? pdfStyles.sizes.text : pdfStyles.sizes.text,
-        bold: element.formatting?.includes('bold'),
-        italics: element.formatting?.includes('italic'),
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
-      }
-
     case 'multi-part-text':
+      // Deprecated - render as plain text
       return {
-        text: element.parts.map((part) => ({
-          text: part.text,
-          bold: part.formatting?.includes('bold'),
-          italics: part.formatting?.includes('italic'),
-          color: part.color === 'liturgy-red' ? pdfStyles.color : undefined,
-        })),
-        alignment: element.alignment || pdfStyles.alignment.left,
-        margin: [0, pdfStyles.spacing.small, 0, pdfStyles.spacing.small],
+        text: element.parts.map((part) => part.text).join(''),
+        ...getElementStyle('text'),
       }
 
     default:
