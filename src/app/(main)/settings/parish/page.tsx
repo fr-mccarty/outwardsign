@@ -89,9 +89,21 @@ export default function ParishSettingsPage() {
         const settingsResult = await getParishSettings(parish.id)
         if (settingsResult.success) {
           setParishSettings(settingsResult.settings)
-          setQuickAmountsData(settingsResult.settings.mass_intention_offering_quick_amount)
-          setDonationsQuickAmountsData(settingsResult.settings.donations_quick_amount)
-          setLiturgicalLocale(settingsResult.settings.liturgical_locale)
+          setQuickAmountsData(settingsResult.settings.mass_intention_offering_quick_amount || [
+            { amount: 100, label: '$1' },
+            { amount: 200, label: '$2' },
+            { amount: 500, label: '$5' }
+          ])
+          setDonationsQuickAmountsData(settingsResult.settings.donations_quick_amount || [
+            { amount: 500, label: '$5' },
+            { amount: 1000, label: '$10' },
+            { amount: 2500, label: '$25' },
+            { amount: 5000, label: '$50' }
+          ])
+          setLiturgicalLocale(settingsResult.settings.liturgical_locale || 'en_US')
+        } else {
+          // If settings don't exist, ensure we still have default values
+          console.warn('Parish settings not found, using defaults')
         }
         
         await loadMembers(parish.id)
@@ -463,10 +475,16 @@ export default function ParishSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-sm text-muted-foreground">
-                Configure the quick amount buttons that appear when entering Mass intention offerings. 
+                Configure the quick amount buttons that appear when entering Mass intention offerings.
                 Amounts are stored in cents for precise calculations.
               </p>
 
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">Loading quick amounts...</div>
+                </div>
+              ) : (
+                <>
               <div className="space-y-4">
                 {quickAmountsData.map((quickAmount, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
@@ -536,6 +554,8 @@ export default function ParishSettingsPage() {
                   ))}
                 </div>
               </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -562,6 +582,12 @@ export default function ParishSettingsPage() {
                 Amounts are stored in cents for precise calculations.
               </p>
 
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">Loading quick amounts...</div>
+                </div>
+              ) : (
+                <>
               <div className="space-y-4">
                 {donationsQuickAmountsData.map((quickAmount, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
@@ -631,6 +657,8 @@ export default function ParishSettingsPage() {
                   ))}
                 </div>
               </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

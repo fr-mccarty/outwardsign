@@ -11,10 +11,10 @@ import {
   ContentElement,
 } from '@/lib/types/liturgy-content'
 import {
-  ELEMENT_STYLES,
   LITURGY_FONT,
   convert,
   resolveElementStyle,
+  resolveSpacerSize,
   type ResolvedStyle,
 } from '@/lib/styles/liturgical-script-styles'
 
@@ -53,7 +53,7 @@ function applyResolvedStyleToParagraph(
     spacing: {
       before: convert.pointsToTwips(style.marginTop),
       after: convert.pointsToTwips(style.marginBottom),
-      line: style.lineHeight === 1.4 ? 280 : style.lineHeight === 1.2 ? 240 : 320,
+      line: convert.lineHeightToTwips(style.fontSize, style.lineHeight),
     },
   })
 }
@@ -74,6 +74,44 @@ function applyResolvedStyleToTextRun(
     italics: style.italic,
     color: convert.colorToWord(style.color),
   })
+}
+
+/**
+ * Create a styled paragraph using element type
+ * Resolves style and creates paragraph with text runs
+ */
+function createStyledParagraph(
+  elementType: string,
+  textRuns: TextRun[]
+): Paragraph {
+  try {
+    const style = resolveElementStyle(elementType as any)
+    if (!style) {
+      return new Paragraph({ children: textRuns })
+    }
+    return applyResolvedStyleToParagraph(style, textRuns)
+  } catch {
+    return new Paragraph({ children: textRuns })
+  }
+}
+
+/**
+ * Create a styled text run using element type
+ * Resolves style and creates text run
+ */
+function createStyledTextRun(
+  elementType: string,
+  text: string
+): TextRun {
+  try {
+    const style = resolveElementStyle(elementType as any)
+    if (!style) {
+      return new TextRun({ text, font: LITURGY_FONT })
+    }
+    return applyResolvedStyleToTextRun(style, text)
+  } catch {
+    return new TextRun({ text, font: LITURGY_FONT })
+  }
 }
 
 // ============================================================================
@@ -167,8 +205,16 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
         createStyledTextRun('priest-text', element.text),
       ])
 
-    case 'info-row':
-      const infoStyle = ELEMENT_STYLES['info-row']
+    case 'info-row': {
+      const infoStyle = resolveElementStyle('info-row')
+      if (!infoStyle) {
+        return new Paragraph({
+          children: [
+            createStyledTextRun('info-row-label', element.label),
+            createStyledTextRun('info-row-value', ' ' + element.value),
+          ],
+        })
+      }
       return new Paragraph({
         children: [
           createStyledTextRun('info-row-label', element.label),
@@ -179,17 +225,15 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
           after: convert.pointsToTwips(infoStyle.marginBottom),
         },
       })
+    }
 
-    case 'spacer':
-      const spacerSize = element.size === 'large'
-        ? ELEMENT_STYLES.spacer.large
-        : element.size === 'medium'
-        ? ELEMENT_STYLES.spacer.medium
-        : ELEMENT_STYLES.spacer.small
+    case 'spacer': {
+      const spacerSize = resolveSpacerSize(element.size || 'small')
       return new Paragraph({
         children: [],
         spacing: { after: convert.pointsToTwips(spacerSize) },
       })
+    }
 
     case 'multi-part-text':
       // Deprecated - render as plain text

@@ -50,6 +50,7 @@ When you need detailed information on forms, styling, components, modules, testi
 **Key Documentation Files:**
 - **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
+- **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
 
 This main CLAUDE.md file provides overviews and references these detailed resources where appropriate.
 

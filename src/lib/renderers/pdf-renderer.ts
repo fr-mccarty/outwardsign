@@ -11,8 +11,8 @@ import {
   ContentElement,
 } from '@/lib/types/liturgy-content'
 import {
-  ELEMENT_STYLES,
   resolveElementStyle,
+  resolveSpacerSize,
   type ResolvedStyle,
 } from '@/lib/styles/liturgical-script-styles'
 
@@ -236,11 +236,7 @@ function renderElement(element: ContentElement): Content {
     }
 
     case 'spacer': {
-      const spacerSize = element.size === 'large'
-        ? ELEMENT_STYLES.spacer.large
-        : element.size === 'medium'
-        ? ELEMENT_STYLES.spacer.medium
-        : ELEMENT_STYLES.spacer.small
+      const spacerSize = resolveSpacerSize(element.size || 'small')
       return {
         text: '',
         margin: [0, 0, 0, spacerSize],

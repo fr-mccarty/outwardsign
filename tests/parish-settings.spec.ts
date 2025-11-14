@@ -318,14 +318,16 @@ test.describe('Parish Settings', () => {
     // Switch to Mass Intentions tab
     const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
     await massIntentionsTab.click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('input[id^="amount-"]').first()).toBeVisible();
+    const massAmountInput = page.locator('input[id^="amount-"]').first();
+    await massAmountInput.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(massAmountInput).toBeVisible();
 
     // Switch to Donations tab
     const donationsTab = page.getByRole('tab', { name: /Donations/i });
     await donationsTab.click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('input[id^="donations-amount-"]').first()).toBeVisible();
+    const donationsAmountInput = page.locator('input[id^="donations-amount-"]').first();
+    await donationsAmountInput.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(donationsAmountInput).toBeVisible();
 
     // Switch to Members tab
     const membersTab = page.getByRole('tab', { name: /Members/i });
@@ -496,8 +498,8 @@ test.describe('Parish Settings', () => {
     const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
     await massIntentionsTab.click();
 
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
+    // Wait for tab content to load by waiting for description text
+    await page.getByText(/Configure the quick amount buttons/i).waitFor({ state: 'visible', timeout: 10000 });
 
     // Verify description text
     await expect(page.getByText(/Configure the quick amount buttons/i)).toBeVisible();

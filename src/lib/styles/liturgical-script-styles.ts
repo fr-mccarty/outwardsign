@@ -388,6 +388,10 @@ export const convert = {
   // HTML pixel conversion (1pt = 1.333px at 96dpi)
   pointsToPx: (points: number) => points * 1.333,
 
+  // Word line spacing: fontSize × lineHeight × 20 = spacing in twips
+  // Example: 11pt font with 1.4 lineHeight = 11 × 1.4 × 20 = 308 twips
+  lineHeightToTwips: (fontSize: number, lineHeight: number) => Math.round(fontSize * lineHeight * 20),
+
   // Color format conversions
   colorToWord: (hexColor: string) => hexColor.replace('#', ''), // Word needs color without # prefix
   colorToHtml: (hexColor: string) => hexColor, // HTML uses hex as-is

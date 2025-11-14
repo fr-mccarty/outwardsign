@@ -942,6 +942,7 @@ When adding liturgical scripts to a new module:
 
 ## Related Documentation
 
+- **[RENDERER.md](./RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word converters)
 - **[LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md)** - Element types, usage rules, styling parameters, examples
 - **[STYLE_VALUES.md](./STYLE_VALUES.md)** - Easy-to-edit style value reference
 - **[CLAUDE.md](../CLAUDE.md)** - Module structure and patterns
