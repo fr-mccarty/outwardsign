@@ -6,6 +6,7 @@ import { FormField } from '@/components/form-field';
 import { Save, Loader2, FileText } from "lucide-react";
 import { createPetitionTemplate, updatePetitionTemplate, PetitionContextTemplate } from '@/lib/actions/petition-templates';
 import { getDefaultPetitions } from '@/lib/actions/parish-settings';
+import { PETITION_MODULE_VALUES, PETITION_MODULE_LABELS, PETITION_LANGUAGE_VALUES, PETITION_LANGUAGE_LABELS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,9 @@ export default function PetitionTemplateForm({ template, templateSettings }: Pet
   const [formData, setFormData] = useState({
     title: template?.title || '',
     description: template?.description || '',
-    context: template?.context || ''
+    context: template?.context || '',
+    module: template?.module || '',
+    language: template?.language || 'en'
   });
 
   const handleLoadDefaultPetitions = async () => {
@@ -53,18 +56,22 @@ export default function PetitionTemplateForm({ template, templateSettings }: Pet
           id: template.id,
           title: formData.title,
           description: formData.description,
-          context: formData.context
+          context: formData.context,
+          module: formData.module || undefined,
+          language: formData.language || undefined
         });
-        
+
         toast.success('Template updated successfully');
       } else {
         // Create new template
         const newTemplate = await createPetitionTemplate({
           title: formData.title,
           description: formData.description,
-          context: formData.context
+          context: formData.context,
+          module: formData.module || undefined,
+          language: formData.language || undefined
         });
-        
+
         toast.success('Template created successfully');
         router.push(`/settings/petitions/${newTemplate.id}`);
       }
@@ -99,7 +106,37 @@ export default function PetitionTemplateForm({ template, templateSettings }: Pet
             onChange={(value) => setFormData({ ...formData, description: value })}
             placeholder="Brief description of when to use this template"
           />
-          
+
+          <FormField
+            id="module"
+            label="Module"
+            inputType="select"
+            value={formData.module}
+            onChange={(value) => setFormData({ ...formData, module: value })}
+            options={[
+              { value: '', label: 'Select a module...' },
+              ...PETITION_MODULE_VALUES.map(module => ({
+                value: module,
+                label: PETITION_MODULE_LABELS[module].en
+              }))
+            ]}
+            description="Which module should use this template?"
+          />
+
+          <FormField
+            id="language"
+            label="Language"
+            inputType="select"
+            value={formData.language}
+            onChange={(value) => setFormData({ ...formData, language: value })}
+            options={PETITION_LANGUAGE_VALUES.map(lang => ({
+              value: lang,
+              label: PETITION_LANGUAGE_LABELS[lang].en
+            }))}
+            required
+            description="Language of the petition template"
+          />
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label>Template Text</label>

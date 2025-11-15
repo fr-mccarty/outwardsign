@@ -51,7 +51,7 @@ Ahora está listo para planificar una celebración sacramental:
 
 - Explore las [Guías de Usuario](../user-guides/staff-guide) para su rol
 - Aprenda sobre [Características](../features/weddings) específicas como bodas y misas
-- Personalice la [Configuración de su Parroquia](../features/people-management)
+- Aprenda cómo [Invitar Miembros del Personal](../user-guides/inviting-staff) a su parroquia
 
 ## Consejos para el Éxito
 

@@ -454,19 +454,21 @@ export function CorePicker<T>({
                   {filteredItems.map((item) => {
                     const itemId = getItemId(item)
                     const isSelected = selectedItem && getItemId(selectedItem) === itemId
+                    const itemLabel = getItemLabel(item)
 
                     return (
                       <button
                         key={itemId}
                         type="button"
                         onClick={() => handleItemSelect(item)}
+                        aria-label={itemLabel}
                         className={cn(
                           'w-full text-left p-3 rounded-md border transition-colors',
                           'hover:bg-accent hover:text-accent-foreground',
                           isSelected && 'bg-accent border-primary'
                         )}
                       >
-                        {renderItem ? renderItem(item) : getItemLabel(item)}
+                        {renderItem ? renderItem(item) : itemLabel}
                       </button>
                     )
                   })}

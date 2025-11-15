@@ -140,6 +140,5 @@ A: Any Catholic in good standing, typically 16 years or older.
 
 ## Related Features
 
-- [Calendar](calendar) - View all upcoming weddings
-- [People Management](people-management) - Manage bride, groom, and witnesses
-- [Locations](calendar) - Set up ceremony and reception venues
+- [Managing People](../user-guides/people) - Manage bride, groom, and witnesses
+- [Staff Guide](../user-guides/staff-guide) - Complete guide for parish staff

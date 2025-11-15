@@ -346,6 +346,10 @@ outwardsign/
 
 For detailed information on database management, migrations, resets, seeding, and liturgical calendar data, see **[DATABASE.md](./docs/DATABASE.md)**.
 
+## Team Management
+
+Outward Sign includes a robust team management system with role-based permissions and invitation workflows. Parish administrators can invite team members, assign roles (admin, staff, ministry-leader, parishioner), and configure module access for ministry leaders. For detailed information on team structure, invitation workflows, permissions, and database schema, see **[TEAM_MANAGEMENT.md](./docs/TEAM_MANAGEMENT.md)**.
+
 ## 🔍 Troubleshooting
 
 ### Common Issues
@@ -491,13 +495,17 @@ Follow the [Getting Started](#-getting-started) guide above to:
 
 ## 📚 Documentation
 
+> **📋 Documentation Types:**
+> - **Developer/AI Documentation** (below) - Technical documentation for developers and AI agents building the application. Includes architecture, patterns, API references, and implementation guidelines.
+> - **User Documentation** (separate, public-facing) - End-user help guides and tutorials for parish staff using Outward Sign. This is NOT part of the repository documentation.
+
 ### Core Documentation
 
 - **[CLAUDE.md](./CLAUDE.md)** - Comprehensive development guide with architecture, patterns, and conventions
 
 ### Development Resources
 
-The `docs/` directory contains in-depth documentation on specialized topics:
+The `docs/` directory contains in-depth developer/AI documentation on specialized topics:
 
 - **[DATABASE.md](./docs/DATABASE.md)** - Database management, migrations, and seeding
 - **[MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md)** - Step-by-step checklist for creating new modules

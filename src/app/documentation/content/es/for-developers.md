@@ -48,28 +48,25 @@ Outward Sign está construido con tecnologías web modernas:
 
 ### 1. Fork y Clonar el Repositorio
 
-```bash
-# Haga fork del repositorio en GitHub, luego clone su fork
+Haga fork del repositorio en GitHub, luego clone su fork:
+
+```
 git clone https://github.com/SU-USUARIO/outwardsign.git
 cd outwardsign
-
-# Agregue el remoto upstream para mantenerse sincronizado
 git remote add upstream https://github.com/CatholicOS/outwardsign.git
 ```
 
 ### 2. Instalar Dependencias
 
-```bash
+```
 npm install
-# o
-pnpm install
 ```
 
 ### 3. Configurar Variables de Entorno
 
 Cree un archivo `.env.local` en la raíz del proyecto:
 
-```env
+```
 NEXT_PUBLIC_SUPABASE_URL=url_de_su_proyecto_supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=su_clave_anon_supabase
 SUPABASE_SERVICE_ROLE_KEY=su_clave_service_role
@@ -80,24 +77,19 @@ Contacte a los mantenedores para credenciales de base de datos de desarrollo o c
 
 ### 4. Ejecutar Migraciones de Base de Datos
 
-```bash
-# Iniciar sesión en Supabase
+```
 npx supabase login
-
-# Vincular a su proyecto
 npx supabase link --project-ref referencia-de-su-proyecto
-
-# Ejecutar migraciones
 npx supabase db push
 ```
 
 ### 5. Iniciar el Servidor de Desarrollo
 
-```bash
+```
 npm run dev
 ```
 
-Visite `http://localhost:3000` para ver la aplicación en funcionamiento.
+Visite http://localhost:3000 para ver la aplicación en funcionamiento.
 
 ---
 
@@ -180,22 +172,19 @@ Busque issues etiquetados como `good first issue` en nuestra [página de GitHub 
 
 ### 1. Crear una Rama de Características
 
-```bash
-# Actualice su rama main
+Actualice su rama main y cree una nueva rama:
+
+```
 git checkout main
 git pull upstream main
-
-# Cree una nueva rama para su trabajo
 git checkout -b feature/nombre-de-su-caracteristica
-# o
-git checkout -b fix/su-correccion-de-error
 ```
 
 Convenciones de nomenclatura de ramas:
-- `feature/` para nuevas características
-- `fix/` para correcciones de errores
-- `docs/` para actualizaciones de documentación
-- `test/` para agregar pruebas
+- feature/ para nuevas características
+- fix/ para correcciones de errores
+- docs/ para actualizaciones de documentación
+- test/ para agregar pruebas
 
 ### 2. Hacer Sus Cambios
 
@@ -206,23 +195,16 @@ Convenciones de nomenclatura de ramas:
 
 ### 3. Probar Sus Cambios
 
-```bash
-# Ejecutar el servidor de desarrollo
+```
 npm run dev
-
-# Ejecutar pruebas
 npm test
-
-# Ejecutar verificación de tipos
 npm run type-check
-
-# Ejecutar linting
 npm run lint
 ```
 
 ### 4. Hacer Commit de Sus Cambios
 
-```bash
+```
 git add .
 git commit -m "Mensaje de commit descriptivo"
 ```
@@ -233,13 +215,13 @@ Formato de mensaje de commit:
 - Referencie números de issue cuando sea aplicable
 
 Ejemplos:
-- `Add Baptism module following wedding pattern`
-- `Fix date picker validation in event form`
-- `Update Spanish translations for petition templates`
+- Add Baptism module following wedding pattern
+- Fix date picker validation in event form
+- Update Spanish translations for petition templates
 
 ### 5. Push a Su Fork
 
-```bash
+```
 git push origin feature/nombre-de-su-caracteristica
 ```
 
@@ -309,21 +291,19 @@ git push origin feature/nombre-de-su-caracteristica
 
 ### Escribiendo Pruebas
 
-```typescript
-// tests/weddings.spec.ts
+Ejemplo de archivo de prueba (tests/weddings.spec.ts):
+
+```
 import { test, expect } from '@playwright/test'
 
 test('should create a new wedding', async ({ page }) => {
   await page.goto('/weddings/create')
 
-  // Llenar formulario
   await page.getByLabel('Bride Name').fill('Maria Garcia')
   await page.getByLabel('Groom Name').fill('Juan Rodriguez')
 
-  // Enviar formulario
   await page.getByRole('button', { name: 'Save' }).click()
 
-  // Verificar redirección a página de vista
   await expect(page).toHaveURL(/\/weddings\/[a-f0-9-]+$/)
 })
 ```
@@ -346,33 +326,30 @@ Vea [TESTING_GUIDE.md](https://github.com/CatholicOS/outwardsign/blob/main/docs/
 
 ### Plantilla de Descripción de PR
 
-```markdown
-## Descripción
-Breve descripción de los cambios
+Al crear un pull request, incluya:
 
-## Issue Relacionado
-Fixes #123
+**Descripción:** Breve descripción de los cambios
 
-## Tipo de Cambio
-- [ ] Corrección de error
-- [ ] Nueva característica
-- [ ] Actualización de documentación
-- [ ] Refactorización
+**Issue Relacionado:** Fixes #123
 
-## Capturas de Pantalla (si aplica)
-[Agregar capturas de pantalla para cambios de UI]
+**Tipo de Cambio:**
+- Corrección de error
+- Nueva característica
+- Actualización de documentación
+- Refactorización
 
-## Pasos de Prueba
+**Capturas de Pantalla:** Agregar capturas de pantalla para cambios de UI si aplica
+
+**Pasos de Prueba:**
 1. Ir a...
 2. Hacer clic en...
 3. Verificar que...
 
-## Lista de Verificación
-- [ ] Pruebas agregadas/actualizadas
-- [ ] Documentación actualizada
-- [ ] Sigue estándares de código
-- [ ] Soporte bilingüe incluido
-```
+**Lista de Verificación:**
+- Pruebas agregadas/actualizadas
+- Documentación actualizada
+- Sigue estándares de código
+- Soporte bilingüe incluido
 
 ### Proceso de Revisión
 

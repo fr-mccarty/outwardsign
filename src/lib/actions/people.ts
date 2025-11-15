@@ -61,8 +61,21 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
 
   // Apply filters
   if (filters?.search) {
-    // Use OR condition for search across multiple fields
-    query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,phone_number.ilike.%${filters.search}%`)
+    const search = filters.search
+    // Search across individual fields
+    const searchConditions = [`first_name.ilike.%${search}%`, `last_name.ilike.%${search}%`, `email.ilike.%${search}%`, `phone_number.ilike.%${search}%`]
+
+    // If search contains a space, also search for "FirstName LastName" pattern
+    if (search.includes(' ')) {
+      const parts = search.trim().split(/\s+/)
+      if (parts.length >= 2) {
+        const firstPart = parts[0]
+        const lastPart = parts.slice(1).join(' ')
+        searchConditions.push(`and(first_name.ilike.%${firstPart}%,last_name.ilike.%${lastPart}%)`)
+      }
+    }
+
+    query = query.or(searchConditions.join(','))
   }
 
   query = query.order('last_name', { ascending: true })
@@ -97,7 +110,20 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
 
   // Apply search filter
   if (search) {
-    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone_number.ilike.%${search}%`)
+    // Search across individual fields
+    const searchConditions = [`first_name.ilike.%${search}%`, `last_name.ilike.%${search}%`, `email.ilike.%${search}%`, `phone_number.ilike.%${search}%`]
+
+    // If search contains a space, also search for "FirstName LastName" pattern
+    if (search.includes(' ')) {
+      const parts = search.trim().split(/\s+/)
+      if (parts.length >= 2) {
+        const firstPart = parts[0]
+        const lastPart = parts.slice(1).join(' ')
+        searchConditions.push(`and(first_name.ilike.%${firstPart}%,last_name.ilike.%${lastPart}%)`)
+      }
+    }
+
+    query = query.or(searchConditions.join(','))
   }
 
   // Apply ordering, pagination
@@ -176,6 +202,9 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
     console.error('Error creating person:', error)
     throw new Error(`Failed to create person: ${error.message}`)
   }
+
+  revalidatePath('/people')
+  revalidatePath(`/people/${person.id}`)
 
   return person
 }
@@ -278,7 +307,20 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
 
   // Apply search filter
   if (search) {
-    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone_number.ilike.%${search}%`)
+    // Search across individual fields
+    const searchConditions = [`first_name.ilike.%${search}%`, `last_name.ilike.%${search}%`, `email.ilike.%${search}%`, `phone_number.ilike.%${search}%`]
+
+    // If search contains a space, also search for "FirstName LastName" pattern
+    if (search.includes(' ')) {
+      const parts = search.trim().split(/\s+/)
+      if (parts.length >= 2) {
+        const firstPart = parts[0]
+        const lastPart = parts.slice(1).join(' ')
+        searchConditions.push(`and(first_name.ilike.%${firstPart}%,last_name.ilike.%${lastPart}%)`)
+      }
+    }
+
+    query = query.or(searchConditions.join(','))
   }
 
   // Apply ordering, pagination

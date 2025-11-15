@@ -140,6 +140,5 @@ R: Cualquier católico en buen estado, típicamente de 16 años o más.
 
 ## Características Relacionadas
 
-- [Calendario](calendar) - Vea todas las bodas próximas
-- [Gestión de Personas](people-management) - Gestione novia, novio y testigos
-- [Ubicaciones](calendar) - Configure lugares de ceremonia y recepción
+- [Gestión de Personas](../user-guides/people) - Gestione novia, novio y testigos
+- [Guía del Personal](../user-guides/staff-guide) - Guía completa para el personal parroquial

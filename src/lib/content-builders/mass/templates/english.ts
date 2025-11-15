@@ -74,37 +74,20 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
     })
   }
 
-  if (mass.pre_mass_announcement_person) {
+  // Pre-Mass Announcement section (at bottom of first page)
+  if (mass.pre_mass_announcement_person || mass.pre_mass_announcement_topic) {
     elements.push({
-      type: 'info-row',
-      label: 'Pre-Mass Announcements:',
-      value: formatPersonName(mass.pre_mass_announcement_person),
+      type: 'section-title',
+      text: 'Pre-Mass Announcement',
     })
-  }
 
-  return {
-    id: 'summary',
-    title: 'Mass Summary',
-    elements,
-  }
-}
-
-/**
- * Build announcements section
- */
-function buildAnnouncementsSection(mass: MassWithRelations): ContentSection | null {
-  if (!mass.announcements && !mass.pre_mass_announcement_person) {
-    return null
-  }
-
-  const elements: ContentElement[] = []
-
-  if (mass.pre_mass_announcement_person) {
-    elements.push({
-      type: 'info-row',
-      label: 'Announced by:',
-      value: formatPersonName(mass.pre_mass_announcement_person),
-    })
+    if (mass.pre_mass_announcement_person) {
+      elements.push({
+        type: 'info-row',
+        label: 'Announced by:',
+        value: formatPersonName(mass.pre_mass_announcement_person),
+      })
+    }
 
     if (mass.pre_mass_announcement_topic) {
       elements.push({
@@ -115,12 +98,33 @@ function buildAnnouncementsSection(mass: MassWithRelations): ContentSection | nu
     }
   }
 
-  if (mass.announcements) {
-    elements.push({
-      type: 'text',
-      text: mass.announcements,
-    })
+  return {
+    id: 'summary',
+    title: 'Mass Summary',
+    elements,
   }
+}
+
+/**
+ * Build announcements section (full text content)
+ */
+function buildAnnouncementsSection(mass: MassWithRelations): ContentSection | null {
+  if (!mass.announcements) {
+    return null
+  }
+
+  const elements: ContentElement[] = []
+
+  // Section title
+  elements.push({
+    type: 'section-title',
+    text: 'Announcements',
+  })
+
+  elements.push({
+    type: 'text',
+    text: mass.announcements,
+  })
 
   return {
     id: 'announcements',
@@ -144,6 +148,8 @@ export function buildMassEnglish(mass: MassWithRelations): LiturgyDocument {
       petitions: mass.petitions
     })
     if (petitionsSection) {
+      // Add page break after petitions
+      petitionsSection.pageBreakAfter = true
       sections.push(petitionsSection)
     }
   }

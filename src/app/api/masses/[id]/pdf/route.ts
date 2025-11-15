@@ -60,11 +60,13 @@ export async function GET(
     const pdfBuffer = Buffer.concat(chunks)
 
     // Generate filename
-    const presiderLastName = mass.presider?.last_name || 'Presider'
-    const eventDate = mass.event?.start_date
+    const presiderName = mass.presider
+      ? `${mass.presider.first_name}-${mass.presider.last_name}`
+      : 'Presider'
+    const massDate = mass.event?.start_date
       ? new Date(mass.event.start_date).toISOString().split('T')[0].replace(/-/g, '')
       : 'NoDate'
-    const filename = `mass-${presiderLastName}-${eventDate}.pdf`
+    const filename = `Mass-${presiderName}-${massDate}.pdf`
 
     // Return PDF
     return new NextResponse(pdfBuffer as any, {

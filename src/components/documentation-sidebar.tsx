@@ -56,8 +56,8 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
           href: `/documentation/${lang}/getting-started/quick-start`,
         },
         {
-          title: lang === 'en' ? 'System Requirements' : 'Requisitos del Sistema',
-          href: `/documentation/${lang}/getting-started/system-requirements`,
+          title: lang === 'en' ? 'Parish Setup' : 'Configuración de Parroquia',
+          href: `/documentation/${lang}/getting-started/parish-setup`,
         },
       ],
     },
@@ -66,16 +66,20 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
       icon: Users,
       items: [
         {
-          title: lang === 'en' ? 'Admin Guide' : 'Guía de Administrador',
-          href: `/documentation/${lang}/user-guides/admin-guide`,
-        },
-        {
           title: lang === 'en' ? 'Staff Guide' : 'Guía de Personal',
           href: `/documentation/${lang}/user-guides/staff-guide`,
         },
         {
-          title: lang === 'en' ? 'Parishioner Guide' : 'Guía de Feligrés',
-          href: `/documentation/${lang}/user-guides/parishioner-guide`,
+          title: lang === 'en' ? 'Inviting Team Members' : 'Invitar Miembros del Personal',
+          href: `/documentation/${lang}/user-guides/inviting-staff`,
+        },
+        {
+          title: lang === 'en' ? 'Managing People' : 'Gestión de Personas',
+          href: `/documentation/${lang}/user-guides/people`,
+        },
+        {
+          title: lang === 'en' ? 'Creating Events' : 'Creación de Eventos',
+          href: `/documentation/${lang}/user-guides/events`,
         },
       ],
     },
@@ -88,32 +92,8 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
           href: `/documentation/${lang}/features/weddings`,
         },
         {
-          title: lang === 'en' ? 'Funerals' : 'Funerales',
-          href: `/documentation/${lang}/features/funerals`,
-        },
-        {
-          title: lang === 'en' ? 'Baptisms' : 'Bautismos',
-          href: `/documentation/${lang}/features/baptisms`,
-        },
-        {
-          title: lang === 'en' ? 'Quinceañeras' : 'Quinceañeras',
-          href: `/documentation/${lang}/features/quinceaneras`,
-        },
-        {
-          title: lang === 'en' ? 'Presentations' : 'Presentaciones',
-          href: `/documentation/${lang}/features/presentations`,
-        },
-        {
-          title: lang === 'en' ? 'Mass Planning' : 'Planificación de Misas',
-          href: `/documentation/${lang}/features/mass-planning`,
-        },
-        {
-          title: lang === 'en' ? 'Calendar' : 'Calendario',
-          href: `/documentation/${lang}/features/calendar`,
-        },
-        {
-          title: lang === 'en' ? 'People Management' : 'Gestión de Personas',
-          href: `/documentation/${lang}/features/people-management`,
+          title: lang === 'en' ? 'Mass Intentions' : 'Intenciones de Misa',
+          href: `/documentation/${lang}/features/masses`,
         },
       ],
     },

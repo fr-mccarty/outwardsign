@@ -43,7 +43,11 @@
 
 ## 📚 Detailed Documentation
 
-**The `docs/` directory contains comprehensive, in-depth documentation files on specialized topics.**
+> **📋 Documentation Types:**
+> - **Developer/AI Documentation** (this file and `docs/` directory) - Technical documentation for AI agents and developers building and maintaining the application. Includes architecture patterns, API references, implementation guidelines, and internal system documentation.
+> - **User Documentation** (separate, public-facing) - End-user guides, tutorials, and help content for parish staff and administrators using Outward Sign. This is NOT contained in the codebase documentation files.
+
+**The `docs/` directory contains comprehensive, in-depth developer/AI documentation on specialized topics.**
 
 When you need detailed information on forms, styling, components, modules, testing, liturgical calendar system, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.
 

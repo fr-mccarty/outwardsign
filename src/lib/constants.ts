@@ -399,3 +399,41 @@ export const MASS_ROLE_STATUS_LABELS: Record<MassRoleStatus, { en: string; es: s
   SUBSTITUTE_FOUND: { en: 'Substitute Found', es: 'Sustituto Encontrado' },
   NO_SHOW: { en: 'No Show', es: 'No Asistió' }
 }
+
+// ============================================================================
+// PETITION TEMPLATES
+// ============================================================================
+// Module categorization and language support for petition templates
+
+// Petition Template Module Constants
+export const PETITION_MODULE_VALUES = [
+  'mass',
+  'wedding',
+  'funeral',
+  'baptism',
+  'presentation',
+  'quinceanera',
+  'mass-intention'
+] as const
+
+export type PetitionModule = typeof PETITION_MODULE_VALUES[number]
+
+export const PETITION_MODULE_LABELS: Record<PetitionModule, { en: string; es: string }> = {
+  'mass': { en: 'Mass', es: 'Misa' },
+  'wedding': { en: 'Wedding', es: 'Boda' },
+  'funeral': { en: 'Funeral', es: 'Funeral' },
+  'baptism': { en: 'Baptism', es: 'Bautismo' },
+  'presentation': { en: 'Presentation', es: 'Presentación' },
+  'quinceanera': { en: 'Quinceañera', es: 'Quinceañera' },
+  'mass-intention': { en: 'Mass Intention', es: 'Intención de Misa' }
+}
+
+// Petition Template Language Constants
+export const PETITION_LANGUAGE_VALUES = ['en', 'es', 'bilingual'] as const
+export type PetitionLanguage = typeof PETITION_LANGUAGE_VALUES[number]
+
+export const PETITION_LANGUAGE_LABELS: Record<PetitionLanguage, { en: string; es: string }> = {
+  'en': { en: 'English', es: 'Inglés' },
+  'es': { en: 'Spanish', es: 'Español' },
+  'bilingual': { en: 'Bilingual', es: 'Bilingüe' }
+}

@@ -51,7 +51,7 @@ Now you're ready to plan a sacramental celebration:
 
 - Explore the [User Guides](../user-guides/staff-guide) for your role
 - Learn about specific [Features](../features/weddings) like weddings and masses
-- Customize your [Parish Settings](../features/people-management)
+- Learn how to [Invite Team Members](../user-guides/inviting-staff) to your parish
 
 ## Tips for Success
 

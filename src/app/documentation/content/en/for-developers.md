@@ -48,28 +48,25 @@ Outward Sign is built with modern web technologies:
 
 ### 1. Fork and Clone the Repository
 
-```bash
-# Fork the repository on GitHub, then clone your fork
+Fork the repository on GitHub, then clone your fork:
+
+```
 git clone https://github.com/YOUR-USERNAME/outwardsign.git
 cd outwardsign
-
-# Add upstream remote to stay in sync
 git remote add upstream https://github.com/CatholicOS/outwardsign.git
 ```
 
 ### 2. Install Dependencies
 
-```bash
+```
 npm install
-# or
-pnpm install
 ```
 
 ### 3. Set Up Environment Variables
 
 Create a `.env.local` file in the project root:
 
-```env
+```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
@@ -80,24 +77,19 @@ Contact the maintainers for development database credentials or set up your own 
 
 ### 4. Run Database Migrations
 
-```bash
-# Login to Supabase
+```
 npx supabase login
-
-# Link to your project
 npx supabase link --project-ref your-project-ref
-
-# Run migrations
 npx supabase db push
 ```
 
 ### 5. Start the Development Server
 
-```bash
+```
 npm run dev
 ```
 
-Visit `http://localhost:3000` to see the application running.
+Visit http://localhost:3000 to see the application running.
 
 ---
 
@@ -180,22 +172,19 @@ Look for issues labeled `good first issue` on our [GitHub Issues page](https://g
 
 ### 1. Create a Feature Branch
 
-```bash
-# Update your main branch
+Update your main branch and create a new branch:
+
+```
 git checkout main
 git pull upstream main
-
-# Create a new branch for your work
 git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/your-bug-fix
 ```
 
 Branch naming conventions:
-- `feature/` for new features
-- `fix/` for bug fixes
-- `docs/` for documentation updates
-- `test/` for adding tests
+- feature/ for new features
+- fix/ for bug fixes
+- docs/ for documentation updates
+- test/ for adding tests
 
 ### 2. Make Your Changes
 
@@ -206,23 +195,16 @@ Branch naming conventions:
 
 ### 3. Test Your Changes
 
-```bash
-# Run the development server
+```
 npm run dev
-
-# Run tests
 npm test
-
-# Run type checking
 npm run type-check
-
-# Run linting
 npm run lint
 ```
 
 ### 4. Commit Your Changes
 
-```bash
+```
 git add .
 git commit -m "Descriptive commit message"
 ```
@@ -233,13 +215,13 @@ Commit message format:
 - Reference issue numbers when applicable
 
 Examples:
-- `Add Baptism module following wedding pattern`
-- `Fix date picker validation in event form`
-- `Update Spanish translations for petition templates`
+- Add Baptism module following wedding pattern
+- Fix date picker validation in event form
+- Update Spanish translations for petition templates
 
 ### 5. Push to Your Fork
 
-```bash
+```
 git push origin feature/your-feature-name
 ```
 
@@ -309,21 +291,19 @@ git push origin feature/your-feature-name
 
 ### Writing Tests
 
-```typescript
-// tests/weddings.spec.ts
+Example test file (tests/weddings.spec.ts):
+
+```
 import { test, expect } from '@playwright/test'
 
 test('should create a new wedding', async ({ page }) => {
   await page.goto('/weddings/create')
 
-  // Fill out form
   await page.getByLabel('Bride Name').fill('Maria Garcia')
   await page.getByLabel('Groom Name').fill('Juan Rodriguez')
 
-  // Submit form
   await page.getByRole('button', { name: 'Save' }).click()
 
-  // Verify redirect to view page
   await expect(page).toHaveURL(/\/weddings\/[a-f0-9-]+$/)
 })
 ```
@@ -346,33 +326,30 @@ See [TESTING_GUIDE.md](https://github.com/CatholicOS/outwardsign/blob/main/docs/
 
 ### PR Description Template
 
-```markdown
-## Description
-Brief description of changes
+When creating a pull request, include:
 
-## Related Issue
-Fixes #123
+**Description:** Brief description of changes
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation update
-- [ ] Refactoring
+**Related Issue:** Fixes #123
 
-## Screenshots (if applicable)
-[Add screenshots for UI changes]
+**Type of Change:**
+- Bug fix
+- New feature
+- Documentation update
+- Refactoring
 
-## Testing Steps
+**Screenshots:** Add screenshots for UI changes if applicable
+
+**Testing Steps:**
 1. Go to...
 2. Click on...
 3. Verify that...
 
-## Checklist
-- [ ] Tests added/updated
-- [ ] Documentation updated
-- [ ] Follows code standards
-- [ ] Bilingual support included
-```
+**Checklist:**
+- Tests added/updated
+- Documentation updated
+- Follows code standards
+- Bilingual support included
 
 ### Review Process
 

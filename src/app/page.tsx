@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { LanguageSelector } from "@/components/language-selector"
+import { HomeFeatureCard } from "@/components/home-feature-card"
 import Link from "next/link"
 import {
   Church,
@@ -114,6 +115,15 @@ const translations = {
           "English and Spanish supported",
           "Bilingual script generation",
           "Language-specific templates"
+        ]
+      },
+      teamCollaboration: {
+        title: "Team Collaboration",
+        description: "Work together with presiders, staff, and families throughout the preparation process. Everyone stays informed and prepared.",
+        features: [
+          "Shared access for parish staff",
+          "Role-based permissions",
+          "Coordinate with families and participants"
         ]
       },
       freeOpenSource: {
@@ -354,6 +364,15 @@ const translations = {
           "Inglés y español disponibles",
           "Generación de guiones bilingües",
           "Plantillas específicas por idioma"
+        ]
+      },
+      teamCollaboration: {
+        title: "Colaboración en Equipo",
+        description: "Trabaja junto con presidentes, personal y familias durante todo el proceso de preparación. Todos se mantienen informados y preparados.",
+        features: [
+          "Acceso compartido para el personal parroquial",
+          "Permisos basados en roles",
+          "Coordina con familias y participantes"
         ]
       },
       freeOpenSource: {
@@ -796,130 +815,47 @@ function HomeContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Sacrament Management */}
-            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Church className="h-6 w-6 text-primary" />
-                  </div>
-                  {t.features.sacramentManagement.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {t.features.sacramentManagement.description}
-                </p>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  {t.features.sacramentManagement.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <HomeFeatureCard
+              icon={Church}
+              title={t.features.sacramentManagement.title}
+              description={t.features.sacramentManagement.description}
+              features={t.features.sacramentManagement.features}
+            />
 
-            {/* Script Generation */}
-            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <FileText className="h-6 w-6 text-primary" />
-                  </div>
-                  {t.features.scriptGeneration.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {t.features.scriptGeneration.description}
-                </p>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  {t.features.scriptGeneration.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <HomeFeatureCard
+              icon={FileText}
+              title={t.features.scriptGeneration.title}
+              description={t.features.scriptGeneration.description}
+              features={t.features.scriptGeneration.features}
+            />
 
-            {/* Print & Export */}
-            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Printer className="h-6 w-6 text-primary" />
-                  </div>
-                  {t.features.printExport.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {t.features.printExport.description}
-                </p>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  {t.features.printExport.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <HomeFeatureCard
+              icon={Printer}
+              title={t.features.printExport.title}
+              description={t.features.printExport.description}
+              features={t.features.printExport.features}
+            />
 
-            {/* Calendar Integration */}
-            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-6 w-6 text-primary" />
-                  </div>
-                  {t.features.calendar.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {t.features.calendar.description}
-                </p>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  {t.features.calendar.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <HomeFeatureCard
+              icon={Calendar}
+              title={t.features.calendar.title}
+              description={t.features.calendar.description}
+              features={t.features.calendar.features}
+            />
 
-            {/* Multilingual */}
-            <Card className="bg-card text-card-foreground hover:shadow-lg transition-all duration-300 border hover:border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Globe className="h-6 w-6 text-primary" />
-                  </div>
-                  {t.features.multilingual.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {t.features.multilingual.description}
-                </p>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  {t.features.multilingual.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <HomeFeatureCard
+              icon={Globe}
+              title={t.features.multilingual.title}
+              description={t.features.multilingual.description}
+              features={t.features.multilingual.features}
+            />
+
+            <HomeFeatureCard
+              icon={Users}
+              title={t.features.teamCollaboration.title}
+              description={t.features.teamCollaboration.description}
+              features={t.features.teamCollaboration.features}
+            />
           </div>
 
           {/* Free & Open Source Highlight Banner */}

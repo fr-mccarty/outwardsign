@@ -34,22 +34,55 @@ export interface CreateContextData {
   title: string
   description?: string
   context: string
+  module?: string
+  language?: string
 }
 
 export interface UpdateContextData extends CreateContextData {
   id: string
 }
 
-export async function getPetitionTemplates(): Promise<PetitionContextTemplate[]> {
+// Helper function to check if user is admin
+async function requireAdminRole() {
+  const selectedParishId = await requireSelectedParish()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+
+  const { data: userParish } = await supabase
+    .from('parish_users')
+    .select('roles')
+    .eq('parish_id', selectedParishId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!userParish || !userParish.roles.includes('admin')) {
+    throw new Error('Unauthorized: Admin role required')
+  }
+}
+
+export async function getPetitionTemplates(filters?: { module?: string; language?: string }): Promise<PetitionContextTemplate[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('petition_templates')
     .select('*')
     .eq('parish_id', selectedParishId)
-    .order('title', { ascending: true })
+
+  // Apply filters if provided
+  if (filters?.module) {
+    query = query.eq('module', filters.module)
+  }
+  if (filters?.language) {
+    query = query.eq('language', filters.language)
+  }
+
+  const { data, error } = await query.order('title', { ascending: true })
 
   if (error) {
     throw new Error('Failed to fetch petition contexts')
@@ -61,6 +94,7 @@ export async function getPetitionTemplates(): Promise<PetitionContextTemplate[]>
 export async function createPetitionTemplate(contextData: CreateContextData): Promise<PetitionContextTemplate> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+  await requireAdminRole() // Check admin permissions
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -70,7 +104,10 @@ export async function createPetitionTemplate(contextData: CreateContextData): Pr
         parish_id: selectedParishId,
         title: contextData.title,
         description: contextData.description,
-        context: contextData.context
+        context: contextData.context,
+        module: contextData.module,
+        language: contextData.language || 'en',
+        is_default: false
       }
     ])
     .select()
@@ -86,6 +123,7 @@ export async function createPetitionTemplate(contextData: CreateContextData): Pr
 export async function updatePetitionTemplate(contextData: UpdateContextData): Promise<PetitionContextTemplate> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+  await requireAdminRole() // Check admin permissions
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -93,7 +131,9 @@ export async function updatePetitionTemplate(contextData: UpdateContextData): Pr
     .update({
       title: contextData.title,
       description: contextData.description,
-      context: contextData.context
+      context: contextData.context,
+      module: contextData.module,
+      language: contextData.language
     })
     .eq('id', contextData.id)
     .eq('parish_id', selectedParishId)
@@ -110,6 +150,7 @@ export async function updatePetitionTemplate(contextData: UpdateContextData): Pr
 export async function deletePetitionTemplate(contextId: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+  await requireAdminRole() // Check admin permissions
   const supabase = await createClient()
 
   const { error } = await supabase

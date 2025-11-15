@@ -31,12 +31,12 @@ export default async function DocumentationHome({ params }: DocumentationHomePro
       },
       popularTopics: 'Popular Topics',
       topics: [
-        'Planning a Wedding',
-        'Managing Mass Intentions',
-        'Creating Events',
-        'Managing People',
-        'Setting up Your Parish',
-        'Inviting Staff Members',
+        { title: 'Planning a Wedding', href: '/documentation/en/features/weddings' },
+        { title: 'Managing Mass Intentions', href: '/documentation/en/features/masses' },
+        { title: 'Creating Events', href: '/documentation/en/user-guides/events' },
+        { title: 'Managing People', href: '/documentation/en/user-guides/people' },
+        { title: 'Setting up Your Parish', href: '/documentation/en/getting-started/parish-setup' },
+        { title: 'Inviting Staff Members', href: '/documentation/en/user-guides/inviting-staff' },
       ],
     },
     es: {
@@ -59,12 +59,12 @@ export default async function DocumentationHome({ params }: DocumentationHomePro
       },
       popularTopics: 'Temas Populares',
       topics: [
-        'Planificación de una Boda',
-        'Gestión de Intenciones de Misa',
-        'Creación de Eventos',
-        'Gestión de Personas',
-        'Configuración de su Parroquia',
-        'Invitación de Miembros del Personal',
+        { title: 'Planificación de una Boda', href: '/documentation/es/features/weddings' },
+        { title: 'Gestión de Intenciones de Misa', href: '/documentation/es/features/masses' },
+        { title: 'Creación de Eventos', href: '/documentation/es/user-guides/events' },
+        { title: 'Gestión de Personas', href: '/documentation/es/user-guides/people' },
+        { title: 'Configuración de su Parroquia', href: '/documentation/es/getting-started/parish-setup' },
+        { title: 'Invitación de Miembros del Personal', href: '/documentation/es/user-guides/inviting-staff' },
       ],
     },
   }
@@ -147,15 +147,14 @@ export default async function DocumentationHome({ params }: DocumentationHomePro
         <h2 className="text-2xl font-semibold text-foreground mb-4">{t.popularTopics}</h2>
         <div className="grid md:grid-cols-2 gap-3">
           {t.topics.map((topic, index) => (
-            <div
-              key={index}
-              className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 bg-primary rounded-full" />
-                <span className="text-sm text-foreground">{topic}</span>
+            <Link key={index} href={topic.href}>
+              <div className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+                  <span className="text-sm text-foreground">{topic.title}</span>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
