@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { UserPlus, User, Trash2, Users, Edit, X, Save } from "lucide-react"
-import { getGroup, removeGroupMember, updateGroupMemberRoles, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getGroup, removeGroupMember, updateGroupMemberRole, getGroupRoles, type GroupWithMembers, type GroupMember, type GroupRole } from '@/lib/actions/groups'
 import { GroupFormDialog } from '@/components/groups/group-form-dialog'
 import { AddMembershipModal } from '@/components/groups/add-membership-modal'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { ROLE_VALUES, ROLE_LABELS, type LiturgicalRole } from '@/lib/constants'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -34,11 +34,12 @@ interface PageProps {
 export default function GroupDetailPage({ params }: PageProps) {
   const router = useRouter()
   const [group, setGroup] = useState<GroupWithMembers | null>(null)
+  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null)
-  const [editingRoles, setEditingRoles] = useState<LiturgicalRole[]>([])
+  const [editingRoleId, setEditingRoleId] = useState<string | undefined>(undefined)
   const [groupId, setGroupId] = useState<string>('')
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
@@ -50,7 +51,10 @@ export default function GroupDetailPage({ params }: PageProps) {
         const { id } = await params
         setGroupId(id)
 
-        const groupData = await getGroup(id)
+        const [groupData, roles] = await Promise.all([
+          getGroup(id),
+          getGroupRoles()
+        ])
 
         if (!groupData) {
           toast.error('Group not found')
@@ -59,6 +63,7 @@ export default function GroupDetailPage({ params }: PageProps) {
         }
 
         setGroup(groupData)
+        setGroupRoles(roles)
 
         setBreadcrumbs([
           { label: "Dashboard", href: "/dashboard" },
@@ -111,30 +116,22 @@ export default function GroupDetailPage({ params }: PageProps) {
     }
   }
 
-  const handleStartEditRoles = (member: GroupMember) => {
+  const handleStartEditRole = (member: GroupMember) => {
     setEditingMemberId(member.id)
-    setEditingRoles((member.roles || []) as LiturgicalRole[])
+    setEditingRoleId(member.group_role_id || undefined)
   }
 
-  const handleCancelEditRoles = () => {
+  const handleCancelEditRole = () => {
     setEditingMemberId(null)
-    setEditingRoles([])
+    setEditingRoleId(undefined)
   }
 
-  const handleRoleToggle = (role: LiturgicalRole) => {
-    setEditingRoles(prev => {
-      if (prev.includes(role)) {
-        return prev.filter(r => r !== role)
-      } else {
-        return [...prev, role]
-      }
-    })
-  }
-
-  const handleSaveRoles = async (member: GroupMember) => {
+  const handleSaveRole = async (member: GroupMember) => {
     try {
-      await updateGroupMemberRoles(groupId, member.person_id, editingRoles.length > 0 ? editingRoles : undefined)
-      toast.success('Roles updated successfully')
+      // Convert "none" value to null
+      const roleIdToSave = editingRoleId === "none" ? null : editingRoleId
+      await updateGroupMemberRole(groupId, member.person_id, roleIdToSave)
+      toast.success('Role updated successfully')
 
       // Reload group data
       const updatedGroup = await getGroup(groupId)
@@ -143,10 +140,10 @@ export default function GroupDetailPage({ params }: PageProps) {
       }
 
       setEditingMemberId(null)
-      setEditingRoles([])
+      setEditingRoleId(undefined)
     } catch (error) {
-      console.error('Failed to update roles:', error)
-      toast.error('Failed to update roles')
+      console.error('Failed to update role:', error)
+      toast.error('Failed to update role')
     }
   }
 
@@ -256,6 +253,7 @@ export default function GroupDetailPage({ params }: PageProps) {
                 return (
                   <div
                     key={member.id}
+                    data-testid={`member-card-${member.id}`}
                     className="p-4 border rounded-lg"
                   >
                     <div className="flex items-start justify-between">
@@ -279,42 +277,41 @@ export default function GroupDetailPage({ params }: PageProps) {
                             Joined: {new Date(member.joined_at).toLocaleDateString()}
                           </p>
 
-                          {/* Roles Display */}
+                          {/* Role Display */}
                           {!isEditing && (
                             <div className="mt-3">
-                              {member.roles && member.roles.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {member.roles.map((role) => (
-                                    <Badge key={role} variant="secondary">
-                                      {ROLE_LABELS[role as LiturgicalRole]?.en || role}
-                                    </Badge>
-                                  ))}
-                                </div>
+                              {member.group_role ? (
+                                <Badge variant="secondary">
+                                  {member.group_role.name}
+                                </Badge>
                               ) : (
-                                <p className="text-sm text-muted-foreground">No roles assigned</p>
+                                <p className="text-sm text-muted-foreground">No role assigned</p>
                               )}
                             </div>
                           )}
 
-                          {/* Roles Editor */}
+                          {/* Role Editor */}
                           {isEditing && (
-                            <div className="mt-3 space-y-3 border rounded-lg p-3 bg-muted/50">
-                              <Label className="text-sm font-medium">Select Roles</Label>
-                              {ROLE_VALUES.map((role) => (
-                                <div key={role} className="flex items-center space-x-2">
-                                  <Checkbox
-                                    id={`${member.id}-${role}`}
-                                    checked={editingRoles.includes(role)}
-                                    onCheckedChange={() => handleRoleToggle(role)}
-                                  />
-                                  <label
-                                    htmlFor={`${member.id}-${role}`}
-                                    className="text-sm cursor-pointer"
-                                  >
-                                    {ROLE_LABELS[role].en}
-                                  </label>
-                                </div>
-                              ))}
+                            <div className="mt-3 space-y-2 border rounded-lg p-3 bg-muted/50">
+                              <Label htmlFor={`role-select-${member.id}`} className="text-sm font-medium">
+                                Select Role
+                              </Label>
+                              <Select
+                                value={editingRoleId}
+                                onValueChange={setEditingRoleId}
+                              >
+                                <SelectTrigger id={`role-select-${member.id}`}>
+                                  <SelectValue placeholder="Select a role..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">No Role</SelectItem>
+                                  {groupRoles.map((role) => (
+                                    <SelectItem key={role.id} value={role.id}>
+                                      {role.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                           )}
                         </div>
@@ -326,13 +323,15 @@ export default function GroupDetailPage({ params }: PageProps) {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleStartEditRoles(member)}
+                              data-testid={`edit-role-button-${member.id}`}
+                              onClick={() => handleStartEditRole(member)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
+                              data-testid={`delete-member-button-${member.id}`}
                               onClick={() => handleOpenRemoveDialog(member)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -343,13 +342,15 @@ export default function GroupDetailPage({ params }: PageProps) {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={handleCancelEditRoles}
+                              data-testid={`cancel-edit-button-${member.id}`}
+                              onClick={handleCancelEditRole}
                             >
                               <X className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
-                              onClick={() => handleSaveRoles(member)}
+                              data-testid={`save-role-button-${member.id}`}
+                              onClick={() => handleSaveRole(member)}
                             >
                               <Save className="h-4 w-4" />
                             </Button>

@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Mail, Phone, X } from 'lucide-react'
 import { getPeopleWithRolesPaginated, type PersonWithGroupRoles } from '@/lib/actions/people'
-import { getRoles } from '@/lib/actions/roles'
-import type { Person, Role } from '@/lib/types'
+import { getMassRoles } from '@/lib/actions/roles'
+import type { Person, MassRole } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import {
@@ -42,7 +42,7 @@ export function MassRolePicker({
   allowEmpty = true,
 }: MassRolePickerProps) {
   const [people, setPeople] = useState<PersonWithGroupRoles[]>([])
-  const [allRoles, setAllRoles] = useState<Role[]>([])
+  const [allRoles, setAllRoles] = useState<MassRole[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -66,11 +66,11 @@ export function MassRolePicker({
 
   const loadRoles = async () => {
     try {
-      const rolesData = await getRoles()
+      const rolesData = await getMassRoles()
       setAllRoles(rolesData)
     } catch (error) {
-      console.error('Error loading roles:', error)
-      toast.error('Failed to load roles')
+      console.error('Error loading mass roles:', error)
+      toast.error('Failed to load mass roles')
     }
   }
 

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Mass, Person, MassRolesTemplate, MassRole, Role } from '@/lib/types'
+import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { PaginatedParams, PaginatedResult } from './people'
@@ -199,7 +199,13 @@ export interface MassWithRelations extends Mass {
   liturgical_event?: GlobalLiturgicalEvent | null
   mass_roles_template?: MassRolesTemplate | null
   pre_mass_announcement_person?: Person | null
-  mass_roles?: Array<MassRole & { person?: Person; role?: Role }> | null
+  mass_roles?: Array<MassRoleInstance & {
+    person?: Person
+    mass_roles_template_item?: {
+      id: string
+      mass_role: MassRole
+    }
+  }> | null
 }
 
 export async function getMassWithRelations(id: string): Promise<MassWithRelations | null> {
@@ -238,7 +244,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     mass.liturgical_event_id ? supabase.from('global_liturgical_events').select('*').eq('id', mass.liturgical_event_id).single() : Promise.resolve({ data: null }),
     mass.mass_roles_template_id ? supabase.from('mass_roles_templates').select('*').eq('id', mass.mass_roles_template_id).single() : Promise.resolve({ data: null }),
     mass.pre_mass_announcement_id ? supabase.from('people').select('*').eq('id', mass.pre_mass_announcement_id).single() : Promise.resolve({ data: null }),
-    supabase.from('mass_roles').select('*, person:people(*), role:roles(*)').eq('mass_id', id)
+    supabase.from('mass_role_instances').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
   ])
 
   return {
@@ -342,38 +348,36 @@ export async function deleteMass(id: string): Promise<void> {
 export interface CreateMassRoleData {
   mass_id: string
   person_id: string
-  role_id: string
-  status?: string
-  note?: string
-  parameters?: Record<string, any>
+  mass_roles_template_item_id: string
 }
 
 export interface UpdateMassRoleData {
   person_id?: string
-  role_id?: string
-  status?: string
-  confirmed_at?: string | null
-  notified_at?: string | null
-  note?: string | null
-  parameters?: Record<string, any>
+  mass_roles_template_item_id?: string
 }
 
-export interface MassRoleWithRelations extends MassRole {
+export interface MassRoleInstanceWithRelations extends MassRoleInstance {
   person?: Person
-  role?: Role
+  mass_roles_template_item?: {
+    id: string
+    mass_role: MassRole
+  }
 }
 
-export async function getMassRoles(massId: string): Promise<MassRoleWithRelations[]> {
+export async function getMassRoles(massId: string): Promise<MassRoleInstanceWithRelations[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('mass_roles')
+    .from('mass_role_instances')
     .select(`
       *,
       person:people(*),
-      role:roles(*)
+      mass_roles_template_item:mass_roles_template_items(
+        *,
+        mass_role:mass_roles(*)
+      )
     `)
     .eq('mass_id', massId)
     .order('created_at', { ascending: true })
@@ -386,38 +390,35 @@ export async function getMassRoles(massId: string): Promise<MassRoleWithRelation
   return data || []
 }
 
-export async function createMassRole(data: CreateMassRoleData): Promise<MassRole> {
+export async function createMassRole(data: CreateMassRoleData): Promise<MassRoleInstance> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data: massRole, error } = await supabase
-    .from('mass_roles')
+  const { data: massRoleInstance, error } = await supabase
+    .from('mass_role_instances')
     .insert([
       {
         mass_id: data.mass_id,
         person_id: data.person_id,
-        role_id: data.role_id,
-        status: data.status || 'ASSIGNED',
-        note: data.note || null,
-        parameters: data.parameters || null,
+        mass_roles_template_item_id: data.mass_roles_template_item_id,
       }
     ])
     .select()
     .single()
 
   if (error) {
-    console.error('Error creating mass role:', error)
-    throw new Error('Failed to create mass role')
+    console.error('Error creating mass role instance:', error)
+    throw new Error('Failed to create mass role instance')
   }
 
   revalidatePath('/masses')
   revalidatePath(`/masses/${data.mass_id}`)
   revalidatePath(`/masses/${data.mass_id}/edit`)
-  return massRole
+  return massRoleInstance
 }
 
-export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRole> {
+export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRoleInstance> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -427,32 +428,32 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
     Object.entries(data).filter(([_, value]) => value !== undefined)
   )
 
-  const { data: massRole, error } = await supabase
-    .from('mass_roles')
+  const { data: massRoleInstance, error } = await supabase
+    .from('mass_role_instances')
     .update(updateData)
     .eq('id', id)
     .select()
     .single()
 
   if (error) {
-    console.error('Error updating mass role:', error)
-    throw new Error('Failed to update mass role')
+    console.error('Error updating mass role instance:', error)
+    throw new Error('Failed to update mass role instance')
   }
 
   // Get the mass_id for revalidation
-  const { data: roleData } = await supabase
-    .from('mass_roles')
+  const { data: instanceData } = await supabase
+    .from('mass_role_instances')
     .select('mass_id')
     .eq('id', id)
     .single()
 
-  if (roleData) {
+  if (instanceData) {
     revalidatePath('/masses')
-    revalidatePath(`/masses/${roleData.mass_id}`)
-    revalidatePath(`/masses/${roleData.mass_id}/edit`)
+    revalidatePath(`/masses/${instanceData.mass_id}`)
+    revalidatePath(`/masses/${instanceData.mass_id}/edit`)
   }
 
-  return massRole
+  return massRoleInstance
 }
 
 export async function deleteMassRole(id: string): Promise<void> {
@@ -461,57 +462,54 @@ export async function deleteMassRole(id: string): Promise<void> {
   const supabase = await createClient()
 
   // Get the mass_id before deleting for revalidation
-  const { data: roleData } = await supabase
-    .from('mass_roles')
+  const { data: instanceData } = await supabase
+    .from('mass_role_instances')
     .select('mass_id')
     .eq('id', id)
     .single()
 
   const { error } = await supabase
-    .from('mass_roles')
+    .from('mass_role_instances')
     .delete()
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting mass role:', error)
-    throw new Error('Failed to delete mass role')
+    console.error('Error deleting mass role instance:', error)
+    throw new Error('Failed to delete mass role instance')
   }
 
-  if (roleData) {
+  if (instanceData) {
     revalidatePath('/masses')
-    revalidatePath(`/masses/${roleData.mass_id}`)
-    revalidatePath(`/masses/${roleData.mass_id}/edit`)
+    revalidatePath(`/masses/${instanceData.mass_id}`)
+    revalidatePath(`/masses/${instanceData.mass_id}/edit`)
   }
 }
 
-export async function bulkCreateMassRoles(massId: string, assignments: CreateMassRoleData[]): Promise<MassRole[]> {
+export async function bulkCreateMassRoles(massId: string, assignments: CreateMassRoleData[]): Promise<MassRoleInstance[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const rolesToInsert = assignments.map(assignment => ({
+  const instancesToInsert = assignments.map(assignment => ({
     mass_id: massId,
     person_id: assignment.person_id,
-    role_id: assignment.role_id,
-    status: assignment.status || 'ASSIGNED',
-    note: assignment.note || null,
-    parameters: assignment.parameters || null,
+    mass_roles_template_item_id: assignment.mass_roles_template_item_id,
   }))
 
-  const { data: massRoles, error } = await supabase
-    .from('mass_roles')
-    .insert(rolesToInsert)
+  const { data: massRoleInstances, error } = await supabase
+    .from('mass_role_instances')
+    .insert(instancesToInsert)
     .select()
 
   if (error) {
-    console.error('Error creating mass roles in bulk:', error)
-    throw new Error('Failed to create mass roles in bulk')
+    console.error('Error creating mass role instances in bulk:', error)
+    throw new Error('Failed to create mass role instances in bulk')
   }
 
   revalidatePath('/masses')
   revalidatePath(`/masses/${massId}`)
   revalidatePath(`/masses/${massId}/edit`)
-  return massRoles || []
+  return massRoleInstances || []
 }
 
 export interface ApplyTemplateData {

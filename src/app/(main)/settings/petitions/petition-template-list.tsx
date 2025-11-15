@@ -130,6 +130,13 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
         <DataTableRowActions
           row={template}
           variant="hybrid"
+          customActions={[
+            {
+              label: "Edit",
+              icon: <Edit className="h-4 w-4" />,
+              onClick: (row) => router.push(`/settings/petitions/${row.id}`)
+            }
+          ]}
           onDelete={(row) => openDeleteDialog(row.id)}
         />
       ),
@@ -156,7 +163,6 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
         data={filteredTemplates}
         columns={columns}
         keyExtractor={(template) => template.id}
-        onRowClick={(template) => router.push(`/settings/petitions/${template.id}`)}
         emptyState={{
           icon: <FileText className="h-12 w-12 text-gray-400" />,
           title: searchTerm ? "No templates found" : "No templates yet",

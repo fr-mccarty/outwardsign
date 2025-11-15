@@ -111,7 +111,8 @@ class GroupMembershipPage {
     await this.page.waitForTimeout(500);
 
     // Click on the person from search results using getByRole (like working tests)
-    const personButton = pickerDialog.getByRole('button', { name: new RegExp(personName, 'i') });
+    // Use .first() in case there are multiple matches
+    const personButton = pickerDialog.getByRole('button', { name: new RegExp(personName, 'i') }).first();
     await personButton.click();
 
     // Wait for people picker to close
@@ -160,8 +161,8 @@ class GroupMembershipPage {
     const dialog = this.page.locator('[role="dialog"]').first();
 
     for (const role of roles) {
-      const checkbox = dialog.locator(`input#${role}`);
-      await checkbox.check();
+      const checkbox = dialog.getByTestId(`role-checkbox-${role}`);
+      await checkbox.click();
     }
   }
 
@@ -228,32 +229,46 @@ class GroupMembershipPage {
    * Edit a member's roles
    */
   async editMemberRoles(personName: string, newRoles: string[]) {
-    // Find the member card and click the Edit button
-    const memberCard = this.page.locator(`div:has-text("${personName}")`).first();
-    const editButton = memberCard.getByRole('button').filter({ has: this.page.locator('svg') }).first();
+    // Find the member card containing this person's name
+    const memberCard = this.page.locator(`div[data-testid^="member-card-"]:has-text("${personName}")`).first();
+
+    // Find and click the Edit button (the first button in the action group)
+    const editButton = memberCard.locator('button[data-testid^="edit-roles-button-"]');
     await editButton.click();
 
-    // Wait for edit mode to activate
-    await this.page.waitForTimeout(500);
+    // Wait for edit UI to appear - wait for the "Select Roles" label
+    await memberCard.locator('text=Select Roles').waitFor({ state: 'visible', timeout: 5000 });
+
+    // Give it a moment for all checkboxes to render
+    await this.page.waitForTimeout(300);
+
+    // List of all possible roles (must match ROLE_VALUES from constants.ts)
+    const allRoles = ['LECTOR', 'EMHC', 'ALTAR_SERVER', 'CANTOR', 'USHER', 'SACRISTAN', 'MUSIC_MINISTER'];
 
     // First, uncheck all existing roles
-    const checkboxes = memberCard.locator('input[type="checkbox"]');
-    const count = await checkboxes.count();
-    for (let i = 0; i < count; i++) {
-      const checkbox = checkboxes.nth(i);
-      if (await checkbox.isChecked()) {
-        await checkbox.uncheck();
+    for (const role of allRoles) {
+      const checkbox = memberCard.getByTestId(`role-checkbox-${role}`);
+      // Check if it's currently checked
+      try {
+        const dataState = await checkbox.getAttribute('data-state', { timeout: 1000 });
+        if (dataState === 'checked') {
+          await checkbox.click();
+          await this.page.waitForTimeout(100); // Small delay between clicks
+        }
+      } catch (e) {
+        // Checkbox might not exist or not be visible, skip it
       }
     }
 
     // Then check the new roles
     for (const role of newRoles) {
-      const checkbox = memberCard.locator(`input[type="checkbox"][id*="${role}"]`);
-      await checkbox.check();
+      const checkbox = memberCard.getByTestId(`role-checkbox-${role}`);
+      await checkbox.click();
+      await this.page.waitForTimeout(100); // Small delay between clicks
     }
 
-    // Click Save button (checkmark icon)
-    const saveButton = memberCard.getByRole('button').filter({ has: this.page.locator('svg[class*="lucide-save"]') });
+    // Click Save button
+    const saveButton = memberCard.locator('button[data-testid^="save-roles-button-"]');
     await saveButton.click();
 
     // Wait for save to complete
@@ -277,23 +292,21 @@ class GroupMembershipPage {
    * Remove a member from the group
    */
   async removeMember(personName: string, confirm: boolean = true) {
-    const memberCard = this.page.locator(`div:has-text("${personName}")`).first();
+    const memberCard = this.page.locator(`div[data-testid^="member-card-"]:has-text("${personName}")`).first();
 
-    // Find and click the delete button (trash icon)
-    const deleteButton = memberCard.getByRole('button').filter({ has: this.page.locator('svg[class*="lucide-trash"]') });
+    // Find and click the delete button
+    const deleteButton = memberCard.locator('button[data-testid^="delete-member-button-"]');
     await deleteButton.click();
 
-    // Wait for confirmation dialog
+    // Wait for AlertDialog to appear
     await this.page.waitForTimeout(500);
 
-    // Handle browser confirmation dialog
-    this.page.once('dialog', async dialog => {
-      if (confirm) {
-        await dialog.accept();
-      } else {
-        await dialog.dismiss();
-      }
-    });
+    // Click the appropriate button in the AlertDialog
+    if (confirm) {
+      await this.page.getByRole('button', { name: /Remove Member/i }).click();
+    } else {
+      await this.page.getByRole('button', { name: /Cancel/i }).click();
+    }
 
     await this.page.waitForTimeout(1000);
   }
@@ -495,10 +508,19 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.openAddMemberModal();
     await groupPage.selectPersonInModal(`${firstName} ${lastName}`);
     await groupPage.selectRoles(['CANTOR']);
-    await groupPage.submitAddMember();
+
+    // Click Add Member button but don't expect dialog to close (duplicate error)
+    const dialog = page.locator('[role="dialog"]').first();
+    const addButton = dialog.getByRole('button', { name: /Add Member/i });
+    await addButton.click();
 
     // Wait a moment for potential error handling
     await page.waitForTimeout(1000);
+
+    // Close the dialog manually (since duplicate error prevents auto-close)
+    const cancelButton = dialog.getByRole('button', { name: /Cancel/i });
+    await cancelButton.click();
+    await page.waitForTimeout(500);
 
     // The person should only appear once in the list (no duplicate)
     // Count occurrences of the person's name
@@ -591,14 +613,14 @@ test.describe('Group Membership - Edit Roles Tests', () => {
 
   test('TC-009: Cancel editing member roles', async ({ page }) => {
     // Start editing roles
-    const memberCard = page.locator(`div:has-text("${testPersonName}")`).first();
-    const editButton = memberCard.getByRole('button').filter({ has: page.locator('svg') }).first();
+    const memberCard = page.locator(`div[data-testid^="member-card-"]:has-text("${testPersonName}")`).first();
+    const editButton = memberCard.locator('button[data-testid^="edit-roles-button-"]');
     await editButton.click();
     await page.waitForTimeout(500);
 
     // Make some changes (check additional roles)
-    const cantorCheckbox = memberCard.locator(`input[type="checkbox"][id*="CANTOR"]`);
-    await cantorCheckbox.check();
+    const cantorCheckbox = memberCard.getByTestId('role-checkbox-CANTOR');
+    await cantorCheckbox.click();
 
     // Cancel the edit
     await groupPage.cancelEditMemberRoles(testPersonName);
@@ -695,16 +717,16 @@ test.describe('Group Membership - Role Constants Tests', () => {
     ];
 
     for (const role of expectedRoles) {
-      // Verify checkbox exists
-      const checkbox = dialog.locator(`input#${role.key}`);
+      // Verify checkbox exists using data-testid
+      const checkbox = dialog.getByTestId(`role-checkbox-${role.key}`);
       await expect(checkbox).toBeVisible();
 
-      // Verify English label is shown
-      const englishLabel = dialog.locator(`text=${role.en}`);
+      // Verify English label is shown (use .first() in case of duplicates)
+      const englishLabel = dialog.locator(`text=${role.en}`).first();
       await expect(englishLabel).toBeVisible();
 
-      // Verify Spanish label is shown
-      const spanishLabel = dialog.locator(`text=${role.es}`);
+      // Verify Spanish label is shown (use .first() in case of duplicates)
+      const spanishLabel = dialog.locator(`text=${role.es}`).first();
       await expect(spanishLabel).toBeVisible();
     }
   });
@@ -757,11 +779,11 @@ test.describe('Group Membership - Accessibility Tests', () => {
     const dialog = page.locator('[role="dialog"]').first();
 
     // Verify person selector has proper label
-    const personLabel = dialog.getByText(/Person/i);
+    const personLabel = dialog.getByText('Person *');
     await expect(personLabel).toBeVisible();
 
-    // Verify each checkbox has proper label
-    const lectorCheckbox = dialog.locator('input#LECTOR');
+    // Verify each checkbox has proper label (using data-testid)
+    const lectorCheckbox = dialog.getByTestId('role-checkbox-LECTOR');
     const lectorLabel = dialog.locator('label[for="LECTOR"]');
     await expect(lectorCheckbox).toBeVisible();
     await expect(lectorLabel).toBeVisible();

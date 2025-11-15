@@ -4,30 +4,30 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Role, MassRole, Person } from '@/lib/types'
+import { MassRole, MassRoleInstance, Person } from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
 
-// ========== ROLES ==========
+// ========== MASS ROLE DEFINITIONS ==========
 
-export interface CreateRoleData {
+export interface CreateMassRoleData {
   name: string
   description?: string
   note?: string
 }
 
-export interface UpdateRoleData {
+export interface UpdateMassRoleData {
   name?: string
   description?: string | null
   note?: string | null
 }
 
-export async function getRoles(): Promise<Role[]> {
+export async function getMassRoles(): Promise<MassRole[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('roles')
+    .from('mass_roles')
     .select('*')
     .eq('parish_id', selectedParishId)
     .order('name', { ascending: true })
@@ -40,7 +40,7 @@ export async function getRoles(): Promise<Role[]> {
   return data || []
 }
 
-export async function getRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<Role>> {
+export async function getMassRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassRole>> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -54,7 +54,7 @@ export async function getRolesPaginated(params?: PaginatedParams): Promise<Pagin
 
   // Build base query
   let query = supabase
-    .from('roles')
+    .from('mass_roles')
     .select('*', { count: 'exact' })
     .eq('parish_id', selectedParishId)
 
@@ -87,13 +87,13 @@ export async function getRolesPaginated(params?: PaginatedParams): Promise<Pagin
   }
 }
 
-export async function getRole(id: string): Promise<Role | null> {
+export async function getMassRole(id: string): Promise<MassRole | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('roles')
+    .from('mass_roles')
     .select('*')
     .eq('id', id)
     .single()
@@ -109,13 +109,13 @@ export async function getRole(id: string): Promise<Role | null> {
   return data
 }
 
-export async function createRole(data: CreateRoleData): Promise<Role> {
+export async function createMassRole(data: CreateMassRoleData): Promise<MassRole> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data: role, error } = await supabase
-    .from('roles')
+    .from('mass_roles')
     .insert([
       {
         parish_id: selectedParishId,
@@ -136,7 +136,7 @@ export async function createRole(data: CreateRoleData): Promise<Role> {
   return role
 }
 
-export async function updateRole(id: string, data: UpdateRoleData): Promise<Role> {
+export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRole> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -147,7 +147,7 @@ export async function updateRole(id: string, data: UpdateRoleData): Promise<Role
   )
 
   const { data: role, error } = await supabase
-    .from('roles')
+    .from('mass_roles')
     .update(updateData)
     .eq('id', id)
     .select()
@@ -164,13 +164,13 @@ export async function updateRole(id: string, data: UpdateRoleData): Promise<Role
   return role
 }
 
-export async function deleteRole(id: string): Promise<void> {
+export async function deleteMassRole(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { error } = await supabase
-    .from('roles')
+    .from('mass_roles')
     .delete()
     .eq('id', id)
 
@@ -182,37 +182,41 @@ export async function deleteRole(id: string): Promise<void> {
   revalidatePath('/roles')
 }
 
-// ========== MASS ROLES ==========
+// ========== MASS ROLE INSTANCES ==========
 
-export interface CreateMassRoleData {
+export interface CreateMassRoleInstanceData {
   mass_id: string
   person_id: string
-  role_id: string
-  parameters?: Record<string, any>
+  mass_roles_template_item_id: string
 }
 
-export interface UpdateMassRoleData {
+export interface UpdateMassRoleInstanceData {
   person_id?: string
-  role_id?: string
-  parameters?: Record<string, any> | null
+  mass_roles_template_item_id?: string
 }
 
-export interface MassRoleWithRelations extends MassRole {
+export interface MassRoleInstanceWithRelations extends MassRoleInstance {
   person?: Person | null
-  role?: Role | null
+  mass_roles_template_item?: {
+    id: string
+    mass_role: MassRole
+  } | null
 }
 
-export async function getMassRoles(massId: string): Promise<MassRoleWithRelations[]> {
+export async function getMassRoleInstances(massId: string): Promise<MassRoleInstanceWithRelations[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from('mass_roles')
+  const { data, error} = await supabase
+    .from('mass_role_instances')
     .select(`
       *,
       person:people(*),
-      role:roles(*)
+      mass_roles_template_item:mass_roles_template_items(
+        *,
+        mass_role:mass_roles(*)
+      )
     `)
     .eq('mass_id', massId)
     .order('created_at', { ascending: true })
@@ -225,13 +229,13 @@ export async function getMassRoles(massId: string): Promise<MassRoleWithRelation
   return data || []
 }
 
-export async function getMassRole(id: string): Promise<MassRole | null> {
+export async function getMassRoleInstance(id: string): Promise<MassRoleInstance | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('mass_roles')
+    .from('mass_role_instances')
     .select('*')
     .eq('id', id)
     .single()
@@ -240,42 +244,41 @@ export async function getMassRole(id: string): Promise<MassRole | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching mass role:', error)
-    throw new Error('Failed to fetch mass role')
+    console.error('Error fetching mass role instance:', error)
+    throw new Error('Failed to fetch mass role instance')
   }
 
   return data
 }
 
-export async function createMassRole(data: CreateMassRoleData): Promise<MassRole> {
+export async function createMassRoleInstance(data: CreateMassRoleInstanceData): Promise<MassRoleInstance> {
   await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data: massRole, error } = await supabase
-    .from('mass_roles')
+  const { data: massRoleInstance, error } = await supabase
+    .from('mass_role_instances')
     .insert([
       {
         mass_id: data.mass_id,
         person_id: data.person_id,
-        role_id: data.role_id,
-        parameters: data.parameters || null,
+        mass_roles_template_item_id: data.mass_roles_template_item_id,
       }
     ])
     .select()
     .single()
 
   if (error) {
-    console.error('Error creating mass role:', error)
-    throw new Error('Failed to create mass role')
+    console.error('Error creating mass role instance:', error)
+    throw new Error('Failed to create mass role instance')
   }
 
   revalidatePath(`/masses/${data.mass_id}`)
   revalidatePath(`/masses/${data.mass_id}/edit`)
-  return massRole
+  return massRoleInstance
 }
 
-export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRole> {
+export async function updateMassRoleInstance(id: string, data: UpdateMassRoleInstanceData): Promise<MassRoleInstance> {
   await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -285,57 +288,57 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
     Object.entries(data).filter(([_, value]) => value !== undefined)
   )
 
-  const { data: massRole, error } = await supabase
-    .from('mass_roles')
+  const { data: massRoleInstance, error } = await supabase
+    .from('mass_role_instances')
     .update(updateData)
     .eq('id', id)
     .select()
     .single()
 
   if (error) {
-    console.error('Error updating mass role:', error)
-    throw new Error('Failed to update mass role')
+    console.error('Error updating mass role instance:', error)
+    throw new Error('Failed to update mass role instance')
   }
 
   // Get mass_id to revalidate correct paths
-  const { data: massRoleData } = await supabase
-    .from('mass_roles')
+  const { data: massRoleInstanceData } = await supabase
+    .from('mass_role_instances')
     .select('mass_id')
     .eq('id', id)
     .single()
 
-  if (massRoleData) {
-    revalidatePath(`/masses/${massRoleData.mass_id}`)
-    revalidatePath(`/masses/${massRoleData.mass_id}/edit`)
+  if (massRoleInstanceData) {
+    revalidatePath(`/masses/${massRoleInstanceData.mass_id}`)
+    revalidatePath(`/masses/${massRoleInstanceData.mass_id}/edit`)
   }
 
-  return massRole
+  return massRoleInstance
 }
 
-export async function deleteMassRole(id: string): Promise<void> {
+export async function deleteMassRoleInstance(id: string): Promise<void> {
   await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   // Get mass_id before deletion for revalidation
-  const { data: massRoleData } = await supabase
-    .from('mass_roles')
+  const { data: massRoleInstanceData } = await supabase
+    .from('mass_role_instances')
     .select('mass_id')
     .eq('id', id)
     .single()
 
   const { error } = await supabase
-    .from('mass_roles')
+    .from('mass_role_instances')
     .delete()
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting mass role:', error)
-    throw new Error('Failed to delete mass role')
+    console.error('Error deleting mass role instance:', error)
+    throw new Error('Failed to delete mass role instance')
   }
 
-  if (massRoleData) {
-    revalidatePath(`/masses/${massRoleData.mass_id}`)
-    revalidatePath(`/masses/${massRoleData.mass_id}/edit`)
+  if (massRoleInstanceData) {
+    revalidatePath(`/masses/${massRoleInstanceData.mass_id}`)
+    revalidatePath(`/masses/${massRoleInstanceData.mass_id}/edit`)
   }
 }

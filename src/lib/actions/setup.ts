@@ -626,10 +626,115 @@ export async function populateInitialParishData(parishId: string) {
       throw new Error(`Failed to create petition templates: ${petitionTemplatesError.message}`)
     }
 
+    // Seed default group roles
+    const defaultGroupRoles = [
+      {
+        parish_id: parishId,
+        name: 'Leader',
+        description: 'Leads and coordinates the group'
+      },
+      {
+        parish_id: parishId,
+        name: 'Member',
+        description: 'Active participant in the group'
+      },
+      {
+        parish_id: parishId,
+        name: 'Secretary',
+        description: 'Maintains records and communications'
+      },
+      {
+        parish_id: parishId,
+        name: 'Treasurer',
+        description: 'Manages group finances'
+      },
+      {
+        parish_id: parishId,
+        name: 'Coordinator',
+        description: 'Coordinates group activities and events'
+      }
+    ]
+
+    const { data: groupRoles, error: groupRolesError } = await supabase
+      .from('group_roles')
+      .insert(defaultGroupRoles)
+      .select()
+
+    if (groupRolesError) {
+      console.error('Error creating default group roles:', groupRolesError)
+      throw new Error(`Failed to create default group roles: ${groupRolesError.message}`)
+    }
+
+    // Seed default mass (liturgical) roles
+    const defaultMassRoles = [
+      {
+        parish_id: parishId,
+        name: 'Lector',
+        description: 'Proclaims the Word of God during Mass'
+      },
+      {
+        parish_id: parishId,
+        name: 'Usher',
+        description: 'Welcomes parishioners and assists with seating and collection'
+      },
+      {
+        parish_id: parishId,
+        name: 'Server',
+        description: 'Assists the priest at the altar during Mass'
+      },
+      {
+        parish_id: parishId,
+        name: 'Sacristan',
+        description: 'Prepares the sacred vessels and sanctuary for Mass'
+      },
+      {
+        parish_id: parishId,
+        name: 'Eucharistic Minister',
+        description: 'Distributes Holy Communion during Mass'
+      },
+      {
+        parish_id: parishId,
+        name: 'Cantor',
+        description: 'Leads the congregation in singing'
+      },
+      {
+        parish_id: parishId,
+        name: 'Music Minister',
+        description: 'Provides music during the liturgy'
+      },
+      {
+        parish_id: parishId,
+        name: 'Greeter',
+        description: 'Welcomes parishioners as they arrive'
+      },
+      {
+        parish_id: parishId,
+        name: 'Coordinator',
+        description: 'Coordinates and oversees liturgical ministries'
+      },
+      {
+        parish_id: parishId,
+        name: 'Gift Bearer',
+        description: 'Brings up the gifts during the offertory'
+      }
+    ]
+
+    const { data: massRoles, error: massRolesError } = await supabase
+      .from('mass_roles')
+      .insert(defaultMassRoles)
+      .select()
+
+    if (massRolesError) {
+      console.error('Error creating default mass roles:', massRolesError)
+      throw new Error(`Failed to create default mass roles: ${massRolesError.message}`)
+    }
+
     return {
       success: true,
       readings: readings || [],
-      petitionTemplates: petitionTemplates || []
+      petitionTemplates: petitionTemplates || [],
+      groupRoles: groupRoles || [],
+      massRoles: massRoles || []
     }
   } catch (error) {
     console.error('Error populating initial parish data:', error)

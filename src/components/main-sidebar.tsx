@@ -22,7 +22,7 @@ import {
   Settings,
   Church,
   Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
-  BookHeart, CalendarDays, Building
+  BookHeart, CalendarDays, Building, LayoutTemplate
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -148,6 +148,11 @@ export function MainSidebar() {
                     title: "New Mass",
                     url: "/masses/create",
                     icon: Plus,
+                  },
+                  {
+                    title: "Templates",
+                    url: "/mass-role-templates",
+                    icon: LayoutTemplate,
                   },
                 ]}
                 defaultOpen={false}
@@ -332,18 +337,23 @@ export function MainSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
 
-              <CollapsibleNavSection
-                name="Settings"
-                icon={Settings}
-                items={[
-                  {
-                    title: "Parish Settings",
-                    url: "/settings/parish",
-                    icon: Church,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              <SidebarMenuItem key="ParishSettings">
+                <SidebarMenuButton asChild>
+                  <Link href="/settings/parish" onClick={handleLinkClick}>
+                    <Church />
+                    <span>Parish Settings</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem key="UserSettings">
+                <SidebarMenuButton asChild>
+                  <Link href="/settings" onClick={handleLinkClick}>
+                    <User />
+                    <span>User Settings</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
             </SidebarMenu>
           </SidebarGroupContent>

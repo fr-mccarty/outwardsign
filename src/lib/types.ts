@@ -595,7 +595,7 @@ export interface Baptism {
   updated_at: string
 }
 
-export interface Role {
+export interface GroupRole {
   id: string
   parish_id: string
   name: string
@@ -635,16 +635,23 @@ export interface Mass {
   updated_at: string
 }
 
+// Mass role definitions (Lector, Usher, Server, etc.)
 export interface MassRole {
+  id: string
+  parish_id: string
+  name: string
+  description?: string
+  note?: string
+  created_at: string
+  updated_at: string
+}
+
+// Actual mass role assignments (person assigned to a mass role)
+export interface MassRoleInstance {
   id: string
   mass_id: string
   person_id: string
-  role_id: string
-  status?: string
-  confirmed_at?: string | null
-  notified_at?: string | null
-  note?: string | null
-  parameters?: Record<string, any>
+  mass_roles_template_item_id: string
   created_at: string
   updated_at: string
 }

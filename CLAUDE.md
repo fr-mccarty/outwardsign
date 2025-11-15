@@ -45,7 +45,7 @@
 
 > **📋 Documentation Types:**
 > - **Developer/AI Documentation** (this file and `docs/` directory) - Technical documentation for AI agents and developers building and maintaining the application. Includes architecture patterns, API references, implementation guidelines, and internal system documentation.
-> - **User Documentation** (separate, public-facing) - End-user guides, tutorials, and help content for parish staff and administrators using Outward Sign. This is NOT contained in the codebase documentation files.
+> - **User Documentation** (`src/app/documentation/content/`) - Public-facing, bilingual end-user guides, tutorials, and help content for parish staff and administrators using Outward Sign. Located at `/documentation` route in the application.
 
 **The `docs/` directory contains comprehensive, in-depth developer/AI documentation on specialized topics.**
 
@@ -56,6 +56,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 - **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
+- **[USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md)** - User documentation system structure, adding pages, sidebar navigation, breadcrumbs, and multi-language support
 
 This main CLAUDE.md file provides overviews and references these detailed resources where appropriate.
 

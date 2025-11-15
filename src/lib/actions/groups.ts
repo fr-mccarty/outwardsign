@@ -20,7 +20,7 @@ export interface GroupMember {
   id: string
   group_id: string
   person_id: string
-  roles?: string[] | null // Array of roles for multi-role support
+  group_role_id?: string | null
   joined_at: string
   person?: {
     id: string
@@ -28,6 +28,11 @@ export interface GroupMember {
     last_name: string
     email?: string
   }
+  group_role?: {
+    id: string
+    name: string
+    description?: string
+  } | null
 }
 
 export interface GroupWithMembers extends Group {
@@ -85,20 +90,25 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     throw new Error('Failed to fetch group')
   }
 
-  // Get group members with person details
+  // Get group members with person details and group role
   const { data: members, error: membersError } = await supabase
     .from('group_members')
     .select(`
       id,
       group_id,
       person_id,
-      roles,
+      group_role_id,
       joined_at,
       person:person_id (
         id,
         first_name,
         last_name,
         email
+      ),
+      group_role:group_role_id (
+        id,
+        name,
+        description
       )
     `)
     .eq('group_id', id)
@@ -190,7 +200,7 @@ export async function deleteGroup(id: string): Promise<void> {
   revalidatePath('/groups')
 }
 
-export async function addGroupMember(groupId: string, personId: string, roles?: string[]): Promise<GroupMember> {
+export async function addGroupMember(groupId: string, personId: string, groupRoleId?: string): Promise<GroupMember> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
@@ -213,7 +223,7 @@ export async function addGroupMember(groupId: string, personId: string, roles?: 
       {
         group_id: groupId,
         person_id: personId,
-        roles: roles && roles.length > 0 ? roles : null,
+        group_role_id: groupRoleId || null,
       }
     ])
     .select()
@@ -264,7 +274,7 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
   revalidatePath(`/groups/${groupId}`)
 }
 
-export async function updateGroupMemberRoles(groupId: string, personId: string, roles?: string[]): Promise<GroupMember> {
+export async function updateGroupMemberRole(groupId: string, personId: string, groupRoleId?: string | null): Promise<GroupMember> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
@@ -283,15 +293,15 @@ export async function updateGroupMemberRoles(groupId: string, personId: string, 
 
   const { data: member, error } = await supabase
     .from('group_members')
-    .update({ roles: roles && roles.length > 0 ? roles : null })
+    .update({ group_role_id: groupRoleId })
     .eq('group_id', groupId)
     .eq('person_id', personId)
     .select()
     .single()
 
   if (error) {
-    console.error('Error updating group member roles:', error)
-    throw new Error('Failed to update group member roles')
+    console.error('Error updating group member role:', error)
+    throw new Error('Failed to update group member role')
   }
 
   revalidatePath('/groups')
@@ -302,7 +312,7 @@ export async function updateGroupMemberRoles(groupId: string, personId: string, 
 export async function getActiveGroups(): Promise<Group[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -314,6 +324,37 @@ export async function getActiveGroups(): Promise<Group[]> {
   if (error) {
     console.error('Error fetching active groups:', error)
     throw new Error('Failed to fetch active groups')
+  }
+
+  return data || []
+}
+
+// ========== GROUP ROLES ==========
+
+export interface GroupRole {
+  id: string
+  parish_id: string
+  name: string
+  description?: string | null
+  note?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export async function getGroupRoles(): Promise<GroupRole[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('group_roles')
+    .select('*')
+    .eq('parish_id', selectedParishId)
+    .order('name', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching group roles:', error)
+    throw new Error('Failed to fetch group roles')
   }
 
   return data || []

@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { UserCog } from 'lucide-react'
-import { getRolesPaginated, createRole, updateRole } from '@/lib/actions/roles'
-import type { Role } from '@/lib/types'
+import { getMassRolesPaginated, createMassRole, updateMassRole } from '@/lib/actions/roles'
+import type { MassRole } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
@@ -14,7 +14,7 @@ import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequi
 interface RolePickerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (role: Role) => void
+  onSelect: (role: MassRole) => void
   placeholder?: string
   emptyMessage?: string
   selectedRoleId?: string
@@ -24,7 +24,7 @@ interface RolePickerProps {
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
   editMode?: boolean // Open directly to edit form
-  roleToEdit?: Role | null // Role being edited
+  roleToEdit?: MassRole | null // Mass role being edited
 }
 
 // Default visible fields - defined outside component to prevent re-creation
@@ -48,7 +48,7 @@ export function RolePicker({
   editMode = false,
   roleToEdit = null,
 }: RolePickerProps) {
-  const [roles, setRoles] = useState<Role[]>([])
+  const [roles, setRoles] = useState<MassRole[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -75,7 +75,7 @@ export function RolePicker({
   const loadRoles = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const result = await getRolesPaginated({
+      const result = await getMassRolesPaginated({
         page,
         limit: PAGE_SIZE,
         search,
@@ -83,8 +83,8 @@ export function RolePicker({
       setRoles(result.items)
       setTotalCount(result.totalCount)
     } catch (error) {
-      console.error('Error loading roles:', error)
-      toast.error('Failed to load roles')
+      console.error('Error loading mass roles:', error)
+      toast.error('Failed to load mass roles')
     } finally {
       setLoading(false)
     }
@@ -130,9 +130,9 @@ export function RolePicker({
     return fields
   }, [isFieldVisible, isFieldRequired])
 
-  // Handle creating a new role
-  const handleCreateRole = async (data: any): Promise<Role> => {
-    const newRole = await createRole({
+  // Handle creating a new mass role
+  const handleCreateRole = async (data: any): Promise<MassRole> => {
+    const newRole = await createMassRole({
       name: data.name,
       description: data.description || undefined,
       note: data.note || undefined,
@@ -144,9 +144,9 @@ export function RolePicker({
     return newRole
   }
 
-  // Handle updating an existing role
-  const handleUpdateRole = async (id: string, data: any): Promise<Role> => {
-    const updatedRole = await updateRole(id, {
+  // Handle updating an existing mass role
+  const handleUpdateRole = async (id: string, data: any): Promise<MassRole> => {
+    const updatedRole = await updateMassRole(id, {
       name: data.name,
       description: data.description || undefined,
       note: data.note || undefined,
@@ -171,8 +171,8 @@ export function RolePicker({
     setCurrentPage(1) // Reset to first page when searching
   }
 
-  // Custom render for role list items
-  const renderRoleItem = (role: Role) => {
+  // Custom render for mass role list items
+  const renderRoleItem = (role: MassRole) => {
     const isSelected = selectedRoleId === role.id
 
     return (
@@ -200,13 +200,13 @@ export function RolePicker({
   }
 
   return (
-    <CorePicker<Role>
+    <CorePicker<MassRole>
       open={open}
       onOpenChange={onOpenChange}
       items={roles}
       selectedItem={selectedRole}
       onSelect={onSelect}
-      title="Select Role"
+      title="Select Mass Role"
       searchPlaceholder={placeholder}
       searchFields={['name', 'description']}
       getItemLabel={(role) => role.name}
@@ -236,15 +236,15 @@ export function RolePicker({
   )
 }
 
-// Hook to use the role picker
+// Hook to use the mass role picker
 export function useRolePicker() {
   const [open, setOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [selectedRole, setSelectedRole] = useState<MassRole | null>(null)
 
   const openPicker = () => setOpen(true)
   const closePicker = () => setOpen(false)
 
-  const handleSelect = (role: Role) => {
+  const handleSelect = (role: MassRole) => {
     setSelectedRole(role)
     setOpen(false)
   }

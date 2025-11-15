@@ -133,6 +133,10 @@ export interface CorePickerProps<T> {
   /** Whether items are currently loading */
   isLoading?: boolean
 
+  // Testing
+  /** Optional test ID for the dialog (e.g., 'event-picker-dialog', 'location-picker-dialog') */
+  testId?: string
+
   // Pagination
   /** Enable server-side pagination (default: false) */
   enablePagination?: boolean

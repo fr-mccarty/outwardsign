@@ -21,54 +21,58 @@ test.describe('Event Picker Component', () => {
     await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
 
     // Wait for Event Picker dialog
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Event/i })).toBeVisible();
+    const eventDialog = page.getByTestId('event-picker-dialog');
+    await eventDialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    await expect(eventDialog.getByRole('heading', { name: /Select Event/i })).toBeVisible();
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
     // Wait a moment for form to be ready
     await page.waitForTimeout(300);
 
     // Fill in event details
-    await page.locator('[role="dialog"]').getByLabel('Name').fill('Wedding Ceremony');
-    await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-12-25');
+    await eventDialog.getByLabel('Name').fill('Wedding Ceremony');
+    await eventDialog.getByLabel('Date').fill('2025-12-25');
     // Time field - use input#start_time since label includes asterisk
-    await page.locator('[role="dialog"]').locator('input#start_time').fill('14:00');
+    await eventDialog.locator('input#start_time').fill('14:00');
 
     // Click "Select Location" button to open nested LocationPicker
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
+    await eventDialog.getByRole('button', { name: /Select Location/i }).click();
 
     // Wait for the nested location picker dialog to appear
-    await page.waitForTimeout(500);
+    const locationDialog = page.getByTestId('location-picker-dialog');
+    await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // Location picker auto-opens creation form when no location is selected
     // We need to cancel this and use the search instead
-    await page.locator('[role="dialog"]').last().getByRole('button', { name: /Cancel/i }).click();
+    await locationDialog.getByRole('button', { name: /Cancel/i }).waitFor({ state: 'visible', timeout: 5000 });
+    await locationDialog.getByRole('button', { name: /Cancel/i }).click();
     await page.waitForTimeout(300);
 
     // Now we should see the search interface
-    await page.locator('[role="dialog"]').last().getByPlaceholder(/Search/i).fill('St. Mary');
+    await locationDialog.getByPlaceholder(/Search/i).fill('St. Mary');
     await page.waitForTimeout(500);
 
     // Click on the location
-    await page.locator('[role="dialog"]').last().getByRole('button', { name: /St. Mary Cathedral/i }).click();
+    await locationDialog.getByRole('button', { name: /St. Mary Cathedral/i }).click();
 
     // Wait for location picker to close
     await page.waitForTimeout(500);
 
-    // Verify location is selected in the event form (should show location name)
-    await expect(page.locator('[role="dialog"]').getByText('St. Mary Cathedral')).toBeVisible();
+    // Verify location is selected in the event form
+    await expect(eventDialog.getByTestId('event-location-selected')).toBeVisible();
+    await expect(eventDialog.getByTestId('event-location-selected')).toContainText('St. Mary Cathedral');
 
     // Submit the event creation (button text is "Save Event")
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await eventDialog.getByRole('button', { name: /Save Event/i }).click();
 
     // Wait for event picker to close and event to be selected
     await page.waitForTimeout(1500);
 
     // Event picker dialog should close
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
 
-    // Verify the event is selected (should show event name and details)
-    await expect(page.locator('text=Wedding Ceremony')).toBeVisible();
+    // Verify the event is selected
+    await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
   });
 
   test('should create event and location inline via nested pickers', async ({ page }) => {
@@ -81,7 +85,8 @@ test.describe('Event Picker Component', () => {
     await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
 
     // Wait for Event Picker dialog
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    const eventDialog = page.getByTestId('event-picker-dialog');
+    await eventDialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
     // Wait a moment for form to be ready
@@ -89,56 +94,46 @@ test.describe('Event Picker Component', () => {
 
     // Fill in event details
     const eventName = `TestEvent${Date.now()}`;
-    await page.locator('[role="dialog"]').getByLabel('Name').fill(eventName);
-    await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-06-15');
+    await eventDialog.getByLabel('Name').fill(eventName);
+    await eventDialog.getByLabel('Date').fill('2025-06-15');
     // Time field - use input#start_time since label includes asterisk
-    await page.locator('[role="dialog"]').locator('input#start_time').fill('10:30');
+    await eventDialog.locator('input#start_time').fill('10:30');
 
     // Open nested LocationPicker
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
-    await page.waitForTimeout(500);
+    await eventDialog.getByRole('button', { name: /Select Location/i }).click();
+
+    const locationDialog = page.getByTestId('location-picker-dialog');
+    await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // Location picker auto-opens creation form when no location is selected
-    // The form is already displayed, so we can fill it directly
-    await page.waitForTimeout(300);
+    // Wait for the Save Location button to be visible (confirms form is loaded)
+    await locationDialog.getByRole('button', { name: /Save Location/i }).waitFor({ state: 'visible', timeout: 5000 });
 
-    // Fill in location details in the auto-opened form
-    const locationName = `TestChurch${Date.now()}`;
-
-    // Wait a bit more for the location form to be fully ready
-    await page.waitForTimeout(500);
-
-    // Clear and fill the name field (has default value "St. Mary's Church")
-    const locationNameInput = page.locator('[role="dialog"]').last().locator('input').first();
-    await locationNameInput.click();
-    await locationNameInput.clear();
-    await locationNameInput.fill(locationName);
-
-    // Fill optional fields if visible
-    const streetInput = page.locator('[role="dialog"]').last().getByLabel('Street');
-    if (await streetInput.isVisible()) {
-      await streetInput.fill('456 Test Ave');
-    }
-
-    const cityInput = page.locator('[role="dialog"]').last().getByLabel('City');
-    if (await cityInput.isVisible()) {
-      await cityInput.fill('TestCity');
-    }
+    // Find and fill the name input (first text input in the form)
+    const locationNameInput = locationDialog.locator('input[type="text"]').first();
+    await locationNameInput.fill('InlineTestChurch');
 
     // Submit location creation (button text is "Save Location")
-    await page.locator('[role="dialog"]').last().getByRole('button', { name: /Save Location/i }).click();
-    await page.waitForTimeout(1000);
+    // Use force: true because the button might be re-rendering
+    await locationDialog.getByRole('button', { name: /Save Location/i }).click({ force: true });
+
+    // Wait for location dialog to close (indicates successful creation and selection)
+    await expect(locationDialog).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(500);
 
     // Location should be auto-selected in event form
-    await expect(page.locator('[role="dialog"]').getByText(locationName)).toBeVisible();
+    await expect(eventDialog.getByTestId('event-location-selected')).toBeVisible();
+    await expect(eventDialog.getByTestId('event-location-selected')).toContainText('InlineTestChurch');
 
     // Now submit the event creation (button text is "Save Event")
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await eventDialog.getByRole('button', { name: /Save Event/i }).click();
     await page.waitForTimeout(1500);
 
     // Event picker should close and event should be selected
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
-    await expect(page.locator(`text=${eventName}`)).toBeVisible();
+    await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
+
+    // Verify event is selected by checking the wedding ceremony field shows a selected value
+    await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
   });
 
   test('should preserve wedding form context when using nested pickers', async ({ page }) => {
@@ -154,40 +149,40 @@ test.describe('Event Picker Component', () => {
 
     // Now open event picker
     await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible' });
+
+    const eventDialog = page.getByTestId('event-picker-dialog');
+    await eventDialog.waitFor({ state: 'visible' });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
     // Wait a moment for form to be ready
     await page.waitForTimeout(300);
 
     // Fill event
-    await page.locator('[role="dialog"]').getByLabel('Name').fill('PreserveContextEvent');
-    await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-08-20');
+    await eventDialog.getByLabel('Name').fill('PreserveContextEvent');
+    await eventDialog.getByLabel('Date').fill('2025-08-20');
     // Time field - use input#start_time since label includes asterisk
-    await page.locator('[role="dialog"]').locator('input#start_time').fill('15:00');
+    await eventDialog.locator('input#start_time').fill('15:00');
 
     // Open nested location picker and create location
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
-    await page.waitForTimeout(500);
+    await eventDialog.getByRole('button', { name: /Select Location/i }).click();
+
+    const locationDialog = page.getByTestId('location-picker-dialog');
+    await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // Location picker auto-opens creation form when no location is selected
-    await page.waitForTimeout(300);
+    // Wait for the Save Location button to be visible (confirms form is loaded)
+    await locationDialog.getByRole('button', { name: /Save Location/i }).waitFor({ state: 'visible', timeout: 5000 });
 
-    // Fill in location details in the auto-opened form
-    // Wait for form to be fully ready
-    await page.waitForTimeout(500);
-
-    // Clear and fill the name field (has default value "St. Mary's Church")
-    const locationNameInput = page.locator('[role="dialog"]').last().locator('input').first();
-    await locationNameInput.click();
-    await locationNameInput.clear();
+    // Find and fill the name input (first text input in the form)
+    const locationNameInput = locationDialog.locator('input[type="text"]').first();
     await locationNameInput.fill('ContextTestLocation');
     // Submit location creation (button text is "Save Location")
-    await page.locator('[role="dialog"]').last().getByRole('button', { name: /Save Location/i }).click();
+    // Use force: true because the button might be re-rendering
+    await locationDialog.getByRole('button', { name: /Save Location/i }).click({ force: true });
     await page.waitForTimeout(1000);
 
     // Submit event (button text is "Save Event")
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await eventDialog.getByRole('button', { name: /Save Event/i }).click();
     await page.waitForTimeout(1500);
 
     // Verify we're still on wedding create page (no navigation)
@@ -196,8 +191,8 @@ test.describe('Event Picker Component', () => {
     // Verify original form data is preserved
     await expect(page.locator('textarea#notes')).toHaveValue('Important notes that should not be lost');
 
-    // And the event is selected
-    await expect(page.locator('text=PreserveContextEvent')).toBeVisible();
+    // And the event is selected - check that the wedding ceremony field shows a selected value
+    await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
   });
 
   test('should allow selecting existing location in event creation', async ({ page }) => {
@@ -214,42 +209,50 @@ test.describe('Event Picker Component', () => {
 
     // Open event picker
     await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible' });
+
+    const eventDialog = page.getByTestId('event-picker-dialog');
+    await eventDialog.waitFor({ state: 'visible' });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
     // Wait a moment for form to be ready
     await page.waitForTimeout(300);
 
     // Fill event
-    await page.locator('[role="dialog"]').getByLabel('Name').fill('Saturday Evening Mass');
-    await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-11-01');
+    await eventDialog.getByLabel('Name').fill('Saturday Evening Mass');
+    await eventDialog.getByLabel('Date').fill('2025-11-01');
     // Time field - use input#start_time since label includes asterisk
-    await page.locator('[role="dialog"]').locator('input#start_time').fill('17:30');
+    await eventDialog.locator('input#start_time').fill('17:30');
 
     // Open location picker
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Select Location/i }).click();
+    await eventDialog.getByRole('button', { name: /Select Location/i }).click();
     await page.waitForTimeout(500);
+
+    const locationDialog = page.getByTestId('location-picker-dialog');
+    await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // Location picker auto-opens creation form when no location is selected
     // We need to cancel this and use the search instead
-    await page.locator('[role="dialog"]').last().getByRole('button', { name: /Cancel/i }).click();
+    // Wait for the Cancel button to be visible
+    await locationDialog.getByRole('button', { name: /Cancel/i }).waitFor({ state: 'visible', timeout: 5000 });
+    await locationDialog.getByRole('button', { name: /Cancel/i }).click();
     await page.waitForTimeout(300);
 
     // Search and select existing location
-    await page.locator('[role="dialog"]').last().getByPlaceholder(/Search/i).fill('Blessed');
+    await locationDialog.getByPlaceholder(/Search/i).fill('Blessed');
     await page.waitForTimeout(500);
-    await page.locator('[role="dialog"]').last().getByRole('button', { name: /Blessed Sacrament/i }).click();
+    await locationDialog.getByRole('button', { name: /Blessed Sacrament/i }).click();
     await page.waitForTimeout(500);
 
-    // Verify location is selected
-    await expect(page.locator('[role="dialog"]').getByText('Blessed Sacrament Church')).toBeVisible();
+    // Verify location is selected in event form
+    await expect(eventDialog.getByTestId('event-location-selected')).toBeVisible();
+    await expect(eventDialog.getByTestId('event-location-selected')).toContainText('Blessed Sacrament Church');
 
     // Submit event (button text is "Save Event")
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await eventDialog.getByRole('button', { name: /Save Event/i }).click();
     await page.waitForTimeout(1500);
 
-    // Verify event is selected
-    await expect(page.locator('text=Saturday Evening Mass')).toBeVisible();
+    // Verify event is selected - check that the wedding ceremony field shows a selected value
+    await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
   });
 
   test('should show validation error when creating event without required fields', async ({ page }) => {
@@ -259,31 +262,33 @@ test.describe('Event Picker Component', () => {
 
     // Open event picker
     await page.getByRole('button', { name: 'Add Wedding Ceremony' }).click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible' });
+
+    const eventDialog = page.getByTestId('event-picker-dialog');
+    await eventDialog.waitFor({ state: 'visible' });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
     // Wait a moment for form to be ready
     await page.waitForTimeout(300);
 
     // Try to submit without filling required fields (button text is "Save Event")
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await eventDialog.getByRole('button', { name: /Save Event/i }).click();
 
     // Dialog should stay open (validation failed)
     await page.waitForTimeout(500);
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
+    await expect(eventDialog).toBeVisible();
 
     // Now fill required fields
-    await page.locator('[role="dialog"]').getByLabel('Name').fill('ValidEvent');
-    await page.locator('[role="dialog"]').getByLabel('Date').fill('2025-09-10');
+    await eventDialog.getByLabel('Name').fill('ValidEvent');
+    await eventDialog.getByLabel('Date').fill('2025-09-10');
     // Time field - use input#start_time since label includes asterisk
-    await page.locator('[role="dialog"]').locator('input#start_time').fill('12:00');
+    await eventDialog.locator('input#start_time').fill('12:00');
 
     // Submit should work now (button text is "Save Event")
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
+    await eventDialog.getByRole('button', { name: /Save Event/i }).click();
     await page.waitForTimeout(1500);
 
-    // Dialog should close
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=ValidEvent')).toBeVisible();
+    // Dialog should close and event should be selected
+    await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
   });
 });

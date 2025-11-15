@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.group_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   group_id UUID NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
   person_id UUID NOT NULL REFERENCES public.people(id) ON DELETE CASCADE,
-  roles TEXT[], -- Array of roles for multi-role support
+  group_role_id UUID REFERENCES public.group_roles(id) ON DELETE SET NULL,
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(group_id, person_id)
 );
@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.group_members (
 -- Add indexes
 CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON public.group_members(group_id);
 CREATE INDEX IF NOT EXISTS idx_group_members_person_id ON public.group_members(person_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_group_role_id ON public.group_members(group_role_id);
 
 -- Enable Row Level Security
 ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;

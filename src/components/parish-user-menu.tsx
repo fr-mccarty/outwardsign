@@ -21,18 +21,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   LogOut,
-  Settings,
   ChevronUp,
   Check,
   Plus,
-  Edit3,
   Monitor,
   Moon,
   Sun,
   Languages
 } from 'lucide-react'
 import { toast } from 'sonner'
-import Link from 'next/link'
 
 interface UserData {
   email: string
@@ -137,10 +134,6 @@ export function ParishUserMenu() {
     router.push('/select-parish')
   }
 
-  function handleEditParish() {
-    router.push('/settings/parish')
-  }
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/login')
@@ -237,14 +230,7 @@ export function ParishUserMenu() {
           <Plus className="h-4 w-4" />
           <span>Create or Join Parish</span>
         </DropdownMenuItem>
-        
-        {currentParish && (
-          <DropdownMenuItem onClick={handleEditParish} className="flex items-center gap-2">
-            <Edit3 className="h-4 w-4" />
-            <span>Edit Current Parish</span>
-          </DropdownMenuItem>
-        )}
-        
+
         <DropdownMenuSeparator />
         
         {/* User Section */}
@@ -298,13 +284,6 @@ export function ParishUserMenu() {
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="cursor-pointer flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            User Settings
-          </Link>
-        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
         

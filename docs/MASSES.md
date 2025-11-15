@@ -650,7 +650,7 @@ CREATE TABLE minister_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  role_id UUID REFERENCES roles(id) ON DELETE CASCADE, -- NULL = general preferences
+  role_id UUID REFERENCES group_roles(id) ON DELETE CASCADE, -- NULL = general preferences
 
   -- Day/Time preferences
   preferred_days JSONB, -- ["SUNDAY", "SATURDAY"]

@@ -15,7 +15,8 @@ test.describe('Parish Settings', () => {
     // Verify all tabs are present
     await expect(page.getByRole('tab', { name: /Parish Settings/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /Mass Intentions/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Donations/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Petitions/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Readings/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /Members/i })).toBeVisible();
 
     // Verify refresh button exists
@@ -68,6 +69,14 @@ test.describe('Parish Settings', () => {
     // Navigate to parish settings
     await page.goto('/settings/parish');
 
+    // Ensure we're on the Parish Settings tab (default)
+    const parishSettingsTab = page.getByRole('tab', { name: /Parish Settings/i });
+    await parishSettingsTab.click();
+    await page.waitForTimeout(500);
+
+    // Wait for input to be visible before interacting
+    await page.locator('input#name').waitFor({ state: 'visible', timeout: 10000 });
+
     // Clear parish name (required field)
     await page.fill('input#name', '');
 
@@ -92,8 +101,14 @@ test.describe('Parish Settings', () => {
     // Wait for tab content to load
     await page.waitForTimeout(500);
 
-    // Find and click the liturgical locale select
-    const localeSelect = page.locator('#liturgical-locale');
+    // Find and click the liturgical locale select trigger (it's a shadcn Select, not a plain select)
+    // The FormField renders a Label, so we can find the associated select by label text
+    const localeLabel = page.getByText('Liturgical Calendar Locale');
+    await localeLabel.waitFor({ state: 'visible', timeout: 10000 });
+
+    // Find the select trigger button (should be near the label)
+    const localeSelect = localeLabel.locator('..').locator('button[role="combobox"]');
+    await localeSelect.waitFor({ state: 'visible', timeout: 10000 });
     await localeSelect.click();
 
     // Select Spanish (Mexico)
@@ -219,73 +234,10 @@ test.describe('Parish Settings', () => {
     await expect(firstLabelInput).toHaveValue('$25');
   });
 
-  test('should display and configure donations quick amounts', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Donations tab
-    const donationsTab = page.getByRole('tab', { name: /Donations/i });
-    await donationsTab.click();
-
-    // Wait for tab content to load by waiting for the first input
-    const firstAmountInput = page.locator('input[id^="donations-amount-"]').first();
-    await firstAmountInput.waitFor({ state: 'visible', timeout: 10000 });
-
-    // Verify at least one quick amount row exists
-    await expect(firstAmountInput).toBeVisible();
-
-    // Verify preview section exists
-    await expect(page.getByText('Preview:')).toBeVisible();
-
-    // Verify save button
-    await expect(page.getByRole('button', { name: /Save Quick Amounts/i })).toBeVisible();
-
-    // Verify description text
-    await expect(page.getByText(/Configure the quick amount buttons/i)).toBeVisible();
-  });
-
-  test('should add and remove donations quick amounts', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Donations tab
-    const donationsTab = page.getByRole('tab', { name: /Donations/i });
-    await donationsTab.click();
-
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
-
-    // Count initial quick amounts
-    const initialCount = await page.locator('input[id^="donations-amount-"]').count();
-
-    // Add a new quick amount
-    const addButton = page.getByRole('button', { name: /Add Quick Amount/i });
-    await addButton.click();
-
-    // Verify a new row was added
-    const newCount = await page.locator('input[id^="donations-amount-"]').count();
-    expect(newCount).toBe(initialCount + 1);
-
-    // Fill in the new quick amount
-    const lastAmountIndex = newCount - 1;
-    await page.fill(`input[id="donations-amount-${lastAmountIndex}"]`, '10000');
-    await page.fill(`input[id="donations-label-${lastAmountIndex}"]`, '$100');
-
-    // Save quick amounts
-    const saveButton = page.getByRole('button', { name: /Save Quick Amounts/i });
-    await saveButton.click();
-
-    // Wait for save operation
-    await page.waitForTimeout(2000);
-
-    // Verify the new amount is in the preview section (check for badge with exact text)
-    const previewSection = page.locator('text=Preview:').locator('..');
-    await expect(previewSection.getByText('$100', { exact: true })).toBeVisible();
-  });
+  // Note: Donations tab was removed from the implementation
+  // The following tests have been deleted as they reference non-existent features:
+  // - 'should display and configure donations quick amounts'
+  // - 'should add and remove donations quick amounts'
 
   test('should display parish members tab', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)

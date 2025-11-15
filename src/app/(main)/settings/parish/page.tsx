@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FormField } from '@/components/form-field'
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -34,15 +35,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { PageContainer } from '@/components/page-container'
-import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Mail, Send } from "lucide-react"
+import { SettingsPage } from '@/components/settings-page'
+import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Mail, Send, FileText, BookOpen, Download, Database, AlertCircle, CheckCircle, Edit } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getCurrentParish } from '@/lib/auth/parish'
 import { updateParish, getParishMembers, removeParishMember, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
 import { getParishInvitations, createParishInvitation, revokeParishInvitation, resendParishInvitation, type ParishInvitation } from '@/lib/actions/invitations'
+import { getPetitionTemplates, deletePetitionTemplate, ensureDefaultContexts, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
+import { importReadings, getReadingsStats } from '@/lib/actions/import-readings'
 import { Parish, ParishSettings } from '@/lib/types'
 import { PARISH_ROLE_LABELS, PARISH_ROLE_VALUES, type ParishRole } from '@/lib/constants'
 import { toast } from 'sonner'
+import {
+  DataTable,
+  DataTableHeader,
+  DataTableRowActions,
+} from '@/components/data-table'
+import { DeleteRowDialog } from '@/components/delete-row-dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ParishMember {
   user_id: string
@@ -57,6 +67,7 @@ interface ParishMember {
 
 export default function ParishSettingsPage() {
   const [currentParish, setCurrentParish] = useState<Parish | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [parishSettings, setParishSettings] = useState<ParishSettings | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -69,12 +80,6 @@ export default function ParishSettingsPage() {
     { amount: 200, label: '$2' },
     { amount: 500, label: '$5' }
   ])
-  const [donationsQuickAmountsData, setDonationsQuickAmountsData] = useState([
-    { amount: 500, label: '$5' },
-    { amount: 1000, label: '$10' },
-    { amount: 2500, label: '$25' },
-    { amount: 5000, label: '$50' }
-  ])
   const [members, setMembers] = useState<ParishMember[]>([])
   const [invitations, setInvitations] = useState<ParishInvitation[]>([])
   const [loading, setLoading] = useState(true)
@@ -86,7 +91,16 @@ export default function ParishSettingsPage() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<ParishRole>('parishioner')
   const [inviteModules, setInviteModules] = useState<string[]>([])
+  const [petitionTemplates, setPetitionTemplates] = useState<PetitionContextTemplate[]>([])
+  const [petitionSearchTerm, setPetitionSearchTerm] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null)
+  const [isImportingReadings, setIsImportingReadings] = useState(false)
+  const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [importMessage, setImportMessage] = useState('')
+  const [importStats, setImportStats] = useState<{ totalReadings: number; categories: string[]; translations: string[] } | null>(null)
   const { setBreadcrumbs } = useBreadcrumbs()
+  const router = useRouter()
 
   useEffect(() => {
     setBreadcrumbs([
@@ -112,7 +126,7 @@ export default function ParishSettingsPage() {
           city: parish.city,
           state: parish.state
         })
-        
+
         // Load parish settings
         const settingsResult = await getParishSettings(parish.id)
         if (settingsResult.success) {
@@ -122,25 +136,41 @@ export default function ParishSettingsPage() {
             { amount: 200, label: '$2' },
             { amount: 500, label: '$5' }
           ])
-          setDonationsQuickAmountsData(settingsResult.settings.donations_quick_amount || [
-            { amount: 500, label: '$5' },
-            { amount: 1000, label: '$10' },
-            { amount: 2500, label: '$25' },
-            { amount: 5000, label: '$50' }
-          ])
           setLiturgicalLocale(settingsResult.settings.liturgical_locale || 'en_US')
         } else {
           // If settings don't exist, ensure we still have default values
           console.warn('Parish settings not found, using defaults')
         }
-        
+
         await loadMembers(parish.id)
+        await loadPetitionTemplates()
+        await loadReadingsStats()
       }
     } catch (error) {
       console.error('Error loading parish data:', error)
       toast.error('Failed to load parish data')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function loadPetitionTemplates() {
+    try {
+      await ensureDefaultContexts()
+      const templates = await getPetitionTemplates()
+      setPetitionTemplates(templates)
+    } catch (error) {
+      console.error('Error loading petition templates:', error)
+      toast.error('Failed to load petition templates')
+    }
+  }
+
+  async function loadReadingsStats() {
+    try {
+      const stats = await getReadingsStats()
+      setImportStats(stats)
+    } catch (error) {
+      console.error('Failed to load reading stats:', error)
     }
   }
 
@@ -211,23 +241,6 @@ export default function ParishSettingsPage() {
     setQuickAmountsData(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleDonationsQuickAmountChange = (index: number, field: 'amount' | 'label', value: string | number) => {
-    setDonationsQuickAmountsData(prev => prev.map((item, i) =>
-      i === index ? { ...item, [field]: field === 'amount' ? Number(value) : value } : item
-    ))
-  }
-
-  const addDonationsQuickAmount = () => {
-    setDonationsQuickAmountsData(prev => [
-      ...prev,
-      { amount: 1000, label: '$10' }
-    ])
-  }
-
-  const removeDonationsQuickAmount = (index: number) => {
-    setDonationsQuickAmountsData(prev => prev.filter((_, i) => i !== index))
-  }
-
   const handleSaveQuickAmounts = async () => {
     if (!currentParish) {
       toast.error('No parish selected')
@@ -243,26 +256,6 @@ export default function ParishSettingsPage() {
     } catch (error) {
       console.error('Error saving quick amounts:', error)
       toast.error('Failed to save quick amounts')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleSaveDonationsQuickAmounts = async () => {
-    if (!currentParish) {
-      toast.error('No parish selected')
-      return
-    }
-
-    setSaving(true)
-    try {
-      await updateParishSettings(currentParish.id, {
-        donations_quick_amount: donationsQuickAmountsData
-      })
-      toast.success('Donations quick amounts saved successfully!')
-    } catch (error) {
-      console.error('Error saving donations quick amounts:', error)
-      toast.error('Failed to save donations quick amounts')
     } finally {
       setSaving(false)
     }
@@ -377,6 +370,65 @@ export default function ParishSettingsPage() {
     )
   }
 
+  const openDeleteDialog = (templateId: string) => {
+    setTemplateToDelete(templateId)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteTemplate = async () => {
+    if (!templateToDelete) return
+
+    try {
+      await deletePetitionTemplate(templateToDelete)
+      toast.success('Template deleted successfully')
+      setTemplateToDelete(null)
+      await loadPetitionTemplates()
+    } catch (error) {
+      toast.error('Failed to delete template. Please try again.')
+      throw error
+    }
+  }
+
+  const handleImportReadings = async () => {
+    setIsImportingReadings(true)
+    setImportStatus('idle')
+    setImportMessage('')
+
+    try {
+      const loadingToast = toast.loading('Importing readings...')
+      const result = await importReadings()
+
+      toast.dismiss(loadingToast)
+
+      const message = `Successfully imported ${result.imported} readings (${result.skipped} already existed)`
+      setImportStatus('success')
+      setImportMessage(message)
+
+      if (result.imported > 0) {
+        toast.success(`Imported ${result.imported} new readings!`)
+      } else if (result.skipped > 0) {
+        toast.info(`All ${result.skipped} readings already exist in your collection`)
+      } else {
+        toast.info('No readings were imported')
+      }
+
+      if (result.errors.length > 0) {
+        result.errors.forEach(error => toast.error(error))
+      }
+
+      await loadReadingsStats()
+    } catch (error) {
+      toast.dismiss()
+
+      setImportStatus('error')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to import readings'
+      setImportMessage(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setIsImportingReadings(false)
+    }
+  }
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
@@ -394,70 +446,46 @@ export default function ParishSettingsPage() {
 
   if (loading) {
     return (
-      <PageContainer
+      <SettingsPage
         title="Parish Settings"
         description="Manage your parish information and administrative settings"
-        maxWidth="4xl"
-      >
-        <div className="space-y-6">Loading parish settings...</div>
-      </PageContainer>
+        maxWidth="6xl"
+        tabs={[]}
+      />
     )
   }
 
   if (!currentParish) {
     return (
-      <PageContainer
+      <SettingsPage
         title="Parish Settings"
         description="Manage your parish information and administrative settings"
-        maxWidth="4xl"
-      >
-        <Card>
-          <CardContent className="text-center py-12">
-            <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Parish Selected</h3>
-            <p className="text-muted-foreground">
-              Please select a parish to manage its settings.
-            </p>
-          </CardContent>
-        </Card>
-      </PageContainer>
+        maxWidth="6xl"
+        tabs={[
+          {
+            value: 'settings',
+            label: 'Parish Settings',
+            icon: <Settings className="h-4 w-4" />,
+            content: (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Parish Selected</h3>
+                  <p className="text-muted-foreground">
+                    Please select a parish to manage its settings.
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          }
+        ]}
+      />
     )
   }
 
-  return (
-    <PageContainer
-      title="Parish Settings"
-      description="Manage your parish information, members, and administrative settings"
-      maxWidth="6xl"
-    >
-      <div className="flex justify-end mb-6 gap-3">
-        <Button onClick={handleRefresh} variant="outline" disabled={loading}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
-
-      <Tabs defaultValue="settings" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Parish Settings
-          </TabsTrigger>
-          <TabsTrigger value="mass-intentions" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            Mass Intentions
-          </TabsTrigger>
-          <TabsTrigger value="donations" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            Donations
-          </TabsTrigger>
-          <TabsTrigger value="members" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Members ({members.length + invitations.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="settings" className="space-y-6">
+  // Parish Settings Tab Content
+  const parishSettingsContent = (
+    <>
           <div className="flex justify-end mb-4">
             <Button onClick={handleSave} disabled={saving}>
               <Save className="h-4 w-4 mr-2" />
@@ -515,24 +543,21 @@ export default function ParishSettingsPage() {
               <CardTitle>Liturgical Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="liturgical-locale">Liturgical Calendar Locale</Label>
-                <Select value={liturgicalLocale} onValueChange={setLiturgicalLocale}>
-                  <SelectTrigger id="liturgical-locale">
-                    <SelectValue placeholder="Select locale" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en_US">English (United States)</SelectItem>
-                    <SelectItem value="es_MX">Spanish (Mexico)</SelectItem>
-                    <SelectItem value="es_ES">Spanish (Spain)</SelectItem>
-                    <SelectItem value="fr_FR">French (France)</SelectItem>
-                    <SelectItem value="pt_BR">Portuguese (Brazil)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  This determines which liturgical calendar events are imported from the API
-                </p>
-              </div>
+              <FormField
+                id="liturgical-locale"
+                label="Liturgical Calendar Locale"
+                description="This determines which liturgical calendar events are imported from the API"
+                inputType="select"
+                value={liturgicalLocale}
+                onChange={setLiturgicalLocale}
+                options={[
+                  { value: 'en_US', label: 'English (United States)' },
+                  { value: 'es_MX', label: 'Spanish (Mexico)' },
+                  { value: 'es_ES', label: 'Spanish (Spain)' },
+                  { value: 'fr_FR', label: 'French (France)' },
+                  { value: 'pt_BR', label: 'Portuguese (Brazil)' }
+                ]}
+              />
               <div className="flex justify-end">
                 <Button onClick={handleSaveLiturgicalLocale} disabled={saving} size="sm">
                   <Save className="h-4 w-4 mr-2" />
@@ -553,35 +578,38 @@ export default function ParishSettingsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+    </>
+  )
 
-        <TabsContent value="mass-intentions" className="space-y-6">
-          <div className="flex justify-end mb-4">
-            <Button onClick={handleSaveQuickAmounts} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Saving...' : 'Save Quick Amounts'}
-            </Button>
-          </div>
+  // Mass Intentions Tab Content
+  const massIntentionsContent = (
+    <>
+      <div className="flex justify-end mb-4">
+        <Button onClick={handleSaveQuickAmounts} disabled={saving}>
+          <Save className="h-4 w-4 mr-2" />
+          {saving ? 'Saving...' : 'Save Quick Amounts'}
+        </Button>
+      </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <DollarSign className="h-5 w-5" />
-                Mass Intention Offering Quick Amounts
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-sm text-muted-foreground">
-                Configure the quick amount buttons that appear when entering Mass intention offerings.
-                Amounts are stored in cents for precise calculations.
-              </p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <DollarSign className="h-5 w-5" />
+            Mass Intention Offering Quick Amounts
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <p className="text-sm text-muted-foreground">
+            Configure the quick amount buttons that appear when entering Mass intention offerings.
+            Amounts are stored in cents for precise calculations.
+          </p>
 
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-muted-foreground">Loading quick amounts...</div>
-                </div>
-              ) : (
-                <>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-muted-foreground">Loading quick amounts...</div>
+            </div>
+          ) : (
+            <>
               <div className="space-y-4">
                 {quickAmountsData.map((quickAmount, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
@@ -651,117 +679,275 @@ export default function ParishSettingsPage() {
                   ))}
                 </div>
               </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </>
+  )
 
-        </TabsContent>
-
-        <TabsContent value="donations" className="space-y-6">
-          <div className="flex justify-end mb-4">
-            <Button onClick={handleSaveDonationsQuickAmounts} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Saving...' : 'Save Quick Amounts'}
-            </Button>
-          </div>
-
+  // Petitions Tab Content
+  const petitionsContent = (
+    <>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <DollarSign className="h-5 w-5" />
-                Donation Quick Amounts
+                <FileText className="h-5 w-5" />
+                Petition Templates
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-sm text-muted-foreground">
-                Configure the quick amount buttons that appear when entering donations.
-                Amounts are stored in cents for precise calculations.
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-6">
+                Manage petition templates for your liturgical celebrations. Create custom contexts as needed.
               </p>
 
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-muted-foreground">Loading quick amounts...</div>
-                </div>
-              ) : (
-                <>
               <div className="space-y-4">
-                {donationsQuickAmountsData.map((quickAmount, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
-                    <div className="flex-1 grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`donations-amount-${index}`}>
-                          Amount (cents)
-                        </Label>
-                        <Input
-                          id={`donations-amount-${index}`}
-                          type="number"
-                          min="1"
-                          step="1"
-                          value={quickAmount.amount}
-                          onChange={(e) => handleDonationsQuickAmountChange(index, 'amount', parseInt(e.target.value) || 0)}
-                          placeholder="100"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          ${(quickAmount.amount / 100).toFixed(2)}
-                        </p>
-                      </div>
-                      <div>
-                        <Label htmlFor={`donations-label-${index}`}>
-                          Display Label
-                        </Label>
-                        <Input
-                          id={`donations-label-${index}`}
-                          type="text"
-                          value={quickAmount.label}
-                          onChange={(e) => handleDonationsQuickAmountChange(index, 'label', e.target.value)}
-                          placeholder="$1"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeDonationsQuickAmount(index)}
-                      disabled={donationsQuickAmountsData.length <= 1}
-                    >
-                      <Trash2 className="h-4 w-4" />
+                <DataTableHeader
+                  searchValue={petitionSearchTerm}
+                  onSearchChange={setPetitionSearchTerm}
+                  searchPlaceholder="Search templates..."
+                  actions={
+                    <Button asChild size="sm">
+                      <Link href="/settings/petitions/create">
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Template
+                      </Link>
                     </Button>
-                  </div>
-                ))}
-              </div>
+                  }
+                />
 
-              <div className="flex justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addDonationsQuickAmount}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Quick Amount
-                </Button>
-              </div>
+                <DataTable
+                  data={petitionTemplates.filter(template =>
+                    !petitionSearchTerm ||
+                    template.title.toLowerCase().includes(petitionSearchTerm.toLowerCase()) ||
+                    (template.description || '').toLowerCase().includes(petitionSearchTerm.toLowerCase())
+                  )}
+                  columns={[
+                    {
+                      key: 'title',
+                      header: 'Title',
+                      sortable: true,
+                      accessorFn: (template) => template.title,
+                      cell: (template) => <span className="font-medium">{template.title}</span>,
+                    },
+                    {
+                      key: 'description',
+                      header: 'Description',
+                      hiddenOn: 'md',
+                      cell: (template) => (
+                        <span className="text-sm text-muted-foreground">
+                          {template.description || 'No description'}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: 'created_at',
+                      header: 'Created',
+                      hiddenOn: 'xl',
+                      sortable: true,
+                      accessorFn: (template) => new Date(template.created_at),
+                      cell: (template) => {
+                        const date = new Date(template.created_at)
+                        const now = new Date()
+                        const diffTime = Math.abs(now.getTime() - date.getTime())
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                        const displayDate = diffDays < 1 ? 'Today' : diffDays === 1 ? 'Yesterday' : diffDays < 7 ? `${diffDays} days ago` : date.toLocaleDateString()
+                        return <span className="text-sm text-muted-foreground">{displayDate}</span>
+                      },
+                    },
+                    {
+                      key: 'actions',
+                      header: 'Actions',
+                      headerClassName: 'text-center',
+                      className: 'text-center',
+                      cell: (template) => (
+                        <DataTableRowActions
+                          row={template}
+                          variant="hybrid"
+                          customActions={[
+                            {
+                              label: "Edit",
+                              icon: <Edit className="h-4 w-4" />,
+                              onClick: (row) => router.push(`/settings/petitions/${row.id}`)
+                            }
+                          ]}
+                          onDelete={(row) => openDeleteDialog(row.id)}
+                        />
+                      ),
+                    },
+                  ]}
+                  keyExtractor={(template) => template.id}
+                  emptyState={{
+                    icon: <FileText className="h-12 w-12 text-gray-400" />,
+                    title: petitionSearchTerm ? 'No templates found' : 'No templates yet',
+                    description: petitionSearchTerm
+                      ? 'No templates found matching your search.'
+                      : 'No templates yet. Create your first template!',
+                    action: !petitionSearchTerm && (
+                      <Button asChild>
+                        <Link href="/settings/petitions/create">Create Template</Link>
+                      </Button>
+                    ),
+                  }}
+                />
 
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">Preview:</h4>
-                <div className="flex gap-2 flex-wrap">
-                  {donationsQuickAmountsData.map((quickAmount, index) => (
-                    <Badge key={index} variant="outline">
-                      {quickAmount.label}
-                    </Badge>
-                  ))}
-                </div>
+                <DeleteRowDialog
+                  open={deleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
+                  onConfirm={handleDeleteTemplate}
+                  title="Delete Template"
+                  itemName={petitionTemplates.find(t => t.id === templateToDelete)?.title}
+                />
               </div>
-                </>
+            </CardContent>
+          </Card>
+    </>
+  )
+
+  // Readings Tab Content
+  const readingsContent = (
+    <>
+          {importStatus !== 'idle' && (
+            <Alert className={importStatus === 'success' ? 'border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/20' : 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20'}>
+              {importStatus === 'success' ? (
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
               )}
+              <AlertDescription className={importStatus === 'success' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}>
+                {importMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {importStats && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Current Reading Collection
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{importStats.totalReadings}</div>
+                    <div className="text-sm text-muted-foreground">Total Readings</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{importStats.categories.length}</div>
+                    <div className="text-sm text-muted-foreground">Categories</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{importStats.translations.length}</div>
+                    <div className="text-sm text-muted-foreground">Translations</div>
+                  </div>
+                </div>
+
+                {importStats.categories.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-3">Available Categories</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {importStats.categories.map(category => (
+                        <Badge key={category} variant="secondary">
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Import Readings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Import a comprehensive collection of readings from our curated database.
+                This includes readings for weddings, funerals, and other liturgical celebrations with
+                proper introductions and conclusions.
+              </p>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-950/20 dark:border-blue-900/50">
+                <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">What will be imported:</h4>
+                <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                  <li>• Wedding readings (Old Testament, Psalms, New Testament, Gospel)</li>
+                  <li>• Funeral readings (Old Testament, Psalms, New Testament, Gospel)</li>
+                  <li>• Complete biblical texts with proper liturgical introductions</li>
+                  <li>• Categorized by liturgical context and biblical book</li>
+                  <li>• Formatted for liturgical proclamation</li>
+                </ul>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-950/20 dark:border-amber-900/50">
+                <h4 className="font-medium text-amber-900 dark:text-amber-200 mb-2">Important Notes:</h4>
+                <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1">
+                  <li>• This will add readings to your parish collection</li>
+                  <li>• Duplicate readings will be skipped automatically</li>
+                  <li>• You can edit or delete imported readings after import</li>
+                  <li>• Import may take a few moments to complete</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={handleImportReadings}
+                disabled={isImportingReadings}
+                className="w-full"
+                size="lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {isImportingReadings ? 'Importing Readings...' : 'Import Readings'}
+              </Button>
             </CardContent>
           </Card>
 
-        </TabsContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Reading Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Manage your reading collection and organize readings for different liturgical occasions.
+              </p>
 
-        <TabsContent value="members" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button variant="outline" asChild className="justify-between h-auto p-4">
+                  <Link href="/readings">
+                    <div className="text-left">
+                      <div className="font-medium">View All Readings</div>
+                      <div className="text-sm text-muted-foreground">Browse and search your complete reading collection</div>
+                    </div>
+                    <BookOpen className="h-4 w-4" />
+                  </Link>
+                </Button>
+
+                <Button variant="outline" asChild className="justify-between h-auto p-4">
+                  <Link href="/readings/create">
+                    <div className="text-left">
+                      <div className="font-medium">Add New Reading</div>
+                      <div className="text-sm text-muted-foreground">Create custom readings for special occasions</div>
+                    </div>
+                    <BookOpen className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+    </>
+  )
+
+  // Members Tab Content
+  const membersContent = (
+    <>
           {/* Pending Invitations */}
           {invitations.length > 0 && (
             <Card>
@@ -954,8 +1140,58 @@ export default function ParishSettingsPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+    </>
+  )
+
+  const tabs = [
+    {
+      value: 'settings',
+      label: 'Parish Settings',
+      icon: <Settings className="h-4 w-4" />,
+      content: parishSettingsContent
+    },
+    {
+      value: 'mass-intentions',
+      label: 'Mass Intentions',
+      icon: <DollarSign className="h-4 w-4" />,
+      content: massIntentionsContent
+    },
+    {
+      value: 'petitions',
+      label: 'Petitions',
+      icon: <FileText className="h-4 w-4" />,
+      content: petitionsContent
+    },
+    {
+      value: 'readings',
+      label: 'Readings',
+      icon: <BookOpen className="h-4 w-4" />,
+      content: readingsContent
+    },
+    {
+      value: 'members',
+      label: 'Members',
+      icon: <Users className="h-4 w-4" />,
+      badge: members.length + invitations.length,
+      content: membersContent
+    }
+  ]
+
+  return (
+    <>
+      <SettingsPage
+        title="Parish Settings"
+        description="Manage your parish information, members, and administrative settings"
+        maxWidth="6xl"
+        tabs={tabs}
+        defaultTab="settings"
+        actions={
+          <Button onClick={handleRefresh} variant="outline" disabled={loading}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Remove Member Confirmation Dialog */}
       <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
@@ -976,6 +1212,6 @@ export default function ParishSettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </PageContainer>
+    </>
   )
 }

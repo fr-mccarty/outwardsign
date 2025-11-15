@@ -281,6 +281,7 @@ export function LocationPicker({
       selectedItem={selectedLocation}
       onSelect={onSelect}
       title="Select Location"
+      testId="location-picker-dialog"
       searchPlaceholder={placeholder}
       searchFields={['name', 'city', 'state', 'street']}
       getItemLabel={(location) => location.name}

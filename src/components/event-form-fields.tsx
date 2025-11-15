@@ -163,7 +163,7 @@ export function EventFormFields({
             {isFieldRequired('location') && <span className="text-destructive ml-1">*</span>}
           </Label>
           {selectedLocation ? (
-            <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
+            <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50" data-testid="event-location-selected">
               <span className="text-sm">
                 {selectedLocation.name}
                 {selectedLocation.city && `, ${selectedLocation.city}`}

@@ -1,0 +1,85 @@
+-- Create mass_role_instances table
+-- This table stores the actual assignments of people to roles for specific masses
+CREATE TABLE mass_role_instances (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  mass_id UUID NOT NULL REFERENCES masses(id) ON DELETE CASCADE,
+  person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+  mass_roles_template_item_id UUID NOT NULL REFERENCES mass_roles_template_items(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Add comment documenting the purpose
+COMMENT ON TABLE mass_role_instances IS 'Actual assignments of people to liturgical roles for specific masses';
+
+-- Enable RLS
+ALTER TABLE mass_role_instances ENABLE ROW LEVEL SECURITY;
+
+-- Grant access
+GRANT ALL ON mass_role_instances TO anon;
+GRANT ALL ON mass_role_instances TO authenticated;
+GRANT ALL ON mass_role_instances TO service_role;
+
+-- Add indexes
+CREATE INDEX idx_mass_role_instances_mass_id ON mass_role_instances(mass_id);
+CREATE INDEX idx_mass_role_instances_person_id ON mass_role_instances(person_id);
+CREATE INDEX idx_mass_role_instances_template_item_id ON mass_role_instances(mass_roles_template_item_id);
+
+-- RLS Policies for mass_role_instances
+CREATE POLICY "Parish members can read mass_role_instances for their parish masses"
+  ON mass_role_instances
+  FOR SELECT
+  TO anon, authenticated
+  USING (
+    auth.uid() IS NOT NULL AND
+    mass_id IN (
+      SELECT id FROM masses WHERE parish_id IN (
+        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Parish members can create mass_role_instances for their parish masses"
+  ON mass_role_instances
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (
+    auth.uid() IS NOT NULL AND
+    mass_id IN (
+      SELECT id FROM masses WHERE parish_id IN (
+        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Parish members can update mass_role_instances for their parish masses"
+  ON mass_role_instances
+  FOR UPDATE
+  TO anon, authenticated
+  USING (
+    auth.uid() IS NOT NULL AND
+    mass_id IN (
+      SELECT id FROM masses WHERE parish_id IN (
+        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Parish members can delete mass_role_instances for their parish masses"
+  ON mass_role_instances
+  FOR DELETE
+  TO anon, authenticated
+  USING (
+    auth.uid() IS NOT NULL AND
+    mass_id IN (
+      SELECT id FROM masses WHERE parish_id IN (
+        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+-- Add trigger to update updated_at timestamp
+CREATE TRIGGER update_mass_role_instances_updated_at
+  BEFORE UPDATE ON mass_role_instances
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();

@@ -1,16 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Save, X, UserPlus } from "lucide-react"
 import { PeoplePicker } from '@/components/people-picker'
 import { usePickerState } from '@/hooks/use-picker-state'
 import type { Person } from '@/lib/types'
-import { ROLE_VALUES, ROLE_LABELS, type LiturgicalRole } from '@/lib/constants'
-import { addGroupMember } from '@/lib/actions/groups'
+import { addGroupMember, getGroupRoles, type GroupRole } from '@/lib/actions/groups'
 import { toast } from 'sonner'
 
 interface AddMembershipModalProps {
@@ -29,24 +28,30 @@ export function AddMembershipModal({
   onSuccess,
 }: AddMembershipModalProps) {
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
-  const [selectedRoles, setSelectedRoles] = useState<LiturgicalRole[]>([])
+  const [selectedGroupRoleId, setSelectedGroupRoleId] = useState<string | undefined>(undefined)
+  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
+  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const peoplePickerState = usePickerState()
 
+  // Fetch group roles when modal opens
+  useEffect(() => {
+    if (open) {
+      setLoading(true)
+      getGroupRoles()
+        .then(roles => setGroupRoles(roles))
+        .catch(error => {
+          console.error('Failed to fetch group roles:', error)
+          toast.error('Failed to load group roles')
+        })
+        .finally(() => setLoading(false))
+    }
+  }, [open])
+
   const handlePersonSelect = (person: Person) => {
     setSelectedPersonId(person.id)
     peoplePickerState.setShowPicker(false)
-  }
-
-  const handleRoleToggle = (role: LiturgicalRole) => {
-    setSelectedRoles(prev => {
-      if (prev.includes(role)) {
-        return prev.filter(r => r !== role)
-      } else {
-        return [...prev, role]
-      }
-    })
   }
 
   const handleSubmit = async () => {
@@ -57,12 +62,12 @@ export function AddMembershipModal({
 
     setSaving(true)
     try {
-      await addGroupMember(groupId, selectedPersonId, selectedRoles.length > 0 ? selectedRoles : undefined)
+      await addGroupMember(groupId, selectedPersonId, selectedGroupRoleId)
       toast.success('Member added successfully')
 
       // Reset form
       setSelectedPersonId(null)
-      setSelectedRoles([])
+      setSelectedGroupRoleId(undefined)
 
       // Close modal and refresh data
       onOpenChange(false)
@@ -77,7 +82,7 @@ export function AddMembershipModal({
 
   const handleCancel = () => {
     setSelectedPersonId(null)
-    setSelectedRoles([])
+    setSelectedGroupRoleId(undefined)
     onOpenChange(false)
   }
 
@@ -88,7 +93,7 @@ export function AddMembershipModal({
           <DialogHeader className="flex-shrink-0">
             <DialogTitle>Add Member to {groupName}</DialogTitle>
             <DialogDescription>
-              Select a person and assign one or more liturgical roles
+              Select a person and optionally assign a group role
             </DialogDescription>
           </DialogHeader>
 
@@ -111,39 +116,27 @@ export function AddMembershipModal({
               )}
             </div>
 
-            {/* Role Selection */}
-            <div className="space-y-3">
-              <Label>Roles (Optional)</Label>
-              <p className="text-sm text-muted-foreground">
-                Select one or more roles for this member
-              </p>
-              <div className="space-y-3 border rounded-lg p-4">
-                {ROLE_VALUES.map((role) => (
-                  <div key={role} className="flex items-start space-x-3">
-                    <Checkbox
-                      id={role}
-                      checked={selectedRoles.includes(role)}
-                      onCheckedChange={() => handleRoleToggle(role)}
-                    />
-                    <div className="flex-1">
-                      <label
-                        htmlFor={role}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        {ROLE_LABELS[role].en}
-                      </label>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {ROLE_LABELS[role].es}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {selectedRoles.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {selectedRoles.length} role{selectedRoles.length !== 1 ? 's' : ''} selected
-                </p>
-              )}
+            {/* Group Role Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="group-role">Group Role (Optional)</Label>
+              <Select
+                value={selectedGroupRoleId}
+                onValueChange={setSelectedGroupRoleId}
+                disabled={loading}
+              >
+                <SelectTrigger id="group-role">
+                  <SelectValue placeholder="Select a role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Role</SelectItem>
+                  {groupRoles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                      {role.description && ` - ${role.description}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

@@ -281,6 +281,7 @@ export function EventPicker({
       selectedItem={currentSelectedEvent}
       onSelect={onSelect}
       title="Select Event"
+      testId="event-picker-dialog"
       searchPlaceholder={placeholder}
       searchFields={['name', 'event_type', 'start_date']}
       getItemLabel={(event) => event.name}

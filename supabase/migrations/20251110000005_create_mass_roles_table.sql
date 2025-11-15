@@ -1,21 +1,17 @@
--- Create mass_roles junction table
+-- Create mass_roles table for liturgical role definitions
 CREATE TABLE mass_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  mass_id UUID NOT NULL REFERENCES masses(id) ON DELETE CASCADE,
-  person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
-  role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  parameters JSONB,
-  status TEXT DEFAULT 'ASSIGNED',
-  confirmed_at TIMESTAMPTZ,
-  notified_at TIMESTAMPTZ,
+  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(mass_id, person_id, role_id)
+  UNIQUE(parish_id, name)
 );
 
--- Add comment documenting status values
-COMMENT ON COLUMN mass_roles.status IS 'Status: ASSIGNED | CONFIRMED | DECLINED | SUBSTITUTE_REQUESTED | SUBSTITUTE_FOUND | NO_SHOW';
+-- Add comment documenting the purpose
+COMMENT ON TABLE mass_roles IS 'Liturgical role definitions (Lector, Usher, Server, etc.) for Mass';
 
 -- Enable RLS
 ALTER TABLE mass_roles ENABLE ROW LEVEL SECURITY;
@@ -26,61 +22,50 @@ GRANT ALL ON mass_roles TO authenticated;
 GRANT ALL ON mass_roles TO service_role;
 
 -- Add indexes
-CREATE INDEX idx_mass_roles_mass_id ON mass_roles(mass_id);
-CREATE INDEX idx_mass_roles_person_id ON mass_roles(person_id);
-CREATE INDEX idx_mass_roles_role_id ON mass_roles(role_id);
-CREATE INDEX idx_mass_roles_status ON mass_roles(status);
+CREATE INDEX idx_mass_roles_parish_id ON mass_roles(parish_id);
 
 -- RLS Policies for mass_roles
-CREATE POLICY "Parish members can read mass_roles for their parish masses"
+CREATE POLICY "Parish members can read their parish mass_roles"
   ON mass_roles
   FOR SELECT
   TO anon, authenticated
   USING (
     auth.uid() IS NOT NULL AND
-    mass_id IN (
-      SELECT id FROM masses WHERE parish_id IN (
-        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
-      )
+    parish_id IN (
+      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
     )
   );
 
-CREATE POLICY "Parish members can create mass_roles for their parish masses"
+CREATE POLICY "Parish members can create mass_roles for their parish"
   ON mass_roles
   FOR INSERT
   TO anon, authenticated
   WITH CHECK (
     auth.uid() IS NOT NULL AND
-    mass_id IN (
-      SELECT id FROM masses WHERE parish_id IN (
-        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
-      )
+    parish_id IN (
+      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
     )
   );
 
-CREATE POLICY "Parish members can update mass_roles for their parish masses"
+CREATE POLICY "Parish members can update their parish mass_roles"
   ON mass_roles
   FOR UPDATE
   TO anon, authenticated
   USING (
     auth.uid() IS NOT NULL AND
-    mass_id IN (
-      SELECT id FROM masses WHERE parish_id IN (
-        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
-      )
+    parish_id IN (
+      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
     )
   );
 
-CREATE POLICY "Parish members can delete mass_roles for their parish masses"
+CREATE POLICY "Parish members can delete their parish mass_roles"
   ON mass_roles
   FOR DELETE
   TO anon, authenticated
   USING (
     auth.uid() IS NOT NULL AND
-    mass_id IN (
-      SELECT id FROM masses WHERE parish_id IN (
-        SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
-      )
+    parish_id IN (
+      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
     )
   );
 
