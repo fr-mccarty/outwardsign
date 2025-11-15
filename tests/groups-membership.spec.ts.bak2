@@ -156,10 +156,9 @@ class GroupMembershipPage {
   /**
    * Select a single role in the Add Member modal
    * Note: Group membership supports ONE role per member (using Select dropdown, not checkboxes)
-   * @param roles Role constant or array (e.g., 'LECTOR' or ['LECTOR']) - only first role selected if array passed
+   * @param role Role constant (e.g., 'LECTOR', 'CANTOR') - only first role selected if array passed
    */
-  async selectRoles(roles: string | string[]) {
-    const role = Array.isArray(roles) ? roles[0] : roles;
+  async selectRole(role: string) {
     const dialog = this.page.locator('[role="dialog"]').first();
 
     // Click the Select trigger to open the dropdown
@@ -237,7 +236,7 @@ class GroupMembershipPage {
   }
 
   /**
-   * Edit a member's role (single role using Select dropdown)
+   * Edit a member's group role (single role using Select dropdown)
    */
   async editMemberRole(personName: string, newRole: string | null) {
     // Find the member card containing this person's name
@@ -247,7 +246,7 @@ class GroupMembershipPage {
     const editButton = memberCard.locator('button[data-testid^="edit-role-button-"]');
     await editButton.click();
 
-    // Wait for edit UI to appear - wait for the "Select Role" label
+    // Wait for edit UI to appear - wait for the "Select Group Role" label
     await memberCard.locator('text=Select Group Role').waitFor({ state: 'visible', timeout: 5000 });
 
     // Give it a moment for the Select dropdown to render
@@ -259,9 +258,14 @@ class GroupMembershipPage {
     await this.page.waitForTimeout(200);
 
     // Select the new role (or "none" to clear)
-    const roleValue = newRole === null ? 'none' : newRole;
-    const roleOption = this.page.getByRole('option', { name: roleValue === 'none' ? /No Group Role/i : new RegExp(roleValue, 'i') });
-    await roleOption.click();
+    if (newRole === null) {
+      const noRoleOption = this.page.getByRole('option', { name: /No Group Role/i });
+      await noRoleOption.click();
+    } else {
+      // Use testid to select the role option
+      const roleOption = this.page.getByTestId(`role-option-${newRole}`);
+      await roleOption.click();
+    }
     await this.page.waitForTimeout(200);
 
     // Click Save button
@@ -328,14 +332,11 @@ class GroupMembershipPage {
   /**
    * Verify member has specific group role badge (single role)
    */
-  async expectMemberHasRole(personName: string, expectedRoleLabel: string | string[]) {
+  async expectMemberHasRole(personName: string, expectedRoleLabel: string) {
     const memberCard = this.page.locator(`div:has-text("${personName}")`).first();
 
-    // Support both string and array (take first if array for backward compat)
-    const roleLabel = Array.isArray(expectedRoleLabel) ? expectedRoleLabel[0] : expectedRoleLabel;
-
     // Look for badge with role label text
-    const badge = memberCard.locator(`text=${roleLabel}`);
+    const badge = memberCard.locator(`text=${expectedRoleLabel}`);
     await expect(badge).toBeVisible();
   }
 
@@ -385,7 +386,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberInList(`${firstName} ${lastName}`);
 
     // Verify the role badge is displayed
-    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, ['Lector']);
+    await groupPage.expectMemberHasRoles(`${firstName} ${lastName}`, ['Lector']);
   });
 
   test('TC-002: Add member with multiple roles', async ({ page }) => {
@@ -413,7 +414,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberInList(`${firstName} ${lastName}`);
 
     // Verify all role badges are displayed
-    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, [
+    await groupPage.expectMemberHasRoles(`${firstName} ${lastName}`, [
       'Lector',
       'Cantor',
       'Extraordinary Minister of Holy Communion'
@@ -443,8 +444,8 @@ test.describe('Group Membership - Add Member Tests', () => {
     // Verify member appears in list
     await groupPage.expectMemberInList(`${firstName} ${lastName}`);
 
-    // Verify "No group role assigned" text is displayed
-    await groupPage.expectMemberHasNoRole(`${firstName} ${lastName}`);
+    // Verify "No roles assigned" text is displayed
+    await groupPage.expectMemberHasNoRoles(`${firstName} ${lastName}`);
   });
 
   test('TC-004: Cannot add member without selecting person', async ({ page }) => {
@@ -481,7 +482,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberInList(`${firstName} ${lastName}`);
 
     // Verify roles are assigned
-    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, ['Cantor', 'Music Minister']);
+    await groupPage.expectMemberHasRoles(`${firstName} ${lastName}`, ['Cantor', 'Music Minister']);
   });
 
   test('TC-014: Cannot add duplicate member', async ({ page }) => {
@@ -569,28 +570,28 @@ test.describe('Group Membership - Edit Roles Tests', () => {
     await groupPage.expectMemberInList(testPersonName);
   });
 
-  test.skip('TC-006: Edit roles - add additional roles', async ({ page }) => {
+  test('TC-006: Edit roles - add additional roles', async ({ page }) => {
     // Edit the member's roles to add more
     await groupPage.editMemberRoles(testPersonName, ['LECTOR', 'CANTOR', 'USHER']);
 
     // Verify all roles are now displayed
-    await groupPage.expectMemberHasRole(testPersonName, ['Lector', 'Cantor', 'Usher']);
+    await groupPage.expectMemberHasRoles(testPersonName, ['Lector', 'Cantor', 'Usher']);
 
     // Reload page to verify persistence
     await page.reload();
-    await groupPage.expectMemberHasRole(testPersonName, ['Lector', 'Cantor', 'Usher']);
+    await groupPage.expectMemberHasRoles(testPersonName, ['Lector', 'Cantor', 'Usher']);
   });
 
-  test.skip('TC-007: Edit roles - remove roles', async ({ page }) => {
+  test('TC-007: Edit roles - remove roles', async ({ page }) => {
     // First add multiple roles
     await groupPage.editMemberRoles(testPersonName, ['LECTOR', 'CANTOR', 'EMHC']);
-    await groupPage.expectMemberHasRole(testPersonName, ['Lector', 'Cantor', 'Extraordinary Minister of Holy Communion']);
+    await groupPage.expectMemberHasRoles(testPersonName, ['Lector', 'Cantor', 'Extraordinary Minister of Holy Communion']);
 
     // Now remove some roles
     await groupPage.editMemberRoles(testPersonName, ['LECTOR']);
 
     // Verify only Lector remains
-    await groupPage.expectMemberHasRole(testPersonName, ['Lector']);
+    await groupPage.expectMemberHasRoles(testPersonName, ['Lector']);
 
     // Verify removed roles are not displayed
     const memberCard = page.locator(`div:has-text("${testPersonName}")`).first();
@@ -598,18 +599,18 @@ test.describe('Group Membership - Edit Roles Tests', () => {
     await expect(memberCard.locator('text=Extraordinary Minister of Holy Communion')).not.toBeVisible();
   });
 
-  test.skip('TC-008: Edit roles - remove all roles', async ({ page }) => {
+  test('TC-008: Edit roles - remove all roles', async ({ page }) => {
     // Remove all roles
     await groupPage.editMemberRoles(testPersonName, []);
 
-    // Verify "No group role assigned" is displayed
-    await groupPage.expectMemberHasNoRole(testPersonName);
+    // Verify "No roles assigned" is displayed
+    await groupPage.expectMemberHasNoRoles(testPersonName);
 
     // Verify member is still in the group
     await groupPage.expectMemberInList(testPersonName);
   });
 
-  test.skip('TC-009: Cancel editing member roles', async ({ page }) => {
+  test('TC-009: Cancel editing member roles', async ({ page }) => {
     // Start editing roles
     const memberCard = page.locator(`div[data-testid^="member-card-"]:has-text("${testPersonName}")`).first();
     const editButton = memberCard.locator('button[data-testid^="edit-roles-button-"]');
@@ -624,7 +625,7 @@ test.describe('Group Membership - Edit Roles Tests', () => {
     await groupPage.cancelEditMemberRoles(testPersonName);
 
     // Verify original roles are still displayed (only Lector)
-    await groupPage.expectMemberHasRole(testPersonName, ['Lector']);
+    await groupPage.expectMemberHasRoles(testPersonName, ['Lector']);
 
     // Verify Cantor was not added
     const badge = memberCard.locator('text=Cantor');
@@ -691,7 +692,7 @@ test.describe('Group Membership - Remove Member Tests', () => {
 });
 
 test.describe('Group Membership - Role Constants Tests', () => {
-  test.skip('TC-012: All liturgical roles are available', async ({ page }) => {
+  test('TC-012: All liturgical roles are available', async ({ page }) => {
     const groupPage = new GroupMembershipPage(page);
 
     // Create a group
@@ -703,7 +704,7 @@ test.describe('Group Membership - Role Constants Tests', () => {
 
     const dialog = page.locator('[role="dialog"]').first();
 
-    // Verify all roles from MASS_ROLE_VALUES constant are available
+    // Verify all roles from ROLE_VALUES constant are available
     const expectedRoles = [
       { key: 'LECTOR', en: 'Lector', es: 'Lector' },
       { key: 'EMHC', en: 'Extraordinary Minister of Holy Communion', es: 'Ministro Extraordinario de la Comunión' },
@@ -731,7 +732,7 @@ test.describe('Group Membership - Role Constants Tests', () => {
 });
 
 test.describe('Group Membership - Accessibility Tests', () => {
-  test.skip('TC-016: Keyboard navigation', async ({ page }) => {
+  test('TC-016: Keyboard navigation', async ({ page }) => {
     const groupPage = new GroupMembershipPage(page);
 
     // Create a test group and person
@@ -764,7 +765,7 @@ test.describe('Group Membership - Accessibility Tests', () => {
     await expect(page.locator('[role="dialog"]')).not.toBeVisible();
   });
 
-  test.skip('TC-017: Screen reader labels', async ({ page }) => {
+  test('TC-017: Screen reader labels', async ({ page }) => {
     const groupPage = new GroupMembershipPage(page);
 
     // Create a test group

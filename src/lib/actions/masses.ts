@@ -534,7 +534,7 @@ export interface ApplyTemplateData {
  * The UI should display the template requirements and allow users to assign people manually.
  * We don't create placeholder records because person_id is NOT NULL in the schema.
  */
-export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRoleWithRelations[]> {
+export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRoleInstanceWithRelations[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()

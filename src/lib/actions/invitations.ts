@@ -5,7 +5,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { revalidatePath } from 'next/cache'
 import { sendParishInvitationEmail } from '@/lib/email/ses-client'
-import type { ParishRole } from '@/lib/constants'
+import type { UserParishRoleType } from '@/lib/constants'
 
 export interface ParishInvitation {
   id: string
@@ -22,7 +22,7 @@ export interface ParishInvitation {
 
 export interface CreateParishInvitationData {
   email: string
-  roles: ParishRole[]
+  roles: UserParishRoleType[]
   enabled_modules?: string[] // Only used for ministry-leader role
 }
 

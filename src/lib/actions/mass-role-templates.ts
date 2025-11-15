@@ -12,7 +12,6 @@ export interface MassRoleTemplate {
   name: string
   description: string | null
   note: string | null
-  parameters: Record<string, any> | null
   created_at: string
   updated_at: string
 }
@@ -21,14 +20,12 @@ export interface CreateMassRoleTemplateData {
   name: string
   description?: string
   note?: string
-  parameters?: Record<string, any>
 }
 
 export interface UpdateMassRoleTemplateData {
   name?: string
   description?: string
   note?: string
-  parameters?: Record<string, any>
 }
 
 // Get all mass role templates for the current parish
@@ -88,7 +85,6 @@ export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): 
       name: data.name,
       description: data.description || null,
       note: data.note || null,
-      parameters: data.parameters || null,
     })
     .select()
     .single()

@@ -71,5 +71,9 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    env: {
+      // Disable Next.js dev overlay during tests (it blocks clicks)
+      __NEXT_DISABLE_OVERLAY: '1',
+    },
   },
 });

@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { createMass, updateMass, type CreateMassData, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleWithRelations } from "@/lib/actions/masses"
-import { getRoles } from "@/lib/actions/roles"
-import type { Person, Event, Role } from "@/lib/types"
+import { createMass, updateMass, type CreateMassData, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations } from "@/lib/actions/masses"
+import { getMassRoles as getAllMassRoles } from "@/lib/actions/mass-roles"
+import type { Person, Event, MassRole } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -70,8 +70,8 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 
   // Mass role assignments state
-  const [massRoles, setMassRoles] = useState<MassRoleWithRelations[]>([])
-  const [allRoles, setAllRoles] = useState<Role[]>([])
+  const [massRoles, setMassRoles] = useState<MassRoleInstanceWithRelations[]>([])
+  const [allRoles, setAllRoles] = useState<MassRole[]>([])
   const [rolePickerOpen, setRolePickerOpen] = useState(false)
   const [currentRoleId, setCurrentRoleId] = useState<string | null>(null)
   const [loadingRoles, setLoadingRoles] = useState(false)
@@ -111,7 +111,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
   const loadAllRoles = async () => {
     try {
-      const rolesData = await getRoles()
+      const rolesData = await getAllMassRoles()
       setAllRoles(rolesData)
     } catch (error) {
       console.error('Error loading roles:', error)
@@ -190,8 +190,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         const newMassRole = await createMassRole({
           mass_id: mass.id,
           person_id: person.id,
-          role_id: currentRoleId,
-          status: 'ASSIGNED'
+          mass_roles_template_item_id: currentRoleId
         })
 
         // Reload mass roles to get the updated list with relations
@@ -219,7 +218,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
   // Get role assignments for a specific role
   const getRoleAssignments = (roleId: string) => {
-    return massRoles.filter(mr => mr.role_id === roleId)
+    return massRoles.filter(mr => mr.mass_roles_template_item?.mass_role.id === roleId)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -406,11 +405,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                                 <span className="text-sm font-medium">
                                   {assignment.person?.first_name} {assignment.person?.last_name}
                                 </span>
-                                {assignment.status && assignment.status !== 'ASSIGNED' && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {assignment.status}
-                                  </Badge>
-                                )}
                               </div>
                               <Button
                                 type="button"

@@ -78,7 +78,7 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
       setDeleteDialogOpen(false)
     } catch (error) {
       console.error('Failed to delete item:', error)
-      toast.error('Failed to delete role')
+      toast.error('Failed to delete mass role')
     } finally {
       setIsDeleting(false)
     }
@@ -100,10 +100,10 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
 
           {/* Role Name */}
           <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">{item.role.name}</p>
-            {item.role.description && (
+            <p className="font-medium truncate">{item.mass_role.name}</p>
+            {item.mass_role.description && (
               <p className="text-sm text-muted-foreground truncate">
-                {item.role.description}
+                {item.mass_role.description}
               </p>
             )}
           </div>
@@ -136,7 +136,7 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
             size="icon"
             onClick={() => setDeleteDialogOpen(true)}
             className="text-muted-foreground hover:text-destructive"
-            aria-label="Delete role"
+            aria-label="Delete mass role"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -147,9 +147,9 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Role from Template</DialogTitle>
+            <DialogTitle>Remove Mass Role from Template</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove <strong>{item.role.name}</strong> from this template?
+              Are you sure you want to remove <strong>{item.mass_role.name}</strong> from this template?
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -166,7 +166,7 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Removing...' : 'Remove Role'}
+              {isDeleting ? 'Removing...' : 'Remove Mass Role'}
             </Button>
           </DialogFooter>
         </DialogContent>

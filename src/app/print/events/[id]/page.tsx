@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/events'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
+import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -48,17 +49,20 @@ export default async function PrintEventPage({ params }: PageProps) {
           }
         }
 
+        @page {
+          margin: ${PRINT_PAGE_MARGIN};
+        }
         body {
+          margin: 0 !important;
           background: white !important;
           color: black !important;
-          padding: 2rem !important;
           font-family: 'Times New Roman', Times, serif;
         }
 
         .print-container {
           max-width: 8.5in;
           margin: 0 auto;
-          padding: 0.5in;
+          padding: 0;
         }
 
         .event-header {
@@ -120,6 +124,7 @@ export default async function PrintEventPage({ params }: PageProps) {
         <div className="event-header">
           <div className="event-title">{event.name}</div>
           <div className="event-type">
+            {/* TODO: Fetch user language preference from server-side user_settings table */}
             {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
           </div>
         </div>

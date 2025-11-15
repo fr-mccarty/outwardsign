@@ -19,6 +19,7 @@ import {
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 import { LanguageLabel } from '@/components/language-label'
+import { useAppContext } from '@/contexts/AppContextProvider'
 
 interface Stats {
   total: number
@@ -37,6 +38,8 @@ interface EventsListClientProps {
 export function EventsListClient({ initialData, stats }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { userSettings } = useAppContext()
+  const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
 
   // Get current filter values from URL
   const searchTerm = searchParams.get('search') || ''
@@ -84,7 +87,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                   <SelectItem value="all">All Types</SelectItem>
                   {stats.eventTypes.map(type => (
                     <SelectItem key={type} value={type}>
-                      {EVENT_TYPE_LABELS[type]?.en || type}
+                      {EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -119,7 +122,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline" className="text-xs">
-                    {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
+                    {EVENT_TYPE_LABELS[event.event_type]?.[userLanguage] || event.event_type}
                   </Badge>
                   {event.language && (
                     <LanguageLabel language={event.language} className="text-xs" />

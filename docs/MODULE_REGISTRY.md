@@ -209,14 +209,14 @@ When creating a new module, ensure it's documented in this registry:
 
 Liturgical roles are used in the Groups module for assigning people to ministry roles.
 
-### Role Values
+### Mass Role Values
 
 These constants are defined in `src/lib/constants.ts`:
-- `ROLE_VALUES` - Array of role constants
-- `ROLE_LABELS` - Bilingual labels for each role
-- `LiturgicalRole` - TypeScript type
+- `MASS_ROLE_VALUES` - Array of mass role constants
+- `MASS_ROLE_LABELS` - Bilingual labels for each mass role
+- `MassRoleType` - TypeScript type
 
-### Available Roles
+### Available Mass Roles
 
 | Role | English | Spanish |
 |------|---------|---------|
@@ -230,14 +230,14 @@ These constants are defined in `src/lib/constants.ts`:
 
 **Usage:**
 ```typescript
-import { ROLE_VALUES, ROLE_LABELS, type LiturgicalRole } from '@/lib/constants'
+import { MASS_ROLE_VALUES, MASS_ROLE_LABELS, type MassRoleType } from '@/lib/constants'
 
 // Display role in select dropdown
 <FormField
   inputType="select"
-  options={ROLE_VALUES.map(role => ({
+  options={MASS_ROLE_VALUES.map(role => ({
     value: role,
-    label: ROLE_LABELS[role].en  // or .es for Spanish
+    label: MASS_ROLE_LABELS[role].en  // or .es for Spanish
   }))}
 />
 ```

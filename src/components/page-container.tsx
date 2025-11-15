@@ -36,13 +36,13 @@ export function PageContainer({
   return (
     <div className="space-y-6 p-6">
       <div className={cn(maxWidthClasses[maxWidth], "mx-auto", className)}>
-        <div className="mb-8">
+        <div className="mb-4">
           {actions ? (
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold">{title}</h1>
                 {description && (
-                  <p className="text-muted-foreground mt-1">
+                  <p className="text-muted-foreground mt-0">
                     {description}
                   </p>
                 )}
@@ -55,7 +55,7 @@ export function PageContainer({
             <>
               <h1 className="text-3xl font-bold">{title}</h1>
               {description && (
-                <p className="text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-0">
                   {description}
                 </p>
               )}

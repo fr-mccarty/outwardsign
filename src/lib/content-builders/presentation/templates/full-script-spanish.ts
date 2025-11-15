@@ -269,7 +269,6 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   return {
     id: 'liturgy',
-    pageBreakBefore: true, // Start on new page after cover
     elements: liturgyElements,
   }
 }

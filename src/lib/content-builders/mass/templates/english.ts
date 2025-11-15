@@ -148,8 +148,6 @@ export function buildMassEnglish(mass: MassWithRelations): LiturgyDocument {
       petitions: mass.petitions
     })
     if (petitionsSection) {
-      // Add page break after petitions
-      petitionsSection.pageBreakAfter = true
       sections.push(petitionsSection)
     }
   }

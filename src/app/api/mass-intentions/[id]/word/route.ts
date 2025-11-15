@@ -3,6 +3,7 @@ import { getMassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 import { Document, Packer } from 'docx'
 import { buildMassIntentionLiturgy } from '@/lib/content-builders/mass-intention'
 import { renderWord } from '@/lib/renderers/word-renderer'
+import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 
 export async function GET(
   request: NextRequest,
@@ -26,7 +27,16 @@ export async function GET(
     // Create Word document
     const doc = new Document({
       sections: [{
-        properties: {},
+        properties: {
+          page: {
+            margin: {
+              top: WORD_PAGE_MARGIN,
+              right: WORD_PAGE_MARGIN,
+              bottom: WORD_PAGE_MARGIN,
+              left: WORD_PAGE_MARGIN,
+            },
+          },
+        },
         children: paragraphs
       }]
     })

@@ -3,6 +3,7 @@ import { getWeddingWithRelations } from '@/lib/actions/weddings'
 import { Document, Packer } from 'docx'
 import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
 import { renderWord } from '@/lib/renderers/word-renderer'
+import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 
 export async function GET(
   request: NextRequest,
@@ -27,7 +28,16 @@ export async function GET(
     // Create Word document
     const doc = new Document({
       sections: [{
-        properties: {},
+        properties: {
+          page: {
+            margin: {
+              top: WORD_PAGE_MARGIN,
+              right: WORD_PAGE_MARGIN,
+              bottom: WORD_PAGE_MARGIN,
+              left: WORD_PAGE_MARGIN,
+            },
+          },
+        },
         children: paragraphs
       }]
     })

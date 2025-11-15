@@ -9,8 +9,11 @@ import { Save, X, UserPlus } from "lucide-react"
 import { PeoplePicker } from '@/components/people-picker'
 import { usePickerState } from '@/hooks/use-picker-state'
 import type { Person } from '@/lib/types'
-import { addGroupMember, getGroupRoles, type GroupRole } from '@/lib/actions/groups'
+import { addGroupMember } from '@/lib/actions/groups'
+import { getGroupRoles, type GroupRole } from '@/lib/actions/group-roles'
 import { toast } from 'sonner'
+import { MASS_ROLE_LABELS, type MassRoleType } from '@/lib/constants'
+import { useLanguage } from '@/components/language-context'
 
 interface AddMembershipModalProps {
   open: boolean
@@ -27,6 +30,7 @@ export function AddMembershipModal({
   groupName,
   onSuccess,
 }: AddMembershipModalProps) {
+  const { language } = useLanguage()
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
   const [selectedGroupRoleId, setSelectedGroupRoleId] = useState<string | undefined>(undefined)
   const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
@@ -34,6 +38,14 @@ export function AddMembershipModal({
   const [saving, setSaving] = useState(false)
 
   const peoplePickerState = usePickerState()
+
+  // Helper function to get group role label
+  const getRoleLabel = (roleName: string) => {
+    if (roleName in MASS_ROLE_LABELS) {
+      return MASS_ROLE_LABELS[roleName as MassRoleType][language]
+    }
+    return roleName
+  }
 
   // Fetch group roles when modal opens
   useEffect(() => {
@@ -124,15 +136,14 @@ export function AddMembershipModal({
                 onValueChange={setSelectedGroupRoleId}
                 disabled={loading}
               >
-                <SelectTrigger id="group-role">
-                  <SelectValue placeholder="Select a role..." />
+                <SelectTrigger id="group-role" data-testid="role-select-trigger">
+                  <SelectValue placeholder="Select a group role..." />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Role</SelectItem>
+                <SelectContent data-testid="role-select-content">
+                  <SelectItem value="none" data-testid="role-option-none">No Group Role</SelectItem>
                   {groupRoles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
-                      {role.description && ` - ${role.description}`}
+                    <SelectItem key={role.id} value={role.id} data-testid={`role-option-${role.name}`}>
+                      {getRoleLabel(role.name)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -8,6 +8,7 @@ import type { LiturgicalReading } from '@/lib/types'
 import type { IndividualReading } from '@/lib/actions/readings'
 import { getLiturgicalReading } from '@/lib/actions/liturgical-readings'
 import { getIndividualReadings } from '@/lib/actions/readings'
+import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
 
 interface PrintLiturgicalReadingPageProps {
   params: Promise<{ id: string }>
@@ -158,6 +159,17 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
 
   return (
     <div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          margin: ${PRINT_PAGE_MARGIN};
+        }
+        body {
+          margin: 0 !important;
+          background: white !important;
+          color: black !important;
+        }
+      `}} />
+
       {/* Print Actions - Hidden on Print */}
       <div className="print-actions hide-on-print">
         <Button onClick={handlePrint}>
@@ -170,7 +182,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
       <div className="liturgical-readings-print-content">
         {/* First Reading */}
         {firstReading && (
-          <div className={`p-6 ${hasMoreReadingsAfter('first') ? 'break-after-page' : ''}`}>
+          <div className={hasMoreReadingsAfter('first') ? 'break-after-page' : ''}>
             <div className="text-right text-xl text-red-500 font-semibold">FIRST READING</div>
             <div className="text-right text-xl text-red-500 font-semibold italic">{firstReading.pericope}</div>
             {liturgicalReading.first_reading_lector && (
@@ -188,7 +200,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
 
         {/* Responsorial Psalm */}
         {psalm && (
-          <div className={`p-6 ${hasMoreReadingsAfter('psalm') ? 'break-after-page' : ''}`}>
+          <div className={hasMoreReadingsAfter('psalm') ? 'break-after-page' : ''}>
             <div className="text-right text-xl text-red-500 font-semibold">PSALM</div>
             <div className="text-right text-xl text-red-500 font-semibold italic">{psalm.pericope}</div>
             {liturgicalReading.psalm_lector && (
@@ -206,7 +218,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
 
         {/* Second Reading */}
         {secondReading && (
-          <div className={`p-6 ${hasMoreReadingsAfter('second') ? 'break-after-page' : ''}`}>
+          <div className={hasMoreReadingsAfter('second') ? 'break-after-page' : ''}>
             <div className="text-right text-xl text-red-500 font-semibold">SECOND READING</div>
             <div className="text-right text-xl text-red-500 font-semibold italic">{secondReading.pericope}</div>
             {liturgicalReading.second_reading_lector && (
@@ -224,7 +236,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
 
         {/* Gospel */}
         {gospel && (
-          <div className="p-6">
+          <div>
             <div className="text-right text-xl text-red-500 font-semibold">GOSPEL READING</div>
             <div className="text-right text-xl text-red-500 font-semibold italic">{gospel.pericope}</div>
             {liturgicalReading.gospel_lector && (
@@ -242,7 +254,7 @@ export default function PrintLiturgicalReadingPage({ params }: PrintLiturgicalRe
 
         {/* Empty state */}
         {!firstReading && !psalm && !secondReading && !gospel && (
-          <div className="p-6">
+          <div>
             <div className="text-center text-gray-600 italic">
               No readings have been selected for this liturgical reading collection yet.
               Please return to the wizard to select readings.

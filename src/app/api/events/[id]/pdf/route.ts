@@ -47,6 +47,7 @@ export async function GET(
         alignment: 'center'
       },
       {
+        // TODO: Fetch user language preference from server-side user_settings table
         text: EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type,
         style: 'subheader',
         alignment: 'center',

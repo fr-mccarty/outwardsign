@@ -29,6 +29,7 @@ export async function GET(
     const paragraphs: Paragraph[] = []
 
     // Header
+    // TODO: Fetch user language preference from server-side user_settings table
     paragraphs.push(
       new Paragraph({
         text: event.name,

@@ -99,11 +99,11 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
   const handleDelete = async (itemId: string) => {
     try {
       await deleteTemplateItem(itemId)
-      toast.success('Role removed from template')
+      toast.success('Mass role removed from template')
       loadItems()
     } catch (error) {
       console.error('Failed to delete item:', error)
-      toast.error('Failed to remove role')
+      toast.error('Failed to remove mass role')
     }
   }
 
@@ -116,7 +116,7 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          Loading roles...
+          Loading mass roles...
         </CardContent>
       </Card>
     )
@@ -125,16 +125,16 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Template Roles</CardTitle>
+        <CardTitle>Template Mass Roles</CardTitle>
         <CardDescription>
-          Define which roles are needed and how many of each. Drag to reorder.
+          Define which mass roles are needed and how many of each. Drag to reorder.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {items.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p className="mb-4">No roles added yet.</p>
-            <p className="text-sm">Click "Add Role" to get started.</p>
+            <p className="mb-4">No mass roles added yet.</p>
+            <p className="text-sm">Click "Add Mass Role" to get started.</p>
           </div>
         ) : (
           <DndContext
@@ -167,13 +167,13 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
             className="w-full"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Role
+            Add Mass Role
           </Button>
         ) : (
           <div className="space-y-2">
             <RoleSelector
               templateId={templateId}
-              existingRoleIds={items.map(item => item.role_id)}
+              existingRoleIds={items.map(item => item.mass_role_id)}
               onRoleAdded={handleRoleAdded}
               onCancel={() => setShowRoleSelector(false)}
             />

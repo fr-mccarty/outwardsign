@@ -268,6 +268,7 @@ export function buildPetitionsSection(config: PetitionsSectionConfig): ContentSe
   return {
     id: 'petitions',
     pageBreakBefore: true,
+    pageBreakAfter: true,
     elements,
   }
 }

@@ -410,7 +410,7 @@ const event = usePickerState<Event>()
 **Key Features:**
 - Bilingual role labels (English/Spanish)
 - Dropdown select interface
-- Role constants from `ROLE_LABELS`
+- Role constants from `MASS_ROLE_LABELS`
 
 **Props:**
 - `value`: Current role

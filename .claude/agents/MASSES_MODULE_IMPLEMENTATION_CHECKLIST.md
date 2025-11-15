@@ -70,8 +70,8 @@ export const MASS_INTENTION_STATUS_LABELS: Record<MassIntentionStatus, { en: str
 **Task:** Add standard Mass role labels for the pre-populated roles
 
 ```typescript
-// Role Labels (for display purposes)
-export const ROLE_LABELS: Record<string, { en: string; es: string }> = {
+// Mass Role Labels (for display purposes)
+export const MASS_ROLE_LABELS: Record<MassRoleType, { en: string; es: string }> = {
   LECTOR: { en: 'Lector', es: 'Lector' },
   EMHC: { en: 'Extraordinary Minister of Holy Communion', es: 'Ministro Extraordinario de la Comunión' },
   ALTAR_SERVER: { en: 'Altar Server', es: 'Monaguillo' },

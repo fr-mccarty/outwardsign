@@ -89,9 +89,9 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
   if (error) {
     console.error('Error creating template item:', error)
     if (error.code === '23505') { // Unique constraint violation
-      throw new Error('This role is already in the template')
+      throw new Error('This mass role is already in the template')
     }
-    throw new Error('Failed to add role to template')
+    throw new Error('Failed to add mass role to template')
   }
 
   revalidatePath(`/mass-role-templates/${data.template_id}`)

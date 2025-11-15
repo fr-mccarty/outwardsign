@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getMassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 import { buildMassIntentionLiturgy } from '@/lib/content-builders/mass-intention'
 import { renderHTML } from '@/lib/renderers/html-renderer'
+import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -34,10 +35,13 @@ export default async function PrintMassIntentionPage({ params }: PageProps) {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          margin: ${PRINT_PAGE_MARGIN};
+        }
         body {
+          margin: 0 !important;
           background: white !important;
           color: black !important;
-          padding: 2rem !important;
         }
         .print-container {
           max-width: none !important;

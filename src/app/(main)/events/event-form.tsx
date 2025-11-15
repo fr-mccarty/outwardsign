@@ -22,6 +22,7 @@ import { LocationPickerField } from "@/components/location-picker-field"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
+import { useAppContext } from '@/contexts/AppContextProvider'
 
 interface EventFormProps {
   event?: EventWithRelations
@@ -31,6 +32,8 @@ interface EventFormProps {
 
 export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const router = useRouter()
+  const { userSettings } = useAppContext()
+  const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
   const isEditing = !!event
   const [isLoading, setIsLoading] = useState(false)
 
@@ -144,7 +147,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
                 <SelectContent>
                   {EVENT_TYPE_VALUES.map((type) => (
                     <SelectItem key={type} value={type}>
-                      {EVENT_TYPE_LABELS[type].en}
+                      {EVENT_TYPE_LABELS[type][userLanguage]}
                     </SelectItem>
                   ))}
                 </SelectContent>

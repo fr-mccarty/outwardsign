@@ -39,8 +39,8 @@ The team management system in Outward Sign is built around **role-based access c
 **Location:** `src/lib/constants.ts:353`
 
 ```typescript
-export const PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner'] as const
-export type ParishRole = typeof PARISH_ROLE_VALUES[number]
+export const USER_PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner'] as const
+export type UserParishRoleType = typeof USER_PARISH_ROLE_VALUES[number]
 ```
 
 ### Role Definitions
@@ -414,7 +414,7 @@ export interface ParishInvitation {
 
 export interface CreateParishInvitationData {
   email: string
-  roles: ParishRole[]
+  roles: UserParishRoleType[]
   enabled_modules?: string[] // Only used for ministry-leader role
 }
 
@@ -503,10 +503,10 @@ requireModuleAccess(userParish, 'funerals')
 
 ```tsx
 // Role selector
-<Select value={inviteRole} onValueChange={(value) => setInviteRole(value as ParishRole)}>
-  {PARISH_ROLE_VALUES.map((role) => (
+<Select value={inviteRole} onValueChange={(value) => setInviteRole(value as UserParishRoleType)}>
+  {USER_PARISH_ROLE_VALUES.map((role) => (
     <SelectItem key={role} value={role}>
-      {PARISH_ROLE_LABELS[role].en}
+      {USER_PARISH_ROLE_LABELS[role].en}
     </SelectItem>
   ))}
 </Select>
@@ -832,7 +832,7 @@ export function ParishSettingsButton() {
 ### Key Constants
 
 ```typescript
-PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner']
+USER_PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner']
 AVAILABLE_MODULES = ['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups', 'mass-intentions']
 ```
 

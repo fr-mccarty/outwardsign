@@ -48,7 +48,9 @@ export const EVENT_TYPE_VALUES = [
   'MASS',
 
   // General parish events
+  'RECEPTION',
   'MEETING',
+  'MEAL',
   'EVENT',
   'OTHER'
 ] as const
@@ -108,9 +110,17 @@ export const EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
   },
 
   // General parish events
+  RECEPTION: {
+    en: 'Reception',
+    es: 'Recepción'
+  },
   MEETING: {
     en: 'Meeting',
     es: 'Reunión'
+  },
+  MEAL: {
+    en: 'Meal',
+    es: 'Comida'
   },
   EVENT: {
     en: 'Event',
@@ -348,12 +358,12 @@ export const MASS_INTENTION_STATUS_LABELS: Record<MassIntentionStatus, { en: str
 // ============================================================================
 // PARISH ROLES
 // ============================================================================
-// Roles for parish team members (stored in parish_users table)
+// User Parish Roles - Roles for parish team members (stored in parish_users table)
 
-export const PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner'] as const
-export type ParishRole = typeof PARISH_ROLE_VALUES[number]
+export const USER_PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner'] as const
+export type UserParishRoleType = typeof USER_PARISH_ROLE_VALUES[number]
 
-export const PARISH_ROLE_LABELS: Record<ParishRole, { en: string; es: string }> = {
+export const USER_PARISH_ROLE_LABELS: Record<UserParishRoleType, { en: string; es: string }> = {
   admin: { en: 'Admin', es: 'Administrador' },
   staff: { en: 'Staff', es: 'Personal' },
   'ministry-leader': { en: 'Ministry Leader', es: 'Líder de Ministerio' },
@@ -361,11 +371,12 @@ export const PARISH_ROLE_LABELS: Record<ParishRole, { en: string; es: string }> 
 }
 
 // ============================================================================
-// LITURGICAL ROLES
+// MASS ROLES
 // ============================================================================
-// Roles for liturgical ministries (used in Groups module)
+// Liturgical roles for Mass ministries (Lector, Cantor, EMHC, etc.)
+// Note: Group roles are custom per-parish and stored in group_roles table
 
-export const ROLE_VALUES = [
+export const MASS_ROLE_VALUES = [
   'LECTOR',
   'EMHC',
   'ALTAR_SERVER',
@@ -375,9 +386,9 @@ export const ROLE_VALUES = [
   'MUSIC_MINISTER'
 ] as const
 
-export type LiturgicalRole = typeof ROLE_VALUES[number]
+export type MassRoleType = typeof MASS_ROLE_VALUES[number]
 
-export const ROLE_LABELS: Record<LiturgicalRole, { en: string; es: string }> = {
+export const MASS_ROLE_LABELS: Record<MassRoleType, { en: string; es: string }> = {
   LECTOR: { en: 'Lector', es: 'Lector' },
   EMHC: { en: 'Extraordinary Minister of Holy Communion', es: 'Ministro Extraordinario de la Comunión' },
   ALTAR_SERVER: { en: 'Altar Server', es: 'Monaguillo' },

@@ -158,7 +158,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
       {!isEditing && (
         <Card>
           <CardContent className="py-6 text-center text-muted-foreground">
-            <p>Save the template first, then you can add roles to it.</p>
+            <p>Save the template first, then you can add mass roles to it.</p>
           </CardContent>
         </Card>
       )}

@@ -85,10 +85,10 @@ export function MassRoleTemplateViewClient({ template }: MassRoleTemplateViewCli
                     className="flex items-center justify-between p-3 border rounded-lg bg-card"
                   >
                     <div className="flex-1">
-                      <p className="font-medium">{item.role.name}</p>
-                      {item.role.description && (
+                      <p className="font-medium">{item.mass_role.name}</p>
+                      {item.mass_role.description && (
                         <p className="text-sm text-muted-foreground">
-                          {item.role.description}
+                          {item.mass_role.description}
                         </p>
                       )}
                     </div>

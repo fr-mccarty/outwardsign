@@ -10,6 +10,8 @@
  * and converted automatically for each context.
  */
 
+import { PDF_PAGE_MARGIN } from '../print-styles'
+
 // ============================================================================
 // BASE STYLE DEFINITIONS (all in points)
 // ============================================================================
@@ -76,7 +78,7 @@ export const LITURGY_BASE_STYLES = {
   },
 
   margins: {
-    page: 60, // points (approximately 0.83 inches)
+    page: PDF_PAGE_MARGIN, // points (0.75 inches) - inherited from print-styles.ts
   },
 } as const;
 

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Mail, Phone, X } from 'lucide-react'
 import { getPeopleWithRolesPaginated, type PersonWithGroupRoles } from '@/lib/actions/people'
-import { getMassRoles } from '@/lib/actions/roles'
+import { getMassRoles } from '@/lib/actions/mass-roles'
 import type { Person, MassRole } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -218,7 +218,7 @@ export function MassRolePicker({
         <div className="flex items-center gap-2">
           <Select value={selectedRoleFilter} onValueChange={setSelectedRoleFilter}>
             <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Filter by role..." />
+              <SelectValue placeholder="Filter by mass role..." />
             </SelectTrigger>
             <SelectContent>
               {allRoles.map(role => (

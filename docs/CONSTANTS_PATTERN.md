@@ -127,4 +127,42 @@ export const CEREMONY_TYPE_LABELS: Record<CeremonyType, { en: string; es: string
 - **Group related constants** together in `constants.ts` with comment headers
 - **Never hardcode status strings** in components - always use constants
 
+## 🔴 Critical Display Rule: Event Types
+
+**NEVER display event type values directly from the database.** Always filter through `EVENT_TYPE_LABELS` from constants.
+
+**Why this matters:**
+- Database stores uppercase keys like `WEDDING_RECEPTION`, `FUNERAL_MEAL`
+- Users should see friendly, localized labels like "Wedding Reception" or "Recepción de Boda"
+- Ensures consistency across all event displays in the application
+
+**Incorrect (shows raw database value):**
+```tsx
+// ❌ WRONG - displays "WEDDING_RECEPTION" to users
+<p>Event Type: {event.event_type}</p>
+```
+
+**Correct (shows localized label):**
+```tsx
+// ✅ CORRECT - displays "Wedding Reception" or "Recepción de Boda"
+import { EVENT_TYPE_LABELS } from '@/lib/constants'
+
+<p>Event Type: {EVENT_TYPE_LABELS[event.event_type].en}</p>
+```
+
+**In form dropdowns:**
+```tsx
+import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS } from '@/lib/constants'
+
+<Select value={eventType} onValueChange={setEventType}>
+  <SelectContent>
+    {EVENT_TYPE_VALUES.map((type) => (
+      <SelectItem key={type} value={type}>
+        {EVENT_TYPE_LABELS[type].en}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+```
+
 This pattern standardizes database storage while enabling multilingual UI display across all modules.

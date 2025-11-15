@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { UserCog } from 'lucide-react'
-import { getMassRolesPaginated, createMassRole, updateMassRole } from '@/lib/actions/roles'
+import { getMassRolesPaginated, createMassRole, updateMassRole } from '@/lib/actions/mass-roles'
 import type { MassRole } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -37,8 +37,8 @@ export function RolePicker({
   open,
   onOpenChange,
   onSelect,
-  placeholder = 'Search for a role...',
-  emptyMessage = 'No roles found.',
+  placeholder = 'Search for a mass role...',
+  emptyMessage = 'No mass roles found.',
   selectedRoleId,
   className,
   visibleFields,
@@ -103,7 +103,7 @@ export function RolePicker({
         type: 'text',
         required: true,
         placeholder: 'Lector',
-        validation: z.string().min(1, 'Role name is required'),
+        validation: z.string().min(1, 'Mass role name is required'),
       },
     ]
 
@@ -215,17 +215,17 @@ export function RolePicker({
       enableCreate={true}
       createFields={createFields}
       onCreateSubmit={handleCreateRole}
-      createButtonLabel="Save Role"
-      addNewButtonLabel="Add New Role"
+      createButtonLabel="Save Mass Role"
+      addNewButtonLabel="Add New Mass Role"
       emptyMessage={emptyMessage}
-      noResultsMessage="No roles match your search"
+      noResultsMessage="No mass roles match your search"
       isLoading={loading}
       autoOpenCreateForm={autoOpenCreateForm}
       defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
       editMode={editMode}
       entityToEdit={roleToEdit}
       onUpdateSubmit={handleUpdateRole}
-      updateButtonLabel="Update Role"
+      updateButtonLabel="Update Mass Role"
       enablePagination={true}
       totalCount={totalCount}
       currentPage={currentPage}

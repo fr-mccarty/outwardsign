@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { getMassRoles } from '@/lib/actions/roles'
+import { getMassRoles } from '@/lib/actions/mass-roles'
 import type { MassRole } from '@/lib/types'
 import { createTemplateItem } from '@/lib/actions/mass-role-template-items'
 import { AddRoleModal } from './add-role-modal'
@@ -103,19 +103,19 @@ export function RoleSelector({
               className="flex-1 justify-between"
               disabled={isAdding}
             >
-              Select a role...
+              Select a mass role...
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[400px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Search roles..." />
+              <CommandInput placeholder="Search mass roles..." />
               <CommandList>
                 <CommandEmpty>
-                  {isLoading ? 'Loading roles...' : 'No roles found.'}
+                  {isLoading ? 'Loading mass roles...' : 'No mass roles found.'}
                 </CommandEmpty>
                 {availableRoles.length > 0 && (
-                  <CommandGroup heading="Available Roles">
+                  <CommandGroup heading="Available Mass Roles">
                     {availableRoles.map((role) => (
                       <CommandItem
                         key={role.id}
@@ -143,7 +143,7 @@ export function RoleSelector({
                     }}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    <span>Add New Role...</span>
+                    <span>Add New Mass Role...</span>
                   </CommandItem>
                 </CommandGroup>
               </CommandList>

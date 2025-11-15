@@ -27,6 +27,15 @@ export function DayEventsModal<T extends CalendarItem = CalendarItem>({
 }: DayEventsModalProps<T>) {
   const isLiturgicalEvent = (item: any) => item.isLiturgical === true
 
+  // Sort items to show liturgical events first
+  const sortedItems = [...items].sort((a, b) => {
+    const aIsLiturgical = isLiturgicalEvent(a)
+    const bIsLiturgical = isLiturgicalEvent(b)
+    if (aIsLiturgical && !bIsLiturgical) return -1
+    if (!aIsLiturgical && bIsLiturgical) return 1
+    return 0
+  })
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
@@ -38,12 +47,12 @@ export function DayEventsModal<T extends CalendarItem = CalendarItem>({
 
         <div className="overflow-y-auto flex-1 -mx-6 px-6">
           <div className="space-y-3 mt-4 pb-4">
-            {items.length === 0 ? (
+            {sortedItems.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
                 No events on this day
               </p>
             ) : (
-              items.map((item) => {
+              sortedItems.map((item) => {
                 const handleClick = (e: React.MouseEvent) => {
                   onItemClick?.(item, e)
                   onOpenChange(false) // Close modal after clicking an event

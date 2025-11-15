@@ -126,10 +126,24 @@ export async function getUserParishRole(
  * @throws Error if user cannot access the module
  */
 export function requireModuleAccess(
-  userParish: UserParishRole,
+  userParish: UserParishRole | null,
   moduleName: ModuleName
 ): void {
+  if (!userParish) {
+    throw new Error('User is not a member of this parish')
+  }
   if (!canAccessModule(userParish, moduleName)) {
     throw new Error(`You do not have permission to access ${moduleName}`)
   }
+}
+
+/**
+ * Check if user can edit/delete module records
+ * Only admin, staff, and ministry-leaders with module access can edit
+ */
+export function canEditModule(
+  userParish: UserParishRole,
+  moduleName: ModuleName
+): boolean {
+  return canAccessModule(userParish, moduleName)
 }

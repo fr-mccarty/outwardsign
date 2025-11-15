@@ -328,34 +328,3 @@ export async function getActiveGroups(): Promise<Group[]> {
 
   return data || []
 }
-
-// ========== GROUP ROLES ==========
-
-export interface GroupRole {
-  id: string
-  parish_id: string
-  name: string
-  description?: string | null
-  note?: string | null
-  created_at: string
-  updated_at: string
-}
-
-export async function getGroupRoles(): Promise<GroupRole[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('group_roles')
-    .select('*')
-    .eq('parish_id', selectedParishId)
-    .order('name', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching group roles:', error)
-    throw new Error('Failed to fetch group roles')
-  }
-
-  return data || []
-}

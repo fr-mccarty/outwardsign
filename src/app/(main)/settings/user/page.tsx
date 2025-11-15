@@ -113,7 +113,7 @@ export default function UserSettingsPage() {
               label="Preferred Language"
               description="Your interface language preference"
               inputType="select"
-              value={formData.language}
+              value={formData.language || 'en'}
               onChange={(value: string) => updateFormData({ language: value as 'en' | 'es' | 'fr' | 'la' })}
               options={[
                 { value: 'en', label: 'English' },

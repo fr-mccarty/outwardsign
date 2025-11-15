@@ -240,7 +240,6 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   return {
     id: 'liturgy',
-    pageBreakBefore: true,
     elements: liturgyElements,
   }
 }

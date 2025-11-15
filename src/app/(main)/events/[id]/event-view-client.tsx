@@ -9,6 +9,7 @@ import type { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleReference } from '@/lib/helpers/event-helpers'
 import Link from 'next/link'
 import { LanguageLabel } from '@/components/language-label'
+import { useAppContext } from '@/contexts/AppContextProvider'
 
 interface EventViewClientProps {
   event: EventWithRelations
@@ -16,6 +17,9 @@ interface EventViewClientProps {
 }
 
 export function EventViewClient({ event, moduleReference }: EventViewClientProps) {
+  const { userSettings } = useAppContext()
+  const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return null
     return new Date(dateString).toLocaleDateString()
@@ -35,7 +39,7 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
         <h1 className="text-3xl font-bold">{event.name}</h1>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           <Badge variant="outline">
-            {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
+            {EVENT_TYPE_LABELS[event.event_type]?.[userLanguage] || event.event_type}
           </Badge>
           {event.language && (
             <LanguageLabel language={event.language} />
@@ -57,10 +61,10 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
         <Card className="border-primary/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Related {moduleReference.moduleDisplay.en}</CardTitle>
+              <CardTitle className="text-lg">Related {moduleReference.moduleDisplay[userLanguage]}</CardTitle>
               <Button variant="outline" size="sm" asChild>
                 <Link href={moduleReference.modulePath}>
-                  View {moduleReference.moduleDisplay.en}
+                  View {moduleReference.moduleDisplay[userLanguage]}
                   <ExternalLink className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
@@ -71,7 +75,7 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
               <h4 className="font-medium">{moduleReference.summary.title}</h4>
               {moduleReference.summary.status && (
                 <Badge variant="outline">
-                  {MODULE_STATUS_LABELS[moduleReference.summary.status]?.en || moduleReference.summary.status}
+                  {MODULE_STATUS_LABELS[moduleReference.summary.status]?.[userLanguage] || moduleReference.summary.status}
                 </Badge>
               )}
               <ul className="text-sm text-muted-foreground space-y-1">

@@ -68,16 +68,18 @@ export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: L
             </div>
             <div>
               <div className="text-sm font-medium text-muted-foreground">Grade</div>
-              <div className="text-base mt-1">{eventData.grade_lcl}</div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-muted-foreground">Type</div>
-              <div className="text-base mt-1 capitalize">{eventData.type}</div>
+              <div className="text-base mt-1">{eventData.grade_display || eventData.grade_lcl}</div>
             </div>
             <div>
               <div className="text-sm font-medium text-muted-foreground">Liturgical Year</div>
               <div className="text-base mt-1">{eventData.liturgical_year || 'N/A'}</div>
             </div>
+            {eventData.psalter_week && (
+              <div>
+                <div className="text-sm font-medium text-muted-foreground">Psalter Week</div>
+                <div className="text-base mt-1">Week {eventData.psalter_week}</div>
+              </div>
+            )}
           </div>
 
           {/* Liturgical Colors */}

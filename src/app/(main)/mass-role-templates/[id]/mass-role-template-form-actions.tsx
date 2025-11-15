@@ -44,7 +44,7 @@ export function MassRoleTemplateFormActions({ template }: MassRoleTemplateFormAc
   const handleCopyInfo = () => {
     const info = `Mass Role Template
 Name: ${template.name}
-${template.description ? `Description: ${template.description}\n` : ''}${template.note ? `Note: ${template.note}\n` : ''}${template.parameters ? `\nConfiguration:\n${JSON.stringify(template.parameters, null, 2)}` : ''}`
+${template.description ? `Description: ${template.description}\n` : ''}${template.note ? `Note: ${template.note}\n` : ''}`
     navigator.clipboard.writeText(info)
     toast.success('Template information copied to clipboard')
   }

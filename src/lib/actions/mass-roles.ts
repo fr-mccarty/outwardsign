@@ -33,8 +33,8 @@ export async function getMassRoles(): Promise<MassRole[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching roles:', error)
-    throw new Error('Failed to fetch roles')
+    console.error('Error fetching mass roles:', error)
+    throw new Error('Failed to fetch mass roles')
   }
 
   return data || []
@@ -71,8 +71,8 @@ export async function getMassRolesPaginated(params?: PaginatedParams): Promise<P
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated roles:', error)
-    throw new Error('Failed to fetch paginated roles')
+    console.error('Error fetching paginated mass roles:', error)
+    throw new Error('Failed to fetch paginated mass roles')
   }
 
   const totalCount = count || 0
@@ -102,8 +102,8 @@ export async function getMassRole(id: string): Promise<MassRole | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching role:', error)
-    throw new Error('Failed to fetch role')
+    console.error('Error fetching mass role:', error)
+    throw new Error('Failed to fetch mass role')
   }
 
   return data
@@ -128,8 +128,8 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
     .single()
 
   if (error) {
-    console.error('Error creating role:', error)
-    throw new Error('Failed to create role')
+    console.error('Error creating mass role:', error)
+    throw new Error('Failed to create mass role')
   }
 
   revalidatePath('/roles')
@@ -154,8 +154,8 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
     .single()
 
   if (error) {
-    console.error('Error updating role:', error)
-    throw new Error('Failed to update role')
+    console.error('Error updating mass role:', error)
+    throw new Error('Failed to update mass role')
   }
 
   revalidatePath('/roles')
@@ -175,8 +175,8 @@ export async function deleteMassRole(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting role:', error)
-    throw new Error('Failed to delete role')
+    console.error('Error deleting mass role:', error)
+    throw new Error('Failed to delete mass role')
   }
 
   revalidatePath('/roles')

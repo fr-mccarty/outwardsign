@@ -44,7 +44,7 @@ import { getParishInvitations, createParishInvitation, revokeParishInvitation, r
 import { getPetitionTemplates, deletePetitionTemplate, ensureDefaultContexts, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
 import { importReadings, getReadingsStats } from '@/lib/actions/import-readings'
 import { Parish, ParishSettings } from '@/lib/types'
-import { PARISH_ROLE_LABELS, PARISH_ROLE_VALUES, type ParishRole } from '@/lib/constants'
+import { USER_PARISH_ROLE_LABELS, USER_PARISH_ROLE_VALUES, type UserParishRoleType } from '@/lib/constants'
 import { toast } from 'sonner'
 import {
   DataTable,
@@ -89,7 +89,7 @@ export default function ParishSettingsPage() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<ParishRole>('parishioner')
+  const [inviteRole, setInviteRole] = useState<UserParishRoleType>('parishioner')
   const [inviteModules, setInviteModules] = useState<string[]>([])
   const [petitionTemplates, setPetitionTemplates] = useState<PetitionContextTemplate[]>([])
   const [petitionSearchTerm, setPetitionSearchTerm] = useState('')
@@ -131,11 +131,19 @@ export default function ParishSettingsPage() {
         const settingsResult = await getParishSettings(parish.id)
         if (settingsResult.success) {
           setParishSettings(settingsResult.settings)
-          setQuickAmountsData(settingsResult.settings.mass_intention_offering_quick_amount || [
-            { amount: 100, label: '$1' },
-            { amount: 200, label: '$2' },
-            { amount: 500, label: '$5' }
-          ])
+
+          // Check for quick amounts - use defaults if null, undefined, or empty array
+          const quickAmounts = settingsResult.settings.mass_intention_offering_quick_amount
+          setQuickAmountsData(
+            quickAmounts && quickAmounts.length > 0
+              ? quickAmounts
+              : [
+                { amount: 100, label: '$1' },
+                { amount: 200, label: '$2' },
+                { amount: 500, label: '$5' }
+              ]
+          )
+
           setLiturgicalLocale(settingsResult.settings.liturgical_locale || 'en_US')
         } else {
           // If settings don't exist, ensure we still have default values
@@ -429,19 +437,10 @@ export default function ParishSettingsPage() {
     }
   }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-      case 'staff': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-      case 'ministry-leader': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-      case 'parishioner': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
-    }
-  }
 
   const getRoleLabel = (role: string) => {
     // Use English labels for now - TODO: Add language selection
-    return PARISH_ROLE_LABELS[role as ParishRole]?.en || role
+    return USER_PARISH_ROLE_LABELS[role as UserParishRoleType]?.en || role
   }
 
   if (loading) {
@@ -966,12 +965,8 @@ export default function ParishSettingsPage() {
                         <div className="text-sm text-muted-foreground">
                           Invited {new Date(invitation.created_at).toLocaleDateString()} • Expires {new Date(invitation.expires_at).toLocaleDateString()}
                         </div>
-                        <div className="flex gap-1 mt-2">
-                          {invitation.roles.map((role) => (
-                            <Badge key={role} className={getRoleColor(role)} variant="outline">
-                              {getRoleLabel(role)}
-                            </Badge>
-                          ))}
+                        <div className="text-sm text-muted-foreground mt-2">
+                          {invitation.roles.map(role => getRoleLabel(role)).join(', ')}
                         </div>
                       </div>
                       <DropdownMenu>
@@ -1034,14 +1029,14 @@ export default function ParishSettingsPage() {
                     />
                     <div className="space-y-2">
                       <Label htmlFor="invite-role">Role</Label>
-                      <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as ParishRole)}>
+                      <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as UserParishRoleType)}>
                         <SelectTrigger id="invite-role">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {PARISH_ROLE_VALUES.map((role) => (
+                          {USER_PARISH_ROLE_VALUES.map((role) => (
                             <SelectItem key={role} value={role}>
-                              {PARISH_ROLE_LABELS[role].en}
+                              {USER_PARISH_ROLE_LABELS[role].en}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1110,12 +1105,8 @@ export default function ParishSettingsPage() {
                               : 'Parish team member'
                           }
                         </div>
-                        <div className="flex gap-1 mt-2">
-                          {member.roles.map((role) => (
-                            <Badge key={role} className={getRoleColor(role)}>
-                              {getRoleLabel(role)}
-                            </Badge>
-                          ))}
+                        <div className="text-sm text-muted-foreground mt-2">
+                          {member.roles.map(role => getRoleLabel(role)).join(', ')}
                         </div>
                       </div>
                       <DropdownMenu>

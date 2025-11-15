@@ -118,6 +118,7 @@ During initial development, modify existing migrations instead of creating new m
 - **One table per migration file** - Each migration file should create or modify only ONE table
 - Module tables should be named in **plural form** (e.g., `weddings`, `funerals`, `baptisms`)
 - Keep migrations focused and atomic for better version control and rollback capability
+- **Migration file naming timestamp** - When creating new migration files, use a timestamp within the range of the current date to current date plus 30 days. This ensures migrations are properly ordered and prevents timestamp conflicts.
 
 ## 🔴 Git Operations
 
@@ -362,6 +363,18 @@ export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string
 ```
 
 **Why:** Database consistency, bilingual support, type safety, centralized maintenance.
+
+**🔴 CRITICAL - Event Type Display Rule:**
+**NEVER display event type values directly from the database.** Always use `EVENT_TYPE_LABELS` to show localized, user-friendly labels instead of raw database values like `WEDDING_RECEPTION`.
+
+```tsx
+// ✅ CORRECT
+import { EVENT_TYPE_LABELS } from '@/lib/constants'
+<p>{EVENT_TYPE_LABELS[event.event_type].en}</p>
+
+// ❌ WRONG - never display raw event_type
+<p>{event.event_type}</p>
+```
 
 **See [CONSTANTS_PATTERN.md](./docs/CONSTANTS_PATTERN.md) for full usage examples, standard constant types, and adding new constants.**
 

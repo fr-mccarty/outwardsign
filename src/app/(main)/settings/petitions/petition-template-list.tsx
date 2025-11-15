@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { FileText, Edit, Plus } from "lucide-react";
 import { deletePetitionTemplate, PetitionContextTemplate } from '@/lib/actions/petition-templates';
+import { PETITION_MODULE_VALUES, PETITION_MODULE_LABELS, PETITION_LANGUAGE_VALUES, PETITION_LANGUAGE_LABELS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { useRouter } from "next/navigation";
 import { useBreadcrumbs } from '@/components/breadcrumb-context';
@@ -15,6 +16,8 @@ import {
   DataTableRowActions,
 } from '@/components/data-table';
 import { DeleteRowDialog } from '@/components/delete-row-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PetitionTemplateListProps {
   templates: PetitionContextTemplate[];
@@ -22,6 +25,8 @@ interface PetitionTemplateListProps {
 
 export default function PetitionTemplateList({ templates }: PetitionTemplateListProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [moduleFilter, setModuleFilter] = useState<string>("");
+  const [languageFilter, setLanguageFilter] = useState<string>("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
   const router = useRouter();
@@ -37,17 +42,27 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
 
   const filteredTemplates = useMemo(() => {
     let filtered = templates;
-    
+
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(template => 
+      filtered = filtered.filter(template =>
         template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (template.description || "").toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
+    // Filter by module
+    if (moduleFilter) {
+      filtered = filtered.filter(template => template.module === moduleFilter);
+    }
+
+    // Filter by language
+    if (languageFilter) {
+      filtered = filtered.filter(template => template.language === languageFilter);
+    }
+
     return filtered;
-  }, [templates, searchTerm]);
+  }, [templates, searchTerm, moduleFilter, languageFilter]);
 
   const openDeleteDialog = (templateId: string) => {
     setTemplateToDelete(templateId);
@@ -110,6 +125,38 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
       ),
     },
     {
+      key: "module",
+      header: "Module",
+      hiddenOn: "lg",
+      sortable: true,
+      accessorFn: (template) => template.module || '',
+      cell: (template) => (
+        template.module ? (
+          <Badge variant="outline">
+            {PETITION_MODULE_LABELS[template.module as keyof typeof PETITION_MODULE_LABELS]?.en || template.module}
+          </Badge>
+        ) : (
+          <span className="text-sm text-muted-foreground">All modules</span>
+        )
+      ),
+    },
+    {
+      key: "language",
+      header: "Language",
+      hiddenOn: "lg",
+      sortable: true,
+      accessorFn: (template) => template.language || '',
+      cell: (template) => (
+        template.language ? (
+          <Badge variant="secondary">
+            {PETITION_LANGUAGE_LABELS[template.language as keyof typeof PETITION_LANGUAGE_LABELS]?.en || template.language}
+          </Badge>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )
+      ),
+    },
+    {
       key: "created_at",
       header: "Created",
       hiddenOn: "xl",
@@ -150,12 +197,40 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
         onSearchChange={setSearchTerm}
         searchPlaceholder="Search templates..."
         actions={
-          <Button asChild size="sm">
-            <Link href="/settings/petitions/create">
-              <Plus className="h-4 w-4 mr-2" />
-              New Template
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Select value={moduleFilter} onValueChange={setModuleFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All modules" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All modules</SelectItem>
+                {PETITION_MODULE_VALUES.map(module => (
+                  <SelectItem key={module} value={module}>
+                    {PETITION_MODULE_LABELS[module].en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={languageFilter} onValueChange={setLanguageFilter}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="All languages" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All languages</SelectItem>
+                {PETITION_LANGUAGE_VALUES.map(lang => (
+                  <SelectItem key={lang} value={lang}>
+                    {PETITION_LANGUAGE_LABELS[lang].en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button asChild size="sm">
+              <Link href="/settings/petitions/create">
+                <Plus className="h-4 w-4 mr-2" />
+                New Template
+              </Link>
+            </Button>
+          </div>
         }
       />
 

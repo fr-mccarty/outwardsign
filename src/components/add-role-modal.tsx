@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
-import { createMassRole } from '@/lib/actions/roles'
+import { createMassRole } from '@/lib/actions/mass-roles'
 import { toast } from 'sonner'
 import type { MassRole } from '@/lib/types'
 
 const roleSchema = z.object({
-  name: z.string().min(1, "Role name is required"),
+  name: z.string().min(1, "Mass role name is required"),
   description: z.string().optional(),
   note: z.string().optional(),
 })
@@ -79,12 +79,12 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
         note: note || undefined,
       })
 
-      toast.success('Role created successfully')
+      toast.success('Mass role created successfully')
       onRoleCreated(newRole)
       handleClose()
     } catch (error) {
-      console.error('Failed to create role:', error)
-      toast.error('Failed to create role. Please try again.')
+      console.error('Failed to create mass role:', error)
+      toast.error('Failed to create mass role. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -95,22 +95,22 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add New Role</DialogTitle>
+            <DialogTitle>Add New Mass Role</DialogTitle>
             <DialogDescription>
-              Create a new liturgical role for your parish.
+              Create a new liturgical mass role for your parish.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <FormField
               id="name"
-              label="Role Name"
+              label="Mass Role Name"
               value={name}
               onChange={setName}
               required
               error={errors.name}
               description="e.g., Lector, Eucharistic Minister, Altar Server"
-              placeholder="Enter role name"
+              placeholder="Enter mass role name"
               disabled={isLoading}
             />
 
@@ -121,8 +121,8 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
               value={description}
               onChange={setDescription}
               error={errors.description}
-              description="Brief description of this role's responsibilities"
-              placeholder="Enter role description"
+              description="Brief description of this mass role's responsibilities"
+              placeholder="Enter mass role description"
               rows={3}
               disabled={isLoading}
             />
@@ -151,7 +151,7 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create Role'}
+              {isLoading ? 'Creating...' : 'Create Mass Role'}
             </Button>
           </DialogFooter>
         </form>

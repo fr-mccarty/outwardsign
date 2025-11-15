@@ -114,6 +114,35 @@ async function setupTestUser() {
       console.log(`   ✅ Parish created with ID: ${parishId}`);
     }
 
+    // Step 2.5: Create default group roles for the parish
+    console.log(`\n2️⃣.5️⃣  Creating default group roles...`);
+    const { data: existingRoles } = await supabase
+      .from('group_roles')
+      .select('id')
+      .eq('parish_id', parishId);
+
+    if (existingRoles && existingRoles.length > 0) {
+      console.log(`   ✅ Group roles already exist (${existingRoles.length} roles)`);
+    } else {
+      // Create the standard liturgical ministry roles
+      const { error: rolesError } = await supabase
+        .from('group_roles')
+        .insert([
+          { parish_id: parishId, name: 'LECTOR', description: 'Proclaims the Word of God during liturgies' },
+          { parish_id: parishId, name: 'EMHC', description: 'Extraordinary Minister of Holy Communion - distributes communion during Mass' },
+          { parish_id: parishId, name: 'ALTAR_SERVER', description: 'Assists the priest during Mass and other liturgical celebrations' },
+          { parish_id: parishId, name: 'CANTOR', description: 'Leads the congregation in singing psalms and hymns' },
+          { parish_id: parishId, name: 'USHER', description: 'Welcomes parishioners, assists with seating, and takes up the collection' },
+          { parish_id: parishId, name: 'SACRISTAN', description: 'Prepares the church and sacred vessels for Mass and other liturgies' },
+          { parish_id: parishId, name: 'MUSIC_MINISTER', description: 'Provides instrumental or vocal music for liturgical celebrations' }
+        ]);
+
+      if (rolesError) {
+        throw new Error(`Failed to create group roles: ${rolesError.message}`);
+      }
+      console.log('   ✅ Created 7 default group roles');
+    }
+
     // Step 3: Link user to parish with admin role
     console.log(`\n3️⃣  Linking user to parish with admin role...`);
     const { data: existingLink } = await supabase

@@ -5,15 +5,25 @@ import { cn } from '@/lib/utils'
 import { CalendarDayProps, CalendarItem } from "./types"
 import type { CalendarDay } from "./types"
 import {
-  LiturgicalEventItemMonth,
   ParishEventItemMonth,
-  LiturgicalEventItemWeek,
   ParishEventItemWeek,
   LiturgicalEventItemDay,
-  ParishEventItemDay
+  ParishEventItemDay,
+  LiturgicalEventItemWeek
 } from './event-items'
 import { DayEventsModal } from './day-events-modal'
 import { Button } from '@/components/ui/button'
+
+// Map liturgical colors to CSS color values
+const LITURGICAL_BORDER_COLORS: Record<string, string> = {
+  'purple': 'rgb(168, 85, 247)', // purple-500
+  'white': 'rgb(209, 213, 219)', // gray-300
+  'red': 'rgb(239, 68, 68)', // red-500
+  'green': 'rgb(34, 197, 94)', // green-500
+  'gold': 'rgb(234, 179, 8)', // yellow-500
+  'rose': 'rgb(244, 114, 182)', // pink-400
+  'black': 'rgb(0, 0, 0)',
+}
 
 export function CalendarDay<T extends CalendarItem = CalendarItem>({
   day,
@@ -28,15 +38,21 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
   const defaultRenderContent = (day: CalendarDay<T>) => {
     const isLiturgicalEvent = (item: any) => item.isLiturgical === true
 
+    // In month view, only show parish events (liturgical shown as color blocks)
+    // In week/day views, show all events
+    const itemsToShow = view === 'month'
+      ? day.items.filter(item => !isLiturgicalEvent(item))
+      : day.items
+
     return (
       <div className="space-y-1">
-        {day.items.slice(0, maxItemsPerDay).map((item) => {
+        {itemsToShow.slice(0, maxItemsPerDay).map((item) => {
           const handleClick = (e: React.MouseEvent) => {
             e.stopPropagation()
             onItemClick?.(item, e)
           }
 
-          // Render liturgical event
+          // Render liturgical event (only for week/day views)
           if (isLiturgicalEvent(item)) {
             switch (view) {
               case 'day':
@@ -44,7 +60,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
               case 'week':
                 return <LiturgicalEventItemWeek key={item.id} event={item} onClick={handleClick} />
               default:
-                return <LiturgicalEventItemMonth key={item.id} event={item} onClick={handleClick} />
+                return null // Month view liturgical events shown as color blocks
             }
           }
 
@@ -58,7 +74,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
               return <ParishEventItemMonth key={item.id} event={item} onClick={handleClick} />
           }
         })}
-        {day.items.length > maxItemsPerDay && (
+        {itemsToShow.length > maxItemsPerDay && (
           <Button
             variant="ghost"
             size="sm"
@@ -68,7 +84,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
               setShowAllEventsModal(true)
             }}
           >
-            +{day.items.length - maxItemsPerDay} more
+            +{itemsToShow.length - maxItemsPerDay} more
           </Button>
         )}
       </div>
@@ -76,6 +92,21 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
   }
 
   const contentRenderer = renderContent || defaultRenderContent
+
+  // Extract liturgical events for color block rendering (month view only)
+  const isLiturgicalEvent = (item: any) => item.isLiturgical === true
+  const liturgicalEvents = day.items.filter(isLiturgicalEvent)
+
+  // Group colors by liturgical event (each event may have 1 or more colors)
+  const liturgicalEventColorGroups: { colors: string[], event: any }[] = []
+  liturgicalEvents.forEach((item: any) => {
+    const colors = item.liturgicalEvent?.event_data?.color || []
+    if (colors.length > 0) {
+      liturgicalEventColorGroups.push({ colors, event: item })
+    } else if (item.liturgicalColor) {
+      liturgicalEventColorGroups.push({ colors: [item.liturgicalColor], event: item })
+    }
+  })
 
   return (
     <>
@@ -88,11 +119,42 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
         )}
         onClick={() => onClick?.(day.date)}
       >
-        <div className={cn(
-          "font-medium text-sm mb-2",
-          day.isToday && "text-primary font-bold"
-        )}>
-          {day.date.getDate()}
+        <div className="flex items-center gap-2 mb-2">
+          <div className={cn(
+            "font-medium text-sm",
+            day.isToday && "text-primary font-bold"
+          )}>
+            {day.date.getDate()}
+          </div>
+
+          {/* Liturgical color blocks (month view only) */}
+          {view === 'month' && liturgicalEventColorGroups.length > 0 && (
+            <div className="flex gap-1 items-center">
+              {liturgicalEventColorGroups.map((group, groupIndex) => (
+                <div
+                  key={groupIndex}
+                  className={cn(
+                    "flex gap-0 cursor-pointer overflow-hidden rounded-[3px]",
+                    group.colors.length > 1 && "border border-border"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onItemClick?.(group.event, e)
+                  }}
+                >
+                  {group.colors.map((color, colorIndex) => (
+                    <div
+                      key={colorIndex}
+                      className="w-2 h-4"
+                      style={{
+                        backgroundColor: LITURGICAL_BORDER_COLORS[color.toLowerCase()] || 'rgb(156, 163, 175)',
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         {contentRenderer(day)}
       </div>

@@ -1,6 +1,8 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { EVENT_TYPE_LABELS } from '@/lib/constants'
+import { useAppContext } from '@/contexts/AppContextProvider'
 
 interface ParishEventItemDayProps {
   event: {
@@ -13,6 +15,15 @@ interface ParishEventItemDayProps {
 }
 
 export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) {
+  const { userSettings } = useAppContext()
+  const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
+
+  // Get translated event type label
+  // 🔴 CRITICAL: Never display raw event_type values - only show if in EVENT_TYPE_LABELS
+  const eventTypeLabel = event.event_type
+    ? EVENT_TYPE_LABELS[event.event_type]?.[userLanguage]
+    : undefined
+
   return (
     <div
       className={cn(
@@ -22,11 +33,11 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
       onClick={onClick}
     >
       <div className="font-semibold text-base">{event.title}</div>
-      {(event.event_type || event.description) && (
+      {(eventTypeLabel || event.description) && (
         <div className="mt-2 space-y-1">
-          {event.event_type && (
+          {eventTypeLabel && (
             <div className="text-sm font-medium opacity-90">
-              {event.event_type}
+              {eventTypeLabel}
             </div>
           )}
           {event.description && (

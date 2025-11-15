@@ -6,6 +6,7 @@ import { Loading } from '@/components/loading'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ActiveInactiveBadge } from "@/components/active-inactive-badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import {
@@ -21,11 +22,14 @@ import {
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { UserPlus, User, Trash2, Users, Edit, X, Save } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getGroup, removeGroupMember, updateGroupMemberRole, getGroupRoles, type GroupWithMembers, type GroupMember, type GroupRole } from '@/lib/actions/groups'
+import { getGroup, removeGroupMember, updateGroupMemberRole, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
+import { getGroupRoles, type GroupRole } from '@/lib/actions/group-roles'
 import { GroupFormDialog } from '@/components/groups/group-form-dialog'
 import { AddMembershipModal } from '@/components/groups/add-membership-modal'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { MASS_ROLE_LABELS, type MassRoleType } from '@/lib/constants'
+import { useLanguage } from '@/components/language-context'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -33,6 +37,7 @@ interface PageProps {
 
 export default function GroupDetailPage({ params }: PageProps) {
   const router = useRouter()
+  const { language } = useLanguage()
   const [group, setGroup] = useState<GroupWithMembers | null>(null)
   const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,6 +49,14 @@ export default function GroupDetailPage({ params }: PageProps) {
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const { setBreadcrumbs } = useBreadcrumbs()
+
+  // Helper function to get group role label
+  const getRoleLabel = (roleName: string) => {
+    if (roleName in MASS_ROLE_LABELS) {
+      return MASS_ROLE_LABELS[roleName as MassRoleType][language]
+    }
+    return roleName
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -131,7 +144,7 @@ export default function GroupDetailPage({ params }: PageProps) {
       // Convert "none" value to null
       const roleIdToSave = editingRoleId === "none" ? null : editingRoleId
       await updateGroupMemberRole(groupId, member.person_id, roleIdToSave)
-      toast.success('Role updated successfully')
+      toast.success('Group role updated successfully')
 
       // Reload group data
       const updatedGroup = await getGroup(groupId)
@@ -142,8 +155,8 @@ export default function GroupDetailPage({ params }: PageProps) {
       setEditingMemberId(null)
       setEditingRoleId(undefined)
     } catch (error) {
-      console.error('Failed to update role:', error)
-      toast.error('Failed to update role')
+      console.error('Failed to update group role:', error)
+      toast.error('Failed to update group role')
     }
   }
 
@@ -197,7 +210,7 @@ export default function GroupDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-2">
                 <CardTitle>{group.name}</CardTitle>
                 {!group.is_active && (
-                  <Badge variant="secondary">Inactive</Badge>
+                  <ActiveInactiveBadge isActive={group.is_active} language={language} />
                 )}
               </div>
               {group.description && (
@@ -232,7 +245,7 @@ export default function GroupDetailPage({ params }: PageProps) {
             Group Members ({group.members.length})
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Manage the people who are part of this group and their specific roles.
+            Manage the people who are part of this group and their specific group roles.
           </p>
         </CardHeader>
         <CardContent>
@@ -277,37 +290,37 @@ export default function GroupDetailPage({ params }: PageProps) {
                             Joined: {new Date(member.joined_at).toLocaleDateString()}
                           </p>
 
-                          {/* Role Display */}
+                          {/* Group Role Display */}
                           {!isEditing && (
                             <div className="mt-3">
                               {member.group_role ? (
                                 <Badge variant="secondary">
-                                  {member.group_role.name}
+                                  {getRoleLabel(member.group_role.name)}
                                 </Badge>
                               ) : (
-                                <p className="text-sm text-muted-foreground">No role assigned</p>
+                                <p className="text-sm text-muted-foreground">No group role assigned</p>
                               )}
                             </div>
                           )}
 
-                          {/* Role Editor */}
+                          {/* Group Role Editor */}
                           {isEditing && (
                             <div className="mt-3 space-y-2 border rounded-lg p-3 bg-muted/50">
                               <Label htmlFor={`role-select-${member.id}`} className="text-sm font-medium">
-                                Select Role
+                                Select Group Role
                               </Label>
                               <Select
                                 value={editingRoleId}
                                 onValueChange={setEditingRoleId}
                               >
                                 <SelectTrigger id={`role-select-${member.id}`}>
-                                  <SelectValue placeholder="Select a role..." />
+                                  <SelectValue placeholder="Select a group role..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="none">No Role</SelectItem>
+                                  <SelectItem value="none">No Group Role</SelectItem>
                                   {groupRoles.map((role) => (
                                     <SelectItem key={role.id} value={role.id}>
-                                      {role.name}
+                                      {getRoleLabel(role.name)}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
