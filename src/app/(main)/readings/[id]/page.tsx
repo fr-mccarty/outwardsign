@@ -1,12 +1,13 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { BookOpen, Calendar } from "lucide-react"
+import { BookOpen } from "lucide-react"
 import { getReading } from "@/lib/actions/readings"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ReadingFormActions } from './reading-form-actions'
+import { ReadingCategoryLabel } from '@/components/reading-category-label'
+import { LanguageLabel } from '@/components/language-label'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -36,63 +37,39 @@ export default async function ReadingDetailPage({ params }: PageProps) {
     { label: reading.pericope || 'Reading' }
   ]
 
-  const getCategoryColor = (category: string) => {
-    const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-green-100 text-green-800',
-      'bg-purple-100 text-purple-800',
-      'bg-orange-100 text-orange-800',
-      'bg-pink-100 text-pink-800',
-      'bg-indigo-100 text-indigo-800',
-    ]
-    return colors[Math.abs(category.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length]
-  }
-
   return (
     <PageContainer
       title={reading.pericope || 'Reading'}
       description="Scripture reading details"
+      actions={<ReadingFormActions reading={reading} />}
       maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-6">
-        {/* Title and badges */}
-        <div>
-          <h1 className="text-3xl font-bold">{reading.pericope || 'Untitled Reading'}</h1>
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            {reading.language && (
-              <Badge variant="outline">
-                {reading.language}
-              </Badge>
-            )}
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              {new Date(reading.created_at).toLocaleDateString()}
-            </div>
-          </div>
-        </div>
-
-        {/* Action buttons */}
-        <ReadingFormActions reading={reading} />
-
-        <div className="space-y-6">
-          {/* Reading Text */}
-          <Card>
+        {/* Reading Text */}
+        <Card>
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <CardTitle className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
                   Reading Text
                 </CardTitle>
-                {reading.categories && reading.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {reading.categories.map(category => (
-                      <Badge key={category} className={getCategoryColor(category)}>
-                        {category}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2 items-center">
+                  {reading.language && (
+                    <LanguageLabel language={reading.language} />
+                  )}
+                  {reading.categories && reading.categories.length > 0 && (
+                    <>
+                      {reading.categories.map(category => (
+                        <ReadingCategoryLabel
+                          key={category}
+                          category={category}
+                          variant="secondary"
+                        />
+                      ))}
+                    </>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -113,10 +90,10 @@ export default async function ReadingDetailPage({ params }: PageProps) {
                 </div>
               </div>
             </CardContent>
-          </Card>
+        </Card>
 
-          {/* Reading Information */}
-          <Card>
+        {/* Reading Information */}
+        <Card>
             <CardHeader>
               <CardTitle>Reading Information</CardTitle>
             </CardHeader>
@@ -148,8 +125,7 @@ export default async function ReadingDetailPage({ params }: PageProps) {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        </div>
+        </Card>
       </div>
     </PageContainer>
   )

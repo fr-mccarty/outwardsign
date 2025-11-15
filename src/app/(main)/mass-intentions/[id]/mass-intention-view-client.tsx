@@ -3,10 +3,9 @@
 import { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Edit, Calendar, User, DollarSign, FileText, Printer, FileDown } from "lucide-react"
-import { MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
+import { ModuleStatusLabel } from "@/components/module-status-label"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,21 +31,6 @@ export function MassIntentionViewClient({ intention }: MassIntentionViewClientPr
   const formatStipend = (cents: number | null | undefined) => {
     if (!cents) return 'No stipend'
     return `$${(cents / 100).toFixed(2)}`
-  }
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'REQUESTED':
-        return 'secondary'
-      case 'CONFIRMED':
-        return 'default'
-      case 'FULFILLED':
-        return 'outline'
-      case 'CANCELLED':
-        return 'destructive'
-      default:
-        return 'secondary'
-    }
   }
 
   return (
@@ -99,11 +83,7 @@ export function MassIntentionViewClient({ intention }: MassIntentionViewClientPr
                 Created on {new Date(intention.created_at).toLocaleDateString()}
               </CardDescription>
             </div>
-            {intention.status && (
-              <Badge variant={getStatusVariant(intention.status)} className="text-sm">
-                {MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || intention.status}
-              </Badge>
-            )}
+            <ModuleStatusLabel status={intention.status} statusType="mass-intention" className="text-sm" />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

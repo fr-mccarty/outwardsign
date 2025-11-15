@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Edit, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
+import { ModuleStatusLabel } from '@/components/module-status-label'
 import type { Event, Location } from '@/lib/types'
 
 interface ModuleViewPanelProps {
@@ -45,6 +46,12 @@ interface ModuleViewPanelProps {
    * Defaults to `/print/${modulePath}/${entity.id}`
    */
   printViewPath?: string
+
+  /**
+   * Status type for displaying correct labels
+   * Defaults to "module" for most entities
+   */
+  statusType?: 'module' | 'mass' | 'mass-intention'
 }
 
 export function ModuleViewPanel({
@@ -54,6 +61,7 @@ export function ModuleViewPanel({
   mainEvent,
   generateFilename,
   printViewPath,
+  statusType = 'module',
 }: ModuleViewPanelProps) {
   const defaultPrintPath = printViewPath || `/print/${modulePath}/${entity.id}`
 
@@ -114,8 +122,9 @@ export function ModuleViewPanel({
           </div>
 
           <div className="pt-4 border-t space-y-2 text-sm">
-            <div>
-              <span className="font-medium">Status:</span> {entity.status || 'N/A'}
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Status:</span>
+              <ModuleStatusLabel status={entity.status} statusType={statusType} />
             </div>
             {mainEvent?.location && (
               <div>

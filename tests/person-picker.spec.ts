@@ -10,7 +10,8 @@ test.describe('Person Picker Component', () => {
     await page.getByLabel('First Name').fill('Sarah');
     await page.getByLabel('Last Name').fill('Johnson');
     await page.getByLabel('Email').fill('sarah.johnson@test.com');
-    await page.getByRole('button', { name: /Create Person/i }).click();
+    // Use .last() to get the actual submit button (there are duplicate buttons on the page)
+    await page.getByRole('button', { name: /Create Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Now go to a wedding form to test the picker
@@ -84,8 +85,8 @@ test.describe('Person Picker Component', () => {
       await emailInput.fill(`${firstName.toLowerCase()}@test.com`);
     }
 
-    // Submit the create form
-    const createButton = dialog.getByRole('button', { name: /Create/i });
+    // Submit the create form (button text is "Save Person")
+    const createButton = dialog.getByRole('button', { name: /Save Person/i });
     await createButton.click();
 
     // Wait briefly for creation
@@ -135,13 +136,15 @@ test.describe('Person Picker Component', () => {
     await page.goto('/people/create');
     await page.getByLabel('First Name').fill('Alice');
     await page.getByLabel('Last Name').fill('Cooper');
-    await page.getByRole('button', { name: /Create Person/i }).click();
+    // Use .last() to get the actual submit button (there are duplicate buttons on the page)
+    await page.getByRole('button', { name: /Create Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     await page.goto('/people/create');
     await page.getByLabel('First Name').fill('Bob');
     await page.getByLabel('Last Name').fill('Dylan');
-    await page.getByRole('button', { name: /Create Person/i }).click();
+    // Use .last() to get the actual submit button (there are duplicate buttons on the page)
+    await page.getByRole('button', { name: /Create Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
@@ -195,8 +198,8 @@ test.describe('Person Picker Component', () => {
     // Wait a moment for form to be ready
     await page.waitForTimeout(300);
 
-    // Try to submit without filling required fields
-    const createButton = page.locator('[role="dialog"]').getByRole('button', { name: /Create/i });
+    // Try to submit without filling required fields (button text is "Save Person")
+    const createButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Person/i });
     await createButton.click();
 
     // Should show validation errors (form should stay open)
@@ -209,7 +212,7 @@ test.describe('Person Picker Component', () => {
     await page.locator('[role="dialog"]').getByLabel('First Name').fill('Valid');
     await page.locator('[role="dialog"]').getByLabel('Last Name').fill('Person');
 
-    // Submit should now work
+    // Submit should now work (button text is "Save Person")
     await createButton.click();
     await page.waitForTimeout(1500);
 
@@ -240,7 +243,8 @@ test.describe('Person Picker Component', () => {
     const firstName = `ContextTest${Date.now()}`;
     await page.locator('[role="dialog"]').getByLabel('First Name').fill(firstName);
     await page.locator('[role="dialog"]').getByLabel('Last Name').fill('TestLast');
-    await page.locator('[role="dialog"]').getByRole('button', { name: /Create/i }).click();
+    // Submit the create form (button text is "Save Person")
+    await page.locator('[role="dialog"]').getByRole('button', { name: /Save Person/i }).click();
 
     await page.waitForTimeout(1500);
 
@@ -262,14 +266,16 @@ test.describe('Person Picker Component', () => {
     await page.getByLabel('First Name').fill('Emily');
     await page.getByLabel('Last Name').fill('Watson');
     await page.getByLabel('Email').fill('emily.watson@test.com');
-    await page.getByRole('button', { name: /Create Person/i }).click();
+    // Use .last() to get the actual submit button (there are duplicate buttons on the page)
+    await page.getByRole('button', { name: /Create Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     await page.goto('/people/create');
     await page.getByLabel('First Name').fill('Michael');
     await page.getByLabel('Last Name').fill('Chen');
     await page.getByLabel('Email').fill('michael.chen@test.com');
-    await page.getByRole('button', { name: /Create Person/i }).click();
+    // Use .last() to get the actual submit button (there are duplicate buttons on the page)
+    await page.getByRole('button', { name: /Create Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
@@ -279,6 +285,13 @@ test.describe('Person Picker Component', () => {
     // Select the first person (Emily) for Lead Musician using testId
     await page.getByTestId('lead-musician-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    // Form auto-opens when no person is selected - close it to search
+    const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
+    if (await cancelButton.isVisible()) {
+      await cancelButton.click();
+      await page.waitForTimeout(300);
+    }
 
     await page.locator('[role="dialog"]').getByPlaceholder(/Search/i).fill('Emily');
     await page.waitForTimeout(500);

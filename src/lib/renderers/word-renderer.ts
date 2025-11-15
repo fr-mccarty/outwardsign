@@ -235,12 +235,6 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
       })
     }
 
-    case 'multi-part-text':
-      // Deprecated - render as plain text
-      return createStyledParagraph('text', [
-        createStyledTextRun('text', element.parts.map((part) => part.text).join('')),
-      ])
-
     default:
       return new Paragraph({ children: [] })
   }

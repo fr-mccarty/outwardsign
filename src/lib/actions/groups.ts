@@ -20,7 +20,7 @@ export interface GroupMember {
   id: string
   group_id: string
   person_id: string
-  role?: string
+  roles?: string[] | null // Array of roles for multi-role support
   joined_at: string
   person?: {
     id: string
@@ -92,7 +92,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
       id,
       group_id,
       person_id,
-      role,
+      roles,
       joined_at,
       person:person_id (
         id,
@@ -190,7 +190,7 @@ export async function deleteGroup(id: string): Promise<void> {
   revalidatePath('/groups')
 }
 
-export async function addGroupMember(groupId: string, personId: string, role?: string): Promise<GroupMember> {
+export async function addGroupMember(groupId: string, personId: string, roles?: string[]): Promise<GroupMember> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
@@ -213,7 +213,7 @@ export async function addGroupMember(groupId: string, personId: string, role?: s
       {
         group_id: groupId,
         person_id: personId,
-        role: role || null,
+        roles: roles && roles.length > 0 ? roles : null,
       }
     ])
     .select()
@@ -264,7 +264,7 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
   revalidatePath(`/groups/${groupId}`)
 }
 
-export async function updateGroupMemberRole(groupId: string, personId: string, role?: string): Promise<GroupMember> {
+export async function updateGroupMemberRoles(groupId: string, personId: string, roles?: string[]): Promise<GroupMember> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
@@ -283,15 +283,15 @@ export async function updateGroupMemberRole(groupId: string, personId: string, r
 
   const { data: member, error } = await supabase
     .from('group_members')
-    .update({ role: role || null })
+    .update({ roles: roles && roles.length > 0 ? roles : null })
     .eq('group_id', groupId)
     .eq('person_id', personId)
     .select()
     .single()
 
   if (error) {
-    console.error('Error updating group member role:', error)
-    throw new Error('Failed to update group member role')
+    console.error('Error updating group member roles:', error)
+    throw new Error('Failed to update group member roles')
   }
 
   revalidatePath('/groups')

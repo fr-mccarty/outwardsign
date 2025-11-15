@@ -43,13 +43,10 @@ export default async function PersonDetailPage({ params }: PageProps) {
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-6">
-        {/* Title */}
-        <div>
-          <h1 className="text-3xl font-bold">{person.first_name} {person.last_name}</h1>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
-            <Calendar className="h-3 w-3" />
-            Added {new Date(person.created_at).toLocaleDateString()}
-          </div>
+        {/* Metadata */}
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <Calendar className="h-3 w-3" />
+          Added {new Date(person.created_at).toLocaleDateString()}
         </div>
 
         {/* Action buttons */}

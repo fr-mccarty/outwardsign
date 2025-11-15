@@ -144,15 +144,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: `${motherName} y ${fatherName} presentan a su ${genderedText('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Por favor, pasen adelante.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `${motherName} y ${fatherName} presentan a su ${genderedText('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Por favor, pasen adelante.`,
   })
 
   liturgyElements.push({
@@ -170,15 +163,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: `¿Se comprometen a criar a ${childName} en la fe católica?`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `¿Se comprometen a criar a ${childName} en la fe católica?`,
   })
 
   liturgyElements.push({
@@ -198,15 +184,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: `${genderedText('Lo', 'La')} signo con la señal de la cruz. Padres, por favor hagan lo mismo.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `${genderedText('Lo', 'La')} signo con la señal de la cruz. Padres, por favor hagan lo mismo.`,
   })
 
   liturgyElements.push({
@@ -224,15 +203,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Prayer
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: `Padre celestial, bendice a ${genderedText('este niño', 'esta niña')} y a estos padres. Ayúdales a ${genderedText('criarlo', 'criarla')} en la fe y el amor. Te lo pedimos por Cristo nuestro Señor.`,
-      },
-    ],
+    type: 'priest-text',
+    text: `Padre celestial, bendice a ${genderedText('este niño', 'esta niña')} y a estos padres. Ayúdales a ${genderedText('criarlo', 'criarla')} en la fe y el amor. Te lo pedimos por Cristo nuestro Señor.`,
   })
 
   liturgyElements.push({
@@ -262,15 +234,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: 'Mostremos nuestro apoyo con un aplauso.',
-      },
-    ],
+    type: 'priest-dialogue',
+    text: 'Mostremos nuestro apoyo con un aplauso.',
   })
 
   return {

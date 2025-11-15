@@ -220,16 +220,6 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       return <div key={index} style={{ marginBottom: `${convert.pointsToPx(spacerSize)}px` }} />
     }
 
-    case 'multi-part-text': {
-      // Deprecated - render as plain text
-      const style = resolveElementStyle('text')
-      return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
-          {element.parts.map((part) => part.text).join('')}
-        </div>
-      ) : null
-    }
-
     default:
       return null
   }

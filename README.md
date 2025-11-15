@@ -222,6 +222,7 @@ supabase stop --no-backup
 - `npm run test:headed` - Run tests in headed mode (see browser)
 - `npm run test:ui` - Run tests with Playwright UI (for debugging)
 - `npm run seed` - Run all database seeders
+- `npm run db:fresh` - Reset the database (drop all data, re-run migrations) and seed with development data
 
 ### Testing
 

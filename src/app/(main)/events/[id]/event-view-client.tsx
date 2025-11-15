@@ -8,6 +8,7 @@ import { EVENT_TYPE_LABELS, MODULE_STATUS_LABELS } from "@/lib/constants"
 import type { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleReference } from '@/lib/helpers/event-helpers'
 import Link from 'next/link'
+import { LanguageLabel } from '@/components/language-label'
 
 interface EventViewClientProps {
   event: EventWithRelations
@@ -37,9 +38,7 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
             {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
           </Badge>
           {event.language && (
-            <Badge variant="secondary">
-              {event.language}
-            </Badge>
+            <LanguageLabel language={event.language} />
           )}
           {isUpcoming && (
             <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">

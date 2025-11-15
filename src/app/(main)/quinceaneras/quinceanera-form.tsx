@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS, QUINCEANERA_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { quinceaneraTemplates, buildQuinceaneraPetitions } from "@/lib/petition-templates/quinceanera"
@@ -80,7 +80,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   const [note, setNote] = useState(quinceanera?.note || "")
   const [announcements, setAnnouncements] = useState(quinceanera?.announcements || "")
   const [petitions, setPetitions] = useState(quinceanera?.petitions || "")
-  const [quinceaneraTemplateId, setQuinceaneraTemplateId] = useState(quinceanera?.quinceanera_template_id || "")
+  const [quinceaneraTemplateId, setQuinceaneraTemplateId] = useState(quinceanera?.quinceanera_template_id || QUINCEANERA_DEFAULT_TEMPLATE)
 
   // Boolean states
   const [psalmIsSung, setPsalmIsSung] = useState(quinceanera?.psalm_is_sung || false)

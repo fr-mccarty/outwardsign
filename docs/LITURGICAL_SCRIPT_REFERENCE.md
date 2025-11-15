@@ -25,7 +25,6 @@
 | Element Type | Primary Use | Required Parameters | Auto-Styling |
 |-------------|-------------|---------------------|--------------|
 | `text` | General text | `text` | None |
-| `multi-part-text` | Mixed formatting | `parts[]` | None |
 | `event-title` | Main title | `text` | 18pt, bold, centered |
 | `event-datetime` | Event date/time | `text` | 14pt, centered |
 | `section-title` | Section heading | `text` | 16pt, bold, centered |
@@ -73,8 +72,6 @@
 | **Line Height** | Normal: 1.4 (recommended) |
 | **Colors** | Liturgy Red: `#c41e3a`, Black: `#000000` |
 | **Page Margins** | 60pt (~0.83 inches) |
-
-**Exception:** `multi-part-text` supports per-part formatting for complex mixed-format text.
 
 ---
 
@@ -172,35 +169,6 @@ Simple text. Style is controlled by `liturgical-script-styles.ts`.
   text: 'The Lord be with you.'
 }
 ```
-
-#### MultiPartTextElement
-Multiple text parts with individual formatting (e.g., "**Priest:** The Lord be with you").
-
-```typescript
-{
-  type: 'multi-part-text',
-  parts: [
-    {
-      text: string,
-      formatting?: ['bold'] | ['italic'] | ['bolditalic'],
-      color?: 'default' | 'liturgy-red'
-    }
-  ]
-}
-```
-
-**Example:**
-```typescript
-{
-  type: 'multi-part-text',
-  parts: [
-    { text: 'Priest: ', formatting: ['bold'], color: 'liturgy-red' },
-    { text: 'The Lord be with you.' }
-  ]
-}
-```
-
-**Note:** `multi-part-text` is the only element type that supports per-part formatting for complex mixed-format text.
 
 ---
 
@@ -487,7 +455,8 @@ liturgyElements.push({
 Always choose the most semantically appropriate element type:
 
 - **`rubric`** - Liturgical instructions/directions
-- **`multi-part-text`** - Speaker + dialogue
+- **`priest-dialogue`** - Priest/celebrant spoken text
+- **`priest-text`** - Priest's prayer or blessing
 - **`response`** - Assembly responses
 - **`text`** - General content
 - **`reading-text`** - Scripture passages
@@ -555,40 +524,6 @@ Use `spacer` elements for vertical spacing:
 
 // CORRECT
 { type: 'rubric', text: 'After the Homily' }
-```
-
-#### ❌ Don't Forget Speaker Formatting
-
-```typescript
-// WRONG - no bold on speaker
-{
-  type: 'multi-part-text',
-  parts: [
-    { text: 'CELEBRANT: The Lord be with you.' }
-  ]
-}
-
-// CORRECT
-{
-  type: 'multi-part-text',
-  parts: [
-    { text: 'CELEBRANT: ', formatting: ['bold'] },
-    { text: 'The Lord be with you.' }
-  ]
-}
-```
-
-#### ❌ Don't Mix Element Types Incorrectly
-
-```typescript
-// WRONG - rubric content in multi-part-text
-{
-  type: 'multi-part-text',
-  parts: [{ text: '[Walk to the altar]', formatting: ['italic'] }]
-}
-
-// CORRECT
-{ type: 'rubric', text: 'Walk to the altar' }
 ```
 
 ---
@@ -819,21 +754,12 @@ He leads me beside still waters.`
 ]
 ```
 
-### Mixed Formatting Dialogue
+### Priest Dialogue
 
 ```typescript
 {
-  type: 'multi-part-text',
-  parts: [
-    {
-      text: 'CELEBRANT: ',
-      formatting: ['bold'],
-      color: 'liturgy-red'
-    },
-    {
-      text: 'The Lord be with you.'
-    }
-  ]
+  type: 'priest-dialogue',
+  text: 'The Lord be with you.'
 }
 ```
 

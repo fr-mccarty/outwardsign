@@ -29,16 +29,6 @@ export interface TextElement extends BaseElement {
 }
 
 /**
- * Multi-part text element - DEPRECATED, use specific element types instead
- */
-export interface MultiPartTextElement extends BaseElement {
-  type: 'multi-part-text'
-  parts: Array<{
-    text: string
-  }>
-}
-
-/**
  * Event title (e.g., "Jane Doe & John Smith")
  */
 export interface EventTitleElement extends BaseElement {
@@ -184,7 +174,6 @@ export interface SpacerElement extends BaseElement {
  */
 export type ContentElement =
   | TextElement
-  | MultiPartTextElement
   | EventTitleElement
   | EventDateTimeElement
   | SectionTitleElement

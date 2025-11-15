@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS, PRESENTATION_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
@@ -59,7 +59,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       is_baptized: presentation?.is_baptized || false,
       status: (presentation?.status as "ACTIVE" | "INACTIVE" | "ARCHIVED") || "ACTIVE",
       note: presentation?.note || null,
-      presentation_template_id: presentation?.presentation_template_id || "presentation-spanish",
+      presentation_template_id: presentation?.presentation_template_id || PRESENTATION_DEFAULT_TEMPLATE,
     },
   })
 

@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { Reading } from '@/lib/actions/readings'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, BookOpen, Search, Filter } from "lucide-react"
 import { READING_CATEGORY_LABELS, LANGUAGE_LABELS } from "@/lib/constants"
@@ -17,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ListViewCard } from "@/components/list-view-card"
+import { ReadingCategoryLabel } from "@/components/reading-category-label"
+import { LanguageLabel } from "@/components/language-label"
 
 interface Stats {
   total: number
@@ -54,18 +55,6 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
 
   const clearFilters = () => {
     router.push('/readings')
-  }
-
-  // Normalize category for display (handle both uppercase and lowercase with suffixes)
-  const normalizeCategory = (category: string): string => {
-    // Remove numeric suffixes and convert to uppercase (baptism-1 → BAPTISM)
-    return category.replace(/-\d+$/, '').toUpperCase()
-  }
-
-  // Get display label for a category
-  const getCategoryLabel = (category: string): string => {
-    const normalized = normalizeCategory(category)
-    return READING_CATEGORY_LABELS[normalized]?.en || category
   }
 
   const hasActiveFilters = searchTerm || selectedLanguage !== 'all' || selectedCategory !== 'all'
@@ -127,21 +116,21 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
               editHref={`/readings/${reading.id}/edit`}
               viewHref={`/readings/${reading.id}`}
               viewButtonText="View Reading"
+              titleSuffix={
+                reading.language && (
+                  <LanguageLabel language={reading.language} className="text-xs" />
+                )
+              }
             >
-              {reading.language && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="text-xs">
-                    {LANGUAGE_LABELS[reading.language]?.en || reading.language}
-                  </Badge>
-                </div>
-              )}
-
               {reading.categories && reading.categories.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {reading.categories.map(category => (
-                    <Badge key={category} variant="secondary" className="text-xs">
-                      {getCategoryLabel(category)}
-                    </Badge>
+                    <ReadingCategoryLabel
+                      key={category}
+                      category={category}
+                      variant="secondary"
+                      className="text-xs"
+                    />
                   ))}
                 </div>
               )}

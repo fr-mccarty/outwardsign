@@ -150,15 +150,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation - English
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedEn('son', 'daughter')}, ${motherName} and ${fatherName} would like to present their ${genderedEn('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedEn('son', 'daughter')}, ${motherName} and ${fatherName} would like to present their ${genderedEn('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
   })
 
   liturgyElements.push({
@@ -167,15 +160,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation - Spanish
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: `La vida es el mayor regalo de Dios para nosotros. Agradecidos por la vida de su ${genderedEs('hijo', 'hija')}, ${motherName} y ${fatherName} quisieran presentar a su ${genderedEs('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Les damos la bienvenida aquí al frente de la iglesia.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `La vida es el mayor regalo de Dios para nosotros. Agradecidos por la vida de su ${genderedEs('hijo', 'hija')}, ${motherName} y ${fatherName} quisieran presentar a su ${genderedEs('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Les damos la bienvenida aquí al frente de la iglesia.`,
   })
 
   liturgyElements.push({
@@ -193,15 +179,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question - English
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT (to the parents): ',
-      },
-      {
-        text: `By presenting this ${genderedEn('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedEn('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `(to the parents) By presenting this ${genderedEn('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedEn('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
   })
 
   liturgyElements.push({
@@ -210,15 +189,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question - Spanish
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE (a los padres): ',
-      },
-      {
-        text: `Al presentar a ${genderedEs('este niño', 'esta niña')} al Señor y a esta comunidad hoy, ${baptized ? 'renuevan su compromiso' : 'se comprometen'} a ${genderedEs('criarlo', 'criarla')} en los caminos de la fe. ¿Entienden y aceptan esta responsabilidad?`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `(a los padres) Al presentar a ${genderedEs('este niño', 'esta niña')} al Señor y a esta comunidad hoy, ${baptized ? 'renuevan su compromiso' : 'se comprometen'} a ${genderedEs('criarlo', 'criarla')} en los caminos de la fe. ¿Entienden y aceptan esta responsabilidad?`,
   })
 
   liturgyElements.push({
@@ -238,15 +210,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross - English
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: `CELEBRANT (to the ${genderedEn('boy', 'girl')}): `,
-      },
-      {
-        text: `${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your parents to do the same.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `(to the ${genderedEn('boy', 'girl')}) ${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your parents to do the same.`,
   })
 
   liturgyElements.push({
@@ -255,15 +220,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross - Spanish
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: `CELEBRANTE (${genderedEs('al niño', 'a la niña')}): `,
-      },
-      {
-        text: `${baptized ? 'Como el día de tu bautismo, te' : 'Te'} signo con la señal de la cruz, y pido a tus padres que hagan lo mismo.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `(${genderedEs('al niño', 'a la niña')}) ${baptized ? 'Como el día de tu bautismo, te' : 'Te'} signo con la señal de la cruz, y pido a tus padres que hagan lo mismo.`,
   })
 
   liturgyElements.push({
@@ -281,15 +239,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Prayer - English
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `Heavenly Father, you are the giver of all life. You gave us this ${genderedEn('son', 'daughter')} and we present ${genderedEn('him', 'her')} to you, as Mary presented Jesus in the temple. We pray for these parents. Bless them in their efforts to raise this ${genderedEn('boy', 'girl')} as a good Christian and as a good Catholic. Bless this child. Give ${genderedEn('him', 'her')} good health, protect ${genderedEn('him', 'her')} from any danger of body and spirit, and help ${genderedEn('him', 'her')} to grow in age and in wisdom, always in your presence.`,
-      },
-    ],
+    type: 'priest-text',
+    text: `Heavenly Father, you are the giver of all life. You gave us this ${genderedEn('son', 'daughter')} and we present ${genderedEn('him', 'her')} to you, as Mary presented Jesus in the temple. We pray for these parents. Bless them in their efforts to raise this ${genderedEn('boy', 'girl')} as a good Christian and as a good Catholic. Bless this child. Give ${genderedEn('him', 'her')} good health, protect ${genderedEn('him', 'her')} from any danger of body and spirit, and help ${genderedEn('him', 'her')} to grow in age and in wisdom, always in your presence.`,
   })
 
   liturgyElements.push({
@@ -298,15 +249,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Prayer - Spanish
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANTE: ',
-      },
-      {
-        text: `Padre celestial, tú eres el dador de toda vida. Nos diste ${genderedEs('este hijo', 'esta hija')} y ${genderedEs('lo', 'la')} presentamos a ti, como María presentó a Jesús en el templo. Oramos por estos padres. Bendícelos en sus esfuerzos por criar a ${genderedEs('este niño', 'esta niña')} como ${genderedEs('un buen cristiano y un buen católico', 'una buena cristiana y una buena católica')}. Bendice a ${genderedEs('este niño', 'esta niña')}. Dale buena salud, ${genderedEs('protégelo', 'protégela')} de todo peligro del cuerpo y del espíritu, y ayúda${genderedEs('lo', 'la')} a crecer en edad y en sabiduría, siempre en tu presencia.`,
-      },
-    ],
+    type: 'priest-text',
+    text: `Padre celestial, tú eres el dador de toda vida. Nos diste ${genderedEs('este hijo', 'esta hija')} y ${genderedEs('lo', 'la')} presentamos a ti, como María presentó a Jesús en el templo. Oramos por estos padres. Bendícelos en sus esfuerzos por criar a ${genderedEs('este niño', 'esta niña')} como ${genderedEs('un buen cristiano y un buen católico', 'una buena cristiana y una buena católica')}. Bendice a ${genderedEs('este niño', 'esta niña')}. Dale buena salud, ${genderedEs('protégelo', 'protégela')} de todo peligro del cuerpo y del espíritu, y ayúda${genderedEs('lo', 'la')} a crecer en edad y en sabiduría, siempre en tu presencia.`,
   })
 
   liturgyElements.push({
@@ -365,15 +309,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal - Bilingual
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT / CELEBRANTE: ',
-      },
-      {
-        text: 'Now we send you back to your places, as we show you our support with applause. / Ahora los enviamos de regreso a sus lugares, mientras les mostramos nuestro apoyo con un aplauso.',
-      },
-    ],
+    type: 'priest-dialogue',
+    text: 'Now we send you back to your places, as we show you our support with applause. / Ahora los enviamos de regreso a sus lugares, mientras les mostramos nuestro apoyo con un aplauso.',
   })
 
   return {

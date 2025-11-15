@@ -33,6 +33,7 @@ export function MassViewClient({ mass }: MassViewClientProps) {
       generateFilename={generateFilename}
       buildLiturgy={buildMassLiturgy}
       getTemplateId={getTemplateId}
+      statusType="mass"
     />
   )
 }

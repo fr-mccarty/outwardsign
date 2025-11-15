@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, BAPTISM_TEMPLATE_VALUES, BAPTISM_TEMPLATE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, BAPTISM_TEMPLATE_VALUES, BAPTISM_TEMPLATE_LABELS, BAPTISM_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import type { Person, Event } from "@/lib/types"
@@ -58,7 +58,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
    
   const [status, setStatus] = useState<"ACTIVE" | "INACTIVE" | "ARCHIVED">(baptism?.status as any || "ACTIVE")
   const [note, setNote] = useState(baptism?.note || "")
-  const [baptismTemplateId, setBaptismTemplateId] = useState(baptism?.baptism_template_id || "")
+  const [baptismTemplateId, setBaptismTemplateId] = useState(baptism?.baptism_template_id || BAPTISM_DEFAULT_TEMPLATE)
 
   // Picker states using usePickerState hook
   const baptismEvent = usePickerState<Event>()

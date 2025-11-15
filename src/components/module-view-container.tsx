@@ -55,6 +55,12 @@ interface ModuleViewContainerProps {
    * Defaults to `/print/${modulePath}/${entity.id}`
    */
   printViewPath?: string
+
+  /**
+   * Status type for displaying correct labels
+   * Defaults to "module" for most entities
+   */
+  statusType?: 'module' | 'mass' | 'mass-intention'
 }
 
 /**
@@ -70,6 +76,7 @@ export function ModuleViewContainer({
   buildLiturgy,
   getTemplateId,
   printViewPath,
+  statusType = 'module',
 }: ModuleViewContainerProps) {
   // Get template ID from entity
   const templateId = getTemplateId(entity)
@@ -90,6 +97,7 @@ export function ModuleViewContainer({
         mainEvent={mainEvent}
         generateFilename={generateFilename}
         printViewPath={printViewPath}
+        statusType={statusType}
       />
 
       {/* Main Content - appears second on mobile, first on desktop */}

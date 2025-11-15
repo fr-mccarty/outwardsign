@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { MASS_STATUS_VALUES, MASS_STATUS_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
+import { ModuleStatusLabel } from "@/components/module-status-label"
 
 interface Stats {
   total: number
@@ -62,20 +63,6 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
 
   const hasActiveFilters = searchValue || selectedStatus !== 'all'
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'PLANNING':
-        return 'secondary'
-      case 'SCHEDULED':
-        return 'default'
-      case 'COMPLETED':
-        return 'outline'
-      case 'CANCELLED':
-        return 'destructive'
-      default:
-        return 'secondary'
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -135,9 +122,11 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
               viewButtonText="Preview"
             >
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant={getStatusVariant(mass.status || 'PLANNING')} className="text-xs">
-                  {MASS_STATUS_LABELS[mass.status as keyof typeof MASS_STATUS_LABELS]?.en || mass.status}
-                </Badge>
+                <ModuleStatusLabel
+                  status={mass.status}
+                  statusType="mass"
+                  className="text-xs"
+                />
                 {mass.event && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />

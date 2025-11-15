@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
-import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS } from "@/lib/constants"
+import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
@@ -54,7 +54,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [note, setNote] = useState(mass?.note || "")
   const [announcements, setAnnouncements] = useState(mass?.announcements || "")
   const [petitions, setPetitions] = useState(mass?.petitions || "")
-  const [massTemplateId, setMassTemplateId] = useState(mass?.mass_template_id || "mass-full-script-english")
+  const [massTemplateId, setMassTemplateId] = useState(mass?.mass_template_id || MASS_DEFAULT_TEMPLATE)
   const [preMassAnnouncementTopic, setPreMassAnnouncementTopic] = useState(mass?.pre_mass_announcement_topic || "")
 
   // Picker states using usePickerState hook

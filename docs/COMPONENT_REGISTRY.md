@@ -135,6 +135,170 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 
 ---
 
+### EventFormFields
+**Path:** `src/components/event-form-fields.tsx`
+
+**Purpose:** Reusable event form fields component for creating/editing events. Provides consistent event field UI across the application.
+
+**Key Features:**
+- Standard event fields: name, date, time, timezone, location, note
+- Integrated LocationPicker for location selection
+- CommonTimesModal for quick time selection
+- Configurable visible/required fields
+- Automatic location state management
+- Error handling and validation display
+
+**Props:**
+- `formData`: Form data object
+- `setFormData`: Form data setter function
+- `errors`: Validation errors object
+- `isEditMode`: Whether in edit mode
+- `visibleFields`: Array of field names to show (default: `['location', 'note']`)
+- `requiredFields`: Array of field names that are required
+
+**Usage:**
+```tsx
+const [formData, setFormData] = useState({
+  name: '',
+  start_date: '',
+  start_time: '',
+  timezone: 'America/Chicago',
+  location_id: null,
+  note: ''
+})
+const [errors, setErrors] = useState({})
+
+<EventFormFields
+  formData={formData}
+  setFormData={setFormData}
+  errors={errors}
+  isEditMode={false}
+  visibleFields={['location', 'note']}
+  requiredFields={['location']}
+/>
+```
+
+---
+
+### OfferingAmountInput
+**Path:** `src/components/offering-amount-input.tsx`
+
+**Purpose:** Specialized input for monetary offering amounts with quick amount buttons.
+
+**Key Features:**
+- Dollar input with automatic formatting
+- Quick amount buttons popover
+- Custom amount creation with labels
+- Saves custom amounts to parish settings
+- Optimistic UI updates
+- Converts between cents and dollars automatically
+
+**Props:**
+- `id`: Input ID (default: 'offering-amount')
+- `label`: Field label (default: 'Offering Amount')
+- `value`: Current dollar value as string
+- `onChange`: Value change handler
+- `quickAmounts`: Array of `{amount: number (cents), label: string}`
+- `placeholder`: Placeholder text
+- `required`: Mark as required
+- `className`: Additional CSS classes
+- `parishId`: Parish ID for saving custom amounts
+- `onQuickAmountAdded`: Callback when custom amount added
+
+**Usage:**
+```tsx
+const [offeringAmount, setOfferingAmount] = useState('5.00')
+
+<OfferingAmountInput
+  label="Offering Amount"
+  value={offeringAmount}
+  onChange={setOfferingAmount}
+  quickAmounts={[
+    { amount: 100, label: '$1' },
+    { amount: 500, label: '$5' },
+    { amount: 1000, label: '$10' }
+  ]}
+  required
+/>
+```
+
+**Hook - useOfferingAmount:**
+```tsx
+const {
+  dollarValue,
+  setDollarValue,
+  setValueFromCents,
+  getValueInCents
+} = useOfferingAmount(500) // Initialize with 500 cents ($5.00)
+```
+
+---
+
+### CommonTimesModal
+**Path:** `src/components/common-times-modal.tsx`
+
+**Purpose:** Modal for selecting common liturgical service times.
+
+**Key Features:**
+- Grid of common Mass times (7 AM - 7 PM)
+- Quick selection
+- Used by EventFormFields and event pickers
+
+**Props:**
+- `open`: Modal visibility state
+- `onOpenChange`: Modal state handler
+- `onSelectTime`: Callback when time selected (receives time string like '09:00')
+
+**Usage:**
+```tsx
+const [showTimesModal, setShowTimesModal] = useState(false)
+
+<CommonTimesModal
+  open={showTimesModal}
+  onOpenChange={setShowTimesModal}
+  onSelectTime={(time) => {
+    setEventTime(time)
+  }}
+/>
+```
+
+---
+
+### DeleteRowDialog
+**Path:** `src/components/delete-row-dialog.tsx`
+
+**Purpose:** Confirmation dialog for deleting table rows/entities.
+
+---
+
+### CenteredFormCard
+**Path:** `src/components/centered-form-card.tsx`
+
+**Purpose:** Centered card wrapper for authentication and onboarding forms.
+
+---
+
+### CopyButton
+**Path:** `src/components/copy-button.tsx`
+
+**Purpose:** Button to copy text to clipboard with success feedback.
+
+---
+
+### PrintButton
+**Path:** `src/components/print-button.tsx`
+
+**Purpose:** Button to trigger browser print dialog.
+
+---
+
+### TestingBanner
+**Path:** `src/components/testing-banner.tsx`
+
+**Purpose:** Banner displayed in test environments to indicate test mode.
+
+---
+
 ## Picker Components
 
 > **For detailed picker documentation:**
@@ -293,6 +457,41 @@ const mass = usePickerState<Mass>()
 
 ---
 
+#### MassPickerField
+**Path:** `src/components/mass-picker-field.tsx`
+
+**Purpose:** Standardized wrapper for MassPicker with consistent button UI.
+
+**Props:**
+- `label`: Field label
+- `value`: Selected Mass | null
+- `onValueChange`: Mass change handler
+- `showPicker`: Picker visibility state
+- `onShowPickerChange`: Picker visibility handler
+- `description`: Optional help text
+- `placeholder`: Button text when no mass selected
+- `required`: Show required indicator
+
+**Usage with usePickerState:**
+```tsx
+import { usePickerState } from '@/hooks/use-picker-state'
+import { MassPickerField } from '@/components/mass-picker-field'
+
+const assignedMass = usePickerState<MassWithNames>()
+
+<MassPickerField
+  label="Assigned Mass"
+  value={assignedMass.value}
+  onValueChange={assignedMass.setValue}
+  showPicker={assignedMass.showPicker}
+  onShowPickerChange={assignedMass.setShowPicker}
+  description="The Mass for this intention"
+  placeholder="Select Mass"
+/>
+```
+
+---
+
 ### GlobalLiturgicalEventPicker
 **Path:** `src/components/global-liturgical-event-picker.tsx`
 
@@ -319,6 +518,41 @@ const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
   onOpenChange={liturgicalEvent.setShowPicker}
   onSelect={liturgicalEvent.setValue}
   selectedEventId={liturgicalEvent.value?.id}
+/>
+```
+
+---
+
+#### LiturgicalEventPickerField
+**Path:** `src/components/liturgical-event-picker-field.tsx`
+
+**Purpose:** Standardized wrapper for GlobalLiturgicalEventPicker with consistent button UI.
+
+**Props:**
+- `label`: Field label
+- `value`: Selected GlobalLiturgicalEvent | null
+- `onValueChange`: Event change handler
+- `showPicker`: Picker visibility state
+- `onShowPickerChange`: Picker visibility handler
+- `description`: Optional help text
+- `placeholder`: Button text when no event selected
+- `required`: Show required indicator
+
+**Usage with usePickerState:**
+```tsx
+import { usePickerState } from '@/hooks/use-picker-state'
+import { LiturgicalEventPickerField } from '@/components/liturgical-event-picker-field'
+
+const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
+
+<LiturgicalEventPickerField
+  label="Liturgical Event"
+  value={liturgicalEvent.value}
+  onValueChange={liturgicalEvent.setValue}
+  showPicker={liturgicalEvent.showPicker}
+  onShowPickerChange={liturgicalEvent.setShowPicker}
+  description="The liturgical calendar event for this Mass"
+  placeholder="Select Liturgical Event"
 />
 ```
 
@@ -684,6 +918,121 @@ const breadcrumbs = [
 
 ## Display Components
 
+### ListViewCard
+**Path:** `src/components/list-view-card.tsx`
+
+**Purpose:** Reusable card component for displaying entities in list views with consistent layout.
+
+**Key Features:**
+- Title in upper left with optional suffix (e.g., status badge)
+- Edit icon button in upper right
+- Custom content area (passed as children)
+- View button in bottom right
+- Hover shadow effect
+- Responsive design
+
+**Props:**
+- `title`: Card title (required)
+- `editHref`: Link to edit page (required)
+- `viewHref`: Link to view/detail page (required)
+- `viewButtonText`: Text for view button (default: "View Details")
+- `titleSuffix`: Optional ReactNode displayed beside title (e.g., badge)
+- `children`: Card content (required)
+
+**Usage:**
+```tsx
+<ListViewCard
+  title={`${wedding.bride?.first_name} & ${wedding.groom?.first_name}`}
+  titleSuffix={<ModuleStatusLabel status={wedding.status} statusType="module" />}
+  editHref={`/weddings/${wedding.id}/edit`}
+  viewHref={`/weddings/${wedding.id}`}
+  viewButtonText="View Wedding"
+>
+  {/* Custom content */}
+  <div className="text-sm text-muted-foreground">
+    {wedding.wedding_event && (
+      <p>{new Date(wedding.wedding_event.start_date).toLocaleDateString()}</p>
+    )}
+  </div>
+</ListViewCard>
+```
+
+---
+
+### ModuleStatusLabel
+**Path:** `src/components/module-status-label.tsx`
+
+**Purpose:** Display status badges for modules, masses, and mass intentions with appropriate styling and labels.
+
+**Key Features:**
+- Supports three status types: module, mass, mass-intention
+- Bilingual labels (English/Spanish)
+- Automatic color/variant selection based on status
+- Fallback to default status if none provided
+
+**Props:**
+- `status`: Status string (optional, defaults to type-specific default)
+- `statusType`: Type of status ('module' | 'mass' | 'mass-intention')
+- `variant`: Override badge variant (optional)
+- `className`: Additional CSS classes
+
+**Usage:**
+```tsx
+// Module status (weddings, funerals, etc.)
+<ModuleStatusLabel status="ACTIVE" statusType="module" />
+<ModuleStatusLabel status="COMPLETED" statusType="module" />
+
+// Mass status
+<ModuleStatusLabel status="SCHEDULED" statusType="mass" />
+<ModuleStatusLabel status="CANCELLED" statusType="mass" />
+
+// Mass intention status
+<ModuleStatusLabel status="CONFIRMED" statusType="mass-intention" />
+<ModuleStatusLabel status="FULFILLED" statusType="mass-intention" />
+```
+
+**Status Variants:**
+- Module: ACTIVE (default), INACTIVE (secondary), COMPLETED (outline)
+- Mass: PLANNING (secondary), SCHEDULED (default), COMPLETED (outline), CANCELLED (destructive)
+- Mass Intention: REQUESTED (secondary), CONFIRMED (default), FULFILLED (outline), CANCELLED (destructive)
+
+---
+
+### LanguageLabel
+**Path:** `src/components/language-label.tsx`
+
+**Purpose:** Display language labels with bilingual support.
+
+---
+
+### ReadingCategoryLabel
+**Path:** `src/components/reading-category-label.tsx`
+
+**Purpose:** Display reading category labels for liturgical readings.
+
+---
+
+### ErrorDisplay
+**Path:** `src/components/error-display.tsx`
+
+**Purpose:** Standardized error message display component.
+
+---
+
+### LoadingSkeleton
+**Path:** `src/components/loading-skeleton.tsx`
+
+**Purpose:** Skeleton loader for async content loading states.
+
+---
+
+### Loading
+**Path:** `src/components/loading.tsx`
+
+**Purpose:** Loading indicator component.
+
+---
+
 ### ModuleViewPanel
 **Path:** `src/components/module-view-panel.tsx`
 
@@ -760,6 +1109,312 @@ const breadcrumbs = [
 - `onChange`: Change handler
 - `templates`: Array of petition templates
 - `onInsertTemplate`: Template insertion handler
+
+---
+
+## Data Table System
+
+### DataTable
+**Path:** `src/components/data-table/data-table.tsx`
+
+**Purpose:** Reusable data table component with sorting, responsive hiding, and empty states.
+
+**Key Features:**
+- Column-based configuration
+- Client-side sorting with visual indicators
+- Responsive column hiding
+- Empty state customization
+- Row click handling
+- Custom row and cell styling
+- Accessible table structure
+
+**Props:**
+- `data`: Array of data objects
+- `columns`: Array of column definitions
+- `keyExtractor`: Function to extract unique key from row
+- `onRowClick`: Optional row click handler
+- `emptyState`: Empty state configuration
+- `className`: Table CSS classes
+- `containerClassName`: Container CSS classes
+- `rowClassName`: Row CSS classes (string or function)
+- `defaultSort`: Default sort configuration
+
+**Column Definition:**
+```tsx
+interface DataTableColumn<T> {
+  key: string
+  header: string | ReactNode
+  cell: (row: T) => ReactNode
+  className?: string
+  headerClassName?: string
+  hidden?: boolean
+  hiddenOn?: 'sm' | 'md' | 'lg' | 'xl'  // Responsive hiding
+  sortable?: boolean
+  sortFn?: (a: T, b: T) => number
+  accessorFn?: (row: T) => any
+}
+```
+
+**Usage:**
+```tsx
+import { DataTable, type DataTableColumn } from '@/components/data-table/data-table'
+
+const columns: DataTableColumn<Person>[] = [
+  {
+    key: 'name',
+    header: 'Name',
+    cell: (person) => `${person.first_name} ${person.last_name}`,
+    sortable: true,
+    accessorFn: (person) => person.first_name
+  },
+  {
+    key: 'email',
+    header: 'Email',
+    cell: (person) => person.email || '—',
+    hiddenOn: 'sm'  // Hide on small screens
+  },
+  {
+    key: 'actions',
+    header: 'Actions',
+    cell: (person) => (
+      <DropdownMenu>
+        {/* Action buttons */}
+      </DropdownMenu>
+    )
+  }
+]
+
+<DataTable
+  data={people}
+  columns={columns}
+  keyExtractor={(person) => person.id}
+  onRowClick={(person) => router.push(`/people/${person.id}`)}
+  emptyState={{
+    icon: <Users className="h-12 w-12" />,
+    title: 'No people found',
+    description: 'Get started by adding your first person',
+    action: <Button onClick={() => router.push('/people/create')}>Add Person</Button>
+  }}
+  defaultSort={{ key: 'name', direction: 'asc' }}
+/>
+```
+
+---
+
+### DataTableEmpty
+**Path:** `src/components/data-table/data-table-empty.tsx`
+
+**Purpose:** Empty state component for data tables.
+
+**Props:**
+- `icon`: Optional icon to display
+- `title`: Empty state title
+- `description`: Empty state description
+- `action`: Optional action button/element
+
+---
+
+### DataTableHeader
+**Path:** `src/components/data-table/data-table-header.tsx`
+
+**Purpose:** Table header component with search and actions.
+
+---
+
+### DataTableActions
+**Path:** `src/components/data-table/data-table-actions.tsx`
+
+**Purpose:** Action buttons for table rows (edit, delete, etc.).
+
+---
+
+## Calendar Components
+
+### Calendar System
+**Path:** `src/components/calendar/`
+
+**Purpose:** Complete calendar view system for displaying parish events and liturgical calendar.
+
+**Components:**
+- `calendar.tsx` - Main calendar container
+- `calendar-header.tsx` - Calendar navigation and view switcher
+- `calendar-grid.tsx` - Calendar grid layout
+- `calendar-day.tsx` - Individual day cell
+- `day-events-modal.tsx` - Modal for viewing all events on a day
+
+**Event Item Components:**
+Parish events:
+- `event-items/parish-event-item-month.tsx` - Parish event display in month view
+- `event-items/parish-event-item-week.tsx` - Parish event display in week view
+- `event-items/parish-event-item-day.tsx` - Parish event display in day view
+
+Liturgical events:
+- `event-items/liturgical-event-item-month.tsx` - Liturgical event in month view
+- `event-items/liturgical-event-item-week.tsx` - Liturgical event in week view
+- `event-items/liturgical-event-item-day.tsx` - Liturgical event in day view
+
+**Features:**
+- Month/week/day views
+- Parish events integration
+- Liturgical calendar integration
+- Event color coding by type
+- Click to view event details
+- Responsive design
+- Scrollable event modals
+
+---
+
+### MiniCalendar
+**Path:** `src/components/mini-calendar.tsx`
+
+**Purpose:** Small calendar widget for date selection and navigation.
+
+---
+
+### LiturgicalEventModal
+**Path:** `src/components/liturgical-event-modal.tsx`
+
+**Purpose:** Modal for displaying liturgical event details.
+
+---
+
+## Wizard Components
+
+### Wizard System
+**Path:** `src/components/wizard/`
+
+**Purpose:** Multi-step wizard/form flow system.
+
+**Components:**
+- `Wizard.tsx` - Main wizard container
+- `WizardContainer.tsx` - Wizard layout wrapper
+- `WizardSteps.tsx` - Step indicator/progress bar
+- `WizardNavigation.tsx` - Next/back buttons
+- `WizardStepContent.tsx` - Step content wrapper
+- `WizardLoadingState.tsx` - Loading state for wizard
+
+**Features:**
+- Multi-step forms
+- Progress indication
+- Navigation controls
+- Step validation
+- Loading states
+- Responsive design
+
+---
+
+### LiturgicalReadingsWizard
+**Path:** `src/components/liturgical-readings-wizard.tsx`
+
+**Purpose:** Wizard for selecting and configuring liturgical readings.
+
+---
+
+### PetitionWizard
+**Path:** `src/components/petition-wizard.tsx`
+
+**Purpose:** Wizard for creating and editing liturgical petitions.
+
+---
+
+## Group Components
+
+### GroupFormDialog
+**Path:** `src/components/groups/group-form-dialog.tsx`
+
+**Purpose:** Dialog for creating/editing liturgical ministry groups.
+
+**Key Features:**
+- Inline group creation/editing
+- Group name and description
+- Role assignment
+- Member management
+- Used in Groups module (dialog-based architecture)
+
+---
+
+## Navigation & Layout Components
+
+### CollapsibleNavSection
+**Path:** `src/components/collapsible-nav-section.tsx`
+
+**Purpose:** Collapsible navigation section for sidebar.
+
+---
+
+### ParishSwitcher
+**Path:** `src/components/parish-switcher.tsx`
+
+**Purpose:** Dropdown for switching between parishes (multi-parish support).
+
+---
+
+### ParishUserMenu
+**Path:** `src/components/parish-user-menu.tsx`
+
+**Purpose:** User menu dropdown with profile and logout options.
+
+---
+
+### MainHeader
+**Path:** `src/components/main-header.tsx`
+
+**Purpose:** Application header with breadcrumbs and user menu.
+
+---
+
+### UserProfile
+**Path:** `src/components/user-profile.tsx`
+
+**Purpose:** User profile display component.
+
+---
+
+## Context Providers
+
+### BreadcrumbContext
+**Path:** `src/components/breadcrumb-context.tsx`
+
+**Purpose:** React context for managing breadcrumb state across the application.
+
+---
+
+### ThemeProvider
+**Path:** `src/components/theme-provider.tsx`
+
+**Purpose:** Theme provider for dark mode support (wraps next-themes).
+
+---
+
+## Picker Infrastructure Components
+
+### Picker Base Components
+**Path:** `src/components/picker/`
+
+**Purpose:** Reusable wrapper components for building consistent picker modals.
+
+**Components:**
+- `picker-modal-wrapper.tsx` - Base modal wrapper for all pickers
+- `picker-search-field-wrapper.tsx` - Search field wrapper
+- `picker-list-wrapper.tsx` - List/results wrapper
+- `picker-item-wrapper.tsx` - Individual item wrapper
+- `picker-form-wrapper.tsx` - Form wrapper for creating new entities
+
+**Note:** These are infrastructure components. Use the high-level picker components (PeoplePicker, EventPicker, etc.) instead of building pickers from scratch.
+
+---
+
+### CorePicker
+**Path:** `src/components/core-picker.tsx`
+
+**Purpose:** Base picker component for advanced use cases. Most developers should use specific picker components instead.
+
+---
+
+### CorePickerField / PickerField
+**Path:** `src/components/core-picker-field.tsx`, `src/components/picker-field.tsx`
+
+**Purpose:** Generic picker field wrapper. Used internally by specific picker field components.
 
 ---
 

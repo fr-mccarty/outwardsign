@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, FUNERAL_TEMPLATE_VALUES, FUNERAL_TEMPLATE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, FUNERAL_TEMPLATE_VALUES, FUNERAL_TEMPLATE_LABELS, FUNERAL_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { funeralTemplates, buildFuneralPetitions } from "@/lib/petition-templates/funeral"
@@ -80,7 +80,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
   const [note, setNote] = useState(funeral?.note || "")
   const [announcements, setAnnouncements] = useState(funeral?.announcements || "")
   const [petitions, setPetitions] = useState(funeral?.petitions || "")
-  const [funeralTemplateId, setFuneralTemplateId] = useState(funeral?.funeral_template_id || "")
+  const [funeralTemplateId, setFuneralTemplateId] = useState(funeral?.funeral_template_id || FUNERAL_DEFAULT_TEMPLATE)
 
   // Boolean states
   const [psalmIsSung, setPsalmIsSung] = useState(funeral?.psalm_is_sung || false)

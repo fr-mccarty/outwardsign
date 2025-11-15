@@ -9,6 +9,7 @@ interface ListViewCardProps {
   editHref: string
   viewHref: string
   viewButtonText?: string
+  titleSuffix?: ReactNode
   children: ReactNode
 }
 
@@ -17,19 +18,23 @@ interface ListViewCardProps {
  *
  * Layout:
  * - Title in upper left
+ * - Optional titleSuffix beside title (e.g., badge, label)
  * - Edit icon button in upper right
  * - Custom content in the body (passed as children)
  * - View button in bottom right (text customizable)
  */
-export function ListViewCard({ title, editHref, viewHref, viewButtonText = "View Details", children }: ListViewCardProps) {
+export function ListViewCard({ title, editHref, viewHref, viewButtonText = "View Details", titleSuffix, children }: ListViewCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 overflow-hidden">
-            <CardTitle className="text-lg line-clamp-1">
-              {title}
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg line-clamp-1">
+                {title}
+              </CardTitle>
+              {titleSuffix}
+            </div>
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link href={editHref}>

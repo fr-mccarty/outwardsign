@@ -23,7 +23,7 @@ import {
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
@@ -84,7 +84,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   const [notes, setNotes] = useState(wedding?.notes || "")
   const [announcements, setAnnouncements] = useState(wedding?.announcements || "")
   const [petitions, setPetitions] = useState(wedding?.petitions || "")
-  const [weddingTemplateId, setWeddingTemplateId] = useState(wedding?.wedding_template_id || "")
+  const [weddingTemplateId, setWeddingTemplateId] = useState(wedding?.wedding_template_id || WEDDING_DEFAULT_TEMPLATE)
 
   // Boolean states
   const [psalmIsSung, setPsalmIsSung] = useState(wedding?.psalm_is_sung || false)

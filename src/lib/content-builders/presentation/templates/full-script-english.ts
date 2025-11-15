@@ -170,15 +170,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedText('son', 'daughter')}, ${getParentsText()} would like to present their ${genderedText('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedText('son', 'daughter')}, ${getParentsText()} would like to present their ${genderedText('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
   })
 
   liturgyElements.push({
@@ -196,15 +189,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: `CELEBRANT (to the ${getAudienceText()}): `,
-      },
-      {
-        text: `By presenting this ${genderedText('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedText('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `(to the ${getAudienceText()}) By presenting this ${genderedText('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedText('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
   })
 
   liturgyElements.push({
@@ -224,15 +210,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: `CELEBRANT (to the ${genderedText('boy', 'girl')}): `,
-      },
-      {
-        text: `${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your ${getAudienceText()} to do the same.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `(to the ${genderedText('boy', 'girl')}) ${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your ${getAudienceText()} to do the same.`,
   })
 
   liturgyElements.push({
@@ -241,15 +220,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Prayer
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `Heavenly Father, you are the giver of all life. You gave us this ${genderedText('son', 'daughter')} and we present ${genderedText('him', 'her')} to you, as Mary presented Jesus in the temple. We pray for these ${getAudienceText()}. Bless them in their efforts to raise this ${genderedText('boy', 'girl')} as a good Christian and as a good Catholic. Bless this child. Give ${genderedText('him', 'her')} good health, protect ${genderedText('him', 'her')} from any danger of body and spirit, and help ${genderedText('him', 'her')} to grow in age and in wisdom, always in your presence.`,
-      },
-    ],
+    type: 'priest-text',
+    text: `Heavenly Father, you are the giver of all life. You gave us this ${genderedText('son', 'daughter')} and we present ${genderedText('him', 'her')} to you, as Mary presented Jesus in the temple. We pray for these ${getAudienceText()}. Bless them in their efforts to raise this ${genderedText('boy', 'girl')} as a good Christian and as a good Catholic. Bless this child. Give ${genderedText('him', 'her')} good health, protect ${genderedText('him', 'her')} from any danger of body and spirit, and help ${genderedText('him', 'her')} to grow in age and in wisdom, always in your presence.`,
   })
 
   liturgyElements.push({
@@ -289,15 +261,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: 'Now we send you back to your places, as we show you our support with applause.',
-      },
-    ],
+    type: 'priest-dialogue',
+    text: 'Now we send you back to your places, as we show you our support with applause.',
   })
 
   return {

@@ -10,9 +10,11 @@
     "test:ui:setup": "node scripts/setup-ui-test-user.js",
     "test:headed": "node scripts/run-tests-with-temp-user.js --headed",
     "seed": "tsx scripts/seed.ts",
+    "seed:dev": "dotenv -e .env.local -- tsx scripts/dev-seed.ts",
     "seed:liturgical:2025": "tsx scripts/import-liturgical-events.ts --year=2025 --locale=en",
     "seed:liturgical:2026": "tsx scripts/import-liturgical-events.ts --year=2026 --locale=en",
-    "seed:liturgical": "tsx scripts/import-liturgical-events.ts"
+    "seed:liturgical": "tsx scripts/import-liturgical-events.ts",
+    "db:fresh": "./scripts/reset-and-seed.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",

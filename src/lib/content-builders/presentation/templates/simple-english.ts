@@ -144,15 +144,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `${motherName} and ${fatherName} present their ${genderedText('son', 'daughter')} ${childName} to the Lord and to this community. Please come forward.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `${motherName} and ${fatherName} present their ${genderedText('son', 'daughter')} ${childName} to the Lord and to this community. Please come forward.`,
   })
 
   liturgyElements.push({
@@ -170,15 +163,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `Do you commit to raise ${childName} in the Catholic faith?`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `Do you commit to raise ${childName} in the Catholic faith?`,
   })
 
   liturgyElements.push({
@@ -198,15 +184,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `I sign you with the sign of the cross. Parents, please do the same.`,
-      },
-    ],
+    type: 'priest-dialogue',
+    text: `I sign you with the sign of the cross. Parents, please do the same.`,
   })
 
   liturgyElements.push({
@@ -224,15 +203,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Prayer
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: `Heavenly Father, bless this child and these parents. Help them raise ${genderedText('him', 'her')} in faith and love. We ask this through Christ our Lord.`,
-      },
-    ],
+    type: 'priest-text',
+    text: `Heavenly Father, bless this child and these parents. Help them raise ${genderedText('him', 'her')} in faith and love. We ask this through Christ our Lord.`,
   })
 
   liturgyElements.push({
@@ -262,15 +234,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal
   liturgyElements.push({
-    type: 'multi-part-text',
-    parts: [
-      {
-        text: 'CELEBRANT: ',
-      },
-      {
-        text: 'Let us show our support with a round of applause.',
-      },
-    ],
+    type: 'priest-dialogue',
+    text: 'Let us show our support with a round of applause.',
   })
 
   return {

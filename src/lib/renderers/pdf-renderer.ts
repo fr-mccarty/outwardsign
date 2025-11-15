@@ -243,15 +243,6 @@ function renderElement(element: ContentElement): Content {
       }
     }
 
-    case 'multi-part-text': {
-      // Deprecated - render as plain text
-      const style = resolveElementStyle('text')
-      return style ? {
-        text: element.parts.map((part) => part.text).join(''),
-        ...applyResolvedStyle(style),
-      } : { text: '' }
-    }
-
     default:
       return { text: '' }
   }

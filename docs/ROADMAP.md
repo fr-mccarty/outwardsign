@@ -1,18 +1,27 @@
-# ROADMAP.md
+# Roadmap
 
-> **Development Roadmap**
+> **Development Roadmap for Outward Sign**
 >
-> This document tracks current state, planned features, and the phased development approach for Outward Sign.
+> This document tracks current state, in-progress work, planned features, and the phased development approach.
+
+**Last Updated:** 2025-01-15
 
 ---
 
 ## Table of Contents
 
 - [Current State](#current-state)
-- [Phase I - Foundation (Current)](#phase-i---foundation-current)
+- [🚧 In Progress](#-in-progress)
+- [Phase I - Foundation](#phase-i---foundation)
 - [Phase II - Collaboration & Communication](#phase-ii---collaboration--communication)
 - [Phase III - Advanced Features](#phase-iii---advanced-features)
+- [🐛 Known Issues & Technical Debt](#-known-issues--technical-debt)
+- [🎨 UI/UX Improvements](#-uiux-improvements)
+- [🧪 Testing](#-testing)
+- [📝 Documentation](#-documentation)
 - [Future Considerations](#future-considerations)
+- [Decision Points](#decision-points)
+- [Update History](#update-history)
 
 ---
 
@@ -34,6 +43,7 @@
 - ✅ Events - Event scheduling with date/time/location
 - ✅ Locations - Venue management
 - ✅ Readings - Scripture reading library
+- ✅ Groups - Ministry and group management
 - ✅ Calendar - Calendar view of all events
 - ✅ Liturgical Script System - Print, PDF, and Word export
 
@@ -41,6 +51,13 @@
 - ✅ User authentication (Supabase Auth)
 - ✅ Parish selection
 - ✅ Role-based permissions (super-admin, admin, staff, parishioner)
+
+**Technical Foundation:**
+- ✅ Dark mode support
+- ✅ Bilingual content (English/Spanish)
+- ✅ Liturgical calendar integration (2025-2026)
+- ✅ Automated test infrastructure
+- ✅ RLS policies for parish-scoped data
 
 ### Current Limitations
 
@@ -58,15 +75,70 @@
 - No event reminders
 
 **❌ Ministry Scheduling:**
-- Mass roles not yet implemented
+- Mass roles not yet implemented (see [MASSES.md](./MASSES.md) for detailed roadmap)
 - Cannot assign lectors, EMHCs, altar servers to specific masses
 - No ministry scheduling for sacraments (weddings, funerals, baptisms, etc.)
 - No unified ministry schedule view across all sacraments
 - No conflict detection for ministry assignments
 
+### Recently Completed
+
+**2025-01-15:**
+- [x] Completed renderer structure migration
+  - Migrated all 29 occurrences of deprecated `multi-part-text` to specific element types
+  - Removed `MultiPartTextElement` from type system
+  - Cleaned up all three renderers (HTML, PDF, Word)
+  - Updated documentation (RENDERER.md, LITURGICAL_SCRIPT_REFERENCE.md)
+
+**2025-11-15:**
+- [x] Fixed Zod v4 compatibility across all forms (error.issues vs error.errors)
+- [x] Updated validation documentation with Zod v4 guidance
+- [x] Created comprehensive MASSES.md documentation
+- [x] Verified build passes successfully
+
+**2025-11-10:**
+- [x] Created docs folder for documentation organization
+- [x] Moved all capitalized MD files to docs
+- [x] Updated all documentation references in CLAUDE.md and README.md
+- [x] Created FORMS.md with comprehensive form guidelines
+- [x] Added Component Registry section to CLAUDE.md
+- [x] Improved EventPicker and PeoplePicker components
+- [x] Added LocationPicker component
+
+**Earlier:**
+- [x] Implemented Weddings module (reference implementation)
+- [x] Implemented Funerals module
+- [x] Implemented Baptisms module
+- [x] Implemented Presentations module
+- [x] Implemented Quinceañeras module
+- [x] Added liturgical calendar integration (2025-2026)
+- [x] Implemented dark mode support
+- [x] Created test infrastructure with automatic setup/cleanup
+- [x] Added PDF/Word export functionality
+- [x] Implemented parish-scoped data with RLS
+
 ---
 
-## Phase I - Foundation (Current)
+## 🚧 In Progress
+
+### Masses Module
+- [ ] Complete Mass roles implementation (see [MASSES.md](./MASSES.md) Phase 1)
+- [ ] Add role picker for mass participants
+- [ ] Role assignment UI in Mass form
+- [ ] Basic notification system (email templates)
+- [ ] Minister confirmation workflow
+- [ ] Template role configuration UI
+- [ ] Minister directory
+
+### Form Validation
+- [ ] Fix FormField color tokens for dark mode (see `/todos/formfield-improvements.md`)
+- [ ] Implement React Hook Form integration for new forms
+- [ ] Add client-side validation with Zod across all forms
+- [ ] Ensure server-side validation in all server actions
+
+---
+
+## Phase I - Foundation
 
 **Status:** ✅ Mostly Complete
 
@@ -79,11 +151,24 @@
 6. ✅ Print and export functionality (PDF, Word)
 
 **Remaining Phase I Work:**
-- [ ] **Team Member System** - Critical missing piece
-  - Database tables for team membership
-  - Invitation flow (invite → accept → join parish)
-  - Team member list/management UI
-  - Permission structure for team roles
+
+### Team Member System (CRITICAL)
+- [ ] Database tables for team membership
+- [ ] Invitation flow (invite → accept → join parish)
+- [ ] Team member list/management UI
+- [ ] Permission structure for team roles
+
+### Core Module Completions
+- [ ] **Confirmations Module** - Implement confirmation sacrament tracking
+- [ ] **First Communion Module** - Add first communion preparation workflow
+- [ ] **Anointing of the Sick** - Track anointing sacrament celebrations
+- [ ] **Reconciliation Preparation** - Manage first reconciliation preparation
+
+### Multilingual Support
+- [ ] Complete Spanish translations for all modules
+- [ ] Add language selector throughout app
+- [ ] Liturgical content in multiple languages
+- [ ] Bilingual print outputs
 
 **Phase I Goal:** Establish foundation for single-parish usage with basic team structure.
 
@@ -92,8 +177,6 @@
 ## Phase II - Collaboration & Communication
 
 **Status:** 🔜 Planned
-
-**Priority Features:**
 
 ### 1. Team Member Invitations (HIGH PRIORITY)
 
@@ -141,21 +224,28 @@
 
 ### 3. Mass Roles Assignment
 
-**Description:** Assign liturgical roles to specific masses.
+**Description:** Assign liturgical roles to specific masses (see [MASSES.md](./MASSES.md) for complete implementation plan).
 
 **Features:**
 - Mass role picker (Lector, EMHC, Altar Server, Cantor, Usher, Sacristan, Music Minister)
 - Assign multiple people to same mass in different roles
 - Mass role schedule view (who is serving when)
 - Export mass role schedule (print, PDF)
+- Substitute request workflow
+- Minister preference management
+- Auto-assignment algorithm (Phase 3)
 
 **Database Requirements:**
 - `mass_roles` table (mass_id, person_id, role, notes)
+- `minister_preferences` table
+- `minister_blackout_dates` table
+- `mass_role_substitutions` table
 - RLS policies for role assignments
 
 **UI Components:**
 - Mass role assignment in mass form
 - Mass role schedule report page
+- Minister self-service portal
 - Calendar view showing role assignments
 
 ### 4. Ministry Scheduling for Sacraments & Sacramentals
@@ -186,12 +276,6 @@
 - Ministry availability/conflict management
 - Calendar integration showing ministry commitments
 
-**Use Cases:**
-- Assign regular lector to wedding on Saturday
-- Schedule altar servers for funeral on weekday morning
-- Assign music minister to multiple quinceañeras in a month
-- View all ministry commitments for a specific person across all events
-
 ### 5. Communication System (Email & SMS)
 
 **Goal:** Enable communication without requiring expensive services initially.
@@ -220,7 +304,7 @@
 - Export as PDF for easy distribution
 
 **Phase II.B - Automated Communication (Later):**
-- Email integration (SendGrid, Mailgun, or similar)
+- Email integration (SendGrid, Mailgun, AWS SES)
 - SMS integration (Twilio or similar)
 - Automated reminders and notifications
 - Cost considerations: Paid services required
@@ -248,40 +332,192 @@
 - Secure links generated per event
 - Submissions reviewed by parish staff before incorporation
 
+### 7. Calendar & Scheduling Improvements
+- [ ] Liturgical calendar integration improvements
+- [ ] Add Spanish language liturgical events (2025, 2026)
+- [ ] Parish calendar view (monthly, weekly, daily)
+- [ ] Event conflict detection
+- [ ] Recurring event support
+- [ ] Calendar export improvements (.ics format)
+
+### 8. User Management
+- [ ] Parish team management interface
+- [ ] Role assignment UI (super-admin, admin, staff, parishioner)
+- [ ] User permissions management
+- [ ] Parishioner self-service portal
+
 ---
 
 ## Phase III - Advanced Features
 
 **Status:** 🔮 Future
 
-**Potential Features:**
-- Multi-parish support (managing multiple parishes from one account)
-- Advanced reporting and analytics
-- Integration with parish management systems
-- Mobile app (iOS/Android)
-- Online giving/payment integration
-- Automated liturgical calendar generation (multi-year)
-- AI-assisted homily suggestions or resource recommendations
-- Multilingual interface (full localization beyond English/Spanish)
-- Custom module builder (create your own sacramental modules)
-- Public event pages (share event details with families via link)
+### Reporting & Analytics
+- [ ] Sacrament statistics dashboard
+- [ ] Annual sacrament reports
+- [ ] Participant tracking over time
+- [ ] Export reports to PDF/Excel
+- [ ] Minister participation reports
+- [ ] Role coverage reports
+- [ ] No-show tracking and analytics
+
+### Advanced Liturgical Features
+- [ ] **Parish Default Module Templates** - Allow parishes to set default liturgical script templates per module (e.g., default to "Full Script - English" for weddings, "Bilingual" for presentations)
+  - Per-module template preferences in parish settings
+  - Template defaults applied when creating new records
+  - Override capability on individual records
+  - Templates: Simple/Full Script, English/Spanish/Bilingual variations
+- [ ] Custom liturgy templates builder
+- [ ] Document version history
+- [ ] AI-powered scheduling suggestions for ministry roles
+- [ ] Integration with liturgical calendar API for automatic Mass creation
+- [ ] Template sharing marketplace
+
+### Advanced Collaboration
+- [ ] Real-time collaboration (multiple coordinators editing simultaneously)
+- [ ] Version history for Mass assignments and sacramental records
+- [ ] Advanced search functionality across all modules
+- [ ] Bulk operations for multiple records
+
+### Integrations
+- [ ] Church management system integrations
+- [ ] Donor management integration
+- [ ] Google Calendar sync
+- [ ] Outlook Calendar sync
+- [ ] Zoom/video conferencing integration
+
+### Mobile & Performance
+- [ ] Progressive Web App (PWA) enhancements
+- [ ] Offline support
+- [ ] Mobile-optimized views
+- [ ] Native mobile app (iOS/Android)
+
+### Multi-Parish & Enterprise
+- [ ] Multi-parish support (managing multiple parishes from one account)
+- [ ] Multi-parish coordination (for shared ministers)
+- [ ] Parish network features
+- [ ] Diocesan-level administration
+
+### Advanced Features
+- [ ] Online giving/payment integration
+- [ ] Automated liturgical calendar generation (multi-year)
+- [ ] AI-assisted homily suggestions or resource recommendations
+- [ ] Multilingual interface (full localization beyond English/Spanish)
+- [ ] Custom module builder (create your own sacramental modules)
+- [ ] Public event pages (share event details with families via link)
+- [ ] Minister appreciation/recognition system
+
+---
+
+## 🐛 Known Issues & Technical Debt
+
+### High Priority
+- [ ] Review and fix any RLS policy gaps
+- [ ] Test authentication flow edge cases
+- [ ] Validate all foreign key relationships
+
+### Medium Priority
+- [ ] Improve loading states across modules
+- [ ] Add better error messages
+- [ ] Optimize database queries for large datasets
+- [ ] Review and improve mobile responsiveness
+
+### Low Priority
+- [ ] Clean up console warnings
+- [ ] Optimize bundle size
+- [ ] Add skeleton loaders to more pages
+
+### Code Quality
+- [ ] Review and refactor large components
+- [ ] Extract reusable patterns
+- [ ] Remove unused code/dependencies
+- [ ] Standardize error handling
+- [ ] Improve type safety across codebase
+
+### Performance
+- [ ] Optimize image loading
+- [ ] Add pagination to large lists
+- [ ] Implement virtual scrolling where needed
+- [ ] Review and optimize re-renders
+- [ ] Add caching strategies
+
+### Database
+- [ ] Review and optimize database indexes
+- [ ] Add database query monitoring
+- [ ] Optimize N+1 query patterns
+- [ ] Review and improve RLS policies performance
+
+---
+
+## 🎨 UI/UX Improvements
+
+### Design System
+- [ ] Review and standardize spacing patterns
+- [ ] Ensure all components follow dark mode guidelines
+- [ ] Add consistent empty states across all modules
+- [ ] Improve loading skeleton designs
+
+### User Experience
+- [ ] Add keyboard shortcuts for power users
+- [ ] Improve form autosave functionality
+- [ ] Add inline editing where appropriate
+- [ ] Better error recovery in forms
+- [ ] Add success animations/feedback
+
+### Accessibility
+- [ ] Complete ARIA labels audit
+- [ ] Test with screen readers
+- [ ] Keyboard navigation improvements
+- [ ] Color contrast verification
+- [ ] Focus indicator improvements
+- [ ] Screen reader optimization
+- [ ] High contrast mode support
+
+---
+
+## 🧪 Testing
+
+### Test Coverage
+- [ ] Add tests for Masses module
+- [ ] Add tests for new picker components (MassPicker, RolePicker, GlobalLiturgicalEventPicker)
+- [ ] Increase test coverage to >80%
+- [ ] Add integration tests for critical workflows
+- [ ] Add visual regression tests
+
+### Test Infrastructure
+- [ ] Improve test performance
+- [ ] Add test data factories
+- [ ] Document testing patterns
+- [ ] Add CI/CD pipeline
+
+---
+
+## 📝 Documentation
+
+### User Documentation
+- [ ] Create user guide for parish staff
+- [ ] Add video tutorials for common workflows
+- [ ] Create onboarding documentation
+- [ ] Document best practices for each module
+
+### Developer Documentation
+- [ ] Add API documentation
+- [ ] Document server actions patterns
+- [ ] Add architecture diagrams
+- [ ] Document testing strategies
+- [ ] Add contribution guidelines
+
+### Technical Documentation
+- [ ] Document deployment process
+- [ ] Add database schema documentation
+- [ ] Document backup/restore procedures
+- [ ] Add monitoring/logging guidelines
 
 ---
 
 ## Future Considerations
 
-### Technical Debt
-- Confirmations module (currently commented out, needs implementation)
-- Test coverage improvements (ongoing)
-- Performance optimization for large parishes
-- Mobile responsiveness improvements
-
-### User Feedback Integration
-- Gather feedback from pilot parishes
-- Prioritize features based on actual usage patterns
-- Iterate on UX based on real-world workflows
-
-### Scalability
+### Technical Scalability
 - Multi-tenant architecture considerations
 - Database optimization for large datasets
 - Caching strategies for improved performance
@@ -291,6 +527,11 @@
 - Pricing structure for paid features (communication, advanced reporting)
 - Free tier vs. paid tier feature split
 - Sustainability and maintenance funding
+
+### User Feedback Integration
+- Gather feedback from pilot parishes
+- Prioritize features based on actual usage patterns
+- Iterate on UX based on real-world workflows
 
 ---
 
@@ -343,15 +584,40 @@
 
 ## Notes
 
+### Priority Legend
+- **High Priority** - Blocking issues, critical features, security concerns
+- **Medium Priority** - Important improvements, user-requested features
+- **Low Priority** - Nice-to-have enhancements, polish items
+
+### Task Management
+- Use checkboxes `[ ]` for pending tasks, `[x]` for completed tasks
+- Add dates when tasks are completed
+- Archive completed sections periodically
+- Review and update priorities monthly
+
+### Key Insights
 - **Phase II is the critical next step** - Without team collaboration, the app is limited to single-user or very small teams
 - **Communication features should start simple** - Don't overengineer before understanding usage patterns
 - **Event-specific invitations are a key differentiator** - Most parish software doesn't allow granular event-level access
 - **Keep cost low initially** - Free-tier options for communication reduce barrier to adoption
 
+### Contributing
+When adding new roadmap items:
+1. Place in appropriate section (Phase I/II/III or specific category)
+2. Be specific about what needs to be done
+3. Add context if needed (why it's important)
+4. Link to related issues, discussions, or detailed docs (e.g., [MASSES.md](./MASSES.md))
+5. Assign priority level
+
 ---
 
 ## Update History
 
-- **2025-01-11** - Added Phase II feature: Ministry Scheduling for Sacraments & Sacramentals
-- **2025-01-11** - Renamed from TIMELINE.md to ROADMAP.md for clarity
-- **2025-01-11** - Initial document created based on current state and Phase II planning discussions
+- **2025-01-15** - Completed renderer migration (removed deprecated multi-part-text element)
+- **2025-01-15** - Added Parish Default Module Templates feature to Phase III roadmap
+- **2025-11-15** - Merged TIMELINE.md into ROADMAP.md for comprehensive single-source roadmap
+- **2025-11-15** - Added Zod v4 compatibility fixes to Recently Completed
+- **2025-11-15** - Added MASSES.md documentation to Recently Completed
+- **2025-11-11** - Added Phase II feature: Ministry Scheduling for Sacraments & Sacramentals
+- **2025-11-11** - Renamed from TIMELINE.md to ROADMAP.md for clarity
+- **2025-11-11** - Initial document created based on current state and Phase II planning discussions

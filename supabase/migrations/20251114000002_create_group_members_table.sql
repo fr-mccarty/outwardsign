@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.group_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   group_id UUID NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
   person_id UUID NOT NULL REFERENCES public.people(id) ON DELETE CASCADE,
-  role TEXT,
+  roles TEXT[], -- Array of roles for multi-role support
   joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(group_id, person_id)
 );

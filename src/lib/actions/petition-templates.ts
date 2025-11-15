@@ -3,15 +3,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { 
-  DEFAULT_PETITION_CONTEXT_SUNDAY_ENGLISH,
-  DEFAULT_PETITION_CONTEXT_SUNDAY_SPANISH,
-  DEFAULT_PETITION_CONTEXT_DAILY,
-  DEFAULT_PETITION_CONTEXT_WEDDING_ENGLISH,
-  DEFAULT_PETITION_CONTEXT_WEDDING_SPANISH,
-  DEFAULT_PETITION_CONTEXT_FUNERAL_ENGLISH,
-  DEFAULT_PETITION_CONTEXT_FUNERAL_SPANISH
-} from '@/lib/constants'
+import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
+import sundaySpanish from '@/lib/default-petition-templates/sunday-spanish'
+import daily from '@/lib/default-petition-templates/daily'
+import weddingEnglish from '@/lib/default-petition-templates/wedding-english'
+import weddingSpanish from '@/lib/default-petition-templates/wedding-spanish'
+import funeralEnglish from '@/lib/default-petition-templates/funeral-english'
+import funeralSpanish from '@/lib/default-petition-templates/funeral-spanish'
+import quinceaneraEnglish from '@/lib/default-petition-templates/quinceanera-english'
+import quinceaneraSpanish from '@/lib/default-petition-templates/quinceanera-spanish'
+import presentationEnglish from '@/lib/default-petition-templates/presentation-english'
+import presentationSpanish from '@/lib/default-petition-templates/presentation-spanish'
 
 export interface PetitionContextTemplate {
   id: string
@@ -173,54 +175,30 @@ export async function ensureDefaultContexts(): Promise<void> {
     return // Parish already has valid contexts
   }
 
-  // Create default contexts with simple text
+  // Create default contexts from template files
   const defaultContexts = [
-    {
-      title: 'Sunday Mass (English)',
-      description: 'Standard Sunday Mass petitions in English',
-      context: DEFAULT_PETITION_CONTEXT_SUNDAY_ENGLISH
-    },
-    {
-      title: 'Sunday Mass (Spanish)',
-      description: 'Standard Sunday Mass petitions in Spanish',
-      context: DEFAULT_PETITION_CONTEXT_SUNDAY_SPANISH
-    },
-    {
-      title: 'Daily Mass',
-      description: 'Weekday Mass petitions',
-      context: DEFAULT_PETITION_CONTEXT_DAILY
-    },
-    {
-      title: 'Wedding (English)',
-      description: 'Wedding ceremony petitions in English',
-      context: DEFAULT_PETITION_CONTEXT_WEDDING_ENGLISH
-    },
-    {
-      title: 'Wedding (Spanish)',
-      description: 'Wedding ceremony petitions in Spanish',
-      context: DEFAULT_PETITION_CONTEXT_WEDDING_SPANISH
-    },
-    {
-      title: 'Funeral (English)',
-      description: 'Funeral Mass petitions in English',
-      context: DEFAULT_PETITION_CONTEXT_FUNERAL_ENGLISH
-    },
-    {
-      title: 'Funeral (Spanish)',
-      description: 'Funeral Mass petitions in Spanish',
-      context: DEFAULT_PETITION_CONTEXT_FUNERAL_SPANISH
-    }
+    sundayEnglish,
+    sundaySpanish,
+    daily,
+    weddingEnglish,
+    weddingSpanish,
+    funeralEnglish,
+    funeralSpanish,
+    quinceaneraEnglish,
+    quinceaneraSpanish,
+    presentationEnglish,
+    presentationSpanish
   ]
 
-  for (const contextData of defaultContexts) {
+  for (const template of defaultContexts) {
     await supabase
       .from('petition_templates')
       .insert([
         {
           parish_id: selectedParishId,
-          title: contextData.title,
-          description: contextData.description,
-          context: contextData.context
+          title: template.title,
+          description: template.description,
+          context: template.content
         }
       ])
   }

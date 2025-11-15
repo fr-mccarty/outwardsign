@@ -534,7 +534,6 @@ Complete list of supported element types and their purpose:
 | `priest-text` | Priest's prayer or blessing | Priest's spoken prayer |
 | `info-row` | Label-value pair | Label: "Bride:" Value: "Jane Smith" |
 | `spacer` | Vertical spacing | (Empty space) |
-| `multi-part-text` | **DEPRECATED** | (Legacy, rendered as plain text) |
 
 ---
 
@@ -779,45 +778,6 @@ In practice, this should **never happen** for valid element types since all elem
 - **Word**: Empty paragraph is the docx equivalent of "nothing here"
 
 **Consistency:** While the code differs, the semantic result is identical across all formats: the element is not rendered.
-
----
-
-### 5. ⚠️ multi-part-text - Still in Use (Cannot Remove)
-
-**Status:** Deprecated but actively used - must be maintained.
-
-**Location:** All three renderer files + presentation templates
-
-**Current Usage:**
-`multi-part-text` is actively used in **all presentation templates**:
-- `presentation/templates/simple-english.ts` (5 occurrences)
-- `presentation/templates/simple-spanish.ts` (5 occurrences)
-- `presentation/templates/full-script-english.ts` (5 occurrences)
-- `presentation/templates/full-script-spanish.ts` (5 occurrences)
-- `presentation/templates/bilingual.ts` (10+ occurrences)
-
-**Why It's Used:**
-Presentation templates use `multi-part-text` to combine labels with text:
-```typescript
-{
-  type: 'multi-part-text',
-  parts: [
-    { text: 'CELEBRANT: ' },
-    { text: `Do you commit to raise ${childName} in the Catholic faith?` }
-  ]
-}
-```
-
-**Migration Path:**
-New content builders should use specific element types instead:
-- Use `priest-dialogue` or `priest-text` for celebrant text
-- Use `response` element (with `label` and `text` properties) for responses
-
-**Conclusion:**
-- **Cannot remove** - breaking change for presentation module
-- **Keep deprecated** - discourage use in new templates
-- Consider migrating presentation templates to use specific element types in a future refactor
-- If used, document why it's needed
 
 ---
 

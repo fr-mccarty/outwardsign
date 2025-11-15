@@ -1,0 +1,110 @@
+import { Badge } from "@/components/ui/badge"
+import {
+  MODULE_STATUS_LABELS,
+  MASS_STATUS_LABELS,
+  MASS_INTENTION_STATUS_LABELS,
+  type MassStatus,
+  type MassIntentionStatus
+} from "@/lib/constants"
+
+type StatusType = 'module' | 'mass' | 'mass-intention'
+
+interface ModuleStatusLabelProps {
+  status?: string | null
+  statusType: StatusType
+  variant?: "default" | "secondary" | "outline" | "destructive"
+  className?: string
+}
+
+// Get default status based on type
+const getDefaultStatus = (statusType: StatusType): string => {
+  switch (statusType) {
+    case 'module':
+      return 'ACTIVE'
+    case 'mass':
+      return 'PLANNING'
+    case 'mass-intention':
+      return 'REQUESTED'
+    default:
+      return 'ACTIVE'
+  }
+}
+
+// Get display label for a status based on its type
+const getStatusLabel = (status: string, statusType: StatusType): string => {
+  switch (statusType) {
+    case 'module':
+      return MODULE_STATUS_LABELS[status]?.en || status
+    case 'mass':
+      return MASS_STATUS_LABELS[status as MassStatus]?.en || status
+    case 'mass-intention':
+      return MASS_INTENTION_STATUS_LABELS[status as MassIntentionStatus]?.en || status
+    default:
+      return status
+  }
+}
+
+// Get badge variant based on status and type
+const getStatusVariant = (status: string, statusType: StatusType): "default" | "secondary" | "outline" | "destructive" => {
+  // Module status (weddings, funerals, baptisms, quinceaneras, presentations)
+  if (statusType === 'module') {
+    switch (status) {
+      case 'ACTIVE':
+        return 'default'
+      case 'INACTIVE':
+        return 'secondary'
+      case 'COMPLETED':
+        return 'outline'
+      default:
+        return 'secondary'
+    }
+  }
+
+  // Mass status
+  if (statusType === 'mass') {
+    switch (status) {
+      case 'PLANNING':
+        return 'secondary'
+      case 'SCHEDULED':
+        return 'default'
+      case 'COMPLETED':
+        return 'outline'
+      case 'CANCELLED':
+        return 'destructive'
+      default:
+        return 'secondary'
+    }
+  }
+
+  // Mass intention status
+  if (statusType === 'mass-intention') {
+    switch (status) {
+      case 'REQUESTED':
+        return 'secondary'
+      case 'CONFIRMED':
+        return 'default'
+      case 'FULFILLED':
+        return 'outline'
+      case 'CANCELLED':
+        return 'destructive'
+      default:
+        return 'secondary'
+    }
+  }
+
+  return 'secondary'
+}
+
+export function ModuleStatusLabel({ status, statusType, variant, className }: ModuleStatusLabelProps) {
+  // Use default status if none provided
+  const actualStatus = status || getDefaultStatus(statusType)
+
+  const badgeVariant = variant || getStatusVariant(actualStatus, statusType)
+  const label = getStatusLabel(actualStatus, statusType)
+
+  return (
+    <Badge variant={badgeVariant} className={className}>
+      {label}
+    </Badge>
+  )
+}

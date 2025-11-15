@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
+import { LanguageLabel } from '@/components/language-label'
 
 interface Stats {
   total: number
@@ -121,9 +122,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                     {EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
                   </Badge>
                   {event.language && (
-                    <Badge variant="secondary" className="text-xs">
-                      {event.language}
-                    </Badge>
+                    <LanguageLabel language={event.language} className="text-xs" />
                   )}
                   {isUpcoming && (
                     <Badge className="text-xs bg-green-100 text-green-800">
