@@ -381,7 +381,7 @@ For detailed information on database management, migrations, resets, seeding, an
 - Or run on a different port: `npm run dev -- -p 3001`
 
 **Issue: Database migrations not applied**
-- Run `supabase db reset` to reset and reapply all migrations
+- Run `npm run db:fresh` to reset and reapply all migrations
 - Check migration files in `supabase/migrations/` for syntax errors
 - Verify Supabase is running: `supabase status`
 

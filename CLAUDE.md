@@ -107,7 +107,7 @@ When implementing features or evaluating the application, refer to the personas 
 - The frontend uses the Anon policy
 
 **Migration Strategy (Early Development):**
-During initial development, modify existing migrations instead of creating new migration files. When database changes are needed, update the relevant existing migration, then prompt the user to reset the database and re-run all migrations from scratch.
+During initial development, modify existing migrations instead of creating new migration files. When database changes are needed, update the relevant existing migration, then prompt the user to run `npm run db:fresh` to reset the database and re-run all migrations from scratch.
 
 **Migration File Structure:**
 - **One table per migration file** - Each migration file should create or modify only ONE table
@@ -148,10 +148,15 @@ During development, **DO NOT use the Supabase MCP server** for any database oper
 The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
 
 ## 🔴 Role Permissions
-- super-admin: Billing settings, parish ownership
-- admin: Parish settings, parish management
-- staff: Read parish information (default role), they can create, read, update, and delete all other tables.
-- parishioner: Read only their own records
+
+**Roles are assigned at invitation time** - when inviting someone to the parish, the inviter selects their role and (for ministry-leaders) which modules they can access.
+
+- **Admin**: Parish settings, parish management, manage parishioners, manage templates, full access to all modules
+- **Staff**: Can create, read, update, and delete all sacrament/event modules (weddings, funerals, baptisms, etc.), can invite parishioners to parish
+- **Ministry-Leader**: Configurable per-user module access - when inviting someone as a ministry-leader, admin/staff selects which specific modules (masses, groups, weddings, etc.) they can access
+- **Parishioner**: Read-only access to modules shared with them, can share modules with family
+
+**Note**: Roles cannot be changed after invitation - if someone needs a different role, they must be removed and re-invited.
 
 ## Tech Stack
 **Frontend:** Next.js 13+ with App Router  
@@ -538,6 +543,7 @@ Client Component (BreadcrumbSetter):
 - Handling an empty table: make sure there is always a button to create new, unless otherwise specified. Be sure to use the icon which the module is using in the main-sidebar.
 - Table content should always be fetched server-side. Pagination should always be available. Use shadcn components.
 - **Modals should be scrollable:** When creating modals with content that may overflow, use flexbox layout with a fixed header and scrollable content area. Structure: `DialogContent` with `flex flex-col`, `DialogHeader` with `flex-shrink-0`, and content wrapper with `overflow-y-auto flex-1`. Reference implementation: `src/components/calendar/day-events-modal.tsx`
+- **Language selector placement:** Ordinarily, the language selector should be positioned in the upper right-hand corner of the interface.
 
 ### Development Guidelines
 - **Always use custom components** before falling back to shadcn/ui components

@@ -1,6 +1,9 @@
 const quinceaneraSpanish = {
   title: 'Quinceañera (Spanish)',
   description: 'Quinceañera celebration petitions in Spanish',
+  module: 'quinceanera',
+  language: 'es',
+  is_default: true,
   content: `Por [Nombre], para que crezca en fe y sabiduría al comenzar este nuevo capítulo de su vida.
 Roguemos al Señor.
 Por su familia, para que continúen guiándola y apoyándola con amor y fe.

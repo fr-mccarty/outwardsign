@@ -65,7 +65,7 @@ export function FormField(props: FormFieldProps) {
             rows={rows}
             className={cn(
               (props as TextareaFieldProps).resize ? 'resize-y' : 'resize-none',
-              hasError && 'border-red-500 focus-visible:ring-red-500'
+              hasError && 'border-destructive focus-visible:ring-destructive'
             )}
             required={required}
             disabled={disabled}
@@ -77,7 +77,7 @@ export function FormField(props: FormFieldProps) {
         return (
           <Select value={props.value} onValueChange={props.onChange} disabled={disabled}>
             <SelectTrigger
-              className={cn(hasError && 'border-red-500 focus:ring-red-500')}
+              className={cn(hasError && 'border-destructive focus:ring-destructive')}
               aria-describedby={errorId}
               aria-invalid={hasError}
             >
@@ -108,7 +108,7 @@ export function FormField(props: FormFieldProps) {
             max={(props as InputFieldProps).max}
             step={(props as InputFieldProps).step}
             maxLength={(props as InputFieldProps).maxLength}
-            className={cn(hasError && 'border-red-500 focus-visible:ring-red-500')}
+            className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
             required={required}
             disabled={disabled}
             aria-describedby={errorId}
@@ -122,14 +122,14 @@ export function FormField(props: FormFieldProps) {
     <div className={className}>
       <Label htmlFor={id} className={`text-sm font-medium ${description ? '' : 'mb-1'}`}>
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       {description && (
         <p className="text-xs text-muted-foreground mb-1.5">{description}</p>
       )}
       {renderInput()}
       {error && (
-        <p id={errorId} className="text-sm text-red-500 mt-1">
+        <p id={errorId} className="text-sm text-destructive mt-1">
           {error}
         </p>
       )}

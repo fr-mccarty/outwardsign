@@ -1,6 +1,9 @@
 const quinceaneraEnglish = {
   title: 'Quinceañera (English)',
   description: 'Quinceañera celebration petitions in English',
+  module: 'quinceanera',
+  language: 'en',
+  is_default: true,
   content: `For [Name], that she may grow in faith and wisdom as she begins this new chapter of her life.
 For her family, that they may continue to guide and support her with love and faith.
 For all young women entering adulthood, that they may find strength in God's grace.

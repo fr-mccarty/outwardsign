@@ -1,6 +1,9 @@
 const daily = {
   title: 'Daily Mass',
   description: 'Weekday Mass petitions',
+  module: 'mass',
+  language: 'en',
+  is_default: true,
   content: `For our Holy Father, Pope Leo, our Bishop, and all the clergy.
 For peace in our world and an end to all violence and hatred.
 For the sick, the suffering, and those who care for them.

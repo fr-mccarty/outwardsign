@@ -334,3 +334,248 @@ export async function deleteMass(id: string): Promise<void> {
 
   revalidatePath('/masses')
 }
+
+// ============================================================================
+// MASS ROLE ASSIGNMENTS
+// ============================================================================
+
+export interface CreateMassRoleData {
+  mass_id: string
+  person_id: string
+  role_id: string
+  status?: string
+  note?: string
+  parameters?: Record<string, any>
+}
+
+export interface UpdateMassRoleData {
+  person_id?: string
+  role_id?: string
+  status?: string
+  confirmed_at?: string | null
+  notified_at?: string | null
+  note?: string | null
+  parameters?: Record<string, any>
+}
+
+export interface MassRoleWithRelations extends MassRole {
+  person?: Person
+  role?: Role
+}
+
+export async function getMassRoles(massId: string): Promise<MassRoleWithRelations[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('mass_roles')
+    .select(`
+      *,
+      person:people(*),
+      role:roles(*)
+    `)
+    .eq('mass_id', massId)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching mass roles:', error)
+    throw new Error('Failed to fetch mass roles')
+  }
+
+  return data || []
+}
+
+export async function createMassRole(data: CreateMassRoleData): Promise<MassRole> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data: massRole, error } = await supabase
+    .from('mass_roles')
+    .insert([
+      {
+        mass_id: data.mass_id,
+        person_id: data.person_id,
+        role_id: data.role_id,
+        status: data.status || 'ASSIGNED',
+        note: data.note || null,
+        parameters: data.parameters || null,
+      }
+    ])
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error creating mass role:', error)
+    throw new Error('Failed to create mass role')
+  }
+
+  revalidatePath('/masses')
+  revalidatePath(`/masses/${data.mass_id}`)
+  revalidatePath(`/masses/${data.mass_id}/edit`)
+  return massRole
+}
+
+export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRole> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Build update object from only defined values
+  const updateData = Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined)
+  )
+
+  const { data: massRole, error } = await supabase
+    .from('mass_roles')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating mass role:', error)
+    throw new Error('Failed to update mass role')
+  }
+
+  // Get the mass_id for revalidation
+  const { data: roleData } = await supabase
+    .from('mass_roles')
+    .select('mass_id')
+    .eq('id', id)
+    .single()
+
+  if (roleData) {
+    revalidatePath('/masses')
+    revalidatePath(`/masses/${roleData.mass_id}`)
+    revalidatePath(`/masses/${roleData.mass_id}/edit`)
+  }
+
+  return massRole
+}
+
+export async function deleteMassRole(id: string): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the mass_id before deleting for revalidation
+  const { data: roleData } = await supabase
+    .from('mass_roles')
+    .select('mass_id')
+    .eq('id', id)
+    .single()
+
+  const { error } = await supabase
+    .from('mass_roles')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error deleting mass role:', error)
+    throw new Error('Failed to delete mass role')
+  }
+
+  if (roleData) {
+    revalidatePath('/masses')
+    revalidatePath(`/masses/${roleData.mass_id}`)
+    revalidatePath(`/masses/${roleData.mass_id}/edit`)
+  }
+}
+
+export async function bulkCreateMassRoles(massId: string, assignments: CreateMassRoleData[]): Promise<MassRole[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const rolesToInsert = assignments.map(assignment => ({
+    mass_id: massId,
+    person_id: assignment.person_id,
+    role_id: assignment.role_id,
+    status: assignment.status || 'ASSIGNED',
+    note: assignment.note || null,
+    parameters: assignment.parameters || null,
+  }))
+
+  const { data: massRoles, error } = await supabase
+    .from('mass_roles')
+    .insert(rolesToInsert)
+    .select()
+
+  if (error) {
+    console.error('Error creating mass roles in bulk:', error)
+    throw new Error('Failed to create mass roles in bulk')
+  }
+
+  revalidatePath('/masses')
+  revalidatePath(`/masses/${massId}`)
+  revalidatePath(`/masses/${massId}/edit`)
+  return massRoles || []
+}
+
+export interface ApplyTemplateData {
+  mass_id: string
+  template_id: string
+  overwrite_existing: boolean
+}
+
+/**
+ * Apply a mass roles template to a mass
+ * This clears existing assignments (if requested) and returns the template configuration
+ * Template parameters structure:
+ * {
+ *   roles: [
+ *     { role_id: 'uuid', count: 1, required: true },
+ *     { role_id: 'uuid', count: 4, required: false },
+ *     ...
+ *   ]
+ * }
+ *
+ * NOTE: Template application only clears existing roles if overwrite_existing is true.
+ * The UI should display the template requirements and allow users to assign people manually.
+ * We don't create placeholder records because person_id is NOT NULL in the schema.
+ */
+export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRoleWithRelations[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // 1. Fetch template with role requirements
+  const { data: template, error: templateError } = await supabase
+    .from('mass_roles_templates')
+    .select('*')
+    .eq('id', data.template_id)
+    .single()
+
+  if (templateError) {
+    console.error('Error fetching mass roles template:', templateError)
+    throw new Error('Failed to fetch mass roles template')
+  }
+
+  // 2. If overwrite_existing, delete current assignments
+  if (data.overwrite_existing) {
+    const { error: deleteError } = await supabase
+      .from('mass_roles')
+      .delete()
+      .eq('mass_id', data.mass_id)
+
+    if (deleteError) {
+      console.error('Error deleting existing mass roles:', deleteError)
+      throw new Error('Failed to delete existing mass roles')
+    }
+  }
+
+  // 3. Update the mass to reference this template
+  await supabase
+    .from('masses')
+    .update({ mass_roles_template_id: data.template_id })
+    .eq('id', data.mass_id)
+
+  revalidatePath('/masses')
+  revalidatePath(`/masses/${data.mass_id}`)
+  revalidatePath(`/masses/${data.mass_id}/edit`)
+
+  // Return empty array - the UI will use the template parameters to show which roles need to be filled
+  return []
+}

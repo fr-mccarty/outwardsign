@@ -1,6 +1,6 @@
--- Create a function to create a parish with super admin
+-- Create a function to create a parish with admin
 -- Uses SECURITY DEFINER to bypass RLS policies during parish creation
-CREATE OR REPLACE FUNCTION create_parish_with_super_admin(
+CREATE OR REPLACE FUNCTION create_parish_with_admin(
   p_user_id UUID,
   p_name TEXT,
   p_city TEXT,
@@ -31,9 +31,9 @@ BEGIN
   VALUES (p_name, p_city, p_state)
   RETURNING id INTO v_parish_id;
 
-  -- Create the parish_users record with super-admin role
+  -- Create the parish_users record with admin role
   INSERT INTO parish_users (user_id, parish_id, roles)
-  VALUES (p_user_id, v_parish_id, ARRAY['super-admin', 'admin']);
+  VALUES (p_user_id, v_parish_id, ARRAY['admin']);
 
   -- Update user settings to select this parish
   UPDATE user_settings

@@ -5,6 +5,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { FormField } from '@/components/form-field'
 import { PageContainer } from '@/components/page-container'
@@ -28,6 +38,8 @@ export default function PetitionContextsPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingContext, setEditingContext] = useState<PetitionContextTemplate | null>(null)
+  const [contextToDelete, setContextToDelete] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [formData, setFormData] = useState<CreateContextData>({
     title: '',
     description: '',
@@ -89,13 +101,22 @@ export default function PetitionContextsPage() {
     }
   }
 
-  const handleDeleteContext = async (contextId: string) => {
-    if (!confirm('Are you sure you want to delete this context?')) return
+  const handleOpenDeleteDialog = (contextId: string) => {
+    setContextToDelete(contextId)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!contextToDelete) return
+
     try {
-      await deletePetitionTemplate(contextId)
+      await deletePetitionTemplate(contextToDelete)
       loadContexts()
     } catch (error) {
       console.error('Failed to delete context:', error)
+    } finally {
+      setDeleteDialogOpen(false)
+      setContextToDelete(null)
     }
   }
 
@@ -226,10 +247,10 @@ export default function PetitionContextsPage() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteContext(context.id)}
+                        onClick={() => handleOpenDeleteDialog(context.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -269,6 +290,24 @@ export default function PetitionContextsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Context</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this context? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Delete Context
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   )
 }

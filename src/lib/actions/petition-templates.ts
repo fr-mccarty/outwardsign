@@ -21,6 +21,9 @@ export interface PetitionContextTemplate {
   description?: string
   context: string // JSON string containing the full context data
   parish_id: string
+  module?: string
+  language?: string
+  is_default?: boolean
   created_at: string
   updated_at: string
 }
@@ -198,7 +201,10 @@ export async function ensureDefaultContexts(): Promise<void> {
           parish_id: selectedParishId,
           title: template.title,
           description: template.description,
-          context: template.content
+          context: template.content,
+          module: template.module,
+          language: template.language,
+          is_default: template.is_default
         }
       ])
   }

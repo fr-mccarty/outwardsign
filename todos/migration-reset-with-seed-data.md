@@ -35,7 +35,7 @@ When you need to reset your local database after migration changes:
 
 #### Step 1: Reset the Database
 ```bash
-supabase db reset
+npm run db:fresh
 ```
 
 This will:
@@ -261,7 +261,7 @@ seedDevData()
 #### Usage
 ```bash
 # Reset database and run migrations
-supabase db reset
+npm run db:fresh
 
 # Seed development data
 npm run seed:dev
@@ -379,7 +379,7 @@ Never put seed data directly in migration files. Migrations should only contain 
 **Quick Reset & Development**:
 ```bash
 # 1. Reset database
-supabase db reset
+npm run db:fresh
 
 # 2. Either go through onboarding in browser
 # OR run development seed script

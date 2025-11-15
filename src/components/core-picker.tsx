@@ -85,6 +85,9 @@ export function CorePicker<T>({
   pageSize = 10,
   onPageChange,
   onSearch,
+
+  // Custom content
+  children,
 }: CorePickerProps<T>) {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -435,6 +438,9 @@ export function CorePicker<T>({
           ) : (
             /* List of items */
             <>
+              {/* Custom content (e.g., filters) */}
+              {children}
+
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

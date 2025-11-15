@@ -1,6 +1,9 @@
 const presentationEnglish = {
   title: 'Presentation (English)',
   description: 'Presentation of children petitions in English',
+  module: 'presentation',
+  language: 'en',
+  is_default: true,
   content: `For [Child Name], that they may grow in faith and in the knowledge of God's love.
 For the parents, that they may be faithful witnesses of Christ to their child.
 For all families, that they may find strength and joy in their faith journey together.

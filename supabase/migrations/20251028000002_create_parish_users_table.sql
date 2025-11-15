@@ -3,6 +3,7 @@ CREATE TABLE parish_users (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   roles TEXT[] NOT NULL DEFAULT ARRAY['parishioner']::TEXT[],
+  enabled_modules TEXT[] DEFAULT ARRAY[]::TEXT[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, parish_id)
 );
@@ -19,6 +20,10 @@ GRANT ALL ON parish_users TO service_role;
 CREATE INDEX idx_parish_users_user_id ON parish_users(user_id);
 CREATE INDEX idx_parish_users_parish_id ON parish_users(parish_id);
 CREATE INDEX idx_parish_users_roles ON parish_users USING GIN(roles);
+CREATE INDEX idx_parish_users_enabled_modules ON parish_users USING GIN(enabled_modules);
+
+-- Column comments
+COMMENT ON COLUMN parish_users.enabled_modules IS 'Array of module names that ministry-leader role can access. Possible values: masses, weddings, funerals, baptisms, presentations, quinceaneras, groups. Empty array means no module access for ministry-leaders.';
 
 -- RLS Policies for parish_users
 -- Users can read their own parish_users record

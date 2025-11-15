@@ -201,9 +201,9 @@ export async function createParishWithSuperAdmin(parishData: {
   }
 
   try {
-    // Call the database function to create parish with super admin
+    // Call the database function to create parish with admin
     // This uses SECURITY DEFINER to bypass RLS issues with Server Actions
-    const { data, error } = await supabase.rpc('create_parish_with_super_admin', {
+    const { data, error } = await supabase.rpc('create_parish_with_admin', {
       p_user_id: user.id,
       p_name: parishData.name,
       p_city: parishData.city,
@@ -211,12 +211,12 @@ export async function createParishWithSuperAdmin(parishData: {
     })
 
     if (error) {
-      console.error('Error calling create_parish_with_super_admin:', error)
+      console.error('Error calling create_parish_with_admin:', error)
       return { success: false, error: error.message }
     }
 
     if (!data || data.length === 0) {
-      console.error('No data returned from create_parish_with_super_admin')
+      console.error('No data returned from create_parish_with_admin')
       return { success: false, error: 'Failed to create parish' }
     }
 

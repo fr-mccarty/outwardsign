@@ -1,6 +1,9 @@
 const presentationSpanish = {
   title: 'Presentation (Spanish)',
   description: 'Presentation of children petitions in Spanish',
+  module: 'presentation',
+  language: 'es',
+  is_default: true,
   content: `Por [Nombre del Niño/a], para que crezca en la fe y en el conocimiento del amor de Dios.
 Roguemos al Señor.
 Por los padres, para que sean testigos fieles de Cristo para su hijo/a.

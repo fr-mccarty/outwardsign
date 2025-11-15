@@ -3,6 +3,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { readingsData } from '@/lib/data/readings'
+import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
+import sundaySpanish from '@/lib/default-petition-templates/sunday-spanish'
+import daily from '@/lib/default-petition-templates/daily'
+import weddingEnglish from '@/lib/default-petition-templates/wedding-english'
+import weddingSpanish from '@/lib/default-petition-templates/wedding-spanish'
+import funeralEnglish from '@/lib/default-petition-templates/funeral-english'
+import funeralSpanish from '@/lib/default-petition-templates/funeral-spanish'
+import quinceaneraEnglish from '@/lib/default-petition-templates/quinceanera-english'
+import quinceaneraSpanish from '@/lib/default-petition-templates/quinceanera-spanish'
+import presentationEnglish from '@/lib/default-petition-templates/presentation-english'
+import presentationSpanish from '@/lib/default-petition-templates/presentation-spanish'
 
 export async function createTestParish() {
   const supabase = await createClient()
@@ -13,10 +24,10 @@ export async function createTestParish() {
   }
 
   try {
-    // Use the database function to create parish with super admin
+    // Use the database function to create parish with admin
     // This bypasses RLS policies using SECURITY DEFINER
     const { data: result, error: functionError } = await supabase
-      .rpc('create_parish_with_super_admin', {
+      .rpc('create_parish_with_admin', {
         p_user_id: user.id,
         p_name: 'Test Parish',
         p_city: 'Test City',
@@ -29,7 +40,7 @@ export async function createTestParish() {
     }
 
     if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response from create_parish_with_super_admin')
+      throw new Error('Invalid response from create_parish_with_admin')
     }
 
     const typedResult = result as { success: boolean; error_message?: string; parish_id?: string }
@@ -69,10 +80,10 @@ export async function createParish(data: {
   }
 
   try {
-    // Use the database function to create parish with super admin
+    // Use the database function to create parish with admin role
     // This bypasses RLS policies using SECURITY DEFINER
     const { data: result, error: functionError } = await supabase
-      .rpc('create_parish_with_super_admin', {
+      .rpc('create_parish_with_admin', {
         p_user_id: user.id,
         p_name: data.name.trim(),
         p_city: data.city.trim(),
@@ -85,7 +96,7 @@ export async function createParish(data: {
     }
 
     if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response from create_parish_with_super_admin')
+      throw new Error('Invalid response from create_parish_with_admin')
     }
 
     const typedResult = result as { success: boolean; error_message?: string; parish_id?: string }
@@ -580,9 +591,45 @@ export async function populateInitialParishData(parishId: string) {
       throw new Error(`Failed to create readings: ${readingsError.message}`)
     }
 
+    // Seed initial petition templates
+    const defaultPetitionTemplates = [
+      sundayEnglish,
+      sundaySpanish,
+      daily,
+      weddingEnglish,
+      weddingSpanish,
+      funeralEnglish,
+      funeralSpanish,
+      quinceaneraEnglish,
+      quinceaneraSpanish,
+      presentationEnglish,
+      presentationSpanish
+    ]
+
+    const petitionTemplatesToInsert = defaultPetitionTemplates.map((template) => ({
+      parish_id: parishId,
+      title: template.title,
+      description: template.description,
+      context: template.content,
+      module: template.module,
+      language: template.language,
+      is_default: template.is_default
+    }))
+
+    const { data: petitionTemplates, error: petitionTemplatesError } = await supabase
+      .from('petition_templates')
+      .insert(petitionTemplatesToInsert)
+      .select()
+
+    if (petitionTemplatesError) {
+      console.error('Error creating petition templates:', petitionTemplatesError)
+      throw new Error(`Failed to create petition templates: ${petitionTemplatesError.message}`)
+    }
+
     return {
       success: true,
-      readings: readings || []
+      readings: readings || [],
+      petitionTemplates: petitionTemplates || []
     }
   } catch (error) {
     console.error('Error populating initial parish data:', error)

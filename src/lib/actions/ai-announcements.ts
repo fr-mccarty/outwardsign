@@ -25,8 +25,8 @@ export async function generateAnnouncementWithAI(prompt: string, parishId: strin
       .eq('parish_id', parishId)
       .single()
 
-    if (userParishError || !userParish || 
-        (!userParish.roles.includes('admin') && !userParish.roles.includes('minister'))) {
+    if (userParishError || !userParish ||
+        (!userParish.roles.includes('admin') && !userParish.roles.includes('staff'))) {
       throw new Error('You do not have permission to generate announcements for this parish')
     }
 

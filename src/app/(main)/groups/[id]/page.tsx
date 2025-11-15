@@ -8,6 +8,16 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { UserPlus, User, Trash2, Users, Edit, X, Save } from "lucide-react"
 import { getGroup, removeGroupMember, updateGroupMemberRoles, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
@@ -30,6 +40,8 @@ export default function GroupDetailPage({ params }: PageProps) {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null)
   const [editingRoles, setEditingRoles] = useState<LiturgicalRole[]>([])
   const [groupId, setGroupId] = useState<string>('')
+  const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null)
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const { setBreadcrumbs } = useBreadcrumbs()
 
   useEffect(() => {
@@ -73,16 +85,18 @@ export default function GroupDetailPage({ params }: PageProps) {
     }
   }
 
-  const handleRemoveMember = async (member: GroupMember) => {
-    const personName = member.person ? `${member.person.first_name} ${member.person.last_name}` : 'this person'
-    if (!confirm(`Are you sure you want to remove ${personName} from this group?`)) {
-      return
-    }
+  const handleOpenRemoveDialog = (member: GroupMember) => {
+    setMemberToRemove(member)
+    setRemoveDialogOpen(true)
+  }
+
+  const handleConfirmRemove = async () => {
+    if (!memberToRemove) return
 
     try {
-      await removeGroupMember(groupId, member.person_id)
+      await removeGroupMember(groupId, memberToRemove.person_id)
       toast.success('Member removed successfully')
-      
+
       // Reload group data
       const updatedGroup = await getGroup(groupId)
       if (updatedGroup) {
@@ -91,6 +105,9 @@ export default function GroupDetailPage({ params }: PageProps) {
     } catch (error) {
       console.error('Failed to remove member:', error)
       toast.error('Failed to remove member')
+    } finally {
+      setRemoveDialogOpen(false)
+      setMemberToRemove(null)
     }
   }
 
@@ -316,7 +333,7 @@ export default function GroupDetailPage({ params }: PageProps) {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleRemoveMember(member)}
+                              onClick={() => handleOpenRemoveDialog(member)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -364,6 +381,30 @@ export default function GroupDetailPage({ params }: PageProps) {
         groupName={group.name}
         onSuccess={handleAddMemberSuccess}
       />
+
+      {/* Remove Member Confirmation Dialog */}
+      <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove{' '}
+              <span className="font-semibold">
+                {memberToRemove?.person
+                  ? `${memberToRemove.person.first_name} ${memberToRemove.person.last_name}`
+                  : 'this person'}
+              </span>{' '}
+              from this group? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmRemove}>
+              Remove Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   )
 }

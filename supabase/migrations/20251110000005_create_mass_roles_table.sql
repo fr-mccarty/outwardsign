@@ -5,10 +5,17 @@ CREATE TABLE mass_roles (
   person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
   parameters JSONB,
+  status TEXT DEFAULT 'ASSIGNED',
+  confirmed_at TIMESTAMPTZ,
+  notified_at TIMESTAMPTZ,
+  note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(mass_id, person_id, role_id)
 );
+
+-- Add comment documenting status values
+COMMENT ON COLUMN mass_roles.status IS 'Status: ASSIGNED | CONFIRMED | DECLINED | SUBSTITUTE_REQUESTED | SUBSTITUTE_FOUND | NO_SHOW';
 
 -- Enable RLS
 ALTER TABLE mass_roles ENABLE ROW LEVEL SECURITY;
@@ -22,6 +29,7 @@ GRANT ALL ON mass_roles TO service_role;
 CREATE INDEX idx_mass_roles_mass_id ON mass_roles(mass_id);
 CREATE INDEX idx_mass_roles_person_id ON mass_roles(person_id);
 CREATE INDEX idx_mass_roles_role_id ON mass_roles(role_id);
+CREATE INDEX idx_mass_roles_status ON mass_roles(status);
 
 -- RLS Policies for mass_roles
 CREATE POLICY "Parish members can read mass_roles for their parish masses"

@@ -231,3 +231,77 @@ export async function deletePerson(id: string): Promise<void> {
 
   revalidatePath('/people')
 }
+
+// ============================================================================
+// PEOPLE WITH GROUP ROLES (for mass role picker)
+// ============================================================================
+
+export interface PersonWithGroupRoles extends Person {
+  group_members?: Array<{
+    id: string
+    group_id: string
+    roles?: string[] | null
+    group?: {
+      id: string
+      name: string
+    }
+  }>
+}
+
+export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<PersonWithGroupRoles>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query with group_members relation
+  let query = supabase
+    .from('people')
+    .select(`
+      *,
+      group_members!inner (
+        id,
+        group_id,
+        roles,
+        group:groups (
+          id,
+          name
+        )
+      )
+    `, { count: 'exact' })
+
+  // Apply search filter
+  if (search) {
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone_number.ilike.%${search}%`)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('last_name', { ascending: true })
+    .order('first_name', { ascending: true })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated people with roles:', error)
+    throw new Error('Failed to fetch paginated people with roles')
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: data || [],
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
+}

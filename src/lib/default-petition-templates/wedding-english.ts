@@ -1,6 +1,9 @@
 const weddingEnglish = {
   title: 'Wedding (English)',
   description: 'Wedding ceremony petitions in English',
+  module: 'wedding',
+  language: 'en',
+  is_default: true,
   content: `That he will bless their covenant
 as he chose to sanctify marriage at Cana in Galilee,
 let us pray to the Lord.

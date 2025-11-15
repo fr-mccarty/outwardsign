@@ -1,6 +1,9 @@
 const sundayEnglish = {
   title: 'Sunday Mass (English)',
   description: 'Standard Sunday Mass petitions in English',
+  module: 'mass',
+  language: 'en',
+  is_default: true,
   content: `For our Holy Father, Pope Leo, our Bishop, and all the clergy.
 For our nation's leaders and all who serve in public office.
 For peace in our world and protection of the innocent.

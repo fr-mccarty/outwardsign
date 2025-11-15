@@ -40,7 +40,7 @@ CREATE POLICY "Auto-create parish settings"
   TO anon, authenticated
   WITH CHECK (true);
 
--- Admins and super-admins can update parish settings
+-- Admins can update parish settings
 CREATE POLICY "Admins can update parish settings"
   ON parish_settings
   FOR UPDATE
@@ -49,12 +49,12 @@ CREATE POLICY "Admins can update parish settings"
     parish_id IN (
       SELECT parish_id FROM parish_users
       WHERE user_id = auth.uid()
-      AND ('admin' = ANY(roles) OR 'super-admin' = ANY(roles))
+      AND 'admin' = ANY(roles)
     )
   );
 
--- Only super-admins can delete parish settings
-CREATE POLICY "Super-admins can delete parish settings"
+-- Admins can delete parish settings
+CREATE POLICY "Admins can delete parish settings"
   ON parish_settings
   FOR DELETE
   TO anon, authenticated
@@ -62,7 +62,7 @@ CREATE POLICY "Super-admins can delete parish settings"
     parish_id IN (
       SELECT parish_id FROM parish_users
       WHERE user_id = auth.uid()
-      AND 'super-admin' = ANY(roles)
+      AND 'admin' = ANY(roles)
     )
   );
 

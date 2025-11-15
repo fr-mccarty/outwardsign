@@ -69,13 +69,13 @@ async function seedDevData() {
 
   const parishId = parish.id
 
-  // Step 2: Add user as super-admin
+  // Step 2: Add user as admin
   const { error: parishUserError } = await supabase
     .from('parish_users')
     .insert({
       parish_id: parishId,
       user_id: userId,
-      roles: ['super-admin', 'admin', 'staff']
+      roles: ['admin']
     })
 
   if (parishUserError) {
@@ -84,7 +84,7 @@ async function seedDevData() {
   }
 
   console.log(`   ✅ Parish created: ${parishId}`)
-  console.log(`   ✅ User added as super-admin`)
+  console.log(`   ✅ User added as admin`)
   console.log('')
 
   // Use the SAME onboarding setup function to seed initial data
@@ -285,7 +285,7 @@ async function seedDevData() {
   console.log(`Parish ID:   ${parishId}`)
   console.log(`Parish Name: Development Parish`)
   console.log(`User Email:  ${users[0].email}`)
-  console.log(`Role:        super-admin`)
+  console.log(`Role:        admin`)
   console.log('')
   console.log('You can now:')
   console.log('  - Start the dev server: npm run dev')

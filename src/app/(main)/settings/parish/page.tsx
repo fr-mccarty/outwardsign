@@ -9,18 +9,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FormField } from '@/components/form-field'
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 import { PageContainer } from '@/components/page-container'
-import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, UserCog, Settings, Plus, DollarSign } from "lucide-react"
+import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Mail, Send } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getCurrentParish } from '@/lib/auth/parish'
-import { updateParish, getParishMembers, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
+import { updateParish, getParishMembers, removeParishMember, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
+import { getParishInvitations, createParishInvitation, revokeParishInvitation, resendParishInvitation, type ParishInvitation } from '@/lib/actions/invitations'
 import { Parish, ParishSettings } from '@/lib/types'
+import { PARISH_ROLE_LABELS, PARISH_ROLE_VALUES, type ParishRole } from '@/lib/constants'
 import { toast } from 'sonner'
 
 interface ParishMember {
@@ -55,9 +76,16 @@ export default function ParishSettingsPage() {
     { amount: 5000, label: '$50' }
   ])
   const [members, setMembers] = useState<ParishMember[]>([])
+  const [invitations, setInvitations] = useState<ParishInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [loadingMembers, setLoadingMembers] = useState(false)
+  const [memberToRemove, setMemberToRemove] = useState<{ userId: string; email: string } | null>(null)
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<ParishRole>('parishioner')
+  const [inviteModules, setInviteModules] = useState<string[]>([])
   const { setBreadcrumbs } = useBreadcrumbs()
 
   useEffect(() => {
@@ -119,8 +147,15 @@ export default function ParishSettingsPage() {
   async function loadMembers(parishId: string) {
     try {
       setLoadingMembers(true)
-      const result = await getParishMembers(parishId)
-      setMembers(result.members || [])
+      const [membersResult, invitationsResult] = await Promise.all([
+        getParishMembers(parishId),
+        getParishInvitations().catch(err => {
+          console.error('Error loading invitations:', err)
+          return []
+        })
+      ])
+      setMembers(membersResult.members || [])
+      setInvitations(invitationsResult)
     } catch (error) {
       console.error('Error loading members:', error)
       toast.error('Failed to load parish members')
@@ -258,41 +293,103 @@ export default function ParishSettingsPage() {
     loadParishData()
   }
 
-  const handleRemoveMember = async (userId: string, email: string) => {
-    if (!currentParish) return
+  const handleOpenRemoveDialog = (userId: string, email: string) => {
+    setMemberToRemove({ userId, email })
+    setRemoveDialogOpen(true)
+  }
 
-    if (confirm(`Are you sure you want to remove ${email} from the parish?`)) {
-      try {
-        await removeParishMember(currentParish.id, userId)
-        toast.success('Member removed successfully')
-        await loadMembers(currentParish.id)
-      } catch (error) {
-        console.error('Error removing member:', error)
-        toast.error('Failed to remove member')
-      }
+  const handleConfirmRemove = async () => {
+    if (!currentParish || !memberToRemove) return
+
+    try {
+      await removeParishMember(currentParish.id, memberToRemove.userId)
+      toast.success('Member removed successfully')
+      await loadMembers(currentParish.id)
+    } catch (error) {
+      console.error('Error removing member:', error)
+      toast.error('Failed to remove member')
+    } finally {
+      setRemoveDialogOpen(false)
+      setMemberToRemove(null)
     }
   }
 
-  const handleUpdateRole = async (userId: string, newRoles: string[]) => {
+  const handleInviteMember = async () => {
+    if (!currentParish) return
+
+    if (!inviteEmail || !inviteRole) {
+      toast.error('Please enter an email and select a role')
+      return
+    }
+
+    try {
+      setSaving(true)
+      await createParishInvitation({
+        email: inviteEmail,
+        roles: [inviteRole],
+        enabled_modules: inviteRole === 'ministry-leader' ? inviteModules : undefined
+      })
+      toast.success('Invitation sent successfully!')
+      setInviteDialogOpen(false)
+      setInviteEmail('')
+      setInviteRole('parishioner')
+      setInviteModules([])
+      await loadMembers(currentParish.id)
+    } catch (error) {
+      console.error('Error sending invitation:', error)
+      toast.error('Failed to send invitation')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleResendInvitation = async (invitationId: string) => {
     if (!currentParish) return
 
     try {
-      await updateMemberRole(currentParish.id, userId, newRoles)
-      toast.success('Member role updated successfully')
+      await resendParishInvitation(invitationId)
+      toast.success('Invitation resent successfully!')
       await loadMembers(currentParish.id)
     } catch (error) {
-      console.error('Error updating role:', error)
-      toast.error('Failed to update member role')
+      console.error('Error resending invitation:', error)
+      toast.error('Failed to resend invitation')
     }
+  }
+
+  const handleRevokeInvitation = async (invitationId: string) => {
+    if (!currentParish) return
+
+    try {
+      await revokeParishInvitation(invitationId)
+      toast.success('Invitation revoked successfully')
+      await loadMembers(currentParish.id)
+    } catch (error) {
+      console.error('Error revoking invitation:', error)
+      toast.error('Failed to revoke invitation')
+    }
+  }
+
+  const handleModuleToggle = (module: string) => {
+    setInviteModules(prev =>
+      prev.includes(module)
+        ? prev.filter(m => m !== module)
+        : [...prev, module]
+    )
   }
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800'
-      case 'minister': return 'bg-blue-100 text-blue-800'
-      case 'lector': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      case 'staff': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'ministry-leader': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+      case 'parishioner': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
     }
+  }
+
+  const getRoleLabel = (role: string) => {
+    // Use English labels for now - TODO: Add language selection
+    return PARISH_ROLE_LABELS[role as ParishRole]?.en || role
   }
 
   if (loading) {
@@ -356,7 +453,7 @@ export default function ParishSettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="members" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Members ({members.length})
+            Members ({members.length + invitations.length})
           </TabsTrigger>
         </TabsList>
 
@@ -665,12 +762,144 @@ export default function ParishSettingsPage() {
         </TabsContent>
 
         <TabsContent value="members" className="space-y-6">
+          {/* Pending Invitations */}
+          {invitations.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Mail className="h-5 w-5" />
+                  Pending Invitations ({invitations.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {invitations.map((invitation) => (
+                    <div key={invitation.id} className="flex items-center justify-between p-4 border rounded-lg border-dashed">
+                      <div className="flex-1">
+                        <div className="font-medium">{invitation.email}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Invited {new Date(invitation.created_at).toLocaleDateString()} • Expires {new Date(invitation.expires_at).toLocaleDateString()}
+                        </div>
+                        <div className="flex gap-1 mt-2">
+                          {invitation.roles.map((role) => (
+                            <Badge key={role} className={getRoleColor(role)} variant="outline">
+                              {getRoleLabel(role)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleResendInvitation(invitation.id)}>
+                            <Send className="h-4 w-4 mr-2" />
+                            Resend Invitation
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleRevokeInvitation(invitation.id)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Revoke Invitation
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Active Members */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-3">
                 <Users className="h-5 w-5" />
-                Parish Members
+                Parish Members ({members.length})
               </CardTitle>
+              <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Invite Member
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Invite Parish Member</DialogTitle>
+                    <DialogDescription>
+                      Send an invitation to join this parish. They will receive an email with a link to create their account.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <FormField
+                      id="invite-email"
+                      label="Email Address"
+                      inputType="email"
+                      value={inviteEmail}
+                      onChange={setInviteEmail}
+                      placeholder="member@example.com"
+                      required
+                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-role">Role</Label>
+                      <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as ParishRole)}>
+                        <SelectTrigger id="invite-role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PARISH_ROLE_VALUES.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {PARISH_ROLE_LABELS[role].en}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        {inviteRole === 'admin' && 'Full access to parish settings, templates, and all modules'}
+                        {inviteRole === 'staff' && 'Can create and manage all sacrament modules'}
+                        {inviteRole === 'ministry-leader' && 'Access to specific modules (select below)'}
+                        {inviteRole === 'parishioner' && 'Read-only access to shared modules'}
+                      </p>
+                    </div>
+                    {inviteRole === 'ministry-leader' && (
+                      <div className="space-y-2">
+                        <Label>Enabled Modules</Label>
+                        <div className="space-y-2">
+                          {['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups'].map((module) => (
+                            <div key={module} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`module-${module}`}
+                                checked={inviteModules.includes(module)}
+                                onCheckedChange={() => handleModuleToggle(module)}
+                              />
+                              <label
+                                htmlFor={`module-${module}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                              >
+                                {module}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleInviteMember} disabled={saving}>
+                      {saving ? 'Sending...' : 'Send Invitation'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               {loadingMembers ? (
@@ -698,7 +927,7 @@ export default function ParishSettingsPage() {
                         <div className="flex gap-1 mt-2">
                           {member.roles.map((role) => (
                             <Badge key={role} className={getRoleColor(role)}>
-                              {role}
+                              {getRoleLabel(role)}
                             </Badge>
                           ))}
                         </div>
@@ -710,26 +939,12 @@ export default function ParishSettingsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
-                            onClick={() => handleUpdateRole(member.user_id, ['admin'])}
-                            disabled={member.roles.includes('admin')}
-                          >
-                            <UserCog className="h-4 w-4 mr-2" />
-                            Make Admin
-                          </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleUpdateRole(member.user_id, ['staff'])}
-                            disabled={member.roles.length === 1 && member.roles.includes('staff')}
-                          >
-                            <UserCog className="h-4 w-4 mr-2" />
-                            Make Staff
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleRemoveMember(member.user_id, member.users?.email || 'Unknown')}
+                            onClick={() => handleOpenRemoveDialog(member.user_id, member.users?.email || 'Unknown')}
                             className="text-red-600"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Remove
+                            Remove from Parish
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -741,6 +956,26 @@ export default function ParishSettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Remove Member Confirmation Dialog */}
+      <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Parish Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove{' '}
+              <span className="font-semibold">{memberToRemove?.email}</span>{' '}
+              from the parish? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmRemove}>
+              Remove Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   )
 }

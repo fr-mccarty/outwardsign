@@ -346,6 +346,21 @@ export const MASS_INTENTION_STATUS_LABELS: Record<MassIntentionStatus, { en: str
 }
 
 // ============================================================================
+// PARISH ROLES
+// ============================================================================
+// Roles for parish team members (stored in parish_users table)
+
+export const PARISH_ROLE_VALUES = ['admin', 'staff', 'ministry-leader', 'parishioner'] as const
+export type ParishRole = typeof PARISH_ROLE_VALUES[number]
+
+export const PARISH_ROLE_LABELS: Record<ParishRole, { en: string; es: string }> = {
+  admin: { en: 'Admin', es: 'Administrador' },
+  staff: { en: 'Staff', es: 'Personal' },
+  'ministry-leader': { en: 'Ministry Leader', es: 'Líder de Ministerio' },
+  parishioner: { en: 'Parishioner', es: 'Feligrés' }
+}
+
+// ============================================================================
 // LITURGICAL ROLES
 // ============================================================================
 // Roles for liturgical ministries (used in Groups module)
@@ -370,4 +385,17 @@ export const ROLE_LABELS: Record<LiturgicalRole, { en: string; es: string }> = {
   USHER: { en: 'Usher', es: 'Ujier' },
   SACRISTAN: { en: 'Sacristan', es: 'Sacristán' },
   MUSIC_MINISTER: { en: 'Music Minister', es: 'Ministro de Música' }
+}
+
+// Mass Role Status Constants
+export const MASS_ROLE_STATUS_VALUES = ['ASSIGNED', 'CONFIRMED', 'DECLINED', 'SUBSTITUTE_REQUESTED', 'SUBSTITUTE_FOUND', 'NO_SHOW'] as const
+export type MassRoleStatus = typeof MASS_ROLE_STATUS_VALUES[number]
+
+export const MASS_ROLE_STATUS_LABELS: Record<MassRoleStatus, { en: string; es: string }> = {
+  ASSIGNED: { en: 'Assigned', es: 'Asignado' },
+  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
+  DECLINED: { en: 'Declined', es: 'Declinado' },
+  SUBSTITUTE_REQUESTED: { en: 'Substitute Requested', es: 'Sustituto Solicitado' },
+  SUBSTITUTE_FOUND: { en: 'Substitute Found', es: 'Sustituto Encontrado' },
+  NO_SHOW: { en: 'No Show', es: 'No Asistió' }
 }

@@ -5,8 +5,11 @@ import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { createMass, updateMass, type CreateMassData, type MassWithRelations } from "@/lib/actions/masses"
-import type { Person, Event } from "@/lib/types"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { createMass, updateMass, type CreateMassData, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleWithRelations } from "@/lib/actions/masses"
+import { getRoles } from "@/lib/actions/roles"
+import type { Person, Event, Role } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -17,6 +20,8 @@ import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMP
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
+import { MassRolePicker } from "@/components/mass-role-picker"
+import { Plus, X } from "lucide-react"
 
 // Zod validation schema
 const massSchema = z.object({
@@ -64,6 +69,13 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const preMassAnnouncementPerson = usePickerState<Person>()
   const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 
+  // Mass role assignments state
+  const [massRoles, setMassRoles] = useState<MassRoleWithRelations[]>([])
+  const [allRoles, setAllRoles] = useState<Role[]>([])
+  const [rolePickerOpen, setRolePickerOpen] = useState(false)
+  const [currentRoleId, setCurrentRoleId] = useState<string | null>(null)
+  const [loadingRoles, setLoadingRoles] = useState(false)
+
   // Initialize form with mass data when editing
   useEffect(() => {
     if (mass) {
@@ -77,8 +89,49 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
       // Set liturgical event
       if (mass.liturgical_event) liturgicalEvent.setValue(mass.liturgical_event)
+
+      // Set mass roles if available
+      if (mass.mass_roles) {
+        setMassRoles(mass.mass_roles)
+      }
     }
   }, [mass])
+
+  // Load all roles for the role assignment section
+  useEffect(() => {
+    loadAllRoles()
+  }, [])
+
+  // Load mass roles when editing an existing mass
+  useEffect(() => {
+    if (isEditing && mass?.id) {
+      loadMassRoles()
+    }
+  }, [isEditing, mass?.id])
+
+  const loadAllRoles = async () => {
+    try {
+      const rolesData = await getRoles()
+      setAllRoles(rolesData)
+    } catch (error) {
+      console.error('Error loading roles:', error)
+      toast.error('Failed to load roles')
+    }
+  }
+
+  const loadMassRoles = async () => {
+    if (!mass?.id) return
+    try {
+      setLoadingRoles(true)
+      const roles = await getMassRoles(mass.id)
+      setMassRoles(roles)
+    } catch (error) {
+      console.error('Error loading mass roles:', error)
+      toast.error('Failed to load role assignments')
+    } finally {
+      setLoadingRoles(false)
+    }
+  }
 
   // Petition templates (simple default for now)
   const petitionTemplates: PetitionTemplate[] = [
@@ -117,6 +170,56 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       ]
     }
     return []
+  }
+
+  // Mass role assignment handlers
+  const handleOpenRolePicker = (roleId: string) => {
+    setCurrentRoleId(roleId)
+    setRolePickerOpen(true)
+  }
+
+  const handleSelectPersonForRole = async (person: Person | null) => {
+    if (!isEditing || !mass?.id || !currentRoleId) {
+      toast.error('Please save the mass before assigning roles')
+      return
+    }
+
+    try {
+      if (person) {
+        // Assign person to role
+        const newMassRole = await createMassRole({
+          mass_id: mass.id,
+          person_id: person.id,
+          role_id: currentRoleId,
+          status: 'ASSIGNED'
+        })
+
+        // Reload mass roles to get the updated list with relations
+        await loadMassRoles()
+        toast.success('Role assignment added')
+      }
+    } catch (error) {
+      console.error('Error assigning role:', error)
+      toast.error('Failed to assign role')
+    }
+  }
+
+  const handleRemoveRoleAssignment = async (massRoleId: string) => {
+    if (!isEditing || !mass?.id) return
+
+    try {
+      await deleteMassRole(massRoleId)
+      await loadMassRoles()
+      toast.success('Role assignment removed')
+    } catch (error) {
+      console.error('Error removing role assignment:', error)
+      toast.error('Failed to remove role assignment')
+    }
+  }
+
+  // Get role assignments for a specific role
+  const getRoleAssignments = (roleId: string) => {
+    return massRoles.filter(mr => mr.role_id === roleId)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -250,6 +353,102 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           />
         </CardContent>
       </Card>
+
+      {/* Role Assignments */}
+      {isEditing && mass?.id && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Role Assignments</CardTitle>
+            <CardDescription>
+              Assign people to liturgical roles for this Mass
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {allRoles.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                No roles defined. Please create roles in the Roles section first.
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {allRoles.map(role => {
+                  const assignments = getRoleAssignments(role.id)
+                  return (
+                    <div key={role.id} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{role.name}</div>
+                          {role.description && (
+                            <div className="text-sm text-muted-foreground">
+                              {role.description}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenRolePicker(role.id)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Assign Person
+                        </Button>
+                      </div>
+
+                      {/* List of assigned people for this role */}
+                      {assignments.length > 0 && (
+                        <div className="space-y-2 ml-4 mt-2">
+                          {assignments.map(assignment => (
+                            <div
+                              key={assignment.id}
+                              className="flex items-center justify-between p-2 bg-accent/50 rounded-md"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">
+                                  {assignment.person?.first_name} {assignment.person?.last_name}
+                                </span>
+                                {assignment.status && assignment.status !== 'ASSIGNED' && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {assignment.status}
+                                  </Badge>
+                                )}
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveRoleAssignment(assignment.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {assignments.length === 0 && (
+                        <div className="text-sm text-muted-foreground ml-4">
+                          No one assigned yet
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Mass Role Picker Modal */}
+      {currentRoleId && (
+        <MassRolePicker
+          open={rolePickerOpen}
+          onOpenChange={setRolePickerOpen}
+          onSelect={handleSelectPersonForRole}
+          massId={mass?.id}
+          allowEmpty={false}
+        />
+      )}
 
       {/* Pre-Mass Announcements */}
       <Card>

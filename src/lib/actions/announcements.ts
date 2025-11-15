@@ -81,8 +81,8 @@ export async function createAnnouncement(data: {
       .eq('parish_id', data.parish_id)
       .single()
 
-    if (userParishError || !userParish || 
-        (!userParish.roles.includes('admin') && !userParish.roles.includes('minister'))) {
+    if (userParishError || !userParish ||
+        (!userParish.roles.includes('admin') && !userParish.roles.includes('staff'))) {
       throw new Error('You do not have permission to create announcements for this parish')
     }
 

@@ -146,6 +146,10 @@ export interface CorePickerProps<T> {
   onPageChange?: (page: number) => void
   /** Callback when search query changes (for server-side search) */
   onSearch?: (query: string) => void
+
+  // Custom content
+  /** Optional custom content to render above the item list (e.g., filters) */
+  children?: React.ReactNode
 }
 
 /**

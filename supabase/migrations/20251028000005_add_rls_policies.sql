@@ -21,8 +21,8 @@ CREATE POLICY "Parish members can read their parish"
     )
   );
 
--- Super-admins and admins can update their parish
-CREATE POLICY "Super-admins and admins can update their parish"
+-- Admins can update their parish
+CREATE POLICY "Admins can update their parish"
   ON parishes
   FOR UPDATE
   TO anon, authenticated
@@ -31,12 +31,12 @@ CREATE POLICY "Super-admins and admins can update their parish"
     id IN (
       SELECT parish_id FROM parish_users
       WHERE user_id = auth.uid()
-      AND ('super-admin' = ANY(roles) OR 'admin' = ANY(roles))
+      AND 'admin' = ANY(roles)
     )
   );
 
--- Only super-admins can delete their parish
-CREATE POLICY "Super-admins can delete their parish"
+-- Admins can delete their parish
+CREATE POLICY "Admins can delete their parish"
   ON parishes
   FOR DELETE
   TO anon, authenticated
@@ -45,6 +45,6 @@ CREATE POLICY "Super-admins can delete their parish"
     id IN (
       SELECT parish_id FROM parish_users
       WHERE user_id = auth.uid()
-      AND 'super-admin' = ANY(roles)
+      AND 'admin' = ANY(roles)
     )
   );

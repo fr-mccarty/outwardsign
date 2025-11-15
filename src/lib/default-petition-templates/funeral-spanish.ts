@@ -1,6 +1,9 @@
 const funeralSpanish = {
   title: 'Funeral (Spanish)',
   description: 'Funeral Mass petitions in Spanish',
+  module: 'funeral',
+  language: 'es',
+  is_default: true,
   content: `Por [Nombre del Difunto], para que descanse en paz eterna.
 Roguemos al Señor.
 Por la familia y amigos que lloran, para que encuentren consuelo en el amor de Dios.

@@ -1,6 +1,9 @@
 const sundaySpanish = {
   title: 'Sunday Mass (Spanish)',
   description: 'Standard Sunday Mass petitions in Spanish',
+  module: 'mass',
+  language: 'es',
+  is_default: true,
   content: `Por nuestro Santo Padre, el Papa Leo, nuestro Obispo, y todo el clero.
 Roguemos al Señor.
 Por los líderes de nuestra nación y todos los que sirven en cargos públicos.

@@ -228,6 +228,7 @@ export interface ParishUser {
   user_id: string
   parish_id: string
   roles: string[]
+  enabled_modules: string[]
 }
 
 export interface UserSettings {
@@ -639,6 +640,10 @@ export interface MassRole {
   mass_id: string
   person_id: string
   role_id: string
+  status?: string
+  confirmed_at?: string | null
+  notified_at?: string | null
+  note?: string | null
   parameters?: Record<string, any>
   created_at: string
   updated_at: string

@@ -1,0 +1,259 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  BookOpen,
+  Menu,
+  Home,
+  RocketIcon,
+  Users,
+  Sparkles,
+  ChevronDown,
+  ChevronRight,
+  FileQuestion,
+  Code,
+  Heart
+} from 'lucide-react'
+
+interface NavItem {
+  title: string
+  href?: string
+  icon?: any
+  items?: NavItem[]
+}
+
+interface DocumentationSidebarProps {
+  lang: 'en' | 'es'
+}
+
+export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
+  const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Navigation structure
+  const navigation: NavItem[] = [
+    {
+      title: lang === 'en' ? 'Home' : 'Inicio',
+      href: `/documentation/${lang}`,
+      icon: Home,
+    },
+    {
+      title: lang === 'en' ? 'Getting Started' : 'Comenzando',
+      icon: RocketIcon,
+      items: [
+        {
+          title: lang === 'en' ? 'Introduction' : 'Introducción',
+          href: `/documentation/${lang}/getting-started/introduction`,
+        },
+        {
+          title: lang === 'en' ? 'Quick Start' : 'Inicio Rápido',
+          href: `/documentation/${lang}/getting-started/quick-start`,
+        },
+        {
+          title: lang === 'en' ? 'System Requirements' : 'Requisitos del Sistema',
+          href: `/documentation/${lang}/getting-started/system-requirements`,
+        },
+      ],
+    },
+    {
+      title: lang === 'en' ? 'User Guides' : 'Guías de Usuario',
+      icon: Users,
+      items: [
+        {
+          title: lang === 'en' ? 'Admin Guide' : 'Guía de Administrador',
+          href: `/documentation/${lang}/user-guides/admin-guide`,
+        },
+        {
+          title: lang === 'en' ? 'Staff Guide' : 'Guía de Personal',
+          href: `/documentation/${lang}/user-guides/staff-guide`,
+        },
+        {
+          title: lang === 'en' ? 'Parishioner Guide' : 'Guía de Feligrés',
+          href: `/documentation/${lang}/user-guides/parishioner-guide`,
+        },
+      ],
+    },
+    {
+      title: lang === 'en' ? 'Features' : 'Características',
+      icon: Sparkles,
+      items: [
+        {
+          title: lang === 'en' ? 'Weddings' : 'Bodas',
+          href: `/documentation/${lang}/features/weddings`,
+        },
+        {
+          title: lang === 'en' ? 'Funerals' : 'Funerales',
+          href: `/documentation/${lang}/features/funerals`,
+        },
+        {
+          title: lang === 'en' ? 'Baptisms' : 'Bautismos',
+          href: `/documentation/${lang}/features/baptisms`,
+        },
+        {
+          title: lang === 'en' ? 'Quinceañeras' : 'Quinceañeras',
+          href: `/documentation/${lang}/features/quinceaneras`,
+        },
+        {
+          title: lang === 'en' ? 'Presentations' : 'Presentaciones',
+          href: `/documentation/${lang}/features/presentations`,
+        },
+        {
+          title: lang === 'en' ? 'Mass Planning' : 'Planificación de Misas',
+          href: `/documentation/${lang}/features/mass-planning`,
+        },
+        {
+          title: lang === 'en' ? 'Calendar' : 'Calendario',
+          href: `/documentation/${lang}/features/calendar`,
+        },
+        {
+          title: lang === 'en' ? 'People Management' : 'Gestión de Personas',
+          href: `/documentation/${lang}/features/people-management`,
+        },
+      ],
+    },
+    {
+      title: lang === 'en' ? 'FAQ' : 'Preguntas Frecuentes',
+      href: `/documentation/${lang}/faq`,
+      icon: FileQuestion,
+    },
+    {
+      title: lang === 'en' ? 'For Developers' : 'Para Desarrolladores',
+      href: `/documentation/${lang}/for-developers`,
+      icon: Code,
+    },
+    {
+      title: lang === 'en' ? 'Sponsor' : 'Patrocinar',
+      href: `/documentation/${lang}/sponsor`,
+      icon: Heart,
+    },
+  ]
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="p-6 border-b border-border">
+        <Link href="/" className="flex items-center gap-3">
+          <BookOpen className="h-6 w-6 text-primary" />
+          <div>
+            <h2 className="font-semibold text-foreground">Outward Sign</h2>
+            <p className="text-xs text-muted-foreground">
+              {lang === 'en' ? 'Documentation' : 'Documentación'}
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Navigation */}
+      <ScrollArea className="flex-1 px-4 py-6">
+        <nav className="space-y-2">
+          {navigation.map((item) => (
+            <NavItemComponent key={item.title} item={item} pathname={pathname} />
+          ))}
+        </nav>
+      </ScrollArea>
+    </div>
+  )
+
+  return (
+    <>
+      {/* Mobile Hamburger */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            <span className="font-semibold text-foreground">Documentation</span>
+          </div>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <SidebarContent />
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-80 lg:fixed lg:inset-y-0 lg:border-r lg:border-border lg:bg-card">
+        <SidebarContent />
+      </aside>
+    </>
+  )
+}
+
+function NavItemComponent({ item, pathname }: { item: NavItem; pathname: string }) {
+  const [expanded, setExpanded] = useState(
+    item.items?.some((subItem) => pathname.startsWith(subItem.href || '')) || false
+  )
+  const hasChildren = item.items && item.items.length > 0
+  const isActive = item.href === pathname
+
+  if (hasChildren) {
+    return (
+      <div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className={cn(
+            'flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors',
+            'hover:bg-accent hover:text-accent-foreground'
+          )}
+        >
+          <div className="flex items-center gap-2">
+            {item.icon && <item.icon className="h-4 w-4" />}
+            <span>{item.title}</span>
+          </div>
+          {expanded ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </button>
+        {expanded && item.items && (
+          <div className="ml-6 mt-1 space-y-1">
+            {item.items.map((subItem) => {
+              const isSubActive = subItem.href === pathname
+              return (
+                <Link
+                  key={subItem.href}
+                  href={subItem.href || '#'}
+                  className={cn(
+                    'block px-3 py-2 text-sm rounded-md transition-colors',
+                    isSubActive
+                      ? 'bg-accent text-accent-foreground font-medium'
+                      : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
+                  )}
+                >
+                  {subItem.title}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      href={item.href || '#'}
+      className={cn(
+        'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+        isActive
+          ? 'bg-accent text-accent-foreground'
+          : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
+      )}
+    >
+      {item.icon && <item.icon className="h-4 w-4" />}
+      <span>{item.title}</span>
+    </Link>
+  )
+}

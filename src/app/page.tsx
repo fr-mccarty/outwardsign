@@ -10,6 +10,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
+import { LanguageSelector } from "@/components/language-selector"
 import Link from "next/link"
 import {
   Church,
@@ -29,7 +30,6 @@ import {
   HandHeartIcon,
   VenusAndMars,
   Github,
-  Languages,
   Sun,
   Moon,
   Sparkles,
@@ -52,6 +52,7 @@ const translations = {
       features: "Features",
       sacraments: "Sacraments",
       howItWorks: "How it Works",
+      documentation: "Documentation",
       login: "Login",
       getStarted: "Get Started"
     },
@@ -291,6 +292,7 @@ const translations = {
       features: "Características",
       sacraments: "Sacramentos",
       howItWorks: "Cómo Funciona",
+      documentation: "Documentación",
       login: "Iniciar Sesión",
       getStarted: "Comenzar"
     },
@@ -579,6 +581,9 @@ function HomeContent() {
               <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
                 {t.nav.howItWorks}
               </Link>
+              <Link href="/documentation" className="text-muted-foreground hover:text-foreground transition-colors">
+                {t.nav.documentation}
+              </Link>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -596,27 +601,11 @@ function HomeContent() {
               </button>
 
               {/* Language Selector */}
-              <div className="hidden lg:flex items-center gap-2 border border-border rounded-lg p-1">
-                <button
-                  onClick={() => handleLanguageChange('en')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    language === 'en'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => handleLanguageChange('es')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    language === 'es'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  ES
-                </button>
+              <div className="hidden lg:block">
+                <LanguageSelector
+                  currentLang={language}
+                  onLanguageChange={handleLanguageChange}
+                />
               </div>
 
               <Button asChild variant="ghost" className="hidden md:inline-flex">
@@ -672,6 +661,13 @@ function HomeContent() {
               >
                 {t.nav.howItWorks}
               </Link>
+              <Link
+                href="/documentation"
+                className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.documentation}
+              </Link>
             </nav>
 
             <Separator />
@@ -706,30 +702,11 @@ function HomeContent() {
             {/* Language Picker */}
             <div className="space-y-3">
               <div className="text-sm font-medium text-muted-foreground">Language</div>
-              <div className="flex gap-2">
-                <Button
-                  variant={language === 'en' ? 'default' : 'outline'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => {
-                    handleLanguageChange('en')
-                  }}
-                >
-                  <Languages className="h-4 w-4 mr-2" />
-                  English
-                </Button>
-                <Button
-                  variant={language === 'es' ? 'default' : 'outline'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => {
-                    handleLanguageChange('es')
-                  }}
-                >
-                  <Languages className="h-4 w-4 mr-2" />
-                  Español
-                </Button>
-              </div>
+              <LanguageSelector
+                currentLang={language}
+                onLanguageChange={handleLanguageChange}
+                width="w-full"
+              />
             </div>
 
             <Separator />

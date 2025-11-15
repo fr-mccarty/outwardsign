@@ -111,7 +111,7 @@ There are two ways to import liturgical calendar data: migration files (recommen
 
 ### Migration Files (Recommended for Development)
 
-**Why?** Migration files run automatically when resetting the database (`supabase db reset`), making local development faster.
+**Why?** Migration files run automatically when resetting the database (`npm run db:fresh`), making local development faster.
 
 **Current Migrations:**
 - `20251109000002_seed_global_liturgical_events_2025_en_US.sql` - 538 events for 2025
@@ -158,7 +158,7 @@ ON CONFLICT (event_key, date, locale) DO NOTHING;
 **After Generation:**
 1. Review the migration file
 2. Run `supabase db push` to apply it
-3. Or run `supabase db reset` to reset and apply all migrations
+3. Or run `npm run db:fresh` to reset and apply all migrations
 
 ### TypeScript Import Script (Production)
 

@@ -6,6 +6,16 @@ import { PageContainer } from "@/components/page-container"
 import { Loading } from '@/components/loading'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { Plus, Edit, Trash2, Users, UserPlus } from "lucide-react"
 import { getGroups, deleteGroup, type Group } from '@/lib/actions/groups'
@@ -19,6 +29,8 @@ export default function GroupsPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { setBreadcrumbs } = useBreadcrumbs()
 
   useEffect(() => {
@@ -64,18 +76,24 @@ export default function GroupsPage() {
     }
   }
 
-  const handleDelete = async (group: Group) => {
-    if (!confirm(`Are you sure you want to delete the group "${group.name}"?`)) {
-      return
-    }
+  const handleOpenDeleteDialog = (group: Group) => {
+    setGroupToDelete(group)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return
 
     try {
-      await deleteGroup(group.id)
+      await deleteGroup(groupToDelete.id)
       toast.success('Group deleted successfully')
       await loadGroups()
     } catch (error) {
       console.error('Failed to delete group:', error)
       toast.error('Failed to delete group')
+    } finally {
+      setDeleteDialogOpen(false)
+      setGroupToDelete(null)
     }
   }
 
@@ -169,7 +187,7 @@ export default function GroupsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(group)}
+                      onClick={() => handleOpenDeleteDialog(group)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -187,6 +205,26 @@ export default function GroupsPage() {
         group={editingGroup}
         onSuccess={handleSuccess}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Group</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the group{' '}
+              <span className="font-semibold">&quot;{groupToDelete?.name}&quot;</span>?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Delete Group
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageContainer>
   )
 }

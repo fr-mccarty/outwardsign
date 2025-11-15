@@ -107,12 +107,12 @@ BEGIN
   END IF;
 END $$;
 
--- Link the test user to the parish with super-admin role
+-- Link the test user to the parish with admin role
 INSERT INTO parish_users (user_id, parish_id, roles, created_at)
 VALUES (
   '00000000-0000-0000-0000-000000000002'::UUID,
   '00000000-0000-0000-0000-000000000001'::UUID,
-  ARRAY['super-admin', 'admin', 'staff']::TEXT[],
+  ARRAY['admin']::TEXT[],
   now()
 )
 ON CONFLICT (user_id, parish_id) DO NOTHING;
@@ -141,7 +141,7 @@ BEGIN
   RAISE NOTICE 'Test User Email: fr.mccarty@gmail.com';
   RAISE NOTICE 'Test User Password: 1234567890';
   RAISE NOTICE 'User ID: 00000000-0000-0000-0000-000000000002';
-  RAISE NOTICE 'Roles: super-admin, admin, staff';
+  RAISE NOTICE 'Roles: admin';
   RAISE NOTICE '';
   RAISE NOTICE 'You can now run seed scripts that require a parish.';
   RAISE NOTICE '================================================================';

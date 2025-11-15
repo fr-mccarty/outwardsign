@@ -1,6 +1,9 @@
 const weddingSpanish = {
   title: 'Wedding (Spanish)',
   description: 'Wedding ceremony petitions in Spanish',
+  module: 'wedding',
+  language: 'es',
+  is_default: true,
   content: `Por sus familiares y amigos
 y por todos los que les han ayudado a Hegar a este dia.
 Roguemos al Senor.
