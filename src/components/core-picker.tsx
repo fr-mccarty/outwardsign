@@ -181,6 +181,14 @@ export function CorePicker<T>({
     }
   }
 
+  // Reset form to initial state
+  const resetForm = () => {
+    setShowCreateForm(false)
+    setCreateFormData(defaultCreateFormData)
+    setCreateFormErrors({})
+    setEntityIdBeingEdited(null)
+  }
+
   // Handle item selection
   const handleItemSelect = (item: T) => {
     onSelect(item)
@@ -255,13 +263,8 @@ export function CorePicker<T>({
         return
       }
 
-      // Reset form to default values
-      setCreateFormData(defaultCreateFormData)
-      setCreateFormErrors({})
-      setShowCreateForm(false)
-      setEntityIdBeingEdited(null)
-
-      // Auto-select the created/updated item
+      // Reset form and auto-select the created/updated item
+      resetForm()
       handleItemSelect(resultItem)
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} item:`, error)
@@ -414,9 +417,21 @@ export function CorePicker<T>({
       <DialogContent className="flex flex-col max-w-2xl max-h-[80vh]" data-testid={testId}>
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{title}</DialogTitle>
-          {showCreateForm && (
+          {showCreateForm && isEditMode && (
+            <DialogDescription>Update the details below.</DialogDescription>
+          )}
+          {showCreateForm && !isEditMode && (
             <DialogDescription>
-              Close this form to search for an existing {title.toLowerCase().replace('select ', '')}.
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={resetForm}
+                disabled={isCreating}
+                className="h-auto p-0 text-sm"
+              >
+                Select from list instead
+              </Button>
             </DialogDescription>
           )}
         </DialogHeader>
@@ -463,12 +478,7 @@ export function CorePicker<T>({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setShowCreateForm(false)
-                    setCreateFormData(defaultCreateFormData)
-                    setCreateFormErrors({})
-                    setEntityIdBeingEdited(null)
-                  }}
+                  onClick={resetForm}
                   disabled={isCreating}
                 >
                   Cancel
