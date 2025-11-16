@@ -50,7 +50,6 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Weddings"
       description="Manage wedding celebrations in your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/weddings/create">

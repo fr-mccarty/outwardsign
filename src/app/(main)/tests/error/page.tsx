@@ -33,7 +33,6 @@ export default function ErrorTestPage() {
     <PageContainer
       title="Error Component Test Page"
       description="This page displays different states of the Error component for visual testing."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-8">

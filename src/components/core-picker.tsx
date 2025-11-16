@@ -497,6 +497,7 @@ export function CorePicker<T>({
                         type="button"
                         onClick={() => handleItemSelect(item)}
                         aria-label={itemLabel}
+                        data-testid={testId ? `${testId}-${itemId}` : undefined}
                         className={cn(
                           'w-full text-left p-3 rounded-md border transition-colors',
                           'hover:bg-accent hover:text-accent-foreground',

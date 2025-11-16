@@ -18,7 +18,7 @@ export function PageContainer({
   actions,
   children,
   className,
-  maxWidth = '4xl'
+  maxWidth = '7xl'
 }: PageContainerProps) {
   const maxWidthClasses = {
     'sm': 'max-w-sm',

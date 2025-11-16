@@ -43,7 +43,6 @@ export default async function ViewQuinceaneraPage({ params }: PageProps) {
     <PageContainer
       title={title}
       description="Preview and download quinceañera liturgy documents."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <QuinceaneraViewClient quinceanera={quinceanera} />

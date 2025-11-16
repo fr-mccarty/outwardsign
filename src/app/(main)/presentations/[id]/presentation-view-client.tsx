@@ -1,8 +1,8 @@
 "use client"
 
-import { PresentationWithRelations } from '@/lib/actions/presentations'
+import { PresentationWithRelations, updatePresentation } from '@/lib/actions/presentations'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { buildPresentationLiturgy } from '@/lib/content-builders/presentation'
+import { buildPresentationLiturgy, PRESENTATION_TEMPLATES } from '@/lib/content-builders/presentation'
 
 interface PresentationViewClientProps {
   presentation: PresentationWithRelations
@@ -23,6 +23,13 @@ export function PresentationViewClient({ presentation }: PresentationViewClientP
     return presentation.presentation_template_id || 'presentation-spanish'
   }
 
+  // Handle template update
+  const handleUpdateTemplate = async (templateId: string) => {
+    await updatePresentation(presentation.id, {
+      presentation_template_id: templateId,
+    })
+  }
+
   return (
     <ModuleViewContainer
       entity={presentation}
@@ -32,6 +39,13 @@ export function PresentationViewClient({ presentation }: PresentationViewClientP
       generateFilename={generateFilename}
       buildLiturgy={buildPresentationLiturgy}
       getTemplateId={getTemplateId}
+      templateConfig={{
+        currentTemplateId: presentation.presentation_template_id,
+        templates: PRESENTATION_TEMPLATES,
+        templateFieldName: 'presentation_template_id',
+        defaultTemplateId: 'presentation-spanish',
+        onUpdateTemplate: handleUpdateTemplate,
+      }}
     />
   )
 }

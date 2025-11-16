@@ -52,7 +52,6 @@ export default async function MassRoleTemplatesPage({ searchParams }: PageProps)
     <PageContainer
       title="Mass Role Templates"
       description="Manage role assignment templates for different Mass types."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/mass-role-templates/create">

@@ -14,6 +14,7 @@ CREATE TABLE events (
   is_all_day BOOLEAN NOT NULL DEFAULT false,
   location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
   language TEXT,
+  event_template_id TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),

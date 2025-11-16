@@ -57,6 +57,8 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
 - **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
+- **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Liturgical script system for individual entity documents (weddings, funerals, etc.) with template builders and exports
+- **[REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md)** - Report builder system for tabular reports with aggregations, filtering, and CSV/Print exports
 - **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
 - **[USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md)** - User documentation system structure, adding pages, sidebar navigation, breadcrumbs, and multi-language support
 
@@ -410,7 +412,20 @@ The Component Registry contains comprehensive documentation on all reusable comp
 
 **For comprehensive documentation on the liturgical script system, see [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md).**
 
-Content builders create liturgy document structures that can be rendered in multiple formats. See LITURGICAL_SCRIPT_SYSTEM.md for interfaces, template structure, styling, and export functionality.
+Content builders create liturgy document structures that can be rendered in multiple formats. See LITURGICAL_SCRIPT_SYSTEM.md for:
+- Complete registry of all 7 modules using content builders
+- Template selector architecture pattern (view pages only, not edit pages)
+- Interfaces, template structure, styling, and export functionality
+
+**Report Builders:**
+
+**For comprehensive documentation on the report builder system, see [REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md).**
+
+Report builders generate tabular reports with aggregations and filtering for administrative purposes. Different from liturgical scripts (individual entities), reports aggregate data across multiple records. See REPORT_BUILDER_SYSTEM.md for:
+- Report vs. liturgical script use cases
+- Complete implementation guide (server actions, builders, UI, print, CSV)
+- File structure and architecture patterns
+- Mass Intentions Report as reference implementation
 
 ### Type Patterns
 

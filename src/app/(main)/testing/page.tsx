@@ -33,7 +33,6 @@ export default async function TestingIndexPage() {
     <PageContainer
       title="Testing Area"
       description="Test and preview components and features"
-      maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
 

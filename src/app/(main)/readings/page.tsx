@@ -56,7 +56,6 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Readings"
       description="Manage your collection of scripture readings and liturgical texts."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/readings/create">

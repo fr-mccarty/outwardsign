@@ -73,11 +73,10 @@ export default function CreateCalendarPage() {
   }
 
   return (
-    <PageContainer 
+    <PageContainer
       title="Add Calendar Event"
       description="Add a liturgical celebration or special event to the calendar."
       cardTitle="Event Details"
-      maxWidth="4xl"
     >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

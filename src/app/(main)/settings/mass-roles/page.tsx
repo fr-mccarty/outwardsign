@@ -175,7 +175,6 @@ export default function MassRolesPage() {
     <PageContainer
       title="Mass Roles"
       description="Manage liturgical roles for Mass ministries"
-      maxWidth="6xl"
       actions={
         <Button onClick={handleOpenCreate}>
           <Plus className="h-4 w-4 mr-2" />

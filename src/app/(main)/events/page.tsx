@@ -9,7 +9,13 @@ import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; event_type?: string; language?: string }>
+  searchParams: Promise<{
+    search?: string
+    event_type?: string
+    language?: string
+    start_date?: string
+    end_date?: string
+  }>
 }
 
 export default async function EventsPage({ searchParams }: PageProps) {
@@ -27,7 +33,9 @@ export default async function EventsPage({ searchParams }: PageProps) {
   const filters: EventFilterParams = {
     search: params.search,
     event_type: params.event_type,
-    language: params.language
+    language: params.language,
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
   // Fetch events server-side with filters
@@ -62,7 +70,6 @@ export default async function EventsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Events"
       description="Manage parish events and activities."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/events/create">

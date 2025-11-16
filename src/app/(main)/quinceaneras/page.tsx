@@ -50,7 +50,6 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Quinceañeras"
       description="Manage quinceañera celebrations in your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/quinceaneras/create">

@@ -46,7 +46,6 @@ export function EventFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="4xl"
       actions={actions}
     >
       <EventForm

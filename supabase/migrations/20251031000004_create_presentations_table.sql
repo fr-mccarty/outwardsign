@@ -8,7 +8,7 @@ CREATE TABLE presentations (
   father_id UUID REFERENCES people(id) ON DELETE SET NULL,
   coordinator_id UUID REFERENCES people(id) ON DELETE SET NULL,
   is_baptized BOOLEAN NOT NULL DEFAULT false,
-  status TEXT DEFAULT 'ACTIVE',
+  status TEXT DEFAULT 'PLANNING',
   note TEXT,
   presentation_template_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

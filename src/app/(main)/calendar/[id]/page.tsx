@@ -35,7 +35,6 @@ export default async function CalendarDetailPage({ params }: PageProps) {
     <PageContainer
       title={entry.title}
       description={`${entry.liturgical_rank || 'Event'} - ${new Date(entry.date).toLocaleDateString()}`}
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <CalendarViewClient entry={entry} entryId={id} />

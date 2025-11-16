@@ -43,7 +43,6 @@ export default async function ViewPresentationPage({ params }: PageProps) {
     <PageContainer
       title={title}
       description="Preview and download presentation liturgy documents."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PresentationViewClient presentation={presentation} />

@@ -36,7 +36,6 @@ export default async function PetitionSettingsPage() {
     <PageContainer
       title="Petition Templates"
       description="Manage petition templates for your liturgical celebrations. Create custom contexts as needed."
-      maxWidth="6xl"
     >
       <PetitionTemplateList templates={templates} />
     </PageContainer>

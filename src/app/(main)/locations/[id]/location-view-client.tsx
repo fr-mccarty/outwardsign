@@ -63,7 +63,6 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
       <PageContainer
         title={location.name}
         description="Location details"
-        maxWidth="4xl"
         actions={actions}
       >
         <div className="space-y-6">

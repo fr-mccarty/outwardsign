@@ -46,7 +46,6 @@ export function PresentationFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="4xl"
       actions={actions}
     >
       <PresentationForm

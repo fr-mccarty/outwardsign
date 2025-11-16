@@ -48,7 +48,6 @@ export default async function LocationsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Locations"
       description="Manage parish locations."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/locations/create">

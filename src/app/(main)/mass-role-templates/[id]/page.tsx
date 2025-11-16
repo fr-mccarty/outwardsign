@@ -36,7 +36,6 @@ export default async function ViewMassRoleTemplatePage({ params }: PageProps) {
     <PageContainer
       title={`${template.name}-Template`}
       description="View and manage Mass role template details."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassRoleTemplateViewClient template={template} />

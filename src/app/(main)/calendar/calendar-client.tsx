@@ -205,7 +205,6 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
       <PageContainer
         title="Calendar"
         description="View all parish events in a calendar format"
-        maxWidth="7xl"
       >
         <Calendar
           currentDate={currentDate}

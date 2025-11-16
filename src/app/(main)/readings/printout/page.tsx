@@ -154,10 +154,9 @@ export default function ReadingsPrintoutPage() {
 
   if (loading) {
     return (
-      <PageContainer 
+      <PageContainer
         title="Readings Printout"
         description="Create formatted printouts of readings and petitions for liturgical use."
-        maxWidth="6xl"
       >
         <Loading />
       </PageContainer>
@@ -168,10 +167,9 @@ export default function ReadingsPrintoutPage() {
   const petitionData = getSelectedPetitionData()
 
   return (
-    <PageContainer 
+    <PageContainer
       title="Readings Printout"
       description="Create formatted printouts of readings and petitions for liturgical use."
-      maxWidth="6xl"
     >
       <div className="flex justify-end items-center mb-6">
         <div className="flex gap-3">

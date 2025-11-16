@@ -448,7 +448,6 @@ export default function ParishSettingsPage() {
       <SettingsPage
         title="Parish Settings"
         description="Manage your parish information and administrative settings"
-        maxWidth="6xl"
         tabs={[]}
       />
     )
@@ -459,7 +458,6 @@ export default function ParishSettingsPage() {
       <SettingsPage
         title="Parish Settings"
         description="Manage your parish information and administrative settings"
-        maxWidth="6xl"
         tabs={[
           {
             value: 'settings',
@@ -1173,7 +1171,6 @@ export default function ParishSettingsPage() {
       <SettingsPage
         title="Parish Settings"
         description="Manage your parish information, members, and administrative settings"
-        maxWidth="6xl"
         tabs={tabs}
         defaultTab="settings"
         actions={

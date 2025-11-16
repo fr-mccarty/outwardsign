@@ -50,7 +50,6 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Mass Intentions"
       description="Manage Mass intentions for your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/mass-intentions/create">

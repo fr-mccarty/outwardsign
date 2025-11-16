@@ -5,7 +5,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Edit, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
 import { ModuleStatusLabel } from '@/components/module-status-label'
+import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import type { Event, Location } from '@/lib/types'
+import type { LiturgyTemplate } from '@/lib/types/liturgy-content'
 
 interface ModuleViewPanelProps {
   /**
@@ -16,6 +18,7 @@ interface ModuleViewPanelProps {
     id: string
     status?: string | null
     created_at: string
+    [key: string]: any  // Allow template_id fields
   }
 
   /**
@@ -52,6 +55,18 @@ interface ModuleViewPanelProps {
    * Defaults to "module" for most entities
    */
   statusType?: 'module' | 'mass' | 'mass-intention'
+
+  /**
+   * Template selector configuration (optional)
+   * If provided, shows template selector in metadata section
+   */
+  templateConfig?: {
+    currentTemplateId?: string | null
+    templates: Record<string, LiturgyTemplate<any>>
+    templateFieldName: string  // e.g., "wedding_template_id", "mass_template_id"
+    defaultTemplateId: string
+    onUpdateTemplate: (templateId: string) => Promise<void>
+  }
 }
 
 export function ModuleViewPanel({
@@ -62,6 +77,7 @@ export function ModuleViewPanel({
   generateFilename,
   printViewPath,
   statusType = 'module',
+  templateConfig,
 }: ModuleViewPanelProps) {
   const defaultPrintPath = printViewPath || `/print/${modulePath}/${entity.id}`
 
@@ -126,6 +142,17 @@ export function ModuleViewPanel({
               <span className="font-medium">Status:</span>
               <ModuleStatusLabel status={entity.status} statusType={statusType} />
             </div>
+            {templateConfig && (
+              <div className="pt-2 border-t">
+                <TemplateSelectorDialog
+                  currentTemplateId={templateConfig.currentTemplateId}
+                  templates={templateConfig.templates}
+                  moduleName={entityType}
+                  onSave={templateConfig.onUpdateTemplate}
+                  defaultTemplateId={templateConfig.defaultTemplateId}
+                />
+              </div>
+            )}
             {mainEvent?.location && (
               <div>
                 <span className="font-medium">Location:</span> {mainEvent.location.name}

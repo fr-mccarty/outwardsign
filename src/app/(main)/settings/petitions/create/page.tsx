@@ -31,7 +31,6 @@ export default async function CreatePetitionTemplatePage() {
     <PageContainer
       title="Create Petition Template"
       description="Create a new petition template for your liturgical celebrations"
-      maxWidth="3xl"
     >
       <PetitionTemplateForm />
     </PageContainer>

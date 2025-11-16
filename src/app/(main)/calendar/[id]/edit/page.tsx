@@ -110,7 +110,6 @@ export default function EditCalendarPage() {
       <PageContainer
         title="Loading..."
         description="Loading calendar event details"
-        maxWidth="4xl"
       >
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
@@ -128,7 +127,6 @@ export default function EditCalendarPage() {
     <PageContainer
       title="Edit Calendar Event"
       description="Update liturgical celebration details"
-      maxWidth="4xl"
     >
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="sm" asChild>

@@ -31,8 +31,8 @@ export async function GET(
     }
 
     // Build liturgy content using centralized content builder
-    const language = (event.language === 'es' ? 'es' : 'en') as 'en' | 'es'
-    const liturgyDocument = buildEventLiturgy(event, 'full-script', language)
+    const templateId = event.event_template_id || 'event-full-script-english'
+    const liturgyDocument = buildEventLiturgy(event, templateId)
 
     // Render to PDF format
     const content = renderPDF(liturgyDocument)

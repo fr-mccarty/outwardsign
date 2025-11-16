@@ -20,13 +20,13 @@ interface ModuleStatusLabelProps {
 const getDefaultStatus = (statusType: StatusType): string => {
   switch (statusType) {
     case 'module':
-      return 'ACTIVE'
+      return 'PLANNING'
     case 'mass':
       return 'PLANNING'
     case 'mass-intention':
       return 'REQUESTED'
     default:
-      return 'ACTIVE'
+      return 'PLANNING'
   }
 }
 
@@ -49,12 +49,16 @@ const getStatusVariant = (status: string, statusType: StatusType): "default" | "
   // Module status (weddings, funerals, baptisms, quinceaneras, presentations)
   if (statusType === 'module') {
     switch (status) {
+      case 'PLANNING':
+        return 'secondary'
       case 'ACTIVE':
         return 'default'
       case 'INACTIVE':
         return 'secondary'
       case 'COMPLETED':
         return 'outline'
+      case 'CANCELLED':
+        return 'destructive'
       default:
         return 'secondary'
     }

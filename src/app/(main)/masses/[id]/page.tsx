@@ -49,7 +49,6 @@ export default async function ViewMassPage({ params }: PageProps) {
     <PageContainer
       title={title}
       description="Preview and download Mass liturgy documents."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassViewClient mass={mass} />

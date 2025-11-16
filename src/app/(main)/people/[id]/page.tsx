@@ -39,7 +39,6 @@ export default async function PersonDetailPage({ params }: PageProps) {
     <PageContainer
       title={`${person.first_name} ${person.last_name}`}
       description="Person details"
-      maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-6">

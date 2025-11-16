@@ -14,6 +14,7 @@ export interface CreateMassIntentionData {
   date_requested?: string
   stipend_in_cents?: number
   status?: string
+  mass_intention_template_id?: string
   note?: string
 }
 
@@ -25,6 +26,7 @@ export interface UpdateMassIntentionData {
   date_requested?: string | null
   stipend_in_cents?: number | null
   status?: string | null
+  mass_intention_template_id?: string | null
   note?: string | null
 }
 
@@ -255,6 +257,7 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
         date_requested: data.date_requested || null,
         stipend_in_cents: data.stipend_in_cents || 0,
         status: data.status || 'REQUESTED',
+        mass_intention_template_id: data.mass_intention_template_id || null,
         note: data.note || null,
       }
     ])
@@ -314,4 +317,104 @@ export async function deleteMassIntention(id: string): Promise<void> {
   }
 
   revalidatePath('/mass-intentions')
+}
+
+export interface MassIntentionReportData extends MassIntention {
+  mass?: Mass & { event?: { start_date: string } | null } | null
+  requested_by?: Person | null
+}
+
+export interface MassIntentionReportParams {
+  startDate?: string
+  endDate?: string
+}
+
+export interface MassIntentionReportResult {
+  intentions: MassIntentionReportData[]
+  totalCount: number
+  totalStipends: number
+}
+
+export async function getMassIntentionsReport(
+  params?: MassIntentionReportParams
+): Promise<MassIntentionReportResult> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const startDate = params?.startDate
+  const endDate = params?.endDate
+
+  // First, get all mass intentions with their related masses and events
+  const { data: intentions, error } = await supabase
+    .from('mass_intentions')
+    .select(`
+      *,
+      mass:masses(
+        *,
+        event:events(start_date)
+      ),
+      requested_by:people!requested_by_id(*)
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching mass intentions for report:', error)
+    throw new Error('Failed to fetch mass intentions for report')
+  }
+
+  if (!intentions) {
+    return {
+      intentions: [],
+      totalCount: 0,
+      totalStipends: 0
+    }
+  }
+
+  // Filter by date range on the mass event start_date
+  let filteredIntentions = intentions.filter(intention => {
+    // If no mass event date, exclude from report
+    if (!intention.mass?.event?.start_date) {
+      return false
+    }
+
+    const massDate = intention.mass.event.start_date
+
+    // If both dates provided, check range
+    if (startDate && endDate) {
+      return massDate >= startDate && massDate <= endDate
+    }
+
+    // If only start date, show everything from that date onwards
+    if (startDate && !endDate) {
+      return massDate >= startDate
+    }
+
+    // If only end date, show everything up to that date
+    if (!startDate && endDate) {
+      return massDate <= endDate
+    }
+
+    // If no dates, show everything
+    return true
+  })
+
+  // Calculate totals
+  const totalCount = filteredIntentions.length
+  const totalStipends = filteredIntentions.reduce((sum, intention) => sum + (intention.stipend_in_cents || 0), 0)
+
+  return {
+    intentions: filteredIntentions,
+    totalCount,
+    totalStipends
+  }
+}
+
+// Keep the old function for backward compatibility
+export async function getMassIntentionsByDateRange(
+  startDate: string,
+  endDate: string
+): Promise<MassIntentionReportData[]> {
+  const result = await getMassIntentionsReport({ startDate, endDate })
+  return result.intentions
 }

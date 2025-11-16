@@ -50,7 +50,6 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Funerals"
       description="Manage funeral services in your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/funerals/create">

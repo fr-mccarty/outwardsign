@@ -1,8 +1,8 @@
 "use client"
 
-import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
+import { QuinceaneraWithRelations, updateQuinceanera } from '@/lib/actions/quinceaneras'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { buildQuinceaneraLiturgy } from '@/lib/content-builders/quinceanera'
+import { buildQuinceaneraLiturgy, QUINCEANERA_TEMPLATES } from '@/lib/content-builders/quinceanera'
 
 interface QuinceaneraViewClientProps {
   quinceanera: QuinceaneraWithRelations
@@ -23,6 +23,13 @@ export function QuinceaneraViewClient({ quinceanera }: QuinceaneraViewClientProp
     return quinceanera.quinceanera_template_id || 'quinceanera-full-script-english'
   }
 
+  // Handle template update
+  const handleUpdateTemplate = async (templateId: string) => {
+    await updateQuinceanera(quinceanera.id, {
+      quinceanera_template_id: templateId,
+    })
+  }
+
   return (
     <ModuleViewContainer
       entity={quinceanera}
@@ -32,6 +39,13 @@ export function QuinceaneraViewClient({ quinceanera }: QuinceaneraViewClientProp
       generateFilename={generateFilename}
       buildLiturgy={buildQuinceaneraLiturgy}
       getTemplateId={getTemplateId}
+      templateConfig={{
+        currentTemplateId: quinceanera.quinceanera_template_id,
+        templates: QUINCEANERA_TEMPLATES,
+        templateFieldName: 'quinceanera_template_id',
+        defaultTemplateId: 'quinceanera-full-script-english',
+        onUpdateTemplate: handleUpdateTemplate,
+      }}
     />
   )
 }

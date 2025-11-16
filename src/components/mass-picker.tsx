@@ -391,6 +391,7 @@ export function MassPicker({
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
         onSearch={handleSearchChange}
+        testId="mass-card"
       />
 
       {/* Nested Event Picker Modal */}

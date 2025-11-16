@@ -19,6 +19,7 @@ import {
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 import { useAppContext } from '@/contexts/AppContextProvider'
+import { FormField } from "@/components/form-field"
 
 interface Stats {
   total: number
@@ -44,6 +45,8 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   const searchTerm = searchParams.get('search') || ''
   const selectedEventType = searchParams.get('event_type') || 'all'
   const selectedLanguage = searchParams.get('language') || 'all'
+  const startDate = searchParams.get('start_date') || ''
+  const endDate = searchParams.get('end_date') || ''
 
   // Update URL with new filter values
   const updateFilters = (key: string, value: string) => {
@@ -60,48 +63,67 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
     router.push('/events')
   }
 
-  const hasActiveFilters = searchTerm || selectedEventType !== 'all' || selectedLanguage !== 'all'
+  const hasActiveFilters = searchTerm || selectedEventType !== 'all' || selectedLanguage !== 'all' || startDate || endDate
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search events by name, description, or location..."
-                defaultValue={searchTerm}
-                onChange={(e) => updateFilters('search', e.target.value)}
-                className="pl-10"
-              />
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search events by name, description, or location..."
+                  defaultValue={searchTerm}
+                  onChange={(e) => updateFilters('search', e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select value={selectedEventType} onValueChange={(value) => updateFilters('event_type', value)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Event Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {stats.eventTypes.map(type => (
+                      <SelectItem key={type} value={type}>
+                        {EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Languages</SelectItem>
+                    {stats.languages.map(lang => (
+                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Select value={selectedEventType} onValueChange={(value) => updateFilters('event_type', value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Event Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {stats.eventTypes.map(type => (
-                    <SelectItem key={type} value={type}>
-                      {EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  {stats.languages.map(lang => (
-                    <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                id="start-date"
+                label="From Date"
+                inputType="date"
+                value={startDate}
+                onChange={(value) => updateFilters('start_date', value)}
+              />
+              <FormField
+                id="end-date"
+                label="To Date"
+                inputType="date"
+                value={endDate}
+                onChange={(value) => updateFilters('end_date', value)}
+              />
             </div>
           </div>
         </CardContent>

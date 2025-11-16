@@ -1,8 +1,8 @@
 "use client"
 
-import { WeddingWithRelations } from '@/lib/actions/weddings'
+import { WeddingWithRelations, updateWedding } from '@/lib/actions/weddings'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { buildWeddingLiturgy } from '@/lib/content-builders/wedding'
+import { buildWeddingLiturgy, WEDDING_TEMPLATES } from '@/lib/content-builders/wedding'
 
 interface WeddingViewClientProps {
   wedding: WeddingWithRelations
@@ -24,6 +24,13 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
     return wedding.wedding_template_id || 'wedding-full-script-english'
   }
 
+  // Handle template update
+  const handleUpdateTemplate = async (templateId: string) => {
+    await updateWedding(wedding.id, {
+      wedding_template_id: templateId,
+    })
+  }
+
   return (
     <ModuleViewContainer
       entity={wedding}
@@ -33,6 +40,13 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
       generateFilename={generateFilename}
       buildLiturgy={buildWeddingLiturgy}
       getTemplateId={getTemplateId}
+      templateConfig={{
+        currentTemplateId: wedding.wedding_template_id,
+        templates: WEDDING_TEMPLATES,
+        templateFieldName: 'wedding_template_id',
+        defaultTemplateId: 'wedding-full-script-english',
+        onUpdateTemplate: handleUpdateTemplate,
+      }}
     />
   )
 }

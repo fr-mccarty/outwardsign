@@ -36,7 +36,6 @@ export function MassRoleTemplateFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="5xl"
       actions={actions}
     >
       <MassRoleTemplateForm

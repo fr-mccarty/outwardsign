@@ -14,7 +14,6 @@ export default function LoadingTestPage() {
     <PageContainer
       title="Loading Component Test Page"
       description="This page displays all variants of the Loading component for visual testing."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-8">

@@ -79,7 +79,6 @@ export default function DefaultPetitionsPage() {
       <PageContainer
         title="Default Petitions"
         description="Set default petitions that will be used when no template-specific petitions are defined"
-        maxWidth="3xl"
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -92,7 +91,6 @@ export default function DefaultPetitionsPage() {
     <PageContainer
       title="Default Petitions"
       description="Set default petitions that will be used when no template-specific petitions are defined"
-      maxWidth="3xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>

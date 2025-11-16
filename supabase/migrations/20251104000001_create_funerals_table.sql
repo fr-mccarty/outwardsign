@@ -11,7 +11,7 @@ CREATE TABLE funerals (
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
   lead_musician_id UUID REFERENCES people(id) ON DELETE SET NULL,
   cantor_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  status TEXT DEFAULT 'ACTIVE',
+  status TEXT DEFAULT 'PLANNING',
   first_reading_id UUID REFERENCES readings(id) ON DELETE SET NULL,
   psalm_id UUID REFERENCES readings(id) ON DELETE SET NULL,
   psalm_reader_id UUID REFERENCES people(id) ON DELETE SET NULL,

@@ -13,19 +13,18 @@ interface WizardProps {
   title: string
   description: string
   steps: WizardStep[]
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl'
-  
+
   // Loading and error states
   loading?: boolean
   error?: string | null
   loadingMessage?: string
-  
+
   // Navigation configuration
   initialStep?: number
   enableUrlSync?: boolean
   allowPreviousNavigation?: boolean
   showStepPreview?: boolean
-  
+
   // Navigation callbacks
   onComplete?: () => void
   onStepChange?: (step: number) => void
@@ -47,31 +46,30 @@ export function Wizard({
   title,
   description,
   steps,
-  maxWidth = '4xl',
-  
+
   // Loading and error states
   loading = false,
   error = null,
   loadingMessage = 'Loading...',
-  
+
   // Navigation configuration
   initialStep = 1,
   enableUrlSync = true,
   allowPreviousNavigation = true,
   showStepPreview = true,
-  
+
   // Navigation callbacks
   onComplete,
   onStepChange,
-  
+
   // Button text customization
   previousButtonText = 'Previous',
   completeButtonText = 'Complete',
-  
+
   // Navigation control
   disableNext = false,
   disablePrevious = false,
-  
+
   // Step content
   renderStepContent
 }: WizardProps) {
@@ -103,7 +101,6 @@ export function Wizard({
     <PageContainer
       title={title}
       description={description}
-      maxWidth={maxWidth}
     >
       <div className="space-y-6">
         <WizardLoadingState

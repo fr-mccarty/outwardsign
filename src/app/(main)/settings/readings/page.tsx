@@ -95,7 +95,6 @@ export default function ReadingSettingsPage() {
     <PageContainer 
       title="Reading Settings"
       description="Import liturgical readings and manage your reading collections."
-      maxWidth="4xl"
     >
       <Button variant="ghost" size="sm" asChild>
         <Link href="/settings">

@@ -42,7 +42,6 @@ export default async function EventDetailPage({ params }: PageProps) {
     <PageContainer
       title={event.name}
       description={EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventViewClient event={event} moduleReference={moduleReference} />

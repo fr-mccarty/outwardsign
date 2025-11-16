@@ -45,7 +45,6 @@ export default async function ViewBaptismPage({ params }: PageProps) {
     <PageContainer
       title={title}
       description="Preview and download baptism liturgy documents."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <BaptismViewClient baptism={baptism} />

@@ -31,7 +31,7 @@ export async function GET(
     }
 
     // Build liturgy content using centralized content builder
-    const templateId = 'mass-intention-summary'
+    const templateId = massIntention.mass_intention_template_id || 'mass-intention-summary-english'
     const liturgyDocument = buildMassIntentionLiturgy(massIntention, templateId)
 
     // Render to PDF format

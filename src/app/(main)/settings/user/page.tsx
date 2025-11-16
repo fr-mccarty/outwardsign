@@ -63,7 +63,6 @@ export default function UserSettingsPage() {
       <SettingsPage
         title="User Preferences"
         description="Customize your liturgical planning experience"
-        maxWidth="4xl"
         tabs={[]}
       />
     )
@@ -74,7 +73,6 @@ export default function UserSettingsPage() {
       <SettingsPage
         title="User Preferences"
         description="Customize your liturgical planning experience"
-        maxWidth="4xl"
         tabs={[
           {
             value: 'general',
@@ -167,7 +165,6 @@ export default function UserSettingsPage() {
     <SettingsPage
       title="User Preferences"
       description="Customize your liturgical planning experience"
-      maxWidth="4xl"
       tabs={tabs}
       defaultTab="general"
       actions={

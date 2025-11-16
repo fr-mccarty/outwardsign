@@ -135,7 +135,6 @@ export default async function DashboardPage() {
     <PageContainer
       title="Dashboard"
       description="Your sacramental ministry at a glance"
-      maxWidth="7xl"
     >
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">

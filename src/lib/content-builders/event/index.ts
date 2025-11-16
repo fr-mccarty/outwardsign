@@ -5,51 +5,46 @@
  */
 
 import { EventWithRelations } from '@/lib/actions/events'
-import { LiturgyDocument } from '@/lib/types/liturgy-content'
+import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptEnglish } from './templates/full-script-english'
 import { buildFullScriptSpanish } from './templates/full-script-spanish'
 
 /**
- * Available event template types
+ * Standard template registry following the module pattern
  */
-export type EventTemplateType = 'full-script'
-
-/**
- * Template builder function type
- */
-type EventTemplateBuilder = (event: EventWithRelations) => LiturgyDocument
-
-/**
- * Template registry mapping template types and languages to builder functions
- */
-const TEMPLATE_REGISTRY: Record<
-  EventTemplateType,
-  Record<'en' | 'es', EventTemplateBuilder>
-> = {
-  'full-script': {
-    en: buildFullScriptEnglish,
-    es: buildFullScriptSpanish,
+export const EVENT_TEMPLATES: Record<string, LiturgyTemplate<EventWithRelations>> = {
+  'event-full-script-english': {
+    id: 'event-full-script-english',
+    name: 'Full Script (English)',
+    description: 'Complete event script with all details in English',
+    supportedLanguages: ['en'],
+    builder: buildFullScriptEnglish,
+  },
+  'event-full-script-spanish': {
+    id: 'event-full-script-spanish',
+    name: 'Guión Completo (Español)',
+    description: 'Guión completo del evento con todos los detalles en español',
+    supportedLanguages: ['es'],
+    builder: buildFullScriptSpanish,
   },
 }
 
 /**
- * Build event liturgy document
+ * Build event liturgy document using template ID
  *
  * @param event - Event data with relations
- * @param template - Template type (default: 'full-script')
- * @param language - Language code (default: 'en')
+ * @param templateId - Template ID (e.g., 'event-full-script-english')
  * @returns LiturgyDocument ready for rendering
  */
 export function buildEventLiturgy(
   event: EventWithRelations,
-  template: EventTemplateType = 'full-script',
-  language: 'en' | 'es' = 'en'
+  templateId: string
 ): LiturgyDocument {
-  const builder = TEMPLATE_REGISTRY[template]?.[language]
+  const template = EVENT_TEMPLATES[templateId]
 
-  if (!builder) {
-    throw new Error(`Template not found: ${template} (${language})`)
+  if (!template) {
+    throw new Error(`Template not found: ${templateId}`)
   }
 
-  return builder(event)
+  return template.builder(event)
 }

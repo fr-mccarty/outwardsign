@@ -50,7 +50,6 @@ export default async function MassesPage({ searchParams }: PageProps) {
     <PageContainer
       title="Masses"
       description="Manage Mass celebrations in your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/masses/create">

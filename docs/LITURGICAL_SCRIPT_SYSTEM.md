@@ -3,15 +3,18 @@
 > **Documentation for Setting Up Liturgical Scripts**
 >
 > This file documents how to set up the liturgical script system for a new module (templates, print pages, PDF/Word exports). For daily reference on content elements and styling, see [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md).
+>
+> **Note:** This system is for individual entity documents (weddings, funerals, etc.). For tabular reports with aggregations (mass intentions report), see [REPORT_BUILDER_SYSTEM.md](./REPORT_BUILDER_SYSTEM.md).
 
 ## Table of Contents
 
 1. [Quick Overview](#quick-overview)
-2. [WithRelations Pattern](#withrelations-pattern)
-3. [Template System](#template-system)
-4. [Print Page Setup](#print-page-setup)
-5. [Export API Routes (PDF & Word)](#export-api-routes-pdf--word)
-6. [View Page Integration](#view-page-integration)
+2. [Modules Using Content Builders](#modules-using-content-builders)
+3. [WithRelations Pattern](#withrelations-pattern)
+4. [Template System](#template-system)
+5. [Print Page Setup](#print-page-setup)
+6. [Export API Routes (PDF & Word)](#export-api-routes-pdf--word)
+7. [View Page Integration](#view-page-integration)
 
 ---
 
@@ -34,6 +37,87 @@
 - Shared builders: `src/lib/content-builders/shared/script-sections.ts`
 
 **For element types and styling parameters, see [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md).**
+
+---
+
+## Modules Using Content Builders
+
+**All 7 modules with content builders follow a consistent architecture pattern.**
+
+### Module Registry
+
+| Module | Content Builder Path | Templates | View Pattern | Template Selector Location |
+|--------|---------------------|-----------|--------------|---------------------------|
+| **Weddings** | `src/lib/content-builders/wedding/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Funerals** | `src/lib/content-builders/funeral/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Baptisms** | `src/lib/content-builders/baptism/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Presentations** | `src/lib/content-builders/presentation/` | 5 (EN, ES, Bilingual, Simple) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Quinceañeras** | `src/lib/content-builders/quinceanera/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Masses** | `src/lib/content-builders/mass/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Mass Intentions** | `src/lib/content-builders/mass-intention/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
+
+### Template Counts
+
+- **Most templates:** Presentations (5 templates - Full Script Spanish, Full Script English, Simple Spanish, Simple English, Bilingual)
+- **Standard modules:** All others have 2 templates (English and Spanish versions)
+
+### Architecture Consistency
+
+**✅ All modules are consistent:**
+- All use `ModuleViewContainer` in their view pages
+- All have `templateConfig` passed to `ModuleViewContainer`
+- Template selection happens on **view pages** (not edit pages)
+- `TemplateSelectorDialog` is integrated through `ModuleViewPanel`
+- Each module has a `[module]_template_id` field in the database
+
+### Template Selector Pattern
+
+**Location:** Template selector is displayed on the **view page** in the side panel metadata section.
+
+**NOT on edit pages:** Edit pages do not have template selectors. Template selection is a view/export concern.
+
+**Implementation in view-client.tsx:**
+
+```typescript
+export function [Module]ViewClient({ [entity] }: Props) {
+  const handleUpdateTemplate = async (templateId: string) => {
+    await update[Module]([entity].id, {
+      [module]_template_id: templateId,
+    })
+  }
+
+  return (
+    <ModuleViewContainer
+      entity={[entity]}
+      entityType="[Module]"
+      modulePath="[modules]"
+      generateFilename={generateFilename}
+      buildLiturgy={build[Module]Liturgy}
+      getTemplateId={getTemplateId}
+      templateConfig={{
+        currentTemplateId: [entity].[module]_template_id,
+        templates: [MODULE]_TEMPLATES,
+        templateFieldName: '[module]_template_id',
+        defaultTemplateId: '[default-template-id]',
+        onUpdateTemplate: handleUpdateTemplate,
+      }}
+    />
+  )
+}
+```
+
+**Why this pattern:**
+- Template selection affects how the liturgy document is rendered and exported
+- Users select templates when viewing/exporting, not when editing entity data
+- Keeps edit pages focused on entity-specific data (names, dates, etc.)
+- Centralizes template UI through `ModuleViewPanel` component
+
+### Other Content Builders
+
+**Non-module content builders** (not tied to specific sacrament modules):
+- **Event** (`src/lib/content-builders/event/`) - Used for event liturgy scripts
+- **Petitions** (`src/lib/content-builders/petitions/`) - Used for building petitions/intercessions
+- **Shared** (`src/lib/content-builders/shared/`) - Shared utilities for script sections
 
 ---
 

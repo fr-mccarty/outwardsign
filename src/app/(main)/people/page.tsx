@@ -49,7 +49,6 @@ export default async function PeoplePage({ searchParams }: PageProps) {
     <PageContainer
       title="Our People"
       description="Manage people in your parish."
-      maxWidth="7xl"
       actions={
         <div className="flex gap-2">
           <Button variant="outline" asChild>

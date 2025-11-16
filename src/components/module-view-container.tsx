@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { renderHTML } from '@/lib/renderers/html-renderer'
 import type { Event } from '@/lib/types'
-import type { LiturgyDocument } from '@/lib/types/liturgy-content'
+import type { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 
 interface ModuleViewContainerProps {
   /**
@@ -36,19 +36,21 @@ interface ModuleViewContainerProps {
   generateFilename: (extension: string) => string
 
   /**
-   * Function to build liturgy document from entity
+   * Function to build liturgy document from entity (optional)
    * @param entity - The entity with relations
    * @param templateId - The template ID to use
    * @returns Document structure for rendering
+   * If not provided, children must be provided for content
    */
-  buildLiturgy: (entity: any, templateId: string) => LiturgyDocument
+  buildLiturgy?: (entity: any, templateId: string) => LiturgyDocument
 
   /**
-   * Function to extract template ID from entity
+   * Function to extract template ID from entity (optional)
    * @param entity - The entity with relations
    * @returns Template ID string
+   * Required if buildLiturgy is provided
    */
-  getTemplateId: (entity: any) => string
+  getTemplateId?: (entity: any) => string
 
   /**
    * Custom print view path (optional)
@@ -61,6 +63,24 @@ interface ModuleViewContainerProps {
    * Defaults to "module" for most entities
    */
   statusType?: 'module' | 'mass' | 'mass-intention'
+
+  /**
+   * Template selector configuration (optional)
+   * If provided, shows template selector in metadata section
+   */
+  templateConfig?: {
+    currentTemplateId?: string | null
+    templates: Record<string, LiturgyTemplate<any>>
+    templateFieldName: string
+    defaultTemplateId: string
+    onUpdateTemplate: (templateId: string) => Promise<void>
+  }
+
+  /**
+   * Additional content to render before the liturgy content (optional)
+   * Useful for module-specific cards like Mass Intention
+   */
+  children?: React.ReactNode
 }
 
 /**
@@ -77,15 +97,22 @@ export function ModuleViewContainer({
   getTemplateId,
   printViewPath,
   statusType = 'module',
+  templateConfig,
+  children,
 }: ModuleViewContainerProps) {
-  // Get template ID from entity
-  const templateId = getTemplateId(entity)
+  // Only build liturgy if builder functions are provided
+  let liturgyContent: React.ReactNode = null
 
-  // Build liturgy content using module-specific builder
-  const liturgyDocument = buildLiturgy(entity, templateId)
+  if (buildLiturgy && getTemplateId) {
+    // Get template ID from entity
+    const templateId = getTemplateId(entity)
 
-  // Render to HTML/React elements
-  const liturgyContent = renderHTML(liturgyDocument)
+    // Build liturgy content using module-specific builder
+    const liturgyDocument = buildLiturgy(entity, templateId)
+
+    // Render to HTML/React elements
+    liturgyContent = renderHTML(liturgyDocument)
+  }
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
@@ -98,15 +125,22 @@ export function ModuleViewContainer({
         generateFilename={generateFilename}
         printViewPath={printViewPath}
         statusType={statusType}
+        templateConfig={templateConfig}
       />
 
       {/* Main Content - appears second on mobile, first on desktop */}
-      <div className="flex-1 order-2 md:order-1">
-        <Card className="bg-white">
-          <CardContent className="p-6 space-y-6">
-            {liturgyContent}
-          </CardContent>
-        </Card>
+      <div className="flex-1 order-2 md:order-1 space-y-6">
+        {/* Optional additional content (e.g., Mass Intention card) */}
+        {children}
+
+        {/* Liturgy Content (only if liturgy builder is provided) */}
+        {liturgyContent && (
+          <Card className="bg-white">
+            <CardContent className="p-6 space-y-6">
+              {liturgyContent}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

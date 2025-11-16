@@ -50,7 +50,6 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Baptisms"
       description="Manage baptism celebrations in your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/baptisms/create">

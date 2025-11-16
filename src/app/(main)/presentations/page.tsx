@@ -50,7 +50,6 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Presentations"
       description="Manage child presentations in your parish."
-      maxWidth="7xl"
       actions={
         <Button asChild>
           <Link href="/presentations/create">

@@ -23,7 +23,6 @@ export default async function PickersTestPage() {
     <PageContainer
       title="Picker Component Testing"
       description="Test and preview picker components"
-      maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PickersTestClient />

@@ -1,8 +1,8 @@
 "use client"
 
-import { FuneralWithRelations } from '@/lib/actions/funerals'
+import { FuneralWithRelations, updateFuneral } from '@/lib/actions/funerals'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { buildFuneralLiturgy } from '@/lib/content-builders/funeral'
+import { buildFuneralLiturgy, FUNERAL_TEMPLATES } from '@/lib/content-builders/funeral'
 
 interface FuneralViewClientProps {
   funeral: FuneralWithRelations
@@ -23,6 +23,13 @@ export function FuneralViewClient({ funeral }: FuneralViewClientProps) {
     return funeral.funeral_template_id || 'funeral-full-script-english'
   }
 
+  // Handle template update
+  const handleUpdateTemplate = async (templateId: string) => {
+    await updateFuneral(funeral.id, {
+      funeral_template_id: templateId,
+    })
+  }
+
   return (
     <ModuleViewContainer
       entity={funeral}
@@ -32,6 +39,13 @@ export function FuneralViewClient({ funeral }: FuneralViewClientProps) {
       generateFilename={generateFilename}
       buildLiturgy={buildFuneralLiturgy}
       getTemplateId={getTemplateId}
+      templateConfig={{
+        currentTemplateId: funeral.funeral_template_id,
+        templates: FUNERAL_TEMPLATES,
+        templateFieldName: 'funeral_template_id',
+        defaultTemplateId: 'funeral-full-script-english',
+        onUpdateTemplate: handleUpdateTemplate,
+      }}
     />
   )
 }

@@ -1,7 +1,7 @@
 /**
- * Mass Intention Summary Template
+ * Mass Intention Summary Template (Spanish)
  *
- * Simple summary of mass intention details
+ * Simple summary of mass intention details in Spanish
  */
 
 import { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
@@ -9,21 +9,21 @@ import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/lit
 import { formatPersonName } from '@/lib/utils/formatters'
 
 /**
- * Build summary section for mass intention
+ * Build summary section for mass intention (Spanish)
  */
-function buildSummarySection(massIntention: MassIntentionWithRelations): ContentSection {
+function buildSummarySectionSpanish(massIntention: MassIntentionWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
   // Mass Intention Information
   elements.push({
     type: 'section-title',
-    text: 'Mass Intention Details',
+    text: 'Detalles de la Intención de Misa',
   })
 
   if (massIntention.mass_offered_for) {
     elements.push({
       type: 'info-row',
-      label: 'Mass Offered For:',
+      label: 'Misa Ofrecida Por:',
       value: massIntention.mass_offered_for,
     })
   }
@@ -31,7 +31,7 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
   if (massIntention.requested_by) {
     elements.push({
       type: 'info-row',
-      label: 'Requested By:',
+      label: 'Solicitado Por:',
       value: formatPersonName(massIntention.requested_by),
     })
   }
@@ -40,8 +40,8 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
     const dateRequested = new Date(massIntention.date_requested)
     elements.push({
       type: 'info-row',
-      label: 'Date Requested:',
-      value: dateRequested.toLocaleDateString('en-US', {
+      label: 'Fecha Solicitada:',
+      value: dateRequested.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -53,8 +53,8 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
     const dateReceived = new Date(massIntention.date_received)
     elements.push({
       type: 'info-row',
-      label: 'Date Received:',
-      value: dateReceived.toLocaleDateString('en-US', {
+      label: 'Fecha Recibida:',
+      value: dateReceived.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -66,7 +66,7 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
     const stipendDollars = (massIntention.stipend_in_cents / 100).toFixed(2)
     elements.push({
       type: 'info-row',
-      label: 'Stipend:',
+      label: 'Estipendio:',
       value: `$${stipendDollars}`,
     })
   }
@@ -74,7 +74,7 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
   if (massIntention.status) {
     elements.push({
       type: 'info-row',
-      label: 'Status:',
+      label: 'Estado:',
       value: massIntention.status,
     })
   }
@@ -82,7 +82,7 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
   if (massIntention.note) {
     elements.push({
       type: 'section-title',
-      text: 'Notes',
+      text: 'Notas',
     })
     elements.push({
       type: 'text',
@@ -92,26 +92,26 @@ function buildSummarySection(massIntention: MassIntentionWithRelations): Content
 
   return {
     id: 'summary',
-    title: 'Mass Intention Summary',
+    title: 'Resumen de Intención de Misa',
     elements,
   }
 }
 
 /**
- * Build Mass Intention summary document
+ * Build Mass Intention summary document (Spanish)
  */
-export function buildIntentionSummary(massIntention: MassIntentionWithRelations): LiturgyDocument {
+export function buildSummarySpanish(massIntention: MassIntentionWithRelations): LiturgyDocument {
   const sections: ContentSection[] = []
 
   // Summary section
-  sections.push(buildSummarySection(massIntention))
+  sections.push(buildSummarySectionSpanish(massIntention))
 
   return {
     id: massIntention.id,
     type: 'mass-intention',
-    language: 'en',
-    template: 'intention-summary',
-    title: 'Mass Intention',
+    language: 'es',
+    template: 'mass-intention-summary-spanish',
+    title: 'Intención de Misa',
     sections,
   }
 }

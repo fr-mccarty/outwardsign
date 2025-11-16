@@ -45,7 +45,6 @@ export default async function EditPetitionTemplatePage({ params }: { params: Pro
     <PageContainer
       title="Edit Petition Template"
       description="Update your petition template and default text"
-      maxWidth="3xl"
     >
       <PetitionTemplateForm template={template} templateSettings={templateSettings} />
     </PageContainer>

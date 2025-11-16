@@ -23,6 +23,7 @@ export interface CreateEventData {
   timezone?: string
   location_id?: string
   language?: string
+  event_template_id?: string
   note?: string
 }
 
@@ -38,6 +39,7 @@ export interface UpdateEventData {
   timezone?: string
   location_id?: string
   language?: string
+  event_template_id?: string
   note?: string
 }
 
@@ -45,6 +47,8 @@ export interface EventFilterParams {
   search?: string
   event_type?: string
   language?: string
+  start_date?: string
+  end_date?: string
 }
 
 export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
@@ -68,6 +72,15 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
   if (filters?.search) {
     // Use OR condition for search across multiple fields
     query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+  }
+
+  // Date range filters
+  if (filters?.start_date) {
+    query = query.gte('start_date', filters.start_date)
+  }
+
+  if (filters?.end_date) {
+    query = query.lte('start_date', filters.end_date)
   }
 
   query = query.order('start_date', { ascending: false, nullsFirst: false })
@@ -211,6 +224,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         timezone: data.timezone || 'UTC',
         location_id: data.location_id || null,
         language: data.language || null,
+        event_template_id: data.event_template_id || null,
         note: data.note || null,
       }
     ])
@@ -243,6 +257,7 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
   if (data.timezone !== undefined) updateData.timezone = data.timezone || null
   if (data.location_id !== undefined) updateData.location_id = data.location_id || null
   if (data.language !== undefined) updateData.language = data.language || null
+  if (data.event_template_id !== undefined) updateData.event_template_id = data.event_template_id || null
   if (data.note !== undefined) updateData.note = data.note || null
 
   const { data: event, error } = await supabase

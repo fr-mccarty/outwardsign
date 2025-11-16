@@ -9,7 +9,7 @@ CREATE TABLE baptisms (
   sponsor_1_id UUID REFERENCES people(id) ON DELETE SET NULL,
   sponsor_2_id UUID REFERENCES people(id) ON DELETE SET NULL,
   presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  status TEXT DEFAULT 'ACTIVE',
+  status TEXT DEFAULT 'PLANNING',
   baptism_template_id TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

@@ -1,8 +1,8 @@
 "use client"
 
-import { BaptismWithRelations } from '@/lib/actions/baptisms'
+import { BaptismWithRelations, updateBaptism } from '@/lib/actions/baptisms'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { buildBaptismLiturgy } from '@/lib/content-builders/baptism'
+import { buildBaptismLiturgy, BAPTISM_TEMPLATES } from '@/lib/content-builders/baptism'
 
 interface BaptismViewClientProps {
   baptism: BaptismWithRelations
@@ -23,6 +23,13 @@ export function BaptismViewClient({ baptism }: BaptismViewClientProps) {
     return baptism.baptism_template_id || 'baptism-summary-english'
   }
 
+  // Handle template update
+  const handleUpdateTemplate = async (templateId: string) => {
+    await updateBaptism(baptism.id, {
+      baptism_template_id: templateId,
+    })
+  }
+
   return (
     <ModuleViewContainer
       entity={baptism}
@@ -32,6 +39,13 @@ export function BaptismViewClient({ baptism }: BaptismViewClientProps) {
       generateFilename={generateFilename}
       buildLiturgy={buildBaptismLiturgy}
       getTemplateId={getTemplateId}
+      templateConfig={{
+        currentTemplateId: baptism.baptism_template_id,
+        templates: BAPTISM_TEMPLATES,
+        templateFieldName: 'baptism_template_id',
+        defaultTemplateId: 'baptism-summary-english',
+        onUpdateTemplate: handleUpdateTemplate,
+      }}
     />
   )
 }

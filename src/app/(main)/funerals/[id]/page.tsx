@@ -43,7 +43,6 @@ export default async function ViewFuneralPage({ params }: PageProps) {
     <PageContainer
       title={title}
       description="Preview and download funeral liturgy documents."
-      maxWidth="7xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <FuneralViewClient funeral={funeral} />

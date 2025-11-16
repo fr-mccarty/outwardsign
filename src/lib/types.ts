@@ -458,6 +458,7 @@ export interface Event {
   is_all_day: boolean
   location_id?: string | null
   language?: string
+  event_template_id?: string
   note?: string
   created_at: string
   updated_at: string
@@ -668,6 +669,7 @@ export interface MassIntention {
   date_requested?: string
   stipend_in_cents?: number
   status?: string
+  mass_intention_template_id?: string
   note?: string
   created_at: string
   updated_at: string

@@ -149,7 +149,6 @@ export default function PetitionContextsPage() {
       <PageContainer 
         title="Petition Contexts"
         description="Manage reusable contexts for different types of liturgical celebrations."
-        maxWidth="6xl"
       >
         <Loading variant="skeleton-list" />
       </PageContainer>
@@ -160,7 +159,6 @@ export default function PetitionContextsPage() {
     <PageContainer 
       title="Petition Contexts"
       description="Manage reusable contexts for different types of liturgical celebrations."
-      maxWidth="6xl"
     >
       <div className="flex justify-end items-center mb-6">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

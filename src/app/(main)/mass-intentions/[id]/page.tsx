@@ -42,7 +42,6 @@ export default async function ViewMassIntentionPage({ params }: PageProps) {
     <PageContainer
       title={title}
       description="View Mass intention details."
-      maxWidth="4xl"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassIntentionViewClient intention={intention} />

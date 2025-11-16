@@ -16,7 +16,6 @@ interface SettingsPageProps {
   tabs: SettingsTab[]
   defaultTab?: string
   actions?: ReactNode
-  maxWidth?: '4xl' | '6xl'
 }
 
 export function SettingsPage({
@@ -24,8 +23,7 @@ export function SettingsPage({
   description,
   tabs,
   defaultTab,
-  actions,
-  maxWidth = '6xl'
+  actions
 }: SettingsPageProps) {
   // Map tab count to Tailwind grid-cols class
   const gridColsClass = {
@@ -41,7 +39,6 @@ export function SettingsPage({
     <PageContainer
       title={title}
       description={description}
-      maxWidth={maxWidth}
     >
       {actions && (
         <div className="flex justify-end mb-6 gap-3">
