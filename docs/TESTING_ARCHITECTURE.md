@@ -206,24 +206,21 @@ export function WeddingForm({ wedding }: { wedding?: WeddingWithRelations }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <FormField>
-        <Label htmlFor="notes">Wedding Notes</Label>
-        <Textarea
-          id="notes"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-        />
-      </FormField>
+      <FormField
+        id="notes"
+        label="Wedding Notes"
+        inputType="textarea"
+        value={notes}
+        onChange={setNotes}
+      />
 
-      <FormField>
-        <Label htmlFor="wedding-date">Date</Label>
-        <Input
-          id="wedding-date"
-          type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-        />
-      </FormField>
+      <FormField
+        id="wedding-date"
+        label="Date"
+        inputType="date"
+        value={date}
+        onChange={setDate}
+      />
 
       <Button type="submit">
         {wedding ? 'Update Wedding' : 'Create Wedding'}

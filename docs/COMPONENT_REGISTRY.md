@@ -19,9 +19,11 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 ### FormField
 **Path:** `src/components/ui/form-field.tsx`
 
-**Purpose:** Standardized form field wrapper that handles labels, descriptions, error messages, and consistent styling for all form inputs.
+**Purpose:** All-in-one form field component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description + error message). Provides consistent styling, accessibility, and layout for all form inputs.
 
 **CRITICAL:** ALL form inputs, selects, and textareas MUST use this component.
+
+**How it works:** FormField is a **props-based component** - you pass field configuration as props, and it renders everything internally including the label (connected via `htmlFor`/`id`), the input, optional description, and error messages.
 
 **Current Limitation:** FormField currently supports plain inputs (text, email, password), textareas, and select dropdowns only. It does NOT support checkboxes, radio buttons, date pickers, file uploads, or other complex form elements. For those, use the base shadcn/ui components directly with proper Label association.
 
@@ -1485,28 +1487,28 @@ Liturgical events:
 ### Input
 **Path:** `src/components/ui/input.tsx`
 
-**Purpose:** Base input component. **DO NOT USE DIRECTLY** - always wrap with FormField.
+**Purpose:** Base input component. **DO NOT USE DIRECTLY** - always use FormField component instead, which renders Input internally.
 
 ---
 
 ### Textarea
 **Path:** `src/components/ui/textarea.tsx`
 
-**Purpose:** Base textarea component. **DO NOT USE DIRECTLY** - always wrap with FormField.
+**Purpose:** Base textarea component. **DO NOT USE DIRECTLY** - always use FormField component instead, which renders Textarea internally.
 
 ---
 
 ### Select, SelectTrigger, SelectValue, SelectContent, SelectItem
 **Path:** `src/components/ui/select.tsx`
 
-**Purpose:** Dropdown select components from Radix UI. **DO NOT USE DIRECTLY** - always wrap with FormField.
+**Purpose:** Dropdown select components from Radix UI. **DO NOT USE DIRECTLY** - always use FormField component instead, which renders Select internally.
 
 ---
 
 ### Label
 **Path:** `src/components/ui/label.tsx`
 
-**Purpose:** Form label component. **DO NOT USE DIRECTLY** - FormField handles labels automatically.
+**Purpose:** Form label component. **DO NOT USE DIRECTLY** - FormField renders labels automatically and connects them to inputs.
 
 ---
 

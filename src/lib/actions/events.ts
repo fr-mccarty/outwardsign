@@ -301,7 +301,7 @@ export async function deleteEvent(id: string): Promise<void> {
 }
 
 export interface EventModuleLink {
-  moduleType: 'wedding' | 'funeral' | 'baptism' | 'presentation' | 'quinceanera' | null
+  moduleType: 'wedding' | 'funeral' | 'baptism' | 'presentation' | 'quinceanera' | 'mass' | null
   moduleId: string | null
 }
 
@@ -332,7 +332,7 @@ export async function getEventModuleLink(eventId: string): Promise<EventModuleLi
     return { moduleType: 'funeral', moduleId: funeral.id }
   }
 
-  // Check baptisms (if exists)
+  // Check baptisms
   const { data: baptism } = await supabase
     .from('baptisms')
     .select('id')
@@ -343,7 +343,59 @@ export async function getEventModuleLink(eventId: string): Promise<EventModuleLi
     return { moduleType: 'baptism', moduleId: baptism.id }
   }
 
-  // Add more module checks as needed
+  // Check presentations
+  const { data: presentation } = await supabase
+    .from('presentations')
+    .select('id')
+    .eq('presentation_event_id', eventId)
+    .maybeSingle()
+
+  if (presentation) {
+    return { moduleType: 'presentation', moduleId: presentation.id }
+  }
+
+  // Check quinceaneras
+  const { data: quinceanera } = await supabase
+    .from('quinceaneras')
+    .select('id')
+    .eq('quinceanera_event_id', eventId)
+    .maybeSingle()
+
+  if (quinceanera) {
+    return { moduleType: 'quinceanera', moduleId: quinceanera.id }
+  }
+
+  // Check masses
+  const { data: mass } = await supabase
+    .from('masses')
+    .select('id')
+    .eq('event_id', eventId)
+    .maybeSingle()
+
+  if (mass) {
+    return { moduleType: 'mass', moduleId: mass.id }
+  }
 
   return { moduleType: null, moduleId: null }
+}
+
+export interface EventWithModuleLink extends Event {
+  moduleLink?: EventModuleLink
+}
+
+export async function getEventsWithModuleLinks(filters?: EventFilterParams): Promise<EventWithModuleLink[]> {
+  const events = await getEvents(filters)
+
+  // Fetch module links for all events in parallel
+  const eventsWithLinks = await Promise.all(
+    events.map(async (event) => {
+      const moduleLink = await getEventModuleLink(event.id)
+      return {
+        ...event,
+        moduleLink
+      }
+    })
+  )
+
+  return eventsWithLinks
 }

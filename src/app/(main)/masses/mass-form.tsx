@@ -35,8 +35,6 @@ const massSchema = z.object({
   homilist_id: z.string().optional(),
   liturgical_event_id: z.string().optional(),
   mass_roles_template_id: z.string().optional(),
-  pre_mass_announcement_id: z.string().optional(),
-  pre_mass_announcement_topic: z.string().optional(),
   petitions: z.string().optional(),
   announcements: z.string().optional(),
   note: z.string().optional(),
@@ -65,13 +63,11 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [announcements, setAnnouncements] = useState(mass?.announcements || "")
   const [petitions, setPetitions] = useState(mass?.petitions || "")
   const [massTemplateId, setMassTemplateId] = useState(mass?.mass_template_id || MASS_DEFAULT_TEMPLATE)
-  const [preMassAnnouncementTopic, setPreMassAnnouncementTopic] = useState(mass?.pre_mass_announcement_topic || "")
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
   const presider = usePickerState<Person>()
   const homilist = usePickerState<Person>()
-  const preMassAnnouncementPerson = usePickerState<Person>()
   const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 
   // Mass role assignments state
@@ -105,7 +101,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       // Set people
       if (mass.presider) presider.setValue(mass.presider)
       if (mass.homilist) homilist.setValue(mass.homilist)
-      if (mass.pre_mass_announcement_person) preMassAnnouncementPerson.setValue(mass.pre_mass_announcement_person)
 
       // Set liturgical event
       if (mass.liturgical_event) liturgicalEvent.setValue(mass.liturgical_event)
@@ -343,8 +338,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         homilist_id: homilist.value?.id,
         liturgical_event_id: liturgicalEvent.value?.id,
         mass_roles_template_id: massRolesTemplateId || undefined,
-        pre_mass_announcement_id: preMassAnnouncementPerson.value?.id,
-        pre_mass_announcement_topic: preMassAnnouncementTopic || undefined,
         petitions: petitions || undefined,
         announcements: announcements || undefined,
         note: note || undefined,
@@ -656,36 +649,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           onSelect={handleSelectPersonForRole}
         />
       )}
-
-      {/* Pre-Mass Announcements */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pre-Mass Announcements</CardTitle>
-          <CardDescription>
-            Person and topic for announcements made before Mass begins
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
-            label="Announcer"
-            description="Person making pre-Mass announcements"
-            value={preMassAnnouncementPerson.value}
-            onValueChange={preMassAnnouncementPerson.setValue}
-            showPicker={preMassAnnouncementPerson.showPicker}
-            onShowPickerChange={preMassAnnouncementPerson.setShowPicker}
-            openToNewPerson={!preMassAnnouncementPerson.value}
-          />
-
-          <FormField
-            id="pre_mass_announcement_topic"
-            label="Announcement Topic"
-            description="Brief topic or title for pre-Mass announcements"
-            value={preMassAnnouncementTopic}
-            onChange={setPreMassAnnouncementTopic}
-            placeholder="Parish events, thank you notes, etc."
-          />
-        </CardContent>
-      </Card>
 
       {/* Petitions */}
       <Card>

@@ -1303,23 +1303,23 @@ BEGIN
   -- ============================================================
 
   -- Mass 1: Sunday 10 AM
-  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, pre_mass_announcement_id, pre_mass_announcement_topic, status, mass_template_id, announcements, note, petitions)
-  VALUES (v_parish_id, v_mass_1_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, v_coordinator_id, 'Parish Picnic Next Sunday', 'ACTIVE', 'sunday-mass-english', E'Welcome! Parish picnic next Sunday.', 'Children''s choir singing.', E'For Church leaders, we pray.')
+  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, status, mass_template_id, announcements, note, petitions)
+  VALUES (v_parish_id, v_mass_1_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, 'ACTIVE', 'sunday-mass-english', E'Welcome! Parish picnic next Sunday.', 'Children''s choir singing.', E'For Church leaders, we pray.')
   RETURNING id INTO v_mass_1_id;
 
   -- Mass 2: Sunday 8 AM
-  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, pre_mass_announcement_id, pre_mass_announcement_topic, status, mass_template_id, announcements, note, petitions)
-  VALUES (v_parish_id, v_mass_2_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, NULL, NULL, 'ACTIVE', 'sunday-mass-english', E'Early morning Mass. Coffee and donuts after.', 'Traditional liturgy.', E'For world peace, we pray.')
+  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, status, mass_template_id, announcements, note, petitions)
+  VALUES (v_parish_id, v_mass_2_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, 'ACTIVE', 'sunday-mass-english', E'Early morning Mass. Coffee and donuts after.', 'Traditional liturgy.', E'For world peace, we pray.')
   RETURNING id INTO v_mass_2_id;
 
   -- Mass 3: Sunday 12 PM (Spanish)
-  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, pre_mass_announcement_id, pre_mass_announcement_topic, status, mass_template_id, announcements, note, petitions)
-  VALUES (v_parish_id, v_mass_3_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, v_coordinator_id, 'Retiro Espiritual', 'PLANNING', 'sunday-mass-spanish', E'Bienvenidos. Retiro espiritual próximo fin de semana.', 'Misa en español. Coro hispano.', E'Por la paz, oremos al Señor.')
+  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, status, mass_template_id, announcements, note, petitions)
+  VALUES (v_parish_id, v_mass_3_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, 'PLANNING', 'sunday-mass-spanish', E'Bienvenidos. Retiro espiritual próximo fin de semana.', 'Misa en español. Coro hispano.', E'Por la paz, oremos al Señor.')
   RETURNING id INTO v_mass_3_id;
 
   -- Mass 4: Weekday Wednesday
-  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, pre_mass_announcement_id, pre_mass_announcement_topic, status, mass_template_id, announcements, note, petitions)
-  VALUES (v_parish_id, v_mass_4_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, NULL, NULL, 'ACTIVE', 'weekday-mass-english', E'Weekday morning Mass.', 'Simple liturgy. Small congregation.', E'For the sick, we pray.')
+  INSERT INTO masses (parish_id, event_id, presider_id, homilist_id, liturgical_event_id, mass_roles_template_id, status, mass_template_id, announcements, note, petitions)
+  VALUES (v_parish_id, v_mass_4_event_id, v_presider_id, v_homilist_id, v_liturgical_event_id, NULL, 'ACTIVE', 'weekday-mass-english', E'Weekday morning Mass.', 'Simple liturgy. Small congregation.', E'For the sick, we pray.')
   RETURNING id INTO v_mass_4_id;
 
   RAISE NOTICE 'Created % mass records', 4;

@@ -7,8 +7,6 @@ CREATE TABLE masses (
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
   liturgical_event_id UUID REFERENCES global_liturgical_events(id) ON DELETE SET NULL,
   mass_roles_template_id UUID REFERENCES mass_roles_templates(id) ON DELETE SET NULL,
-  pre_mass_announcement_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  pre_mass_announcement_topic TEXT,
   status TEXT DEFAULT 'PLANNING',
   mass_template_id TEXT,
   announcements TEXT,

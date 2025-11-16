@@ -33,6 +33,7 @@ This document provides a complete reference of all test files and individual tes
 - [Picker Components](#picker-components)
   - [Person Picker](#person-picker)
   - [Event Picker](#event-picker)
+  - [Mass Picker](#mass-picker)
 - [Application Features](#application-features)
   - [Dashboard](#dashboard)
   - [Calendar](#calendar)
@@ -327,6 +328,20 @@ This document provides a complete reference of all test files and individual tes
 | should preserve wedding form context when using nested pickers | Critical test ensuring nested pickers don't navigate away from parent wedding form |
 | should allow selecting existing location in event creation | Verifies selecting pre-existing location when creating event via picker modal |
 | should show validation error when creating event without required fields | Confirms inline event creation form validates required fields (event name, type, date) |
+
+### Mass Picker
+
+#### `tests/mass-picker.spec.ts` (5 tests)
+
+**Module:** Mass Picker Component
+
+| Test | Description |
+|------|-------------|
+| should open and close mass picker from mass intention form | Verifies picker modal opens from mass intention form, loads correctly, and closes without selection |
+| should select existing mass from picker | Validates browsing and selecting an existing mass from picker and confirming selection appears in parent form |
+| should display masses in picker | Confirms picker loads and displays mass cards from the database with correct count |
+| should clear selected mass | Verifies user can clear a selected mass using the X button and field returns to empty state |
+| should preserve mass intention form context when using mass picker | Critical test ensuring picker doesn't navigate away or lose parent form data when selecting a mass |
 
 ---
 

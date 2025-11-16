@@ -4,7 +4,7 @@ This document contains a checklist of items to verify during code review. Use th
 
 ## Form Components
 
-- [ ] **All form inputs use FormField component** - Verify that all Input, Select, and Textarea components in forms are wrapped with the FormField component. Direct usage of these components without FormField wrapper is prohibited except in picker components or explicitly approved special cases.
+- [ ] **All form inputs use FormField component** - Verify that all form inputs use the FormField component instead of manually composing Label + Input/Select/Textarea. FormField is an all-in-one component that takes props and internally renders the complete field structure. Direct usage of Input, Select, or Textarea components with manual Label composition is prohibited except in picker components or explicitly approved special cases.
 
 - [ ] **No extra styling on form inputs** - Verify that form inputs (Input, Textarea, Select) do NOT have prohibited styling applied. According to [FORMS.md](./FORMS.md) § Form Input Styling, form inputs must use default shadcn/ui styling. **PROHIBITED:** font-family modifications (`font-mono`, `font-serif`, `font-sans`), font styles (`italic`), font weights (`font-bold`, `font-semibold`), border customizations (`border-*`, `rounded-*`), background changes (`bg-*`). **ALLOWED:** Text sizes (`text-sm`, `text-lg`), layout classes (`w-full`, `min-h-*`, padding, margin). Check all Input, Textarea, and Select components for compliance.
 

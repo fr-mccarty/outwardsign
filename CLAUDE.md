@@ -232,7 +232,7 @@ For views within a print folder (`app/print/`), custom styling is allowed to opt
 This includes:
 - 🔴 **Form Input Styling** - Critical rules for styling form inputs (NEVER modify font-family, borders, or backgrounds)
 - 🔴 **Form Component Structure** - Unified form pattern, isEditing pattern, redirection pattern
-- 🔴 **FormField Usage** - REQUIRED component wrapper for all inputs/selects/textareas
+- 🔴 **FormField Usage** - REQUIRED all-in-one component for all inputs/selects/textareas
 - **Shared Form Components** - SaveButton, CancelButton, picker components
 - **Form Event Handling** - Nested forms and event propagation (e.stopPropagation)
 - **Validation** - Dual validation with Zod pattern

@@ -74,30 +74,6 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
     })
   }
 
-  // Pre-Mass Announcement section (at bottom of first page)
-  if (mass.pre_mass_announcement_person || mass.pre_mass_announcement_topic) {
-    elements.push({
-      type: 'section-title',
-      text: 'Pre-Mass Announcement',
-    })
-
-    if (mass.pre_mass_announcement_person) {
-      elements.push({
-        type: 'info-row',
-        label: 'Announced by:',
-        value: formatPersonName(mass.pre_mass_announcement_person),
-      })
-    }
-
-    if (mass.pre_mass_announcement_topic) {
-      elements.push({
-        type: 'info-row',
-        label: 'Topic:',
-        value: mass.pre_mass_announcement_topic,
-      })
-    }
-  }
-
   return {
     id: 'summary',
     title: 'Mass Summary',

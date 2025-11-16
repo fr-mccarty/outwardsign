@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { CalendarDayProps, CalendarItem } from "./types"
 import type { CalendarDay } from "./types"
@@ -108,24 +109,31 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
     }
   })
 
+  // Format date for URL parameter (YYYY-MM-DD)
+  const formattedDate = day.date.toISOString().split('T')[0]
+  const dayViewUrl = `/calendar?view=day&date=${formattedDate}`
+
   return (
     <>
       <div
         className={cn(
-          "min-h-[100px] border p-3 cursor-pointer transition-colors rounded-sm",
-          "bg-card hover:bg-accent/50",
+          "min-h-[100px] border p-3 transition-colors rounded-sm",
+          "bg-card",
           !day.isCurrentMonth && "bg-muted/30 text-muted-foreground opacity-60",
           day.isToday && "ring-2 ring-primary bg-primary/5"
         )}
-        onClick={() => onClick?.(day.date)}
       >
         <div className="flex items-center gap-2 mb-2">
-          <div className={cn(
-            "font-medium text-sm",
-            day.isToday && "text-primary font-bold"
-          )}>
+          <Link
+            href={dayViewUrl}
+            className={cn(
+              "font-medium text-sm hover:bg-accent hover:text-accent-foreground rounded px-1.5 py-0.5 -ml-1.5 transition-colors",
+              day.isToday && "text-primary font-bold"
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
             {day.date.getDate()}
-          </div>
+          </Link>
 
           {/* Liturgical color blocks (month view only) */}
           {view === 'month' && liturgicalEventColorGroups.length > 0 && (
@@ -134,7 +142,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
                 <div
                   key={groupIndex}
                   className={cn(
-                    "flex gap-0 cursor-pointer overflow-hidden rounded-[3px]",
+                    "flex gap-0 cursor-pointer overflow-hidden rounded-[3px] transition-all hover:scale-110 hover:shadow-md",
                     group.colors.length > 1 && "border border-border"
                   )}
                   onClick={(e) => {

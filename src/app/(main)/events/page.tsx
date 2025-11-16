@@ -3,7 +3,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import Link from "next/link"
 import { Plus } from "lucide-react"
-import { getEvents, type EventFilterParams } from "@/lib/actions/events"
+import { getEvents, getEventsWithModuleLinks, type EventFilterParams } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
@@ -40,8 +40,8 @@ export default async function EventsPage({ searchParams }: PageProps) {
     sort: params.sort
   }
 
-  // Fetch events server-side with filters
-  const events = await getEvents(filters)
+  // Fetch events server-side with filters and module links
+  const events = await getEventsWithModuleLinks(filters)
 
   // Compute stats server-side
   const allEvents = await getEvents()

@@ -144,7 +144,7 @@ The following components should be used in all forms for consistency:
 ### Core Form Components:
 - **`SaveButton`** - Handles loading state, shows spinner while saving
 - **`CancelButton`** - Standard cancel button with routing
-- **`FormField`** - Standardized form field wrapper (**REQUIRED** for all inputs/selects/textareas)
+- **`FormField`** - All-in-one form field component (**REQUIRED** for all inputs/selects/textareas)
 - **`EventDisplay`** - Display event date/time/location in forms
 
 ### Picker Components:
@@ -173,12 +173,21 @@ The following components should be used in all forms for consistency:
 
 ## 🔴 FormField Usage (CRITICAL - REQUIRED)
 
-**ALL form inputs, selects, and textareas MUST use the `FormField` component.** This ensures consistent styling, labels, descriptions, and layout across the application.
+**ALL form inputs, selects, and textareas MUST use the `FormField` component.** This is an all-in-one component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description + error message). This ensures consistent styling, labels, descriptions, accessibility, and layout across the application.
+
+### How FormField Works:
+
+`FormField` is a **props-based component** that accepts field configuration and renders everything internally:
+- Automatically renders the `<Label>` connected to the input via `htmlFor`/`id`
+- Renders the appropriate input type (`<Input>`, `<Textarea>`, or `<Select>`)
+- Displays optional description text
+- Handles error messages and styling
+- Manages accessibility attributes (`aria-describedby`, `aria-invalid`)
 
 ### REQUIRED Pattern:
 
 ```tsx
-// ✅ CORRECT - Always use FormField wrapper for Input
+// ✅ CORRECT - FormField for text input
 <FormField
   id="field-name"
   label="Field Label"
@@ -188,7 +197,7 @@ The following components should be used in all forms for consistency:
   required={true}
 />
 
-// ✅ CORRECT - FormField wrapper for Textarea
+// ✅ CORRECT - FormField for textarea
 <FormField
   id="notes"
   label="Notes"
@@ -198,7 +207,7 @@ The following components should be used in all forms for consistency:
   rows={12}
 />
 
-// ✅ CORRECT - FormField wrapper for Select
+// ✅ CORRECT - FormField for select
 <FormField
   id="status"
   label="Status"
@@ -212,23 +221,30 @@ The following components should be used in all forms for consistency:
 />
 ```
 
-### ❌ PROHIBITED - Never use bare Input/Select/Textarea components:
+### ❌ PROHIBITED - Never manually compose Label + Input:
 
 ```tsx
-// ❌ WRONG - Never use Input directly without FormField wrapper
-<Label>Field Label</Label>
-<Input value={value} onChange={(e) => setValue(e.target.value)} />
+// ❌ WRONG - Never use Input directly with manual Label
+<Label htmlFor="field-name">Field Label</Label>
+<Input id="field-name" value={value} onChange={(e) => setValue(e.target.value)} />
 
-// ❌ WRONG - Never use Select directly without FormField wrapper
-<Label>Status</Label>
+// ❌ WRONG - Never use Select directly with manual Label
+<Label htmlFor="status">Status</Label>
 <Select value={status} onValueChange={setStatus}>
-  <SelectTrigger>...</SelectTrigger>
+  <SelectTrigger id="status">...</SelectTrigger>
 </Select>
 
-// ❌ WRONG - Never use Textarea directly without FormField wrapper
-<Label>Notes</Label>
-<Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+// ❌ WRONG - Never use Textarea directly with manual Label
+<Label htmlFor="notes">Notes</Label>
+<Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
 ```
+
+**Why use FormField?**
+- **Consistency** - All fields have the same structure across the app
+- **Accessibility** - Automatically connects labels to inputs and handles ARIA attributes
+- **Less boilerplate** - One component instead of composing Label + Input + description + error
+- **Type safety** - Different prop interfaces for text, textarea, and select inputs
+- **Maintainability** - Changes to field styling/structure happen in one place
 
 ### Exceptions:
 

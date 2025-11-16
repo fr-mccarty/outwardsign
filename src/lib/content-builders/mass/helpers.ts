@@ -9,17 +9,6 @@ import { MassWithRelations } from '@/lib/actions/masses'
 import { Location, Person } from '@/lib/types'
 
 // ============================================================================
-// CONDITIONAL CHECK HELPERS
-// ============================================================================
-
-/**
- * Check if mass has announcements or announcement person
- */
-export function hasAnnouncements(mass: MassWithRelations): boolean {
-  return !!(mass.announcements || mass.pre_mass_announcement_person)
-}
-
-// ============================================================================
 // LOCATION HELPERS
 // ============================================================================
 

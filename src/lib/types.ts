@@ -625,8 +625,6 @@ export interface Mass {
   homilist_id?: string
   liturgical_event_id?: string
   mass_roles_template_id?: string
-  pre_mass_announcement_id?: string
-  pre_mass_announcement_topic?: string
   status?: string
   mass_template_id?: string
   announcements?: string

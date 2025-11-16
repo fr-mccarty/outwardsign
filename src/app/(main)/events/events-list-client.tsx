@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
-import type { Event } from '@/lib/types'
+import type { EventWithModuleLink } from '@/lib/actions/events'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -32,7 +32,7 @@ interface Stats {
 }
 
 interface EventsListClientProps {
-  initialData: Event[]
+  initialData: EventWithModuleLink[]
   stats: Stats
 }
 
@@ -168,23 +168,28 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((event) => {
             const isUpcoming = event.start_date && new Date(event.start_date) >= new Date()
+
+            // Determine edit href based on module link
+            let editHref = `/events/${event.id}/edit`
+            if (event.moduleLink?.moduleType && event.moduleLink?.moduleId) {
+              const { moduleType, moduleId } = event.moduleLink
+              // Handle special plural forms
+              const modulePath = moduleType === 'mass' ? 'masses' : `${moduleType}s`
+              editHref = `/${modulePath}/${moduleId}/edit`
+            }
+
             return (
               <ListViewCard
                 key={event.id}
                 title={event.name}
-                editHref={`/events/${event.id}/edit`}
+                editHref={editHref}
                 viewHref={`/events/${event.id}`}
                 language={event.language || undefined}
               >
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="secondary" className="text-xs font-medium">
                     {EVENT_TYPE_LABELS[event.event_type]?.[userLanguage] || event.event_type}
                   </Badge>
-                  {isUpcoming && (
-                    <Badge className="text-xs bg-green-100 text-green-800">
-                      Upcoming
-                    </Badge>
-                  )}
                 </div>
 
                 {event.description && (
@@ -193,15 +198,22 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                   </p>
                 )}
 
-                <div className="text-sm space-y-1">
+                <div className="text-sm space-y-2">
                   {event.start_date && (
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {formatDatePretty(event.start_date)}
-                        {event.start_time && ` at ${formatTime(event.start_time)}`}
-                      </span>
-                    </div>
+                    <>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-muted-foreground">
+                          {formatDatePretty(event.start_date)}
+                          {event.start_time && ` at ${formatTime(event.start_time)}`}
+                        </span>
+                      </div>
+                      {isUpcoming && (
+                        <Badge variant="default" className="text-xs font-medium bg-green-700 hover:bg-green-700 text-white">
+                          Upcoming
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </div>
               </ListViewCard>

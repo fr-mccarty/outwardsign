@@ -15,8 +15,6 @@ export interface CreateMassData {
   homilist_id?: string
   liturgical_event_id?: string
   mass_roles_template_id?: string
-  pre_mass_announcement_id?: string
-  pre_mass_announcement_topic?: string
   status?: string
   mass_template_id?: string
   announcements?: string
@@ -30,8 +28,6 @@ export interface UpdateMassData {
   homilist_id?: string | null
   liturgical_event_id?: string | null
   mass_roles_template_id?: string | null
-  pre_mass_announcement_id?: string | null
-  pre_mass_announcement_topic?: string | null
   status?: string | null
   mass_template_id?: string | null
   announcements?: string | null
@@ -198,7 +194,6 @@ export interface MassWithRelations extends Mass {
   homilist?: Person | null
   liturgical_event?: GlobalLiturgicalEvent | null
   mass_roles_template?: MassRolesTemplate | null
-  pre_mass_announcement_person?: Person | null
   mass_intention?: (MassIntention & {
     requested_by?: Person | null
   }) | null
@@ -238,7 +233,6 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     homilistData,
     liturgicalEventData,
     massRolesTemplateData,
-    preMassAnnouncementData,
     massIntentionData,
     massRolesData
   ] = await Promise.all([
@@ -247,7 +241,6 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     mass.homilist_id ? supabase.from('people').select('*').eq('id', mass.homilist_id).single() : Promise.resolve({ data: null }),
     mass.liturgical_event_id ? supabase.from('global_liturgical_events').select('*').eq('id', mass.liturgical_event_id).single() : Promise.resolve({ data: null }),
     mass.mass_roles_template_id ? supabase.from('mass_roles_templates').select('*').eq('id', mass.mass_roles_template_id).single() : Promise.resolve({ data: null }),
-    mass.pre_mass_announcement_id ? supabase.from('people').select('*').eq('id', mass.pre_mass_announcement_id).single() : Promise.resolve({ data: null }),
     supabase.from('mass_intentions').select('*, requested_by:people!requested_by_id(*)').eq('mass_id', id).maybeSingle(),
     supabase.from('mass_role_instances').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
   ])
@@ -259,7 +252,6 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     homilist: homilistData.data,
     liturgical_event: liturgicalEventData.data,
     mass_roles_template: massRolesTemplateData.data,
-    pre_mass_announcement_person: preMassAnnouncementData.data,
     mass_intention: massIntentionData.data,
     mass_roles: massRolesData.data || []
   }
@@ -280,8 +272,6 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
         homilist_id: data.homilist_id || null,
         liturgical_event_id: data.liturgical_event_id || null,
         mass_roles_template_id: data.mass_roles_template_id || null,
-        pre_mass_announcement_id: data.pre_mass_announcement_id || null,
-        pre_mass_announcement_topic: data.pre_mass_announcement_topic || null,
         status: data.status || 'PLANNING',
         mass_template_id: data.mass_template_id || null,
         announcements: data.announcements || null,

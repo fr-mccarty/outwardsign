@@ -746,6 +746,13 @@ export async function populateInitialParishData(parishId: string) {
         description: 'Brings up the gifts during the offertory',
         is_active: true,
         display_order: 10
+      },
+      {
+        parish_id: parishId,
+        name: 'Pre-Mass Speaker',
+        description: 'Makes announcements before Mass begins',
+        is_active: true,
+        display_order: 11
       }
     ]
 
