@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FormSectionCard } from '@/components/form-section-card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { FileText, Info } from 'lucide-react'
@@ -33,7 +33,6 @@ interface PetitionEditorProps {
   onInsertTemplate?: (templateId: string) => string[] // Returns array of petition texts from selected template
   templates?: PetitionTemplate[]
   readOnly?: boolean
-  className?: string
 }
 
 export function PetitionEditor({
@@ -42,7 +41,6 @@ export function PetitionEditor({
   onInsertTemplate,
   templates = [],
   readOnly = false,
-  className,
 }: PetitionEditorProps) {
   const [showFormatInfo, setShowFormatInfo] = useState(false)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -63,41 +61,33 @@ export function PetitionEditor({
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Petitions</CardTitle>
-              <CardDescription>
-                Universal prayers - one petition per line
-              </CardDescription>
-            </div>
-          </div>
-
-          {!readOnly && templates.length > 0 && onInsertTemplate && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                <SelectTrigger className="w-full sm:w-[250px]">
-                  <SelectValue placeholder="Select template..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button type="button" variant="outline" size="sm" onClick={insertTemplate} className="w-full sm:w-auto">
-                <FileText className="h-4 w-4 mr-2" />
-                Insert Template
-              </Button>
-            </div>
-          )}
+    <FormSectionCard
+      title="Petitions"
+      description="Universal prayers - one petition per line"
+    >
+      {/* Template Selector (if available) */}
+      {!readOnly && templates.length > 0 && onInsertTemplate && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+            <SelectTrigger className="w-full sm:w-[250px]">
+              <SelectValue placeholder="Select template..." />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.map((template) => (
+                <SelectItem key={template.id} value={template.id}>
+                  {template.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button type="button" variant="outline" size="sm" onClick={insertTemplate} className="w-full sm:w-auto">
+            <FileText className="h-4 w-4 mr-2" />
+            Insert Template
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      )}
+
+      <div className="space-y-4">
         {/* Format Info Modal */}
         <Dialog open={showFormatInfo} onOpenChange={setShowFormatInfo}>
           <DialogTrigger asChild>
@@ -168,7 +158,7 @@ export function PetitionEditor({
             Each petition can be concluded with or without a period.
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </FormSectionCard>
   )
 }

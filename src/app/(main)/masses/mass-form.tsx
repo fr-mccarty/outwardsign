@@ -632,17 +632,12 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       )}
 
       {/* Petitions */}
-      <FormSectionCard
-        title="Petitions"
-        description="Universal Prayer (Prayer of the Faithful)"
-      >
-        <PetitionEditor
-            value={petitions}
-            onChange={setPetitions}
-            templates={petitionTemplates}
-            onInsertTemplate={handleInsertTemplate}
-          />
-      </FormSectionCard>
+      <PetitionEditor
+        value={petitions}
+        onChange={setPetitions}
+        templates={petitionTemplates}
+        onInsertTemplate={handleInsertTemplate}
+      />
 
       {/* Announcements */}
       <FormSectionCard
