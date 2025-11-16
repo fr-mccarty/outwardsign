@@ -406,6 +406,13 @@ The Component Registry contains comprehensive documentation on all reusable comp
 - Layout components (PageContainer, ModuleViewPanel, ModuleViewContainer)
 - Hooks (usePickerState)
 
+**🔴 CRITICAL - When Creating New Components:**
+When you create a new reusable component (pickers, form components, layout components, hooks, etc.), you **MUST** add it to the Component Registry:
+1. Add the component to `docs/COMPONENT_REGISTRY.md` with full documentation
+2. Include props interface, usage examples, and when to use it
+3. Update the list above in this CLAUDE.md file if it's a new category
+4. Follow the documentation pattern established in COMPONENT_REGISTRY.md
+
 **For picker behavior patterns (auto-select, no redirect), see [PICKER_PATTERNS.md](./docs/PICKER_PATTERNS.md).**
 
 **Content Builders & Renderers:**

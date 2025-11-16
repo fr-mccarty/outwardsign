@@ -5,7 +5,7 @@ import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
 import { createWedding, updateWedding, type CreateWeddingData, type WeddingWithRelations } from "@/lib/actions/weddings"
@@ -279,134 +279,123 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* Key Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Information</CardTitle>
-          <CardDescription>Essential details about the couple and ceremony</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonPickerField
-              label="Bride"
-              value={bride.value}
-              onValueChange={bride.setValue}
-              showPicker={bride.showPicker}
-              onShowPickerChange={bride.setShowPicker}
-              placeholder="Select Bride"
-              openToNewPerson={!bride.value}
-            />
-            <PersonPickerField
-              label="Groom"
-              value={groom.value}
-              onValueChange={groom.setValue}
-              showPicker={groom.showPicker}
-              onShowPickerChange={groom.setShowPicker}
-              placeholder="Select Groom"
-              openToNewPerson={!groom.value}
-            />
-          </div>
-          <EventPickerField
-            label="Wedding Ceremony"
-            value={weddingEvent.value}
-            onValueChange={weddingEvent.setValue}
-            showPicker={weddingEvent.showPicker}
-            onShowPickerChange={weddingEvent.setShowPicker}
-            placeholder="Add Wedding Ceremony"
-            openToNewEvent={!weddingEvent.value}
-            defaultEventType="WEDDING"
-            defaultName={EVENT_TYPE_LABELS.WEDDING.en}
-            disableSearch={true}
-            defaultCreateFormData={{ name: suggestedWeddingName }}
+      <FormSectionCard
+        title="Key Information"
+        description="Essential details about the couple and ceremony"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <PersonPickerField
+            label="Bride"
+            value={bride.value}
+            onValueChange={bride.setValue}
+            showPicker={bride.showPicker}
+            onShowPickerChange={bride.setShowPicker}
+            placeholder="Select Bride"
+            openToNewPerson={!bride.value}
           />
-        </CardContent>
-      </Card>
+          <PersonPickerField
+            label="Groom"
+            value={groom.value}
+            onValueChange={groom.setValue}
+            showPicker={groom.showPicker}
+            onShowPickerChange={groom.setShowPicker}
+            placeholder="Select Groom"
+            openToNewPerson={!groom.value}
+          />
+        </div>
+        <EventPickerField
+          label="Wedding Ceremony"
+          value={weddingEvent.value}
+          onValueChange={weddingEvent.setValue}
+          showPicker={weddingEvent.showPicker}
+          onShowPickerChange={weddingEvent.setShowPicker}
+          placeholder="Add Wedding Ceremony"
+          openToNewEvent={!weddingEvent.value}
+          defaultEventType="WEDDING"
+          defaultName={EVENT_TYPE_LABELS.WEDDING.en}
+          disableSearch={true}
+          defaultCreateFormData={{ name: suggestedWeddingName }}
+        />
+      </FormSectionCard>
 
       {/* Other Events */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other Events</CardTitle>
-          <CardDescription>Related celebration events</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <EventPickerField
-              label="Reception"
-              value={receptionEvent.value}
-              onValueChange={receptionEvent.setValue}
-              showPicker={receptionEvent.showPicker}
-              onShowPickerChange={receptionEvent.setShowPicker}
-              placeholder="Add Reception"
-              openToNewEvent={!receptionEvent.value}
-              defaultEventType="OTHER"
-              defaultName="Reception"
-              disableSearch={true}
-              defaultCreateFormData={{ name: suggestedReceptionName }}
-            />
-            <EventPickerField
-              label="Rehearsal"
-              value={rehearsalEvent.value}
-              onValueChange={rehearsalEvent.setValue}
-              showPicker={rehearsalEvent.showPicker}
-              onShowPickerChange={rehearsalEvent.setShowPicker}
-              placeholder="Add Rehearsal"
-              openToNewEvent={!rehearsalEvent.value}
-              defaultEventType="REHEARSAL"
-              defaultName="Rehearsal"
-              disableSearch={true}
-            />
-          </div>
+      <FormSectionCard
+        title="Other Events"
+        description="Related celebration events"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <EventPickerField
-            label="Rehearsal Dinner"
-            value={rehearsalDinnerEvent.value}
-            onValueChange={rehearsalDinnerEvent.setValue}
-            showPicker={rehearsalDinnerEvent.showPicker}
-            onShowPickerChange={rehearsalDinnerEvent.setShowPicker}
-            placeholder="Add Rehearsal Dinner"
-            openToNewEvent={!rehearsalDinnerEvent.value}
+            label="Reception"
+            value={receptionEvent.value}
+            onValueChange={receptionEvent.setValue}
+            showPicker={receptionEvent.showPicker}
+            onShowPickerChange={receptionEvent.setShowPicker}
+            placeholder="Add Reception"
+            openToNewEvent={!receptionEvent.value}
             defaultEventType="OTHER"
-            defaultName="Rehearsal Dinner"
+            defaultName="Reception"
+            disableSearch={true}
+            defaultCreateFormData={{ name: suggestedReceptionName }}
+          />
+          <EventPickerField
+            label="Rehearsal"
+            value={rehearsalEvent.value}
+            onValueChange={rehearsalEvent.setValue}
+            showPicker={rehearsalEvent.showPicker}
+            onShowPickerChange={rehearsalEvent.setShowPicker}
+            placeholder="Add Rehearsal"
+            openToNewEvent={!rehearsalEvent.value}
+            defaultEventType="REHEARSAL"
+            defaultName="Rehearsal"
             disableSearch={true}
           />
-        </CardContent>
-      </Card>
+        </div>
+        <EventPickerField
+          label="Rehearsal Dinner"
+          value={rehearsalDinnerEvent.value}
+          onValueChange={rehearsalDinnerEvent.setValue}
+          showPicker={rehearsalDinnerEvent.showPicker}
+          onShowPickerChange={rehearsalDinnerEvent.setShowPicker}
+          placeholder="Add Rehearsal Dinner"
+          openToNewEvent={!rehearsalDinnerEvent.value}
+          defaultEventType="OTHER"
+          defaultName="Rehearsal Dinner"
+          disableSearch={true}
+        />
+      </FormSectionCard>
 
       {/* Key Liturgical Roles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Liturgical Roles</CardTitle>
-          <CardDescription>Primary liturgical ministers</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonPickerField
-              label="Presider"
-              value={presider.value}
-              onValueChange={presider.setValue}
-              showPicker={presider.showPicker}
-              onShowPickerChange={presider.setShowPicker}
-              placeholder="Select Presider"
-              autoSetSex="MALE"
-            />
-            <PersonPickerField
-              label="Homilist"
-              value={homilist.value}
-              onValueChange={homilist.setValue}
-              showPicker={homilist.showPicker}
-              onShowPickerChange={homilist.setShowPicker}
-              placeholder="Select Homilist"
-              autoSetSex="MALE"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Key Liturgical Roles"
+        description="Primary liturgical ministers"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <PersonPickerField
+            label="Presider"
+            value={presider.value}
+            onValueChange={presider.setValue}
+            showPicker={presider.showPicker}
+            onShowPickerChange={presider.setShowPicker}
+            placeholder="Select Presider"
+            autoSetSex="MALE"
+          />
+          <PersonPickerField
+            label="Homilist"
+            value={homilist.value}
+            onValueChange={homilist.setValue}
+            showPicker={homilist.showPicker}
+            onShowPickerChange={homilist.setShowPicker}
+            placeholder="Select Homilist"
+            autoSetSex="MALE"
+          />
+        </div>
+      </FormSectionCard>
 
       {/* Other Liturgical Roles and Liturgical Selections */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
-          <CardDescription>Additional ministers, readers, and scripture selections</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <FormSectionCard
+        title="Other Liturgical Roles and Liturgical Selections"
+        description="Additional ministers, readers, and scripture selections"
+      >
           {/* Music Ministers */}
           <div className="space-y-2">
             <Label className="text-base font-semibold">Music Ministers</Label>
@@ -582,16 +571,13 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               openToNewPerson={!gospelReader.value}
             />
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Petitions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Petitions</CardTitle>
-          <CardDescription>Prayer of the Faithful</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <FormSectionCard
+        title="Petitions"
+        description="Prayer of the Faithful"
+      >
           <div className="flex items-center space-x-2">
             <Checkbox
               id="petitions_read_by_second_reader"
@@ -617,8 +603,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               openToNewPerson={!petitionReader.value}
             />
           )}
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Petition Editor */}
       <PetitionEditor
@@ -629,12 +614,10 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       />
 
       {/* Announcements */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Announcements</CardTitle>
-          <CardDescription>Announcements for the end of the liturgy</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <FormSectionCard
+        title="Announcements"
+        description="Announcements for the end of the liturgy"
+      >
           <FormField
             id="announcements"
             label="Announcements"
@@ -645,16 +628,13 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             inputType="textarea"
             rows={3}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Additional Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Details</CardTitle>
-          <CardDescription>Coordinator, template, notes, and status</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <FormSectionCard
+        title="Additional Details"
+        description="Coordinator, template, notes, and status"
+      >
           <PersonPickerField
             label="Coordinator"
             value={coordinator.value}
@@ -709,8 +689,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Submit Buttons */}
       <FormBottomActions

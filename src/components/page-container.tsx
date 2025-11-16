@@ -1,10 +1,8 @@
-import { CenteredFormCard } from "@/components/centered-form-card"
 import { cn } from "@/lib/utils"
 
 interface PageContainerProps {
   title: string
   description?: string
-  cardTitle?: string
   actions?: React.ReactNode
   children: React.ReactNode
   className?: string
@@ -14,11 +12,10 @@ interface PageContainerProps {
 export function PageContainer({
   title,
   description,
-  cardTitle,
   actions,
   children,
   className,
-  maxWidth = '7xl'
+  maxWidth = '6xl'
 }: PageContainerProps) {
   const maxWidthClasses = {
     'sm': 'max-w-sm',
@@ -63,13 +60,7 @@ export function PageContainer({
           )}
         </div>
 
-        {cardTitle ? (
-          <CenteredFormCard title={cardTitle} className="max-w-none">
-            {children}
-          </CenteredFormCard>
-        ) : (
-          children
-        )}
+        {children}
       </div>
     </div>
   )

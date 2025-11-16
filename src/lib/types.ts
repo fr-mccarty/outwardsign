@@ -92,34 +92,6 @@ export interface CreateLiturgyPlanData {
   special_notes?: string
 }
 
-export interface LiturgicalCalendarEntry {
-  id: string
-  parish_id: string
-  title: string
-  date: string
-  liturgical_season?: string
-  liturgical_rank?: string
-  color?: string
-  readings: unknown[]
-  special_prayers: unknown[]
-  notes?: string
-  is_custom: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface CreateCalendarEntryData {
-  title: string
-  date: string
-  liturgical_season?: string
-  liturgical_rank?: string
-  color?: string
-  readings?: unknown[]
-  special_prayers?: unknown[]
-  notes?: string
-  is_custom?: boolean
-}
-
 export interface ReadingCollection {
   id: string
   parish_id: string

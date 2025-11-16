@@ -1,6 +1,6 @@
 "use client"
 
-import { PresentationWithRelations, updatePresentation } from '@/lib/actions/presentations'
+import { PresentationWithRelations, updatePresentation, deletePresentation } from '@/lib/actions/presentations'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildPresentationLiturgy, PRESENTATION_TEMPLATES } from '@/lib/content-builders/presentation'
 
@@ -46,6 +46,7 @@ export function PresentationViewClient({ presentation }: PresentationViewClientP
         defaultTemplateId: 'presentation-spanish',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deletePresentation}
     />
   )
 }

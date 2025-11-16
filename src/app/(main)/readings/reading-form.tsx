@@ -5,7 +5,7 @@ import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { createReading, updateReading, type CreateReadingData, type Reading } from "@/lib/actions/readings"
 import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
@@ -99,97 +99,94 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
 
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Reading Details</CardTitle>
-          <CardDescription>Scripture reading or liturgical text information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <FormField
-            id="pericope"
-            label="Pericope"
-            value={pericope}
-            onChange={setPericope}
-            required
-            placeholder="e.g., Matthew 5:1-12, Genesis 1:1-2:4"
-            description="The scripture reference or title of the reading"
-          />
+      <FormSectionCard
+        title="Reading Details"
+        description="Scripture reading or liturgical text information"
+      >
+        <FormField
+          id="pericope"
+          label="Pericope"
+          value={pericope}
+          onChange={setPericope}
+          required
+          placeholder="e.g., Matthew 5:1-12, Genesis 1:1-2:4"
+          description="The scripture reference or title of the reading"
+        />
 
-          <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger id="language">
-                <SelectValue placeholder="Select a language" />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGE_VALUES.map(lang => (
-                  <SelectItem key={lang} value={lang}>
-                    {LANGUAGE_LABELS[lang].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <FormField
-            id="introduction"
-            label="Introduction (Optional)"
-            inputType="textarea"
-            value={introduction}
-            onChange={setIntroduction}
-            placeholder="Optional introduction text read before the main reading..."
-            rows={3}
-            description="Text read before the main reading (e.g., &quot;A reading from the Book of Genesis&quot;)"
-          />
-
-          <FormField
-            id="text"
-            label="Reading Text"
-            inputType="textarea"
-            value={text}
-            onChange={setText}
-            placeholder="Enter the full text of the reading..."
-            rows={12}
-            required
-            description="The complete text of the scripture reading or liturgical text"
-          />
-
-          <FormField
-            id="conclusion"
-            label="Conclusion (Optional)"
-            inputType="textarea"
-            value={conclusion}
-            onChange={setConclusion}
-            placeholder="Optional conclusion text read after the main reading..."
-            rows={2}
-            description="Text read after the main reading (e.g., &quot;The Word of the Lord&quot;)"
-          />
-
-          <div className="space-y-3">
-            <Label>Categories</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Select one or more categories for this reading
-            </p>
-            <div className="space-y-2">
-              {READING_CATEGORIES.map((category) => (
-                <div key={category} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`category-${category}`}
-                    checked={selectedCategories.includes(category)}
-                    onCheckedChange={() => handleCategoryToggle(category)}
-                  />
-                  <label
-                    htmlFor={`category-${category}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {READING_CATEGORY_LABELS[category]?.en || category}
-                  </label>
-                </div>
+        <div className="space-y-2">
+          <Label htmlFor="language">Language</Label>
+          <Select value={language} onValueChange={setLanguage}>
+            <SelectTrigger id="language">
+              <SelectValue placeholder="Select a language" />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGE_VALUES.map(lang => (
+                <SelectItem key={lang} value={lang}>
+                  {LANGUAGE_LABELS[lang].en}
+                </SelectItem>
               ))}
-            </div>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <FormField
+          id="introduction"
+          label="Introduction (Optional)"
+          inputType="textarea"
+          value={introduction}
+          onChange={setIntroduction}
+          placeholder="Optional introduction text read before the main reading..."
+          rows={3}
+          description="Text read before the main reading (e.g., &quot;A reading from the Book of Genesis&quot;)"
+        />
+
+        <FormField
+          id="text"
+          label="Reading Text"
+          inputType="textarea"
+          value={text}
+          onChange={setText}
+          placeholder="Enter the full text of the reading..."
+          rows={12}
+          required
+          description="The complete text of the scripture reading or liturgical text"
+        />
+
+        <FormField
+          id="conclusion"
+          label="Conclusion (Optional)"
+          inputType="textarea"
+          value={conclusion}
+          onChange={setConclusion}
+          placeholder="Optional conclusion text read after the main reading..."
+          rows={2}
+          description="Text read after the main reading (e.g., &quot;The Word of the Lord&quot;)"
+        />
+
+        <div className="space-y-3">
+          <Label>Categories</Label>
+          <p className="text-sm text-muted-foreground mb-2">
+            Select one or more categories for this reading
+          </p>
+          <div className="space-y-2">
+            {READING_CATEGORIES.map((category) => (
+              <div key={category} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`category-${category}`}
+                  checked={selectedCategories.includes(category)}
+                  onCheckedChange={() => handleCategoryToggle(category)}
+                />
+                <label
+                  htmlFor={`category-${category}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {READING_CATEGORY_LABELS[category]?.en || category}
+                </label>
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </FormSectionCard>
 
       <FormBottomActions
         isEditing={isEditing}

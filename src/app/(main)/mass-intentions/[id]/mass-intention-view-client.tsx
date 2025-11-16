@@ -1,6 +1,6 @@
 "use client"
 
-import { MassIntentionWithRelations, updateMassIntention } from '@/lib/actions/mass-intentions'
+import { MassIntentionWithRelations, updateMassIntention, deleteMassIntention } from '@/lib/actions/mass-intentions'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildMassIntentionLiturgy, MASS_INTENTION_TEMPLATES } from '@/lib/content-builders/mass-intention'
 
@@ -46,6 +46,7 @@ export function MassIntentionViewClient({ intention }: MassIntentionViewClientPr
         defaultTemplateId: 'mass-intention-summary-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteMassIntention}
     />
   )
 }

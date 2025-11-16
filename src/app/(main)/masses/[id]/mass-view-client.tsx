@@ -1,6 +1,6 @@
 "use client"
 
-import { MassWithRelations, updateMass } from '@/lib/actions/masses'
+import { MassWithRelations, updateMass, deleteMass } from '@/lib/actions/masses'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -54,6 +54,7 @@ export function MassViewClient({ mass }: MassViewClientProps) {
         defaultTemplateId: 'mass-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteMass}
     >
       {/* Mass Intention Card - rendered before liturgy content */}
       {mass.mass_intention && (

@@ -1,6 +1,6 @@
 "use client"
 
-import { FuneralWithRelations, updateFuneral } from '@/lib/actions/funerals'
+import { FuneralWithRelations, updateFuneral, deleteFuneral } from '@/lib/actions/funerals'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildFuneralLiturgy, FUNERAL_TEMPLATES } from '@/lib/content-builders/funeral'
 
@@ -46,6 +46,7 @@ export function FuneralViewClient({ funeral }: FuneralViewClientProps) {
         defaultTemplateId: 'funeral-full-script-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteFuneral}
     />
   )
 }

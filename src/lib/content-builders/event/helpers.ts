@@ -76,10 +76,20 @@ export function formatEventDate(dateString: string | null | undefined, language:
 
 /**
  * Format time (e.g., "3:00 PM")
+ * Converts military time (16:00:00) to 12-hour format (4:00 PM)
  */
 export function formatEventTime(timeString: string | null | undefined): string {
   if (!timeString) return ''
-  return timeString
+
+  // Parse time (format: "16:21:00" or "16:21")
+  const [hours, minutes] = timeString.split(':').map(Number)
+
+  // Convert to 12-hour format with AM/PM (no seconds)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
+  const displayMinutes = minutes.toString().padStart(2, '0')
+
+  return `${displayHours}:${displayMinutes} ${period}`
 }
 
 /**

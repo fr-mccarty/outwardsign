@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { z } from "zod"
 import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/ui/form-field"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { createBaptism, updateBaptism, type CreateBaptismData, type BaptismWithRelations } from "@/lib/actions/baptisms"
 import { useRouter } from "next/navigation"
@@ -145,13 +145,11 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   return (
     <form onSubmit={handleSubmit} id={formId} className="space-y-8">
       {/* Key Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Information</CardTitle>
-          <CardDescription>Essential details about the child and baptism event</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Key Information"
+        description="Essential details about the child and baptism event"
+      >
+        <PersonPickerField
             label="Child"
             value={child.value}
             onValueChange={child.setValue}
@@ -173,17 +171,14 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedBaptismName }}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other People */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other People</CardTitle>
-          <CardDescription>Parents and godparents</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+      <FormSectionCard
+        title="Other People"
+        description="Parents and godparents"
+      >
+        <div className="space-y-2">
             <Label className="text-base font-semibold">Parents</Label>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,17 +227,14 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
               openToNewPerson={!sponsor2.value}
             />
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Key Liturgical Roles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Liturgical Roles</CardTitle>
-          <CardDescription>Primary liturgical ministers</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Key Liturgical Roles"
+        description="Primary liturgical ministers"
+      >
+        <PersonPickerField
             label="Presider"
             value={presider.value}
             onValueChange={presider.setValue}
@@ -251,49 +243,37 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             placeholder="Select Presider"
             autoSetSex="MALE"
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other Liturgical Roles and Liturgical Selections */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
-          <CardDescription>Additional ministers and ceremony options</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Other Liturgical Roles and Liturgical Selections"
+        description="Additional ministers and ceremony options"
+      >
+        <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
+      </FormSectionCard>
 
       {/* Petitions (If applicable) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Petitions</CardTitle>
-          <CardDescription>Special intentions and prayers (if applicable)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Petitions"
+        description="Special intentions and prayers (if applicable)"
+      >
+        <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
+      </FormSectionCard>
 
       {/* Announcements (If applicable) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Announcements</CardTitle>
-          <CardDescription>Special announcements (if applicable)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Announcements"
+        description="Special announcements (if applicable)"
+      >
+        <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
+      </FormSectionCard>
 
       {/* Additional Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+      <FormSectionCard
+        title="Additional Details"
+      >
+        <div className="space-y-2">
             <Label htmlFor="baptism_template_id">Ceremony Template</Label>
             <Select value={baptismTemplateId} onValueChange={setBaptismTemplateId}>
               <SelectTrigger id="baptism_template_id">
@@ -335,8 +315,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Form Actions */}
       <FormBottomActions

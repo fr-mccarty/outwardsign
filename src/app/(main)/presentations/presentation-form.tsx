@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import {
   createPresentation,
   updatePresentation,
@@ -148,13 +148,11 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Key Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Information</CardTitle>
-          <CardDescription>Essential details about the recipient and event</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Key Information"
+        description="Essential details about the recipient and event"
+      >
+        <PersonPickerField
             label="Recipient"
             value={child.value}
             onValueChange={child.setValue}
@@ -177,17 +175,14 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedPresentationName }}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other People in the Family */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other People in the Family</CardTitle>
-          <CardDescription>Family members and contacts</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormSectionCard
+        title="Other People in the Family"
+        description="Family members and contacts"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonPickerField
               label="Family Contact"
               value={mother.value}
@@ -209,17 +204,14 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               visibleFields={['email', 'phone_number', 'note']}
             />
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Key Liturgical Roles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Liturgical Roles</CardTitle>
-          <CardDescription>Primary liturgical ministers</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Key Liturgical Roles"
+        description="Primary liturgical ministers"
+      >
+        <PersonPickerField
             label="Presider"
             value={coordinator.value}
             onValueChange={coordinator.setValue}
@@ -229,49 +221,37 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             visibleFields={['email', 'phone_number', 'note']}
             autoSetSex="MALE"
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other Liturgical Roles and liturgical selections */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
-          <CardDescription>Additional ministers and ceremony options</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Other Liturgical Roles and Liturgical Selections"
+        description="Additional ministers and ceremony options"
+      >
+        <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
+      </FormSectionCard>
 
       {/* Petitions (If applicable) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Petitions</CardTitle>
-          <CardDescription>Special intentions and prayers (if applicable)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Petitions"
+        description="Special intentions and prayers (if applicable)"
+      >
+        <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
+      </FormSectionCard>
 
       {/* Announcements (If applicable) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Announcements</CardTitle>
-          <CardDescription>Special announcements (if applicable)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Announcements"
+        description="Special announcements (if applicable)"
+      >
+        <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
+      </FormSectionCard>
 
       {/* Additional Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+      <FormSectionCard
+        title="Additional Details"
+      >
+        <div className="space-y-2">
             <Label htmlFor="template">Ceremony Template</Label>
             <Select
               value={presentationTemplateId || ""}
@@ -340,8 +320,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               Child is baptized
             </label>
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Form Buttons */}
       <FormBottomActions

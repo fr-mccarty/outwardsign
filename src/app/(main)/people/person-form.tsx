@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { createPerson, updatePerson, type CreatePersonData } from "@/lib/actions/people"
 import type { Person } from "@/lib/types"
@@ -91,97 +91,94 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
 
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Person Details</CardTitle>
-          <CardDescription>Basic information and contact details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              id="first_name"
-              label="First Name"
-              value={firstName}
-              onChange={setFirstName}
-              required
-              placeholder="Enter first name"
-            />
-
-            <FormField
-              id="last_name"
-              label="Last Name"
-              value={lastName}
-              onChange={setLastName}
-              required
-              placeholder="Enter last name"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              id="email"
-              label="Email (Optional)"
-              inputType="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="Enter email address"
-            />
-
-            <FormField
-              id="phone_number"
-              label="Phone Number (Optional)"
-              inputType="tel"
-              value={phoneNumber}
-              onChange={setPhoneNumber}
-              placeholder="Enter phone number"
-            />
-          </div>
-
+      <FormSectionCard
+        title="Person Details"
+        description="Basic information and contact details"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
-            id="street"
-            label="Street Address (Optional)"
-            value={street}
-            onChange={setStreet}
-            placeholder="Enter street address"
+            id="first_name"
+            label="First Name"
+            value={firstName}
+            onChange={setFirstName}
+            required
+            placeholder="Enter first name"
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FormField
-              id="city"
-              label="City (Optional)"
-              value={city}
-              onChange={setCity}
-              placeholder="Enter city"
-            />
+          <FormField
+            id="last_name"
+            label="Last Name"
+            value={lastName}
+            onChange={setLastName}
+            required
+            placeholder="Enter last name"
+          />
+        </div>
 
-            <FormField
-              id="state"
-              label="State (Optional)"
-              value={state}
-              onChange={setState}
-              placeholder="Enter state"
-            />
-
-            <FormField
-              id="zipcode"
-              label="Zip Code (Optional)"
-              value={zipcode}
-              onChange={setZipcode}
-              placeholder="Enter zip code"
-            />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            id="email"
+            label="Email (Optional)"
+            inputType="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="Enter email address"
+          />
 
           <FormField
-            id="note"
-            label="Notes (Optional)"
-            inputType="textarea"
-            value={note}
-            onChange={setNote}
-            placeholder="Enter any additional notes..."
-            rows={4}
+            id="phone_number"
+            label="Phone Number (Optional)"
+            inputType="tel"
+            value={phoneNumber}
+            onChange={setPhoneNumber}
+            placeholder="Enter phone number"
           />
-        </CardContent>
-      </Card>
+        </div>
+
+        <FormField
+          id="street"
+          label="Street Address (Optional)"
+          value={street}
+          onChange={setStreet}
+          placeholder="Enter street address"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormField
+            id="city"
+            label="City (Optional)"
+            value={city}
+            onChange={setCity}
+            placeholder="Enter city"
+          />
+
+          <FormField
+            id="state"
+            label="State (Optional)"
+            value={state}
+            onChange={setState}
+            placeholder="Enter state"
+          />
+
+          <FormField
+            id="zipcode"
+            label="Zip Code (Optional)"
+            value={zipcode}
+            onChange={setZipcode}
+            placeholder="Enter zip code"
+          />
+        </div>
+
+        <FormField
+          id="note"
+          label="Notes (Optional)"
+          inputType="textarea"
+          value={note}
+          onChange={setNote}
+          placeholder="Enter any additional notes..."
+          rows={4}
+        />
+      </FormSectionCard>
 
       <FormBottomActions
         isEditing={isEditing}

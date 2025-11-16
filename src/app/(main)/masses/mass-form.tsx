@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
@@ -368,15 +368,11 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>
-            Core details for this Mass celebration
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <EventPickerField
+      <FormSectionCard
+        title="Basic Information"
+        description="Core details for this Mass celebration"
+      >
+        <EventPickerField
             label="Mass Event"
             description="Date, time, and location of the Mass"
             value={event.value}
@@ -422,19 +418,14 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
               label: MASS_TEMPLATE_LABELS[value].en
             }))}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Ministers and Mass Roles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ministers</CardTitle>
-          <CardDescription>
-            People serving in liturgical mass roles for this Mass
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Ministers"
+        description="People serving in liturgical mass roles for this Mass"
+      >
+        <PersonPickerField
             label="Presider"
             description="Priest or deacon presiding at this Mass"
             value={presider.value}
@@ -453,20 +444,16 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onShowPickerChange={homilist.setShowPicker}
             autoSetSex="MALE"
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Mass Intention */}
       {isEditing && mass?.id && (
-        <Card data-testid="mass-intention-card">
-          <CardHeader>
-            <CardTitle>Mass Intention</CardTitle>
-            <CardDescription>
-              Link a mass intention to this Mass
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {massIntention ? (
+        <FormSectionCard
+          title="Mass Intention"
+          description="Link a mass intention to this Mass"
+          data-testid="mass-intention-card"
+        >
+          {massIntention ? (
               <div className="border rounded-md p-4 space-y-3" data-testid="mass-intention-display">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
@@ -522,21 +509,16 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </FormSectionCard>
       )}
 
       {/* Mass Role Assignments */}
       {isEditing && mass?.id && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Mass Role Assignments</CardTitle>
-            <CardDescription>
-              Assign people to liturgical mass roles for this Mass
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {allTemplates.length > 0 ? (
+        <FormSectionCard
+          title="Mass Role Assignments"
+          description="Assign people to liturgical mass roles for this Mass"
+        >
+          {allTemplates.length > 0 ? (
               <FormField
                 id="mass_roles_template_id"
                 inputType="select"
@@ -637,8 +619,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                 Please select a role template to assign people to liturgical roles.
               </div>
             )}
-          </CardContent>
-        </Card>
+        </FormSectionCard>
       )}
 
       {/* People Picker Modal for Mass Role Assignment */}
@@ -651,33 +632,24 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       )}
 
       {/* Petitions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Petitions</CardTitle>
-          <CardDescription>
-            Universal Prayer (Prayer of the Faithful)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PetitionEditor
+      <FormSectionCard
+        title="Petitions"
+        description="Universal Prayer (Prayer of the Faithful)"
+      >
+        <PetitionEditor
             value={petitions}
             onChange={setPetitions}
             templates={petitionTemplates}
             onInsertTemplate={handleInsertTemplate}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Announcements */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Announcements</CardTitle>
-          <CardDescription>
-            Full text of announcements to be read before Mass
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FormField
+      <FormSectionCard
+        title="Announcements"
+        description="Full text of announcements to be read before Mass"
+      >
+        <FormField
             id="announcements"
             label="Announcement Text"
             inputType="textarea"
@@ -686,19 +658,14 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             placeholder="Enter announcements here..."
             rows={6}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Notes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notes</CardTitle>
-          <CardDescription>
-            Internal notes and reminders (not included in printed liturgy)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FormField
+      <FormSectionCard
+        title="Notes"
+        description="Internal notes and reminders (not included in printed liturgy)"
+      >
+        <FormField
             id="note"
             label="Notes"
             inputType="textarea"
@@ -707,8 +674,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             placeholder="Add any internal notes or reminders..."
             rows={3}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Form Actions */}
       <FormBottomActions

@@ -9,7 +9,7 @@ import { getDefaultPetitions } from '@/lib/actions/parish-settings';
 import { PETITION_MODULE_VALUES, PETITION_MODULE_LABELS, PETITION_LANGUAGE_VALUES, PETITION_LANGUAGE_LABELS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormSectionCard } from "@/components/form-section-card";
 
 interface PetitionTemplateFormProps {
   template?: PetitionContextTemplate;
@@ -85,84 +85,79 @@ export default function PetitionTemplateForm({ template, templateSettings }: Pet
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Template Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
-            id="title"
-            label="Template Title"
-            value={formData.title}
-            onChange={(value) => setFormData({ ...formData, title: value })}
-            placeholder="e.g., Sunday Mass (English)"
-            required
-          />
-          
-          <FormField
-            id="description"
-            label="Description"
-            value={formData.description}
-            onChange={(value) => setFormData({ ...formData, description: value })}
-            placeholder="Brief description of when to use this template"
-          />
+      <FormSectionCard title="Template Information">
+        <FormField
+          id="title"
+          label="Template Title"
+          value={formData.title}
+          onChange={(value) => setFormData({ ...formData, title: value })}
+          placeholder="e.g., Sunday Mass (English)"
+          required
+        />
 
-          <FormField
-            id="module"
-            label="Module"
-            inputType="select"
-            value={formData.module}
-            onChange={(value) => setFormData({ ...formData, module: value })}
-            options={[
-              { value: '', label: 'Select a module...' },
-              ...PETITION_MODULE_VALUES.map(module => ({
-                value: module,
-                label: PETITION_MODULE_LABELS[module].en
-              }))
-            ]}
-            description="Which module should use this template?"
-          />
+        <FormField
+          id="description"
+          label="Description"
+          value={formData.description}
+          onChange={(value) => setFormData({ ...formData, description: value })}
+          placeholder="Brief description of when to use this template"
+        />
 
-          <FormField
-            id="language"
-            label="Language"
-            inputType="select"
-            value={formData.language}
-            onChange={(value) => setFormData({ ...formData, language: value })}
-            options={PETITION_LANGUAGE_VALUES.map(lang => ({
-              value: lang,
-              label: PETITION_LANGUAGE_LABELS[lang].en
-            }))}
-            required
-            description="Language of the petition template"
-          />
+        <FormField
+          id="module"
+          label="Module"
+          inputType="select"
+          value={formData.module}
+          onChange={(value) => setFormData({ ...formData, module: value })}
+          options={[
+            { value: '', label: 'Select a module...' },
+            ...PETITION_MODULE_VALUES.map(module => ({
+              value: module,
+              label: PETITION_MODULE_LABELS[module].en
+            }))
+          ]}
+          description="Which module should use this template?"
+        />
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label>Template Text</label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleLoadDefaultPetitions}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Insert Default Text
-              </Button>
-            </div>
-            <FormField
-              id="context"
-              label=""
-              inputType="textarea"
-              value={formData.context}
-              onChange={(value) => setFormData({ ...formData, context: value })}
-              placeholder="Enter the template text for this template..."
-              rows={10}
-              description="This is the template text that will be used when creating a new petition with this template. Users can edit it later."
-            />
+        <FormField
+          id="language"
+          label="Language"
+          inputType="select"
+          value={formData.language}
+          onChange={(value) => setFormData({ ...formData, language: value })}
+          options={PETITION_LANGUAGE_VALUES.map(lang => ({
+            value: lang,
+            label: PETITION_LANGUAGE_LABELS[lang].en
+          }))}
+          required
+          description="Language of the petition template"
+        />
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label>Template Text</label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleLoadDefaultPetitions}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Insert Default Text
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+          <FormField
+            id="context"
+            label=""
+            inputType="textarea"
+            value={formData.context}
+            onChange={(value) => setFormData({ ...formData, context: value })}
+            placeholder="Enter the template text for this template..."
+            rows={10}
+            description="This is the template text that will be used when creating a new petition with this template. Users can edit it later."
+          />
+        </div>
+      </FormSectionCard>
 
 
       <div className="flex gap-4">

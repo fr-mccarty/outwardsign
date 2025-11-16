@@ -6,6 +6,7 @@ import { FileText, Edit, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
+import { DeleteButton } from '@/components/delete-button'
 import type { Event, Location } from '@/lib/types'
 import type { LiturgyTemplate } from '@/lib/types/liturgy-content'
 
@@ -67,6 +68,12 @@ interface ModuleViewPanelProps {
     defaultTemplateId: string
     onUpdateTemplate: (templateId: string) => Promise<void>
   }
+
+  /**
+   * Delete function (optional)
+   * If provided, shows delete button at bottom of panel
+   */
+  onDelete?: (id: string) => Promise<void>
 }
 
 export function ModuleViewPanel({
@@ -78,6 +85,7 @@ export function ModuleViewPanel({
   printViewPath,
   statusType = 'module',
   templateConfig,
+  onDelete,
 }: ModuleViewPanelProps) {
   const defaultPrintPath = printViewPath || `/print/${modulePath}/${entity.id}`
 
@@ -168,6 +176,17 @@ export function ModuleViewPanel({
               Created: {new Date(entity.created_at).toLocaleDateString()}
             </div>
           </div>
+
+          {onDelete && (
+            <div className="pt-4 border-t">
+              <DeleteButton
+                entityId={entity.id}
+                entityType={entityType}
+                modulePath={modulePath}
+                onDelete={onDelete}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

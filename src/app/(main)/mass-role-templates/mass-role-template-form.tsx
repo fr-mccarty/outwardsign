@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { createMassRoleTemplate, updateMassRoleTemplate, type CreateMassRoleTemplateData, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -101,15 +101,11 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Template Information</CardTitle>
-          <CardDescription>
-            Define the basic details for this Mass role template
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
+      <FormSectionCard
+        title="Template Information"
+        description="Define the basic details for this Mass role template"
+      >
+        <FormField
             id="name"
             label="Template Name"
             value={name}
@@ -146,8 +142,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             rows={2}
             disabled={isLoading}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Template Roles - Only show if editing existing template */}
       {isEditing && template && (
@@ -156,11 +151,14 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
 
       {/* Show helper text if creating new template */}
       {!isEditing && (
-        <Card>
-          <CardContent className="py-6 text-center text-muted-foreground">
+        <FormSectionCard
+          title="Mass Roles"
+          description="Add roles after saving the template"
+        >
+          <div className="py-6 text-center text-muted-foreground">
             <p>Save the template first, then you can add mass roles to it.</p>
-          </CardContent>
-        </Card>
+          </div>
+        </FormSectionCard>
       )}
 
       <FormBottomActions

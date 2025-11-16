@@ -26,7 +26,8 @@
       "Bash(for module in mass wedding quinceanera funeral baptism presentation mass-intention)",
       "Bash(do echo '=== $module ===' if [ -d /Users/joshmccarty/Code-2025Macbook/outwardsign/src/lib/content-builders/$module/templates ])",
       "Bash(then ls /Users/joshmccarty/Code-2025Macbook/outwardsign/src/lib/content-builders/$module/templates/)",
-      "Bash(npx playwright show-report:*)"
+      "Bash(npx playwright show-report:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

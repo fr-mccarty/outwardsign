@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { FormField } from "@/components/ui/form-field"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import {
   Select,
   SelectContent,
@@ -110,183 +110,171 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   return (
     <form onSubmit={handleSubmit} id={formId} className="space-y-6">
       {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>General event details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
-            id="name"
-            label="Event Name"
-            value={name}
-            onChange={setName}
-            required
-            placeholder="Enter event name"
-          />
+      <FormSectionCard
+        title="Basic Information"
+        description="General event details"
+      >
+        <FormField
+          id="name"
+          label="Event Name"
+          value={name}
+          onChange={setName}
+          required
+          placeholder="Enter event name"
+        />
 
-          <FormField
-            id="description"
-            label="Description"
-            inputType="textarea"
-            value={description}
-            onChange={setDescription}
-            placeholder="Enter event description..."
-            rows={3}
-          />
+        <FormField
+          id="description"
+          label="Description"
+          inputType="textarea"
+          value={description}
+          onChange={setDescription}
+          placeholder="Enter event description..."
+          rows={3}
+        />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="event_type">
-                Event Type <span className="text-destructive">*</span>
-              </Label>
-              <Select value={eventType} onValueChange={setEventType}>
-                <SelectTrigger id="event_type">
-                  <SelectValue placeholder="Select event type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_TYPE_VALUES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {EVENT_TYPE_LABELS[type][userLanguage]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="event_type">
+              Event Type <span className="text-destructive">*</span>
+            </Label>
+            <Select value={eventType} onValueChange={setEventType}>
+              <SelectTrigger id="event_type">
+                <SelectValue placeholder="Select event type" />
+              </SelectTrigger>
+              <SelectContent>
+                {EVENT_TYPE_VALUES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {EVENT_TYPE_LABELS[type][userLanguage]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="responsible_party">Responsible Party</Label>
-              {responsibleParty.value ? (
-                <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                  <span className="text-sm">
-                    {responsibleParty.value.first_name} {responsibleParty.value.last_name}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => responsibleParty.setValue(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
+          <div className="space-y-2">
+            <Label htmlFor="responsible_party">Responsible Party</Label>
+            {responsibleParty.value ? (
+              <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                <span className="text-sm">
+                  {responsibleParty.value.first_name} {responsibleParty.value.last_name}
+                </span>
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={() => responsibleParty.setShowPicker(true)}
-                  className="w-full"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => responsibleParty.setValue(null)}
                 >
-                  Select Responsible Party
+                  <X className="h-4 w-4" />
                 </Button>
-              )}
-              <p className="text-sm text-muted-foreground">
-                Person responsible for organizing this event
-              </p>
-            </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => responsibleParty.setShowPicker(true)}
+                className="w-full"
+              >
+                Select Responsible Party
+              </Button>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Person responsible for organizing this event
+            </p>
           </div>
+        </div>
 
-          <PeoplePicker
-            open={responsibleParty.showPicker}
-            onOpenChange={responsibleParty.setShowPicker}
-            onSelect={(person) => responsibleParty.setValue(person)}
-          />
-        </CardContent>
-      </Card>
+        <PeoplePicker
+          open={responsibleParty.showPicker}
+          onOpenChange={responsibleParty.setShowPicker}
+          onSelect={(person) => responsibleParty.setValue(person)}
+        />
+      </FormSectionCard>
 
       {/* Date & Time */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Date & Time</CardTitle>
-          <CardDescription>When the event takes place</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              id="start_date"
-              label="Start Date"
-              inputType="date"
-              value={startDate}
-              onChange={setStartDate}
-            />
+      <FormSectionCard
+        title="Date & Time"
+        description="When the event takes place"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            id="start_date"
+            label="Start Date"
+            inputType="date"
+            value={startDate}
+            onChange={setStartDate}
+          />
 
-            <FormField
-              id="start_time"
-              label="Start Time"
-              inputType="time"
-              value={startTime}
-              onChange={setStartTime}
-            />
-          </div>
+          <FormField
+            id="start_time"
+            label="Start Time"
+            inputType="time"
+            value={startTime}
+            onChange={setStartTime}
+          />
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              id="end_date"
-              label="End Date"
-              inputType="date"
-              value={endDate}
-              onChange={setEndDate}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            id="end_date"
+            label="End Date"
+            inputType="date"
+            value={endDate}
+            onChange={setEndDate}
+          />
 
-            <FormField
-              id="end_time"
-              label="End Time"
-              inputType="time"
-              value={endTime}
-              onChange={setEndTime}
-            />
-          </div>
-        </CardContent>
-      </Card>
+          <FormField
+            id="end_time"
+            label="End Time"
+            inputType="time"
+            value={endTime}
+            onChange={setEndTime}
+          />
+        </div>
+      </FormSectionCard>
 
       {/* Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Details</CardTitle>
-          <CardDescription>Location and language information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <LocationPickerField
-              label="Location"
-              value={location.value}
-              onValueChange={location.setValue}
-              showPicker={location.showPicker}
-              onShowPickerChange={location.setShowPicker}
-              description="Where the event will take place"
-              placeholder="Select Location"
-              openToNewLocation={!isEditing}
-            />
+      <FormSectionCard
+        title="Details"
+        description="Location and language information"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <LocationPickerField
+            label="Location"
+            value={location.value}
+            onValueChange={location.setValue}
+            showPicker={location.showPicker}
+            onShowPickerChange={location.setShowPicker}
+            description="Where the event will take place"
+            placeholder="Select Location"
+            openToNewLocation={!isEditing}
+          />
 
-            <FormField
-              id="language"
-              label="Language"
-              value={language}
-              onChange={setLanguage}
-              placeholder="e.g., English, Spanish"
-            />
-          </div>
-        </CardContent>
-      </Card>
+          <FormField
+            id="language"
+            label="Language"
+            value={language}
+            onChange={setLanguage}
+            placeholder="e.g., English, Spanish"
+          />
+        </div>
+      </FormSectionCard>
 
       {/* Additional Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Information</CardTitle>
-          <CardDescription>Notes and other details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
-            id="notes"
-            label="Notes"
-            inputType="textarea"
-            value={notes}
-            onChange={setNotes}
-            placeholder="Enter any additional notes..."
-            rows={4}
-          />
-        </CardContent>
-      </Card>
+      <FormSectionCard
+        title="Additional Information"
+        description="Notes and other details"
+      >
+        <FormField
+          id="notes"
+          label="Notes"
+          inputType="textarea"
+          value={notes}
+          onChange={setNotes}
+          placeholder="Enter any additional notes..."
+          rows={4}
+        />
+      </FormSectionCard>
 
       <FormBottomActions
         isEditing={isEditing}

@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildEventLiturgy, EVENT_TEMPLATES } from '@/lib/content-builders/event'
-import { updateEvent } from '@/lib/actions/events'
+import { updateEvent, deleteEvent } from '@/lib/actions/events'
 
 interface EventViewClientProps {
   event: EventWithRelations
@@ -58,6 +58,7 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
         defaultTemplateId: 'event-full-script-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteEvent}
     >
       {/* Module Reference Section - rendered before liturgy content */}
       {moduleReference && (

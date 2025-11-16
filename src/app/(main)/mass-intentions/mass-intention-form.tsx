@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { createMassIntention, updateMassIntention, type CreateMassIntentionData, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -112,15 +112,11 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mass Intention Details</CardTitle>
-          <CardDescription>
-            Core information about this Mass intention
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
+      <FormSectionCard
+        title="Mass Intention Details"
+        description="Core information about this Mass intention"
+      >
+        <FormField
             id="mass_offered_for"
             label="Mass Offered For"
             description="Who or what this Mass is being offered for (required)"
@@ -163,19 +159,14 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
               </SelectItem>
             ))}
           </FormField>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Dates and Financial Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Dates and Stipend</CardTitle>
-          <CardDescription>
-            When the intention was requested/received and stipend amount
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
+      <FormSectionCard
+        title="Dates and Stipend"
+        description="When the intention was requested/received and stipend amount"
+      >
+        <FormField
             id="date_requested"
             inputType="date"
             label="Date Requested"
@@ -204,26 +195,20 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             step="0.01"
             min="0"
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Notes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notes</CardTitle>
-          <CardDescription>
-            Additional information or special requests
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
+      <FormSectionCard
+        title="Notes"
+        description="Additional information or special requests"
+      >
+        <Textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Add any additional notes or special requests..."
             rows={3}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Form Actions */}
       <FormBottomActions

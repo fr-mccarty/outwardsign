@@ -116,6 +116,41 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 
 ---
 
+### DeleteButton
+**Path:** `src/components/delete-button.tsx`
+
+**Purpose:** Reusable delete button with confirmation dialog for edit views. Provides consistent delete functionality with user confirmation across all modules.
+
+**Props:**
+- `entityId`: The ID of the entity to delete (required)
+- `entityType`: Display name of the entity type, e.g., "Wedding", "Funeral" (required)
+- `modulePath`: Module path for redirect after deletion, e.g., "weddings", "funerals" (required)
+- `onDelete`: Server action to delete the entity `(id: string) => Promise<void>` (required)
+- `confirmMessage`: Optional custom confirmation message (defaults to "Are you sure you want to delete this {entityType}? This action cannot be undone.")
+
+**Usage:**
+```tsx
+import { DeleteButton } from '@/components/delete-button'
+import { deleteWedding } from '@/lib/actions/weddings'
+
+<DeleteButton
+  entityId={wedding.id}
+  entityType="Wedding"
+  modulePath="weddings"
+  onDelete={deleteWedding}
+/>
+```
+
+**Features:**
+- Full-width destructive button styling
+- Confirmation dialog before deletion
+- Loading state during deletion
+- Success/error toast notifications
+- Automatic redirect to list page after successful deletion
+- Generic and reusable across all modules
+
+---
+
 ### FormBottomActions
 **Path:** `src/components/form-bottom-actions.tsx`
 
@@ -270,13 +305,6 @@ const [showTimesModal, setShowTimesModal] = useState(false)
 **Path:** `src/components/delete-row-dialog.tsx`
 
 **Purpose:** Confirmation dialog for deleting table rows/entities.
-
----
-
-### CenteredFormCard
-**Path:** `src/components/centered-form-card.tsx`
-
-**Purpose:** Centered card wrapper for authentication and onboarding forms.
 
 ---
 

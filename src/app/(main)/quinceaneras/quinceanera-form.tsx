@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
 import { createQuinceanera, updateQuinceanera, type CreateQuinceaneraData, type QuinceaneraWithRelations } from "@/lib/actions/quinceaneras"
@@ -262,13 +262,11 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-8">
       {/* Key Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Information</CardTitle>
-          <CardDescription>Essential details about the quinceañera and mass event</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Key Information"
+        description="Essential details about the quinceañera and mass event"
+      >
+        <PersonPickerField
             label="Quinceañera"
             value={quinceaneraGirl.value}
             onValueChange={quinceaneraGirl.setValue}
@@ -290,17 +288,14 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedQuinceaneraName }}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other Events */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other Events</CardTitle>
-          <CardDescription>Related celebration events</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <EventPickerField
+      <FormSectionCard
+        title="Other Events"
+        description="Related celebration events"
+      >
+        <EventPickerField
             label="Reception"
             value={quinceaneraReception.value}
             onValueChange={quinceaneraReception.setValue}
@@ -313,17 +308,14 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedReceptionName }}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other People */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other People</CardTitle>
-          <CardDescription>Family contacts</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Other People"
+        description="Family contacts"
+      >
+        <PersonPickerField
             label="Family Contact"
             value={familyContact.value}
             onValueChange={familyContact.setValue}
@@ -332,17 +324,14 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             placeholder="Select Family Contact"
             openToNewPerson={!familyContact.value}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Key Liturgical Roles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Liturgical Roles</CardTitle>
-          <CardDescription>Primary liturgical ministers</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormSectionCard
+        title="Key Liturgical Roles"
+        description="Primary liturgical ministers"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonPickerField
               label="Presider"
               value={presider.value}
@@ -362,17 +351,14 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               autoSetSex="MALE"
             />
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Other Liturgical Roles and Liturgical Selections */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Other Liturgical Roles and Liturgical Selections</CardTitle>
-          <CardDescription>Additional ministers, readers, and scripture selections</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Music Ministers */}
+      <FormSectionCard
+        title="Other Liturgical Roles and Liturgical Selections"
+        description="Additional ministers, readers, and scripture selections"
+      >
+        {/* Music Ministers */}
           <div className="space-y-2">
             <Label className="text-base font-semibold">Music Ministers</Label>
           </div>
@@ -514,8 +500,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               openToNewPerson={!gospelReader.value}
             />
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Petitions */}
       <PetitionEditor
@@ -525,13 +510,11 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         templates={petitionTemplates}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Petition Reader</CardTitle>
-          <CardDescription>Who will read the petitions</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
+      <FormSectionCard
+        title="Petition Reader"
+        description="Who will read the petitions"
+      >
+        <div className="flex items-center space-x-2">
             <Checkbox
               id="petitions_read_by_second_reader"
               checked={petitionsReadBySecondReader}
@@ -556,17 +539,14 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               openToNewPerson={!petitionReader.value}
             />
           )}
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Announcements */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Announcements</CardTitle>
-          <CardDescription>Special announcements for the end of the liturgy</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField
+      <FormSectionCard
+        title="Announcements"
+        description="Special announcements for the end of the liturgy"
+      >
+        <FormField
             id="announcements"
             label="Announcements"
             description="These announcements will be printed on the last page of the liturgy script"
@@ -576,16 +556,13 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             inputType="textarea"
             rows={3}
           />
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Additional Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PersonPickerField
+      <FormSectionCard
+        title="Additional Details"
+      >
+        <PersonPickerField
             label="Coordinator"
             value={coordinator.value}
             onValueChange={coordinator.setValue}
@@ -637,8 +614,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+      </FormSectionCard>
 
       {/* Submit Buttons */}
       <FormBottomActions

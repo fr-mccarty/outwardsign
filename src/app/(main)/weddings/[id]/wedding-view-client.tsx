@@ -1,6 +1,6 @@
 "use client"
 
-import { WeddingWithRelations, updateWedding } from '@/lib/actions/weddings'
+import { WeddingWithRelations, updateWedding, deleteWedding } from '@/lib/actions/weddings'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildWeddingLiturgy, WEDDING_TEMPLATES } from '@/lib/content-builders/wedding'
 
@@ -47,6 +47,7 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
         defaultTemplateId: 'wedding-full-script-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteWedding}
     />
   )
 }

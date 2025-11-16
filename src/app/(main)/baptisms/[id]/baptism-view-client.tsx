@@ -1,6 +1,6 @@
 "use client"
 
-import { BaptismWithRelations, updateBaptism } from '@/lib/actions/baptisms'
+import { BaptismWithRelations, updateBaptism, deleteBaptism } from '@/lib/actions/baptisms'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildBaptismLiturgy, BAPTISM_TEMPLATES } from '@/lib/content-builders/baptism'
 
@@ -46,6 +46,7 @@ export function BaptismViewClient({ baptism }: BaptismViewClientProps) {
         defaultTemplateId: 'baptism-summary-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteBaptism}
     />
   )
 }

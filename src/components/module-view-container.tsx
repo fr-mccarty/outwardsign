@@ -81,6 +81,12 @@ interface ModuleViewContainerProps {
    * Useful for module-specific cards like Mass Intention
    */
   children?: React.ReactNode
+
+  /**
+   * Delete function (optional)
+   * If provided, shows delete button at bottom of sidebar panel
+   */
+  onDelete?: (id: string) => Promise<void>
 }
 
 /**
@@ -99,6 +105,7 @@ export function ModuleViewContainer({
   statusType = 'module',
   templateConfig,
   children,
+  onDelete,
 }: ModuleViewContainerProps) {
   // Only build liturgy if builder functions are provided
   let liturgyContent: React.ReactNode = null
@@ -126,6 +133,7 @@ export function ModuleViewContainer({
         printViewPath={printViewPath}
         statusType={statusType}
         templateConfig={templateConfig}
+        onDelete={onDelete}
       />
 
       {/* Main Content - appears second on mobile, first on desktop */}

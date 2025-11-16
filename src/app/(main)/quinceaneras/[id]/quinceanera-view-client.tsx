@@ -1,6 +1,6 @@
 "use client"
 
-import { QuinceaneraWithRelations, updateQuinceanera } from '@/lib/actions/quinceaneras'
+import { QuinceaneraWithRelations, updateQuinceanera, deleteQuinceanera } from '@/lib/actions/quinceaneras'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildQuinceaneraLiturgy, QUINCEANERA_TEMPLATES } from '@/lib/content-builders/quinceanera'
 
@@ -46,6 +46,7 @@ export function QuinceaneraViewClient({ quinceanera }: QuinceaneraViewClientProp
         defaultTemplateId: 'quinceanera-full-script-english',
         onUpdateTemplate: handleUpdateTemplate,
       }}
+      onDelete={deleteQuinceanera}
     />
   )
 }
