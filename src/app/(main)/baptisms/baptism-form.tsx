@@ -249,7 +249,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
             placeholder="Select Presider"
-            openToNewPerson={!presider.value}
+            autoSetSex="MALE"
           />
         </CardContent>
       </Card>

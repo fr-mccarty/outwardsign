@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
+import { SEX_VALUES, SEX_LABELS, type Sex } from '@/lib/constants'
 
 interface PeoplePickerProps {
   open: boolean
@@ -27,6 +28,7 @@ interface PeoplePickerProps {
   defaultCreateFormData?: Record<string, any>
   editMode?: boolean // Open directly to edit form
   personToEdit?: Person | null // Person being edited
+  autoSetSex?: Sex // Auto-set sex to this value and hide the field
 }
 
 // Default visible fields - defined outside component to prevent re-creation
@@ -50,6 +52,7 @@ export function PeoplePicker({
   defaultCreateFormData,
   editMode = false,
   personToEdit = null,
+  autoSetSex,
 }: PeoplePickerProps) {
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
@@ -60,8 +63,14 @@ export function PeoplePicker({
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
-    (fieldName: string) => checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS),
-    [visibleFields]
+    (fieldName: string) => {
+      // Hide sex field if autoSetSex is provided
+      if (fieldName === 'sex' && autoSetSex) {
+        return false
+      }
+      return checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS)
+    },
+    [visibleFields, autoSetSex]
   )
   const isFieldRequired = useCallback(
     (fieldName: string) => checkFieldRequired(fieldName, requiredFields),
@@ -165,10 +174,10 @@ export function PeoplePicker({
         label: 'Sex',
         type: 'select',
         required: isFieldRequired('sex'),
-        options: [
-          { value: 'Male', label: 'Male' },
-          { value: 'Female', label: 'Female' },
-        ],
+        options: SEX_VALUES.map(value => ({
+          value,
+          label: SEX_LABELS[value].en // Using English labels for now
+        })),
       })
     }
 
@@ -192,7 +201,7 @@ export function PeoplePicker({
       last_name: data.last_name,
       email: data.email || undefined,
       phone_number: data.phone_number || undefined,
-      sex: data.sex || undefined,
+      sex: autoSetSex || data.sex || undefined,
       note: data.note || undefined,
     })
 

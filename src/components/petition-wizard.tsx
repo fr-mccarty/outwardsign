@@ -181,8 +181,8 @@ export function PetitionWizard({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
             Petition Wizard
@@ -193,7 +193,8 @@ export function PetitionWizard({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto -mx-6 px-6">
+          <div className="space-y-4 py-1">
           {/* Template Selection */}
           <div className="space-y-2">
             <Label>Select Template</Label>
@@ -324,9 +325,10 @@ export function PetitionWizard({
               </div>
             </div>
           )}
+          </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>

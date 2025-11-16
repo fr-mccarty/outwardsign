@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { PresentationWithNames } from '@/lib/actions/presentations'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -66,7 +66,11 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
     <div className="space-y-6">
       {/* Search and Filters */}
       <Card>
-        <CardContent className="pt-6">
+        <CardHeader>
+          <CardTitle>Search</CardTitle>
+          <CardDescription>Search for a Presentation</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

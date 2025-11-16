@@ -441,7 +441,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onValueChange={presider.setValue}
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
-            openToNewPerson={!presider.value}
+            autoSetSex="MALE"
           />
 
           <PersonPickerField
@@ -451,7 +451,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onValueChange={homilist.setValue}
             showPicker={homilist.showPicker}
             onShowPickerChange={homilist.setShowPicker}
-            openToNewPerson={!homilist.value}
+            autoSetSex="MALE"
           />
         </CardContent>
       </Card>

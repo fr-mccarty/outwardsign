@@ -43,8 +43,8 @@ export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: L
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-start gap-4">
             <div className={`w-4 h-full min-h-16 rounded ${colorClass}`} />
             <div className="flex-1">
@@ -57,7 +57,8 @@ export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: L
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+        <div className="flex-1 overflow-y-auto -mx-6 px-6">
+          <div className="space-y-6 mt-4">
           {/* Event Details */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -184,6 +185,7 @@ export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: L
               <Cross className="w-4 h-4" />
               Add Mass
             </Button>
+          </div>
           </div>
         </div>
       </DialogContent>

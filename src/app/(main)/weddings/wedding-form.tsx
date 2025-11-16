@@ -385,7 +385,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={presider.showPicker}
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
-              openToNewPerson={!presider.value}
+              autoSetSex="MALE"
             />
             <PersonPickerField
               label="Homilist"
@@ -394,7 +394,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={homilist.showPicker}
               onShowPickerChange={homilist.setShowPicker}
               placeholder="Select Homilist"
-              openToNewPerson={!homilist.value}
+              autoSetSex="MALE"
             />
           </div>
         </CardContent>

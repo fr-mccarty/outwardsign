@@ -226,8 +226,8 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             showPicker={coordinator.showPicker}
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Presider"
-            openToNewPerson={!coordinator.value}
             visibleFields={['email', 'phone_number', 'note']}
+            autoSetSex="MALE"
           />
         </CardContent>
       </Card>

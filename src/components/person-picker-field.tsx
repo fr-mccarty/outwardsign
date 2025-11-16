@@ -4,6 +4,7 @@ import { PeoplePicker } from '@/components/people-picker'
 import { PickerField } from '@/components/picker-field'
 import { User } from 'lucide-react'
 import type { Person } from '@/lib/types'
+import type { Sex } from '@/lib/constants'
 
 interface PersonPickerFieldProps {
   label: string
@@ -17,6 +18,7 @@ interface PersonPickerFieldProps {
   openToNewPerson?: boolean
   visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
   requiredFields?: string[] // Fields that should be marked as required in the picker form
+  autoSetSex?: Sex // Auto-set sex to this value and hide the field
 }
 
 export function PersonPickerField({
@@ -31,6 +33,7 @@ export function PersonPickerField({
   openToNewPerson = false,
   visibleFields,
   requiredFields,
+  autoSetSex,
 }: PersonPickerFieldProps) {
   return (
     <PickerField
@@ -55,6 +58,7 @@ export function PersonPickerField({
         requiredFields={requiredFields}
         editMode={value !== null}
         personToEdit={value}
+        autoSetSex={autoSetSex}
       />
     </PickerField>
   )

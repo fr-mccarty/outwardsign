@@ -7,6 +7,22 @@ export const HOME_LANGUAGES = ['en', 'es'] as const
 export type HomeLanguage = typeof HOME_LANGUAGES[number]
 export const DEFAULT_HOME_LANGUAGE: HomeLanguage = 'en'
 
+// Sex values (stored as uppercase in database)
+export const SEX_VALUES = ['MALE', 'FEMALE'] as const
+export type Sex = typeof SEX_VALUES[number]
+
+// Sex labels for display
+export const SEX_LABELS: Record<Sex, { en: string; es: string }> = {
+  MALE: {
+    en: 'Male',
+    es: 'Masculino'
+  },
+  FEMALE: {
+    en: 'Female',
+    es: 'Femenino'
+  }
+}
+
 // Status values (stored as uppercase in database) - shared across all modules
 export const MODULE_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'INACTIVE', 'COMPLETED', 'CANCELLED'] as const
 

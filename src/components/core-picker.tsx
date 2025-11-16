@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -414,6 +414,11 @@ export function CorePicker<T>({
       <DialogContent className="flex flex-col max-w-2xl max-h-[80vh]" data-testid={testId}>
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{title}</DialogTitle>
+          {showCreateForm && (
+            <DialogDescription>
+              Close this form to search for an existing {title.toLowerCase().replace('select ', '')}.
+            </DialogDescription>
+          )}
         </DialogHeader>
 
         {/* Search input */}

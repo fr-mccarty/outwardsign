@@ -350,7 +350,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               showPicker={presider.showPicker}
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
-              openToNewPerson={!presider.value}
+              autoSetSex="MALE"
             />
             <PersonPickerField
               label="Homilist"
@@ -359,7 +359,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               showPicker={homilist.showPicker}
               onShowPickerChange={homilist.setShowPicker}
               placeholder="Select Homilist"
-              openToNewPerson={!homilist.value}
+              autoSetSex="MALE"
             />
           </div>
         </CardContent>

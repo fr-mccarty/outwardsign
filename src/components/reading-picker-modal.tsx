@@ -241,10 +241,10 @@ export function ReadingPickerModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent 
-          className="h-[90vh] max-h-[90vh] w-[95vw] max-w-[900px] lg:max-w-[1100px] flex flex-col overflow-hidden p-0"
+        <DialogContent
+          className="h-[85vh] max-h-[85vh] w-[95vw] max-w-[900px] lg:max-w-[1100px] flex flex-col overflow-hidden p-0"
         >
-          <DialogHeader className="px-6 pt-6 pb-0">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
               {title}
@@ -252,7 +252,7 @@ export function ReadingPickerModal({
           </DialogHeader>
 
         {/* Filters */}
-        <div className="space-y-3 border-b pb-3 px-4 flex-shrink-0">
+        <div className="space-y-3 border-b pb-3 px-4 pt-4 flex-shrink-0">
           {/* Language Selector */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Language</Label>
@@ -388,15 +388,15 @@ export function ReadingPickerModal({
 
       {/* Preview Modal */}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
               {previewReading?.pericope || 'Reading Preview'}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pr-2">
+          <div className="flex-1 overflow-y-auto -mx-6 px-6">
             {previewReading && (
               <div className="space-y-4">
                 {/* Title */}
@@ -422,7 +422,7 @@ export function ReadingPickerModal({
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
             <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
               Close
             </Button>
