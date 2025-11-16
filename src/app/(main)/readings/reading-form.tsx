@@ -11,13 +11,6 @@ import { createReading, updateReading, type CreateReadingData, type Reading } fr
 import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 // Zod validation schema
 const readingSchema = z.object({
@@ -44,7 +37,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
   const [text, setText] = useState(reading?.text || "")
   const [introduction, setIntroduction] = useState(reading?.introduction || "")
   const [conclusion, setConclusion] = useState(reading?.conclusion || "")
-  const [language, setLanguage] = useState(reading?.language || "")
+  const [language, setLanguage] = useState(reading?.language || "ENGLISH")
 
   // Sync loading state with parent wrapper
   useEffect(() => {
@@ -113,21 +106,17 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
           description="The scripture reference or title of the reading"
         />
 
-        <div className="space-y-2">
-          <Label htmlFor="language">Language</Label>
-          <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger id="language">
-              <SelectValue placeholder="Select a language" />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGE_VALUES.map(lang => (
-                <SelectItem key={lang} value={lang}>
-                  {LANGUAGE_LABELS[lang].en}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <FormField
+          id="language"
+          label="Language"
+          inputType="select"
+          value={language}
+          onChange={setLanguage}
+          options={LANGUAGE_VALUES.map((lang) => ({
+            value: lang,
+            label: LANGUAGE_LABELS[lang].en
+          }))}
+        />
 
         <FormField
           id="introduction"

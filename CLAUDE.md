@@ -580,6 +580,14 @@ Client Component (BreadcrumbSetter):
 - **Verification:** After making changes to user-facing text, especially on the homepage, verify that both English and Spanish translations are complete and accurate
 - **Translation pattern:** Follow the existing pattern in `src/app/page.tsx` with translations object containing `en` and `es` keys
 
+**🔴 TEMPORARY: Hard-Coded English in Constants**
+- **Current state:** All constant label usage (status labels, event type labels, etc.) currently hard-codes `.en` throughout the application
+- **Example:** `MODULE_STATUS_LABELS[status].en` instead of dynamic language selection
+- **Why:** Temporary approach while full language selector system is being implemented
+- **Infrastructure exists:** All labels have both `.en` and `.es` properties ready for use
+- **Coming soon:** See [ROADMAP.md](./docs/ROADMAP.md) Phase I - Multilingual Support for planned language selector implementation
+- **See:** [CONSTANTS_PATTERN.md](./docs/CONSTANTS_PATTERN.md) for detailed documentation
+
 **When in doubt:** Check existing bilingual implementations (homepage, constants file) for the correct pattern.
 
 ### UI Patterns

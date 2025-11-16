@@ -4,6 +4,25 @@
 
 The application uses a **dual-constant pattern** for all dropdown values, status fields, and enumerated types. This pattern separates database storage from UI display and enables bilingual support.
 
+## 🔴 TEMPORARY: Hard-Coded English Language
+
+**CURRENT STATE:** All constant label usage currently hard-codes `.en` (English) throughout the application.
+
+**Example:**
+```tsx
+// Current implementation - hard-coded English
+<p>Status: {MODULE_STATUS_LABELS[entity.status].en}</p>
+```
+
+**Why:** This is a temporary approach while the full language selection system is being implemented. The infrastructure for bilingual support exists (all labels have both `.en` and `.es`), but the user-facing language selector is not yet available.
+
+**Coming Soon:** See [ROADMAP.md](./ROADMAP.md) Phase I - Multilingual Support
+- Add language selector throughout app
+- Complete Spanish translations for all modules
+- Dynamic language switching based on user preference
+
+**When implemented:** Replace all hard-coded `.en` with dynamic language selection based on user preference or context.
+
 ## Pattern Structure
 
 Every constant follows this three-part structure:
@@ -41,7 +60,7 @@ export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string
 ## Usage in Forms
 
 ```tsx
-// Render dropdown options
+// Render dropdown options (currently hard-coded to .en)
 <Select value={status} onValueChange={setStatus}>
   <SelectTrigger>
     <SelectValue placeholder="Select status" />
@@ -49,7 +68,7 @@ export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string
   <SelectContent>
     {MODULE_STATUS_VALUES.map((statusOption) => (
       <SelectItem key={statusOption} value={statusOption}>
-        {MODULE_STATUS_LABELS[statusOption].en}
+        {MODULE_STATUS_LABELS[statusOption].en}  {/* TODO: Replace with dynamic language */}
       </SelectItem>
     ))}
   </SelectContent>
@@ -59,8 +78,8 @@ export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string
 ## Usage in Display/View Components
 
 ```tsx
-// Display the label in the current language
-<p>Status: {MODULE_STATUS_LABELS[entity.status].en}</p>
+// Display the label (currently hard-coded to .en)
+<p>Status: {MODULE_STATUS_LABELS[entity.status].en}</p>  {/* TODO: Replace with dynamic language */}
 ```
 
 ## Why This Pattern?
@@ -122,7 +141,8 @@ export const CEREMONY_TYPE_LABELS: Record<CeremonyType, { en: string; es: string
 ## Important Notes
 
 - **Always use UPPERCASE** for database values (e.g., `ACTIVE`, not `active`)
-- **Always provide both `.en` and `.es`** labels, even if the Spanish translation is the same
+- **Always provide both `.en` and `.es`** labels when defining constants, even if the Spanish translation is the same (future-proofing for when language selection is implemented)
+- **Currently use `.en` hard-coded** throughout the application (see temporary note above)
 - **Use descriptive constant names** that indicate the domain (e.g., `MASS_STATUS`, not just `STATUS`)
 - **Group related constants** together in `constants.ts` with comment headers
 - **Never hardcode status strings** in components - always use constants

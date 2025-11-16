@@ -15,7 +15,7 @@ import { createEvent, updateEvent, type CreateEventData, type EventWithRelations
 import type { Person, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS } from "@/lib/constants"
+import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PeoplePicker } from "@/components/people-picker"
 import { LocationPickerField } from "@/components/location-picker-field"
@@ -48,7 +48,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const [startTime, setStartTime] = useState(event?.start_time || "")
   const [endDate, setEndDate] = useState(event?.end_date || "")
   const [endTime, setEndTime] = useState(event?.end_time || "")
-  const [language, setLanguage] = useState(event?.language || "")
+  const [language, setLanguage] = useState(event?.language || "ENGLISH")
   const [notes, setNotes] = useState(event?.note || "")
 
   // Responsible party picker state
@@ -253,9 +253,13 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           <FormField
             id="language"
             label="Language"
+            inputType="select"
             value={language}
             onChange={setLanguage}
-            placeholder="e.g., English, Spanish"
+            options={LANGUAGE_VALUES.map((lang) => ({
+              value: lang,
+              label: LANGUAGE_LABELS[lang].en
+            }))}
           />
         </div>
       </FormSectionCard>
