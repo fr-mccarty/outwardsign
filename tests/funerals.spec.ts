@@ -156,4 +156,69 @@ test.describe('Funerals Module', () => {
     await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
   });
+
+  test('should update funeral and verify persistence after page refresh', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Create a funeral with initial data
+    await page.goto('/funerals/create');
+
+    const initialNote = 'Initial funeral note before any updates';
+
+    await page.fill('textarea#note', initialNote);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+    await page.waitForURL(/\/funerals\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const funeralId = page.url().split('/').pop();
+
+    // Verify initial data is displayed on view page
+    await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();
+
+    // Navigate to edit page
+    await page.goto(`/funerals/${funeralId}/edit`);
+    await expect(page).toHaveURL(`/funerals/${funeralId}/edit`);
+
+    // Verify initial value is pre-filled
+    await expect(page.locator('textarea#note')).toHaveValue(initialNote);
+
+    // Update with NEW value
+    const updatedNote = 'UPDATED: Memorial service confirmed for Saturday April 20th at 10am. Reception to follow in parish hall.';
+
+    await page.fill('textarea#note', updatedNote);
+
+    // Submit the update
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+
+    // Funeral form uses router.refresh() on edit, so it stays on edit page
+    // Wait for the update to complete
+    await page.waitForTimeout(2000);
+
+    // Navigate to view page to verify the update
+    await page.goto(`/funerals/${funeralId}`);
+    await expect(page).toHaveURL(`/funerals/${funeralId}`);
+
+    // CRITICAL: Verify UPDATED value is displayed
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // CRITICAL: Verify old value is NOT displayed
+    await expect(page.locator(`text=${initialNote}`)).not.toBeVisible();
+
+    // PERSISTENCE TEST: Refresh page to verify database persistence
+    console.log(`Refreshing page to verify persistence for funeral: ${funeralId}`);
+    await page.reload();
+
+    // After refresh, verify UPDATED value is STILL displayed
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // Navigate to edit page again to verify form persistence
+    await page.goto(`/funerals/${funeralId}/edit`);
+
+    // PERSISTENCE TEST: Verify form field contains UPDATED value
+    await expect(page.locator('textarea#note')).toHaveValue(updatedNote);
+
+    console.log(`Successfully verified update persistence for funeral: ${funeralId}`);
+  });
 });

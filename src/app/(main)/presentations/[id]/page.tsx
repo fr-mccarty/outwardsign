@@ -27,10 +27,10 @@ export default async function ViewPresentationPage({ params }: PageProps) {
 
   // Build dynamic title from child name
   const child = presentation.child
-  let title = "Presentation Liturgy"
+  let title = "Presentation"
 
   if (child?.last_name) {
-    title = `${child.last_name} Presentation`
+    title = `${child.last_name}-Presentation`
   }
 
   const breadcrumbs = [

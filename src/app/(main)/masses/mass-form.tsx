@@ -246,7 +246,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       } else {
         const newMass = await createMass(massData)
         toast.success('Mass created successfully')
-        router.push(`/masses/${newMass.id}`)
+        router.push(`/masses/${newMass.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

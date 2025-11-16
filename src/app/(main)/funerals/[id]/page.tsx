@@ -27,10 +27,10 @@ export default async function ViewFuneralPage({ params }: PageProps) {
 
   // Build dynamic title from deceased name
   const deceased = (funeral as any).deceased
-  let title = "Funeral Liturgy"
+  let title = "Funeral"
 
   if (deceased?.last_name) {
-    title = `${deceased.first_name ? deceased.first_name + ' ' : ''}${deceased.last_name} Funeral`
+    title = `${deceased.first_name ? deceased.first_name + ' ' : ''}${deceased.last_name}-Funeral`
   }
 
   const breadcrumbs = [

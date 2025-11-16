@@ -34,7 +34,7 @@ export default async function ViewMassRoleTemplatePage({ params }: PageProps) {
 
   return (
     <PageContainer
-      title={template.name}
+      title={`${template.name}-Template`}
       description="View and manage Mass role template details."
       maxWidth="7xl"
     >

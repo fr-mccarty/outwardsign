@@ -262,11 +262,12 @@ export function MainSidebar() {
                     url: "/mass-intentions/create",
                     icon: Plus,
                   },
-                  {
-                    title: "Print Report",
-                    url: "/mass-intentions-print",
-                    icon: FileText,
-                  },
+                  // TODO: Implement Print Intentions functionality
+                  // {
+                  //   title: "Print Report",
+                  //   url: "/mass-intentions-print",
+                  //   icon: FileText,
+                  // },
                 ]}
                 defaultOpen={false}
               />

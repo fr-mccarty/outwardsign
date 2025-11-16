@@ -27,10 +27,10 @@ export default async function ViewQuinceaneraPage({ params }: PageProps) {
 
   // Build dynamic title from quinceañera name
   const quinceaneraGirl = quinceanera.quinceanera
-  let title = "Quinceañera Liturgy"
+  let title = "Quinceañera"
 
   if (quinceaneraGirl?.last_name) {
-    title = `${quinceaneraGirl.last_name} Quinceañera`
+    title = `${quinceaneraGirl.last_name}-Quinceañera`
   }
 
   const breadcrumbs = [

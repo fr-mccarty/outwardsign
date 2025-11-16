@@ -37,7 +37,7 @@ export default async function EditMassRoleTemplatePage({ params }: PageProps) {
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassRoleTemplateFormWrapper
         template={template}
-        title={`Edit: ${template.name}`}
+        title={`${template.name}-Template`}
         description="Update the Mass role template details and configuration"
         breadcrumbs={breadcrumbs}
       />

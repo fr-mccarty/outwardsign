@@ -128,7 +128,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       } else {
         const newBaptism = await createBaptism(formData)
         toast.success('Baptism created successfully')
-        router.push(`/baptisms/${newBaptism.id}`)
+        router.push(`/baptisms/${newBaptism.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

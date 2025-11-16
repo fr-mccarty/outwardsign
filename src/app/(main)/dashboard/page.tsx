@@ -119,8 +119,8 @@ export default async function DashboardPage() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5)
 
-  // Upcoming celebrations with events
-  const upcomingSacramentalEvents = events
+  // Upcoming events (next 30 days)
+  const upcomingEvents30Days = events
     .filter(e => {
       if (!e.start_date) return false
       const eventDate = new Date(e.start_date)
@@ -244,15 +244,15 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Upcoming Celebrations */}
+        {/* Upcoming Events */}
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Celebrations</CardTitle>
+            <CardTitle>Upcoming Events</CardTitle>
           </CardHeader>
           <CardContent>
-            {upcomingSacramentalEvents.length > 0 ? (
+            {upcomingEvents30Days.length > 0 ? (
               <div className="space-y-3">
-                {upcomingSacramentalEvents.map((event) => (
+                {upcomingEvents30Days.map((event) => (
                   <Link
                     key={event.id}
                     href={`/events/${event.id}`}
@@ -276,7 +276,7 @@ export default async function DashboardPage() {
               <div className="text-center py-8">
                 <CalendarDays className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground mb-3">
-                  No upcoming celebrations in the next 30 days
+                  No upcoming events in the next 30 days
                 </p>
                 <Link
                   href="/events/create"

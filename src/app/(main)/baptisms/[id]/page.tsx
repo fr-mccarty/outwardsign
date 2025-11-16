@@ -27,12 +27,12 @@ export default async function ViewBaptismPage({ params }: PageProps) {
 
   // Build dynamic title from child name
   const child = (baptism as any).child
-  let title = "Baptism Liturgy"
+  let title = "Baptism"
 
   if (child?.last_name) {
-    title = `${child.first_name || ''} ${child.last_name} Baptism`.trim()
+    title = `${child.first_name || ''} ${child.last_name}-Baptism`.trim()
   } else if (child?.first_name) {
-    title = `${child.first_name} Baptism`
+    title = `${child.first_name}-Baptism`
   }
 
   const breadcrumbs = [

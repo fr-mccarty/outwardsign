@@ -78,12 +78,12 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
         // Update existing template
         await updateMassRoleTemplate(template.id, data)
         toast.success('Template updated successfully')
-        router.push(`/mass-role-templates/${template.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         // Create new template
         const newTemplate = await createMassRoleTemplate(data)
         toast.success('Template created successfully')
-        router.push(`/mass-role-templates/${newTemplate.id}`)
+        router.push(`/mass-role-templates/${newTemplate.id}/edit`)
       }
     } catch (error) {
       console.error('Failed to save template:', error)

@@ -156,4 +156,69 @@ test.describe('Quinceaneras Module', () => {
     await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
   });
+
+  test('should update quinceanera and verify persistence after page refresh', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Create a quinceanera with initial data
+    await page.goto('/quinceaneras/create');
+
+    const initialNote = 'Initial quinceanera note before any updates';
+
+    await page.fill('textarea#note', initialNote);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const quinceaneraId = page.url().split('/').pop();
+
+    // Verify initial data is displayed on view page
+    await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();
+
+    // Navigate to edit page
+    await page.goto(`/quinceaneras/${quinceaneraId}/edit`);
+    await expect(page).toHaveURL(`/quinceaneras/${quinceaneraId}/edit`);
+
+    // Verify initial value is pre-filled
+    await expect(page.locator('textarea#note')).toHaveValue(initialNote);
+
+    // Update with NEW value
+    const updatedNote = 'UPDATED: Quinceañera celebration confirmed for Saturday May 25th at 6pm. Reception venue secured.';
+
+    await page.fill('textarea#note', updatedNote);
+
+    // Submit the update
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+
+    // Quinceanera form uses router.refresh() on edit, so it stays on edit page
+    // Wait for the update to complete
+    await page.waitForTimeout(2000);
+
+    // Navigate to view page to verify the update
+    await page.goto(`/quinceaneras/${quinceaneraId}`);
+    await expect(page).toHaveURL(`/quinceaneras/${quinceaneraId}`);
+
+    // CRITICAL: Verify UPDATED value is displayed
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // CRITICAL: Verify old value is NOT displayed
+    await expect(page.locator(`text=${initialNote}`)).not.toBeVisible();
+
+    // PERSISTENCE TEST: Refresh page to verify database persistence
+    console.log(`Refreshing page to verify persistence for quinceanera: ${quinceaneraId}`);
+    await page.reload();
+
+    // After refresh, verify UPDATED value is STILL displayed
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // Navigate to edit page again to verify form persistence
+    await page.goto(`/quinceaneras/${quinceaneraId}/edit`);
+
+    // PERSISTENCE TEST: Verify form field contains UPDATED value
+    await expect(page.locator('textarea#note')).toHaveValue(updatedNote);
+
+    console.log(`Successfully verified update persistence for quinceanera: ${quinceaneraId}`);
+  });
 });

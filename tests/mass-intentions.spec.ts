@@ -284,4 +284,78 @@ test.describe('Mass Intentions Module', () => {
     // Verify we're on a mass intention detail page
     await expect(page.getByRole('heading', { name: /Mass Intention/i }).first()).toBeVisible();
   });
+
+  test('should update mass intention and verify persistence after page refresh', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Create a mass intention with initial data
+    await page.goto('/mass-intentions/create');
+
+    const initialMassOfferedFor = 'In memory of Maria Rodriguez';
+    const initialNote = 'Initial mass intention note';
+
+    await page.fill('#mass_offered_for', initialMassOfferedFor);
+    await page.locator('textarea').first().fill(initialNote);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+    await page.waitForURL(/\/mass-intentions\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const intentionId = page.url().split('/').pop();
+
+    // Verify initial data is displayed on view page
+    await expect(page.locator(`text=${initialMassOfferedFor}`).first()).toBeVisible();
+
+    // Navigate to edit page
+    await page.goto(`/mass-intentions/${intentionId}/edit`);
+    await expect(page).toHaveURL(`/mass-intentions/${intentionId}/edit`);
+
+    // Verify initial values are pre-filled
+    await expect(page.locator('#mass_offered_for')).toHaveValue(initialMassOfferedFor);
+    await expect(page.locator('textarea').first()).toHaveValue(initialNote);
+
+    // Update with NEW values
+    const updatedMassOfferedFor = 'For the repose of the soul of Juan Martinez';
+    const updatedNote = 'UPDATED: Family has confirmed stipend payment and requested Sunday 10am Mass.';
+
+    await page.fill('#mass_offered_for', updatedMassOfferedFor);
+    await page.locator('textarea').first().fill(updatedNote);
+
+    // Submit the update
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+
+    // Mass intention form uses router.refresh() on edit, so it stays on edit page
+    // Wait for the update to complete
+    await page.waitForTimeout(2000);
+
+    // Navigate to view page to verify the update
+    await page.goto(`/mass-intentions/${intentionId}`);
+    await expect(page).toHaveURL(`/mass-intentions/${intentionId}`);
+
+    // CRITICAL: Verify UPDATED values are displayed
+    await expect(page.locator(`text=${updatedMassOfferedFor}`).first()).toBeVisible();
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // CRITICAL: Verify old values are NOT displayed
+    await expect(page.locator(`text=${initialMassOfferedFor}`)).not.toBeVisible();
+    await expect(page.locator(`text=${initialNote}`)).not.toBeVisible();
+
+    // PERSISTENCE TEST: Refresh page to verify database persistence
+    console.log(`Refreshing page to verify persistence for mass intention: ${intentionId}`);
+    await page.reload();
+
+    // After refresh, verify UPDATED values are STILL displayed
+    await expect(page.locator(`text=${updatedMassOfferedFor}`).first()).toBeVisible();
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // Navigate to edit page again to verify form persistence
+    await page.goto(`/mass-intentions/${intentionId}/edit`);
+
+    // PERSISTENCE TEST: Verify form fields contain UPDATED values
+    await expect(page.locator('#mass_offered_for')).toHaveValue(updatedMassOfferedFor);
+    await expect(page.locator('textarea').first()).toHaveValue(updatedNote);
+
+    console.log(`Successfully verified update persistence for mass intention: ${intentionId}`);
+  });
 });

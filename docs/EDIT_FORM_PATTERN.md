@@ -376,7 +376,7 @@ export function [Entity]Form({ [entity], formId, onLoadingChange }: [Entity]Form
         // CREATE
         const new[Entity] = await create[Entity](formData)
         toast.success('[Entity] created successfully!')
-        router.push(`/[entities]/${new[Entity].id}`) // Navigate to view page
+        router.push(`/[entities]/${new[Entity].id}/edit`) // Navigate to edit page
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} [entity]:`, error)
@@ -442,7 +442,7 @@ export function [Entity]Form({ [entity], formId, onLoadingChange }: [Entity]Form
 | ✅ **useEffect for initialization** | Populate form fields from entity data in edit mode |
 | ✅ **Use usePickerState hook** | Reduces boilerplate for picker modal management |
 | ✅ **router.refresh() after update** | Shows updated data, stays on edit page |
-| ✅ **router.push() after create** | Navigates to view page for new entity |
+| ✅ **router.push() after create** | Navigates to edit page for new entity |
 | ✅ **FormBottomActions component** | Consistent button placement and styling |
 | ✅ **formId matches wrapper** | Allows external SaveButton to trigger submit |
 | ✅ **Optional fields as `undefined`** | Server action update pattern (see [Object.fromEntries pattern](#objectfromentries-pattern)) |
@@ -766,7 +766,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       } else {
         const newWedding = await createWedding(weddingData)
         toast.success('Wedding created successfully!')
-        router.push(`/weddings/${newWedding.id}`)
+        router.push(`/weddings/${newWedding.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} wedding:`, error)
@@ -1038,7 +1038,7 @@ Use this checklist when creating or updating edit forms:
 - [ ] Edit mode: Form populates with entity data
 - [ ] Edit mode: "View [Entity]" button appears and works
 - [ ] Save button shows loading spinner during submission
-- [ ] After create: Redirects to view page
+- [ ] After create: Redirects to edit page
 - [ ] After update: Stays on edit page with updated data
 - [ ] Toast messages appear on success/error
 - [ ] Cancel button works (create and edit modes)
@@ -1090,7 +1090,7 @@ if (isEditing) {
   router.refresh()  // Stay on edit page
 } else {
   const newEntity = await createEntity(data)
-  router.push(`/entities/${newEntity.id}`)  // Go to view page
+  router.push(`/entities/${newEntity.id}/edit`)  // Go to edit page
 }
 ```
 

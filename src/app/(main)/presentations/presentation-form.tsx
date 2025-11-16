@@ -137,7 +137,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       } else {
         const newPresentation = await createPresentation(data)
         toast.success('Presentation created successfully!')
-        router.push(`/presentations/${newPresentation.id}`)
+        router.push(`/presentations/${newPresentation.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} presentation:`, error)

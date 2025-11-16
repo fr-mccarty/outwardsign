@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { MassRoleTemplateForm } from './mass-role-template-form'
 import { PageContainer } from '@/components/page-container'
 import { SaveButton } from '@/components/save-button'
-import { CancelButton } from '@/components/cancel-button'
 import type { MassRoleTemplate } from '@/lib/actions/mass-role-templates'
 
 interface MassRoleTemplateFormWrapperProps {
@@ -24,24 +23,21 @@ export function MassRoleTemplateFormWrapper({
   const formId = 'mass-role-template-form'
   const isEditing = !!template
 
-  // Determine cancel URL based on mode
-  const cancelUrl = isEditing
-    ? `/mass-role-templates/${template.id}`
-    : '/mass-role-templates'
+  // Determine save button label to match bottom button
+  const saveButtonLabel = isEditing ? 'Update Template' : 'Create Template'
+
+  const actions = (
+    <SaveButton isLoading={isLoading} form={formId}>
+      {saveButtonLabel}
+    </SaveButton>
+  )
 
   return (
     <PageContainer
       title={title}
       description={description}
       maxWidth="5xl"
-      actions={
-        isEditing ? (
-          <div className="flex gap-2">
-            <CancelButton href={cancelUrl} />
-            <SaveButton form={formId} disabled={isLoading} />
-          </div>
-        ) : undefined
-      }
+      actions={actions}
     >
       <MassRoleTemplateForm
         template={template}

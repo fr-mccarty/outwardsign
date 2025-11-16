@@ -281,4 +281,69 @@ test.describe('Masses Module', () => {
 
     console.log(`Successfully verified mass ${massId} with event and location created via nested pickers`);
   });
+
+  test('should update mass and verify persistence after page refresh', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Create a mass with initial data
+    await page.goto('/masses/create');
+
+    const initialNote = 'Initial mass note before any updates';
+
+    await page.fill('textarea#note', initialNote);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const massId = page.url().split('/').pop();
+
+    // Verify initial data is displayed on view page
+    await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();
+
+    // Navigate to edit page
+    await page.goto(`/masses/${massId}/edit`);
+    await expect(page).toHaveURL(`/masses/${massId}/edit`);
+
+    // Verify initial value is pre-filled
+    await expect(page.locator('textarea#note')).toHaveValue(initialNote);
+
+    // Update with NEW value
+    const updatedNote = 'UPDATED: Sunday Mass at 10am confirmed. Special music and extra ministers arranged.';
+
+    await page.fill('textarea#note', updatedNote);
+
+    // Submit the update
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+
+    // Mass form uses router.refresh() on edit, so it stays on edit page
+    // Wait for the update to complete
+    await page.waitForTimeout(2000);
+
+    // Navigate to view page to verify the update
+    await page.goto(`/masses/${massId}`);
+    await expect(page).toHaveURL(`/masses/${massId}`);
+
+    // CRITICAL: Verify UPDATED value is displayed
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // CRITICAL: Verify old value is NOT displayed
+    await expect(page.locator(`text=${initialNote}`)).not.toBeVisible();
+
+    // PERSISTENCE TEST: Refresh page to verify database persistence
+    console.log(`Refreshing page to verify persistence for mass: ${massId}`);
+    await page.reload();
+
+    // After refresh, verify UPDATED value is STILL displayed
+    await expect(page.locator(`text=${updatedNote}`).first()).toBeVisible();
+
+    // Navigate to edit page again to verify form persistence
+    await page.goto(`/masses/${massId}/edit`);
+
+    // PERSISTENCE TEST: Verify form field contains UPDATED value
+    await expect(page.locator('textarea#note')).toHaveValue(updatedNote);
+
+    console.log(`Successfully verified update persistence for mass: ${massId}`);
+  });
 });

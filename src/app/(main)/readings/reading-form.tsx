@@ -71,11 +71,11 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
       if (isEditing) {
         await updateReading(reading.id, readingData)
         toast.success('Reading updated successfully')
-        router.push(`/readings/${reading.id}`)
+        router.refresh() // Stay on edit page
       } else {
         const newReading = await createReading(readingData)
         toast.success('Reading created successfully!')
-        router.push(`/readings/${newReading.id}`)
+        router.push(`/readings/${newReading.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

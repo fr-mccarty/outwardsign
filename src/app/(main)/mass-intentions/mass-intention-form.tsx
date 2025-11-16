@@ -95,7 +95,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
       } else {
         const newIntention = await createMassIntention(intentionData)
         toast.success('Mass intention created successfully')
-        router.push(`/mass-intentions/${newIntention.id}`)
+        router.push(`/mass-intentions/${newIntention.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

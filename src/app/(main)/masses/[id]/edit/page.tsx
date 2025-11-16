@@ -25,17 +25,17 @@ export default async function EditMassPage({ params }: PageProps) {
   }
 
   // Build dynamic title from presider name and date
-  let title = "Edit Mass"
+  let title = "Mass"
 
   if (mass.presider) {
     const presiderName = `${mass.presider.first_name} ${mass.presider.last_name}`
     const eventDate = mass.event?.start_date
       ? new Date(mass.event.start_date).toLocaleDateString()
       : ''
-    title = eventDate ? `Mass - ${presiderName} - ${eventDate}` : `Mass - ${presiderName}`
+    title = eventDate ? `${presiderName}-${eventDate}-Mass` : `${presiderName}-Mass`
   } else if (mass.event?.start_date) {
     const eventDate = new Date(mass.event.start_date).toLocaleDateString()
-    title = `Mass - ${eventDate}`
+    title = `${eventDate}-Mass`
   }
 
   const breadcrumbs = [

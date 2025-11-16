@@ -5,6 +5,7 @@
 > **See Also:**
 > - **[TESTING_QUICKSTART.md](./TESTING_QUICKSTART.md)** - Quick setup and run commands
 > - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Comprehensive guide for writing tests
+> - **[TESTING_REGISTRY.md](./TESTING_REGISTRY.md)** - Complete registry of all tests with descriptions
 
 This document defines standards for building testable components and writing reliable tests.
 

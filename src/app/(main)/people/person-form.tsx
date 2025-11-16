@@ -71,11 +71,11 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       if (isEditing) {
         await updatePerson(person.id, personData)
         toast.success('Person updated successfully')
-        router.push(`/people/${person.id}`)
+        router.refresh() // Stay on edit page
       } else {
         const newPerson = await createPerson(personData)
         toast.success('Person created successfully!')
-        router.push(`/people/${newPerson.id}`)
+        router.push(`/people/${newPerson.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

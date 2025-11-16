@@ -6,7 +6,7 @@ import type { MassRoleTemplate } from '@/lib/actions/mass-role-templates'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, LayoutTemplate, Search, X, FileText } from "lucide-react"
+import { Plus, LayoutTemplate, Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ListViewCard } from "@/components/list-view-card"
 
@@ -118,41 +118,27 @@ export function MassRoleTemplatesListClient({ initialData, stats }: MassRoleTemp
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {initialData.map((template) => (
-            <Link
+            <ListViewCard
               key={template.id}
-              href={`/mass-role-templates/${template.id}`}
-              className="block"
+              title={template.name}
+              editHref={`/mass-role-templates/${template.id}/edit`}
+              viewHref={`/mass-role-templates/${template.id}`}
+              viewButtonText="Preview"
             >
-              <Card className="h-full hover:bg-accent transition-colors">
-                <CardHeader>
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <LayoutTemplate className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg mb-1 truncate">
-                        {template.name}
-                      </CardTitle>
-                      {template.description && (
-                        <CardDescription className="line-clamp-2">
-                          {template.description}
-                        </CardDescription>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                {template.note && (
-                  <CardContent>
-                    <div className="text-sm text-muted-foreground line-clamp-2">
-                      <FileText className="h-4 w-4 inline mr-1" />
-                      {template.note}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            </Link>
+              {template.description && (
+                <p className="text-sm text-muted-foreground">
+                  {template.description}
+                </p>
+              )}
+
+              {template.note && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {template.note}
+                </p>
+              )}
+            </ListViewCard>
           ))}
         </div>
       )}

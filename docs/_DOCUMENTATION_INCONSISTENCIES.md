@@ -20,8 +20,10 @@
 
 ### Remaining Items (Low Priority)
 - Consider merging PICKER_PATTERNS.md into PICKERS.md (optional)
-- Create documentation index showing file relationships (optional)
 - Add "last updated" dates to frequently changing docs (optional)
+
+### Recent Additions ✨
+- ✅ **TESTING_REGISTRY.md created** (2025-11-16) - Complete test inventory with one-sentence descriptions
 
 **Status:** Documentation is now consistent and well-organized. All critical and medium-priority issues resolved.
 

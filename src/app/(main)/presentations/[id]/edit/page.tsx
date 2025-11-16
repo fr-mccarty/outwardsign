@@ -26,10 +26,10 @@ export default async function EditPresentationPage({ params }: PageProps) {
 
   // Build dynamic title from child name
   const child = presentation.child
-  let title = "Edit Presentation"
+  let title = "Presentation"
 
   if (child?.last_name) {
-    title = `${child.last_name} Presentation`
+    title = `${child.last_name}-Presentation`
   }
 
   const breadcrumbs = [

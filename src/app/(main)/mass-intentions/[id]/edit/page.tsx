@@ -25,9 +25,10 @@ export default async function EditMassIntentionPage({ params }: PageProps) {
   }
 
   // Build dynamic title
-  let title = "Edit Mass Intention"
+  let title = "Mass Intention"
   if (intention.mass_offered_for) {
-    title = `Edit: ${intention.mass_offered_for.substring(0, 40)}${intention.mass_offered_for.length > 40 ? '...' : ''}`
+    const truncatedText = intention.mass_offered_for.substring(0, 40)
+    title = `${truncatedText}${intention.mass_offered_for.length > 40 ? '...' : ''}-Mass Intention`
   }
 
   const breadcrumbs = [

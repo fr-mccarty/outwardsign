@@ -35,6 +35,7 @@
 - [Breadcrumbs](#breadcrumbs)
 - [Code Conventions](#code-conventions)
   - [🔴 Bilingual Implementation](#-bilingual-implementation-english--spanish)
+  - [🔴 Page Title Formatting](#-page-title-formatting-critical)
   - [Abstraction Principle (Rule of Three)](#abstraction-principle-rule-of-three)
 - [🔴 Design Principles](#-design-principles)
 - [🔴 Creating New Modules](#-creating-new-modules)
@@ -137,6 +138,8 @@ During initial development, modify existing migrations instead of creating new m
 **For AI agents writing tests:** See [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Comprehensive guide including authentication patterns, file structure, writing tests, Page Object Model, debugging techniques, and command reference.
 
 **For testability standards and code review:** See [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, test ID conventions, accessibility requirements, and anti-patterns to avoid.
+
+**For complete test inventory:** See [TESTING_REGISTRY.md](./docs/TESTING_REGISTRY.md) - Complete registry of all tests organized by module with one-sentence descriptions.
 
 **Key Points:**
 - Tests are pre-authenticated automatically - no manual auth setup needed in test files
@@ -563,6 +566,64 @@ Client Component (BreadcrumbSetter):
 - Table content should always be fetched server-side. Pagination should always be available. Use shadcn components.
 - **Modals should be scrollable:** When creating modals with content that may overflow, use flexbox layout with a fixed header and scrollable content area. Structure: `DialogContent` with `flex flex-col`, `DialogHeader` with `flex-shrink-0`, and content wrapper with `overflow-y-auto flex-1`. Reference implementation: `src/components/calendar/day-events-modal.tsx`
 - **Language selector placement:** Ordinarily, the language selector should be positioned in the upper right-hand corner of the interface.
+
+### 🔴 Page Title Formatting (CRITICAL)
+
+**All module view and edit pages MUST follow this title format:**
+
+**Format:** `[Dynamic Content]-[Module Name]`
+
+**Rules:**
+- Module name (Wedding, Funeral, Baptism, etc.) ALWAYS comes at the END
+- Use dashes with NO SPACES around them
+- Dynamic content (names, dates) comes BEFORE the module name
+- Default fallback is just the module name if no dynamic content exists
+
+**Examples:**
+```typescript
+// Weddings
+title = "Smith-Jones-Wedding"        // Bride and groom last names
+title = "Smith-Wedding"              // Single last name
+title = "Wedding"                    // Fallback
+
+// Funerals
+title = "John Doe-Funeral"          // Full name (spaces allowed in name, not around dash)
+title = "Funeral"                    // Fallback
+
+// Baptisms
+title = "Jane Smith-Baptism"        // Full name
+title = "Jane-Baptism"              // First name only
+title = "Baptism"                    // Fallback
+
+// Masses
+title = "Fr. John Smith-12/25/2024-Mass"  // Presider and date
+title = "Fr. John Smith-Mass"             // Presider only
+title = "12/25/2024-Mass"                 // Date only
+title = "Mass"                            // Fallback
+
+// Mass Intentions
+title = "For John Doe-Mass Intention"     // Intention text
+title = "Mass Intention"                  // Fallback
+
+// Templates
+title = "Sunday Mass-Template"            // Template name
+title = "Template"                        // Fallback
+```
+
+**Implementation Pattern:**
+```typescript
+// In view and edit page.tsx files
+let title = "ModuleName"  // Set fallback first
+
+if (dynamicContent) {
+  title = `${dynamicContent}-ModuleName`  // NO SPACES around dash
+}
+```
+
+**This pattern applies to:**
+- All module view pages (`[id]/page.tsx`)
+- All module edit pages (`[id]/edit/page.tsx`)
+- Any other page showing a specific module entity
 
 ### Development Guidelines
 - **Always use custom components** before falling back to shadcn/ui components

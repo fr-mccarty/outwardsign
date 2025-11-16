@@ -28,14 +28,14 @@ export default async function ViewWeddingPage({ params }: PageProps) {
   // Build dynamic title from bride and groom names
   const bride = (wedding as any).bride
   const groom = (wedding as any).groom
-  let title = "Wedding Liturgy"
+  let title = "Wedding"
 
   if (bride?.last_name && groom?.last_name) {
-    title = `${bride.last_name}-${groom.last_name} Wedding`
+    title = `${bride.last_name}-${groom.last_name}-Wedding`
   } else if (bride?.last_name) {
-    title = `${bride.last_name} Wedding`
+    title = `${bride.last_name}-Wedding`
   } else if (groom?.last_name) {
-    title = `${groom.last_name} Wedding`
+    title = `${groom.last_name}-Wedding`
   }
 
   const breadcrumbs = [

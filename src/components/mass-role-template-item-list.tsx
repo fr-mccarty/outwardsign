@@ -23,11 +23,13 @@ import {
   getTemplateItems,
   reorderTemplateItems,
   deleteTemplateItem,
+  createTemplateItem,
   type MassRoleTemplateItemWithRole
 } from '@/lib/actions/mass-role-template-items'
 import { MassRoleTemplateItem } from './mass-role-template-item'
-import { RoleSelector } from './role-selector'
+import { MassRolePicker } from './mass-role-picker'
 import { toast } from 'sonner'
+import type { MassRole } from '@/lib/types'
 
 interface MassRoleTemplateItemListProps {
   templateId: string
@@ -36,7 +38,7 @@ interface MassRoleTemplateItemListProps {
 export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemListProps) {
   const [items, setItems] = useState<MassRoleTemplateItemWithRole[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showRoleSelector, setShowRoleSelector] = useState(false)
+  const [showRolePicker, setShowRolePicker] = useState(false)
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -107,9 +109,29 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
     }
   }
 
-  const handleRoleAdded = () => {
-    setShowRoleSelector(false)
-    loadItems()
+  const handleRoleSelected = async (role: MassRole) => {
+    try {
+      // Check if role already exists in template
+      const existingRoleIds = items.map(item => item.mass_role_id)
+      if (existingRoleIds.includes(role.id)) {
+        toast.error('This mass role is already in the template')
+        setShowRolePicker(false)
+        return
+      }
+
+      // Add role to template
+      await createTemplateItem({
+        template_id: templateId,
+        mass_role_id: role.id,
+        count: 1
+      })
+      toast.success('Mass role added to template')
+      setShowRolePicker(false)
+      loadItems()
+    } catch (error) {
+      console.error('Failed to add mass role:', error)
+      toast.error('Failed to add mass role')
+    }
   }
 
   if (isLoading) {
@@ -160,25 +182,22 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
           </DndContext>
         )}
 
-        {!showRoleSelector ? (
-          <Button
-            onClick={() => setShowRoleSelector(true)}
-            variant="outline"
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Mass Role
-          </Button>
-        ) : (
-          <div className="space-y-2">
-            <RoleSelector
-              templateId={templateId}
-              existingRoleIds={items.map(item => item.mass_role_id)}
-              onRoleAdded={handleRoleAdded}
-              onCancel={() => setShowRoleSelector(false)}
-            />
-          </div>
-        )}
+        <Button
+          onClick={() => setShowRolePicker(true)}
+          variant="outline"
+          className="w-full"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Mass Role
+        </Button>
+
+        <MassRolePicker
+          open={showRolePicker}
+          onOpenChange={setShowRolePicker}
+          onSelect={handleRoleSelected}
+          placeholder="Search for a mass role..."
+          emptyMessage="No mass roles found."
+        />
       </CardContent>
     </Card>
   )

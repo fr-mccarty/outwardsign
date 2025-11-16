@@ -167,4 +167,79 @@ test.describe('Weddings Module', () => {
     await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
   });
+
+  test('should update wedding and verify persistence after page refresh', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    // Create a wedding with initial data
+    await page.goto('/weddings/create');
+
+    const initialNotes = 'Initial wedding notes before update';
+    const initialAnnouncements = 'Initial announcements text';
+
+    await page.locator('textarea#notes').first().fill(initialNotes);
+    await page.locator('textarea#announcements').first().fill(initialAnnouncements);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const weddingId = page.url().split('/').pop();
+
+    // Verify initial data is displayed on view page
+    await expect(page.locator(`text=${initialNotes}`).first()).toBeVisible();
+    await expect(page.locator(`text=${initialAnnouncements}`).first()).toBeVisible();
+
+    // Navigate to edit page
+    await page.goto(`/weddings/${weddingId}/edit`);
+    await expect(page).toHaveURL(`/weddings/${weddingId}/edit`);
+
+    // Verify initial values are pre-filled
+    await expect(page.locator('textarea#notes').first()).toHaveValue(initialNotes);
+    await expect(page.locator('textarea#announcements').first()).toHaveValue(initialAnnouncements);
+
+    // Update with NEW values
+    const updatedNotes = 'UPDATED: Wedding ceremony confirmed for June 15th at 2pm';
+    const updatedAnnouncements = 'UPDATED: Reception will be held at the Grand Hall immediately following';
+
+    await page.locator('textarea#notes').first().fill(updatedNotes);
+    await page.locator('textarea#announcements').first().fill(updatedAnnouncements);
+
+    // Submit the update
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.locator('button[type="submit"]').last().click();
+
+    // Wedding form uses router.refresh() on edit, so it stays on edit page
+    // Wait for the update to complete
+    await page.waitForTimeout(2000);
+
+    // Navigate to view page to verify the update
+    await page.goto(`/weddings/${weddingId}`);
+    await expect(page).toHaveURL(`/weddings/${weddingId}`);
+
+    // CRITICAL: Verify UPDATED values are displayed on view page
+    await expect(page.locator(`text=${updatedNotes}`).first()).toBeVisible();
+    await expect(page.locator(`text=${updatedAnnouncements}`).first()).toBeVisible();
+
+    // CRITICAL: Verify old values are NOT displayed
+    await expect(page.locator(`text=${initialNotes}`)).not.toBeVisible();
+    await expect(page.locator(`text=${initialAnnouncements}`)).not.toBeVisible();
+
+    // PERSISTENCE TEST: Refresh page to verify database persistence
+    console.log(`Refreshing page to verify persistence for wedding: ${weddingId}`);
+    await page.reload();
+
+    // After refresh, verify UPDATED values are STILL displayed
+    await expect(page.locator(`text=${updatedNotes}`).first()).toBeVisible();
+    await expect(page.locator(`text=${updatedAnnouncements}`).first()).toBeVisible();
+
+    // Navigate to edit page again to verify form persistence
+    await page.goto(`/weddings/${weddingId}/edit`);
+
+    // PERSISTENCE TEST: Verify form fields contain UPDATED values
+    await expect(page.locator('textarea#notes').first()).toHaveValue(updatedNotes);
+    await expect(page.locator('textarea#announcements').first()).toHaveValue(updatedAnnouncements);
+
+    console.log(`Successfully verified update persistence for wedding: ${weddingId}`);
+  });
 });

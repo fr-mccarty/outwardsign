@@ -97,7 +97,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
       } else {
         const newEvent = await createEvent(eventData)
         toast.success('Event created successfully!')
-        router.push(`/events/${newEvent.id}`)
+        router.push(`/events/${newEvent.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} event:`, error)

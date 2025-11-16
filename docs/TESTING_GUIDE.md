@@ -5,6 +5,7 @@
 > **See Also:**
 > - **[TESTING_QUICKSTART.md](./TESTING_QUICKSTART.md)** - Quick setup and run commands
 > - **[TESTING_ARCHITECTURE.md](./TESTING_ARCHITECTURE.md)** - Testability standards and component patterns
+> - **[TESTING_REGISTRY.md](./TESTING_REGISTRY.md)** - Complete registry of all tests with descriptions
 
 Comprehensive guide for writing and maintaining end-to-end tests using Playwright.
 

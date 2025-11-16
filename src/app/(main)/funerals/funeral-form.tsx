@@ -245,7 +245,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
       } else {
         const newFuneral = await createFuneral(funeralData)
         toast.success('Funeral created successfully!')
-        router.push(`/funerals/${newFuneral.id}`)
+        router.push(`/funerals/${newFuneral.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

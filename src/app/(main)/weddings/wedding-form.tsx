@@ -262,7 +262,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       } else {
         const newWedding = await createWedding(weddingData)
         toast.success('Wedding created successfully!')
-        router.push(`/weddings/${newWedding.id}`)
+        router.push(`/weddings/${newWedding.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -107,7 +107,7 @@ Forms must follow these exact redirect rules based on the operation:
 | Operation | Action | Route | Reason |
 |-----------|--------|-------|--------|
 | **UPDATE** (Edit Page) | `router.refresh()` | Stay on `/entities/{id}/edit` | User stays on edit page to see updated data and can continue editing |
-| **CREATE** (Create Page) | `router.push()` | Go to `/entities/{id}` | User sees new entity in view mode after creation |
+| **CREATE** (Create Page) | `router.push()` | Go to `/entities/{id}/edit` | User goes to edit page to continue configuring the new entity |
 
 ```tsx
 const handleSubmit = async (e: React.FormEvent) => {
@@ -123,7 +123,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       // CREATE case - from /entities/create
       const newEntity = await createEntity(formData)
       toast.success('Entity created successfully')
-      router.push(`/entities/${newEntity.id}`) // ← GOES to view page (/entities/{id})
+      router.push(`/entities/${newEntity.id}/edit`) // ← GOES to edit page (/entities/{id}/edit)
     }
   } catch (error) {
     toast.error('Failed to save entity')
@@ -133,7 +133,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 **Why These Rules?**
 - **UPDATE uses `router.refresh()`**: After updating, the user expects to stay on the edit form to see their changes and potentially make more edits. Redirecting to the view page would be disruptive and require clicking "Edit" again.
-- **CREATE uses `router.push()`**: After creating a new entity, the natural flow is to view what was created. The user can then choose to edit if needed.
+- **CREATE uses `router.push()`**: After creating a new entity, the user goes to the edit page to continue configuring it. This allows them to add related data, make adjustments, or view the fully configured entity before finishing.
 
 ---
 

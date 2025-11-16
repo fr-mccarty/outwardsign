@@ -245,7 +245,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
       } else {
         const newQuinceanera = await createQuinceanera(quinceaneraData)
         toast.success('Quinceañera created successfully!')
-        router.push(`/quinceaneras/${newQuinceanera.id}`)
+        router.push(`/quinceaneras/${newQuinceanera.id}/edit`)
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

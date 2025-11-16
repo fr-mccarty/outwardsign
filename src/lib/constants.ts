@@ -8,10 +8,14 @@ export type HomeLanguage = typeof HOME_LANGUAGES[number]
 export const DEFAULT_HOME_LANGUAGE: HomeLanguage = 'en'
 
 // Status values (stored as uppercase in database) - shared across all modules
-export const MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE', 'COMPLETED'] as const
+export const MODULE_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'INACTIVE', 'COMPLETED'] as const
 
 // Status labels for display - shared across all modules
 export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = {
+  PLANNING: {
+    en: 'Planning',
+    es: 'Planificación'
+  },
   ACTIVE: {
     en: 'Active',
     es: 'Activo'

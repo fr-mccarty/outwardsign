@@ -238,7 +238,7 @@ export function EventFormFields({
           updateField('location_id', location.id)
         }}
         selectedLocationId={selectedLocation?.id}
-        openToNewLocation={!selectedLocation}
+        openToNewLocation={false}
       />
     </>
   )

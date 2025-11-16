@@ -105,7 +105,7 @@ Follow the wedding module pattern exactly for all 9 main files:
   - [ ] Place SaveButton and CancelButton at bottom
   - [ ] Call `create[Entity]()` or `update[Entity]()`
   - [ ] After UPDATE: `router.refresh()` (stay on edit page)
-  - [ ] After CREATE: `router.push(\`/[entities]/\${newEntity.id}\`)` (go to view page)
+  - [ ] After CREATE: `router.push(\`/[entities]/\${newEntity.id}/edit\`)` (go to edit page)
 
 - [ ] **View Client** - `app/(main)/[entities]/[id]/[entity]-view-client.tsx` (Client)
   - [ ] Accept `entity: [Entity]WithRelations` prop
@@ -196,7 +196,7 @@ Use the validation checklist below to verify your implementation.
 #### 2. Wrong Redirection Pattern
 
 - ✅ **CORRECT**: After UPDATE → `router.refresh()` (stays on edit page)
-- ✅ **CORRECT**: After CREATE → `router.push(\`/[entities]/\${newEntity.id}\`)` (goes to view page)
+- ✅ **CORRECT**: After CREATE → `router.push(\`/[entities]/\${newEntity.id}/edit\`)` (goes to edit page)
 - ❌ **WRONG**: Using `router.push()` after update (loses unsaved context)
 - ❌ **WRONG**: Staying on create page after creation
 

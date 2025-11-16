@@ -657,7 +657,7 @@ export function [Entity]Form({
       } else {
         const new[Entity] = await create[Entity](values)
         toast.success('[Entity] created successfully')
-        router.push(`/[entities]/${new[Entity].id}`) // ← Goes to view page
+        router.push(`/[entities]/${new[Entity].id}/edit`) // ← Goes to edit page
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -721,7 +721,7 @@ export function [Entity]Form({
 - ✅ Detects mode via `entity` prop
 - ✅ Form ID matches wrapper's `form` attribute
 - ✅ **Redirect behavior:**
-  - **CREATE**: Redirects to view page (`router.push(/entities/${id})`)
+  - **CREATE**: Redirects to edit page (`router.push(/entities/${id}/edit)`)
   - **UPDATE**: Stays on edit page (`router.refresh()`)
 - ✅ **Zod validation recommended** for type safety and client-side validation
 - ✅ **Save buttons appear in TWO locations:**
@@ -1030,7 +1030,7 @@ try {
 ### Redirection Pattern
 
 After successful operations:
-- **Create:** Redirect to view page (`/[entities]/${newEntity.id}`)
+- **Create:** Redirect to edit page (`/[entities]/${newEntity.id}/edit`)
 - **Update:** Stay on edit page (`router.refresh()`)
 - **Delete:** Redirect to list page (`/[entities]`)
 

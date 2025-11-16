@@ -26,10 +26,10 @@ export default async function EditQuinceaneraPage({ params }: PageProps) {
 
   // Build dynamic title from quinceañera name
   const quinceaneraGirl = quinceanera.quinceanera
-  let title = "Edit Quinceañera"
+  let title = "Quinceañera"
 
   if (quinceaneraGirl?.last_name) {
-    title = `${quinceaneraGirl.last_name} Quinceañera`
+    title = `${quinceaneraGirl.last_name}-Quinceañera`
   }
 
   const breadcrumbs = [

@@ -55,7 +55,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
       } else {
         const newLocation = await createLocation(locationData)
         toast.success('Location created successfully!')
-        router.push(`/locations/${newLocation.id}`)
+        router.push(`/locations/${newLocation.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} location:`, error)
