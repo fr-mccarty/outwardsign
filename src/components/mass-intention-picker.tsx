@@ -26,6 +26,7 @@ interface MassIntentionPickerProps {
   autoOpenCreateForm?: boolean
   editMode?: boolean
   massIntentionToEdit?: MassIntentionWithNames | null
+  testId?: string
 }
 
 // Define constant outside component to prevent re-creation on every render
@@ -42,6 +43,7 @@ export function MassIntentionPicker({
   autoOpenCreateForm = false,
   editMode = false,
   massIntentionToEdit = null,
+  testId = 'mass-intention-picker',
 }: MassIntentionPickerProps) {
   const [massIntentions, setMassIntentions] = useState<MassIntentionWithNames[]>([])
   const [loading, setLoading] = useState(false)
@@ -389,6 +391,7 @@ export function MassIntentionPicker({
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
         onSearch={handleSearchChange}
+        testId={testId}
       />
 
       {/* Nested Requested By Picker Modal */}

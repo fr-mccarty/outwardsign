@@ -71,14 +71,20 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     // STEP 5: Open the mass intention picker using test ID
     const linkButton = page.getByTestId('link-mass-intention-button');
     await expect(linkButton).toBeVisible();
-    // Scroll button into view and click
+    await expect(linkButton).toBeEnabled();
+    // Scroll button into view and wait for React hydration
     await linkButton.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
-    await linkButton.click();
+    await page.waitForTimeout(2000); // Wait for React hydration
 
-    // Wait for Mass Intention Picker dialog to open
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: 10000 });
-    await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Mass Intention/i })).toBeVisible();
+    // Click and verify the picker opens
+    console.log('Clicking link mass intention button...');
+    await linkButton.click();
+    await page.waitForTimeout(1000);
+
+    // Wait for Mass Intention Picker dialog to open using test ID
+    console.log('Waiting for mass intention picker dialog...');
+    await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('mass-intention-picker').getByRole('heading', { name: /Select Mass Intention/i })).toBeVisible();
 
     // STEP 6: Wait for mass intentions to load
     // The picker should show a list of available mass intentions
@@ -86,16 +92,16 @@ test.describe('Masses Module - Mass Intention Picker', () => {
 
     // STEP 7: Select the mass intention we created earlier
     // Mass intentions are displayed with the intention text and requested by info
-    // Look for our intention text in the dialog
-    const intentionOption = page.locator('[role="dialog"]').getByText(intentionText).first();
+    // Look for our intention text in the picker dialog
+    const intentionOption = page.getByTestId('mass-intention-picker').getByText(intentionText).first();
     await expect(intentionOption).toBeVisible();
     await intentionOption.click();
 
     // Wait for the dialog to close and the linking to complete
     await page.waitForTimeout(2000);
 
-    // Dialog should be closed
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+    // Picker dialog should be closed
+    await expect(page.getByTestId('mass-intention-picker')).toHaveCount(0);
 
     // STEP 8: Verify the mass intention is now displayed in the card
     // After linking, the empty state should be gone
@@ -163,11 +169,11 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     await page.waitForTimeout(500);
     await linkButton.click();
 
-    // Wait for picker dialog
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: 10000 });
+    // Wait for picker dialog using test ID
+    await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 10000 });
 
     // STEP 3: Click "Add New Mass Intention" button to open the create form
-    const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Intention/i });
+    const addNewButton = page.getByTestId('mass-intention-picker').getByRole('button', { name: /Add New Mass Intention/i });
     await expect(addNewButton).toBeVisible();
     await addNewButton.click();
 
@@ -178,19 +184,19 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const newIntentionText = `For the intentions of the parish family - Created via picker ${Date.now()}`;
 
     // The form should have a "Mass Offered For" field
-    const massOfferedForInput = page.locator('[role="dialog"]').getByLabel(/Mass Offered For/i);
+    const massOfferedForInput = page.getByTestId('mass-intention-picker').getByLabel(/Mass Offered For/i);
     await expect(massOfferedForInput).toBeVisible();
     await massOfferedForInput.fill(newIntentionText);
 
     // Optionally fill in stipend
-    const stipendInput = page.locator('[role="dialog"]').getByLabel(/Stipend Amount/i);
+    const stipendInput = page.getByTestId('mass-intention-picker').getByLabel(/Stipend Amount/i);
     if (await stipendInput.isVisible()) {
       await stipendInput.fill('10.00');
     }
 
     // Select status if available
     // Look for a status select within the dialog
-    const statusSelect = page.locator('[role="dialog"]').locator('#status');
+    const statusSelect = page.getByTestId('mass-intention-picker').locator('#status');
     if (await statusSelect.isVisible()) {
       await statusSelect.click();
       // Wait for options to appear and select "Requested"
@@ -202,15 +208,15 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     }
 
     // STEP 5: Submit the mass intention creation form
-    const saveButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Mass Intention/i });
+    const saveButton = page.getByTestId('mass-intention-picker').getByRole('button', { name: /Save Mass Intention/i });
     await expect(saveButton).toBeVisible();
     await saveButton.click();
 
     // Wait for the picker to close and the mass intention to be linked
     await page.waitForTimeout(2000);
 
-    // Dialog should be closed
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+    // Picker dialog should be closed
+    await expect(page.getByTestId('mass-intention-picker')).toHaveCount(0);
 
     // STEP 6: Verify we stayed on the mass edit page (NO REDIRECT)
     await expect(page).toHaveURL(`/masses/${massId}/edit`);
@@ -276,10 +282,10 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     await linkBtn.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
     await linkBtn.click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: 10000 });
+    await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(1000);
 
-    const intentionOption = page.locator('[role="dialog"]').getByText(intentionText).first();
+    const intentionOption = page.getByTestId('mass-intention-picker').getByText(intentionText).first();
     await intentionOption.click();
     await page.waitForTimeout(2000);
 
@@ -394,10 +400,10 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     await linkBtn2.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
     await linkBtn2.click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: 10000 });
+    await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(1000);
 
-    const intentionOption = page.locator('[role="dialog"]').getByText(intentionText).first();
+    const intentionOption = page.getByTestId('mass-intention-picker').getByText(intentionText).first();
     await intentionOption.click();
     await page.waitForTimeout(2000);
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -90,9 +90,15 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [allTemplates, setAllTemplates] = useState<MassRoleTemplate[]>([])
   const [templateItems, setTemplateItems] = useState<MassRoleTemplateItemWithRole[]>([])
 
+  // Track if we've initialized to prevent infinite loops
+  const initializedRef = useRef(false)
+  const initializedMassIdRef = useRef<string | null>(null)
+
   // Initialize form with mass data when editing
   useEffect(() => {
-    if (mass) {
+    if (mass && mass.id !== initializedMassIdRef.current) {
+      initializedMassIdRef.current = mass.id
+
       // Set event
       if (mass.event) event.setValue(mass.event)
 
@@ -113,8 +119,11 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       if (mass.mass_intention) {
         setMassIntention(mass.mass_intention)
       }
+
+      initializedRef.current = true
     }
-  }, [mass])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mass?.id]) // Only re-run when mass ID changes
 
   // Load all mass roles for the role assignment section
   useEffect(() => {
