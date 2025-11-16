@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 import type { Event } from '@/lib/types'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -47,6 +48,28 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   const selectedLanguage = searchParams.get('language') || 'all'
   const startDate = searchParams.get('start_date') || ''
   const endDate = searchParams.get('end_date') || ''
+  const sortOrder = searchParams.get('sort') || 'asc'
+
+  // Auto-set start_date to today and sort to asc on initial load if not already set
+  useEffect(() => {
+    const hasStartDate = searchParams.get('start_date')
+    const hasSort = searchParams.get('sort')
+
+    if (!hasStartDate || !hasSort) {
+      const params = new URLSearchParams(searchParams.toString())
+
+      if (!hasStartDate) {
+        const today = new Date().toISOString().split('T')[0]
+        params.set('start_date', today)
+      }
+
+      if (!hasSort) {
+        params.set('sort', 'asc')
+      }
+
+      router.replace(`/events?${params.toString()}`)
+    }
+  }, [])
 
   // Update URL with new filter values
   const updateFilters = (key: string, value: string) => {
@@ -63,7 +86,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
     router.push('/events')
   }
 
-  const hasActiveFilters = searchTerm || selectedEventType !== 'all' || selectedLanguage !== 'all' || startDate || endDate
+  const hasActiveFilters = searchTerm || selectedEventType !== 'all' || selectedLanguage !== 'all' || startDate || endDate || sortOrder !== 'asc'
 
   return (
     <div className="space-y-6">
@@ -109,7 +132,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 id="start-date"
                 label="From Date"
@@ -123,6 +146,17 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                 inputType="date"
                 value={endDate}
                 onChange={(value) => updateFilters('end_date', value)}
+              />
+              <FormField
+                id="sort"
+                label="Sort By Date"
+                inputType="select"
+                value={sortOrder}
+                onChange={(value) => updateFilters('sort', value)}
+                options={[
+                  { value: 'desc', label: 'Newest First' },
+                  { value: 'asc', label: 'Oldest First' }
+                ]}
               />
             </div>
           </div>

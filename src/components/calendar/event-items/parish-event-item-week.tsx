@@ -26,8 +26,8 @@ export function ParishEventItemWeek({ event, onClick }: ParishEventItemWeekProps
   return (
     <div
       className={cn(
-        "text-sm px-3 py-2 rounded cursor-pointer hover:brightness-95 transition-all",
-        "bg-white text-foreground border border-gray-300"
+        "text-sm px-3 py-2 rounded cursor-pointer hover:shadow-md transition-all",
+        "bg-card text-card-foreground border"
       )}
       onClick={onClick}
     >

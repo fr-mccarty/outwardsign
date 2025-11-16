@@ -15,6 +15,7 @@ interface PageProps {
     language?: string
     start_date?: string
     end_date?: string
+    sort?: string
   }>
 }
 
@@ -35,7 +36,8 @@ export default async function EventsPage({ searchParams }: PageProps) {
     event_type: params.event_type,
     language: params.language,
     start_date: params.start_date,
-    end_date: params.end_date
+    end_date: params.end_date,
+    sort: params.sort
   }
 
   // Fetch events server-side with filters

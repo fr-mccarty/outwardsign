@@ -49,6 +49,7 @@ export interface EventFilterParams {
   language?: string
   start_date?: string
   end_date?: string
+  sort?: string
 }
 
 export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
@@ -83,7 +84,11 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
     query = query.lte('start_date', filters.end_date)
   }
 
-  query = query.order('start_date', { ascending: false, nullsFirst: false })
+  // Dynamic sorting based on sort parameter
+  const sortOrder = filters?.sort || 'asc'
+  const ascending = sortOrder === 'asc'
+
+  query = query.order('start_date', { ascending, nullsFirst: false })
     .order('created_at', { ascending: false })
 
   const { data, error } = await query
