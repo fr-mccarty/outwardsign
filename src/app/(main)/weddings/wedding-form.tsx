@@ -258,7 +258,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       if (isEditing && wedding) {
         await updateWedding(wedding.id, weddingData)
         toast.success('Wedding updated successfully')
-        router.push(`/weddings/${wedding.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         const newWedding = await createWedding(weddingData)
         toast.success('Wedding created successfully!')

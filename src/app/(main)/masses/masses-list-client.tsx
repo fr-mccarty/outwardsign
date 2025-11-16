@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select"
 import { MASS_STATUS_VALUES, MASS_STATUS_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
-import { ModuleStatusLabel } from "@/components/module-status-label"
 
 interface Stats {
   total: number
@@ -120,21 +119,17 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
               editHref={`/masses/${mass.id}/edit`}
               viewHref={`/masses/${mass.id}`}
               viewButtonText="Preview"
+              language={mass.event?.language || undefined}
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                <ModuleStatusLabel
-                  status={mass.status}
-                  statusType="mass"
-                  className="text-xs"
-                />
-                {mass.event && (
+              {mass.event && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {mass.event.start_date && formatDatePretty(mass.event.start_date)}
                     {mass.event.start_time && ` at ${formatTime(mass.event.start_time)}`}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="text-sm space-y-1">
                 <p className="text-muted-foreground">

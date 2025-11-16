@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select"
 import { ListViewCard } from "@/components/list-view-card"
 import { ReadingCategoryLabel } from "@/components/reading-category-label"
-import { LanguageLabel } from "@/components/language-label"
 
 interface Stats {
   total: number
@@ -116,11 +115,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
               editHref={`/readings/${reading.id}/edit`}
               viewHref={`/readings/${reading.id}`}
               viewButtonText="View Reading"
-              titleSuffix={
-                reading.language && (
-                  <LanguageLabel language={reading.language} className="text-xs" />
-                )
-              }
+              language={reading.language || undefined}
             >
               {reading.categories && reading.categories.length > 0 && (
                 <div className="flex flex-wrap gap-1">

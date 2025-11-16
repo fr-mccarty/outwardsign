@@ -35,6 +35,7 @@
 - [Breadcrumbs](#breadcrumbs)
 - [Code Conventions](#code-conventions)
   - [🔴 Bilingual Implementation](#-bilingual-implementation-english--spanish)
+  - [Abstraction Principle (Rule of Three)](#abstraction-principle-rule-of-three)
 - [🔴 Design Principles](#-design-principles)
 - [🔴 Creating New Modules](#-creating-new-modules)
 - [Known Issues](#known-issues)
@@ -571,6 +572,26 @@ Client Component (BreadcrumbSetter):
 - **Maintain responsive design** across all new components
 - **Integrate with Supabase Auth** for user-facing features
 - **Use consistent design patterns** from existing component library
+
+### Abstraction Principle (Rule of Three)
+
+**When to abstract code into reusable patterns:**
+
+- **Wait for three uses** - Don't create abstractions (helper functions, components, utilities) until a pattern appears at least three times
+- **Abstract at three uses** - Once something is used three times, it SHOULD be abstracted into a reusable component, function, or utility
+- **Why this matters:**
+  - Premature abstraction creates unnecessary complexity
+  - Waiting reveals the actual pattern and variation points
+  - Three instances provide enough data to design a good abstraction
+  - Prevents "one-off" abstractions that only serve a single use case
+
+**Examples:**
+- **Components**: If three forms need the same input pattern → create reusable FormField component
+- **Utilities**: If three files format dates the same way → create formatDate() utility
+- **Hooks**: If three components manage the same state pattern → create custom hook
+- **Server Actions**: If three modules have identical CRUD patterns → create generic helper
+
+**Exception**: Copy-paste is acceptable for 1-2 uses. At 3 uses, refactor to remove duplication.
 
 ## 🔴 Design Principles
 

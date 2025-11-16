@@ -124,7 +124,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       if (isEditing && baptism) {
         await updateBaptism(baptism.id, formData)
         toast.success('Baptism updated successfully')
-        router.push(`/baptisms/${baptism.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         const newBaptism = await createBaptism(formData)
         toast.success('Baptism created successfully')

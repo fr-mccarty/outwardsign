@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
-import { ModuleStatusLabel } from "@/components/module-status-label"
 
 interface Stats {
   total: number
@@ -119,21 +118,19 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
               editHref={`/funerals/${funeral.id}/edit`}
               viewHref={`/funerals/${funeral.id}`}
               viewButtonText="Preview"
+              status={funeral.status}
+              statusType="module"
+              language={funeral.funeral_event?.language || undefined}
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                <ModuleStatusLabel
-                  status={funeral.status}
-                  statusType="module"
-                  className="text-xs"
-                />
-                {funeral.funeral_event && (
+              {funeral.funeral_event && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {funeral.funeral_event.start_date && formatDatePretty(funeral.funeral_event.start_date)}
                     {funeral.funeral_event.start_time && ` at ${formatTime(funeral.funeral_event.start_time)}`}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="text-sm space-y-1">
                 {funeral.deceased && (

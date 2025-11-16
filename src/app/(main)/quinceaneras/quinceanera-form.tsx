@@ -241,7 +241,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
       if (isEditing) {
         await updateQuinceanera(quinceanera.id, quinceaneraData)
         toast.success('Quinceañera updated successfully')
-        router.push(`/quinceaneras/${quinceanera.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         const newQuinceanera = await createQuinceanera(quinceaneraData)
         toast.success('Quinceañera created successfully!')

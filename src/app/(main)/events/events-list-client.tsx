@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select"
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
-import { LanguageLabel } from '@/components/language-label'
 import { useAppContext } from '@/contexts/AppContextProvider'
 
 interface Stats {
@@ -119,14 +118,12 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                 title={event.name}
                 editHref={`/events/${event.id}/edit`}
                 viewHref={`/events/${event.id}`}
+                language={event.language || undefined}
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline" className="text-xs">
                     {EVENT_TYPE_LABELS[event.event_type]?.[userLanguage] || event.event_type}
                   </Badge>
-                  {event.language && (
-                    <LanguageLabel language={event.language} className="text-xs" />
-                  )}
                   {isUpcoming && (
                     <Badge className="text-xs bg-green-100 text-green-800">
                       Upcoming

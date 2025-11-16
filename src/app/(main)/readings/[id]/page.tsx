@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ReadingFormActions } from './reading-form-actions'
 import { ReadingCategoryLabel } from '@/components/reading-category-label'
-import { LanguageLabel } from '@/components/language-label'
+import { LANGUAGE_LABELS } from '@/lib/constants'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -56,7 +56,9 @@ export default async function ReadingDetailPage({ params }: PageProps) {
                 </CardTitle>
                 <div className="flex flex-wrap gap-2 items-center">
                   {reading.language && (
-                    <LanguageLabel language={reading.language} />
+                    <span className="text-sm text-muted-foreground">
+                      {LANGUAGE_LABELS[reading.language]?.en || reading.language}
+                    </span>
                   )}
                   {reading.categories && reading.categories.length > 0 && (
                     <>

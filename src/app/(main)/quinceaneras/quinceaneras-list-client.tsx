@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
-import { ModuleStatusLabel } from "@/components/module-status-label"
 
 interface Stats {
   total: number
@@ -119,21 +118,19 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
               editHref={`/quinceaneras/${quinceanera.id}/edit`}
               viewHref={`/quinceaneras/${quinceanera.id}`}
               viewButtonText="Preview"
+              status={quinceanera.status}
+              statusType="module"
+              language={quinceanera.quinceanera_event?.language || undefined}
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                <ModuleStatusLabel
-                  status={quinceanera.status}
-                  statusType="module"
-                  className="text-xs"
-                />
-                {quinceanera.quinceanera_event && (
+              {quinceanera.quinceanera_event && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {quinceanera.quinceanera_event.start_date && formatDatePretty(quinceanera.quinceanera_event.start_date)}
                     {quinceanera.quinceanera_event.start_time && ` at ${formatTime(quinceanera.quinceanera_event.start_time)}`}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="text-sm space-y-1">
                 {quinceanera.quinceanera && (

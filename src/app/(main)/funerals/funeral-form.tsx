@@ -241,7 +241,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
       if (isEditing && funeral) {
         await updateFuneral(funeral.id, funeralData)
         toast.success('Funeral updated successfully')
-        router.push(`/funerals/${funeral.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         const newFuneral = await createFuneral(funeralData)
         toast.success('Funeral created successfully!')

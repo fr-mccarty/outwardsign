@@ -921,10 +921,11 @@ const breadcrumbs = [
 ### ListViewCard
 **Path:** `src/components/list-view-card.tsx`
 
-**Purpose:** Reusable card component for displaying entities in list views with consistent layout.
+**Purpose:** Reusable card component for displaying entities in list views with consistent layout and optional status badge.
 
 **Key Features:**
-- Title in upper left with optional suffix (e.g., status badge)
+- Title in upper left (truncates automatically)
+- Optional status badge between title and edit button
 - Edit icon button in upper right
 - Custom content area (passed as children)
 - View button in bottom right
@@ -932,30 +933,77 @@ const breadcrumbs = [
 - Responsive design
 
 **Props:**
-- `title`: Card title (required)
+- `title`: Card title (required) - will truncate if status present
 - `editHref`: Link to edit page (required)
 - `viewHref`: Link to view/detail page (required)
 - `viewButtonText`: Text for view button (default: "View Details")
-- `titleSuffix`: Optional ReactNode displayed beside title (e.g., badge)
+- `status`: Optional status value - automatically renders ModuleStatusLabel
+- `statusType`: Status type ('module') - default: 'module'
+- `language`: Optional language code - automatically renders plain text below title
 - `children`: Card content (required)
 
-**Usage:**
+**Layout:**
+```
+┌─────────────────────────────────────────┐
+│ Title...     [Status Badge]    [Edit ✏️] │
+│ Language Text                            │  ← Language as plain text
+│─────────────────────────────────────────│
+│ Content from children prop               │
+│                         [Preview Button] │
+└─────────────────────────────────────────┘
+```
+
+**Usage (with status and language):**
 ```tsx
 <ListViewCard
-  title={`${wedding.bride?.first_name} & ${wedding.groom?.first_name}`}
-  titleSuffix={<ModuleStatusLabel status={wedding.status} statusType="module" />}
+  title="Wedding"
   editHref={`/weddings/${wedding.id}/edit`}
   viewHref={`/weddings/${wedding.id}`}
-  viewButtonText="View Wedding"
+  viewButtonText="Preview"
+  status={wedding.status}                      // ← Automatically renders status badge
+  statusType="module"
+  language={wedding.wedding_event?.language}   // ← Automatically renders language text
 >
-  {/* Custom content */}
-  <div className="text-sm text-muted-foreground">
-    {wedding.wedding_event && (
-      <p>{new Date(wedding.wedding_event.start_date).toLocaleDateString()}</p>
-    )}
+  {/* Date/time info */}
+  {wedding.wedding_event && (
+    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+      <Calendar className="h-3 w-3" />
+      {formatDatePretty(wedding.wedding_event.start_date)}
+    </div>
+  )}
+
+  {/* Entity details */}
+  <div className="text-sm space-y-1">
+    <p className="text-muted-foreground">
+      <span className="font-medium">Bride:</span> {wedding.bride.first_name}
+    </p>
   </div>
 </ListViewCard>
 ```
+
+**Usage (without status):**
+```tsx
+<ListViewCard
+  title={person.first_name + ' ' + person.last_name}
+  editHref={`/people/${person.id}/edit`}
+  viewHref={`/people/${person.id}`}
+>
+  <div className="text-sm">
+    <p>{person.email}</p>
+    <p>{person.phone_number}</p>
+  </div>
+</ListViewCard>
+```
+
+**Notes:**
+- Do NOT import ModuleStatusLabel in list-client files - ListViewCard handles it automatically
+- Title will truncate with `line-clamp-1` to make room for status badge
+- Language appears as plain text directly below title when `language` prop is provided
+- Language source varies by module:
+  - Events: `event.language`
+  - Readings: `reading.language`
+  - Sacrament modules: `entity.[entity]_event?.language`
+  - Masses: `mass.event?.language`
 
 ---
 
@@ -995,13 +1043,6 @@ const breadcrumbs = [
 - Module: ACTIVE (default), INACTIVE (secondary), COMPLETED (outline)
 - Mass: PLANNING (secondary), SCHEDULED (default), COMPLETED (outline), CANCELLED (destructive)
 - Mass Intention: REQUESTED (secondary), CONFIRMED (default), FULFILLED (outline), CANCELLED (destructive)
-
----
-
-### LanguageLabel
-**Path:** `src/components/language-label.tsx`
-
-**Purpose:** Display language labels with bilingual support.
 
 ---
 

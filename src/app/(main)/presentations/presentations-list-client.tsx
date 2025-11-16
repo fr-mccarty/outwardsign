@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select"
 import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
-import { ModuleStatusLabel } from "@/components/module-status-label"
 
 interface Stats {
   total: number
@@ -119,13 +118,11 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
               editHref={`/presentations/${presentation.id}/edit`}
               viewHref={`/presentations/${presentation.id}`}
               viewButtonText="Preview"
+              status={presentation.status}
+              statusType="module"
+              language={presentation.presentation_event?.language || undefined}
             >
               <div className="flex items-center gap-2 flex-wrap">
-                <ModuleStatusLabel
-                  status={presentation.status}
-                  statusType="module"
-                  className="text-xs"
-                />
                 {presentation.is_baptized && (
                   <Badge variant="secondary" className="text-xs">
                     Baptized

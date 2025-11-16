@@ -235,6 +235,112 @@ export function [Entity]ListClient({ initialData, stats }: [Entity]ListClientPro
 
 **Reference:** `src/app/(main)/weddings/weddings-list-client.tsx`
 
+### ListView Card Status and Language Pattern
+
+**CRITICAL:** All ListView cards with status fields must use the `status` and `statusType` props. All cards with language should use the `language` prop.
+
+#### Visual Layout
+
+```
+┌─────────────────────────────────────────┐
+│ Title...     [Status Badge]    [Edit ✏️] │ ← Status in header, title truncates
+│ [Language Badge]                         │ ← Language directly under title
+│─────────────────────────────────────────│
+│ 📅 Date/Time info                        │
+│                                          │
+│ Entity Details:                          │
+│ • Person 1: Name                         │
+│ • Person 2: Name                         │
+│                                          │
+│ Notes text here...                       │
+│                                          │
+│                         [Preview Button] │
+└─────────────────────────────────────────┘
+```
+
+#### Implementation Pattern
+
+```tsx
+<ListViewCard
+  title="Entity Name"
+  editHref={`/entities/${entity.id}/edit`}
+  viewHref={`/entities/${entity.id}`}
+  viewButtonText="Preview"
+  status={entity.status}              // ← Pass status here
+  statusType="module"                 // ← "module", "mass", or "mass-intention"
+  language={entity.event?.language || undefined}  // ← Pass language here
+>
+  {/* Date/time and other metadata */}
+  {entity.event && (
+    <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+        <Calendar className="h-3 w-3" />
+        {formatDatePretty(entity.event.start_date)}
+        {entity.event.start_time && ` at ${formatTime(entity.event.start_time)}`}
+      </div>
+    </div>
+  )}
+
+  {/* Entity-specific content */}
+  <div className="text-sm space-y-1">
+    {entity.person && (
+      <p className="text-muted-foreground">
+        <span className="font-medium">Person:</span> {entity.person.first_name} {entity.person.last_name}
+      </p>
+    )}
+  </div>
+
+  {/* Notes at the end */}
+  {entity.note && (
+    <p className="text-sm text-muted-foreground line-clamp-2">
+      {entity.note}
+    </p>
+  )}
+</ListViewCard>
+```
+
+#### Status Label Rules
+
+1. **Position**: Status badge appears in the card header, between title and edit button
+2. **Title Truncation**: Title will truncate (`line-clamp-1`) to make room for status badge
+3. **Component Integration**: ListViewCard automatically renders ModuleStatusLabel when `status` prop is provided
+4. **No Import Needed**: Don't import ModuleStatusLabel in list-client files - ListViewCard handles it
+5. **StatusType**: Use `"module"` for all sacrament modules (weddings, funerals, baptisms, presentations, quinceañeras)
+
+#### Language Display Rules
+
+1. **Position**: Language appears as plain text directly below the title in the card header
+2. **Styling**: ListViewCard automatically renders language text when `language` prop is provided
+3. **Display**: Language is displayed using `LANGUAGE_LABELS` for localized names (e.g., "English", "Spanish", "Latin")
+4. **Language Source**: Pass the language from the appropriate field:
+   - **Events**: `event.language`
+   - **Readings**: `reading.language`
+   - **Sacrament modules**: `entity.[entity]_event?.language` (e.g., `wedding.wedding_event?.language`)
+   - **Masses**: `mass.event?.language`
+
+#### Modules Using Status Pattern
+
+- ✅ Weddings
+- ✅ Funerals
+- ✅ Baptisms
+- ✅ Presentations
+- ✅ Quinceañeras
+
+**Note:** Masses and Mass Intentions do not use status labels in list views.
+
+#### Modules Using Language Pattern
+
+- ✅ Weddings
+- ✅ Funerals
+- ✅ Baptisms
+- ✅ Presentations
+- ✅ Quinceañeras
+- ✅ Masses
+- ✅ Events
+- ✅ Readings
+
+**Note:** Modules without status fields (Events, People, Locations) do not use the status prop.
+
 ---
 
 ## 3. Create Page (Server)
@@ -547,11 +653,11 @@ export function [Entity]Form({
       if (isEditing) {
         await update[Entity](entity.id, values)
         toast.success('[Entity] updated successfully')
-        router.push(`/[entities]/${entity.id}`)
+        router.refresh() // ← Stays on edit page to show updated data
       } else {
         const new[Entity] = await create[Entity](values)
         toast.success('[Entity] created successfully')
-        router.push(`/[entities]/${new[Entity].id}`)
+        router.push(`/[entities]/${new[Entity].id}`) // ← Goes to view page
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -614,7 +720,9 @@ export function [Entity]Form({
 
 - ✅ Detects mode via `entity` prop
 - ✅ Form ID matches wrapper's `form` attribute
-- ✅ Redirects to view page after save
+- ✅ **Redirect behavior:**
+  - **CREATE**: Redirects to view page (`router.push(/entities/${id})`)
+  - **UPDATE**: Stays on edit page (`router.refresh()`)
 - ✅ **Zod validation recommended** for type safety and client-side validation
 - ✅ **Save buttons appear in TWO locations:**
   - **Top:** In PageContainer actions (via wrapper - View + Save in edit mode, Save only in create mode)
@@ -923,7 +1031,7 @@ try {
 
 After successful operations:
 - **Create:** Redirect to view page (`/[entities]/${newEntity.id}`)
-- **Update:** Redirect to view page (`/[entities]/${entity.id}`)
+- **Update:** Stay on edit page (`router.refresh()`)
 - **Delete:** Redirect to list page (`/[entities]`)
 
 ---

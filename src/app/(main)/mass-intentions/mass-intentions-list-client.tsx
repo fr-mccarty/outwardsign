@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select"
 import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
 import { formatDatePretty } from "@/lib/utils/date-format"
-import { ModuleStatusLabel } from "@/components/module-status-label"
 
 interface Stats {
   total: number
@@ -139,19 +138,14 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
               editHref={`/mass-intentions/${intention.id}/edit`}
               viewHref={`/mass-intentions/${intention.id}`}
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                <ModuleStatusLabel
-                  status={intention.status}
-                  statusType="mass-intention"
-                  className="text-xs"
-                />
-                {intention.stipend_in_cents && (
+              {intention.stipend_in_cents && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <DollarSign className="h-3 w-3" />
                     {formatStipend(intention.stipend_in_cents)}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="text-sm space-y-1">
                 {intention.requested_by && (

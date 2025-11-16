@@ -154,27 +154,54 @@ class GroupMembershipPage {
   }
 
   /**
-   * Select a single role in the Add Member modal
-   * Note: Group membership supports ONE role per member (using Select dropdown, not checkboxes)
-   * @param roles Role constant or array (e.g., 'LECTOR' or ['LECTOR']) - only first role selected if array passed
+   * Select a group role in the Add Member modal
+   * Note: Uses GroupRolePickerField which opens a modal dialog (not a Select dropdown)
    */
-  async selectRoles(roles: string | string[]) {
-    const role = Array.isArray(roles) ? roles[0] : roles;
+  async selectRole(roleName: string) {
     const dialog = this.page.locator('[role="dialog"]').first();
 
-    // Click the Select trigger to open the dropdown
-    const selectTrigger = dialog.getByTestId('role-select-trigger');
-    await selectTrigger.click();
+    // Click the "Group Role" button to open the group role picker modal
+    const groupRoleTrigger = dialog.getByTestId('group-role-trigger');
+    await groupRoleTrigger.click();
 
-    // Wait for dropdown to be visible
-    await this.page.waitForTimeout(200);
+    // Wait for the group role picker modal to open (will be a nested dialog)
+    await this.page.waitForTimeout(1000);
 
-    // Click the role option
-    const roleOption = this.page.getByTestId(`role-option-${role}`);
-    await roleOption.click();
+    // Find the group role picker dialog (the second/nested dialog)
+    const pickerDialog = this.page.locator('[role="dialog"]').last();
+    await expect(pickerDialog.getByRole('heading', { name: /Select Group Role/i })).toBeVisible();
 
-    // Wait for dropdown to close
-    await this.page.waitForTimeout(200);
+    // Click on the role from the list
+    const roleButton = pickerDialog.getByRole('button', { name: new RegExp(roleName, 'i') }).first();
+    await roleButton.click();
+
+    // Wait for picker to close
+    await this.page.waitForTimeout(500);
+  }
+
+  /**
+   * Legacy method for backward compatibility - converts array to single role
+   */
+  async selectRoles(roles: string | string[]) {
+    // Group membership only supports one role, so take the first if array
+    const roleName = Array.isArray(roles) ? this.getRoleLabelFromConstant(roles[0]) : this.getRoleLabelFromConstant(roles);
+    await this.selectRole(roleName);
+  }
+
+  /**
+   * Convert role constant to display label
+   */
+  private getRoleLabelFromConstant(roleConstant: string): string {
+    const roleLabels: Record<string, string> = {
+      'LECTOR': 'Lector',
+      'EMHC': 'Extraordinary Minister of Holy Communion',
+      'ALTAR_SERVER': 'Altar Server',
+      'CANTOR': 'Cantor',
+      'USHER': 'Usher',
+      'SACRISTAN': 'Sacristan',
+      'MUSIC_MINISTER': 'Music Minister',
+    };
+    return roleLabels[roleConstant] || roleConstant;
   }
 
   /**
@@ -334,17 +361,19 @@ class GroupMembershipPage {
     // Support both string and array (take first if array for backward compat)
     const roleLabel = Array.isArray(expectedRoleLabel) ? expectedRoleLabel[0] : expectedRoleLabel;
 
-    // Look for badge with role label text
-    const badge = memberCard.locator(`text=${roleLabel}`);
+    // Look for badge component with role label text (more specific to avoid strict mode violations)
+    // The badge is rendered as a Badge component with variant="secondary"
+    // Use case-insensitive regex since role names may be stored in different cases
+    const badge = memberCard.locator('[data-slot="badge"]', { hasText: new RegExp(roleLabel, 'i') });
     await expect(badge).toBeVisible();
   }
 
   /**
-   * Verify member shows "No group role assigned" text
+   * Verify member shows "No role" text
    */
   async expectMemberHasNoRole(personName: string) {
     const memberCard = this.page.locator(`div:has-text("${personName}")`).first();
-    await expect(memberCard.locator('text=/No group role assigned/i')).toBeVisible();
+    await expect(memberCard.locator('text=/No role/i')).toBeVisible();
   }
 }
 
@@ -388,11 +417,11 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, ['Lector']);
   });
 
-  test('TC-002: Add member with multiple roles', async ({ page }) => {
+  test('TC-002: Add member with Cantor role', async ({ page }) => {
     // Create a test person
-    const firstName = 'MultiRole';
+    const firstName = 'Cantor';
     const lastName = 'TestPerson';
-    await groupPage.createTestPerson(firstName, lastName, 'multirole@test.com');
+    await groupPage.createTestPerson(firstName, lastName, 'cantor@test.com');
 
     // Navigate back to group
     await groupPage.navigateToGroup(testGroupId);
@@ -403,8 +432,8 @@ test.describe('Group Membership - Add Member Tests', () => {
     // Select the person
     await groupPage.selectPersonInModal(`${firstName} ${lastName}`);
 
-    // Select multiple roles
-    await groupPage.selectRoles(['LECTOR', 'CANTOR', 'EMHC']);
+    // Select Cantor role (groups only support ONE role per member)
+    await groupPage.selectRoles(['CANTOR']);
 
     // Submit the form
     await groupPage.submitAddMember();
@@ -412,12 +441,8 @@ test.describe('Group Membership - Add Member Tests', () => {
     // Verify member appears in list
     await groupPage.expectMemberInList(`${firstName} ${lastName}`);
 
-    // Verify all role badges are displayed
-    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, [
-      'Lector',
-      'Cantor',
-      'Extraordinary Minister of Holy Communion'
-    ]);
+    // Verify the role badge is displayed
+    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, 'Cantor');
   });
 
   test('TC-003: Add member with no roles', async ({ page }) => {
@@ -467,12 +492,14 @@ test.describe('Group Membership - Add Member Tests', () => {
     const lastName = 'Person';
     await groupPage.createPersonInModal(firstName, lastName, 'inlinecreated@test.com');
 
-    // Verify person is auto-selected (the modal should show "Change Person" instead of "Select Person")
+    // Verify person is auto-selected (should show the person's name in the picker field)
     const dialog = page.locator('[role="dialog"]').first();
-    await expect(dialog.locator('text=/Person selected/i')).toBeVisible();
+    const personName = `${firstName} ${lastName}`;
+    // The PickerField shows the selected person's name when a value is selected
+    await expect(dialog.locator(`text="${personName}"`)).toBeVisible();
 
-    // Select roles for the newly created person
-    await groupPage.selectRoles(['CANTOR', 'MUSIC_MINISTER']);
+    // Select role for the newly created person (only one role supported)
+    await groupPage.selectRoles(['CANTOR']);
 
     // Submit the form
     await groupPage.submitAddMember();
@@ -480,8 +507,8 @@ test.describe('Group Membership - Add Member Tests', () => {
     // Verify member appears in list
     await groupPage.expectMemberInList(`${firstName} ${lastName}`);
 
-    // Verify roles are assigned
-    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, ['Cantor', 'Music Minister']);
+    // Verify role is assigned
+    await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, 'Cantor');
   });
 
   test('TC-014: Cannot add duplicate member', async ({ page }) => {

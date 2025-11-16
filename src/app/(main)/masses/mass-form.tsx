@@ -242,7 +242,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       if (isEditing) {
         await updateMass(mass.id, massData)
         toast.success('Mass updated successfully')
-        router.push(`/masses/${mass.id}`)
+        router.refresh() // Stay on edit page to show updated data
       } else {
         const newMass = await createMass(massData)
         toast.success('Mass created successfully')

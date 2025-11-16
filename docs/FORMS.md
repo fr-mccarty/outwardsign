@@ -100,21 +100,30 @@ export function EntityForm({ entity }: EntityFormProps) {
 
 ### Redirection Pattern:
 
+**🔴 CRITICAL - Form Redirect Rules:**
+
+Forms must follow these exact redirect rules based on the operation:
+
+| Operation | Action | Route | Reason |
+|-----------|--------|-------|--------|
+| **UPDATE** (Edit Page) | `router.refresh()` | Stay on `/entities/{id}/edit` | User stays on edit page to see updated data and can continue editing |
+| **CREATE** (Create Page) | `router.push()` | Go to `/entities/{id}` | User sees new entity in view mode after creation |
+
 ```tsx
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
 
   try {
     if (isEditing) {
-      // UPDATE case
+      // UPDATE case - from /entities/{id}/edit
       await updateEntity(entity.id, formData)
       toast.success('Entity updated successfully')
-      router.refresh() // ← Stays on edit page to show updated data
+      router.refresh() // ← STAYS on edit page (/entities/{id}/edit)
     } else {
-      // CREATE case
+      // CREATE case - from /entities/create
       const newEntity = await createEntity(formData)
       toast.success('Entity created successfully')
-      router.push(`/entities/${newEntity.id}`) // ← Goes to view page
+      router.push(`/entities/${newEntity.id}`) // ← GOES to view page (/entities/{id})
     }
   } catch (error) {
     toast.error('Failed to save entity')
@@ -122,9 +131,9 @@ const handleSubmit = async (e: React.FormEvent) => {
 }
 ```
 
-**Summary:**
-- After UPDATE: `router.refresh()` (stays on edit page)
-- After CREATE: `router.push(\`/[entities]/\${newEntity.id}\`)` (goes to view page)
+**Why These Rules?**
+- **UPDATE uses `router.refresh()`**: After updating, the user expects to stay on the edit form to see their changes and potentially make more edits. Redirecting to the view page would be disruptive and require clicking "Edit" again.
+- **CREATE uses `router.push()`**: After creating a new entity, the natural flow is to view what was created. The user can then choose to edit if needed.
 
 ---
 
