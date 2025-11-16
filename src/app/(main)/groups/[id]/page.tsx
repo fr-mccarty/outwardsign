@@ -7,8 +7,6 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ActiveInactiveBadge } from "@/components/active-inactive-badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,15 +18,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { UserPlus, User, Trash2, Users, Edit, X, Save } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getGroup, removeGroupMember, updateGroupMemberRole, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
+import { UserPlus, User, Trash2, Users, Edit } from "lucide-react"
+import { getGroup, removeGroupMember, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
 import { getGroupRoles, type GroupRole } from '@/lib/actions/group-roles'
+import { getMassRoles } from '@/lib/actions/mass-roles'
+import type { MassRole } from '@/lib/types'
 import { GroupFormDialog } from '@/components/groups/group-form-dialog'
 import { AddMembershipModal } from '@/components/groups/add-membership-modal'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { MASS_ROLE_LABELS, type MassRoleType } from '@/lib/constants'
 import { useLanguage } from '@/components/language-context'
 
 interface PageProps {
@@ -40,21 +38,25 @@ export default function GroupDetailPage({ params }: PageProps) {
   const { language } = useLanguage()
   const [group, setGroup] = useState<GroupWithMembers | null>(null)
   const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
+  const [massRoles, setMassRoles] = useState<MassRole[]>([])
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
-  const [editingMemberId, setEditingMemberId] = useState<string | null>(null)
-  const [editingRoleId, setEditingRoleId] = useState<string | undefined>(undefined)
+  const [editMemberDialogOpen, setEditMemberDialogOpen] = useState(false)
+  const [memberBeingEdited, setMemberBeingEdited] = useState<GroupMember | null>(null)
   const [groupId, setGroupId] = useState<string>('')
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
-  const { setBreadcrumbs } = useBreadcrumbs()
+  const { setBreadcrumbs} = useBreadcrumbs()
 
-  // Helper function to get group role label
+  // Helper function to get role label
   const getRoleLabel = (roleName: string) => {
-    if (roleName in MASS_ROLE_LABELS) {
-      return MASS_ROLE_LABELS[roleName as MassRoleType][language]
+    // Check if it's a mass role
+    const massRole = massRoles.find(r => r.name === roleName)
+    if (massRole) {
+      return massRole.name
     }
+    // Otherwise it's a group role, return as-is
     return roleName
   }
 
@@ -64,9 +66,10 @@ export default function GroupDetailPage({ params }: PageProps) {
         const { id } = await params
         setGroupId(id)
 
-        const [groupData, roles] = await Promise.all([
+        const [groupData, roles, massRolesData] = await Promise.all([
           getGroup(id),
-          getGroupRoles()
+          getGroupRoles(),
+          getMassRoles()
         ])
 
         if (!groupData) {
@@ -77,6 +80,7 @@ export default function GroupDetailPage({ params }: PageProps) {
 
         setGroup(groupData)
         setGroupRoles(roles)
+        setMassRoles(massRolesData)
 
         setBreadcrumbs([
           { label: "Dashboard", href: "/dashboard" },
@@ -129,35 +133,18 @@ export default function GroupDetailPage({ params }: PageProps) {
     }
   }
 
-  const handleStartEditRole = (member: GroupMember) => {
-    setEditingMemberId(member.id)
-    setEditingRoleId(member.group_role_id || undefined)
+  const handleOpenEditMember = (member: GroupMember) => {
+    setMemberBeingEdited(member)
+    setEditMemberDialogOpen(true)
   }
 
-  const handleCancelEditRole = () => {
-    setEditingMemberId(null)
-    setEditingRoleId(undefined)
-  }
-
-  const handleSaveRole = async (member: GroupMember) => {
-    try {
-      // Convert "none" value to null
-      const roleIdToSave = editingRoleId === "none" ? null : editingRoleId
-      await updateGroupMemberRole(groupId, member.person_id, roleIdToSave)
-      toast.success('Group role updated successfully')
-
-      // Reload group data
-      const updatedGroup = await getGroup(groupId)
-      if (updatedGroup) {
-        setGroup(updatedGroup)
-      }
-
-      setEditingMemberId(null)
-      setEditingRoleId(undefined)
-    } catch (error) {
-      console.error('Failed to update group role:', error)
-      toast.error('Failed to update group role')
+  const handleEditMemberSuccess = async () => {
+    // Reload group data
+    const updatedGroup = await getGroup(groupId)
+    if (updatedGroup) {
+      setGroup(updatedGroup)
     }
+    setMemberBeingEdited(null)
   }
 
   const handleEditSuccess = async (updatedGroupId: string) => {
@@ -203,7 +190,7 @@ export default function GroupDetailPage({ params }: PageProps) {
       description={group.description || "Manage group members and their roles"}
     >
       {/* Group Details Card */}
-      <Card className="mb-6">
+      <Card className="mb-8">
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="space-y-1">
@@ -230,7 +217,7 @@ export default function GroupDetailPage({ params }: PageProps) {
       </Card>
 
       {/* Member Management */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div></div>
         <Button onClick={() => setAddMemberDialogOpen(true)}>
           <UserPlus className="h-4 w-4 mr-2" />
@@ -259,121 +246,58 @@ export default function GroupDetailPage({ params }: PageProps) {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
-              {group.members.map((member) => {
-                const isEditing = editingMemberId === member.id
-
-                return (
-                  <div
-                    key={member.id}
-                    data-testid={`member-card-${member.id}`}
-                    className="p-4 border rounded-lg"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <User className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">
-                            {member.person ?
-                              `${member.person.first_name} ${member.person.last_name}` :
-                              'Unknown Person'
-                            }
-                          </h3>
-                          {member.person?.email && (
-                            <p className="text-sm text-muted-foreground">
-                              {member.person.email}
-                            </p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Joined: {new Date(member.joined_at).toLocaleDateString()}
-                          </p>
-
-                          {/* Group Role Display */}
-                          {!isEditing && (
-                            <div className="mt-3">
-                              {member.group_role ? (
-                                <Badge variant="secondary">
-                                  {getRoleLabel(member.group_role.name)}
-                                </Badge>
-                              ) : (
-                                <p className="text-sm text-muted-foreground">No group role assigned</p>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Group Role Editor */}
-                          {isEditing && (
-                            <div className="mt-3 space-y-2 border rounded-lg p-3 bg-muted/50">
-                              <Label htmlFor={`role-select-${member.id}`} className="text-sm font-medium">
-                                Select Group Role
-                              </Label>
-                              <Select
-                                value={editingRoleId}
-                                onValueChange={setEditingRoleId}
-                              >
-                                <SelectTrigger id={`role-select-${member.id}`}>
-                                  <SelectValue placeholder="Select a group role..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="none">No Group Role</SelectItem>
-                                  {groupRoles.map((role) => (
-                                    <SelectItem key={role.id} value={role.id}>
-                                      {getRoleLabel(role.name)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {!isEditing ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              data-testid={`edit-role-button-${member.id}`}
-                              onClick={() => handleStartEditRole(member)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              data-testid={`delete-member-button-${member.id}`}
-                              onClick={() => handleOpenRemoveDialog(member)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
+            <div className="space-y-3">
+              {group.members.map((member) => (
+                <div
+                  key={member.id}
+                  data-testid={`member-card-${member.id}`}
+                  className="p-4 border rounded-lg"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-medium">
+                          {member.person ?
+                            `${member.person.first_name} ${member.person.last_name}` :
+                            'Unknown Person'
+                          }
+                        </h3>
+                        {member.group_role ? (
+                          <Badge variant="secondary" className="text-xs">
+                            {getRoleLabel(member.group_role.name)}
+                          </Badge>
                         ) : (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              data-testid={`cancel-edit-button-${member.id}`}
-                              onClick={handleCancelEditRole}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              data-testid={`save-role-button-${member.id}`}
-                              onClick={() => handleSaveRole(member)}
-                            >
-                              <Save className="h-4 w-4" />
-                            </Button>
-                          </>
+                          <span className="text-xs text-muted-foreground">No role</span>
                         )}
                       </div>
+                      {member.person?.email && (
+                        <p className="text-sm text-muted-foreground">
+                          {member.person.email}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`edit-role-button-${member.id}`}
+                        onClick={() => handleOpenEditMember(member)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`delete-member-button-${member.id}`}
+                        onClick={() => handleOpenRemoveDialog(member)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
@@ -394,6 +318,17 @@ export default function GroupDetailPage({ params }: PageProps) {
         groupId={groupId}
         groupName={group.name}
         onSuccess={handleAddMemberSuccess}
+      />
+
+      {/* Edit Membership Modal */}
+      <AddMembershipModal
+        open={editMemberDialogOpen}
+        onOpenChange={setEditMemberDialogOpen}
+        groupId={groupId}
+        groupName={group.name}
+        onSuccess={handleEditMemberSuccess}
+        editMode={true}
+        memberToEdit={memberBeingEdited}
       />
 
       {/* Remove Member Confirmation Dialog */}

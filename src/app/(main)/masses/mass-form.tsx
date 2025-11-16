@@ -20,7 +20,7 @@ import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMP
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
-import { MassRolePicker } from "@/components/mass-role-picker"
+import { PeoplePicker } from "@/components/people-picker"
 import { Plus, X } from "lucide-react"
 
 // Zod validation schema
@@ -178,25 +178,23 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     setRolePickerOpen(true)
   }
 
-  const handleSelectPersonForRole = async (person: Person | null) => {
+  const handleSelectPersonForRole = async (person: Person) => {
     if (!isEditing || !mass?.id || !currentRoleId) {
       toast.error('Please save the mass before assigning roles')
       return
     }
 
     try {
-      if (person) {
-        // Assign person to role
-        const newMassRole = await createMassRole({
-          mass_id: mass.id,
-          person_id: person.id,
-          mass_roles_template_item_id: currentRoleId
-        })
+      // Assign person to role
+      const newMassRole = await createMassRole({
+        mass_id: mass.id,
+        person_id: person.id,
+        mass_roles_template_item_id: currentRoleId
+      })
 
-        // Reload mass roles to get the updated list with relations
-        await loadMassRoles()
-        toast.success('Role assignment added')
-      }
+      // Reload mass roles to get the updated list with relations
+      await loadMassRoles()
+      toast.success('Role assignment added')
     } catch (error) {
       console.error('Error assigning role:', error)
       toast.error('Failed to assign role')
@@ -433,14 +431,12 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         </Card>
       )}
 
-      {/* Mass Role Picker Modal */}
+      {/* People Picker Modal for Role Assignment */}
       {currentRoleId && (
-        <MassRolePicker
+        <PeoplePicker
           open={rolePickerOpen}
           onOpenChange={setRolePickerOpen}
           onSelect={handleSelectPersonForRole}
-          massId={mass?.id}
-          allowEmpty={false}
         />
       )}
 

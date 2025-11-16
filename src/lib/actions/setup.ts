@@ -631,27 +631,37 @@ export async function populateInitialParishData(parishId: string) {
       {
         parish_id: parishId,
         name: 'Leader',
-        description: 'Leads and coordinates the group'
+        description: 'Leads and coordinates the group',
+        is_active: true,
+        display_order: 1
       },
       {
         parish_id: parishId,
         name: 'Member',
-        description: 'Active participant in the group'
+        description: 'Active participant in the group',
+        is_active: true,
+        display_order: 2
       },
       {
         parish_id: parishId,
         name: 'Secretary',
-        description: 'Maintains records and communications'
+        description: 'Maintains records and communications',
+        is_active: true,
+        display_order: 3
       },
       {
         parish_id: parishId,
         name: 'Treasurer',
-        description: 'Manages group finances'
+        description: 'Manages group finances',
+        is_active: true,
+        display_order: 4
       },
       {
         parish_id: parishId,
         name: 'Coordinator',
-        description: 'Coordinates group activities and events'
+        description: 'Coordinates group activities and events',
+        is_active: true,
+        display_order: 5
       }
     ]
 
@@ -670,52 +680,72 @@ export async function populateInitialParishData(parishId: string) {
       {
         parish_id: parishId,
         name: 'Lector',
-        description: 'Proclaims the Word of God during Mass'
-      },
-      {
-        parish_id: parishId,
-        name: 'Usher',
-        description: 'Welcomes parishioners and assists with seating and collection'
-      },
-      {
-        parish_id: parishId,
-        name: 'Server',
-        description: 'Assists the priest at the altar during Mass'
-      },
-      {
-        parish_id: parishId,
-        name: 'Sacristan',
-        description: 'Prepares the sacred vessels and sanctuary for Mass'
+        description: 'Proclaims the Word of God during Mass',
+        is_active: true,
+        display_order: 1
       },
       {
         parish_id: parishId,
         name: 'Eucharistic Minister',
-        description: 'Distributes Holy Communion during Mass'
+        description: 'Distributes Holy Communion during Mass',
+        is_active: true,
+        display_order: 2
+      },
+      {
+        parish_id: parishId,
+        name: 'Server',
+        description: 'Assists the priest at the altar during Mass',
+        is_active: true,
+        display_order: 3
       },
       {
         parish_id: parishId,
         name: 'Cantor',
-        description: 'Leads the congregation in singing'
+        description: 'Leads the congregation in singing',
+        is_active: true,
+        display_order: 4
+      },
+      {
+        parish_id: parishId,
+        name: 'Usher',
+        description: 'Welcomes parishioners and assists with seating and collection',
+        is_active: true,
+        display_order: 5
+      },
+      {
+        parish_id: parishId,
+        name: 'Sacristan',
+        description: 'Prepares the sacred vessels and sanctuary for Mass',
+        is_active: true,
+        display_order: 6
       },
       {
         parish_id: parishId,
         name: 'Music Minister',
-        description: 'Provides music during the liturgy'
+        description: 'Provides music during the liturgy',
+        is_active: true,
+        display_order: 7
       },
       {
         parish_id: parishId,
         name: 'Greeter',
-        description: 'Welcomes parishioners as they arrive'
+        description: 'Welcomes parishioners as they arrive',
+        is_active: true,
+        display_order: 8
       },
       {
         parish_id: parishId,
         name: 'Coordinator',
-        description: 'Coordinates and oversees liturgical ministries'
+        description: 'Coordinates and oversees liturgical ministries',
+        is_active: true,
+        display_order: 9
       },
       {
         parish_id: parishId,
         name: 'Gift Bearer',
-        description: 'Brings up the gifts during the offertory'
+        description: 'Brings up the gifts during the offertory',
+        is_active: true,
+        display_order: 10
       }
     ]
 

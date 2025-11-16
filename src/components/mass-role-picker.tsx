@@ -1,188 +1,197 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Mail, Phone, X } from 'lucide-react'
-import { getPeopleWithRolesPaginated, type PersonWithGroupRoles } from '@/lib/actions/people'
-import { getMassRoles } from '@/lib/actions/mass-roles'
-import type { Person, MassRole } from '@/lib/types'
+import { UserCog } from 'lucide-react'
+import { getMassRolesPaginated, createMassRole, updateMassRole } from '@/lib/actions/mass-roles'
+import type { MassRole } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { PickerFieldConfig } from '@/types/core-picker'
+import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 
 interface MassRolePickerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (person: Person | null) => void // null = remove assignment
-  selectedPersonId?: string
-  filterByRoleIds?: string[] // Filter people by these role IDs
-  massId?: string // For checking existing assignments
+  onSelect: (role: MassRole) => void
   placeholder?: string
   emptyMessage?: string
-  allowEmpty?: boolean // Allow role to be unfilled (default: true)
+  selectedRoleId?: string
+  className?: string
+  visibleFields?: string[] // Optional fields to show: 'description', 'note'
+  requiredFields?: string[] // Fields that should be marked as required
+  autoOpenCreateForm?: boolean
+  defaultCreateFormData?: Record<string, any>
+  editMode?: boolean // Open directly to edit form
+  roleToEdit?: MassRole | null // Mass role being edited
 }
+
+// Default visible fields - defined outside component to prevent re-creation
+const DEFAULT_VISIBLE_FIELDS = ['description', 'note']
+
+// Empty object constant to prevent re-creation on every render
+const EMPTY_FORM_DATA = {}
 
 export function MassRolePicker({
   open,
   onOpenChange,
   onSelect,
-  selectedPersonId,
-  filterByRoleIds = [],
-  massId,
-  placeholder = 'Search for a person...',
-  emptyMessage = 'No people found.',
-  allowEmpty = true,
+  placeholder = 'Search for a mass role...',
+  emptyMessage = 'No mass roles found.',
+  selectedRoleId,
+  className,
+  visibleFields,
+  requiredFields,
+  autoOpenCreateForm = false,
+  defaultCreateFormData,
+  editMode = false,
+  roleToEdit = null,
 }: MassRolePickerProps) {
-  const [people, setPeople] = useState<PersonWithGroupRoles[]>([])
-  const [allRoles, setAllRoles] = useState<MassRole[]>([])
+  const [roles, setRoles] = useState<MassRole[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('')
   const PAGE_SIZE = 10
 
-  // Load all roles for filter dropdown
-  useEffect(() => {
-    if (open) {
-      loadRoles()
-    }
-  }, [open])
+  // Memoize helper functions to prevent unnecessary re-renders
+  const isFieldVisible = useCallback(
+    (fieldName: string) => checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS),
+    [visibleFields]
+  )
+  const isFieldRequired = useCallback(
+    (fieldName: string) => checkFieldRequired(fieldName, requiredFields),
+    [requiredFields]
+  )
 
-  // Load people when dialog opens or when page/search changes
+  // Load roles when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadPeople(currentPage, searchQuery)
+      loadRoles(currentPage, searchQuery)
     }
   }, [open, currentPage, searchQuery])
 
-  const loadRoles = async () => {
-    try {
-      const rolesData = await getMassRoles()
-      setAllRoles(rolesData)
-    } catch (error) {
-      console.error('Error loading mass roles:', error)
-      toast.error('Failed to load mass roles')
-    }
-  }
-
-  const loadPeople = async (page: number, search: string) => {
+  const loadRoles = async (page: number, search: string) => {
     try {
       setLoading(true)
-      const result = await getPeopleWithRolesPaginated({
+      const result = await getMassRolesPaginated({
         page,
         limit: PAGE_SIZE,
         search,
       })
-      setPeople(result.items)
+      setRoles(result.items)
       setTotalCount(result.totalCount)
     } catch (error) {
-      console.error('Error loading people:', error)
-      toast.error('Failed to load people')
+      console.error('Error loading mass roles:', error)
+      toast.error('Failed to load mass roles')
     } finally {
       setLoading(false)
     }
   }
 
-  // Filter people by selected role (client-side filtering after fetch)
-  const filteredPeople = useMemo(() => {
-    if (!selectedRoleFilter) {
-      return people
+  const selectedRole = selectedRoleId
+    ? roles.find((r) => r.id === selectedRoleId)
+    : null
+
+  // Build create fields configuration dynamically - memoized to prevent infinite re-renders
+  const createFields: PickerFieldConfig[] = useMemo(() => {
+    const fields: PickerFieldConfig[] = [
+      {
+        key: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Lector',
+        validation: z.string().min(1, 'Mass role name is required'),
+      },
+    ]
+
+    if (isFieldVisible('description')) {
+      fields.push({
+        key: 'description',
+        label: 'Description',
+        type: 'text',
+        required: isFieldRequired('description'),
+        placeholder: 'Proclaims the Word of God',
+      })
     }
 
-    // Find the role name from the role ID
-    const selectedRole = allRoles.find(r => r.id === selectedRoleFilter)
-    if (!selectedRole) {
-      return people
+    if (isFieldVisible('note')) {
+      fields.push({
+        key: 'note',
+        label: 'Note',
+        type: 'textarea',
+        required: isFieldRequired('note'),
+        placeholder: 'Additional notes...',
+      })
     }
 
-    // Filter people who have this role in ANY of their group memberships
-    return people.filter(person => {
-      return person.group_members?.some(gm =>
-        gm.roles?.includes(selectedRole.name)
-      )
+    return fields
+  }, [isFieldVisible, isFieldRequired])
+
+  // Handle creating a new mass role
+  const handleCreateRole = async (data: any): Promise<MassRole> => {
+    const newRole = await createMassRole({
+      name: data.name,
+      description: data.description || undefined,
+      note: data.note || undefined,
     })
-  }, [people, selectedRoleFilter, allRoles])
 
-  const getPersonDisplayName = (person: Person) => {
-    return `${person.first_name} ${person.last_name}`.trim()
+    // Add to local list
+    setRoles((prev) => [newRole, ...prev])
+
+    return newRole
   }
 
-  const getPersonInitials = (person: Person) => {
-    const firstInitial = person.first_name?.[0] || ''
-    const lastInitial = person.last_name?.[0] || ''
-    return `${firstInitial}${lastInitial}`.toUpperCase()
-  }
-
-  const handleClearFilter = () => {
-    setSelectedRoleFilter('')
-  }
-
-  const handleSelect = (person: PersonWithGroupRoles) => {
-    onSelect(person)
-    onOpenChange(false)
-  }
-
-  const handleClear = () => {
-    if (allowEmpty) {
-      onSelect(null)
-      onOpenChange(false)
-    }
-  }
-
-  const renderPersonItem = (person: PersonWithGroupRoles) => {
-    const isSelected = person.id === selectedPersonId
-
-    // Get unique roles from all group memberships
-    const personRoles = new Set<string>()
-    person.group_members?.forEach(gm => {
-      gm.roles?.forEach(role => personRoles.add(role))
+  // Handle updating an existing mass role
+  const handleUpdateRole = async (id: string, data: any): Promise<MassRole> => {
+    const updatedRole = await updateMassRole(id, {
+      name: data.name,
+      description: data.description || undefined,
+      note: data.note || undefined,
     })
+
+    // Update local list
+    setRoles((prev) =>
+      prev.map(r => r.id === updatedRole.id ? updatedRole : r)
+    )
+
+    return updatedRole
+  }
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
+  // Custom render for mass role list items
+  const renderRoleItem = (role: MassRole) => {
+    const isSelected = selectedRoleId === role.id
 
     return (
-      <div
-        key={person.id}
-        onClick={() => handleSelect(person)}
-        className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-          isSelected
-            ? 'bg-accent text-accent-foreground'
-            : 'hover:bg-accent/50'
-        }`}
-      >
-        <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarFallback className="text-sm">
-            {getPersonInitials(person)}
-          </AvatarFallback>
-        </Avatar>
+      <div className="flex items-center gap-3">
+        <UserCog className="h-5 w-5 text-muted-foreground" />
+
         <div className="flex-1 min-w-0">
-          <div className="font-medium">{getPersonDisplayName(person)}</div>
-          {person.email && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Mail className="h-3 w-3" />
-              <span className="truncate">{person.email}</span>
-            </div>
-          )}
-          {person.phone_number && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Phone className="h-3 w-3" />
-              <span>{person.phone_number}</span>
-            </div>
-          )}
-          {personRoles.size > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {Array.from(personRoles).map(role => (
-                <Badge key={role} variant="secondary" className="text-xs">
-                  {role}
-                </Badge>
-              ))}
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{role.name}</span>
+            {isSelected && (
+              <Badge variant="secondary" className="text-xs">
+                Selected
+              </Badge>
+            )}
+          </div>
+
+          {role.description && (
+            <div className="mt-1 text-xs text-muted-foreground line-clamp-1">
+              {role.description}
             </div>
           )}
         </div>
@@ -191,67 +200,66 @@ export function MassRolePicker({
   }
 
   return (
-    <CorePicker<PersonWithGroupRoles>
+    <CorePicker<MassRole>
       open={open}
       onOpenChange={onOpenChange}
-      items={filteredPeople}
-      selectedItem={people.find(p => p.id === selectedPersonId)}
-      onSelect={handleSelect}
-      title="Select Person for Role"
+      items={roles}
+      selectedItem={selectedRole}
+      onSelect={onSelect}
+      title="Select Mass Role"
       searchPlaceholder={placeholder}
-      searchFields={['first_name', 'last_name', 'email', 'phone_number']}
-      getItemLabel={getPersonDisplayName}
-      getItemId={(person) => person.id}
-      renderItem={renderPersonItem}
+      searchFields={['name', 'description']}
+      getItemLabel={(role) => role.name}
+      getItemId={(role) => role.id}
+      renderItem={renderRoleItem}
+      enableCreate={true}
+      createFields={createFields}
+      onCreateSubmit={handleCreateRole}
+      createButtonLabel="Save Mass Role"
+      addNewButtonLabel="Add New Mass Role"
       emptyMessage={emptyMessage}
-      noResultsMessage="No people found matching your search and filters."
+      noResultsMessage="No mass roles match your search"
       isLoading={loading}
+      autoOpenCreateForm={autoOpenCreateForm}
+      defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
+      editMode={editMode}
+      entityToEdit={roleToEdit}
+      onUpdateSubmit={handleUpdateRole}
+      updateButtonLabel="Update Mass Role"
       enablePagination={true}
       totalCount={totalCount}
       currentPage={currentPage}
       pageSize={PAGE_SIZE}
-      onPageChange={setCurrentPage}
-      onSearch={setSearchQuery}
-    >
-      {/* Custom filter controls */}
-      <div className="space-y-3 p-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <Select value={selectedRoleFilter} onValueChange={setSelectedRoleFilter}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Filter by mass role..." />
-            </SelectTrigger>
-            <SelectContent>
-              {allRoles.map(role => (
-                <SelectItem key={role.id} value={role.id}>
-                  {role.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedRoleFilter && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleClearFilter}
-            >
-              <X className="h-4 w-4 mr-1" />
-              Clear Filter
-            </Button>
-          )}
-        </div>
-        {allowEmpty && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleClear}
-            className="w-full"
-          >
-            Clear Assignment
-          </Button>
-        )}
-      </div>
-    </CorePicker>
+      onPageChange={handlePageChange}
+      onSearch={handleSearchChange}
+    />
   )
+}
+
+// Hook to use the mass role picker
+export function useMassRolePicker() {
+  const [open, setOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<MassRole | null>(null)
+
+  const openPicker = () => setOpen(true)
+  const closePicker = () => setOpen(false)
+
+  const handleSelect = (role: MassRole) => {
+    setSelectedRole(role)
+    setOpen(false)
+  }
+
+  const clearSelection = () => {
+    setSelectedRole(null)
+  }
+
+  return {
+    open,
+    openPicker,
+    closePicker,
+    selectedRole,
+    handleSelect,
+    clearSelection,
+    setOpen,
+  }
 }

@@ -13,12 +13,16 @@ export interface CreateMassRoleData {
   name: string
   description?: string
   note?: string
+  is_active?: boolean
+  display_order?: number
 }
 
 export interface UpdateMassRoleData {
   name?: string
   description?: string | null
   note?: string | null
+  is_active?: boolean
+  display_order?: number | null
 }
 
 export async function getMassRoles(): Promise<MassRole[]> {
@@ -30,6 +34,7 @@ export async function getMassRoles(): Promise<MassRole[]> {
     .from('mass_roles')
     .select('*')
     .eq('parish_id', selectedParishId)
+    .order('display_order', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })
 
   if (error) {
@@ -65,6 +70,7 @@ export async function getMassRolesPaginated(params?: PaginatedParams): Promise<P
 
   // Apply ordering, pagination
   query = query
+    .order('display_order', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })
     .range(offset, offset + limit - 1)
 
@@ -122,6 +128,8 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
         name: data.name,
         description: data.description || null,
         note: data.note || null,
+        is_active: data.is_active ?? true,
+        display_order: data.display_order || null,
       }
     ])
     .select()
@@ -132,7 +140,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
     throw new Error('Failed to create mass role')
   }
 
-  revalidatePath('/roles')
+  revalidatePath('/settings/mass-roles')
   return role
 }
 
@@ -158,9 +166,7 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
     throw new Error('Failed to update mass role')
   }
 
-  revalidatePath('/roles')
-  revalidatePath(`/roles/${id}`)
-  revalidatePath(`/roles/${id}/edit`)
+  revalidatePath('/settings/mass-roles')
   return role
 }
 
@@ -168,6 +174,38 @@ export async function deleteMassRole(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check if role is in use in templates
+  const { data: templateItems, error: checkError } = await supabase
+    .from('mass_roles_template_items')
+    .select('id')
+    .eq('mass_role_id', id)
+    .limit(1)
+
+  if (checkError) {
+    console.error('Error checking mass role usage:', checkError)
+    throw new Error('Failed to check if mass role is in use')
+  }
+
+  if (templateItems && templateItems.length > 0) {
+    throw new Error('Cannot delete mass role that is being used in templates')
+  }
+
+  // Check if role is in use in mass role instances (through template items)
+  const { data: roleInstances, error: instanceCheckError } = await supabase
+    .from('mass_role_instances')
+    .select('id, mass_roles_template_item:mass_roles_template_items!inner(mass_role_id)')
+    .eq('mass_roles_template_item.mass_role_id', id)
+    .limit(1)
+
+  if (instanceCheckError) {
+    console.error('Error checking mass role instance usage:', instanceCheckError)
+    throw new Error('Failed to check if mass role is in use')
+  }
+
+  if (roleInstances && roleInstances.length > 0) {
+    throw new Error('Cannot delete mass role that is assigned to people')
+  }
 
   const { error } = await supabase
     .from('mass_roles')
@@ -179,7 +217,7 @@ export async function deleteMassRole(id: string): Promise<void> {
     throw new Error('Failed to delete mass role')
   }
 
-  revalidatePath('/roles')
+  revalidatePath('/settings/mass-roles')
 }
 
 // ========== MASS ROLE INSTANCES ==========

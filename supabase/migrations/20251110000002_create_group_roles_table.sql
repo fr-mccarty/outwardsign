@@ -5,10 +5,15 @@ CREATE TABLE group_roles (
   name TEXT NOT NULL,
   description TEXT,
   note TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  display_order INTEGER,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(parish_id, name)
 );
+
+-- Add comment documenting the purpose
+COMMENT ON TABLE group_roles IS 'Group role definitions (Leader, Member, Secretary, etc.) for parish groups';
 
 -- Enable RLS
 ALTER TABLE group_roles ENABLE ROW LEVEL SECURITY;
@@ -20,6 +25,8 @@ GRANT ALL ON group_roles TO service_role;
 
 -- Add indexes
 CREATE INDEX idx_group_roles_parish_id ON group_roles(parish_id);
+CREATE INDEX idx_group_roles_is_active ON group_roles(is_active);
+CREATE INDEX idx_group_roles_display_order ON group_roles(display_order);
 
 -- RLS Policies for group_roles
 CREATE POLICY "Parish members can read their parish group_roles"

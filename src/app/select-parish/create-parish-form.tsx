@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createParish } from '@/lib/actions/setup'
+import { createParish, populateInitialParishData } from '@/lib/actions/setup'
 import { setSelectedParish } from '@/lib/auth/parish'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
@@ -25,29 +25,39 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.name.trim() || !formData.city.trim() || !formData.state.trim()) {
       toast.error('Please fill in all fields')
       return
     }
 
     setCreating(true)
-    
+
     try {
       const result = await createParish(formData)
+
+      // Populate initial parish data (readings, petition templates, group roles, mass roles)
+      try {
+        await populateInitialParishData(result.parish.id)
+      } catch (seedError) {
+        console.error('Error seeding parish data:', seedError)
+        // Continue anyway - parish is created, just missing seed data
+        toast.error('Parish created but some initial data failed to load')
+      }
+
       toast.success('Parish created successfully!')
-      
+
       // Set the new parish as selected
       await setSelectedParish(result.parish.id)
-      
+
       // Call success callback
       onSuccess()
-      
+
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (error) {
       console.error('Error creating parish:', error)
-      toast.error('Failed to create parish')
+      toast.error(error instanceof Error ? error.message : 'Failed to create parish')
     } finally {
       setCreating(false)
     }

@@ -52,10 +52,11 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
     try {
       if (group) {
         // Edit mode
-        const updateData: UpdateGroupData = {}
-        if (formData.name !== group.name) updateData.name = formData.name
-        if (formData.description !== (group.description || '')) updateData.description = formData.description || undefined
-        if (formData.is_active !== group.is_active) updateData.is_active = formData.is_active
+        const updateData: UpdateGroupData = {
+          name: formData.name,
+          description: formData.description || undefined,
+          is_active: formData.is_active
+        }
 
         await updateGroup(group.id, updateData)
         toast.success('Group updated successfully')

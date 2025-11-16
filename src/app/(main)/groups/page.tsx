@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
-import { Plus, Edit, Trash2, Users, UserPlus } from "lucide-react"
+import { Plus, Edit, Trash2, Users } from "lucide-react"
 import { getGroups, deleteGroup, type Group } from '@/lib/actions/groups'
 import { GroupFormDialog } from '@/components/groups/group-form-dialog'
 import { toast } from 'sonner'
@@ -58,11 +58,6 @@ export default function GroupsPage() {
 
   const handleCreate = () => {
     setEditingGroup(null)
-    setDialogOpen(true)
-  }
-
-  const handleEdit = (group: Group) => {
-    setEditingGroup(group)
     setDialogOpen(true)
   }
 
@@ -174,15 +169,8 @@ export default function GroupsPage() {
                       asChild
                     >
                       <Link href={`/groups/${group.id}`}>
-                        <UserPlus className="h-4 w-4" />
+                        <Edit className="h-4 w-4" />
                       </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(group)}
-                    >
-                      <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"

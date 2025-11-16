@@ -590,53 +590,21 @@ function HomeContent() {
               </Link>
             </div>
 
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                {t.nav.features}
-              </Link>
-              <Link href="#sacraments" className="text-muted-foreground hover:text-foreground transition-colors">
-                {t.nav.sacraments}
-              </Link>
-              <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-                {t.nav.howItWorks}
-              </Link>
-              <Link href="/documentation" className="text-muted-foreground hover:text-foreground transition-colors">
-                {t.nav.documentation}
-              </Link>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              {/* Theme Toggle */}
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="hidden lg:block p-2 rounded-lg border border-border hover:bg-accent transition-colors"
-                aria-label="Toggle theme"
-              >
-                {mounted && theme === 'dark' ? (
-                  <Sun className="h-4 w-4 text-foreground" />
-                ) : (
-                  <Moon className="h-4 w-4 text-foreground" />
-                )}
-              </button>
-
-              {/* Language Selector */}
-              <div className="hidden lg:block">
-                <LanguageSelector
-                  currentLang={language}
-                  onLanguageChange={handleLanguageChange}
-                />
-              </div>
-
+            <div className="flex items-center space-x-3">
+              {/* Login Button - visible at md+ */}
               <Button asChild variant="ghost" className="hidden md:inline-flex">
                 <Link href="/login">{t.nav.login}</Link>
               </Button>
+
+              {/* Get Started Button - visible at md+ */}
               <Button asChild className="hidden md:inline-flex">
                 <Link href="/signup">{t.nav.getStarted}</Link>
               </Button>
+
+              {/* Hamburger Menu (contains nav links, theme, language) - Always on the right */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="md:hidden"
                 onClick={() => setMobileMenuOpen(true)}
               >
                 <Menu className="h-5 w-5" />
@@ -657,7 +625,7 @@ function HomeContent() {
           </SheetHeader>
 
           <div className="flex flex-col gap-6 mt-8">
-            {/* Navigation Links */}
+            {/* Navigation Links - Always visible in menu */}
             <nav className="flex flex-col gap-4">
               <Link
                 href="#features"
@@ -691,7 +659,7 @@ function HomeContent() {
 
             <Separator />
 
-            {/* Theme Picker */}
+            {/* Theme Picker - Always visible in menu */}
             <div className="space-y-3">
               <div className="text-sm font-medium text-muted-foreground">Theme</div>
               <div className="flex gap-2">
@@ -718,7 +686,7 @@ function HomeContent() {
 
             <Separator />
 
-            {/* Language Picker */}
+            {/* Language Picker - Always visible in menu */}
             <div className="space-y-3">
               <div className="text-sm font-medium text-muted-foreground">Language</div>
               <LanguageSelector
@@ -728,16 +696,18 @@ function HomeContent() {
               />
             </div>
 
-            <Separator />
+            {/* Action Buttons - Only visible on mobile (< md) */}
+            <div className="md:hidden flex flex-col gap-6">
+              <Separator />
 
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3">
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/login">{t.nav.login}</Link>
-              </Button>
-              <Button asChild className="w-full">
-                <Link href="/signup">{t.nav.getStarted}</Link>
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/login">{t.nav.login}</Link>
+                </Button>
+                <Button asChild className="w-full">
+                  <Link href="/signup">{t.nav.getStarted}</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </SheetContent>

@@ -11,6 +11,7 @@ import { Flower, Loader2 } from 'lucide-react'
 import { APP_NAME } from '@/lib/constants'
 import { createParishWithSuperAdmin } from '@/lib/auth/parish'
 import { populateInitialParishData } from '@/lib/actions/setup'
+import { toast } from 'sonner'
 
 export default function OnboardingPage() {
   const [parishName, setParishName] = useState('')
@@ -77,14 +78,20 @@ export default function OnboardingPage() {
       setLoading(false)
       setPreparing(true)
 
-      // Step 3: Populate initial data (sample readings)
-      await populateInitialParishData(result.parishId)
+      // Step 3: Populate initial data (sample readings, group roles, mass roles, etc.)
+      try {
+        await populateInitialParishData(result.parishId)
+      } catch (seedError) {
+        console.error('Error seeding parish data:', seedError)
+        // Continue anyway - parish is created, just missing seed data
+        toast.error('Parish created but some initial data failed to load')
+      }
 
       // Step 4: Redirect to dashboard
       router.push('/dashboard')
     } catch (err) {
       console.error('Onboarding error:', err)
-      setError('An unexpected error occurred')
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
       setLoading(false)
       setPreparing(false)
     }

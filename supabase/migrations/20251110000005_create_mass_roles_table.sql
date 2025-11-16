@@ -5,6 +5,8 @@ CREATE TABLE mass_roles (
   name TEXT NOT NULL,
   description TEXT,
   note TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  display_order INTEGER,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(parish_id, name)
@@ -23,6 +25,8 @@ GRANT ALL ON mass_roles TO service_role;
 
 -- Add indexes
 CREATE INDEX idx_mass_roles_parish_id ON mass_roles(parish_id);
+CREATE INDEX idx_mass_roles_is_active ON mass_roles(is_active);
+CREATE INDEX idx_mass_roles_display_order ON mass_roles(display_order);
 
 -- RLS Policies for mass_roles
 CREATE POLICY "Parish members can read their parish mass_roles"

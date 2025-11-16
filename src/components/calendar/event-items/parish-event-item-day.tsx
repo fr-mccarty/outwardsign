@@ -27,8 +27,8 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
   return (
     <div
       className={cn(
-        "px-4 py-3 rounded cursor-pointer hover:brightness-110 transition-all",
-        "bg-primary/20 text-primary border border-primary/30"
+        "px-4 py-3 rounded cursor-pointer hover:brightness-95 transition-all",
+        "bg-white text-foreground border border-gray-300"
       )}
       onClick={onClick}
     >

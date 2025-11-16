@@ -217,7 +217,7 @@ export interface ContentSection {
 export interface LiturgyDocument {
   /** Metadata */
   id: string
-  type: 'wedding' | 'baptism' | 'funeral' | 'quinceanera' | 'presentation' | 'mass' | 'mass-intention'
+  type: 'wedding' | 'baptism' | 'funeral' | 'quinceanera' | 'presentation' | 'mass' | 'mass-intention' | 'event'
   language: string
   template: string
 

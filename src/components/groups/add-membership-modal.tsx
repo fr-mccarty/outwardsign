@@ -3,17 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save, X, UserPlus } from "lucide-react"
-import { PeoplePicker } from '@/components/people-picker'
+import { Save, X } from "lucide-react"
+import { PersonPickerField } from '@/components/person-picker-field'
+import { GroupRolePickerField } from '@/components/group-role-picker-field'
 import { usePickerState } from '@/hooks/use-picker-state'
 import type { Person } from '@/lib/types'
-import { addGroupMember } from '@/lib/actions/groups'
-import { getGroupRoles, type GroupRole } from '@/lib/actions/group-roles'
+import { addGroupMember, updateGroupMemberRole, type GroupMember } from '@/lib/actions/groups'
+import type { GroupRole } from '@/lib/actions/group-roles'
 import { toast } from 'sonner'
-import { MASS_ROLE_LABELS, type MassRoleType } from '@/lib/constants'
-import { useLanguage } from '@/components/language-context'
 
 interface AddMembershipModalProps {
   open: boolean
@@ -21,6 +18,8 @@ interface AddMembershipModalProps {
   groupId: string
   groupName: string
   onSuccess: () => void
+  editMode?: boolean
+  memberToEdit?: GroupMember | null
 }
 
 export function AddMembershipModal({
@@ -29,72 +28,62 @@ export function AddMembershipModal({
   groupId,
   groupName,
   onSuccess,
+  editMode = false,
+  memberToEdit = null,
 }: AddMembershipModalProps) {
-  const { language } = useLanguage()
-  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
-  const [selectedGroupRoleId, setSelectedGroupRoleId] = useState<string | undefined>(undefined)
-  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const peoplePickerState = usePickerState()
+  const person = usePickerState<Person>()
+  const groupRole = usePickerState<GroupRole>()
 
-  // Helper function to get group role label
-  const getRoleLabel = (roleName: string) => {
-    if (roleName in MASS_ROLE_LABELS) {
-      return MASS_ROLE_LABELS[roleName as MassRoleType][language]
-    }
-    return roleName
-  }
-
-  // Fetch group roles when modal opens
+  // Pre-populate fields when editing
   useEffect(() => {
-    if (open) {
-      setLoading(true)
-      getGroupRoles()
-        .then(roles => setGroupRoles(roles))
-        .catch(error => {
-          console.error('Failed to fetch group roles:', error)
-          toast.error('Failed to load group roles')
-        })
-        .finally(() => setLoading(false))
+    if (editMode && memberToEdit && open) {
+      if (memberToEdit.person) {
+        person.setValue(memberToEdit.person as Person)
+      }
+      if (memberToEdit.group_role) {
+        groupRole.setValue(memberToEdit.group_role as GroupRole)
+      }
     }
-  }, [open])
-
-  const handlePersonSelect = (person: Person) => {
-    setSelectedPersonId(person.id)
-    peoplePickerState.setShowPicker(false)
-  }
+  }, [editMode, memberToEdit, open])
 
   const handleSubmit = async () => {
-    if (!selectedPersonId) {
+    if (!person.value) {
       toast.error('Please select a person')
       return
     }
 
     setSaving(true)
     try {
-      await addGroupMember(groupId, selectedPersonId, selectedGroupRoleId)
-      toast.success('Member added successfully')
+      if (editMode && memberToEdit) {
+        // Update existing member's role
+        await updateGroupMemberRole(groupId, memberToEdit.person_id, groupRole.value?.id || null)
+        toast.success('Member updated successfully')
+      } else {
+        // Add new member
+        await addGroupMember(groupId, person.value.id, groupRole.value?.id)
+        toast.success('Member added successfully')
+      }
 
       // Reset form
-      setSelectedPersonId(null)
-      setSelectedGroupRoleId(undefined)
+      person.setValue(null)
+      groupRole.setValue(null)
 
       // Close modal and refresh data
       onOpenChange(false)
       onSuccess()
     } catch (error) {
-      console.error('Failed to add member:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to add member')
+      console.error(editMode ? 'Failed to update member:' : 'Failed to add member:', error)
+      toast.error(error instanceof Error ? error.message : (editMode ? 'Failed to update member' : 'Failed to add member'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleCancel = () => {
-    setSelectedPersonId(null)
-    setSelectedGroupRoleId(undefined)
+    person.setValue(null)
+    groupRole.setValue(null)
     onOpenChange(false)
   }
 
@@ -103,52 +92,54 @@ export function AddMembershipModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle>Add Member to {groupName}</DialogTitle>
+            <DialogTitle>
+              {editMode ? `Edit Member in ${groupName}` : `Add Member to ${groupName}`}
+            </DialogTitle>
             <DialogDescription>
-              Select a person and optionally assign a group role
+              {editMode
+                ? 'Update the group role for this member'
+                : 'Select a person and optionally assign a group role'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 overflow-y-auto flex-1">
             {/* Person Selection */}
-            <div className="space-y-2">
-              <Label>Person *</Label>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => peoplePickerState.setShowPicker(true)}
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                {selectedPersonId ? 'Change Person' : 'Select Person'}
-              </Button>
-              {selectedPersonId && (
-                <p className="text-sm text-muted-foreground">
-                  Person selected
-                </p>
-              )}
-            </div>
+            {editMode ? (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Person</label>
+                <div className="p-3 border rounded-md bg-muted">
+                  <p className="font-medium">
+                    {person.value
+                      ? `${person.value.first_name} ${person.value.last_name}`
+                      : 'Unknown Person'}
+                  </p>
+                  {person.value?.email && (
+                    <p className="text-sm text-muted-foreground">{person.value.email}</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <PersonPickerField
+                label="Person"
+                value={person.value}
+                onValueChange={person.setValue}
+                showPicker={person.showPicker}
+                onShowPickerChange={person.setShowPicker}
+                placeholder="Select Person"
+                required
+              />
+            )}
 
             {/* Group Role Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="group-role">Group Role (Optional)</Label>
-              <Select
-                value={selectedGroupRoleId}
-                onValueChange={setSelectedGroupRoleId}
-                disabled={loading}
-              >
-                <SelectTrigger id="group-role" data-testid="role-select-trigger">
-                  <SelectValue placeholder="Select a group role..." />
-                </SelectTrigger>
-                <SelectContent data-testid="role-select-content">
-                  <SelectItem value="none" data-testid="role-option-none">No Group Role</SelectItem>
-                  {groupRoles.map((role) => (
-                    <SelectItem key={role.id} value={role.id} data-testid={`role-option-${role.name}`}>
-                      {getRoleLabel(role.name)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <GroupRolePickerField
+              label="Group Role"
+              value={groupRole.value}
+              onValueChange={groupRole.setValue}
+              showPicker={groupRole.showPicker}
+              onShowPickerChange={groupRole.setShowPicker}
+              placeholder="Select Group Role (Optional)"
+              description="Optional: Assign a role to this member in the group"
+            />
           </div>
 
           <div className="flex gap-2 justify-end flex-shrink-0 pt-4 border-t">
@@ -162,22 +153,14 @@ export function AddMembershipModal({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={saving || !selectedPersonId}
+              disabled={saving || !person.value}
             >
               <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Adding...' : 'Add Member'}
+              {saving ? (editMode ? 'Updating...' : 'Adding...') : (editMode ? 'Update Member' : 'Add Member')}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* People Picker Modal */}
-      <PeoplePicker
-        open={peoplePickerState.showPicker}
-        onOpenChange={peoplePickerState.setShowPicker}
-        onSelect={handlePersonSelect}
-        selectedPersonId={selectedPersonId || undefined}
-      />
     </>
   )
 }

@@ -642,6 +642,8 @@ export interface MassRole {
   name: string
   description?: string
   note?: string
+  is_active: boolean
+  display_order?: number | null
   created_at: string
   updated_at: string
 }

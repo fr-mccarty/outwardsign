@@ -373,43 +373,10 @@ export const USER_PARISH_ROLE_LABELS: Record<UserParishRoleType, { en: string; e
 // ============================================================================
 // MASS ROLES
 // ============================================================================
-// Liturgical roles for Mass ministries (Lector, Cantor, EMHC, etc.)
-// Note: Group roles are custom per-parish and stored in group_roles table
-
-export const MASS_ROLE_VALUES = [
-  'LECTOR',
-  'EMHC',
-  'ALTAR_SERVER',
-  'CANTOR',
-  'USHER',
-  'SACRISTAN',
-  'MUSIC_MINISTER'
-] as const
-
-export type MassRoleType = typeof MASS_ROLE_VALUES[number]
-
-export const MASS_ROLE_LABELS: Record<MassRoleType, { en: string; es: string }> = {
-  LECTOR: { en: 'Lector', es: 'Lector' },
-  EMHC: { en: 'Extraordinary Minister of Holy Communion', es: 'Ministro Extraordinario de la Comunión' },
-  ALTAR_SERVER: { en: 'Altar Server', es: 'Monaguillo' },
-  CANTOR: { en: 'Cantor', es: 'Cantor' },
-  USHER: { en: 'Usher', es: 'Ujier' },
-  SACRISTAN: { en: 'Sacristan', es: 'Sacristán' },
-  MUSIC_MINISTER: { en: 'Music Minister', es: 'Ministro de Música' }
-}
-
-// Mass Role Status Constants
-export const MASS_ROLE_STATUS_VALUES = ['ASSIGNED', 'CONFIRMED', 'DECLINED', 'SUBSTITUTE_REQUESTED', 'SUBSTITUTE_FOUND', 'NO_SHOW'] as const
-export type MassRoleStatus = typeof MASS_ROLE_STATUS_VALUES[number]
-
-export const MASS_ROLE_STATUS_LABELS: Record<MassRoleStatus, { en: string; es: string }> = {
-  ASSIGNED: { en: 'Assigned', es: 'Asignado' },
-  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
-  DECLINED: { en: 'Declined', es: 'Declinado' },
-  SUBSTITUTE_REQUESTED: { en: 'Substitute Requested', es: 'Sustituto Solicitado' },
-  SUBSTITUTE_FOUND: { en: 'Substitute Found', es: 'Sustituto Encontrado' },
-  NO_SHOW: { en: 'No Show', es: 'No Asistió' }
-}
+// Mass roles are stored in the database as parish-specific entities.
+// Each parish can create and manage their own mass roles in the mass_roles table.
+// See: src/lib/actions/mass-roles.ts for CRUD operations
+// Default roles are seeded during parish creation in src/lib/actions/setup.ts
 
 // ============================================================================
 // PETITION TEMPLATES

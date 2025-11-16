@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -346,6 +347,37 @@ export function CorePicker<T>({
             placeholder={field.placeholder}
             className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
           />
+          {field.description && !hasError && (
+            <p className="text-sm text-muted-foreground">{field.description}</p>
+          )}
+          {hasError && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+      )
+    }
+
+    // Checkbox field
+    if (field.type === 'checkbox') {
+      const checked = value === true || value === 'true'
+      return (
+        <div key={field.key} className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={field.key}
+              checked={checked}
+              onCheckedChange={(newValue) => handleCreateFieldChange(field.key, newValue)}
+              className={cn(hasError && 'border-destructive')}
+            />
+            <Label
+              htmlFor={field.key}
+              className={cn(
+                'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+                hasError && 'text-destructive'
+              )}
+            >
+              {field.label}
+              {field.required && <span className="text-destructive ml-1">*</span>}
+            </Label>
+          </div>
           {field.description && !hasError && (
             <p className="text-sm text-muted-foreground">{field.description}</p>
           )}

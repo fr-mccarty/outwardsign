@@ -4,41 +4,41 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { UserCog } from 'lucide-react'
-import { getMassRolesPaginated, createMassRole, updateMassRole } from '@/lib/actions/mass-roles'
-import type { MassRole } from '@/lib/types'
+import { getGroupRolesPaginated, createGroupRole, updateGroupRole, type GroupRole } from '@/lib/actions/group-roles'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 
-interface RolePickerProps {
+interface GroupRolePickerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (role: MassRole) => void
+  onSelect: (role: GroupRole) => void
   placeholder?: string
   emptyMessage?: string
   selectedRoleId?: string
   className?: string
-  visibleFields?: string[] // Optional fields to show: 'description', 'note'
+  visibleFields?: string[] // Optional fields to show: 'description', 'note', 'is_active', 'display_order'
   requiredFields?: string[] // Fields that should be marked as required
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
   editMode?: boolean // Open directly to edit form
-  roleToEdit?: MassRole | null // Mass role being edited
+  roleToEdit?: GroupRole | null // Group role being edited
 }
 
 // Default visible fields - defined outside component to prevent re-creation
+// Note: is_active and display_order are hidden and auto-managed
 const DEFAULT_VISIBLE_FIELDS = ['description', 'note']
 
 // Empty object constant to prevent re-creation on every render
 const EMPTY_FORM_DATA = {}
 
-export function RolePicker({
+export function GroupRolePicker({
   open,
   onOpenChange,
   onSelect,
-  placeholder = 'Search for a mass role...',
-  emptyMessage = 'No mass roles found.',
+  placeholder = 'Search for a group role...',
+  emptyMessage = 'No group roles found.',
   selectedRoleId,
   className,
   visibleFields,
@@ -47,13 +47,9 @@ export function RolePicker({
   defaultCreateFormData,
   editMode = false,
   roleToEdit = null,
-}: RolePickerProps) {
-  const [roles, setRoles] = useState<MassRole[]>([])
+}: GroupRolePickerProps) {
+  const [roles, setRoles] = useState<GroupRole[]>([])
   const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalCount, setTotalCount] = useState(0)
-  const [searchQuery, setSearchQuery] = useState('')
-  const PAGE_SIZE = 10
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -65,26 +61,26 @@ export function RolePicker({
     [requiredFields]
   )
 
-  // Load roles when dialog opens or when page/search changes
+  // Load all roles when dialog opens
   useEffect(() => {
     if (open) {
-      loadRoles(currentPage, searchQuery)
+      loadRoles()
     }
-  }, [open, currentPage, searchQuery])
+  }, [open])
 
-  const loadRoles = async (page: number, search: string) => {
+  const loadRoles = async () => {
     try {
       setLoading(true)
-      const result = await getMassRolesPaginated({
-        page,
-        limit: PAGE_SIZE,
-        search,
+      // Fetch all group roles with a large limit
+      const result = await getGroupRolesPaginated({
+        page: 1,
+        limit: 1000,
+        search: '',
       })
       setRoles(result.items)
-      setTotalCount(result.totalCount)
     } catch (error) {
-      console.error('Error loading mass roles:', error)
-      toast.error('Failed to load mass roles')
+      console.error('Error loading group roles:', error)
+      toast.error('Failed to load group roles')
     } finally {
       setLoading(false)
     }
@@ -102,8 +98,8 @@ export function RolePicker({
         label: 'Name',
         type: 'text',
         required: true,
-        placeholder: 'Lector',
-        validation: z.string().min(1, 'Mass role name is required'),
+        placeholder: 'Leader',
+        validation: z.string().min(1, 'Group role name is required'),
       },
     ]
 
@@ -113,7 +109,7 @@ export function RolePicker({
         label: 'Description',
         type: 'text',
         required: isFieldRequired('description'),
-        placeholder: 'Proclaims the Word of God',
+        placeholder: 'Leads and coordinates the group',
       })
     }
 
@@ -127,15 +123,42 @@ export function RolePicker({
       })
     }
 
+    if (isFieldVisible('is_active')) {
+      fields.push({
+        key: 'is_active',
+        label: 'Active',
+        type: 'checkbox',
+        required: isFieldRequired('is_active'),
+      })
+    }
+
+    if (isFieldVisible('display_order')) {
+      fields.push({
+        key: 'display_order',
+        label: 'Display Order',
+        type: 'number',
+        required: isFieldRequired('display_order'),
+        placeholder: '1',
+      })
+    }
+
     return fields
   }, [isFieldVisible, isFieldRequired])
 
-  // Handle creating a new mass role
-  const handleCreateRole = async (data: any): Promise<MassRole> => {
-    const newRole = await createMassRole({
+  // Handle creating a new group role
+  const handleCreateRole = async (data: any): Promise<GroupRole> => {
+    // Calculate next display_order (max + 1)
+    const maxDisplayOrder = roles.reduce((max, role) => {
+      return role.display_order && role.display_order > max ? role.display_order : max
+    }, 0)
+    const nextDisplayOrder = maxDisplayOrder + 1
+
+    const newRole = await createGroupRole({
       name: data.name,
       description: data.description || undefined,
       note: data.note || undefined,
+      is_active: true, // Always active when created
+      display_order: nextDisplayOrder,
     })
 
     // Add to local list
@@ -144,12 +167,14 @@ export function RolePicker({
     return newRole
   }
 
-  // Handle updating an existing mass role
-  const handleUpdateRole = async (id: string, data: any): Promise<MassRole> => {
-    const updatedRole = await updateMassRole(id, {
+  // Handle updating an existing group role
+  const handleUpdateRole = async (id: string, data: any): Promise<GroupRole> => {
+    const updatedRole = await updateGroupRole(id, {
       name: data.name,
       description: data.description || undefined,
       note: data.note || undefined,
+      is_active: data.is_active !== undefined ? data.is_active : undefined,
+      display_order: data.display_order ? parseInt(data.display_order) : undefined,
     })
 
     // Update local list
@@ -160,19 +185,8 @@ export function RolePicker({
     return updatedRole
   }
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  // Handle search change
-  const handleSearchChange = (search: string) => {
-    setSearchQuery(search)
-    setCurrentPage(1) // Reset to first page when searching
-  }
-
-  // Custom render for mass role list items
-  const renderRoleItem = (role: MassRole) => {
+  // Custom render for group role list items
+  const renderRoleItem = (role: GroupRole) => {
     const isSelected = selectedRoleId === role.id
 
     return (
@@ -185,6 +199,11 @@ export function RolePicker({
             {isSelected && (
               <Badge variant="secondary" className="text-xs">
                 Selected
+              </Badge>
+            )}
+            {!role.is_active && (
+              <Badge variant="outline" className="text-xs">
+                Inactive
               </Badge>
             )}
           </div>
@@ -200,13 +219,13 @@ export function RolePicker({
   }
 
   return (
-    <CorePicker<MassRole>
+    <CorePicker<GroupRole>
       open={open}
       onOpenChange={onOpenChange}
       items={roles}
       selectedItem={selectedRole}
       onSelect={onSelect}
-      title="Select Mass Role"
+      title="Select Group Role"
       searchPlaceholder={placeholder}
       searchFields={['name', 'description']}
       getItemLabel={(role) => role.name}
@@ -215,36 +234,31 @@ export function RolePicker({
       enableCreate={true}
       createFields={createFields}
       onCreateSubmit={handleCreateRole}
-      createButtonLabel="Save Mass Role"
-      addNewButtonLabel="Add New Mass Role"
+      createButtonLabel="Save Group Role"
+      addNewButtonLabel="Add New Group Role"
       emptyMessage={emptyMessage}
-      noResultsMessage="No mass roles match your search"
+      noResultsMessage="No group roles match your search"
       isLoading={loading}
       autoOpenCreateForm={autoOpenCreateForm}
       defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
       editMode={editMode}
       entityToEdit={roleToEdit}
       onUpdateSubmit={handleUpdateRole}
-      updateButtonLabel="Update Mass Role"
-      enablePagination={true}
-      totalCount={totalCount}
-      currentPage={currentPage}
-      pageSize={PAGE_SIZE}
-      onPageChange={handlePageChange}
-      onSearch={handleSearchChange}
+      updateButtonLabel="Update Group Role"
+      enablePagination={false}
     />
   )
 }
 
-// Hook to use the mass role picker
-export function useRolePicker() {
+// Hook to use the group role picker
+export function useGroupRolePicker() {
   const [open, setOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<MassRole | null>(null)
+  const [selectedRole, setSelectedRole] = useState<GroupRole | null>(null)
 
   const openPicker = () => setOpen(true)
   const closePicker = () => setOpen(false)
 
-  const handleSelect = (role: MassRole) => {
+  const handleSelect = (role: GroupRole) => {
     setSelectedRole(role)
     setOpen(false)
   }

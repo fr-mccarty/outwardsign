@@ -14,8 +14,8 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
   return (
     <div
       className={cn(
-        "text-xs px-2 py-1 rounded truncate cursor-pointer hover:brightness-110 transition-all",
-        "bg-primary/20 text-primary border border-primary/30"
+        "text-xs px-2 py-1 rounded truncate cursor-pointer hover:brightness-95 transition-all",
+        "bg-white text-foreground border border-gray-300"
       )}
       onClick={onClick}
     >

@@ -10,6 +10,8 @@ export type PickerFieldType =
   | 'date'
   | 'datetime-local'
   | 'time'
+  | 'number'
+  | 'checkbox'
   | 'select'
   | 'textarea'
   | 'custom'

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getEventWithRelations } from '@/lib/actions/events'
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from 'docx'
-import { EVENT_TYPE_LABELS } from '@/lib/constants'
+import { Document, Packer } from 'docx'
+import { buildEventLiturgy } from '@/lib/content-builders/event'
+import { renderWord } from '@/lib/renderers/word-renderer'
+import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 
 export async function GET(
   request: NextRequest,
@@ -15,214 +17,26 @@ export async function GET(
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
-    const formatDate = (dateString?: string) => {
-      if (!dateString) return 'Not specified'
-      return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    }
+    // Build liturgy content using centralized content builder
+    const language = (event.language === 'es' ? 'es' : 'en') as 'en' | 'es'
+    const liturgyDocument = buildEventLiturgy(event, 'full-script', language)
 
-    // Build Word document paragraphs
-    const paragraphs: Paragraph[] = []
-
-    // Header
-    // TODO: Fetch user language preference from server-side user_settings table
-    paragraphs.push(
-      new Paragraph({
-        text: event.name,
-        heading: HeadingLevel.HEADING_1,
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 }
-      }),
-      new Paragraph({
-        text: EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type,
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-        children: [
-          new TextRun({
-            text: EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type,
-            color: '666666',
-            size: 24
-          })
-        ]
-      })
-    )
-
-    // Description
-    if (event.description) {
-      paragraphs.push(
-        new Paragraph({
-          text: 'Description',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        }),
-        new Paragraph({
-          text: event.description,
-          spacing: { after: 300 }
-        })
-      )
-    }
-
-    // Event Details
-    paragraphs.push(
-      new Paragraph({
-        text: 'Event Details',
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 100 }
-      })
-    )
-
-    if (event.start_date) {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Start Date: ', bold: true }),
-            new TextRun({ text: formatDate(event.start_date) })
-          ]
-        })
-      )
-    }
-
-    if (event.start_time) {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Start Time: ', bold: true }),
-            new TextRun({ text: event.start_time })
-          ]
-        })
-      )
-    }
-
-    if (event.end_date) {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'End Date: ', bold: true }),
-            new TextRun({ text: formatDate(event.end_date) })
-          ]
-        })
-      )
-    }
-
-    if (event.end_time) {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'End Time: ', bold: true }),
-            new TextRun({ text: event.end_time })
-          ]
-        })
-      )
-    }
-
-    if (event.location) {
-      const locationText = event.location.name +
-        (event.location.street || event.location.city ?
-          ` (${[event.location.street, event.location.city, event.location.state].filter(Boolean).join(', ')})` :
-          '')
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Location: ', bold: true }),
-            new TextRun({ text: locationText })
-          ]
-        })
-      )
-    }
-
-    if (event.language) {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: 'Language: ', bold: true }),
-            new TextRun({ text: event.language })
-          ]
-        })
-      )
-    }
-
-    paragraphs.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: 'Responsible Party: ', bold: true }),
-          new TextRun({ text: event.responsible_party_id || 'N/A', size: 16, font: 'Courier New' })
-        ],
-        spacing: { after: 300 }
-      })
-    )
-
-    // Notes
-    if (event.note) {
-      paragraphs.push(
-        new Paragraph({
-          text: 'Notes',
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 200, after: 100 }
-        }),
-        new Paragraph({
-          text: event.note,
-          spacing: { after: 300 }
-        })
-      )
-    }
-
-    // Metadata
-    paragraphs.push(
-      new Paragraph({
-        text: '',
-        spacing: { before: 400 },
-        border: {
-          top: {
-            color: 'CCCCCC',
-            space: 1,
-            style: BorderStyle.SINGLE,
-            size: 6
-          }
-        }
-      }),
-      new Paragraph({
-        children: [
-          new TextRun({ text: 'Created: ', bold: true, size: 18, color: '666666' }),
-          new TextRun({
-            text: new Date(event.created_at).toLocaleString('en-US', {
-              dateStyle: 'long',
-              timeStyle: 'short'
-            }),
-            size: 18,
-            color: '666666'
-          })
-        ],
-        spacing: { before: 200 }
-      }),
-      new Paragraph({
-        children: [
-          new TextRun({ text: 'Last Updated: ', bold: true, size: 18, color: '666666' }),
-          new TextRun({
-            text: new Date(event.updated_at).toLocaleString('en-US', {
-              dateStyle: 'long',
-              timeStyle: 'short'
-            }),
-            size: 18,
-            color: '666666'
-          })
-        ]
-      }),
-      new Paragraph({
-        children: [
-          new TextRun({ text: 'Event ID: ', bold: true, size: 18, color: '666666' }),
-          new TextRun({ text: event.id, size: 16, font: 'Courier New', color: '666666' })
-        ]
-      })
-    )
+    // Render to Word format
+    const paragraphs = renderWord(liturgyDocument)
 
     // Create Word document
     const doc = new Document({
       sections: [{
-        properties: {},
+        properties: {
+          page: {
+            margin: {
+              top: WORD_PAGE_MARGIN,
+              right: WORD_PAGE_MARGIN,
+              bottom: WORD_PAGE_MARGIN,
+              left: WORD_PAGE_MARGIN,
+            },
+          },
+        },
         children: paragraphs
       }]
     })
