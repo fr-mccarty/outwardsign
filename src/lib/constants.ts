@@ -266,10 +266,11 @@ export const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
 }
 
 // Mass Status Constants
-export const MASS_STATUS_VALUES = ['PLANNING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'] as const
+export const MASS_STATUS_VALUES = ['ACTIVE', 'PLANNING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'] as const
 export type MassStatus = typeof MASS_STATUS_VALUES[number]
 
 export const MASS_STATUS_LABELS: Record<MassStatus, { en: string; es: string }> = {
+  ACTIVE: { en: 'Active', es: 'Activo' },
   PLANNING: { en: 'Planning', es: 'Planificación' },
   SCHEDULED: { en: 'Scheduled', es: 'Programado' },
   COMPLETED: { en: 'Completed', es: 'Completado' },

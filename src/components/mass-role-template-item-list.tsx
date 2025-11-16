@@ -38,7 +38,7 @@ interface MassRoleTemplateItemListProps {
 export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemListProps) {
   const [items, setItems] = useState<MassRoleTemplateItemWithRole[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showRolePicker, setShowRolePicker] = useState(false)
+  const [showMassRolePicker, setShowMassRolePicker] = useState(false)
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -109,24 +109,24 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
     }
   }
 
-  const handleRoleSelected = async (role: MassRole) => {
+  const handleMassRoleSelected = async (massRole: MassRole) => {
     try {
-      // Check if role already exists in template
-      const existingRoleIds = items.map(item => item.mass_role_id)
-      if (existingRoleIds.includes(role.id)) {
+      // Check if mass role already exists in template
+      const existingMassRoleIds = items.map(item => item.mass_role_id)
+      if (existingMassRoleIds.includes(massRole.id)) {
         toast.error('This mass role is already in the template')
-        setShowRolePicker(false)
+        setShowMassRolePicker(false)
         return
       }
 
-      // Add role to template
+      // Add mass role to template
       await createTemplateItem({
         template_id: templateId,
-        mass_role_id: role.id,
+        mass_role_id: massRole.id,
         count: 1
       })
       toast.success('Mass role added to template')
-      setShowRolePicker(false)
+      setShowMassRolePicker(false)
       loadItems()
     } catch (error) {
       console.error('Failed to add mass role:', error)
@@ -183,7 +183,7 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
         )}
 
         <Button
-          onClick={() => setShowRolePicker(true)}
+          onClick={() => setShowMassRolePicker(true)}
           variant="outline"
           className="w-full"
         >
@@ -192,9 +192,9 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
         </Button>
 
         <MassRolePicker
-          open={showRolePicker}
-          onOpenChange={setShowRolePicker}
-          onSelect={handleRoleSelected}
+          open={showMassRolePicker}
+          onOpenChange={setShowMassRolePicker}
+          onSelect={handleMassRoleSelected}
           placeholder="Search for a mass role..."
           emptyMessage="No mass roles found."
         />

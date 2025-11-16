@@ -98,7 +98,7 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
             <GripVertical className="h-5 w-5" />
           </button>
 
-          {/* Role Name */}
+          {/* Mass Role Name */}
           <div className="flex-1 min-w-0">
             <p className="font-medium truncate">{item.mass_role.name}</p>
             {item.mass_role.description && (

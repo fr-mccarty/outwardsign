@@ -4,24 +4,28 @@ import { useState, useEffect } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { createMass, updateMass, type CreateMassData, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations } from "@/lib/actions/masses"
+import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
 import { getMassRoles as getAllMassRoles } from "@/lib/actions/mass-roles"
+import { getMassRoleTemplates, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
+import { getTemplateItems, type MassRoleTemplateItemWithRole } from "@/lib/actions/mass-role-template-items"
 import type { Person, Event, MassRole } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
+import type { MassIntentionWithNames } from "@/lib/actions/mass-intentions"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
-import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PeoplePicker } from "@/components/people-picker"
-import { Plus, X } from "lucide-react"
+import { MassIntentionPicker } from "@/components/mass-intention-picker"
+import { RoleFulfillmentBadge } from "@/components/role-fulfillment-badge"
+import { Plus, X, Heart } from "lucide-react"
 
 // Zod validation schema
 const massSchema = z.object({
@@ -30,6 +34,7 @@ const massSchema = z.object({
   presider_id: z.string().optional(),
   homilist_id: z.string().optional(),
   liturgical_event_id: z.string().optional(),
+  mass_roles_template_id: z.string().optional(),
   pre_mass_announcement_id: z.string().optional(),
   pre_mass_announcement_topic: z.string().optional(),
   petitions: z.string().optional(),
@@ -55,7 +60,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(mass?.status || "PLANNING")
+  const [status, setStatus] = useState(mass?.status || "ACTIVE")
   const [note, setNote] = useState(mass?.note || "")
   const [announcements, setAnnouncements] = useState(mass?.announcements || "")
   const [petitions, setPetitions] = useState(mass?.petitions || "")
@@ -71,10 +76,19 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
   // Mass role assignments state
   const [massRoles, setMassRoles] = useState<MassRoleInstanceWithRelations[]>([])
-  const [allRoles, setAllRoles] = useState<MassRole[]>([])
+  const [allMassRoles, setAllMassRoles] = useState<MassRole[]>([])
+  const [loadingMassRoles, setLoadingMassRoles] = useState(false)
   const [rolePickerOpen, setRolePickerOpen] = useState(false)
   const [currentRoleId, setCurrentRoleId] = useState<string | null>(null)
-  const [loadingRoles, setLoadingRoles] = useState(false)
+
+  // Mass intention state
+  const [massIntention, setMassIntention] = useState<MassIntentionWithNames | null>(null)
+  const [massIntentionPickerOpen, setMassIntentionPickerOpen] = useState(false)
+
+  // Mass role template state
+  const [massRolesTemplateId, setMassRolesTemplateId] = useState<string>(mass?.mass_roles_template_id || "")
+  const [allTemplates, setAllTemplates] = useState<MassRoleTemplate[]>([])
+  const [templateItems, setTemplateItems] = useState<MassRoleTemplateItemWithRole[]>([])
 
   // Initialize form with mass data when editing
   useEffect(() => {
@@ -94,13 +108,32 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       if (mass.mass_roles) {
         setMassRoles(mass.mass_roles)
       }
+
+      // Set mass intention if available
+      if (mass.mass_intention) {
+        setMassIntention(mass.mass_intention)
+      }
     }
   }, [mass])
 
-  // Load all roles for the role assignment section
+  // Load all mass roles for the role assignment section
   useEffect(() => {
-    loadAllRoles()
+    loadAllMassRoles()
   }, [])
+
+  // Load all templates when the form mounts
+  useEffect(() => {
+    loadAllTemplates()
+  }, [])
+
+  // Load template items when template is selected
+  useEffect(() => {
+    if (massRolesTemplateId) {
+      loadTemplateItems(massRolesTemplateId)
+    } else {
+      setTemplateItems([])
+    }
+  }, [massRolesTemplateId])
 
   // Load mass roles when editing an existing mass
   useEffect(() => {
@@ -109,27 +142,51 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     }
   }, [isEditing, mass?.id])
 
-  const loadAllRoles = async () => {
+  const loadAllMassRoles = async () => {
     try {
-      const rolesData = await getAllMassRoles()
-      setAllRoles(rolesData)
+      const massRolesData = await getAllMassRoles()
+      setAllMassRoles(massRolesData)
     } catch (error) {
-      console.error('Error loading roles:', error)
-      toast.error('Failed to load roles')
+      console.error('Error loading mass roles:', error)
+      toast.error('Failed to load mass roles')
     }
   }
 
   const loadMassRoles = async () => {
     if (!mass?.id) return
     try {
-      setLoadingRoles(true)
-      const roles = await getMassRoles(mass.id)
-      setMassRoles(roles)
+      setLoadingMassRoles(true)
+      const massRoleInstances = await getMassRoles(mass.id)
+      setMassRoles(massRoleInstances)
     } catch (error) {
       console.error('Error loading mass roles:', error)
-      toast.error('Failed to load role assignments')
+      toast.error('Failed to load mass role assignments')
     } finally {
-      setLoadingRoles(false)
+      setLoadingMassRoles(false)
+    }
+  }
+
+  const loadAllTemplates = async () => {
+    try {
+      const templatesData = await getMassRoleTemplates()
+      setAllTemplates(templatesData)
+    } catch (error) {
+      console.error('Error loading templates:', error)
+      toast.error('Failed to load role templates')
+    }
+  }
+
+  const loadTemplateItems = async (templateId: string) => {
+    if (!templateId) {
+      setTemplateItems([])
+      return
+    }
+    try {
+      const items = await getTemplateItems(templateId)
+      setTemplateItems(items)
+    } catch (error) {
+      console.error('Error loading template items:', error)
+      toast.error('Failed to load template items')
     }
   }
 
@@ -172,6 +229,25 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     return []
   }
 
+  // Handle template change - clear existing role assignments if editing
+  const handleTemplateChange = async (newTemplateId: string) => {
+    setMassRolesTemplateId(newTemplateId)
+
+    // If editing an existing mass, clear all existing mass role assignments
+    if (isEditing && mass?.id && massRoles.length > 0) {
+      try {
+        // Delete all existing mass role assignments
+        await Promise.all(massRoles.map(mr => deleteMassRole(mr.id)))
+        // Reload mass roles to show empty list
+        await loadMassRoles()
+        toast.success('Mass role assignments cleared for new template')
+      } catch (error) {
+        console.error('Error clearing mass role assignments:', error)
+        toast.error('Failed to clear existing mass role assignments')
+      }
+    }
+  }
+
   // Mass role assignment handlers
   const handleOpenRolePicker = (roleId: string) => {
     setCurrentRoleId(roleId)
@@ -180,13 +256,13 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
   const handleSelectPersonForRole = async (person: Person) => {
     if (!isEditing || !mass?.id || !currentRoleId) {
-      toast.error('Please save the mass before assigning roles')
+      toast.error('Please save the mass before assigning mass roles')
       return
     }
 
     try {
-      // Assign person to role
-      const newMassRole = await createMassRole({
+      // Assign person to mass role
+      await createMassRole({
         mass_id: mass.id,
         person_id: person.id,
         mass_roles_template_item_id: currentRoleId
@@ -194,10 +270,10 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
       // Reload mass roles to get the updated list with relations
       await loadMassRoles()
-      toast.success('Role assignment added')
+      toast.success('Mass role assignment added')
     } catch (error) {
-      console.error('Error assigning role:', error)
-      toast.error('Failed to assign role')
+      console.error('Error assigning mass role:', error)
+      toast.error('Failed to assign mass role')
     }
   }
 
@@ -207,16 +283,42 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     try {
       await deleteMassRole(massRoleId)
       await loadMassRoles()
-      toast.success('Role assignment removed')
+      toast.success('Mass role assignment removed')
     } catch (error) {
-      console.error('Error removing role assignment:', error)
-      toast.error('Failed to remove role assignment')
+      console.error('Error removing mass role assignment:', error)
+      toast.error('Failed to remove mass role assignment')
     }
   }
 
-  // Get role assignments for a specific role
-  const getRoleAssignments = (roleId: string) => {
-    return massRoles.filter(mr => mr.mass_roles_template_item?.mass_role.id === roleId)
+  // Mass intention handlers
+  const handleSelectMassIntention = async (intention: MassIntentionWithNames) => {
+    if (!isEditing || !mass?.id) {
+      toast.error('Please save the mass before linking a mass intention')
+      return
+    }
+
+    try {
+      await linkMassIntention(mass.id, intention.id)
+      setMassIntention(intention)
+      setMassIntentionPickerOpen(false)
+      toast.success('Mass intention linked')
+    } catch (error) {
+      console.error('Error linking mass intention:', error)
+      toast.error('Failed to link mass intention')
+    }
+  }
+
+  const handleUnlinkMassIntention = async () => {
+    if (!massIntention) return
+
+    try {
+      await unlinkMassIntention(massIntention.id)
+      setMassIntention(null)
+      toast.success('Mass intention unlinked')
+    } catch (error) {
+      console.error('Error unlinking mass intention:', error)
+      toast.error('Failed to unlink mass intention')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,6 +333,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         presider_id: presider.value?.id,
         homilist_id: homilist.value?.id,
         liturgical_event_id: liturgicalEvent.value?.id,
+        mass_roles_template_id: massRolesTemplateId || undefined,
         pre_mass_announcement_id: preMassAnnouncementPerson.value?.id,
         pre_mass_announcement_topic: preMassAnnouncementTopic || undefined,
         petitions: petitions || undefined,
@@ -308,7 +411,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           <FormField
             id="template"
             inputType="select"
-            label="Template"
+            label="Print Template"
             description="Choose the liturgy template for this Mass"
             value={massTemplateId}
             onChange={setMassTemplateId}
@@ -320,12 +423,12 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         </CardContent>
       </Card>
 
-      {/* Ministers and Roles */}
+      {/* Ministers and Mass Roles */}
       <Card>
         <CardHeader>
           <CardTitle>Ministers</CardTitle>
           <CardDescription>
-            People serving in liturgical roles for this Mass
+            People serving in liturgical mass roles for this Mass
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -351,32 +454,131 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         </CardContent>
       </Card>
 
-      {/* Role Assignments */}
+      {/* Mass Intention */}
       {isEditing && mass?.id && (
-        <Card>
+        <Card data-testid="mass-intention-card">
           <CardHeader>
-            <CardTitle>Role Assignments</CardTitle>
+            <CardTitle>Mass Intention</CardTitle>
             <CardDescription>
-              Assign people to liturgical roles for this Mass
+              Link a mass intention to this Mass
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {allRoles.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-6">
-                No roles defined. Please create roles in the Roles section first.
+            {massIntention ? (
+              <div className="border rounded-md p-4 space-y-3" data-testid="mass-intention-display">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <Heart className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="space-y-2">
+                      <div>
+                        <div className="font-medium">
+                          {massIntention.mass_offered_for || 'No intention specified'}
+                        </div>
+                        {massIntention.requested_by && (
+                          <div className="text-sm text-muted-foreground">
+                            Requested by: {massIntention.requested_by.first_name} {massIntention.requested_by.last_name}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">
+                          {MASS_INTENTION_STATUS_LABELS[massIntention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || massIntention.status}
+                        </Badge>
+                        {massIntention.stipend_in_cents && (
+                          <div className="text-sm text-muted-foreground">
+                            ${(massIntention.stipend_in_cents / 100).toFixed(2)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUnlinkMassIntention}
+                    data-testid="unlink-mass-intention-button"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ) : (
+              <div className="text-center py-6">
+                <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground mb-4">
+                  No mass intention linked yet
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMassIntentionPickerOpen(true)}
+                  data-testid="link-mass-intention-button"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Link Mass Intention
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Mass Role Assignments */}
+      {isEditing && mass?.id && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Mass Role Assignments</CardTitle>
+            <CardDescription>
+              Assign people to liturgical mass roles for this Mass
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {allTemplates.length > 0 ? (
+              <FormField
+                id="mass_roles_template_id"
+                inputType="select"
+                label="Mass Role Template"
+                description="Choose a template to define which mass roles are needed for this Mass"
+                value={massRolesTemplateId}
+                onChange={handleTemplateChange}
+                options={allTemplates.map((template) => ({
+                  value: template.id,
+                  label: template.name
+                }))}
+              />
+            ) : (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                No mass role templates available. Please create a template first.
+              </div>
+            )}
+
+            {massRolesTemplateId && templateItems.length === 0 && (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                This template has no mass roles defined. Please edit the template to add mass roles.
+              </div>
+            )}
+
+            {massRolesTemplateId && templateItems.length > 0 && (
               <div className="space-y-6">
-                {allRoles.map(role => {
-                  const assignments = getRoleAssignments(role.id)
+                {templateItems.map(item => {
+                  const assignments = massRoles.filter(mr =>
+                    mr.mass_roles_template_item_id === item.id
+                  )
                   return (
-                    <div key={role.id} className="space-y-2">
+                    <div key={item.id} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium">{role.name}</div>
-                          {role.description && (
+                          <div className="font-medium">
+                            {item.mass_role.name}
+                            <RoleFulfillmentBadge
+                              countNeeded={item.count}
+                              countAssigned={assignments.length}
+                            />
+                          </div>
+                          {item.mass_role.description && (
                             <div className="text-sm text-muted-foreground">
-                              {role.description}
+                              {item.mass_role.description}
                             </div>
                           )}
                         </div>
@@ -384,7 +586,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenRolePicker(role.id)}
+                          onClick={() => handleOpenRolePicker(item.id)}
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Assign Person
@@ -427,11 +629,17 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                 })}
               </div>
             )}
+
+            {!massRolesTemplateId && (
+              <div className="text-sm text-muted-foreground text-center py-6">
+                Please select a role template to assign people to liturgical roles.
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {/* People Picker Modal for Role Assignment */}
+      {/* People Picker Modal for Mass Role Assignment */}
       {currentRoleId && (
         <PeoplePicker
           open={rolePickerOpen}
@@ -536,6 +744,15 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         isLoading={isLoading}
         cancelHref={isEditing ? `/masses/${mass.id}` : '/masses'}
         saveLabel={isEditing ? "Save Mass" : "Create Mass"}
+      />
+
+      {/* Mass Intention Picker Modal */}
+      <MassIntentionPicker
+        open={massIntentionPickerOpen}
+        onOpenChange={setMassIntentionPickerOpen}
+        onSelect={handleSelectMassIntention}
+        selectedMassIntentionId={massIntention?.id}
+        openToNewMassIntention={!massIntention}
       />
     </form>
   )

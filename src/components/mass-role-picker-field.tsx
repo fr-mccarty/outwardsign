@@ -8,7 +8,7 @@ import type { MassRole } from '@/lib/types'
 interface MassRolePickerFieldProps {
   label: string
   value: MassRole | null
-  onValueChange: (role: MassRole | null) => void
+  onValueChange: (massRole: MassRole | null) => void
   showPicker: boolean
   onShowPickerChange: (show: boolean) => void
   description?: string
@@ -41,7 +41,7 @@ export function MassRolePickerField({
       placeholder={placeholder}
       required={required}
       icon={UserCog}
-      renderValue={(role) => role.name}
+      renderValue={(massRole) => massRole.name}
     >
       <MassRolePicker
         open={showPicker}

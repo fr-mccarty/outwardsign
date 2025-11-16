@@ -38,6 +38,21 @@ export interface MassIntentionWithNames extends MassIntention {
   requested_by?: Person | null
 }
 
+export interface PaginatedParams {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+}
+
+export interface PaginatedResult<T> {
+  items: T[]
+  totalCount: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 export async function getMassIntentions(filters?: MassIntentionFilterParams): Promise<MassIntentionWithNames[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -86,6 +101,77 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
   }
 
   return intentions
+}
+
+export async function getMassIntentionsPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassIntentionWithNames>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+  const search = params?.search || ''
+  const status = params?.status
+
+  // Calculate offset
+  const offset = (page - 1) * limit
+
+  // Build base query with relations
+  let query = supabase
+    .from('mass_intentions')
+    .select(`
+      *,
+      mass:masses(*),
+      requested_by:people!requested_by_id(*)
+    `, { count: 'exact' })
+
+  // Apply status filter at database level
+  if (status && status !== 'all') {
+    query = query.eq('status', status)
+  }
+
+  // Apply ordering, pagination
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('Error fetching paginated mass intentions:', error)
+    throw new Error('Failed to fetch paginated mass intentions')
+  }
+
+  let intentions = data || []
+
+  // Apply search filter in application layer (searching related table fields)
+  if (search) {
+    const searchTerm = search.toLowerCase()
+    intentions = intentions.filter(intention => {
+      const requestedByFirstName = intention.requested_by?.first_name?.toLowerCase() || ''
+      const requestedByLastName = intention.requested_by?.last_name?.toLowerCase() || ''
+      const massOfferedFor = intention.mass_offered_for?.toLowerCase() || ''
+      const note = intention.note?.toLowerCase() || ''
+
+      return (
+        requestedByFirstName.includes(searchTerm) ||
+        requestedByLastName.includes(searchTerm) ||
+        massOfferedFor.includes(searchTerm) ||
+        note.includes(searchTerm)
+      )
+    })
+  }
+
+  const totalCount = count || 0
+  const totalPages = Math.ceil(totalCount / limit)
+
+  return {
+    items: intentions,
+    totalCount,
+    page,
+    limit,
+    totalPages,
+  }
 }
 
 export async function getMassIntention(id: string): Promise<MassIntention | null> {

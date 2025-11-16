@@ -48,7 +48,7 @@ export function MassRolePicker({
   editMode = false,
   roleToEdit = null,
 }: MassRolePickerProps) {
-  const [roles, setRoles] = useState<MassRole[]>([])
+  const [massRoles, setMassRoles] = useState<MassRole[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
@@ -65,14 +65,14 @@ export function MassRolePicker({
     [requiredFields]
   )
 
-  // Load roles when dialog opens or when page/search changes
+  // Load mass roles when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadRoles(currentPage, searchQuery)
+      loadMassRoles(currentPage, searchQuery)
     }
   }, [open, currentPage, searchQuery])
 
-  const loadRoles = async (page: number, search: string) => {
+  const loadMassRoles = async (page: number, search: string) => {
     try {
       setLoading(true)
       const result = await getMassRolesPaginated({
@@ -80,7 +80,7 @@ export function MassRolePicker({
         limit: PAGE_SIZE,
         search,
       })
-      setRoles(result.items)
+      setMassRoles(result.items)
       setTotalCount(result.totalCount)
     } catch (error) {
       console.error('Error loading mass roles:', error)
@@ -91,7 +91,7 @@ export function MassRolePicker({
   }
 
   const selectedRole = selectedRoleId
-    ? roles.find((r) => r.id === selectedRoleId)
+    ? massRoles.find((r) => r.id === selectedRoleId)
     : null
 
   // Build create fields configuration dynamically - memoized to prevent infinite re-renders
@@ -131,33 +131,33 @@ export function MassRolePicker({
   }, [isFieldVisible, isFieldRequired])
 
   // Handle creating a new mass role
-  const handleCreateRole = async (data: any): Promise<MassRole> => {
-    const newRole = await createMassRole({
+  const handleCreateMassRole = async (data: any): Promise<MassRole> => {
+    const newMassRole = await createMassRole({
       name: data.name,
       description: data.description || undefined,
       note: data.note || undefined,
     })
 
     // Add to local list
-    setRoles((prev) => [newRole, ...prev])
+    setMassRoles((prev) => [newMassRole, ...prev])
 
-    return newRole
+    return newMassRole
   }
 
   // Handle updating an existing mass role
-  const handleUpdateRole = async (id: string, data: any): Promise<MassRole> => {
-    const updatedRole = await updateMassRole(id, {
+  const handleUpdateMassRole = async (id: string, data: any): Promise<MassRole> => {
+    const updatedMassRole = await updateMassRole(id, {
       name: data.name,
       description: data.description || undefined,
       note: data.note || undefined,
     })
 
     // Update local list
-    setRoles((prev) =>
-      prev.map(r => r.id === updatedRole.id ? updatedRole : r)
+    setMassRoles((prev) =>
+      prev.map(r => r.id === updatedMassRole.id ? updatedMassRole : r)
     )
 
-    return updatedRole
+    return updatedMassRole
   }
 
   // Handle page change
@@ -172,8 +172,8 @@ export function MassRolePicker({
   }
 
   // Custom render for mass role list items
-  const renderRoleItem = (role: MassRole) => {
-    const isSelected = selectedRoleId === role.id
+  const renderMassRoleItem = (massRole: MassRole) => {
+    const isSelected = selectedRoleId === massRole.id
 
     return (
       <div className="flex items-center gap-3">
@@ -181,7 +181,7 @@ export function MassRolePicker({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium">{role.name}</span>
+            <span className="font-medium">{massRole.name}</span>
             {isSelected && (
               <Badge variant="secondary" className="text-xs">
                 Selected
@@ -189,9 +189,9 @@ export function MassRolePicker({
             )}
           </div>
 
-          {role.description && (
+          {massRole.description && (
             <div className="mt-1 text-xs text-muted-foreground line-clamp-1">
-              {role.description}
+              {massRole.description}
             </div>
           )}
         </div>
@@ -203,18 +203,18 @@ export function MassRolePicker({
     <CorePicker<MassRole>
       open={open}
       onOpenChange={onOpenChange}
-      items={roles}
+      items={massRoles}
       selectedItem={selectedRole}
       onSelect={onSelect}
       title="Select Mass Role"
       searchPlaceholder={placeholder}
       searchFields={['name', 'description']}
-      getItemLabel={(role) => role.name}
-      getItemId={(role) => role.id}
-      renderItem={renderRoleItem}
+      getItemLabel={(massRole) => massRole.name}
+      getItemId={(massRole) => massRole.id}
+      renderItem={renderMassRoleItem}
       enableCreate={true}
       createFields={createFields}
-      onCreateSubmit={handleCreateRole}
+      onCreateSubmit={handleCreateMassRole}
       createButtonLabel="Save Mass Role"
       addNewButtonLabel="Add New Mass Role"
       emptyMessage={emptyMessage}
@@ -224,7 +224,7 @@ export function MassRolePicker({
       defaultCreateFormData={defaultCreateFormData || EMPTY_FORM_DATA}
       editMode={editMode}
       entityToEdit={roleToEdit}
-      onUpdateSubmit={handleUpdateRole}
+      onUpdateSubmit={handleUpdateMassRole}
       updateButtonLabel="Update Mass Role"
       enablePagination={true}
       totalCount={totalCount}
@@ -239,25 +239,25 @@ export function MassRolePicker({
 // Hook to use the mass role picker
 export function useMassRolePicker() {
   const [open, setOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<MassRole | null>(null)
+  const [selectedMassRole, setSelectedMassRole] = useState<MassRole | null>(null)
 
   const openPicker = () => setOpen(true)
   const closePicker = () => setOpen(false)
 
-  const handleSelect = (role: MassRole) => {
-    setSelectedRole(role)
+  const handleSelect = (massRole: MassRole) => {
+    setSelectedMassRole(massRole)
     setOpen(false)
   }
 
   const clearSelection = () => {
-    setSelectedRole(null)
+    setSelectedMassRole(null)
   }
 
   return {
     open,
     openPicker,
     closePicker,
-    selectedRole,
+    selectedMassRole,
     handleSelect,
     clearSelection,
     setOpen,

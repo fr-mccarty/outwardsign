@@ -64,18 +64,18 @@ export function MassRoleTemplateViewClient({ template }: MassRoleTemplateViewCli
           </CardContent>
         </Card>
 
-        {/* Template Roles */}
+        {/* Template Mass Roles */}
         <Card>
           <CardHeader>
-            <CardTitle>Template Roles</CardTitle>
-            <CardDescription>Roles required for this Mass type</CardDescription>
+            <CardTitle>Template Mass Roles</CardTitle>
+            <CardDescription>Mass roles required for this Mass type</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading roles...</p>
+              <p className="text-sm text-muted-foreground">Loading mass roles...</p>
             ) : items.length === 0 ? (
               <p className="text-sm text-muted-foreground italic">
-                No roles defined yet. Edit this template to add role requirements.
+                No mass roles defined yet. Edit this template to add mass role requirements.
               </p>
             ) : (
               <div className="space-y-3">

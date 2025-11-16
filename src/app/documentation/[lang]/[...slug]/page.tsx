@@ -22,7 +22,7 @@ async function getDocContent(lang: string, slug: string[]) {
     // Simple markdown parsing - just extract title and content
     const lines = fileContent.split('\n')
     let title = ''
-    let content = fileContent
+    const content = fileContent
 
     // Extract title from first # heading
     const titleMatch = fileContent.match(/^#\s+(.+)$/m)

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance } from '@/lib/types'
+import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance, MassIntention } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { PaginatedParams, PaginatedResult } from './people'
@@ -199,6 +199,9 @@ export interface MassWithRelations extends Mass {
   liturgical_event?: GlobalLiturgicalEvent | null
   mass_roles_template?: MassRolesTemplate | null
   pre_mass_announcement_person?: Person | null
+  mass_intention?: (MassIntention & {
+    requested_by?: Person | null
+  }) | null
   mass_roles?: Array<MassRoleInstance & {
     person?: Person
     mass_roles_template_item?: {
@@ -236,6 +239,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     liturgicalEventData,
     massRolesTemplateData,
     preMassAnnouncementData,
+    massIntentionData,
     massRolesData
   ] = await Promise.all([
     mass.event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', mass.event_id).single() : Promise.resolve({ data: null }),
@@ -244,6 +248,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     mass.liturgical_event_id ? supabase.from('global_liturgical_events').select('*').eq('id', mass.liturgical_event_id).single() : Promise.resolve({ data: null }),
     mass.mass_roles_template_id ? supabase.from('mass_roles_templates').select('*').eq('id', mass.mass_roles_template_id).single() : Promise.resolve({ data: null }),
     mass.pre_mass_announcement_id ? supabase.from('people').select('*').eq('id', mass.pre_mass_announcement_id).single() : Promise.resolve({ data: null }),
+    supabase.from('mass_intentions').select('*, requested_by:people!requested_by_id(*)').eq('mass_id', id).maybeSingle(),
     supabase.from('mass_role_instances').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
   ])
 
@@ -255,6 +260,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     liturgical_event: liturgicalEventData.data,
     mass_roles_template: massRolesTemplateData.data,
     pre_mass_announcement_person: preMassAnnouncementData.data,
+    mass_intention: massIntentionData.data,
     mass_roles: massRolesData.data || []
   }
 }
@@ -539,7 +545,7 @@ export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRo
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // 1. Fetch template with role requirements
+  // 1. Fetch template with mass role requirements
   const { data: template, error: templateError } = await supabase
     .from('mass_roles_templates')
     .select('*')
@@ -576,4 +582,61 @@ export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRo
 
   // Return empty array - the UI will use the template parameters to show which roles need to be filled
   return []
+}
+
+// Link a mass intention to a mass
+export async function linkMassIntention(massId: string, massIntentionId: string): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Update the mass intention to link it to this mass
+  const { error } = await supabase
+    .from('mass_intentions')
+    .update({ mass_id: massId })
+    .eq('id', massIntentionId)
+
+  if (error) {
+    console.error('Error linking mass intention:', error)
+    throw new Error('Failed to link mass intention')
+  }
+
+  revalidatePath('/masses')
+  revalidatePath(`/masses/${massId}`)
+  revalidatePath(`/masses/${massId}/edit`)
+  revalidatePath('/mass-intentions')
+  revalidatePath(`/mass-intentions/${massIntentionId}`)
+}
+
+// Unlink a mass intention from a mass
+export async function unlinkMassIntention(massIntentionId: string): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the mass_id before unlinking for revalidation
+  const { data: intentionData } = await supabase
+    .from('mass_intentions')
+    .select('mass_id')
+    .eq('id', massIntentionId)
+    .single()
+
+  // Update the mass intention to unlink it
+  const { error } = await supabase
+    .from('mass_intentions')
+    .update({ mass_id: null })
+    .eq('id', massIntentionId)
+
+  if (error) {
+    console.error('Error unlinking mass intention:', error)
+    throw new Error('Failed to unlink mass intention')
+  }
+
+  if (intentionData?.mass_id) {
+    revalidatePath('/masses')
+    revalidatePath(`/masses/${intentionData.mass_id}`)
+    revalidatePath(`/masses/${intentionData.mass_id}/edit`)
+  }
+  revalidatePath('/mass-intentions')
+  revalidatePath(`/mass-intentions/${massIntentionId}`)
 }
