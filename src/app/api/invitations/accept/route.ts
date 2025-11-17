@@ -52,11 +52,12 @@ export async function POST(request: NextRequest) {
 
     // Add user to parish
     const { error: addUserError } = await supabase
-      .from('parish_user')
+      .from('parish_users')
       .insert({
         user_id: userId,
         parish_id: invitation.parish_id,
-        roles: invitation.roles
+        roles: invitation.roles,
+        enabled_modules: invitation.enabled_modules
       })
 
     if (addUserError) {

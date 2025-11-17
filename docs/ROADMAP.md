@@ -158,11 +158,17 @@
 - [ ] Team member list/management UI
 - [ ] Permission structure for team roles
 
-### Core Module Completions
-- [ ] **Confirmations Module** - Implement confirmation sacrament tracking
-- [ ] **First Communion Module** - Add first communion preparation workflow
-- [ ] **Anointing of the Sick** - Track anointing sacrament celebrations
-- [ ] **Reconciliation Preparation** - Manage first reconciliation preparation
+### ~~Core Module Completions~~ (EXCLUDED)
+
+**⚠️ EXCLUDED FROM ROADMAP - User Decision 2025-11-17**
+
+These modules are explicitly excluded and should NOT be created:
+- ❌ ~~**Confirmations Module**~~ - EXCLUDED
+- ❌ ~~**First Communion Module**~~ - EXCLUDED
+- ❌ ~~**Anointing of the Sick**~~ - EXCLUDED
+- ❌ ~~**Reconciliation Preparation**~~ - EXCLUDED
+
+**Reason:** Focus on existing modules and collaboration features. Current module coverage (Weddings, Funerals, Baptisms, Presentations, Quinceañeras, Masses, Mass Intentions) is sufficient.
 
 ### Multilingual Support
 - [ ] Complete Spanish translations for all modules
@@ -613,6 +619,8 @@ When adding new roadmap items:
 
 ## Update History
 
+- **2025-11-17** - Excluded 4 sacramental modules from roadmap (Confirmations, First Communion, Anointing, Reconciliation) per user decision
+- **2025-11-17** - Note: Time estimates should NOT be included in future roadmap updates per user preference
 - **2025-01-15** - Completed renderer migration (removed deprecated multi-part-text element)
 - **2025-01-15** - Added Parish Default Module Templates feature to Phase III roadmap
 - **2025-11-15** - Merged TIMELINE.md into ROADMAP.md for comprehensive single-source roadmap

@@ -1,74 +1,61 @@
 /**
  * Petitions Builder
  *
- * Abstracted builder for creating petitions sections with customizable content
- * Less structured than psalm - allows for free-form petitions text
+ * Builds petitions (Prayer of the Faithful) section
+ * Structure: Petition Title > Reader Name > Introduction > Individual Petitions
  */
 
 import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatPersonName } from '@/lib/utils/formatters'
 
 /**
- * Configuration for building a petitions section
- */
-export interface PetitionsSectionConfig {
-  id?: string // Section ID (default: 'petitions')
-  title?: string // Section title (default: 'Petitions')
-  petitions?: string | null // The petitions text (newline-separated or custom format)
-  petition_reader?: any // The designated petition reader
-  second_reader?: any // The second reader (fallback if petitions_read_by_second_reader is true)
-  petitions_read_by_second_reader?: boolean // Whether second reader reads petitions
-  responseText?: string // Custom response text (default: 'Lord, hear our prayer.')
-  includeInstruction?: boolean // Include instruction for response (default: true)
-  pageBreakBefore?: boolean // Add page break before petitions (default: true)
-  pageBreakAfter?: boolean // Add page break after petitions (default: true)
-  format?: 'standard' | 'custom' // Format type (default: 'standard')
-}
-
-/**
  * Build a petitions section
  *
- * Creates a petitions section with:
- * - Petitions title
- * - Reader name (formatted)
- * - Optional instruction for response
- * - Individual petition lines (formatted)
- * - Responses after each petition
+ * Creates petitions section with standard liturgical format.
+ * Each petition line gets "let us pray to the Lord" appended.
+ * Returns null if no petitions provided.
+ * Always has pageBreakAfter: true.
  *
- * Standard format: Adds "let us pray to the Lord" to each petition
- * Custom format: Uses petitions text as-is
- *
- * Returns null if no petitions are provided.
+ * Supports two calling styles:
+ * 1. Simple: buildPetitionsSection(petitions, reader)
+ * 2. Config: buildPetitionsSection({ petitions, petition_reader, second_reader, petitions_read_by_second_reader })
  *
  * @example
- * // Standard petitions (auto-formatted)
- * const petitions = buildPetitionsSection({
- *   petitions: wedding.petitions, // Multi-line string
+ * // Simple style
+ * buildPetitionsSection(wedding.petitions, wedding.petition_reader)
+ *
+ * @example
+ * // Config style (backward compatible, supports fallback reader logic)
+ * buildPetitionsSection({
+ *   petitions: wedding.petitions,
  *   petition_reader: wedding.petition_reader,
- * })
- *
- * @example
- * // Custom petitions with different response
- * const customPetitions = buildPetitionsSection({
- *   petitions: mass.petitions,
- *   responseText: 'Hear us, O Lord.',
- *   format: 'custom',
+ *   second_reader: wedding.second_reader,
+ *   petitions_read_by_second_reader: true
  * })
  */
-export function buildPetitionsSection(config: PetitionsSectionConfig): ContentSection | null {
-  const {
-    id = 'petitions',
-    title = 'Petitions',
-    petitions,
-    petition_reader,
-    second_reader,
-    petitions_read_by_second_reader = false,
-    responseText = 'Lord, hear our prayer.',
-    includeInstruction = true,
-    pageBreakBefore = true,
-    pageBreakAfter = true,
-    format = 'standard',
-  } = config
+export function buildPetitionsSection(
+  petitionsOrConfig?: string | null | { petitions?: string | null; petition_reader?: any; second_reader?: any; petitions_read_by_second_reader?: boolean; [key: string]: any },
+  reader?: any
+): ContentSection | null {
+  // Handle both calling styles
+  let petitions: string | null | undefined
+  let actualReader: any
+
+  if (typeof petitionsOrConfig === 'string' || petitionsOrConfig === null || petitionsOrConfig === undefined) {
+    // Simple style: buildPetitionsSection(petitions, reader)
+    petitions = petitionsOrConfig
+    actualReader = reader
+  } else {
+    // Config style: buildPetitionsSection({ petitions, petition_reader, second_reader, petitions_read_by_second_reader })
+    petitions = petitionsOrConfig.petitions
+
+    // Determine reader (with fallback logic)
+    if (petitionsOrConfig.petitions_read_by_second_reader && petitionsOrConfig.second_reader) {
+      actualReader = petitionsOrConfig.second_reader
+    } else {
+      actualReader = petitionsOrConfig.petition_reader
+    }
+  }
 
   // No petitions - exclude section
   if (!petitions) {
@@ -77,102 +64,58 @@ export function buildPetitionsSection(config: PetitionsSectionConfig): ContentSe
 
   const elements: ContentElement[] = []
 
-  // Determine petition reader
-  const petitionsReader = petitions_read_by_second_reader && second_reader
-    ? formatPersonName(second_reader)
-    : petition_reader
-    ? formatPersonName(petition_reader)
-    : ''
-
-  // Petitions title
+  // Petition title
   elements.push({
     type: 'reading-title',
-    text: title,
+    text: 'Petitions',
   })
 
-  // Reader name (if available)
-  if (petitionsReader) {
+  // Name of reader
+  if (actualReader) {
     elements.push({
       type: 'reader-name',
-      text: petitionsReader,
+      text: formatPersonName(actualReader),
     })
   }
 
-  // Spacing before petitions
+  // Spacing
   elements.push({
     type: 'spacer',
     size: 'medium',
   })
 
-  // Instruction for response (if enabled)
-  if (includeInstruction) {
-    elements.push({
-      type: 'petition',
-      label: 'Reader:',
-      text: `The response is "${responseText}" [Pause]`,
-    })
-  }
+  // Petition introduction (instruction for response)
+  elements.push({
+    type: 'petition',
+    label: 'Reader:',
+    text: 'The response is "Lord, hear our prayer." [Pause]',
+  })
 
-  // Process petition lines
+  // Individual petitions
   const petitionLines = petitions.split('\n').filter((p) => p.trim())
 
   petitionLines.forEach((petition) => {
-    if (format === 'standard') {
-      // Standard format: Add "let us pray to the Lord" to each petition
-      // Strip trailing period if present
-      const petitionText = petition.trim().replace(/\.$/, '')
+    // Remove trailing period if present
+    const petitionText = petition.trim().replace(/\.$/, '')
 
-      elements.push({
-        type: 'petition',
-        label: 'Reader:',
-        text: `${petitionText}, let us pray to the Lord.`,
-      })
-    } else {
-      // Custom format: Use petition text as-is
-      elements.push({
-        type: 'petition',
-        label: 'Reader:',
-        text: petition.trim(),
-      })
-    }
+    // Petition with "let us pray to the Lord"
+    elements.push({
+      type: 'petition',
+      label: 'Reader:',
+      text: `${petitionText}, let us pray to the Lord.`,
+    })
 
     // Response after each petition
     elements.push({
       type: 'response',
       label: 'People:',
-      text: responseText,
+      text: 'Lord, hear our prayer.',
     })
   })
 
   return {
-    id,
-    pageBreakBefore,
-    pageBreakAfter,
+    id: 'petitions',
+    pageBreakAfter: true,
     elements,
   }
-}
-
-/**
- * Build a simple petitions section from an array of petition strings
- *
- * Convenience wrapper for when you have an array instead of a multi-line string
- *
- * @example
- * buildPetitionsFromArray({
- *   petitions: [
- *     'For the Church throughout the world',
- *     'For our Holy Father, Pope Francis',
- *     'For peace in our world',
- *   ],
- *   petition_reader: mass.petition_reader,
- * })
- */
-export function buildPetitionsFromArray(
-  config: Omit<PetitionsSectionConfig, 'petitions'> & { petitions: string[] }
-): ContentSection | null {
-  const { petitions, ...rest } = config
-  return buildPetitionsSection({
-    ...rest,
-    petitions: petitions.join('\n'),
-  })
 }

@@ -316,7 +316,7 @@ export async function getParishMembers(parishId: string) {
     // Get all members of the parish
     const { data: parishMembers, error: parishMembersError } = await supabase
       .from('parish_users')
-      .select('user_id, roles, created_at')
+      .select('user_id, roles, enabled_modules, created_at')
       .eq('parish_id', parishId)
 
     if (parishMembersError) {
@@ -343,6 +343,7 @@ export async function getParishMembers(parishId: string) {
         return {
           user_id: parishMember.user_id,
           roles: parishMember.roles,
+          enabled_modules: parishMember.enabled_modules || [],
           users: {
             id: parishMember.user_id,
             email: userEmail,
@@ -516,7 +517,12 @@ export async function removeParishMember(parishId: string, userId: string) {
   }
 }
 
-export async function updateMemberRole(parishId: string, userId: string, roles: string[]) {
+export async function updateMemberRole(
+  parishId: string,
+  userId: string,
+  roles: string[],
+  enabled_modules?: string[]
+) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -542,10 +548,17 @@ export async function updateMemberRole(parishId: string, userId: string, roles: 
       throw new Error('You cannot remove your own admin role')
     }
 
-    // Update the member's roles
+    // Update the member's roles and enabled_modules
+    const updateData: { roles: string[]; enabled_modules?: string[] } = { roles }
+
+    // Only set enabled_modules if provided (for ministry-leader role)
+    if (enabled_modules !== undefined) {
+      updateData.enabled_modules = roles.includes('ministry-leader') ? enabled_modules : []
+    }
+
     const { error: updateError } = await supabase
       .from('parish_users')
-      .update({ roles })
+      .update(updateData)
       .eq('user_id', userId)
       .eq('parish_id', parishId)
 

@@ -1,44 +1,24 @@
 /**
  * Content Builder Components Index
  *
- * Exports all abstracted builder components for creating liturgy documents
+ * Exports all builder functions for creating liturgy documents
+ * Each builder follows a specific structure and returns ContentSection
  */
 
 // Cover Page Builder
-export {
-  buildCoverPage,
-  buildSimpleCoverPage,
-  type CoverPageConfig,
-  type CoverPageSection,
-  type CoverPageInfoRow,
-} from './cover-page'
+export { buildCoverPage, type CoverPageSection, type CoverPageRow } from './cover-page'
 
 // Reading Builder
-export {
-  buildReadingSection,
-  type ReadingSectionConfig,
-} from './reading'
+export { buildReadingSection } from './reading'
 
 // Psalm Builder
-export {
-  buildPsalmSection,
-  type PsalmSectionConfig,
-} from './psalm'
+export { buildPsalmSection } from './psalm'
 
 // Petitions Builder
-export {
-  buildPetitionsSection,
-  buildPetitionsFromArray,
-  type PetitionsSectionConfig,
-} from './petitions'
+export { buildPetitionsSection } from './petitions'
+
+// Announcements Builder
+export { buildAnnouncementsSection } from './announcements'
 
 // Ceremony Builder
-export {
-  buildCeremonySection,
-  buildDialogueExchange,
-  buildPrayerWithAmen,
-  buildQuestionSeries,
-  buildRubricAction,
-  type CeremonySectionConfig,
-  type CeremonyElement,
-} from './ceremony'
+export { buildCeremonySection } from './ceremony'

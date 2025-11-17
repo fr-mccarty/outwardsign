@@ -1,77 +1,65 @@
 /**
  * Cover Page Builder
  *
- * Abstracted builder for creating cover/summary pages in liturgy documents
- * Used for the first page that displays event details, participants, and metadata
+ * Builds the cover/summary page for liturgy documents
+ * Structure: Title (doc level) > Subtitle (doc level) > Sections > Content (labels/values)
  */
 
 import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 
 /**
- * Configuration for a single info row on the cover page
+ * A single label-value row on the cover page
  */
-export interface CoverPageInfoRow {
+export interface CoverPageRow {
   label: string
   value: string
 }
 
 /**
- * Configuration for a section group on the cover page
+ * A section on the cover page (e.g., "Wedding Information", "Ministers")
  */
 export interface CoverPageSection {
   title: string
-  rows: CoverPageInfoRow[]
+  rows: CoverPageRow[]
 }
 
 /**
- * Configuration for building a cover page
- */
-export interface CoverPageConfig {
-  id?: string // Section ID (default: 'summary')
-  sections: CoverPageSection[] // Groups of related information
-  pageBreakAfter?: boolean // Whether to add page break after cover
-}
-
-/**
- * Build a cover/summary page section
+ * Build cover page section
  *
- * Creates a structured cover page with multiple subsections of information.
- * Each subsection has a title and a list of label-value pairs.
+ * Creates the first page with event details organized into subsections.
+ * Always has pageBreakAfter: true to separate from liturgy content.
+ *
+ * @param sections - Array of subsections, each with title and label-value rows
+ * @returns ContentSection with all cover page elements
  *
  * @example
- * const coverPage = buildCoverPage({
- *   sections: [
- *     {
- *       title: 'Wedding Information',
- *       rows: [
- *         { label: 'Bride:', value: 'Jane Smith' },
- *         { label: 'Groom:', value: 'John Doe' },
- *       ]
- *     },
- *     {
- *       title: 'Ministers',
- *       rows: [
- *         { label: 'Presider:', value: 'Fr. Michael Johnson' },
- *       ]
- *     }
- *   ],
- *   pageBreakAfter: true
- * })
+ * buildCoverPage([
+ *   {
+ *     title: 'Wedding Information',
+ *     rows: [
+ *       { label: 'Bride:', value: 'Jane Smith' },
+ *       { label: 'Groom:', value: 'John Doe' }
+ *     ]
+ *   },
+ *   {
+ *     title: 'Ministers',
+ *     rows: [
+ *       { label: 'Presider:', value: 'Fr. Michael Johnson' }
+ *     ]
+ *   }
+ * ])
  */
-export function buildCoverPage(config: CoverPageConfig): ContentSection {
-  const { id = 'summary', sections, pageBreakAfter = false } = config
-
+export function buildCoverPage(sections: CoverPageSection[]): ContentSection {
   const elements: ContentElement[] = []
 
-  // Build each subsection
-  sections.forEach((section, index) => {
-    // Add section title
+  sections.forEach((section) => {
+    // Section title
     elements.push({
       type: 'section-title',
       text: section.title,
     })
 
-    // Add all info rows for this section
+    // Label-value rows
     section.rows.forEach((row) => {
       elements.push({
         type: 'info-row',
@@ -80,34 +68,16 @@ export function buildCoverPage(config: CoverPageConfig): ContentSection {
       })
     })
 
-    // Add spacing between sections (except after last section)
-    if (index < sections.length - 1) {
-      elements.push({
-        type: 'spacer',
-        size: 'medium',
-      })
-    }
+    // Spacing between sections
+    elements.push({
+      type: 'spacer',
+      size: 'medium',
+    })
   })
 
   return {
-    id,
-    pageBreakAfter,
+    id: 'summary',
+    pageBreakAfter: true,
     elements,
   }
-}
-
-/**
- * Helper: Build a simple cover page with just one section
- *
- * Convenience wrapper for when you only need a single section
- */
-export function buildSimpleCoverPage(
-  title: string,
-  rows: CoverPageInfoRow[],
-  pageBreakAfter = false
-): ContentSection {
-  return buildCoverPage({
-    sections: [{ title, rows }],
-    pageBreakAfter,
-  })
 }

@@ -60,7 +60,8 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[FORMATTERS.md](./docs/FORMATTERS.md)** - Helper and formatting functions (dates, names, locations, page titles, filenames)
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Liturgical script system for individual entity documents (weddings, funerals, etc.) with template builders and exports
-- **[CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)** - Content builder section types (cover, readings, psalm, gospel, petitions, announcements) with strict interfaces and shared builders
+- **[CONTENT_BUILDER_STRUCTURE.md](./docs/CONTENT_BUILDER_STRUCTURE.md)** - Standard liturgical script structure (Cover Page, Reading, Psalm, Petitions, Announcements, Ceremony) with page break rules
+- **[CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)** - Content builder section types with strict interfaces and shared builders
 - **[REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md)** - Report builder system for tabular reports with aggregations, filtering, and CSV/Print exports
 - **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
 - **[USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md)** - User documentation system structure, adding pages, sidebar navigation, breadcrumbs, and multi-language support

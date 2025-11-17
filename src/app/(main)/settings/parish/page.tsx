@@ -39,7 +39,7 @@ import { SettingsPage } from '@/components/settings-page'
 import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Mail, Send, FileText, BookOpen, Download, Database, AlertCircle, CheckCircle, Edit } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getCurrentParish } from '@/lib/auth/parish'
-import { updateParish, getParishMembers, removeParishMember, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
+import { updateParish, getParishMembers, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'
 import { getParishInvitations, createParishInvitation, revokeParishInvitation, resendParishInvitation, type ParishInvitation } from '@/lib/actions/invitations'
 import { getPetitionTemplates, deletePetitionTemplate, ensureDefaultContexts, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
 import { importReadings, getReadingsStats } from '@/lib/actions/import-readings'
@@ -57,6 +57,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 interface ParishMember {
   user_id: string
   roles: string[]
+  enabled_modules: string[]
   users: {
     id: string
     email: string | null
@@ -86,6 +87,10 @@ export default function ParishSettingsPage() {
   const [loadingMembers, setLoadingMembers] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<{ userId: string; email: string } | null>(null)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
+  const [memberToEdit, setMemberToEdit] = useState<{ userId: string; email: string; roles: string[]; enabled_modules: string[] } | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editRole, setEditRole] = useState<UserParishRoleType>('parishioner')
+  const [editModules, setEditModules] = useState<string[]>([])
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<UserParishRoleType>('parishioner')
@@ -375,6 +380,44 @@ export default function ParishSettingsPage() {
         ? prev.filter(m => m !== module)
         : [...prev, module]
     )
+  }
+
+  const handleEditModuleToggle = (module: string) => {
+    setEditModules(prev =>
+      prev.includes(module)
+        ? prev.filter(m => m !== module)
+        : [...prev, module]
+    )
+  }
+
+  const handleOpenEditDialog = (userId: string, email: string, roles: string[], enabled_modules: string[]) => {
+    setMemberToEdit({ userId, email, roles, enabled_modules })
+    setEditRole(roles[0] as UserParishRoleType || 'parishioner')
+    setEditModules(enabled_modules || [])
+    setEditDialogOpen(true)
+  }
+
+  const handleConfirmEdit = async () => {
+    if (!currentParish || !memberToEdit) return
+
+    try {
+      setSaving(true)
+      await updateMemberRole(
+        currentParish.id,
+        memberToEdit.userId,
+        [editRole],
+        editRole === 'ministry-leader' ? editModules : undefined
+      )
+      toast.success('Member role updated successfully')
+      setEditDialogOpen(false)
+      setMemberToEdit(null)
+      await loadMembers(currentParish.id)
+    } catch (error) {
+      console.error('Error updating member role:', error)
+      toast.error('Failed to update member role')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const openDeleteDialog = (templateId: string) => {
@@ -1036,6 +1079,17 @@ export default function ParishSettingsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
+                            onClick={() => handleOpenEditDialog(
+                              member.user_id,
+                              member.users?.email || 'Unknown',
+                              member.roles,
+                              member.enabled_modules || []
+                            )}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Role
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
                             onClick={() => handleOpenRemoveDialog(member.user_id, member.users?.email || 'Unknown')}
                             className="text-red-600"
                           >
@@ -1100,6 +1154,71 @@ export default function ParishSettingsPage() {
           </Button>
         }
       />
+
+      {/* Edit Member Role Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Member Role</DialogTitle>
+            <DialogDescription>
+              Update the role and permissions for <strong>{memberToEdit?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Role</Label>
+              <Select value={editRole} onValueChange={(value) => setEditRole(value as UserParishRoleType)}>
+                <SelectTrigger id="edit-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {USER_PARISH_ROLE_VALUES.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {USER_PARISH_ROLE_LABELS[role].en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {editRole === 'admin' && 'Full access to parish settings, templates, and all modules'}
+                {editRole === 'staff' && 'Can create and manage all sacrament modules'}
+                {editRole === 'ministry-leader' && 'Access to specific modules (select below)'}
+                {editRole === 'parishioner' && 'Read-only access to shared modules'}
+              </p>
+            </div>
+            {editRole === 'ministry-leader' && (
+              <div className="space-y-2">
+                <Label>Enabled Modules</Label>
+                <div className="space-y-2">
+                  {['masses', 'weddings', 'funerals', 'baptisms', 'presentations', 'quinceaneras', 'groups'].map((module) => (
+                    <div key={module} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`edit-module-${module}`}
+                        checked={editModules.includes(module)}
+                        onCheckedChange={() => handleEditModuleToggle(module)}
+                      />
+                      <label
+                        htmlFor={`edit-module-${module}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                      >
+                        {module}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmEdit} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Remove Member Confirmation Dialog */}
       <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>

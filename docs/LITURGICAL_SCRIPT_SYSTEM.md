@@ -38,7 +38,9 @@
 
 **For element types and styling parameters, see [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md).**
 
-**For section types and structure patterns, see [CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md).**
+**For standard liturgical script structure (Cover Page, Readings, Psalm, Petitions, Ceremony), see [CONTENT_BUILDER_STRUCTURE.md](./CONTENT_BUILDER_STRUCTURE.md).**
+
+**For section types and builder interfaces, see [CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md).**
 
 ---
 
