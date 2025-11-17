@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { SelectItem } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { MassPickerField } from "@/components/mass-picker-field"
-import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
+import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS, MASS_INTENTION_TEMPLATE_VALUES, MASS_INTENTION_TEMPLATE_LABELS, MASS_INTENTION_DEFAULT_TEMPLATE } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
@@ -27,7 +27,8 @@ const massIntentionSchema = z.object({
   stipend_in_cents: z.number().optional(),
   note: z.string().optional(),
   requested_by_id: z.string().optional(),
-  mass_id: z.string().optional()
+  mass_id: z.string().optional(),
+  mass_intention_template_id: z.string().optional()
 })
 
 interface MassIntentionFormProps {
@@ -55,6 +56,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
     intention?.stipend_in_cents ? (intention.stipend_in_cents / 100).toFixed(2) : ""
   )
   const [note, setNote] = useState(intention?.note || "")
+  const [massIntentionTemplateId, setMassIntentionTemplateId] = useState(intention?.mass_intention_template_id || MASS_INTENTION_DEFAULT_TEMPLATE)
 
   // Picker states
   const requestedBy = usePickerState<Person>()
@@ -86,6 +88,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         stipend_in_cents: stipendCents,
         status: status || undefined,
         note: note || undefined,
+        mass_intention_template_id: massIntentionTemplateId || undefined,
       })
 
       if (isEditing) {
@@ -156,6 +159,21 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             {MASS_INTENTION_STATUS_VALUES.map((value) => (
               <SelectItem key={value} value={value}>
                 {MASS_INTENTION_STATUS_LABELS[value].en}
+              </SelectItem>
+            ))}
+          </FormField>
+
+          <FormField
+            id="mass_intention_template_id"
+            inputType="select"
+            label="Print Template"
+            description="Choose the template for printing this Mass intention"
+            value={massIntentionTemplateId}
+            onChange={setMassIntentionTemplateId}
+          >
+            {MASS_INTENTION_TEMPLATE_VALUES.map((value) => (
+              <SelectItem key={value} value={value}>
+                {MASS_INTENTION_TEMPLATE_LABELS[value].en}
               </SelectItem>
             ))}
           </FormField>

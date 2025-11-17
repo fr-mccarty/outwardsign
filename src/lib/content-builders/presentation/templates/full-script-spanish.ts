@@ -42,7 +42,6 @@ import {
 function buildLiturgySection(presentation: PresentationWithRelations): ContentSection {
   // Get names and values using shared helpers
   const childName = getChildNameSpanish(presentation)
-  const childSex = getChildSex(presentation)
   const baptized = isBaptized(presentation)
 
   // Helper function for gendered text in Spanish (wraps shared helper)
@@ -59,7 +58,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
   // After the Homily
   liturgyElements.push({
     type: 'section-title',
-    text: 'Presentation',
+    text: ' Presentación',
   })
 
   liturgyElements.push({

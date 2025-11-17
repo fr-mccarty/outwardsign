@@ -359,12 +359,13 @@ export const PRESENTATION_TEMPLATE_LABELS: Record<PresentationTemplate, { en: st
 }
 
 // Mass Intention Template Constants
-export const MASS_INTENTION_TEMPLATE_VALUES = ['mass-intention-summary'] as const
+export const MASS_INTENTION_TEMPLATE_VALUES = ['mass-intention-summary-english', 'mass-intention-summary-spanish'] as const
 export type MassIntentionTemplate = typeof MASS_INTENTION_TEMPLATE_VALUES[number]
-export const MASS_INTENTION_DEFAULT_TEMPLATE: MassIntentionTemplate = 'mass-intention-summary'
+export const MASS_INTENTION_DEFAULT_TEMPLATE: MassIntentionTemplate = 'mass-intention-summary-english'
 
 export const MASS_INTENTION_TEMPLATE_LABELS: Record<MassIntentionTemplate, { en: string; es: string }> = {
-  'mass-intention-summary': { en: 'Mass Intention Summary', es: 'Resumen de Intención de Misa' }
+  'mass-intention-summary-english': { en: 'Mass Intention Summary (English)', es: 'Resumen de Intención de Misa (Inglés)' },
+  'mass-intention-summary-spanish': { en: 'Mass Intention Summary (Spanish)', es: 'Resumen de Intención de Misa (Español)' }
 }
 
 // Mass Intention Status Constants
