@@ -119,11 +119,23 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     })
   }
 
-  // Sacred Liturgy subsection
-  elements.push({
-    type: 'section-title',
-    text: 'Sacred Liturgy',
-  })
+  // Sacred Liturgy subsection - only show if there are readings/petitions
+  const petitionsReader = quinceanera.petitions_read_by_second_reader && quinceanera.second_reader
+    ? formatPersonName(quinceanera.second_reader)
+    : quinceanera.petition_reader
+    ? formatPersonName(quinceanera.petition_reader)
+    : ''
+  const hasLiturgyContent = quinceanera.first_reading || quinceanera.first_reader ||
+    quinceanera.psalm || quinceanera.psalm_reader || quinceanera.psalm_is_sung ||
+    quinceanera.second_reading || quinceanera.second_reader ||
+    quinceanera.gospel_reading || petitionsReader
+
+  if (hasLiturgyContent) {
+    elements.push({
+      type: 'section-title',
+      text: 'Sacred Liturgy',
+    })
+  }
 
   if (quinceanera.first_reading) {
     elements.push({
@@ -187,13 +199,6 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     })
   }
 
-  // Determine petition reader
-  const petitionsReader = quinceanera.petitions_read_by_second_reader && quinceanera.second_reader
-    ? formatPersonName(quinceanera.second_reader)
-    : quinceanera.petition_reader
-    ? formatPersonName(quinceanera.petition_reader)
-    : ''
-
   if (petitionsReader) {
     elements.push({
       type: 'info-row',
@@ -228,7 +233,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     reading: quinceanera.first_reading,
     reader: quinceanera.first_reader,
     responseText: 'Thanks be to God.',
-    showNoneSelected: true,
   })
   if (firstReadingSection) {
     sections.push(firstReadingSection)

@@ -12,6 +12,8 @@ This document describes all helper and formatting functions used throughout the 
 - [Critical Rules](#critical-rules)
 - [Date Formatting Functions](#date-formatting-functions)
 - [Person Formatting Functions](#person-formatting-functions)
+- [Event Formatting Functions](#event-formatting-functions)
+- [Reading Formatting Functions](#reading-formatting-functions)
 - [Location Formatting Functions](#location-formatting-functions)
 - [Page Title Generator Functions](#page-title-generator-functions)
 - [Filename Generator Functions](#filename-generator-functions)
@@ -108,9 +110,61 @@ When you need a formatter that doesn't exist:
 
 ## Date Formatting Functions
 
-**Location:** `src/lib/utils/date-format.ts`
+**Location:** `src/lib/utils/date-format.ts` and `src/lib/utils/formatters.ts`
 
 All date formatting functions accept either a string or Date object and handle errors gracefully.
+
+### formatDate() ✨ Enhanced
+
+Returns formatted date with flexible options: **"December 25, 2025"**
+
+```typescript
+import { formatDate } from '@/lib/utils/formatters'
+
+// Default: long format
+formatDate('2025-12-25', 'en')
+// "December 25, 2025"
+
+// With weekday
+formatDate('2025-12-25', 'en', { includeWeekday: true })
+// "Thursday, December 25, 2025"
+
+// Short format
+formatDate('2025-12-25', 'en', { format: 'short' })
+// "Dec 25, 2025"
+
+// Numeric format
+formatDate('2025-12-25', 'en', { format: 'numeric' })
+// "12/25/2025"
+
+// Spanish locale
+formatDate('2025-12-25', 'es')
+// "25 de diciembre de 2025"
+
+formatDate('2025-12-25', 'es', { includeWeekday: true })
+// "jueves, 25 de diciembre de 2025"
+```
+
+**Use for:** All date displays with configurable formatting
+**Bilingual:** Full support for English and Spanish locales
+**Options:**
+- `includeWeekday`: Add day of week (default: false)
+- `format`: 'long' (default), 'short', or 'numeric'
+
+### formatTime() ✨ Enhanced
+
+Returns time in 12-hour format: **"2:30 PM"**
+
+```typescript
+import { formatTime } from '@/lib/utils/formatters'
+
+formatTime('14:30:00')  // "2:30 PM"
+formatTime('09:15')     // "9:15 AM"
+formatTime('14:30:00', 'es')  // "2:30 PM" (AM/PM is international)
+```
+
+**Use for:** Time-only displays
+**Bilingual:** Accepts language parameter (AM/PM is international standard)
 
 ### formatDateNumeric()
 
@@ -198,19 +252,6 @@ formatEventDateTime('2025-07-15', '11:00')
 
 **Use for:** Event displays, calendars, schedules
 
-### formatTime()
-
-Returns time: **"2:30 PM"**
-
-```typescript
-import { formatTime } from '@/lib/utils/date-format'
-
-formatTime('14:30')  // "2:30 PM"
-formatTime('09:00')  // "9:00 AM"
-```
-
-**Use for:** Time-only displays
-
 ### formatDateForFilename()
 
 Returns YYYYMMDD format: **"20250715"** (or **"NoDate"** if null)
@@ -243,6 +284,32 @@ formatPersonName(null)    // ""
 
 **Use for:** Most person name displays
 
+### formatPersonLastName()
+
+Returns last name only: **"Smith"**
+
+```typescript
+import { formatPersonLastName } from '@/lib/utils/formatters'
+
+formatPersonLastName(person)  // "Smith"
+formatPersonLastName(null)    // ""
+```
+
+**Use for:** When only last name is needed (titles, summaries)
+
+### formatPersonFirstName()
+
+Returns first name only: **"John"**
+
+```typescript
+import { formatPersonFirstName } from '@/lib/utils/formatters'
+
+formatPersonFirstName(person)  // "John"
+formatPersonFirstName(null)    // ""
+```
+
+**Use for:** Informal displays, casual references
+
 ### formatPersonWithPhone()
 
 Returns name with phone: **"John Smith (555-1234)"**
@@ -255,6 +322,184 @@ formatPersonWithPhone({ ...person, phone_number: null })  // "John Smith"
 ```
 
 **Use for:** Contact lists, forms with phone display
+
+### formatPersonWithRole()
+
+Returns name with role: **"John Smith (Lector)"**
+
+```typescript
+import { formatPersonWithRole } from '@/lib/utils/formatters'
+
+formatPersonWithRole(person, 'Lector')     // "John Smith (Lector)"
+formatPersonWithRole(person, 'Best Man')   // "John Smith (Best Man)"
+formatPersonWithRole(person, null)         // "John Smith"
+```
+
+**Use for:** Liturgical roles, ministry assignments, participant lists
+
+### formatPersonWithEmail()
+
+Returns name with email: **"John Smith - john@example.com"**
+
+```typescript
+import { formatPersonWithEmail } from '@/lib/utils/formatters'
+
+formatPersonWithEmail(person)  // "John Smith - john@example.com"
+formatPersonWithEmail({ ...person, email: null })  // "John Smith"
+```
+
+**Use for:** Contact lists with email, participant communications
+
+---
+
+## Event Formatting Functions
+
+**Location:** `src/lib/utils/formatters.ts`
+
+Event formatters handle event names, locations, and date/time subtitles for liturgical documents.
+
+### getEventName()
+
+Returns event name with fallback to event type: **"Christmas Mass"**
+
+```typescript
+import { getEventName } from '@/lib/utils/formatters'
+
+getEventName({ name: 'Christmas Mass' })  // "Christmas Mass"
+getEventName({ event_type: 'WEDDING_CEREMONY' }, 'en')  // Uses event_type
+getEventName({}, 'en')  // "Event"
+```
+
+**Use for:** Event displays when name may not be set
+
+**Note:** Returns raw event_type if no name. You may need to use EVENT_TYPE_LABELS for user-friendly display.
+
+### formatEventWithLocation()
+
+Returns event with location: **"Wedding Ceremony at St. Mary Church"**
+
+```typescript
+import { formatEventWithLocation } from '@/lib/utils/formatters'
+
+formatEventWithLocation(event, location, 'en')
+// "Wedding Ceremony at St. Mary Church"
+
+formatEventWithLocation(event, location, 'es')
+// "Ceremonia de Boda en Iglesia Santa María"
+
+formatEventWithLocation(event, null, 'en')
+// "Wedding Ceremony" (no location)
+```
+
+**Use for:** Event summaries with location context
+**Bilingual:** Supports English ('at') and Spanish ('en') connectors
+
+### formatEventSubtitleEnglish()
+
+Returns subtitle for English templates: **"Tuesday, July 15, 2025 at 11:00 AM"**
+
+```typescript
+import { formatEventSubtitleEnglish } from '@/lib/utils/formatters'
+
+formatEventSubtitleEnglish(event)
+// "Tuesday, July 15, 2025 at 11:00 AM"
+
+formatEventSubtitleEnglish({})
+// "Missing Date and Time"
+```
+
+**Use for:** Liturgical document headers (English templates)
+**Fallback:** Returns "Missing Date and Time" if date/time not set
+
+### formatEventSubtitleSpanish()
+
+Returns subtitle for Spanish templates: **"martes, 15 de julio de 2025 a las 11:00 AM"**
+
+```typescript
+import { formatEventSubtitleSpanish } from '@/lib/utils/formatters'
+
+formatEventSubtitleSpanish(event)
+// "martes, 15 de julio de 2025 a las 11:00 AM"
+
+formatEventSubtitleSpanish({})
+// "Falta Fecha y Hora"
+```
+
+**Use for:** Liturgical document headers (Spanish templates)
+**Fallback:** Returns "Falta Fecha y Hora" if date/time not set
+
+### formatEventDateTimeCompact()
+
+Returns compact format for lists: **"Mon, Jul 15, 2025 at 11:00 AM"**
+
+```typescript
+import { formatEventDateTimeCompact } from '@/lib/utils/formatters'
+
+formatEventDateTimeCompact(event)
+// "Mon, Jul 15, 2025 at 11:00 AM"
+
+formatEventDateTimeCompact(event, 'es')
+// "lun, 15 jul 2025 a las 11:00 AM"
+
+formatEventDateTimeCompact({ start_date: '2025-07-15' })
+// "Mon, Jul 15, 2025" (no time)
+```
+
+**Use for:** Event lists, calendars, compact displays
+**Bilingual:** Supports English and Spanish formats
+
+---
+
+## Reading Formatting Functions
+
+**Location:** `src/lib/utils/formatters.ts`
+
+Reading formatters handle liturgical readings (First Reading, Psalm, Gospel, etc.) used across sacramental modules.
+
+### getReadingPericope()
+
+Returns reading citation: **"Genesis 1:1-5"**
+
+```typescript
+import { getReadingPericope } from '@/lib/utils/formatters'
+
+getReadingPericope(reading)  // "Genesis 1:1-5"
+getReadingPericope(null)     // ""
+```
+
+**Use for:** Displaying scripture references in templates, summaries
+
+### getReadingTitle()
+
+Returns reading title: **"First Reading"**
+
+```typescript
+import { getReadingTitle } from '@/lib/utils/formatters'
+
+getReadingTitle(reading)  // "First Reading"
+getReadingTitle(null)     // ""
+```
+
+**Use for:** Displaying reading labels in templates
+
+### formatReadingWithLector()
+
+Returns reading with lector: **"Genesis 1:1-5 (John Smith)"**
+
+```typescript
+import { formatReadingWithLector } from '@/lib/utils/formatters'
+
+formatReadingWithLector(reading, lector)
+// "Genesis 1:1-5 (John Smith)"
+
+formatReadingWithLector(reading, null)
+// "Genesis 1:1-5" (no lector)
+
+formatReadingWithLector(null, lector)
+// "" (no reading)
+```
+
+**Use for:** Summaries showing who reads which scripture passage
 
 ---
 

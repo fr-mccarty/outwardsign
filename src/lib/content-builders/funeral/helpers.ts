@@ -7,7 +7,13 @@
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import { Location } from '@/lib/types'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import {
+  formatPersonName,
+  formatEventDateTime,
+  formatLocationWithAddress,
+  formatEventSubtitleEnglish,
+  formatEventSubtitleSpanish
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // TITLE AND SUBTITLE HELPERS
@@ -35,20 +41,16 @@ export function buildTitleSpanish(funeral: FuneralWithRelations): string {
 
 /**
  * Get event subtitle (date/time) for English template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleEnglish(funeral: FuneralWithRelations): string {
-  if (funeral.funeral_event?.start_date && funeral.funeral_event?.start_time) {
-    return formatEventDateTime(funeral.funeral_event)
-  }
-  return 'Missing Date and Time'
+  return formatEventSubtitleEnglish(funeral.funeral_event)
 }
 
 /**
  * Get event subtitle (date/time) for Spanish template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleSpanish(funeral: FuneralWithRelations): string {
-  if (funeral.funeral_event?.start_date && funeral.funeral_event?.start_time) {
-    return formatEventDateTime(funeral.funeral_event)
-  }
-  return 'Falta Fecha y Hora'
+  return formatEventSubtitleSpanish(funeral.funeral_event)
 }

@@ -243,7 +243,7 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
 /**
  * Render a content section to docx Paragraphs
  */
-function renderSection(section: ContentSection): Paragraph[] {
+function renderSection(section: ContentSection, isLastSection: boolean): Paragraph[] {
   const paragraphs: Paragraph[] = []
 
   // Add page break before if needed
@@ -261,8 +261,8 @@ function renderSection(section: ContentSection): Paragraph[] {
     }
   })
 
-  // Add page break after if needed
-  if (section.pageBreakAfter) {
+  // Add page break after if needed (but not for the last section)
+  if (section.pageBreakAfter && !isLastSection) {
     paragraphs.push(new Paragraph({ children: [new PageBreak()] }))
   }
 
@@ -327,8 +327,9 @@ export function renderWord(document: LiturgyDocument): Paragraph[] {
   )
 
   // Render all sections
-  document.sections.forEach((section) => {
-    paragraphs.push(...renderSection(section))
+  document.sections.forEach((section, index) => {
+    const isLastSection = index === document.sections.length - 1
+    paragraphs.push(...renderSection(section, isLastSection))
   })
 
   return paragraphs

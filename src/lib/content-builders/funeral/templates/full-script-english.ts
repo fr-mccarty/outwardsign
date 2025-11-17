@@ -102,11 +102,17 @@ function buildSummarySection(funeral: FuneralWithRelations): ContentSection {
     })
   }
 
-  // Liturgical Roles subsection
-  elements.push({
-    type: 'section-title',
-    text: 'Liturgical Roles',
-  })
+  // Liturgical Roles subsection - only show if there are roles assigned
+  const hasLiturgicalRoles = funeral.first_reader || funeral.psalm_reader ||
+    funeral.second_reader || funeral.gospel_reader ||
+    funeral.petition_reader || funeral.petitions_read_by_second_reader
+
+  if (hasLiturgicalRoles) {
+    elements.push({
+      type: 'section-title',
+      text: 'Liturgical Roles',
+    })
+  }
 
   if (funeral.first_reader) {
     elements.push({
@@ -171,30 +177,23 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
 
   const sections: ContentSection[] = []
 
-  // Add summary section (title/subtitle handled at document level)
-  sections.push(buildSummarySection(funeral))
+  // Build summary section first
+  const summarySection = buildSummarySection(funeral)
 
-  // Add all reading sections (only if they exist)
+  // Build all other sections (each checks individually if it has content)
   const firstReadingSection = buildReadingSection({
     id: 'first-reading',
     title: 'LITURGY OF THE WORD',
     reading: funeral.first_reading,
     reader: funeral.first_reader,
     responseText: 'Thanks be to God.',
-    showNoneSelected: true,
   })
-  if (firstReadingSection) {
-    sections.push(firstReadingSection)
-  }
 
   const psalmSection = buildPsalmSection({
     psalm: funeral.psalm,
     psalm_reader: funeral.psalm_reader,
     psalm_is_sung: funeral.psalm_is_sung,
   })
-  if (psalmSection) {
-    sections.push(psalmSection)
-  }
 
   const secondReadingSection = buildReadingSection({
     id: 'second-reading',
@@ -204,9 +203,6 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
     responseText: 'Thanks be to God.',
     pageBreakBefore: !!funeral.second_reading,
   })
-  if (secondReadingSection) {
-    sections.push(secondReadingSection)
-  }
 
   const gospelSection = buildReadingSection({
     id: 'gospel',
@@ -216,26 +212,39 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
     includeGospelAcclamations: true,
     pageBreakBefore: !!funeral.gospel_reading,
   })
-  if (gospelSection) {
-    sections.push(gospelSection)
-  }
 
-  // Add petitions if present
   const petitionsSection = buildPetitionsSection({
     petitions: funeral.petitions,
     petition_reader: funeral.petition_reader,
     second_reader: funeral.second_reader,
     petitions_read_by_second_reader: funeral.petitions_read_by_second_reader,
   })
-  if (petitionsSection) {
-    sections.push(petitionsSection)
-  }
 
-  // Add announcements if present
   const announcementsSection = buildAnnouncementsSection(funeral.announcements)
-  if (announcementsSection) {
-    sections.push(announcementsSection)
-  }
+
+  // Check if there are any sections after summary
+  const hasFollowingSections = !!(
+    firstReadingSection ||
+    psalmSection ||
+    secondReadingSection ||
+    gospelSection ||
+    petitionsSection ||
+    announcementsSection
+  )
+
+  // Only add page break after summary if there are following sections
+  summarySection.pageBreakAfter = hasFollowingSections
+
+  // Add summary section
+  sections.push(summarySection)
+
+  // Add other sections (only non-null ones)
+  if (firstReadingSection) sections.push(firstReadingSection)
+  if (psalmSection) sections.push(psalmSection)
+  if (secondReadingSection) sections.push(secondReadingSection)
+  if (gospelSection) sections.push(gospelSection)
+  if (petitionsSection) sections.push(petitionsSection)
+  if (announcementsSection) sections.push(announcementsSection)
 
   return {
     id: funeral.id,

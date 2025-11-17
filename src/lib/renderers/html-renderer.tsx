@@ -228,7 +228,11 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
 /**
  * Render a content section to React JSX
  */
-function renderSection(section: ContentSection, index: number): React.ReactNode {
+function renderSection(
+  section: ContentSection,
+  index: number,
+  isLastSection: boolean
+): React.ReactNode {
   const classes = []
   if (section.pageBreakBefore) classes.push('print:break-before-page')
   if (section.pageBreakAfter) classes.push('print:break-after-page')
@@ -242,7 +246,8 @@ function renderSection(section: ContentSection, index: number): React.ReactNode 
       <div className={className}>
         {section.elements.map((element, elemIndex) => renderElement(element, elemIndex))}
       </div>
-      {section.pageBreakAfter && (
+      {/* Only show pageBreakAfter indicator if this is not the last section */}
+      {section.pageBreakAfter && !isLastSection && (
         <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/30" />
       )}
     </React.Fragment>
@@ -283,7 +288,9 @@ export function renderHTML(document: LiturgyDocument): React.ReactNode {
       <div style={{ marginBottom: `${convert.pointsToPx(24)}px` }} />
 
       {/* Content sections */}
-      {document.sections.map((section, index) => renderSection(section, index))}
+      {document.sections.map((section, index) =>
+        renderSection(section, index, index === document.sections.length - 1)
+      )}
     </>
   )
 }

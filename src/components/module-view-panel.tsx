@@ -75,7 +75,7 @@ export function ModuleViewPanel({
   return (
     <div className="w-full md:w-80 space-y-4 print:hidden order-1 md:order-2">
       <Card>
-        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+        <CardContent className="px-6 pb-1 space-y-4">
           {/* Actions Section */}
           {actionButtons && (
             <div className="space-y-2">

@@ -7,7 +7,12 @@
 
 import { MassWithRelations } from '@/lib/actions/masses'
 import { Person } from '@/lib/types'
-import { formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import {
+  formatEventDateTime,
+  formatLocationWithAddress,
+  formatEventSubtitleEnglish,
+  formatEventSubtitleSpanish
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // PERSON HELPERS
@@ -26,20 +31,16 @@ export function getHomilist(mass: MassWithRelations): Person | null {
 
 /**
  * Get event subtitle (date/time) for English template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleEnglish(mass: MassWithRelations): string {
-  if (mass.event?.start_date && mass.event?.start_time) {
-    return formatEventDateTime(mass.event)
-  }
-  return 'Missing Date and Time'
+  return formatEventSubtitleEnglish(mass.event)
 }
 
 /**
  * Get event subtitle (date/time) for Spanish template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleSpanish(mass: MassWithRelations): string {
-  if (mass.event?.start_date && mass.event?.start_time) {
-    return formatEventDateTime(mass.event)
-  }
-  return 'Falta Fecha y Hora'
+  return formatEventSubtitleSpanish(mass.event)
 }

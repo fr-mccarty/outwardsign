@@ -251,7 +251,7 @@ function renderElement(element: ContentElement): Content {
 /**
  * Render a content section to pdfmake format
  */
-function renderSection(section: ContentSection): Content[] {
+function renderSection(section: ContentSection, isLastSection: boolean): Content[] {
   const content: Content[] = []
 
   // Add page break before if needed
@@ -264,8 +264,8 @@ function renderSection(section: ContentSection): Content[] {
     content.push(renderElement(element))
   })
 
-  // Add page break after if needed
-  if (section.pageBreakAfter) {
+  // Add page break after if needed (but not for the last section)
+  if (section.pageBreakAfter && !isLastSection) {
     content.push({ text: '', pageBreak: 'after' as const })
   }
 
@@ -310,8 +310,9 @@ export function renderPDF(document: LiturgyDocument): Content[] {
   })
 
   // Render all sections
-  document.sections.forEach((section) => {
-    content.push(...renderSection(section))
+  document.sections.forEach((section, index) => {
+    const isLastSection = index === document.sections.length - 1
+    content.push(...renderSection(section, isLastSection))
   })
 
   return content

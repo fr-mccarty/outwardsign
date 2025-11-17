@@ -199,11 +199,19 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     })
   }
 
-  // Sacred Liturgy subsection
-  elements.push({
-    type: 'section-title',
-    text: 'Sagrada Liturgia',
-  })
+  // Sacred Liturgy subsection - only show if there are readings/petitions
+  const petitionsReader = getPetitionsReaderName(wedding)
+  const hasLiturgyContent = wedding.first_reading || wedding.first_reader ||
+    wedding.psalm || wedding.psalm_reader || wedding.psalm_is_sung ||
+    wedding.second_reading || wedding.second_reader ||
+    wedding.gospel_reading || petitionsReader
+
+  if (hasLiturgyContent) {
+    elements.push({
+      type: 'section-title',
+      text: 'Sagrada Liturgia',
+    })
+  }
 
   if (wedding.first_reading) {
     elements.push({
@@ -267,9 +275,6 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     })
   }
 
-  // Determine petition reader
-  const petitionsReader = getPetitionsReaderName(wedding)
-
   if (petitionsReader) {
     elements.push({
       type: 'info-row',
@@ -296,14 +301,13 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
 function buildReadings(wedding: WeddingWithRelations): ContentSection[] {
   const sections: ContentSection[] = []
 
-  // First Reading (always include, show "None Selected" if missing)
+  // First Reading (only if present)
   // Note: No pageBreakBefore needed - cover page already has pageBreakAfter
   const firstReadingSection = buildReadingSection({
     id: 'first-reading',
     title: CONTENT.firstReading,
     reading: wedding.first_reading,
     reader: wedding.first_reader,
-    showNoneSelected: true,
   })
   if (firstReadingSection) {
     sections.push(firstReadingSection)
@@ -397,23 +401,31 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
   // Build all sections in order
   const sections: ContentSection[] = []
 
-  // 1. Cover page
-  sections.push(buildCoverPage(wedding))
+  // 1. Build cover page
+  const coverPage = buildCoverPage(wedding)
 
-  // 2. Readings (first, psalm, second, gospel)
-  sections.push(...buildReadings(wedding))
+  // 2. Build readings (each checks individually if it has content)
+  const readingSections = buildReadings(wedding)
 
-  // 3. Petitions (if present)
+  // 3. Build petitions (returns null if no content)
   const petitions = buildPetitions(wedding)
-  if (petitions) {
-    sections.push(petitions)
-  }
 
-  // 4. Announcements (if present)
+  // 4. Build announcements (returns null if no content)
   const announcements = buildAnnouncements(wedding)
-  if (announcements) {
-    sections.push(announcements)
-  }
+
+  // Check if there are any sections after cover page
+  const hasFollowingSections = readingSections.length > 0 || petitions !== null || announcements !== null
+
+  // Only add page break after cover page if there are following sections
+  coverPage.pageBreakAfter = hasFollowingSections
+
+  // Add cover page
+  sections.push(coverPage)
+
+  // Add other sections (only non-null/non-empty ones)
+  sections.push(...readingSections)
+  if (petitions) sections.push(petitions)
+  if (announcements) sections.push(announcements)
 
   // Return complete document
   return {

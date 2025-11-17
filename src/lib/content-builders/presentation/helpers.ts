@@ -5,7 +5,11 @@
  */
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
-import { formatEventDateTime } from '@/lib/utils/formatters'
+import {
+  formatEventDateTime,
+  formatEventSubtitleEnglish,
+  formatEventSubtitleSpanish
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // NAME HELPERS
@@ -218,30 +222,24 @@ export function buildTitleSpanish(presentation: PresentationWithRelations): stri
 
 /**
  * Get event subtitle with fallback text (English)
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleEnglish(presentation: PresentationWithRelations): string {
-  if (!presentation.presentation_event?.start_date) {
-    return 'No date/time'
-  }
-  return formatEventDateTime(presentation.presentation_event)
+  return formatEventSubtitleEnglish(presentation.presentation_event)
 }
 
 /**
  * Get event subtitle with fallback text (Spanish)
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleSpanish(presentation: PresentationWithRelations): string {
-  if (!presentation.presentation_event?.start_date) {
-    return 'Sin fecha/hora'
-  }
-  return formatEventDateTime(presentation.presentation_event)
+  return formatEventSubtitleSpanish(presentation.presentation_event)
 }
 
 /**
  * Get event subtitle with fallback text (Bilingual)
+ * Uses English formatter for bilingual template
  */
 export function getEventSubtitleBilingual(presentation: PresentationWithRelations): string {
-  if (!presentation.presentation_event?.start_date) {
-    return 'No date/time / Sin fecha/hora'
-  }
-  return formatEventDateTime(presentation.presentation_event)
+  return formatEventSubtitleEnglish(presentation.presentation_event)
 }

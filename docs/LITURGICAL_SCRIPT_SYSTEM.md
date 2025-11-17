@@ -505,14 +505,15 @@ export function buildFullScriptEnglish(entity: [Module]WithRelations): LiturgyDo
   sections.push(buildSummarySection(entity))
 
   // Use shared builders for common sections
-  if (entity.first_reading) {
-    sections.push(buildReadingSection({
-      id: 'first-reading',
-      title: 'FIRST READING',
-      reading: entity.first_reading,
-      reader: entity.first_reader,
-      showNoneSelected: true
-    }))
+  // buildReadingSection returns null if no reading, excluding section entirely
+  const firstReadingSection = buildReadingSection({
+    id: 'first-reading',
+    title: 'FIRST READING',
+    reading: entity.first_reading,
+    reader: entity.first_reader,
+  })
+  if (firstReadingSection) {
+    sections.push(firstReadingSection)
   }
 
   if (entity.psalm) {
@@ -682,13 +683,12 @@ import {
   buildAnnouncementsSection
 } from '@/lib/content-builders/shared/script-sections'
 
-// Build a reading
+// Build a reading (returns null if no reading, excluding section entirely)
 buildReadingSection({
   id: 'first-reading',
   title: 'FIRST READING',
   reading: entity.first_reading,
   reader: entity.first_reader,
-  showNoneSelected: true,
   pageBreakBefore: false
 })
 

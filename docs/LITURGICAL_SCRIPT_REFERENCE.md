@@ -637,13 +637,12 @@ import {
   buildAnnouncementsSection
 } from '@/lib/content-builders/shared/script-sections'
 
-// Build reading
+// Build reading (returns null if no reading, excluding section entirely)
 const firstReading = buildReadingSection({
   id: 'first-reading',
   title: 'FIRST READING',
   reading: entity.first_reading,
   reader: entity.first_reader,
-  showNoneSelected: true,
   pageBreakBefore: false
 })
 

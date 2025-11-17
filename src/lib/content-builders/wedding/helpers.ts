@@ -7,7 +7,13 @@
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { IndividualReading, Location, Event, Person } from '@/lib/types'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import {
+  formatPersonName,
+  formatEventDateTime,
+  formatLocationWithAddress,
+  formatEventSubtitleEnglish,
+  formatEventSubtitleSpanish
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // CONDITIONAL CHECK HELPERS
@@ -76,20 +82,16 @@ export function buildTitleSpanish(wedding: WeddingWithRelations): string {
 
 /**
  * Get event subtitle (date/time) for English template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleEnglish(wedding: WeddingWithRelations): string {
-  if (wedding.wedding_event?.start_date && wedding.wedding_event?.start_time) {
-    return formatEventDateTime(wedding.wedding_event)
-  }
-  return 'Missing Date and Time'
+  return formatEventSubtitleEnglish(wedding.wedding_event)
 }
 
 /**
  * Get event subtitle (date/time) for Spanish template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleSpanish(wedding: WeddingWithRelations): string {
-  if (wedding.wedding_event?.start_date && wedding.wedding_event?.start_time) {
-    return formatEventDateTime(wedding.wedding_event)
-  }
-  return 'Falta Fecha y Hora'
+  return formatEventSubtitleSpanish(wedding.wedding_event)
 }

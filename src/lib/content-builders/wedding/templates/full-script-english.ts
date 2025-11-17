@@ -145,11 +145,19 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     })
   }
 
-  // Sacred Liturgy subsection
-  elements.push({
-    type: 'section-title',
-    text: 'Sacred Liturgy',
-  })
+  // Sacred Liturgy subsection - only show if there are readings/petitions
+  const petitionsReader = getPetitionsReaderName(wedding)
+  const hasLiturgyContent = wedding.first_reading || wedding.first_reader ||
+    wedding.psalm || wedding.psalm_reader || wedding.psalm_is_sung ||
+    wedding.second_reading || wedding.second_reader ||
+    wedding.gospel_reading || petitionsReader
+
+  if (hasLiturgyContent) {
+    elements.push({
+      type: 'section-title',
+      text: 'Sacred Liturgy',
+    })
+  }
 
   if (wedding.first_reading) {
     elements.push({
@@ -213,9 +221,6 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     })
   }
 
-  // Determine petition reader
-  const petitionsReader = getPetitionsReaderName(wedding)
-
   if (petitionsReader) {
     elements.push({
       type: 'info-row',
@@ -240,46 +245,22 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
 
   const sections: ContentSection[] = []
 
-  // Add summary section (title/subtitle handled at document level)
-  sections.push(buildSummarySection(wedding))
+  // Build summary section first
+  const summarySection = buildSummarySection(wedding)
 
-  // Add header before readings
-  // sections.push({
-  //   id: 'readings-header',
-  //   elements: [
-  //     {
-  //       type: 'event-title',
-  //       text: weddingTitle,
-  //       alignment: 'center',
-  //     },
-  //     {
-  //       type: 'event-datetime',
-  //       text: eventDateTime,
-  //       alignment: 'center',
-  //     },
-  //   ],
-  // })
-
-  // Add all reading sections (only if they exist)
+  // Build all other sections (each checks individually if it has content)
   const firstReadingSection = buildReadingSection({
     id: 'first-reading',
     title: 'FIRST READING',
     reading: wedding.first_reading,
     reader: wedding.first_reader,
-    showNoneSelected: true,
   })
-  if (firstReadingSection) {
-    sections.push(firstReadingSection)
-  }
 
   const psalmSection = buildPsalmSection({
     psalm: wedding.psalm,
     psalm_reader: wedding.psalm_reader,
     psalm_is_sung: wedding.psalm_is_sung,
   })
-  if (psalmSection) {
-    sections.push(psalmSection)
-  }
 
   const secondReadingSection = buildReadingSection({
     id: 'second-reading',
@@ -288,9 +269,6 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     reader: wedding.second_reader,
     pageBreakBefore: !!wedding.second_reading,
   })
-  if (secondReadingSection) {
-    sections.push(secondReadingSection)
-  }
 
   const gospelSection = buildReadingSection({
     id: 'gospel',
@@ -299,26 +277,39 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     includeGospelDialogue: false,
     pageBreakBefore: !!wedding.gospel_reading,
   })
-  if (gospelSection) {
-    sections.push(gospelSection)
-  }
 
-  // Add petitions
   const petitionsSection = buildPetitionsSection({
     petitions: wedding.petitions,
     petition_reader: wedding.petition_reader,
     second_reader: wedding.second_reader,
     petitions_read_by_second_reader: wedding.petitions_read_by_second_reader,
   })
-  if (petitionsSection) {
-    sections.push(petitionsSection)
-  }
 
-  // Add announcements if present
   const announcementsSection = buildAnnouncementsSection(wedding.announcements)
-  if (announcementsSection) {
-    sections.push(announcementsSection)
-  }
+
+  // Check if there are any sections after summary
+  const hasFollowingSections = !!(
+    firstReadingSection ||
+    psalmSection ||
+    secondReadingSection ||
+    gospelSection ||
+    petitionsSection ||
+    announcementsSection
+  )
+
+  // Only add page break after summary if there are following sections
+  summarySection.pageBreakAfter = hasFollowingSections
+
+  // Add summary section
+  sections.push(summarySection)
+
+  // Add other sections (only non-null ones)
+  if (firstReadingSection) sections.push(firstReadingSection)
+  if (psalmSection) sections.push(psalmSection)
+  if (secondReadingSection) sections.push(secondReadingSection)
+  if (gospelSection) sections.push(gospelSection)
+  if (petitionsSection) sections.push(petitionsSection)
+  if (announcementsSection) sections.push(announcementsSection)
 
   return {
     id: wedding.id,

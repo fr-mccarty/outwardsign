@@ -7,7 +7,13 @@
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { IndividualReading } from '@/lib/types'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import {
+  formatPersonName,
+  formatEventDateTime,
+  formatLocationWithAddress,
+  formatEventSubtitleEnglish,
+  formatEventSubtitleSpanish
+} from '@/lib/utils/formatters'
 
 // ============================================================================
 // READING HELPERS
@@ -46,20 +52,16 @@ export function buildTitleSpanish(quinceanera: QuinceaneraWithRelations): string
 
 /**
  * Get event subtitle (date/time) for English template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleEnglish(quinceanera: QuinceaneraWithRelations): string {
-  if (quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event?.start_time) {
-    return formatEventDateTime(quinceanera.quinceanera_event)
-  }
-  return 'Missing Date and Time'
+  return formatEventSubtitleEnglish(quinceanera.quinceanera_event)
 }
 
 /**
  * Get event subtitle (date/time) for Spanish template
+ * Delegates to centralized formatter
  */
 export function getEventSubtitleSpanish(quinceanera: QuinceaneraWithRelations): string {
-  if (quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event?.start_time) {
-    return formatEventDateTime(quinceanera.quinceanera_event)
-  }
-  return 'Falta Fecha y Hora'
+  return formatEventSubtitleSpanish(quinceanera.quinceanera_event)
 }
