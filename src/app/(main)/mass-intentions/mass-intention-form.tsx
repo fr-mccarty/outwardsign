@@ -11,7 +11,8 @@ import { toast } from 'sonner'
 import { SelectItem } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { MassPickerField } from "@/components/mass-picker-field"
-import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS, MASS_INTENTION_TEMPLATE_VALUES, MASS_INTENTION_TEMPLATE_LABELS, MASS_INTENTION_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_TEMPLATE_VALUES, MASS_INTENTION_TEMPLATE_LABELS, MASS_INTENTION_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
@@ -159,7 +160,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           >
             {MASS_INTENTION_STATUS_VALUES.map((value) => (
               <SelectItem key={value} value={value}>
-                {MASS_INTENTION_STATUS_LABELS[value].en}
+                {getStatusLabel(value, 'en')}
               </SelectItem>
             ))}
           </FormField>

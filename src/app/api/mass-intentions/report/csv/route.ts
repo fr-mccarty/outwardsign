@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { getMassIntentionsByDateRange } from '@/lib/actions/mass-intentions'
 import { formatDatePretty } from '@/lib/utils/date-format'
-import { MASS_INTENTION_STATUS_LABELS } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -61,9 +61,7 @@ export async function GET(request: Request) {
           : 'N/A'
       ),
       formatStipend(intention.stipend_in_cents),
-      escapeCSV(
-        MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || intention.status
-      ),
+      escapeCSV(getStatusLabel(intention.status, 'en')),
       escapeCSV(intention.date_received ? formatDatePretty(intention.date_received) : 'N/A'),
       escapeCSV(intention.date_requested ? formatDatePretty(intention.date_requested) : 'N/A'),
       escapeCSV(intention.note || '')

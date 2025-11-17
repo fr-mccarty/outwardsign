@@ -23,7 +23,8 @@ import {
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
@@ -684,7 +685,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               <SelectContent>
                 {MODULE_STATUS_VALUES.map((statusOption) => (
                   <SelectItem key={statusOption} value={statusOption}>
-                    {MODULE_STATUS_LABELS[statusOption].en}
+                    {getStatusLabel(statusOption, 'en')}
                   </SelectItem>
                 ))}
               </SelectContent>

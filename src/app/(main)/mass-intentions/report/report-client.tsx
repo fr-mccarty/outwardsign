@@ -18,7 +18,7 @@ import { FileText, Download, Printer } from 'lucide-react'
 import { getMassIntentionsReport, type MassIntentionReportData } from '@/lib/actions/mass-intentions'
 import { toast } from 'sonner'
 import { formatDatePretty } from '@/lib/utils/date-format'
-import { MASS_INTENTION_STATUS_LABELS } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import Link from 'next/link'
 import { PageContainer } from '@/components/page-container'
 
@@ -266,7 +266,7 @@ export function MassIntentionsReportClient() {
                                         : 'N/A'}
                                     </span>
                                     <Badge variant={getStatusVariant(intention.status || 'REQUESTED')} className="w-fit">
-                                      {MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || intention.status || 'N/A'}
+                                      {getStatusLabel(intention.status, 'en')}
                                     </Badge>
                                   </div>
                                 </TableCell>

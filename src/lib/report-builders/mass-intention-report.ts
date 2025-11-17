@@ -6,7 +6,7 @@
 
 import { MassIntentionReportData } from '@/lib/actions/mass-intentions'
 import { formatDatePretty } from '@/lib/utils/date-format'
-import { MASS_INTENTION_STATUS_LABELS } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import { ReportBuilder } from './types'
 
 export interface MassIntentionReportParams {
@@ -41,7 +41,7 @@ export const buildMassIntentionReport: ReportBuilder<MassIntentionReportParams> 
               : 'N/A'}
           </span>
           <span class="cell-sublabel">
-            ${MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || intention.status}
+            ${getStatusLabel(intention.status, 'en')}
           </span>
         </div>
       </td>

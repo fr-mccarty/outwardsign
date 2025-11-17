@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
+import { MASS_INTENTION_STATUS_VALUES } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { formatDatePretty } from "@/lib/utils/date-format"
 
 interface Stats {
@@ -106,7 +107,7 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
                   <SelectItem value="all">All Status</SelectItem>
                   {MASS_INTENTION_STATUS_VALUES.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {MASS_INTENTION_STATUS_LABELS[status].en}
+                      {getStatusLabel(status, 'en')}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buildMassLiturgy, MASS_TEMPLATES } from '@/lib/content-builders/mass'
 import { Heart, User, Edit, Printer, FileText, Download } from 'lucide-react'
-import { MASS_INTENTION_STATUS_LABELS } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import Link from 'next/link'
@@ -156,7 +156,7 @@ export function MassViewClient({ mass }: MassViewClientProps) {
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="secondary">
-                {MASS_INTENTION_STATUS_LABELS[mass.mass_intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || mass.mass_intention.status}
+                {getStatusLabel(mass.mass_intention.status, 'en')}
               </Badge>
               {mass.mass_intention.stipend_in_cents && (
                 <div className="text-sm text-muted-foreground">

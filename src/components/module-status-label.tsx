@@ -1,11 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import {
-  MODULE_STATUS_LABELS,
-  MASS_STATUS_LABELS,
-  MASS_INTENTION_STATUS_LABELS,
-  type MassStatus,
-  type MassIntentionStatus
-} from "@/lib/constants"
+import { MODULE_STATUS_LABELS } from "@/lib/constants"
 
 type StatusType = 'module' | 'mass' | 'mass-intention'
 
@@ -32,16 +26,8 @@ const getDefaultStatus = (statusType: StatusType): string => {
 
 // Get display label for a status based on its type
 const getStatusLabel = (status: string, statusType: StatusType): string => {
-  switch (statusType) {
-    case 'module':
-      return MODULE_STATUS_LABELS[status]?.en || status
-    case 'mass':
-      return MASS_STATUS_LABELS[status as MassStatus]?.en || status
-    case 'mass-intention':
-      return MASS_INTENTION_STATUS_LABELS[status as MassIntentionStatus]?.en || status
-    default:
-      return status
-  }
+  // All status labels are now in MODULE_STATUS_LABELS
+  return MODULE_STATUS_LABELS[status]?.en || status
 }
 
 // Get badge variant based on status and type

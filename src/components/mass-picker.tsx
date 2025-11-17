@@ -8,7 +8,8 @@ import type { Event, Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
-import { MASS_STATUS_VALUES, MASS_STATUS_LABELS } from '@/lib/constants'
+import { MASS_STATUS_VALUES } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import { EventPicker } from '@/components/event-picker'
 import { PeoplePicker } from '@/components/people-picker'
 import { Button } from '@/components/ui/button'
@@ -224,7 +225,7 @@ export function MassPicker({
       required: false,
       options: MASS_STATUS_VALUES.map((status) => ({
         value: status,
-        label: MASS_STATUS_LABELS[status].en,
+        label: getStatusLabel(status, 'en'),
       })),
     },
     {
@@ -349,8 +350,7 @@ export function MassPicker({
               variant={getStatusVariant(mass.status || 'PLANNING')}
               className="text-xs"
             >
-              {MASS_STATUS_LABELS[mass.status as keyof typeof MASS_STATUS_LABELS]
-                ?.en || mass.status}
+              {getStatusLabel(mass.status, 'en')}
             </Badge>
           </div>
         </div>

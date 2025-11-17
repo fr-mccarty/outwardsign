@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MASS_STATUS_VALUES, MASS_STATUS_LABELS } from "@/lib/constants"
+import { MASS_STATUS_VALUES } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface Stats {
@@ -102,7 +103,7 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
                   <SelectItem value="all">All Status</SelectItem>
                   {MASS_STATUS_VALUES.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {MASS_STATUS_LABELS[status].en}
+                      {getStatusLabel(status, 'en')}
                     </SelectItem>
                   ))}
                 </SelectContent>

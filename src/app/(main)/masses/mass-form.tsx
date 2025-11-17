@@ -17,7 +17,8 @@ import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
-import { MASS_STATUS_VALUES, MASS_STATUS_LABELS, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, MASS_INTENTION_STATUS_LABELS } from "@/lib/constants"
+import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
 import { usePickerState } from "@/hooks/use-picker-state"
@@ -372,7 +373,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onChange={setStatus}
             options={MASS_STATUS_VALUES.map((value) => ({
               value,
-              label: MASS_STATUS_LABELS[value].en
+              label: getStatusLabel(value, 'en')
             }))}
           />
 
@@ -450,7 +451,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary">
-                          {MASS_INTENTION_STATUS_LABELS[massIntention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]?.en || massIntention.status}
+                          {getStatusLabel(massIntention.status, 'en')}
                         </Badge>
                         {massIntention.stipend_in_cents && (
                           <div className="text-sm text-muted-foreground">

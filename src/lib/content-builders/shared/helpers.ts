@@ -5,7 +5,7 @@
  */
 
 import { Person } from '@/lib/types'
-import { ALL_STATUS_LABELS } from '@/lib/constants'
+import { MODULE_STATUS_LABELS } from '@/lib/constants'
 
 // ============================================================================
 // GENDERED TEXT HELPERS
@@ -44,7 +44,7 @@ export function gendered(
  * 🔴 CRITICAL: NEVER display raw database status values to users.
  * Always use this helper to convert database values to human-readable labels.
  *
- * This function looks up the status in the ALL_STATUS_LABELS constant
+ * This function looks up the status in the MODULE_STATUS_LABELS constant
  * which contains all status values from all modules.
  *
  * @param status - The database status value (e.g., 'ACTIVE', 'PLANNING', 'REQUESTED', 'SCHEDULED')
@@ -65,7 +65,7 @@ export function getStatusLabel(
   if (!status) return ''
 
   // Look up the status in the combined labels constant
-  const labelObj = ALL_STATUS_LABELS[status]
+  const labelObj = MODULE_STATUS_LABELS[status]
 
   // Return the localized label, or fall back to the raw status if not found
   return labelObj ? labelObj[language] : status

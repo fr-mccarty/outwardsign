@@ -9,7 +9,8 @@ import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
-import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_STATUS_LABELS } from '@/lib/constants'
+import { MASS_INTENTION_STATUS_VALUES } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import { PeoplePicker } from '@/components/people-picker'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -207,7 +208,7 @@ export function MassIntentionPicker({
       required: false,
       options: MASS_INTENTION_STATUS_VALUES.map((status) => ({
         value: status,
-        label: MASS_INTENTION_STATUS_LABELS[status].en,
+        label: getStatusLabel(status, 'en'),
       })),
     },
     {
@@ -348,8 +349,7 @@ export function MassIntentionPicker({
               variant={getStatusVariant(intention.status || 'REQUESTED')}
               className="text-xs"
             >
-              {MASS_INTENTION_STATUS_LABELS[intention.status as keyof typeof MASS_INTENTION_STATUS_LABELS]
-                ?.en || intention.status}
+              {getStatusLabel(intention.status, 'en')}
             </Badge>
           </div>
         </div>

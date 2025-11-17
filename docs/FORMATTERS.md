@@ -14,6 +14,7 @@ This document describes all helper and formatting functions used throughout the 
   - [ALWAYS Format Dates](#-always-format-dates)
   - [Format Dates in Content Builders](#-format-dates-in-content-builders)
   - [NEVER Display Raw Database Values](#-never-display-raw-database-values)
+  - [Helper Functions Enforce Consistency](#-helper-functions-enforce-consistency)
   - [Request Permission Before Creating New Helpers](#-request-permission-before-creating-new-helpers)
 - [Date Formatting Functions](#date-formatting-functions)
 - [Person Formatting Functions](#person-formatting-functions)
@@ -122,7 +123,7 @@ if (presentation.status) {
 }
 
 // ✅ CORRECT - use getStatusLabel helper
-import { getStatusLabel } from '@/lib/content-builders/shared/builders'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 
 if (presentation.status) {
   presentationRows.push({
@@ -136,7 +137,7 @@ if (presentation.status) {
 **Status Label Helper:**
 
 ```typescript
-import { getStatusLabel } from '@/lib/content-builders/shared/builders'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 
 // Automatically finds the right label in all status constants
 getStatusLabel('ACTIVE', 'en')      // Returns: "Active"
@@ -164,6 +165,28 @@ The helper searches all available status label constants:
 - Users need human-readable text like "Active" or "Activo"
 - Supports bilingual display (English and Spanish)
 - Maintains consistency across the application
+
+### 🔴 Helper Functions Enforce Consistency
+
+**Helper functions serve a dual purpose in this codebase:**
+
+1. **Code Standardization** - Centralizes logic, reduces duplication, makes maintenance easier
+2. **AI Agent Enforcement** - Provides clear, documented patterns that AI agents must follow, preventing inconsistent implementations
+
+**Example:** The `getStatusLabel()` helper not only standardizes status display across the app, but also enforces that AI agents ALWAYS convert database values to human-readable labels. Without the helper, an AI agent might inconsistently display raw values in some places and formatted values in others.
+
+**When creating helpers:**
+- Document them thoroughly with examples
+- Mark critical patterns with 🔴 CRITICAL
+- Implement the helper in all applicable locations
+- Update documentation to reference the helper
+- This creates a "single source of truth" that both humans and AI agents follow
+
+**Benefits for AI agents:**
+- Clear, discoverable patterns (import statements show what's available)
+- Reduced decision-making (no need to choose between multiple approaches)
+- Enforced consistency (helper exists = must use it)
+- Better maintainability (changes to one helper propagate everywhere)
 
 ### 🔴 Request Permission Before Creating New Helpers
 

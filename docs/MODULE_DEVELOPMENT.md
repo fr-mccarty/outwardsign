@@ -116,7 +116,7 @@ The application uses a **dual-constant pattern** for all dropdown values, status
 ```typescript
 export const MODULE_STATUS_VALUES = ['ACTIVE', 'INACTIVE', 'COMPLETED'] as const
 export type ModuleStatus = typeof MODULE_STATUS_VALUES[number]
-export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string }> = {
+export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = {
   ACTIVE: { en: 'Active', es: 'Activo' },
   INACTIVE: { en: 'Inactive', es: 'Inactivo' },
   COMPLETED: { en: 'Completed', es: 'Completado' }
@@ -124,6 +124,31 @@ export const MODULE_STATUS_LABELS: Record<ModuleStatus, { en: string; es: string
 ```
 
 **Why:** Database consistency, bilingual support, type safety, centralized maintenance.
+
+### 🔴 CRITICAL - Status Label Display Rule
+
+**NEVER access `MODULE_STATUS_LABELS` directly.** Always use the `getStatusLabel` helper function to display status labels. This ensures consistent handling of edge cases (null/undefined values) and maintains a single source of truth for label formatting.
+
+```tsx
+// ✅ CORRECT - Use getStatusLabel helper
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
+<p>{getStatusLabel(entity.status, 'en')}</p>
+
+// ✅ CORRECT - In select options
+import { MODULE_STATUS_VALUES } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
+<SelectContent>
+  {MODULE_STATUS_VALUES.map((status) => (
+    <SelectItem key={status} value={status}>
+      {getStatusLabel(status, 'en')}
+    </SelectItem>
+  ))}
+</SelectContent>
+
+// ❌ WRONG - never access MODULE_STATUS_LABELS directly
+import { MODULE_STATUS_LABELS } from '@/lib/constants'
+<p>{MODULE_STATUS_LABELS[entity.status]?.en || entity.status}</p>
+```
 
 ### 🔴 CRITICAL - Event Type Display Rule
 

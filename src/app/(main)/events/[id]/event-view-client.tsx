@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ExternalLink, Edit, Printer, FileText, Download } from "lucide-react"
-import { MODULE_STATUS_LABELS } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import type { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleReference } from '@/lib/helpers/event-helpers'
@@ -138,7 +138,7 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
               <h4 className="font-medium">{moduleReference.summary.title}</h4>
               {moduleReference.summary.status && (
                 <Badge variant="outline">
-                  {MODULE_STATUS_LABELS[moduleReference.summary.status]?.[userLanguage] || moduleReference.summary.status}
+                  {getStatusLabel(moduleReference.summary.status, userLanguage)}
                 </Badge>
               )}
               <ul className="text-sm text-muted-foreground space-y-1">

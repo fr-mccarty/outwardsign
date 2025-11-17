@@ -26,7 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MODULE_STATUS_VALUES, MODULE_STATUS_LABELS, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS, PRESENTATION_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS, PRESENTATION_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
@@ -275,7 +276,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               <SelectContent>
                 {MODULE_STATUS_VALUES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {MODULE_STATUS_LABELS[s].en}
+                    {getStatusLabel(s, 'en')}
                   </SelectItem>
                 ))}
               </SelectContent>
