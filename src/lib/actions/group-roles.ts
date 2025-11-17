@@ -105,7 +105,7 @@ export async function getGroupRolesPaginated(params?: PaginatedParams): Promise<
 }
 
 export async function getGroupRole(id: string): Promise<GroupRole | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -156,7 +156,7 @@ export async function createGroupRole(data: CreateGroupRoleData): Promise<GroupR
 }
 
 export async function updateGroupRole(id: string, data: UpdateGroupRoleData): Promise<GroupRole> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -182,7 +182,7 @@ export async function updateGroupRole(id: string, data: UpdateGroupRoleData): Pr
 }
 
 export async function deleteGroupRole(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

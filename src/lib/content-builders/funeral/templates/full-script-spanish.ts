@@ -6,7 +6,7 @@
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   buildReadingSection,
@@ -35,31 +35,40 @@ export function buildFullScriptSpanish(funeral: FuneralWithRelations): LiturgyDo
   // Funeral Service subsection
   const funeralRows = []
   if (funeral.deceased) {
-    funeralRows.push({ label: 'Difunto(a):', value: formatPersonName(funeral.deceased) })
+    funeralRows.push({ label: 'Difunto(a):', value: formatPersonWithPhone(funeral.deceased) })
   }
   if (funeral.family_contact) {
     funeralRows.push({ label: 'Contacto Familiar:', value: formatPersonWithPhone(funeral.family_contact) })
   }
   if (funeral.coordinator) {
-    funeralRows.push({ label: 'Coordinador(a):', value: formatPersonName(funeral.coordinator) })
+    funeralRows.push({ label: 'Coordinador(a):', value: formatPersonWithPhone(funeral.coordinator) })
   }
   if (funeral.presider) {
-    funeralRows.push({ label: 'Celebrante:', value: formatPersonName(funeral.presider) })
+    funeralRows.push({ label: 'Celebrante:', value: formatPersonWithPhone(funeral.presider) })
   }
   if (funeral.homilist) {
-    funeralRows.push({ label: 'Homilista:', value: formatPersonName(funeral.homilist) })
+    funeralRows.push({ label: 'Homilista:', value: formatPersonWithPhone(funeral.homilist) })
   }
   if (funeral.lead_musician) {
-    funeralRows.push({ label: 'Músico Principal:', value: formatPersonName(funeral.lead_musician) })
+    funeralRows.push({ label: 'Músico Principal:', value: formatPersonWithPhone(funeral.lead_musician) })
   }
   if (funeral.cantor) {
-    funeralRows.push({ label: 'Cantor:', value: formatPersonName(funeral.cantor) })
+    funeralRows.push({ label: 'Cantor:', value: formatPersonWithPhone(funeral.cantor) })
   }
   if (funeral.funeral_event?.location) {
     funeralRows.push({ label: 'Lugar del Servicio:', value: formatLocationWithAddress(funeral.funeral_event.location) })
   }
   if (funeral.funeral_event?.start_date) {
     funeralRows.push({ label: 'Fecha y Hora del Servicio:', value: formatEventDateTime(funeral.funeral_event) })
+  }
+  if (funeral.funeral_meal_event?.location) {
+    funeralRows.push({ label: 'Lugar de la Comida Fúnebre:', value: formatLocationWithAddress(funeral.funeral_meal_event.location) })
+  }
+  if (funeral.funeral_meal_event?.start_date) {
+    funeralRows.push({ label: 'Fecha y Hora de la Comida Fúnebre:', value: formatEventDateTime(funeral.funeral_meal_event) })
+  }
+  if (funeral.note) {
+    funeralRows.push({ label: 'Nota:', value: funeral.note })
   }
   coverSections.push({ title: 'Información del Servicio Fúnebre', rows: funeralRows })
 
@@ -71,19 +80,19 @@ export function buildFullScriptSpanish(funeral: FuneralWithRelations): LiturgyDo
   if (hasLiturgicalRoles) {
     const rolesRows = []
     if (funeral.first_reader) {
-      rolesRows.push({ label: 'Primer Lector:', value: formatPersonName(funeral.first_reader) })
+      rolesRows.push({ label: 'Primer Lector:', value: formatPersonWithPhone(funeral.first_reader) })
     }
     if (funeral.psalm_reader) {
-      rolesRows.push({ label: 'Lector del Salmo:', value: formatPersonName(funeral.psalm_reader) })
+      rolesRows.push({ label: 'Lector del Salmo:', value: formatPersonWithPhone(funeral.psalm_reader) })
     }
     if (funeral.second_reader) {
-      rolesRows.push({ label: 'Segundo Lector:', value: formatPersonName(funeral.second_reader) })
+      rolesRows.push({ label: 'Segundo Lector:', value: formatPersonWithPhone(funeral.second_reader) })
     }
     if (funeral.gospel_reader) {
-      rolesRows.push({ label: 'Lector del Evangelio:', value: formatPersonName(funeral.gospel_reader) })
+      rolesRows.push({ label: 'Lector del Evangelio:', value: formatPersonWithPhone(funeral.gospel_reader) })
     }
     if (funeral.petition_reader) {
-      rolesRows.push({ label: 'Lector de Peticiones:', value: formatPersonName(funeral.petition_reader) })
+      rolesRows.push({ label: 'Lector de Peticiones:', value: formatPersonWithPhone(funeral.petition_reader) })
     } else if (funeral.petitions_read_by_second_reader) {
       rolesRows.push({ label: 'Lector de Peticiones:', value: 'Segundo Lector' })
     }

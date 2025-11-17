@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock } from 'lucide-react'
 import { getEventsPaginated, createEvent, updateEvent } from '@/lib/actions/events'
@@ -60,12 +59,9 @@ export function EventPicker({
   placeholder = 'Search for an event...',
   emptyMessage = 'No events found.',
   selectedEventId,
-  selectedEvent,
-  className,
   defaultEventType = 'EVENT',
   defaultName = '',
   openToNewEvent = false,
-  disableSearch = false,
   visibleFields,
   requiredFields,
   autoOpenCreateForm = false,

@@ -389,6 +389,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.navigateToGroup(testGroupId);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test('TC-001: Add member with single role', async ({ page }) => {
     // Create a test person
     const firstName = 'SingleRole';
@@ -417,6 +418,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, ['Lector']);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test('TC-002: Add member with Cantor role', async ({ page }) => {
     // Create a test person
     const firstName = 'Cantor';
@@ -445,6 +447,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberHasRole(`${firstName} ${lastName}`, 'Cantor');
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test('TC-003: Add member with no roles', async ({ page }) => {
     // Create a test person
     const firstName = 'NoRole';
@@ -472,6 +475,7 @@ test.describe('Group Membership - Add Member Tests', () => {
     await groupPage.expectMemberHasNoRole(`${firstName} ${lastName}`);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test('TC-004: Cannot add member without selecting person', async ({ page }) => {
     // Open Add Member modal
     await groupPage.openAddMemberModal();
@@ -625,6 +629,7 @@ test.describe('Group Membership - Edit Roles Tests', () => {
     await expect(memberCard.locator('text=Extraordinary Minister of Holy Communion')).not.toBeVisible();
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test.skip('TC-008: Edit roles - remove all roles', async ({ page }) => {
     // Remove all roles
     await groupPage.editMemberRoles(testPersonName, []);
@@ -694,7 +699,7 @@ test.describe('Group Membership - Remove Member Tests', () => {
     await groupPage.expectMemberNotInList(fullName);
   });
 
-  test('TC-011: Cancel removing member', async ({ page }) => {
+  test('TC-011: Cancel removing member', async () => {
     // Create and add a test person
     const firstName = 'CancelRemove';
     const lastName = 'Person';
@@ -771,8 +776,6 @@ test.describe('Group Membership - Accessibility Tests', () => {
 
     // Open Add Member modal
     await groupPage.openAddMemberModal();
-
-    const dialog = page.locator('[role="dialog"]').first();
 
     // Tab through role checkboxes
     await page.keyboard.press('Tab'); // Focus moves into dialog

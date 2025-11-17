@@ -7,10 +7,9 @@ import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
-import { getMassRoles as getAllMassRoles } from "@/lib/actions/mass-roles"
 import { getMassRoleTemplates, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { getTemplateItems, type MassRoleTemplateItemWithRole } from "@/lib/actions/mass-role-template-items"
-import type { Person, Event, MassRole } from "@/lib/types"
+import type { Person, Event } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import type { MassIntentionWithNames } from "@/lib/actions/mass-intentions"
 import { useRouter } from "next/navigation"
@@ -72,8 +71,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
   // Mass role assignments state
   const [massRoles, setMassRoles] = useState<MassRoleInstanceWithRelations[]>([])
-  const [allMassRoles, setAllMassRoles] = useState<MassRole[]>([])
-  const [loadingMassRoles, setLoadingMassRoles] = useState(false)
   const [rolePickerOpen, setRolePickerOpen] = useState(false)
   const [currentRoleId, setCurrentRoleId] = useState<string | null>(null)
 
@@ -120,11 +117,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mass?.id]) // Only re-run when mass ID changes
 
-  // Load all mass roles for the role assignment section
-  useEffect(() => {
-    loadAllMassRoles()
-  }, [])
-
   // Load all templates when the form mounts
   useEffect(() => {
     loadAllTemplates()
@@ -146,27 +138,14 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     }
   }, [isEditing, mass?.id])
 
-  const loadAllMassRoles = async () => {
-    try {
-      const massRolesData = await getAllMassRoles()
-      setAllMassRoles(massRolesData)
-    } catch (error) {
-      console.error('Error loading mass roles:', error)
-      toast.error('Failed to load mass roles')
-    }
-  }
-
   const loadMassRoles = async () => {
     if (!mass?.id) return
     try {
-      setLoadingMassRoles(true)
       const massRoleInstances = await getMassRoles(mass.id)
       setMassRoles(massRoleInstances)
     } catch (error) {
       console.error('Error loading mass roles:', error)
       toast.error('Failed to load mass role assignments')
-    } finally {
-      setLoadingMassRoles(false)
     }
   }
 

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { QuinceaneraWithNames } from '@/lib/actions/quinceaneras'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, BookHeart, Calendar, Search, Filter, X } from "lucide-react"
 import { Input } from "@/components/ui/input"

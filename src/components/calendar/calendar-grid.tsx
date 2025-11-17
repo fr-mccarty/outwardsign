@@ -1,7 +1,7 @@
 'use client'
 
 import { CalendarDay } from "./calendar-day"
-import { CalendarGridProps, CalendarItem, CalendarDay as CalendarDayType, CalendarView } from "./types"
+import { CalendarGridProps, CalendarItem, CalendarDay as CalendarDayType } from "./types"
 
 export function CalendarGrid<T extends CalendarItem = CalendarItem>({
   currentDate,

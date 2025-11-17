@@ -194,12 +194,6 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
     }
   }
 
-  const handleAddMass = () => {
-    toast.info('Mass scheduling coming soon!')
-    setModalOpen(false)
-  }
-
-
   return (
     <>
       <PageContainer

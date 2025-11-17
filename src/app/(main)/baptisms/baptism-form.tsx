@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { FormField } from "@/components/ui/form-field"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
-import { createBaptism, updateBaptism, type CreateBaptismData, type BaptismWithRelations } from "@/lib/actions/baptisms"
+import { createBaptism, updateBaptism, type BaptismWithRelations } from "@/lib/actions/baptisms"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import {
@@ -47,7 +47,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   const router = useRouter()
   const isEditing = !!baptism
   const [isLoading, setIsLoading] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Notify parent component of loading state changes
   useEffect(() => {
@@ -104,7 +103,6 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setValidationErrors({})
 
     try {
       // Validate with Zod

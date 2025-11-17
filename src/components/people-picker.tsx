@@ -44,7 +44,7 @@ export function PeoplePicker({
   placeholder = 'Search for a person...',
   emptyMessage = 'No people found.',
   selectedPersonId,
-  className,
+
   visibleFields,
   requiredFields,
   openToNewPerson = false,

@@ -103,6 +103,9 @@ npm test
 # Single test file
 npm run test:headed tests/events.spec.ts
 
+# Single test file with line reporter (cleaner output - recommended)
+npm test -- tests/module-deletion.spec.ts --reporter=line
+
 # Tests matching a pattern
 npm run test:headed -- --grep "should create event"
 

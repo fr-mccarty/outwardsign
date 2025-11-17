@@ -376,7 +376,8 @@ function buildCeremonySection(entity: EntityWithRelations): ContentSection {
 - May use subsection titles to organize multi-part ceremonies
 
 **Implementation Notes:**
-- Use helper functions for gendered text, names, dates
+- Use the shared `gendered()` helper from `@/lib/content-builders/shared/builders` for gendered text
+- Use helper functions for names, dates, and other formatting
 - Use rubrics for stage directions
 - Use `presider-dialogue` for spoken celebrant text
 - Use `priest-text` for prayers
@@ -385,9 +386,10 @@ function buildCeremonySection(entity: EntityWithRelations): ContentSection {
 
 **Example 1 - Single Presentation Ceremony (appears after homily):**
 ```typescript
+import { gendered } from '@/lib/content-builders/shared/builders'
+
 function buildPresentationBlessingSection(presentation: PresentationWithRelations): ContentSection {
   const childName = getChildName(presentation)
-  const childSex = getChildSex(presentation)
 
   const elements: ContentElement[] = []
 
@@ -403,7 +405,7 @@ function buildPresentationBlessingSection(presentation: PresentationWithRelation
 
   elements.push({
     type: 'presider-dialogue',
-    text: `Grateful for the life of their ${gendered(childSex, 'son', 'daughter')}, the parents would like to present ${childName} to the Lord.`
+    text: `Grateful for the life of their ${gendered(presentation.child, 'son', 'daughter')}, the parents would like to present ${childName} to the Lord.`
   })
 
   elements.push({

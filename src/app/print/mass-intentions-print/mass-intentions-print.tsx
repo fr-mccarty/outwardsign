@@ -94,14 +94,6 @@ export function MassIntentionsPrint() {
     return new Date(dateString).toLocaleDateString()
   }
 
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return ''
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString([], { 
-      hour: 'numeric', 
-      minute: '2-digit' 
-    })
-  }
-
   const formatCurrency = (amount: number | null) => {
     if (!amount) return ''
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount / 100)

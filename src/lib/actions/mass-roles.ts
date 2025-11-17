@@ -290,7 +290,7 @@ export async function getMassRoleInstance(id: string): Promise<MassRoleInstance 
 }
 
 export async function createMassRoleInstance(data: CreateMassRoleInstanceData): Promise<MassRoleInstance> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -317,7 +317,7 @@ export async function createMassRoleInstance(data: CreateMassRoleInstanceData): 
 }
 
 export async function updateMassRoleInstance(id: string, data: UpdateMassRoleInstanceData): Promise<MassRoleInstance> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -354,7 +354,7 @@ export async function updateMassRoleInstance(id: string, data: UpdateMassRoleIns
 }
 
 export async function deleteMassRoleInstance(id: string): Promise<void> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

@@ -6,7 +6,7 @@
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress, formatPersonName } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -35,7 +35,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Quinceañera:',
-      value: formatPersonName(quinceanera.quinceanera),
+      value: formatPersonWithPhone(quinceanera.quinceanera),
     })
   }
 
@@ -51,7 +51,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Coordinador(a):',
-      value: formatPersonName(quinceanera.coordinator),
+      value: formatPersonWithPhone(quinceanera.coordinator),
     })
   }
 
@@ -59,7 +59,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Celebrante:',
-      value: formatPersonName(quinceanera.presider),
+      value: formatPersonWithPhone(quinceanera.presider),
     })
   }
 
@@ -67,7 +67,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Homilista:',
-      value: formatPersonName(quinceanera.homilist),
+      value: formatPersonWithPhone(quinceanera.homilist),
     })
   }
 
@@ -75,7 +75,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Músico Principal:',
-      value: formatPersonName(quinceanera.lead_musician),
+      value: formatPersonWithPhone(quinceanera.lead_musician),
     })
   }
 
@@ -83,7 +83,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Cantor(a):',
-      value: formatPersonName(quinceanera.cantor),
+      value: formatPersonWithPhone(quinceanera.cantor),
     })
   }
 
@@ -121,9 +121,9 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
 
   // Sacred Liturgy subsection - only show if there are readings/petitions
   const petitionsReader = quinceanera.petitions_read_by_second_reader && quinceanera.second_reader
-    ? formatPersonName(quinceanera.second_reader)
+    ? formatPersonWithPhone(quinceanera.second_reader)
     : quinceanera.petition_reader
-    ? formatPersonName(quinceanera.petition_reader)
+    ? formatPersonWithPhone(quinceanera.petition_reader)
     : ''
   const hasLiturgyContent = quinceanera.first_reading || quinceanera.first_reader ||
     quinceanera.psalm || quinceanera.psalm_reader || quinceanera.psalm_is_sung ||
@@ -149,7 +149,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Lector de la Primera Lectura:',
-      value: formatPersonName(quinceanera.first_reader),
+      value: formatPersonWithPhone(quinceanera.first_reader),
     })
   }
 
@@ -171,7 +171,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Lector del Salmo:',
-      value: formatPersonName(quinceanera.psalm_reader),
+      value: formatPersonWithPhone(quinceanera.psalm_reader),
     })
   }
 
@@ -187,7 +187,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Lector de la Segunda Lectura:',
-      value: formatPersonName(quinceanera.second_reader),
+      value: formatPersonWithPhone(quinceanera.second_reader),
     })
   }
 

@@ -5,9 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassWithNames } from '@/lib/actions/masses'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, Church, Calendar, Search, Filter, X, User } from "lucide-react"
+import { Plus, Church, Calendar, Search, Filter, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ListViewCard } from "@/components/list-view-card"
 import {

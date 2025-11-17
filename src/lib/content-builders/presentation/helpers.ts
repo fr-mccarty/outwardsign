@@ -6,7 +6,6 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import {
-  formatEventDateTime,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'
@@ -104,49 +103,8 @@ export function isBaptized(presentation: PresentationWithRelations): boolean {
 // ============================================================================
 // GENDERED TEXT HELPERS
 // ============================================================================
-
-/**
- * Get gendered text based on child's sex
- *
- * @example
- * gendered(presentation, 'son', 'daughter') // Returns 'son' if child is male
- */
-export function gendered(
-  presentation: PresentationWithRelations,
-  maleText: string,
-  femaleText: string
-): string {
-  const sex = getChildSex(presentation)
-  return sex === 'Male' ? maleText : femaleText
-}
-
-/**
- * Get gendered pronoun
- *
- * @example
- * genderedPronoun(presentation, 'en') // Returns 'he/him/his' based on child's sex
- */
-export function genderedPronoun(
-  presentation: PresentationWithRelations,
-  language: 'en' | 'es',
-  type: 'subject' | 'object' | 'possessive'
-): string {
-  const sex = getChildSex(presentation)
-
-  if (language === 'en') {
-    if (type === 'subject') return sex === 'Male' ? 'he' : 'she'
-    if (type === 'object') return sex === 'Male' ? 'him' : 'her'
-    if (type === 'possessive') return sex === 'Male' ? 'his' : 'her'
-  }
-
-  if (language === 'es') {
-    if (type === 'subject') return sex === 'Male' ? 'él' : 'ella'
-    if (type === 'object') return sex === 'Male' ? 'lo' : 'la'
-    if (type === 'possessive') return sex === 'Male' ? 'su' : 'su'
-  }
-
-  return ''
-}
+// Note: gendered() function has been moved to @/lib/content-builders/shared/helpers
+// and is now available for use across all content builder templates
 
 // ============================================================================
 // PARENTS TEXT HELPERS

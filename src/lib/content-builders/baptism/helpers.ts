@@ -5,5 +5,5 @@
  * ALL fallback logic and conditional checks should be in this file, NOT in templates
  */
 
-import { BaptismWithRelations } from '@/lib/actions/baptisms'
-import { formatLocationWithAddress } from '@/lib/utils/formatters'
+// Empty export to make this a valid module
+export {}

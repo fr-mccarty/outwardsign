@@ -28,7 +28,6 @@ interface FormBottomActionsProps {
  * />
  */
 export function FormBottomActions({
-  isEditing,
   isLoading,
   cancelHref,
   saveLabel = 'Save'

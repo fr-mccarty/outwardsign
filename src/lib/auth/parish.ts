@@ -194,7 +194,7 @@ export async function createParishWithSuperAdmin(parishData: {
   const supabase = await createClient()
 
   // Check authentication
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return { success: false, error: 'User not authenticated' }

@@ -28,9 +28,7 @@ const LITURGICAL_BORDER_COLORS: Record<string, string> = {
 
 export function CalendarDay<T extends CalendarItem = CalendarItem>({
   day,
-  onClick,
   renderContent,
-  getItemColor,
   onItemClick,
   maxItemsPerDay = 3,
   view = 'month'

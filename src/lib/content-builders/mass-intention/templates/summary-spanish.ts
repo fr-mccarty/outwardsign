@@ -6,7 +6,7 @@
 
 import { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName } from '@/lib/utils/formatters'
+import { formatPersonWithPhone } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   type CoverPageSection,
@@ -35,7 +35,7 @@ export function buildSummarySpanish(massIntention: MassIntentionWithRelations): 
     detailRows.push({ label: 'Misa Ofrecida Por:', value: massIntention.mass_offered_for })
   }
   if (massIntention.requested_by) {
-    detailRows.push({ label: 'Solicitado Por:', value: formatPersonName(massIntention.requested_by) })
+    detailRows.push({ label: 'Solicitado Por:', value: formatPersonWithPhone(massIntention.requested_by) })
   }
   if (massIntention.date_requested) {
     const dateRequested = new Date(massIntention.date_requested)

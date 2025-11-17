@@ -8,7 +8,6 @@
 import { EventWithRelations } from '@/lib/actions/events'
 import { Location } from '@/lib/types'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
-import { formatLocationWithAddress } from '@/lib/utils/formatters'
 
 // ============================================================================
 // EVENT TYPE HELPERS

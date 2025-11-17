@@ -31,7 +31,6 @@ export function EventFormFields({
   formData,
   setFormData,
   errors,
-  isEditMode,
   visibleFields = ['location', 'note'],
   requiredFields = [],
 }: EventFormFieldsProps) {

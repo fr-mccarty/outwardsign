@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Quinceanera, Person, Event, Location } from '@/lib/types'
+import { Quinceanera, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
 

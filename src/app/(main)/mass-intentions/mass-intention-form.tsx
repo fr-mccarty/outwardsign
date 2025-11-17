@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { FormSectionCard } from "@/components/form-section-card"
-import { createMassIntention, updateMassIntention, type CreateMassIntentionData, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
+import { createMassIntention, updateMassIntention, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -68,6 +68,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
       if (intention.requested_by) requestedBy.setValue(intention.requested_by)
       if (intention.mass) assignedMass.setValue(intention.mass as any)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [intention])
 
   const handleSubmit = async (e: React.FormEvent) => {

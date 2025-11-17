@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageContainer } from '@/components/page-container'
-import { Settings, User, FileText, ChevronRight, BookOpen, Church, Users } from 'lucide-react'
+import { User, FileText, ChevronRight, BookOpen, Church, Users } from 'lucide-react'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import Link from 'next/link'
 

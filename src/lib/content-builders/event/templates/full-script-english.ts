@@ -6,10 +6,9 @@
 
 import { EventWithRelations } from '@/lib/actions/events'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   getEventTypeLabel,
-  formatLocationAddress,
   formatEventDate,
   formatEventTime,
   formatEventDateTime,
@@ -44,6 +43,19 @@ function buildEventDetailsSection(event: EventWithRelations): ContentSection {
     elements.push({
       type: 'text',
       text: event.description,
+    })
+  }
+
+  // Responsible Party
+  if (event.responsible_party) {
+    elements.push({
+      type: 'section-title',
+      text: 'Responsible Party',
+    })
+    elements.push({
+      type: 'info-row',
+      label: 'Contact:',
+      value: formatPersonWithPhone(event.responsible_party),
     })
   }
 

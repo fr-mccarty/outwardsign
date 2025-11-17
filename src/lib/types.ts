@@ -559,7 +559,6 @@ export interface Baptism {
   father_id?: string
   sponsor_1_id?: string
   sponsor_2_id?: string
-  location_id?: string
   presider_id?: string
   status?: string
   baptism_template_id?: string

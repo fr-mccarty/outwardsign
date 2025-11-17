@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassIntentionWithNames } from '@/lib/actions/mass-intentions'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, Heart, Search, Filter, X, DollarSign } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -65,21 +64,6 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
   const formatStipend = (cents: number | null | undefined) => {
     if (!cents) return 'No stipend'
     return `$${(cents / 100).toFixed(2)}`
-  }
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'REQUESTED':
-        return 'secondary'
-      case 'CONFIRMED':
-        return 'default'
-      case 'FULFILLED':
-        return 'outline'
-      case 'CANCELLED':
-        return 'destructive'
-      default:
-        return 'secondary'
-    }
   }
 
   return (

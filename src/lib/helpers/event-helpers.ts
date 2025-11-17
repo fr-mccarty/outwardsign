@@ -44,7 +44,7 @@ export async function getEventModuleReference(event: Event): Promise<ModuleRefer
     const enrichedData = await enrichModuleData(supabase, module, data)
 
     // Build summary based on module type
-    const summary = buildModuleSummary(module, enrichedData, event)
+    const summary = buildModuleSummary(module, enrichedData)
 
     return {
       moduleType: module,
@@ -118,8 +118,7 @@ async function enrichModuleData(supabase: any, moduleType: string, data: any): P
  */
 function buildModuleSummary(
   moduleType: string,
-  moduleData: any,
-  event: Event
+  moduleData: any
 ): { title: string; details: string[]; status?: string } {
   switch (moduleType) {
     case 'weddings':

@@ -6,11 +6,9 @@
  */
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
-import { IndividualReading, Location, Event, Person } from '@/lib/types'
+import { IndividualReading } from '@/lib/types'
 import {
   formatPersonName,
-  formatEventDateTime,
-  formatLocationWithAddress,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'

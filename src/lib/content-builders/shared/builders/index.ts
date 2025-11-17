@@ -5,6 +5,9 @@
  * Each builder follows a specific structure and returns ContentSection
  */
 
+// Shared Helpers
+export { gendered } from '../helpers'
+
 // Cover Page Builder
 export { buildCoverPage, type CoverPageSection, type CoverPageRow } from './cover-page'
 

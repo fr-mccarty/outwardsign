@@ -8,8 +8,6 @@
 import { MassWithRelations } from '@/lib/actions/masses'
 import { Person } from '@/lib/types'
 import {
-  formatEventDateTime,
-  formatLocationWithAddress,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'

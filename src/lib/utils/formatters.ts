@@ -149,7 +149,7 @@ export function formatDate(
  * formatTime('09:15') // "9:15 AM"
  * formatTime('14:30:00', 'es') // "2:30 PM" (AM/PM is international)
  */
-export function formatTime(time?: string | null, language: 'en' | 'es' = 'en'): string {
+export function formatTime(time?: string | null): string {
   if (!time) return ''
 
   // Parse time (format: "16:21:00" or "16:21")
@@ -213,7 +213,7 @@ export function formatEventDateTimeCompact(
 
   if (!event.start_time) return date
 
-  const time = formatTime(event.start_time, language)
+  const time = formatTime(event.start_time)
   const connector = language === 'es' ? 'a las' : 'at'
 
   return `${date} ${connector} ${time}`
@@ -294,8 +294,7 @@ export function formatAddress(location?: {
  * getEventName({}, 'en') // "Event"
  */
 export function getEventName(
-  event?: { name?: string | null; event_type?: string } | null,
-  language: 'en' | 'es' = 'en'
+  event?: { name?: string | null; event_type?: string } | null
 ): string {
   if (!event) return 'Event'
   if (event.name) return event.name
@@ -364,7 +363,7 @@ export function formatEventSubtitleSpanish(event?: { start_date?: string | null;
   if (event?.start_date && event?.start_time) {
     // Use bilingual date formatter with Spanish locale
     const date = formatDate(event.start_date, 'es', { includeWeekday: true })
-    const time = formatTime(event.start_time, 'es')
+    const time = formatTime(event.start_time)
     return `${date} a las ${time}`
   }
   return 'Falta Fecha y Hora'

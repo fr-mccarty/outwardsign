@@ -40,7 +40,7 @@ export function MassRolePicker({
   placeholder = 'Search for a mass role...',
   emptyMessage = 'No mass roles found.',
   selectedRoleId,
-  className,
+
   visibleFields,
   requiredFields,
   autoOpenCreateForm = false,

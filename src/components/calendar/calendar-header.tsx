@@ -11,7 +11,6 @@ export function CalendarHeader({
   onNavigate,
   onToday,
   onViewChange,
-  title,
   actions,
   showViewSelector = false
 }: CalendarHeaderProps) {

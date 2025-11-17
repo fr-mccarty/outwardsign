@@ -3,8 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ChevronRight } from 'lucide-react'
 
 interface DocumentationPageProps {
   params: Promise<{ lang: string; slug: string[] }>
@@ -20,7 +19,6 @@ async function getDocContent(lang: string, slug: string[]) {
     const fileContent = fs.readFileSync(filePath, 'utf8')
 
     // Simple markdown parsing - just extract title and content
-    const lines = fileContent.split('\n')
     let title = ''
     const content = fileContent
 
@@ -31,7 +29,7 @@ async function getDocContent(lang: string, slug: string[]) {
     }
 
     return { title, content }
-  } catch (error) {
+  } catch {
     return null
   }
 }

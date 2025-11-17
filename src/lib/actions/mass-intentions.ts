@@ -372,7 +372,7 @@ export async function getMassIntentionsReport(
   }
 
   // Filter by date range on the mass event start_date
-  let filteredIntentions = intentions.filter(intention => {
+  const filteredIntentions = intentions.filter(intention => {
     // If no mass event date, exclude from report
     if (!intention.mass?.event?.start_date) {
       return false

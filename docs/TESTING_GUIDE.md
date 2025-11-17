@@ -550,6 +550,9 @@ npm test
 # Run specific test file
 npm run test:headed tests/events.spec.ts
 
+# Run specific test file with line reporter (cleaner output - recommended)
+npm test -- tests/module-deletion.spec.ts --reporter=line
+
 # Run specific test by name (BEST for fixing individual failing tests)
 npm run test:headed -- --grep "should create, view, edit, and verify print view"
 

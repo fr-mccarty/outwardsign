@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Presentation, Person, Event, Location } from '@/lib/types'
+import { Presentation, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import {
   createPresentationSchema,

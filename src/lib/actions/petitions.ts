@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { CreatePetitionData, Petition, PetitionContext } from '@/lib/types'
-import { redirect } from 'next/navigation'
+// redirect import removed - not used
 import { getPromptTemplate } from '@/lib/actions/definitions'
 import { replaceTemplateVariables, getTemplateVariables } from '@/lib/template-utils'
 import { getPetitionTemplate } from './petition-templates'

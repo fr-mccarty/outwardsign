@@ -11,7 +11,7 @@ export interface PetitionContextSettings {
 
 export async function getPetitionContextSettings(): Promise<PetitionContextSettings> {
   const supabase = await createClient()
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const { data, error } = await supabase
@@ -34,7 +34,7 @@ export async function getPetitionContextSettings(): Promise<PetitionContextSetti
 
 export async function updatePetitionContextSetting(contextId: string, petitionText: string) {
   const supabase = await createClient()
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   // Simply store the petition text directly in the context field

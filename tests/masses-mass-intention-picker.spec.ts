@@ -337,7 +337,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
 
     // Should redirect to edit page
     await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
-    const massId2 = page.url().split('/')[page.url().split('/').length - 2];
 
     // Reload the page to ensure proper server render
     await page.reload();
@@ -382,7 +381,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
-    const massId3 = page.url().split('/')[page.url().split('/').length - 2];
 
     // Reload the page to ensure proper server render
     await page.reload();

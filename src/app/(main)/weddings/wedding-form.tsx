@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
-import { createWedding, updateWedding, type CreateWeddingData, type WeddingWithRelations } from "@/lib/actions/weddings"
+import { createWedding, updateWedding, type WeddingWithRelations } from "@/lib/actions/weddings"
 import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -170,6 +170,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       if (wedding.second_reading) setSecondReading(wedding.second_reading)
       if (wedding.gospel_reading) setGospelReading(wedding.gospel_reading)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wedding])
 
   // Handle inserting template petitions

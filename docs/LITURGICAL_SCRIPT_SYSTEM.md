@@ -245,9 +245,10 @@ When building templates, follow these rules for where calculations should live:
    - **Why:** Reusability across all templates (English, Spanish, Simple, Bilingual, etc.)
 
 2. **Exception: Sex-based calculations can be done in templates**
-   - Use the `gendered()` helper function OR inline sex checks
-   - Templates can check `child?.sex` or `person?.sex` directly
+   - Use the shared `gendered()` helper function from `@/lib/content-builders/shared/builders`
+   - Templates can check `child?.sex` or `person?.sex` directly if needed
    - **Why:** Sex-based text is template-specific and often context-dependent
+   - **Note:** The `gendered()` helper accepts a `Person` object, making it reusable across all templates
 
 3. **Avoid duplicating logic across templates**
    - If multiple templates need the same calculation, move it to `helpers.ts`
@@ -576,17 +577,19 @@ export function isBaptized(entity: [Module]WithRelations): boolean {
 }
 
 /**
- * Generic gendered text helper
- * Returns maleText if child is male, femaleText if female, maleText as default
+ * NOTE: The gendered() helper has been moved to shared helpers
+ * Import from: @/lib/content-builders/shared/builders
+ *
+ * Usage:
+ * import { gendered } from '@/lib/content-builders/shared/builders'
+ *
+ * gendered(person, 'son', 'daughter')
+ * gendered(entity.child, 'baptized', 'not baptized')
+ * gendered(entity.bride, 'groom', 'bride', 'Female') // with custom default
+ *
+ * The shared gendered() function accepts a Person object directly,
+ * making it reusable across all content builder templates.
  */
-export function gendered(
-  entity: [Module]WithRelations,
-  maleText: string,
-  femaleText: string
-): string {
-  const sex = getChildSex(entity)
-  return sex === 'FEMALE' ? femaleText : maleText
-}
 
 /**
  * Build document title (English)

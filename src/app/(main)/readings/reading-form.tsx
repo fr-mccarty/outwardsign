@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
-import { createReading, updateReading, type CreateReadingData, type Reading } from "@/lib/actions/readings"
+import { createReading, updateReading, type Reading } from "@/lib/actions/readings"
 import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'

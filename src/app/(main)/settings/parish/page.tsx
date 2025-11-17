@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { SettingsPage } from '@/components/settings-page'
-import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Mail, Send, FileText, BookOpen, Download, Database, AlertCircle, CheckCircle, Edit } from "lucide-react"
+import { Save, Church, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Send, FileText, BookOpen, Download, AlertCircle, CheckCircle, Edit } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getCurrentParish } from '@/lib/auth/parish'
 import { updateParish, getParishMembers, removeParishMember, updateMemberRole, getParishSettings, updateParishSettings } from '@/lib/actions/setup'

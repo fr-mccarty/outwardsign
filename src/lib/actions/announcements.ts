@@ -128,7 +128,7 @@ export async function updateAnnouncement(announcementId: number, data: {
 
   try {
     const selectedParishId = await requireSelectedParish()
-    
+
     // Get the announcement to check parish ownership
     const { data: existingAnnouncement, error: fetchError } = await supabase
       .from('announcements')
@@ -227,7 +227,7 @@ export async function deleteAnnouncement(announcementId: number) {
 
 export async function getAnnouncementTemplates() {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
 
   const { data: templates, error } = await supabase
@@ -248,7 +248,7 @@ export async function createAnnouncementTemplate(data: {
   text: string
 }) {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
 
   // Generate a unique bigint ID using timestamp + random component
@@ -279,7 +279,7 @@ export async function updateAnnouncementTemplate(templateId: number, data: {
   text: string
 }) {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
 
   // Get the template to check parish ownership
@@ -317,7 +317,7 @@ export async function updateAnnouncementTemplate(templateId: number, data: {
 
 export async function deleteAnnouncementTemplate(templateId: number) {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
 
   // Get the template to check parish ownership
@@ -350,7 +350,7 @@ export async function deleteAnnouncementTemplate(templateId: number) {
 
 export async function getAnnouncementTemplate(templateId: number) {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
 
   const { data: template, error } = await supabase
@@ -538,7 +538,7 @@ export async function createBasicAnnouncement(data: {
   date: string
 }) {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
 
   // Generate a unique bigint ID using timestamp + random component

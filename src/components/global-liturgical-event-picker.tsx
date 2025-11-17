@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Calendar, Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-react'
 import { getGlobalLiturgicalEventsPaginated, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -96,10 +96,8 @@ export function GlobalLiturgicalEventPicker({
   open,
   onOpenChange,
   onSelect,
-  placeholder = 'Search for a liturgical event...',
   emptyMessage = 'No liturgical events found.',
   selectedEventId,
-  className,
 }: GlobalLiturgicalEventPickerProps) {
   const [events, setEvents] = useState<GlobalLiturgicalEvent[]>([])
   const [loading, setLoading] = useState(false)
@@ -308,7 +306,6 @@ export function GlobalLiturgicalEventPicker({
 
     // Get the first day of the current month based on calendarMonth
     const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1)
-    const lastDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0)
 
     // Get the Sunday before the first day of the month
     const startOfCalendar = new Date(firstDay)
@@ -592,7 +589,6 @@ export function GlobalLiturgicalEventPicker({
                 {calendarDays.map((day, index) => {
                   const hasEvents = day.events.length > 0
                   const primaryEvent = day.events[0]
-                  const liturgicalColor = primaryEvent?.event_data?.color?.[0]
 
                   return (
                     <div

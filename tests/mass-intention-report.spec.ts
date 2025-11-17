@@ -237,9 +237,6 @@ test.describe('Mass Intention Report', () => {
     const printButton = page.getByRole('button', { name: /Print View/i });
     await expect(printButton).toBeVisible();
 
-    // Store the current page context
-    const currentUrl = page.url();
-
     // Click print button and handle the new window/tab
     const [newPage] = await Promise.all([
       page.context().waitForEvent('page'),
@@ -417,9 +414,9 @@ test.describe('Mass Intention Report', () => {
     console.log('Creating mass intentions with stipends for totals test...');
 
     // Create masses
-    const mass1Id = await createMassWithDate(page, '2025-07-10');
-    const mass2Id = await createMassWithDate(page, '2025-07-15');
-    const mass3Id = await createMassWithDate(page, '2025-07-20');
+    await createMassWithDate(page, '2025-07-10');
+    await createMassWithDate(page, '2025-07-15');
+    await createMassWithDate(page, '2025-07-20');
 
     // Create mass intentions with specific stipends
     // Intention 1: $10.00

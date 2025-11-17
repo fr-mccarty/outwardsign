@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { TEST_TIMEOUTS, TEST_SELECTORS } from './utils/test-config';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Events Module - Standalone Events', () => {
   test('should create a standalone event (MEETING type) with no module references', async ({ page }) => {
@@ -56,10 +56,6 @@ test.describe('Events Module - Standalone Events', () => {
 
     // Should redirect to the event detail page (navigation proves success)
     await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
-
-    // Get the event ID from URL for later verification
-    const eventUrl = page.url();
-    const eventId = eventUrl.split('/').pop();
 
     // Verify event details are displayed on the view page
     await expect(page.getByRole('heading', { name: eventName }).first()).toBeVisible();

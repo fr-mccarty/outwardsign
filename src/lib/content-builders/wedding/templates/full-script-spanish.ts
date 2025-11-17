@@ -6,7 +6,7 @@
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   buildReadingSection,
@@ -68,13 +68,19 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
     weddingRows.push({ label: 'Novio:', value: formatPersonWithPhone(wedding.groom) })
   }
   if (wedding.coordinator) {
-    weddingRows.push({ label: 'Coordinador(a):', value: formatPersonName(wedding.coordinator) })
+    weddingRows.push({ label: 'Coordinador(a):', value: formatPersonWithPhone(wedding.coordinator) })
   }
   if (wedding.presider) {
-    weddingRows.push({ label: 'Celebrante:', value: formatPersonName(wedding.presider) })
+    weddingRows.push({ label: 'Celebrante:', value: formatPersonWithPhone(wedding.presider) })
+  }
+  if (wedding.homilist) {
+    weddingRows.push({ label: 'Homilista:', value: formatPersonWithPhone(wedding.homilist) })
   }
   if (wedding.lead_musician) {
-    weddingRows.push({ label: 'Músico Principal:', value: formatPersonName(wedding.lead_musician) })
+    weddingRows.push({ label: 'Músico Principal:', value: formatPersonWithPhone(wedding.lead_musician) })
+  }
+  if (wedding.cantor) {
+    weddingRows.push({ label: 'Cantor:', value: formatPersonWithPhone(wedding.cantor) })
   }
   if (wedding.wedding_event?.location) {
     weddingRows.push({ label: 'Lugar de la Boda:', value: formatLocationWithAddress(wedding.wedding_event.location) })
@@ -83,10 +89,10 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
     weddingRows.push({ label: 'Lugar de la Recepción:', value: formatLocationWithAddress(wedding.reception_event.location) })
   }
   if (wedding.witness_1) {
-    weddingRows.push({ label: 'Testigo Principal:', value: formatPersonName(wedding.witness_1) })
+    weddingRows.push({ label: 'Testigo Principal:', value: formatPersonWithPhone(wedding.witness_1) })
   }
   if (wedding.witness_2) {
-    weddingRows.push({ label: 'Dama de Honor:', value: formatPersonName(wedding.witness_2) })
+    weddingRows.push({ label: 'Dama de Honor:', value: formatPersonWithPhone(wedding.witness_2) })
   }
   if (wedding.notes) {
     weddingRows.push({ label: 'Nota de la Boda:', value: wedding.notes })
@@ -106,7 +112,7 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
       liturgyRows.push({ label: 'Primera Lectura:', value: getReadingPericope(wedding.first_reading) })
     }
     if (wedding.first_reader) {
-      liturgyRows.push({ label: 'Lector de la Primera Lectura:', value: formatPersonName(wedding.first_reader) })
+      liturgyRows.push({ label: 'Lector de la Primera Lectura:', value: formatPersonWithPhone(wedding.first_reader) })
     }
     if (wedding.psalm) {
       liturgyRows.push({ label: 'Salmo:', value: getReadingPericope(wedding.psalm) })
@@ -114,13 +120,13 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
     if (wedding.psalm_is_sung) {
       liturgyRows.push({ label: 'Opción del Salmo:', value: 'Cantado' })
     } else if (wedding.psalm_reader) {
-      liturgyRows.push({ label: 'Lector del Salmo:', value: formatPersonName(wedding.psalm_reader) })
+      liturgyRows.push({ label: 'Lector del Salmo:', value: formatPersonWithPhone(wedding.psalm_reader) })
     }
     if (wedding.second_reading) {
       liturgyRows.push({ label: 'Segunda Lectura:', value: getReadingPericope(wedding.second_reading) })
     }
     if (wedding.second_reader) {
-      liturgyRows.push({ label: 'Lector de la Segunda Lectura:', value: formatPersonName(wedding.second_reader) })
+      liturgyRows.push({ label: 'Lector de la Segunda Lectura:', value: formatPersonWithPhone(wedding.second_reader) })
     }
     if (wedding.gospel_reading) {
       liturgyRows.push({ label: 'Lectura del Evangelio:', value: getReadingPericope(wedding.gospel_reading) })

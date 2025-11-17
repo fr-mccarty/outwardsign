@@ -37,7 +37,7 @@ export function MassPicker({
   placeholder = 'Search for a mass...',
   emptyMessage = 'No masses found.',
   selectedMassId,
-  className,
+
   editMode = false,
   massToEdit = null,
 }: MassPickerProps) {

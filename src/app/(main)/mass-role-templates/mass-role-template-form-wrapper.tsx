@@ -17,7 +17,6 @@ export function MassRoleTemplateFormWrapper({
   template,
   title,
   description,
-  breadcrumbs
 }: MassRoleTemplateFormWrapperProps) {
   const [isLoading, setIsLoading] = useState(false)
   const formId = 'mass-role-template-form'

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
-import { createFuneral, updateFuneral, type CreateFuneralData, type FuneralWithRelations } from "@/lib/actions/funerals"
+import { createFuneral, updateFuneral, type FuneralWithRelations } from "@/lib/actions/funerals"
 import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -158,6 +158,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
       if (funeral.second_reading) setSecondReading(funeral.second_reading)
       if (funeral.gospel_reading) setGospelReading(funeral.gospel_reading)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [funeral])
 
   // Handle inserting template petitions

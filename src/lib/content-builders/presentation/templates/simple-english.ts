@@ -9,14 +9,13 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { gendered } from '@/lib/content-builders/shared/builders'
 import {
   getChildName,
   getMotherName,
   getFatherName,
-  gendered,
   buildTitleEnglish,
-  getEventSubtitleEnglish,
 } from '../helpers'
 
 /**
@@ -37,7 +36,7 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
     elements.push({
       type: 'info-row',
       label: 'Child:',
-      value: formatPersonName(presentation.child),
+      value: formatPersonWithPhone(presentation.child),
     })
   }
 
@@ -45,7 +44,7 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
     elements.push({
       type: 'info-row',
       label: 'Mother:',
-      value: formatPersonName(presentation.mother),
+      value: formatPersonWithPhone(presentation.mother),
     })
   }
 
@@ -53,7 +52,7 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
     elements.push({
       type: 'info-row',
       label: 'Father:',
-      value: formatPersonName(presentation.father),
+      value: formatPersonWithPhone(presentation.father),
     })
   }
 
@@ -61,7 +60,7 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
     elements.push({
       type: 'info-row',
       label: 'Coordinator:',
-      value: formatPersonName(presentation.coordinator),
+      value: formatPersonWithPhone(presentation.coordinator),
     })
   }
 
@@ -113,7 +112,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Helper function for gendered text
   const genderedText = (maleText: string, femaleText: string) => {
-    return gendered(presentation, maleText, femaleText)
+    return gendered(presentation.child, maleText, femaleText)
   }
 
   // Build liturgy elements

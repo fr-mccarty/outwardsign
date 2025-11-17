@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ExternalLink, Edit, Printer, FileText, Download } from "lucide-react"
 import { MODULE_STATUS_LABELS } from "@/lib/constants"
-import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import type { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleReference } from '@/lib/helpers/event-helpers'

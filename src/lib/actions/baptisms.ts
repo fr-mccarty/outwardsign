@@ -44,7 +44,7 @@ export interface BaptismWithNames extends Baptism {
 }
 
 export async function getBaptisms(filters?: BaptismFilterParams): Promise<BaptismWithNames[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -90,7 +90,7 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
 }
 
 export async function getBaptism(id: string): Promise<Baptism | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -123,7 +123,7 @@ export interface BaptismWithRelations extends Baptism {
 }
 
 export async function getBaptismWithRelations(id: string): Promise<BaptismWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -208,7 +208,7 @@ export async function createBaptism(data: CreateBaptismData): Promise<Baptism> {
 }
 
 export async function updateBaptism(id: string, data: UpdateBaptismData): Promise<Baptism> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -236,7 +236,7 @@ export async function updateBaptism(id: string, data: UpdateBaptismData): Promis
 }
 
 export async function deleteBaptism(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

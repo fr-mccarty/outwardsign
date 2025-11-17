@@ -9,16 +9,15 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatEventDateTime, formatLocationWithAddress, formatPersonWithPhone } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   type CoverPageSection,
+  gendered,
 } from '@/lib/content-builders/shared/builders'
 import {
   getChildName,
-  getChildSex,
   isBaptized,
-  gendered,
   getParentsTextEnglish,
   getAudienceTextEnglish,
   buildTitleEnglish,
@@ -40,12 +39,11 @@ import {
 function buildLiturgySection(presentation: PresentationWithRelations): ContentSection {
   // Get names and values using shared helpers
   const childName = getChildName(presentation)
-  const childSex = getChildSex(presentation)
   const baptized = isBaptized(presentation)
 
   // Helper function for gendered text in English (wraps shared helper)
   const genderedText = (maleText: string, femaleText: string) => {
-    return gendered(presentation, maleText, femaleText)
+    return gendered(presentation.child, maleText, femaleText)
   }
 
   const getParentsText = () => getParentsTextEnglish(presentation)
@@ -200,16 +198,16 @@ export function buildFullScriptEnglish(presentation: PresentationWithRelations):
   // Presentation Information subsection
   const presentationRows = []
   if (presentation.child) {
-    presentationRows.push({ label: 'Child:', value: formatPersonName(presentation.child) })
+    presentationRows.push({ label: 'Child:', value: formatPersonWithPhone(presentation.child) })
   }
   if (presentation.mother) {
-    presentationRows.push({ label: 'Mother:', value: formatPersonName(presentation.mother) })
+    presentationRows.push({ label: 'Mother:', value: formatPersonWithPhone(presentation.mother) })
   }
   if (presentation.father) {
-    presentationRows.push({ label: 'Father:', value: formatPersonName(presentation.father) })
+    presentationRows.push({ label: 'Father:', value: formatPersonWithPhone(presentation.father) })
   }
   if (presentation.coordinator) {
-    presentationRows.push({ label: 'Coordinator:', value: formatPersonName(presentation.coordinator) })
+    presentationRows.push({ label: 'Coordinator:', value: formatPersonWithPhone(presentation.coordinator) })
   }
   if (presentation.presentation_event?.start_date) {
     presentationRows.push({ label: 'Event Date & Time:', value: formatEventDateTime(presentation.presentation_event) })

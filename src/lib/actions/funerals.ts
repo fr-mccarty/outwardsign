@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Funeral, Person, Event, Location } from '@/lib/types'
+import { Funeral, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
 
@@ -76,7 +76,7 @@ export interface FuneralWithNames extends Funeral {
 }
 
 export async function getFunerals(filters?: FuneralFilterParams): Promise<FuneralWithNames[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -127,7 +127,7 @@ export async function getFunerals(filters?: FuneralFilterParams): Promise<Funera
 }
 
 export async function getFuneral(id: string): Promise<Funeral | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -171,7 +171,7 @@ export interface FuneralWithRelations extends Funeral {
 }
 
 export async function getFuneralWithRelations(id: string): Promise<FuneralWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -304,7 +304,7 @@ export async function createFuneral(data: CreateFuneralData): Promise<Funeral> {
 }
 
 export async function updateFuneral(id: string, data: UpdateFuneralData): Promise<Funeral> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -332,7 +332,7 @@ export async function updateFuneral(id: string, data: UpdateFuneralData): Promis
 }
 
 export async function deleteFuneral(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

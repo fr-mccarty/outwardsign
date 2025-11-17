@@ -340,17 +340,38 @@ Parish announcements before final blessing
 
 ### Builder Functions Location
 
-All builder functions are located in:
+All builder functions and shared helpers are located in:
 ```
-src/lib/content-builders/shared/builders/
-├── index.ts              # Exports all builders
-├── cover-page.ts         # Cover/summary pages
-├── reading.ts            # Reading sections
-├── psalm.ts              # Psalm sections
-├── petitions.ts          # Petitions sections
-├── ceremony.ts           # Ceremony sections (+ helpers)
-└── README.md             # Complete usage documentation
+src/lib/content-builders/shared/
+├── builders/
+│   ├── index.ts              # Exports all builders + shared helpers
+│   ├── cover-page.ts         # Cover/summary pages
+│   ├── reading.ts            # Reading sections
+│   ├── psalm.ts              # Psalm sections
+│   ├── petitions.ts          # Petitions sections
+│   ├── announcements.ts      # Announcements sections
+│   ├── ceremony.ts           # Ceremony sections
+│   └── README.md             # Complete usage documentation
+├── helpers.ts                # Shared helper functions (gendered, etc.)
+└── script-sections.ts        # Section type definitions
 ```
+
+#### Shared Helpers
+
+**`helpers.ts`** provides reusable helper functions for all content builder templates:
+
+**`gendered(person, maleText, femaleText, defaultSex?)`**
+- Returns gendered text based on a person's sex
+- Accepts any `Person` object (child, bride, groom, deceased, etc.)
+- Handles null/undefined gracefully with optional default sex parameter
+- **Usage:**
+  ```typescript
+  import { gendered } from '@/lib/content-builders/shared/builders'
+
+  const text = gendered(presentation.child, 'son', 'daughter')
+  const text = gendered(wedding.bride, 'groom', 'bride', 'Female')
+  const text = gendered(funeral.deceased, 'his', 'her')
+  ```
 
 ### Template Structure
 
@@ -373,6 +394,7 @@ import {
   buildPsalmSection,
   buildPetitionsSection,
   buildCeremonySection,
+  gendered,  // Shared helper for gendered text
 } from '@/lib/content-builders/shared/builders'
 
 export function buildWeddingLiturgy(wedding: WeddingWithRelations): LiturgyDocument {

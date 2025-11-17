@@ -62,6 +62,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
     if (event?.location && !location.value) {
       location.setValue(event.location)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.location])
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -6,7 +6,7 @@
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   buildReadingSection,
@@ -68,13 +68,19 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     weddingRows.push({ label: 'Groom:', value: formatPersonWithPhone(wedding.groom) })
   }
   if (wedding.coordinator) {
-    weddingRows.push({ label: 'Coordinator:', value: formatPersonName(wedding.coordinator) })
+    weddingRows.push({ label: 'Coordinator:', value: formatPersonWithPhone(wedding.coordinator) })
   }
   if (wedding.presider) {
-    weddingRows.push({ label: 'Presider:', value: formatPersonName(wedding.presider) })
+    weddingRows.push({ label: 'Presider:', value: formatPersonWithPhone(wedding.presider) })
+  }
+  if (wedding.homilist) {
+    weddingRows.push({ label: 'Homilist:', value: formatPersonWithPhone(wedding.homilist) })
   }
   if (wedding.lead_musician) {
-    weddingRows.push({ label: 'Lead Musician:', value: formatPersonName(wedding.lead_musician) })
+    weddingRows.push({ label: 'Lead Musician:', value: formatPersonWithPhone(wedding.lead_musician) })
+  }
+  if (wedding.cantor) {
+    weddingRows.push({ label: 'Cantor:', value: formatPersonWithPhone(wedding.cantor) })
   }
   if (wedding.wedding_event?.location) {
     weddingRows.push({ label: 'Wedding Location:', value: formatLocationWithAddress(wedding.wedding_event.location) })
@@ -83,10 +89,10 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     weddingRows.push({ label: 'Reception Location:', value: formatLocationWithAddress(wedding.reception_event.location) })
   }
   if (wedding.witness_1) {
-    weddingRows.push({ label: 'Best Man:', value: formatPersonName(wedding.witness_1) })
+    weddingRows.push({ label: 'Best Man:', value: formatPersonWithPhone(wedding.witness_1) })
   }
   if (wedding.witness_2) {
-    weddingRows.push({ label: 'Maid/Matron of Honor:', value: formatPersonName(wedding.witness_2) })
+    weddingRows.push({ label: 'Maid/Matron of Honor:', value: formatPersonWithPhone(wedding.witness_2) })
   }
   if (wedding.notes) {
     weddingRows.push({ label: 'Wedding Note:', value: wedding.notes })
@@ -106,7 +112,7 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
       liturgyRows.push({ label: 'First Reading:', value: getReadingPericope(wedding.first_reading) })
     }
     if (wedding.first_reader) {
-      liturgyRows.push({ label: 'First Reading Lector:', value: formatPersonName(wedding.first_reader) })
+      liturgyRows.push({ label: 'First Reading Lector:', value: formatPersonWithPhone(wedding.first_reader) })
     }
     if (wedding.psalm) {
       liturgyRows.push({ label: 'Psalm:', value: getReadingPericope(wedding.psalm) })
@@ -114,13 +120,13 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
     if (wedding.psalm_is_sung) {
       liturgyRows.push({ label: 'Psalm Choice:', value: 'Sung' })
     } else if (wedding.psalm_reader) {
-      liturgyRows.push({ label: 'Psalm Lector:', value: formatPersonName(wedding.psalm_reader) })
+      liturgyRows.push({ label: 'Psalm Lector:', value: formatPersonWithPhone(wedding.psalm_reader) })
     }
     if (wedding.second_reading) {
       liturgyRows.push({ label: 'Second Reading:', value: getReadingPericope(wedding.second_reading) })
     }
     if (wedding.second_reader) {
-      liturgyRows.push({ label: 'Second Reading Lector:', value: formatPersonName(wedding.second_reader) })
+      liturgyRows.push({ label: 'Second Reading Lector:', value: formatPersonWithPhone(wedding.second_reader) })
     }
     if (wedding.gospel_reading) {
       liturgyRows.push({ label: 'Gospel Reading:', value: getReadingPericope(wedding.gospel_reading) })

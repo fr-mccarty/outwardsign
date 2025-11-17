@@ -9,8 +9,6 @@ import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { IndividualReading } from '@/lib/types'
 import {
   formatPersonName,
-  formatEventDateTime,
-  formatLocationWithAddress,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'

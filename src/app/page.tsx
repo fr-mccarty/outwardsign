@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -553,13 +553,11 @@ function HomeContent() {
   const searchParams = useSearchParams()
   const { theme, setTheme } = useTheme()
   const [language, setLanguage] = useState<HomeLanguage>(DEFAULT_HOME_LANGUAGE)
-  const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = translations[language]
 
   // Read language from URL on mount
   useEffect(() => {
-    setMounted(true)
     const langParam = searchParams.get('lang')
     if (langParam === 'en' || langParam === 'es') {
       setLanguage(langParam)

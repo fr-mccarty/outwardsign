@@ -16,7 +16,7 @@ interface PetitionTemplateFormProps {
   templateSettings?: string;
 }
 
-export default function PetitionTemplateForm({ template, templateSettings }: PetitionTemplateFormProps) {
+export default function PetitionTemplateForm({ template }: PetitionTemplateFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
-import { createQuinceanera, updateQuinceanera, type CreateQuinceaneraData, type QuinceaneraWithRelations } from "@/lib/actions/quinceaneras"
+import { createQuinceanera, updateQuinceanera, type QuinceaneraWithRelations } from "@/lib/actions/quinceaneras"
 import { getIndividualReadings } from "@/lib/actions/readings"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -158,6 +158,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
       if (quinceanera.second_reading) setSecondReading(quinceanera.second_reading)
       if (quinceanera.gospel_reading) setGospelReading(quinceanera.gospel_reading)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quinceanera])
 
   // Handle inserting template petitions

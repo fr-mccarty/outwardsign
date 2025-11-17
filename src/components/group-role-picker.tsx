@@ -40,7 +40,7 @@ export function GroupRolePicker({
   placeholder = 'Search for a group role...',
   emptyMessage = 'No group roles found.',
   selectedRoleId,
-  className,
+
   visibleFields,
   requiredFields,
   autoOpenCreateForm = false,

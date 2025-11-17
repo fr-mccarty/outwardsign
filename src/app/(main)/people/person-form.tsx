@@ -5,7 +5,7 @@ import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
-import { createPerson, updatePerson, type CreatePersonData } from "@/lib/actions/people"
+import { createPerson, updatePerson } from "@/lib/actions/people"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'

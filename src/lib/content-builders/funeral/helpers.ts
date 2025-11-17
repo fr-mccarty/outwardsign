@@ -6,11 +6,8 @@
  */
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
-import { Location } from '@/lib/types'
 import {
   formatPersonName,
-  formatEventDateTime,
-  formatLocationWithAddress,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'

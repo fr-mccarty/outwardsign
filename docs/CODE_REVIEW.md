@@ -18,9 +18,34 @@ This document contains a checklist of items to verify during code review. Use th
 
 - [ ] **All components are documented in COMPONENT_REGISTRY.md** - Verify that all reusable components in `src/components/` are documented in [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md). Each component should have: component name, file path, purpose description, key features (if applicable), props documentation, and usage examples. **REQUIRED:** Compare the list of files in `src/components/` (using `ls src/components/*.tsx` and checking subdirectories) against the documented components in COMPONENT_REGISTRY.md. Any missing components should be added with complete documentation including props, purpose, and usage examples. **EXCEPTION:** Internal/private components that are only used within a single component file do not need documentation. See COMPONENT_REGISTRY.md for examples of proper component documentation format.
 
+## Database Schema & Types
+
+- [ ] **Database schema aligns with types.ts** - Verify that the database schema (migration files in `supabase/migrations/`) matches the TypeScript types in each module's `types.ts` file. For each module, compare:
+  - **Column names** - Database column names should match type property names (both singular)
+  - **Data types** - SQL types should match TypeScript types (e.g., `text` → `string`, `timestamp` → `Date | string`, `uuid` → `string`, `boolean` → `boolean`, `integer` → `number`)
+  - **Nullable fields** - Database `NULL` columns should match TypeScript optional properties (`field?:` or `field: ... | null`)
+  - **Foreign keys** - Database foreign key columns should match type properties (e.g., `parish_id uuid` → `parish_id: string`)
+  - **Default values** - Database defaults should be reflected in types (e.g., `DEFAULT false` → ensure type includes boolean)
+  - **Missing fields** - Check for fields in database that are missing from types.ts and vice versa
+
+  **How to check:**
+  1. Find the module's migration file: `supabase/migrations/*_[module_plural].sql`
+  2. Find the module's types file: `src/lib/types/[module_singular].ts`
+  3. Compare CREATE TABLE statement with the base type interface
+  4. Verify all columns are represented in the TypeScript interface
+  5. Verify all type properties have corresponding database columns
+
+  **Common mismatches to look for:**
+  - Database has `updated_at` but types.ts is missing it
+  - Types.ts has a field but database migration doesn't create that column
+  - Database allows NULL but TypeScript type is not optional
+  - Database has foreign key but types.ts is missing the relationship field
+
+  See MODULE_DEVELOPMENT.md § Type Patterns for proper type structure.
+
 ## Code Quality
 
-- [ ] **Check for unused imports** - Verify that all imports are being used and delete any unused imports. Run the linter to identify unused imports automatically. 
+- [ ] **Check for unused imports** - Verify that all imports are being used and delete any unused imports. Run the linter to identify unused imports automatically.
 
 
 

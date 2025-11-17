@@ -6,7 +6,7 @@
 
 import { MassWithRelations } from '@/lib/actions/masses'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildPetitionsSection,
   buildAnnouncementsSection,
@@ -64,7 +64,7 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Celebrante:',
-        value: formatPersonName(mass.presider),
+        value: formatPersonWithPhone(mass.presider),
       })
     }
 
@@ -72,7 +72,7 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Homilista:',
-        value: formatPersonName(mass.homilist),
+        value: formatPersonWithPhone(mass.homilist),
       })
     }
   }

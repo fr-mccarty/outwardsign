@@ -20,7 +20,6 @@ import {
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { UserPlus, User, Trash2, Users, Edit } from "lucide-react"
 import { getGroup, removeGroupMember, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
-import { getGroupRoles, type GroupRole } from '@/lib/actions/group-roles'
 import { getMassRoles } from '@/lib/actions/mass-roles'
 import type { MassRole } from '@/lib/types'
 import { GroupFormDialog } from '@/components/groups/group-form-dialog'
@@ -37,7 +36,6 @@ export default function GroupDetailPage({ params }: PageProps) {
   const router = useRouter()
   const { language } = useLanguage()
   const [group, setGroup] = useState<GroupWithMembers | null>(null)
-  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
   const [massRoles, setMassRoles] = useState<MassRole[]>([])
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -66,9 +64,8 @@ export default function GroupDetailPage({ params }: PageProps) {
         const { id } = await params
         setGroupId(id)
 
-        const [groupData, roles, massRolesData] = await Promise.all([
+        const [groupData, massRolesData] = await Promise.all([
           getGroup(id),
-          getGroupRoles(),
           getMassRoles()
         ])
 
@@ -79,7 +76,6 @@ export default function GroupDetailPage({ params }: PageProps) {
         }
 
         setGroup(groupData)
-        setGroupRoles(roles)
         setMassRoles(massRolesData)
 
         setBreadcrumbs([

@@ -4,11 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Event, Location } from '@/lib/types'
+import { Event, Location, Person } from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface EventWithRelations extends Event {
   location?: Location | null
+  responsible_party?: Person | null
 }
 
 export interface CreateEventData {
@@ -53,7 +54,7 @@ export interface EventFilterParams {
 }
 
 export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -102,7 +103,7 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
 }
 
 export async function getEventsPaginated(params?: PaginatedParams): Promise<PaginatedResult<Event>> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -149,7 +150,7 @@ export async function getEventsPaginated(params?: PaginatedParams): Promise<Pagi
 }
 
 export async function getEvent(id: string): Promise<Event | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -171,7 +172,7 @@ export async function getEvent(id: string): Promise<Event | null> {
 }
 
 export async function getEventWithRelations(id: string): Promise<EventWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -246,7 +247,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
 }
 
 export async function updateEvent(id: string, data: UpdateEventData): Promise<Event> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -283,7 +284,7 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -306,7 +307,7 @@ export interface EventModuleLink {
 }
 
 export async function getEventModuleLink(eventId: string): Promise<EventModuleLink> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

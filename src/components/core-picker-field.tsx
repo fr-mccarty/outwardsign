@@ -32,7 +32,6 @@ export function CorePickerField<T>({
   required,
   placeholder = 'Select an item',
   renderSelected,
-  emptyText = 'None selected',
 
   // CorePicker props
   items,
