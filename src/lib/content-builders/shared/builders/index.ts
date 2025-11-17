@@ -6,7 +6,7 @@
  */
 
 // Shared Helpers
-export { gendered } from '../helpers'
+export { gendered, getStatusLabel } from '../helpers'
 
 // Cover Page Builder
 export { buildCoverPage, type CoverPageSection, type CoverPageRow } from './cover-page'

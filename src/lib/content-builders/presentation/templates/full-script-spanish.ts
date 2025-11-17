@@ -14,6 +14,7 @@ import {
   buildCoverPage,
   type CoverPageSection,
   gendered,
+  getStatusLabel,
 } from '@/lib/content-builders/shared/builders'
 import {
   getChildNameSpanish,
@@ -218,10 +219,15 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
   }
   presentationRows.push({
     label: 'Estado de Bautismo:',
-    value: presentation.is_baptized ? 'Bautizado/a' : 'Aún no bautizado/a',
+    value: presentation.is_baptized
+      ? gendered(presentation.child, 'Bautizado', 'Bautizada')
+      : gendered(presentation.child, 'Aún no bautizado', 'Aún no bautizada'),
   })
   if (presentation.status) {
-    presentationRows.push({ label: 'Estado:', value: presentation.status })
+    presentationRows.push({
+      label: 'Estado:',
+      value: getStatusLabel(presentation.status, 'es'),
+    })
   }
   if (presentation.note) {
     presentationRows.push({ label: 'Notas:', value: presentation.note })

@@ -84,7 +84,9 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
   elements.push({
     type: 'info-row',
     label: 'Estado de Bautismo:',
-    value: presentation.is_baptized ? 'Bautizado/a' : 'Aún no bautizado/a',
+    value: presentation.is_baptized
+      ? gendered(presentation.child, 'Bautizado', 'Bautizada')
+      : gendered(presentation.child, 'Aún no bautizado', 'Aún no bautizada'),
   })
 
   if (presentation.note) {

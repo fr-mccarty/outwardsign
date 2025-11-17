@@ -380,6 +380,30 @@ export const MASS_INTENTION_STATUS_LABELS: Record<MassIntentionStatus, { en: str
 }
 
 // ============================================================================
+// ALL STATUS LABELS (Combined for easy lookup)
+// ============================================================================
+// Combines all status labels from all modules into a single constant
+// Use this for content builders and formatters that need to display any status
+
+export const ALL_STATUS_LABELS: Record<string, { en: string; es: string }> = {
+  // Module statuses (presentations, weddings, funerals, baptisms, quinceañeras)
+  PLANNING: { en: 'Planning', es: 'Planificación' },
+  ACTIVE: { en: 'Active', es: 'Activo' },
+  INACTIVE: { en: 'Inactive', es: 'Inactivo' },
+  COMPLETED: { en: 'Completed', es: 'Completado' },
+  CANCELLED: { en: 'Cancelled', es: 'Cancelado' },
+
+  // Mass statuses (additional to module statuses)
+  SCHEDULED: { en: 'Scheduled', es: 'Programado' },
+
+  // Mass intention statuses
+  REQUESTED: { en: 'Requested', es: 'Solicitado' },
+  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
+  FULFILLED: { en: 'Fulfilled', es: 'Cumplido' }
+  // CANCELLED already defined above
+}
+
+// ============================================================================
 // PARISH ROLES
 // ============================================================================
 // User Parish Roles - Roles for parish team members (stored in parish_users table)

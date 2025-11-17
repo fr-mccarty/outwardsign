@@ -10,6 +10,11 @@ This document describes all helper and formatting functions used throughout the 
 
 - [Overview](#overview)
 - [Critical Rules](#critical-rules)
+  - [ALWAYS Use Helper Functions](#-always-use-helper-functions)
+  - [ALWAYS Format Dates](#-always-format-dates)
+  - [Format Dates in Content Builders](#-format-dates-in-content-builders)
+  - [NEVER Display Raw Database Values](#-never-display-raw-database-values)
+  - [Request Permission Before Creating New Helpers](#-request-permission-before-creating-new-helpers)
 - [Date Formatting Functions](#date-formatting-functions)
 - [Person Formatting Functions](#person-formatting-functions)
 - [Event Formatting Functions](#event-formatting-functions)
@@ -95,6 +100,70 @@ const liturgyContent = {
   ]
 }
 ```
+
+### 🔴 NEVER Display Raw Database Values
+
+**CRITICAL: Database values should NEVER be displayed directly to users.**
+
+This applies to all enumerated database fields with corresponding label constants:
+- **Status fields** (`status`, `ACTIVE`, `PLANNING`, `COMPLETED`, etc.)
+- **Event types** (`event_type`, `WEDDING`, `FUNERAL`, etc.)
+- **Reading categories** (`category`, `WEDDING`, `FUNERAL`, etc.)
+- **Language fields** (`language`, `ENGLISH`, `SPANISH`, etc.)
+- **Sex fields** (`sex`, `MALE`, `FEMALE`)
+
+**Always use the helper function to get the localized label:**
+
+```typescript
+// ❌ WRONG - displaying raw database value
+if (presentation.status) {
+  presentationRows.push({ label: 'Estado:', value: presentation.status })
+  // Shows: "ACTIVE" or "PLANNING" (ugly, database value)
+}
+
+// ✅ CORRECT - use getStatusLabel helper
+import { getStatusLabel } from '@/lib/content-builders/shared/builders'
+
+if (presentation.status) {
+  presentationRows.push({
+    label: 'Estado:',
+    value: getStatusLabel(presentation.status, 'es')
+    // Shows: "Activo" or "Planificación" (human-readable, localized)
+  })
+}
+```
+
+**Status Label Helper:**
+
+```typescript
+import { getStatusLabel } from '@/lib/content-builders/shared/builders'
+
+// Automatically finds the right label in all status constants
+getStatusLabel('ACTIVE', 'en')      // Returns: "Active"
+getStatusLabel('PLANNING', 'es')    // Returns: "Planificación"
+getStatusLabel('REQUESTED', 'en')   // Returns: "Requested"
+getStatusLabel('SCHEDULED', 'es')   // Returns: "Programado"
+getStatusLabel('CONFIRMED', 'en')   // Returns: "Confirmed"
+getStatusLabel('FULFILLED', 'es')   // Returns: "Cumplido"
+```
+
+The helper searches all available status label constants:
+- Module statuses (presentations, weddings, funerals, baptisms, quinceañeras): PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED
+- Mass statuses: ACTIVE, PLANNING, SCHEDULED, COMPLETED, CANCELLED
+- Mass intention statuses: REQUESTED, CONFIRMED, FULFILLED, CANCELLED
+
+**Where this applies:**
+- Content builders (liturgical documents, PDFs)
+- UI components (cards, lists, forms in display mode)
+- View pages
+- Print views
+- Any user-facing display
+
+**Why this matters:**
+- Database values like "ACTIVE" look unprofessional
+- Users need human-readable text like "Active" or "Activo"
+- Supports bilingual display (English and Spanish)
+- Maintains consistency across the application
 
 ### 🔴 Request Permission Before Creating New Helpers
 

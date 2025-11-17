@@ -14,6 +14,7 @@ import {
   buildCoverPage,
   type CoverPageSection,
   gendered,
+  getStatusLabel,
 } from '@/lib/content-builders/shared/builders'
 import {
   getChildName,
@@ -220,7 +221,10 @@ export function buildFullScriptEnglish(presentation: PresentationWithRelations):
     value: presentation.is_baptized ? 'Baptized' : 'Not yet baptized',
   })
   if (presentation.status) {
-    presentationRows.push({ label: 'Status:', value: presentation.status })
+    presentationRows.push({
+      label: 'Status:',
+      value: getStatusLabel(presentation.status, 'en'),
+    })
   }
   if (presentation.note) {
     presentationRows.push({ label: 'Notes:', value: presentation.note })

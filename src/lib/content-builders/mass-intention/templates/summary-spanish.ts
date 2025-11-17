@@ -10,6 +10,7 @@ import { formatPersonWithPhone } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   type CoverPageSection,
+  getStatusLabel,
 } from '@/lib/content-builders/shared/builders'
 
 /**
@@ -64,7 +65,10 @@ export function buildSummarySpanish(massIntention: MassIntentionWithRelations): 
     detailRows.push({ label: 'Estipendio:', value: `$${stipendDollars}` })
   }
   if (massIntention.status) {
-    detailRows.push({ label: 'Estado:', value: massIntention.status })
+    detailRows.push({
+      label: 'Estado:',
+      value: getStatusLabel(massIntention.status, 'es'),
+    })
   }
   if (detailRows.length > 0) {
     coverSections.push({ title: 'Detalles de la Intención de Misa', rows: detailRows })
