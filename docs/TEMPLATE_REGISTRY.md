@@ -31,7 +31,7 @@ This document provides a complete reference of all template files, their IDs, na
 ## Overview
 
 **Total Modules with Templates:** 7
-**Total Templates:** 19
+**Total Templates:** 17
 
 Each module has a template registry in its `index.ts` file that defines available templates. Templates are referenced by their unique ID and can be selected on the view page via the template selector dialog.
 
@@ -54,16 +54,15 @@ src/lib/content-builders/[module]/
 | **Weddings** | 2 | 1 (Full Script) | 1 (Full Script) | - | - |
 | **Funerals** | 2 | 1 (Full Script) | 1 (Full Script) | - | - |
 | **Baptisms** | 2 | 1 (Summary) | 1 (Summary) | - | - |
-| **Presentations** | 5 | 2 (Full, Simple) | 2 (Full, Simple) | 1 | - |
+| **Presentations** | 3 | 1 (Full Script) | 1 (Full Script) | 1 | - |
 | **Quinceañeras** | 2 | 1 (Full Script) | 1 (Full Script) | - | - |
 | **Masses** | 2 | 1 | 1 | - | - |
 | **Mass Intentions** | 2 | 1 (Summary) | 1 (Summary) | - | - |
-| **TOTAL** | **19** | **9** | **9** | **1** | **0** |
+| **TOTAL** | **17** | **7** | **7** | **1** | **0** |
 
 **Template Types:**
 - **Full Script** - Complete liturgy with all readings, responses, and directions
 - **Summary** - Condensed information summary for sacristy use
-- **Simple** - Simplified version without full ceremony details
 - **Bilingual** - Combined English and Spanish content
 
 ---
@@ -125,19 +124,17 @@ src/lib/content-builders/[module]/
 **Module Path:** `src/lib/content-builders/presentation/`
 **Template Registry:** `PRESENTATION_TEMPLATES`
 **Builder Function:** `buildPresentationLiturgy(presentation, templateId)`
-**Total Templates:** 5
+**Total Templates:** 3
 
 | Template ID | Name | Description | Language | Type | File |
 |------------|------|-------------|----------|------|------|
-| `presentation-spanish` | Presentación en el Templo (Español) | Complete presentation liturgy in Spanish | Spanish | Full Script | `templates/full-script-spanish.ts` |
 | `presentation-english` | Presentation in the Temple (English) | Complete presentation liturgy in English | English | Full Script | `templates/full-script-english.ts` |
-| `presentation-simple-spanish` | Presentación Simple (Español) | Simplified presentation liturgy in Spanish | Spanish | Simple | `templates/simple-spanish.ts` |
-| `presentation-simple-english` | Simple Presentation (English) | Simplified presentation liturgy in English | English | Simple | `templates/simple-english.ts` |
+| `presentation-spanish` | Presentación en el Templo (Español) | Complete presentation liturgy in Spanish | Spanish | Full Script | `templates/full-script-spanish.ts` |
 | `presentation-bilingual` | Bilingual Presentation (English & Spanish) | Complete bilingual presentation liturgy | Bilingual | Full Script | `templates/bilingual.ts` |
 
-**Default Template:** `presentation-spanish`
+**Default Template:** `presentation-english`
 
-**Note:** Presentations has the most template variety (5 templates) including full scripts, simple versions, and a bilingual option.
+**Note:** Presentations includes full scripts in English, Spanish, and a bilingual option.
 
 ---
 
@@ -210,7 +207,6 @@ src/lib/content-builders/[module]/
 **Type Names:**
 - `full-script` - Complete liturgy with all elements
 - `summary` - Condensed information for quick reference
-- `simple` - Simplified version without full ceremony
 
 **Language Codes:**
 - `english` - English only

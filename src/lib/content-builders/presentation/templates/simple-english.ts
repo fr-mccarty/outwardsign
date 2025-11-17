@@ -131,7 +131,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `${motherName} and ${fatherName} present their ${genderedText('son', 'daughter')} ${childName} to the Lord and to this community. Please come forward.`,
   })
 
@@ -150,7 +151,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `Do you commit to raise ${childName} in the Catholic faith?`,
   })
 
@@ -160,7 +162,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Parents' response
   liturgyElements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'PARENTS:',
     text: 'We do.',
   })
@@ -171,7 +173,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `I sign you with the sign of the cross. Parents, please do the same.`,
   })
 
@@ -200,7 +203,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Assembly response
   liturgyElements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'ASSEMBLY:',
     text: 'Amen.',
   })
@@ -221,7 +224,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: 'Let us show our support with a round of applause.',
   })
 

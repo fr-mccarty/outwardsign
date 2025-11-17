@@ -11,6 +11,10 @@ import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
+  buildCoverPage,
+  type CoverPageSection,
+} from '@/lib/content-builders/shared/builders'
+import {
   getChildName,
   getChildSex,
   isBaptized,
@@ -24,97 +28,7 @@ import {
 // ============================================================================
 // SECTION 1: COVER PAGE
 // ============================================================================
-
-/**
- * Build cover page with presentation summary information
- */
-function buildCoverPage(presentation: PresentationWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  // Title and subtitle handled at document level
-
-  // Presentation Information subsection
-  elements.push({
-    type: 'section-title',
-    text: 'Presentation Information',
-  })
-
-  if (presentation.child) {
-    elements.push({
-      type: 'info-row',
-      label: 'Child:',
-      value: formatPersonName(presentation.child),
-    })
-  }
-
-  if (presentation.mother) {
-    elements.push({
-      type: 'info-row',
-      label: 'Mother:',
-      value: formatPersonName(presentation.mother),
-    })
-  }
-
-  if (presentation.father) {
-    elements.push({
-      type: 'info-row',
-      label: 'Father:',
-      value: formatPersonName(presentation.father),
-    })
-  }
-
-  if (presentation.coordinator) {
-    elements.push({
-      type: 'info-row',
-      label: 'Coordinator:',
-      value: formatPersonName(presentation.coordinator),
-    })
-  }
-
-  if (presentation.presentation_event?.start_date) {
-    elements.push({
-      type: 'info-row',
-      label: 'Event Date & Time:',
-      value: formatEventDateTime(presentation.presentation_event),
-    })
-  }
-
-  if (presentation.presentation_event?.location) {
-    elements.push({
-      type: 'info-row',
-      label: 'Location:',
-      value: formatLocationWithAddress(presentation.presentation_event.location),
-    })
-  }
-
-  elements.push({
-    type: 'info-row',
-    label: 'Baptism Status:',
-    value: presentation.is_baptized ? 'Baptized' : 'Not yet baptized',
-  })
-
-  if (presentation.status) {
-    elements.push({
-      type: 'info-row',
-      label: 'Status:',
-      value: presentation.status,
-    })
-  }
-
-  if (presentation.note) {
-    elements.push({
-      type: 'info-row',
-      label: 'Notes:',
-      value: presentation.note,
-    })
-  }
-
-  return {
-    id: 'cover',
-    pageBreakAfter: true, // Always page break after cover
-    elements,
-  }
-}
+// (Uses shared buildCoverPage builder)
 
 // ============================================================================
 // SECTION 2: LITURGY
@@ -157,7 +71,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedText('son', 'daughter')}, ${getParentsText()} would like to present their ${genderedText('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
   })
 
@@ -176,7 +91,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `(to the ${getAudienceText()}) By presenting this ${genderedText('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedText('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
   })
 
@@ -186,7 +102,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Parents' response
   liturgyElements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'PARENTS:',
     text: 'Yes, we do.',
   })
@@ -197,7 +113,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `(to the ${genderedText('boy', 'girl')}) ${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your ${getAudienceText()} to do the same.`,
   })
 
@@ -227,7 +144,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Assembly response
   liturgyElements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'ASSEMBLY:',
     text: 'Amen.',
   })
@@ -248,7 +165,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: 'Now we send you back to your places, as we show you our support with applause.',
   })
 
@@ -272,20 +190,50 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 export function buildFullScriptEnglish(presentation: PresentationWithRelations): LiturgyDocument {
   // Calculate title and subtitle
   const title = buildTitleEnglish(presentation)
-  const subtitle = presentation.presentation_event
-    ? formatEventDateTime(presentation.presentation_event)
-    : undefined
+  const subtitle = getEventSubtitleEnglish(presentation)
 
-  // Build all sections in order
   const sections: ContentSection[] = []
 
-  // PAGE 1: Cover page
-  sections.push(buildCoverPage(presentation))
+  // 1. COVER PAGE - Build sections array conditionally
+  const coverSections: CoverPageSection[] = []
 
-  // PAGE 2: Liturgy section
+  // Presentation Information subsection
+  const presentationRows = []
+  if (presentation.child) {
+    presentationRows.push({ label: 'Child:', value: formatPersonName(presentation.child) })
+  }
+  if (presentation.mother) {
+    presentationRows.push({ label: 'Mother:', value: formatPersonName(presentation.mother) })
+  }
+  if (presentation.father) {
+    presentationRows.push({ label: 'Father:', value: formatPersonName(presentation.father) })
+  }
+  if (presentation.coordinator) {
+    presentationRows.push({ label: 'Coordinator:', value: formatPersonName(presentation.coordinator) })
+  }
+  if (presentation.presentation_event?.start_date) {
+    presentationRows.push({ label: 'Event Date & Time:', value: formatEventDateTime(presentation.presentation_event) })
+  }
+  if (presentation.presentation_event?.location) {
+    presentationRows.push({ label: 'Location:', value: formatLocationWithAddress(presentation.presentation_event.location) })
+  }
+  presentationRows.push({
+    label: 'Baptism Status:',
+    value: presentation.is_baptized ? 'Baptized' : 'Not yet baptized',
+  })
+  if (presentation.status) {
+    presentationRows.push({ label: 'Status:', value: presentation.status })
+  }
+  if (presentation.note) {
+    presentationRows.push({ label: 'Notes:', value: presentation.note })
+  }
+  coverSections.push({ title: 'Presentation Information', rows: presentationRows })
+
+  sections.push(buildCoverPage(coverSections))
+
+  // 2. LITURGY SECTION
   sections.push(buildLiturgySection(presentation))
 
-  // Return complete document
   return {
     id: presentation.id,
     type: 'presentation',

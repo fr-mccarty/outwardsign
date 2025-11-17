@@ -206,10 +206,10 @@ case 'section-title': {
 Elements with label + text use multiple styled spans:
 
 ```typescript
-case 'response': {
-  const containerStyle = resolveElementStyle('response')
-  const labelStyle = resolveElementStyle('response-label')
-  const textStyle = resolveElementStyle('response-text')
+case 'response-dialogue': {
+  const containerStyle = resolveElementStyle('response-dialogue')
+  const labelStyle = resolveElementStyle('response-dialogue-label')
+  const textStyle = resolveElementStyle('response-dialogue-text')
   return containerStyle && labelStyle && textStyle ? (
     <div key={index} style={applyResolvedStyle(containerStyle)}>
       <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
@@ -287,10 +287,10 @@ case 'section-title': {
 Uses pdfmake's inline text array:
 
 ```typescript
-case 'response': {
-  const containerStyle = resolveElementStyle('response')
-  const labelStyle = resolveElementStyle('response-label')
-  const textStyle = resolveElementStyle('response-text')
+case 'response-dialogue': {
+  const containerStyle = resolveElementStyle('response-dialogue')
+  const labelStyle = resolveElementStyle('response-dialogue-label')
+  const textStyle = resolveElementStyle('response-dialogue-text')
   return containerStyle && labelStyle && textStyle ? {
     text: [
       {
@@ -463,10 +463,10 @@ case 'section-title':
 Multiple text runs in one paragraph:
 
 ```typescript
-case 'response':
-  return createStyledParagraph('response', [
-    createStyledTextRun('response-label', element.label || ''),
-    createStyledTextRun('response-text', ' ' + (element.text || '')),
+case 'response-dialogue':
+  return createStyledParagraph('response-dialogue', [
+    createStyledTextRun('response-dialogue-label', element.label || ''),
+    createStyledTextRun('response-dialogue-text', ' ' + (element.text || '')),
   ])
 ```
 
@@ -525,8 +525,8 @@ Complete list of supported element types and their purpose:
 | `introduction` | Introductory text before reading | "A reading from the Book of Genesis..." |
 | `reading-text` | The scripture text itself | (The actual reading content) |
 | `conclusion` | Concluding formula | "The Word of the Lord." |
-| `response` | Call and response | Label: "R." Text: "Thanks be to God." |
-| `priest-dialogue` | Priest's spoken text | "The Lord be with you." |
+| `response-dialogue` | Call and response | Label: "R." Text: "Thanks be to God." |
+| `presider-dialogue` | Presider's spoken text | "The Lord be with you." |
 | `petition` | Prayer petition | Label: "For..." Text: "We pray to the Lord." |
 | `text` | General body text | Any regular paragraph |
 | `rubric` | Liturgical instruction | "(All stand)" |

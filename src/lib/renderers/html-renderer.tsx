@@ -131,10 +131,10 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       ) : null
     }
 
-    case 'response': {
-      const containerStyle = resolveElementStyle('response')
-      const labelStyle = resolveElementStyle('response-label')
-      const textStyle = resolveElementStyle('response-text')
+    case 'response-dialogue': {
+      const containerStyle = resolveElementStyle('response-dialogue')
+      const labelStyle = resolveElementStyle('response-dialogue-label')
+      const textStyle = resolveElementStyle('response-dialogue-text')
       return containerStyle && labelStyle && textStyle ? (
         <div key={index} style={applyResolvedStyle(containerStyle)}>
           <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
@@ -144,13 +144,27 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       ) : null
     }
 
-    case 'priest-dialogue': {
-      const style = resolveElementStyle('priest-dialogue')
-      return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+    case 'presider-dialogue': {
+      const containerStyle = resolveElementStyle('presider-dialogue')
+      if (!containerStyle) return null
+
+      if (element.label) {
+        const labelStyle = resolveElementStyle('presider-dialogue-label')
+        const textStyle = resolveElementStyle('presider-dialogue-text')
+        return labelStyle && textStyle ? (
+          <div key={index} style={applyResolvedStyle(containerStyle)}>
+            <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
+            {' '}
+            <span style={applyResolvedStyle(textStyle)}>{element.text}</span>
+          </div>
+        ) : null
+      }
+
+      return (
+        <div key={index} style={applyResolvedStyle(containerStyle)}>
           {element.text}
         </div>
-      ) : null
+      )
     }
 
     case 'petition': {

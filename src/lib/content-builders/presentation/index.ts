@@ -8,8 +8,6 @@ import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
 import { buildFullScriptSpanish } from './templates/full-script-spanish'
 import { buildFullScriptEnglish } from './templates/full-script-english'
-import { buildSimpleSpanish } from './templates/simple-spanish'
-import { buildSimpleEnglish } from './templates/simple-english'
 import { buildBilingual } from './templates/bilingual'
 
 // Export shared helpers for use in templates
@@ -20,13 +18,6 @@ export * from './helpers'
  * Add new presentation templates here as they are created
  */
 export const PRESENTATION_TEMPLATES: Record<string, LiturgyTemplate<PresentationWithRelations>> = {
-  'presentation-spanish': {
-    id: 'presentation-spanish',
-    name: 'Presentación en el Templo (Español)',
-    description: 'Complete presentation liturgy in Spanish',
-    supportedLanguages: ['es'],
-    builder: buildFullScriptSpanish,
-  },
   'presentation-english': {
     id: 'presentation-english',
     name: 'Presentation in the Temple (English)',
@@ -34,19 +25,12 @@ export const PRESENTATION_TEMPLATES: Record<string, LiturgyTemplate<Presentation
     supportedLanguages: ['en'],
     builder: buildFullScriptEnglish,
   },
-  'presentation-simple-spanish': {
-    id: 'presentation-simple-spanish',
-    name: 'Presentación Simple (Español)',
-    description: 'Simplified presentation liturgy in Spanish',
+  'presentation-spanish': {
+    id: 'presentation-spanish',
+    name: 'Presentación en el Templo (Español)',
+    description: 'Complete presentation liturgy in Spanish',
     supportedLanguages: ['es'],
-    builder: buildSimpleSpanish,
-  },
-  'presentation-simple-english': {
-    id: 'presentation-simple-english',
-    name: 'Simple Presentation (English)',
-    description: 'Simplified presentation liturgy in English',
-    supportedLanguages: ['en'],
-    builder: buildSimpleEnglish,
+    builder: buildFullScriptSpanish,
   },
   'presentation-bilingual': {
     id: 'presentation-bilingual',
@@ -62,8 +46,8 @@ export const PRESENTATION_TEMPLATES: Record<string, LiturgyTemplate<Presentation
  */
 export function buildPresentationLiturgy(
   presentation: PresentationWithRelations,
-  templateId: string = 'presentation-spanish'
+  templateId: string = 'presentation-english'
 ): LiturgyDocument {
-  const template = PRESENTATION_TEMPLATES[templateId] || PRESENTATION_TEMPLATES['presentation-spanish']
+  const template = PRESENTATION_TEMPLATES[templateId] || PRESENTATION_TEMPLATES['presentation-english']
   return template.builder(presentation)
 }

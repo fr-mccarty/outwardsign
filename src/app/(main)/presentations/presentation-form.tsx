@@ -225,30 +225,6 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
           />
       </FormSectionCard>
 
-      {/* Other Liturgical Roles and liturgical selections */}
-      <FormSectionCard
-        title="Other Liturgical Roles and Liturgical Selections"
-        description="Additional ministers and ceremony options"
-      >
-        <p className="text-sm text-muted-foreground">No additional roles configured yet.</p>
-      </FormSectionCard>
-
-      {/* Petitions (If applicable) */}
-      <FormSectionCard
-        title="Petitions"
-        description="Special intentions and prayers (if applicable)"
-      >
-        <p className="text-sm text-muted-foreground">No petitions configured yet.</p>
-      </FormSectionCard>
-
-      {/* Announcements (If applicable) */}
-      <FormSectionCard
-        title="Announcements"
-        description="Special announcements (if applicable)"
-      >
-        <p className="text-sm text-muted-foreground">No announcements configured yet.</p>
-      </FormSectionCard>
-
       {/* Additional Details */}
       <FormSectionCard
         title="Additional Details"

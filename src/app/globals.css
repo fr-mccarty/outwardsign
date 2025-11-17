@@ -163,15 +163,15 @@
   }
 
   /* Liturgical Responses */
-  .liturgy-response {
+  .liturgy-response-dialogue {
     @apply mt-3 italic;
   }
 
-  .liturgy-response-label {
+  .liturgy-response-dialogue-label {
     @apply font-semibold;
   }
 
-  .liturgy-priest-dialogue {
+  .liturgy-presider-dialogue {
     @apply mt-3;
   }
 

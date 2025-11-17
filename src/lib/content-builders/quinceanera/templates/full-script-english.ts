@@ -296,7 +296,8 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'PRESIDER:',
         text: `${quinceaneraName}, do you renounce Satan and all his works and all his empty promises?`,
       },
       {
@@ -304,7 +305,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'I do.',
       },
@@ -313,7 +314,8 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'PRESIDER:',
         text: 'Do you believe in God, the Father almighty, Creator of heaven and earth?',
       },
       {
@@ -321,7 +323,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'I do.',
       },
@@ -330,7 +332,8 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'PRESIDER:',
         text: 'Do you believe in Jesus Christ, his only Son, our Lord, who was born of the Virgin Mary, suffered death and was buried, rose again from the dead and is seated at the right hand of the Father?',
       },
       {
@@ -338,7 +341,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'I do.',
       },
@@ -347,7 +350,8 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'PRESIDER:',
         text: 'Do you believe in the Holy Spirit, the holy Catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and life everlasting?',
       },
       {
@@ -355,7 +359,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'I do.',
       },
@@ -372,7 +376,7 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'ALL:',
         text: 'Amen.',
       },
@@ -406,7 +410,7 @@ We ask this through Christ our Lord.`,
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'ALL:',
         text: 'Amen.',
       },

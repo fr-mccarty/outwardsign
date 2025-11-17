@@ -118,10 +118,10 @@ function renderElement(element: ContentElement): Content {
       } : { text: '' }
     }
 
-    case 'response': {
-      const containerStyle = resolveElementStyle('response')
-      const labelStyle = resolveElementStyle('response-label')
-      const textStyle = resolveElementStyle('response-text')
+    case 'response-dialogue': {
+      const containerStyle = resolveElementStyle('response-dialogue')
+      const labelStyle = resolveElementStyle('response-dialogue-label')
+      const textStyle = resolveElementStyle('response-dialogue-text')
       return containerStyle && labelStyle && textStyle ? {
         text: [
           {
@@ -143,12 +143,38 @@ function renderElement(element: ContentElement): Content {
       } : { text: '' }
     }
 
-    case 'priest-dialogue': {
-      const style = resolveElementStyle('priest-dialogue')
-      return style ? {
+    case 'presider-dialogue': {
+      const containerStyle = resolveElementStyle('presider-dialogue')
+      if (!containerStyle) return { text: '' }
+
+      if (element.label) {
+        const labelStyle = resolveElementStyle('presider-dialogue-label')
+        const textStyle = resolveElementStyle('presider-dialogue-text')
+        return labelStyle && textStyle ? {
+          text: [
+            {
+              text: element.label || '',
+              bold: labelStyle.bold,
+              italics: labelStyle.italic,
+              color: labelStyle.color,
+              fontSize: labelStyle.fontSize,
+            },
+            {
+              text: ' ' + (element.text || ''),
+              bold: textStyle.bold,
+              italics: textStyle.italic,
+              color: textStyle.color,
+              fontSize: textStyle.fontSize,
+            },
+          ],
+          ...applyResolvedStyle(containerStyle),
+        } : { text: '' }
+      }
+
+      return {
         text: element.text,
-        ...applyResolvedStyle(style),
-      } : { text: '' }
+        ...applyResolvedStyle(containerStyle),
+      }
     }
 
     case 'petition': {

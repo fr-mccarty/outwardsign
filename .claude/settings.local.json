@@ -7,6 +7,7 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(npm run build:*)",
       "Bash(ls:*)",
+      "Bash(for file:*)",
       "Bash(diff:*)",
       "Bash(npx playwright test:*)",
       "WebFetch(domain:code.claude.com)",
@@ -23,11 +24,9 @@
       "Bash(npm run lint:*)",
       "Bash(test:*)",
       "Bash(xargs:*)",
-      "Bash(for module in mass wedding quinceanera funeral baptism presentation mass-intention)",
-      "Bash(do echo '=== $module ===' if [ -d /Users/joshmccarty/Code-2025Macbook/outwardsign/src/lib/content-builders/$module/templates ])",
-      "Bash(then ls /Users/joshmccarty/Code-2025Macbook/outwardsign/src/lib/content-builders/$module/templates/)",
+      "Bash(do echo:*)",
+      "Bash(echo:*)",
       "Bash(npx playwright show-report:*)",
-      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

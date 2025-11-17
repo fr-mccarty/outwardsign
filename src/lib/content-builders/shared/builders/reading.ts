@@ -109,7 +109,7 @@ export function buildReadingSection(
 
   // Response after reading
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'People:',
     text: 'Thanks be to God.',
   })

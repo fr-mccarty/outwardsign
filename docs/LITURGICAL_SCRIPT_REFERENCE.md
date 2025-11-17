@@ -34,8 +34,8 @@
 | `introduction` | Reading intro | `text` | 11pt |
 | `reading-text` | Scripture passage | `text` | 11pt, preserves line breaks |
 | `conclusion` | Reading ending | `text` | 11pt |
-| `response` | Congregation response | `label`, `text` | Label bold |
-| `priest-dialogue` | Priest directions | `text` | 11pt |
+| `response-dialogue` | Congregation response | `label`, `text` | Label bold |
+| `presider-dialogue` | Presider dialogue | `label?`, `text` | 11pt, label bold if present |
 | `petition` | Petition text | `label`, `text` | Label bold + red |
 | `rubric` | Liturgical instruction | `text` | Italic, red |
 | `info-row` | Label-value pair | `label`, `value` | Label bold |
@@ -54,7 +54,7 @@
 **Each element type gets its style automatically** based on its `type`:
 - `'section-title'` → 16pt, bold, center aligned
 - `'reading-title'` → 14pt, bold, liturgy red, right aligned
-- `'response'` → Label bold, text normal
+- `'response-dialogue'` → Label bold, text normal
 - `'petition'` → Label bold + liturgy red
 
 **To change how an element type looks:** Edit the element's style definition in `liturgical-script-styles.ts`.
@@ -286,12 +286,12 @@ Reading conclusion (e.g., "The word of the Lord").
 
 **Style:** 11pt, left aligned
 
-#### ResponseElement
+#### ResponseDialogueElement
 Congregation response (e.g., "**People:** Thanks be to God").
 
 ```typescript
 {
-  type: 'response',
+  type: 'response-dialogue',
   label: string,  // e.g., "People:"
   text: string    // e.g., "Thanks be to God."
 }
@@ -302,7 +302,7 @@ Congregation response (e.g., "**People:** Thanks be to God").
 **Example:**
 ```typescript
 {
-  type: 'response',
+  type: 'response-dialogue',
   label: 'People:',
   text: 'Thanks be to God.'
 }
@@ -312,17 +312,35 @@ Congregation response (e.g., "**People:** Thanks be to God").
 
 ### Ceremony Elements
 
-#### PriestDialogueElement
-Priest/Deacon dialogue and directions.
+#### PresiderDialogueElement
+Presider (Priest/Deacon) dialogue and directions. Label is optional.
 
 ```typescript
 {
-  type: 'priest-dialogue',
+  type: 'presider-dialogue',
+  label?: string,  // Optional - e.g., "PRESIDER:"
   text: string
 }
 ```
 
-**Style:** 11pt, left aligned
+**Style:** 11pt, left aligned. When label is present, label rendered bold, text rendered normal.
+
+**Example without label:**
+```typescript
+{
+  type: 'presider-dialogue',
+  text: 'Dearly beloved, we are gathered here today...'
+}
+```
+
+**Example with label:**
+```typescript
+{
+  type: 'presider-dialogue',
+  label: 'PRESIDER:',
+  text: "Life is God's greatest gift to us..."
+}
+```
 
 #### PetitionElement
 Petition text (Prayer of the Faithful).
@@ -455,7 +473,7 @@ liturgyElements.push({
 Always choose the most semantically appropriate element type:
 
 - **`rubric`** - Liturgical instructions/directions
-- **`priest-dialogue`** - Priest/celebrant spoken text
+- **`presider-dialogue`** - Priest/celebrant spoken text
 - **`priest-text`** - Priest's prayer or blessing
 - **`response`** - Assembly responses
 - **`text`** - General content
@@ -600,7 +618,7 @@ Complete scripture reading:
     { type: 'introduction', text: 'A reading from the Book of Genesis' },
     { type: 'reading-text', text: '...scripture...' },
     { type: 'conclusion', text: 'The word of the Lord.' },
-    { type: 'response', label: 'People:', text: 'Thanks be to God.' }
+    { type: 'response-dialogue', label: 'People:', text: 'Thanks be to God.' }
   ]
 }
 ```
@@ -617,10 +635,10 @@ Prayer of the Faithful:
     { type: 'reader-name', text: 'Read by: Michael Brown' },
     { type: 'spacer' },
     { type: 'petition', label: 'Reader:', text: 'For the Church, let us pray to the Lord.' },
-    { type: 'response', label: 'People:', text: 'Lord, hear our prayer.' },
+    { type: 'response-dialogue', label: 'People:', text: 'Lord, hear our prayer.' },
     { type: 'spacer' },
     { type: 'petition', label: 'Reader:', text: 'For peace, let us pray to the Lord.' },
-    { type: 'response', label: 'People:', text: 'Lord, hear our prayer.' }
+    { type: 'response-dialogue', label: 'People:', text: 'Lord, hear our prayer.' }
   ]
 }
 ```
@@ -689,11 +707,11 @@ const elements: ContentElement[] = [
 ```typescript
 const elements: ContentElement[] = [
   {
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
     text: 'Priest: The Lord be with you.'
   },
   {
-    type: 'response',
+    type: 'response-dialogue',
     label: 'People:',
     text: 'And with your spirit.'
   }
@@ -757,7 +775,7 @@ He leads me beside still waters.`
 
 ```typescript
 {
-  type: 'priest-dialogue',
+  type: 'presider-dialogue',
   text: 'The Lord be with you.'
 }
 ```
@@ -766,7 +784,7 @@ He leads me beside still waters.`
 
 ```typescript
 {
-  type: 'response',
+  type: 'response-dialogue',
   label: 'ASSEMBLY / ASAMBLEA:',
   text: 'Amen. / Amén.'
 }

@@ -21,8 +21,8 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  * buildCeremonySection('marriage-consent', [
  *   { type: 'section-title', text: 'MARRIAGE CONSENT' },
  *   { type: 'rubric', text: 'The priest addresses the couple:' },
- *   { type: 'priest-dialogue', text: 'Have you come here freely?' },
- *   { type: 'response', label: 'COUPLE:', text: 'We have.' }
+ *   { type: 'presider-dialogue', text: 'Have you come here freely?' },
+ *   { type: 'response-dialogue', label: 'COUPLE:', text: 'We have.' }
  * ])
  */
 export function buildCeremonySection(

@@ -168,16 +168,23 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
         createStyledTextRun('conclusion', element.text),
       ])
 
-    case 'response':
-      return createStyledParagraph('response', [
-        createStyledTextRun('response-label', element.label || ''),
-        createStyledTextRun('response-text', ' ' + (element.text || '')),
+    case 'response-dialogue':
+      return createStyledParagraph('response-dialogue', [
+        createStyledTextRun('response-dialogue-label', element.label || ''),
+        createStyledTextRun('response-dialogue-text', ' ' + (element.text || '')),
       ])
 
-    case 'priest-dialogue':
-      return createStyledParagraph('priest-dialogue', [
-        createStyledTextRun('priest-dialogue', element.text),
-      ])
+    case 'presider-dialogue':
+      return createStyledParagraph('presider-dialogue',
+        element.label
+          ? [
+              createStyledTextRun('presider-dialogue-label', element.label || ''),
+              createStyledTextRun('presider-dialogue-text', ' ' + (element.text || '')),
+            ]
+          : [
+              createStyledTextRun('presider-dialogue', element.text),
+            ]
+      )
 
     case 'petition':
       return createStyledParagraph('petition', [

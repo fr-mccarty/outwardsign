@@ -107,7 +107,7 @@ export function buildPetitionsSection(
 
     // Response after each petition
     elements.push({
-      type: 'response',
+      type: 'response-dialogue',
       label: 'People:',
       text: 'Lord, hear our prayer.',
     })

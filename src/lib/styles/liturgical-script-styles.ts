@@ -136,7 +136,7 @@ export const ELEMENT_STYLES = {
     preserveLineBreaks: false,
   },
 
-  'response': {
+  'response-dialogue': {
     fontSize: 11,
     bold: false,
     italic: false,
@@ -148,7 +148,7 @@ export const ELEMENT_STYLES = {
     preserveLineBreaks: false,
   },
 
-  'response-label': {
+  'response-dialogue-label': {
     fontSize: 11,
     bold: true,
     italic: false,
@@ -160,7 +160,7 @@ export const ELEMENT_STYLES = {
     preserveLineBreaks: false,
   },
 
-  'response-text': {
+  'response-dialogue-text': {
     fontSize: 11,
     bold: false,
     italic: false,
@@ -172,7 +172,7 @@ export const ELEMENT_STYLES = {
     preserveLineBreaks: false,
   },
 
-  'priest-dialogue': {
+  'presider-dialogue': {
     fontSize: 11,
     bold: false,
     italic: false,
@@ -180,6 +180,30 @@ export const ELEMENT_STYLES = {
     alignment: 'left',
     marginTop: 3,
     marginBottom: 3,
+    lineHeight: 1.4,
+    preserveLineBreaks: false,
+  },
+
+  'presider-dialogue-label': {
+    fontSize: 11,
+    bold: true,
+    italic: false,
+    color: 'black',
+    alignment: 'left',
+    marginTop: 0,
+    marginBottom: 0,
+    lineHeight: 1.4,
+    preserveLineBreaks: false,
+  },
+
+  'presider-dialogue-text': {
+    fontSize: 11,
+    bold: false,
+    italic: false,
+    color: 'black',
+    alignment: 'left',
+    marginTop: 0,
+    marginBottom: 0,
     lineHeight: 1.4,
     preserveLineBreaks: false,
   },

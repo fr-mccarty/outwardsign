@@ -42,6 +42,8 @@
 
 **For section types and builder interfaces, see [CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md).**
 
+**For complete registry of all templates across all modules, see [TEMPLATE_REGISTRY.md](./TEMPLATE_REGISTRY.md).**
+
 ---
 
 ## Modules Using Content Builders
@@ -55,14 +57,14 @@
 | **Weddings** | `src/lib/content-builders/wedding/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
 | **Funerals** | `src/lib/content-builders/funeral/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
 | **Baptisms** | `src/lib/content-builders/baptism/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
-| **Presentations** | `src/lib/content-builders/presentation/` | 5 (EN, ES, Bilingual, Simple) | ModuleViewContainer | View page (ModuleViewPanel) |
+| **Presentations** | `src/lib/content-builders/presentation/` | 3 (EN, ES, Bilingual) | ModuleViewContainer | View page (ModuleViewPanel) |
 | **Quinceañeras** | `src/lib/content-builders/quinceanera/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
 | **Masses** | `src/lib/content-builders/mass/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
 | **Mass Intentions** | `src/lib/content-builders/mass-intention/` | 2 (EN, ES) | ModuleViewContainer | View page (ModuleViewPanel) |
 
 ### Template Counts
 
-- **Most templates:** Presentations (5 templates - Full Script Spanish, Full Script English, Simple Spanish, Simple English, Bilingual)
+- **Most templates:** Presentations (3 templates - Full Script English, Full Script Spanish, Bilingual)
 - **Standard modules:** All others have 2 templates (English and Spanish versions)
 
 ### Architecture Consistency

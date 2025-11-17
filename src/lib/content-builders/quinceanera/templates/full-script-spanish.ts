@@ -296,7 +296,8 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'CELEBRANTE:',
         text: `${quinceaneraName}, ¿renuncias a Satanás, a todas sus obras y a todas sus seducciones?`,
       },
       {
@@ -304,7 +305,7 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'Sí, renuncio.',
       },
@@ -313,7 +314,8 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'CELEBRANTE:',
         text: '¿Crees en Dios, Padre todopoderoso, Creador del cielo y de la tierra?',
       },
       {
@@ -321,7 +323,7 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'Sí, creo.',
       },
@@ -330,7 +332,8 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'CELEBRANTE:',
         text: '¿Crees en Jesucristo, su único Hijo, nuestro Señor, que nació de la Virgen María, padeció y fue sepultado, resucitó de entre los muertos y está sentado a la derecha del Padre?',
       },
       {
@@ -338,7 +341,7 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'Sí, creo.',
       },
@@ -347,7 +350,8 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'priest-dialogue',
+        type: 'presider-dialogue',
+        label: 'CELEBRANTE:',
         text: '¿Crees en el Espíritu Santo, en la santa Iglesia católica, en la comunión de los santos, en el perdón de los pecados, en la resurrección de los muertos y en la vida eterna?',
       },
       {
@@ -355,7 +359,7 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'QUINCEAÑERA:',
         text: 'Sí, creo.',
       },
@@ -372,7 +376,7 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'TODOS:',
         text: 'Amén.',
       },
@@ -406,7 +410,7 @@ Te lo pedimos por Cristo nuestro Señor.`,
         size: 'small',
       },
       {
-        type: 'response',
+        type: 'response-dialogue',
         label: 'TODOS:',
         text: 'Amén.',
       },

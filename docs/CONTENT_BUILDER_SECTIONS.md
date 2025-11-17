@@ -325,13 +325,13 @@ function buildCeremonySection(entity: EntityWithRelations): ContentSection {
 
   // Priest dialogue
   elements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
     text: 'Dearly beloved, we are gathered here today...'
   })
 
   // Response
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'Bride and Groom:',
     text: 'I do.'
   })
@@ -343,7 +343,7 @@ function buildCeremonySection(entity: EntityWithRelations): ContentSection {
   })
 
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'Assembly:',
     text: 'Amen.'
   })
@@ -378,9 +378,9 @@ function buildCeremonySection(entity: EntityWithRelations): ContentSection {
 **Implementation Notes:**
 - Use helper functions for gendered text, names, dates
 - Use rubrics for stage directions
-- Use `priest-dialogue` for spoken celebrant text
+- Use `presider-dialogue` for spoken celebrant text
 - Use `priest-text` for prayers
-- Use `response` for participant/assembly responses
+- Use `response-dialogue` for participant/assembly responses
 - Use `spacer` elements for readability
 
 **Example 1 - Single Presentation Ceremony (appears after homily):**
@@ -402,7 +402,7 @@ function buildPresentationBlessingSection(presentation: PresentationWithRelation
   })
 
   elements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
     text: `Grateful for the life of their ${gendered(childSex, 'son', 'daughter')}, the parents would like to present ${childName} to the Lord.`
   })
 
@@ -413,12 +413,12 @@ function buildPresentationBlessingSection(presentation: PresentationWithRelation
 
   // Commitment question
   elements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
     text: 'Do you commit to raise this child in the ways of faith?'
   })
 
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'Parents:',
     text: 'Yes, we do.'
   })
@@ -430,7 +430,7 @@ function buildPresentationBlessingSection(presentation: PresentationWithRelation
   })
 
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'Assembly:',
     text: 'Amen.'
   })
@@ -461,12 +461,12 @@ function buildMarriageConsentSection(wedding: WeddingWithRelations): ContentSect
   })
 
   elements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
     text: 'Do you take this woman to be your lawfully wedded wife?'
   })
 
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'Groom:',
     text: 'I do.'
   })
@@ -517,7 +517,7 @@ function buildNuptialBlessingSection(wedding: WeddingWithRelations): ContentSect
   })
 
   elements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'Assembly:',
     text: 'Amen.'
   })

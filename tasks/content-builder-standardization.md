@@ -149,7 +149,7 @@ Need to investigate:
   - Create ceremony section builders (marriage consent, ring exchange, nuptial blessing)
   - Add ceremony sections to both English and Spanish templates
   - Position after Gospel, before Petitions
-  - Use rubrics, priest-dialogue, response, priest-text elements
+  - Use rubrics, presider-dialogue, response, priest-text elements
   - Fix any title/subtitle violations
   - Fix any page break issues
   - Test HTML, PDF, Word outputs
@@ -160,7 +160,7 @@ Need to investigate:
   - Create ceremony section builders (final commendation, incensation, song of farewell)
   - Add ceremony sections to both English and Spanish templates
   - Position after readings, before Petitions
-  - Use rubrics, priest-dialogue, response, priest-text elements
+  - Use rubrics, presider-dialogue, response, priest-text elements
   - Fix any title/subtitle violations
   - Fix any page break issues
   - Test HTML, PDF, Word outputs
@@ -171,7 +171,7 @@ Need to investigate:
   - Create ceremony section builders (renewal of promises, blessing, presentation of symbols)
   - Add ceremony sections to both English and Spanish templates
   - Position after Gospel, before Petitions
-  - Use rubrics, priest-dialogue, response, priest-text elements
+  - Use rubrics, presider-dialogue, response, priest-text elements
   - Fix any title/subtitle violations
   - Fix any page break issues
   - Test HTML, PDF, Word outputs

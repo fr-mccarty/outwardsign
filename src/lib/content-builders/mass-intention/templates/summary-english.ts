@@ -5,104 +5,12 @@
  */
 
 import { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
-import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
+import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
 import { formatPersonName } from '@/lib/utils/formatters'
-
-/**
- * Build summary section for mass intention (English)
- */
-function buildSummarySectionEnglish(massIntention: MassIntentionWithRelations): ContentSection {
-  const elements: ContentElement[] = []
-
-  // Mass Intention Information (only show section if there's at least one detail)
-  const hasDetails = massIntention.mass_offered_for || massIntention.requested_by ||
-    massIntention.date_requested || massIntention.date_received ||
-    (massIntention.stipend_in_cents !== null && massIntention.stipend_in_cents !== undefined) ||
-    massIntention.status
-
-  if (hasDetails) {
-    elements.push({
-      type: 'section-title',
-      text: 'Mass Intention Details',
-    })
-
-    if (massIntention.mass_offered_for) {
-      elements.push({
-        type: 'info-row',
-        label: 'Mass Offered For:',
-        value: massIntention.mass_offered_for,
-      })
-    }
-
-    if (massIntention.requested_by) {
-      elements.push({
-        type: 'info-row',
-        label: 'Requested By:',
-        value: formatPersonName(massIntention.requested_by),
-      })
-    }
-
-    if (massIntention.date_requested) {
-      const dateRequested = new Date(massIntention.date_requested)
-      elements.push({
-        type: 'info-row',
-        label: 'Date Requested:',
-        value: dateRequested.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-      })
-    }
-
-    if (massIntention.date_received) {
-      const dateReceived = new Date(massIntention.date_received)
-      elements.push({
-        type: 'info-row',
-        label: 'Date Received:',
-        value: dateReceived.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-      })
-    }
-
-    if (massIntention.stipend_in_cents !== null && massIntention.stipend_in_cents !== undefined) {
-      const stipendDollars = (massIntention.stipend_in_cents / 100).toFixed(2)
-      elements.push({
-        type: 'info-row',
-        label: 'Stipend:',
-        value: `$${stipendDollars}`,
-      })
-    }
-
-    if (massIntention.status) {
-      elements.push({
-        type: 'info-row',
-        label: 'Status:',
-        value: massIntention.status,
-      })
-    }
-  }
-
-  if (massIntention.note) {
-    elements.push({
-      type: 'section-title',
-      text: 'Notes',
-    })
-    elements.push({
-      type: 'text',
-      text: massIntention.note,
-    })
-  }
-
-  return {
-    id: 'summary',
-    title: 'Mass Intention Summary',
-    elements,
-  }
-}
+import {
+  buildCoverPage,
+  type CoverPageSection,
+} from '@/lib/content-builders/shared/builders'
 
 /**
  * Build Mass Intention summary document (English)
@@ -118,8 +26,58 @@ export function buildSummaryEnglish(massIntention: MassIntentionWithRelations): 
 
   const sections: ContentSection[] = []
 
-  // Summary section
-  sections.push(buildSummarySectionEnglish(massIntention))
+  // Build cover page sections array conditionally
+  const coverSections: CoverPageSection[] = []
+
+  // Mass Intention Details subsection
+  const detailRows = []
+  if (massIntention.mass_offered_for) {
+    detailRows.push({ label: 'Mass Offered For:', value: massIntention.mass_offered_for })
+  }
+  if (massIntention.requested_by) {
+    detailRows.push({ label: 'Requested By:', value: formatPersonName(massIntention.requested_by) })
+  }
+  if (massIntention.date_requested) {
+    const dateRequested = new Date(massIntention.date_requested)
+    detailRows.push({
+      label: 'Date Requested:',
+      value: dateRequested.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+    })
+  }
+  if (massIntention.date_received) {
+    const dateReceived = new Date(massIntention.date_received)
+    detailRows.push({
+      label: 'Date Received:',
+      value: dateReceived.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+    })
+  }
+  if (massIntention.stipend_in_cents !== null && massIntention.stipend_in_cents !== undefined) {
+    const stipendDollars = (massIntention.stipend_in_cents / 100).toFixed(2)
+    detailRows.push({ label: 'Stipend:', value: `$${stipendDollars}` })
+  }
+  if (massIntention.status) {
+    detailRows.push({ label: 'Status:', value: massIntention.status })
+  }
+  if (detailRows.length > 0) {
+    coverSections.push({ title: 'Mass Intention Details', rows: detailRows })
+  }
+
+  // Notes subsection
+  if (massIntention.note) {
+    const noteRows = []
+    noteRows.push({ label: 'Note:', value: massIntention.note })
+    coverSections.push({ title: 'Notes', rows: noteRows })
+  }
+
+  sections.push(buildCoverPage(coverSections))
 
   return {
     id: massIntention.id,

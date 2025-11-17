@@ -136,7 +136,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation - English
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `Life is God's greatest gift to us. Grateful for the life of their ${genderedEn('son', 'daughter')}, ${motherName} and ${fatherName} would like to present their ${genderedEn('son', 'daughter')} ${childName} to the Lord and to this community. We welcome you here to the front of the church.`,
   })
 
@@ -146,7 +147,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Celebrant invitation - Spanish
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'CELEBRANTE:',
     text: `La vida es el mayor regalo de Dios para nosotros. Agradecidos por la vida de su ${genderedEs('hijo', 'hija')}, ${motherName} y ${fatherName} quisieran presentar a su ${genderedEs('hijo', 'hija')} ${childName} al Señor y a esta comunidad. Les damos la bienvenida aquí al frente de la iglesia.`,
   })
 
@@ -165,7 +167,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question - English
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `(to the parents) By presenting this ${genderedEn('boy', 'girl')} to the Lord and to this community today, you ${baptized ? 'renew your commitment' : 'commit yourselves'} to raise ${genderedEn('him', 'her')} in the ways of faith. Do you understand and accept this responsibility?`,
   })
 
@@ -175,7 +178,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Commitment question - Spanish
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'CELEBRANTE:',
     text: `(a los padres) Al presentar a ${genderedEs('este niño', 'esta niña')} al Señor y a esta comunidad hoy, ${baptized ? 'renuevan su compromiso' : 'se comprometen'} a ${genderedEs('criarlo', 'criarla')} en los caminos de la fe. ¿Entienden y aceptan esta responsabilidad?`,
   })
 
@@ -185,7 +189,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Parents' response - Bilingual
   liturgyElements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'PARENTS / PADRES:',
     text: 'Yes, we do. / Sí, aceptamos.',
   })
@@ -196,7 +200,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross - English
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER:',
     text: `(to the ${genderedEn('boy', 'girl')}) ${baptized ? 'As on the day of your baptism, I' : 'I'} sign you with the sign of the cross, and I ask your parents to do the same.`,
   })
 
@@ -206,7 +211,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Sign of the cross - Spanish
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'CELEBRANTE:',
     text: `(${genderedEs('al niño', 'a la niña')}) ${baptized ? 'Como el día de tu bautismo, te' : 'Te'} signo con la señal de la cruz, y pido a tus padres que hagan lo mismo.`,
   })
 
@@ -274,7 +280,7 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Assembly response - Bilingual
   liturgyElements.push({
-    type: 'response',
+    type: 'response-dialogue',
     label: 'ASSEMBLY / ASAMBLEA:',
     text: 'Amen. / Amén.',
   })
@@ -295,7 +301,8 @@ function buildLiturgySection(presentation: PresentationWithRelations): ContentSe
 
   // Dismissal - Bilingual
   liturgyElements.push({
-    type: 'priest-dialogue',
+    type: 'presider-dialogue',
+    label: 'PRESIDER / CELEBRANTE:',
     text: 'Now we send you back to your places, as we show you our support with applause. / Ahora los enviamos de regreso a sus lugares, mientras les mostramos nuestro apoyo con un aplauso.',
   })
 

@@ -348,15 +348,13 @@ export const BAPTISM_TEMPLATE_LABELS: Record<BaptismTemplate, { en: string; es: 
 }
 
 // Presentation Template Constants
-export const PRESENTATION_TEMPLATE_VALUES = ['presentation-english', 'presentation-spanish', 'presentation-simple-english', 'presentation-simple-spanish', 'presentation-bilingual'] as const
+export const PRESENTATION_TEMPLATE_VALUES = ['presentation-english', 'presentation-spanish', 'presentation-bilingual'] as const
 export type PresentationTemplate = typeof PRESENTATION_TEMPLATE_VALUES[number]
 export const PRESENTATION_DEFAULT_TEMPLATE: PresentationTemplate = 'presentation-english'
 
 export const PRESENTATION_TEMPLATE_LABELS: Record<PresentationTemplate, { en: string; es: string }> = {
   'presentation-english': { en: 'Presentation in the Temple (English)', es: 'Presentación en el Templo (Inglés)' },
   'presentation-spanish': { en: 'Presentation in the Temple (Spanish)', es: 'Presentación en el Templo (Español)' },
-  'presentation-simple-english': { en: 'Simple Presentation (English)', es: 'Presentación Simple (Inglés)' },
-  'presentation-simple-spanish': { en: 'Simple Presentation (Spanish)', es: 'Presentación Simple (Español)' },
   'presentation-bilingual': { en: 'Bilingual Presentation (English & Spanish)', es: 'Presentación Bilingüe (Inglés y Español)' }
 }
 

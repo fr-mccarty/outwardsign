@@ -65,7 +65,7 @@ interface CoverPageConfig {
 }
 
 interface CeremonyElement {
-  type: 'rubric' | 'priest-dialogue' | 'response' | ...
+  type: 'rubric' | 'presider-dialogue' | 'response-dialogue' | ...
   text?: string
   label?: string
 }
@@ -88,9 +88,9 @@ interface CeremonyElement {
 ```typescript
 // 15 lines for a simple dialogue exchange
 const elements: ContentElement[] = []
-elements.push({ type: 'priest-dialogue', text: 'Question?' })
+elements.push({ type: 'presider-dialogue', text: 'Question?' })
 elements.push({ type: 'spacer', size: 'small' })
-elements.push({ type: 'response', label: 'PERSON:', text: 'Answer' })
+elements.push({ type: 'response-dialogue', label: 'PERSON:', text: 'Answer' })
 // ... repeated 10+ times
 ```
 

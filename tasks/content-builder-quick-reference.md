@@ -123,9 +123,9 @@ sections.push({
     { type: 'spacer', size: 'medium' },
     { type: 'rubric', text: 'The priest addresses the bride and groom:' },
     { type: 'spacer', size: 'small' },
-    { type: 'priest-dialogue', text: 'Have you come here freely?' },
+    { type: 'presider-dialogue', text: 'Have you come here freely?' },
     { type: 'spacer', size: 'small' },
-    { type: 'response', label: 'COUPLE:', text: 'We have.' },
+    { type: 'response-dialogue', label: 'COUPLE:', text: 'We have.' },
     // ... 50 more elements
   ]
 })

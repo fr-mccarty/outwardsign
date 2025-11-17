@@ -101,20 +101,22 @@ export interface ConclusionElement extends BaseElement {
 }
 
 /**
- * Response (e.g., "People: Thanks be to God")
+ * Response dialogue (e.g., "People: Thanks be to God")
  * Label is rendered bold, text is rendered normal
  */
-export interface ResponseElement extends BaseElement {
-  type: 'response'
+export interface ResponseDialogueElement extends BaseElement {
+  type: 'response-dialogue'
   label: string  // e.g., "People:"
   text: string   // e.g., "Thanks be to God"
 }
 
 /**
- * Priest/Deacon dialogue
+ * Presider dialogue (Priest/Deacon)
+ * Label is optional (e.g., "PRESIDER:")
  */
-export interface PriestDialogueElement extends BaseElement {
-  type: 'priest-dialogue'
+export interface PresiderDialogueElement extends BaseElement {
+  type: 'presider-dialogue'
+  label?: string
   text: string
 }
 
@@ -183,8 +185,8 @@ export type ContentElement =
   | IntroductionElement
   | ReadingTextElement
   | ConclusionElement
-  | ResponseElement
-  | PriestDialogueElement
+  | ResponseDialogueElement
+  | PresiderDialogueElement
   | PetitionElement
   | RubricElement
   | PrayerTextElement
