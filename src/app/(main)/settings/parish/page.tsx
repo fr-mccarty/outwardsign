@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { FormSectionCard } from '@/components/form-section-card'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -60,7 +60,6 @@ interface ParishMember {
   users: {
     id: string
     email: string | null
-    full_name: string | null
     created_at: string | null
   } | null
 }
@@ -464,15 +463,14 @@ export default function ParishSettingsPage() {
             label: 'Parish Settings',
             icon: <Settings className="h-4 w-4" />,
             content: (
-              <Card>
-                <CardContent className="text-center py-12">
+              <FormSectionCard title="No Parish Selected">
+                <div className="text-center py-8">
                   <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Parish Selected</h3>
                   <p className="text-muted-foreground">
                     Please select a parish to manage its settings.
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </FormSectionCard>
             )
           }
         ]}
@@ -490,14 +488,7 @@ export default function ParishSettingsPage() {
             </Button>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <Church className="h-5 w-5" />
-                Parish Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <FormSectionCard title="Parish Information">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <FormField
@@ -532,18 +523,15 @@ export default function ParishSettingsPage() {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </FormSectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Liturgical Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <FormSectionCard
+            title="Liturgical Settings"
+            description="This determines which liturgical calendar events are imported from the API"
+          >
               <FormField
                 id="liturgical-locale"
                 label="Liturgical Calendar Locale"
-                description="This determines which liturgical calendar events are imported from the API"
                 inputType="select"
                 value={liturgicalLocale}
                 onChange={setLiturgicalLocale}
@@ -561,20 +549,14 @@ export default function ParishSettingsPage() {
                   {saving ? 'Saving...' : 'Save Locale'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </FormSectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Parish Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <FormSectionCard title="Parish Details">
               <div>
                 <Label className="text-muted-foreground">Created</Label>
                 <p className="mt-1 text-sm">{new Date(currentParish.created_at).toLocaleDateString()}</p>
               </div>
-            </CardContent>
-          </Card>
+          </FormSectionCard>
     </>
   )
 
@@ -588,20 +570,11 @@ export default function ParishSettingsPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <DollarSign className="h-5 w-5" />
-            Mass Intention Offering Quick Amounts
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-sm text-muted-foreground">
-            Configure the quick amount buttons that appear when entering Mass intention offerings.
-            Amounts are stored in cents for precise calculations.
-          </p>
-
-          {loading ? (
+      <FormSectionCard
+        title="Mass Intention Offering Quick Amounts"
+        description="Configure the quick amount buttons that appear when entering Mass intention offerings. Amounts are stored in cents for precise calculations."
+      >
+        {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-muted-foreground">Loading quick amounts...</div>
             </div>
@@ -678,26 +651,17 @@ export default function ParishSettingsPage() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+      </FormSectionCard>
     </>
   )
 
   // Petitions Tab Content
   const petitionsContent = (
     <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <FileText className="h-5 w-5" />
-                Petition Templates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-6">
-                Manage petition templates for your liturgical celebrations. Create custom contexts as needed.
-              </p>
-
+          <FormSectionCard
+            title="Petition Templates"
+            description="Manage petition templates for your liturgical celebrations. Create custom contexts as needed."
+          >
               <div className="space-y-4">
                 <DataTableHeader
                   searchValue={petitionSearchTerm}
@@ -796,8 +760,7 @@ export default function ParishSettingsPage() {
                   itemName={petitionTemplates.find(t => t.id === templateToDelete)?.title}
                 />
               </div>
-            </CardContent>
-          </Card>
+          </FormSectionCard>
     </>
   )
 
@@ -818,14 +781,7 @@ export default function ParishSettingsPage() {
           )}
 
           {importStats && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Current Reading Collection
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <FormSectionCard title="Current Reading Collection">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary">{importStats.totalReadings}</div>
@@ -853,24 +809,13 @@ export default function ParishSettingsPage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+            </FormSectionCard>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                Import Readings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Import a comprehensive collection of readings from our curated database.
-                This includes readings for weddings, funerals, and other liturgical celebrations with
-                proper introductions and conclusions.
-              </p>
-
+          <FormSectionCard
+            title="Import Readings"
+            description="Import a comprehensive collection of readings from our curated database. This includes readings for weddings, funerals, and other liturgical celebrations with proper introductions and conclusions."
+          >
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-950/20 dark:border-blue-900/50">
                 <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">What will be imported:</h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
@@ -901,21 +846,12 @@ export default function ParishSettingsPage() {
                 <Download className="h-4 w-4 mr-2" />
                 {isImportingReadings ? 'Importing Readings...' : 'Import Readings'}
               </Button>
-            </CardContent>
-          </Card>
+          </FormSectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Reading Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Manage your reading collection and organize readings for different liturgical occasions.
-              </p>
-
+          <FormSectionCard
+            title="Reading Management"
+            description="Manage your reading collection and organize readings for different liturgical occasions."
+          >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button variant="outline" asChild className="justify-between h-auto p-4">
                   <Link href="/readings">
@@ -937,8 +873,7 @@ export default function ParishSettingsPage() {
                   </Link>
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </FormSectionCard>
     </>
   )
 
@@ -947,14 +882,7 @@ export default function ParishSettingsPage() {
     <>
           {/* Pending Invitations */}
           {invitations.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Mail className="h-5 w-5" />
-                  Pending Invitations ({invitations.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <FormSectionCard title={`Pending Invitations (${invitations.length})`}>
                 <div className="space-y-4">
                   {invitations.map((invitation) => (
                     <div key={invitation.id} className="flex items-center justify-between p-4 border rounded-lg border-dashed">
@@ -990,17 +918,12 @@ export default function ParishSettingsPage() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+            </FormSectionCard>
           )}
 
           {/* Active Members */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-3">
-                <Users className="h-5 w-5" />
-                Parish Members ({members.length})
-              </CardTitle>
+          <FormSectionCard title={`Parish Members (${members.length})`}>
+            <div className="flex justify-end mb-4">
               <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                 <DialogTrigger asChild>
                   <Button>
@@ -1079,9 +1002,9 @@ export default function ParishSettingsPage() {
                   </div>
                 </DialogContent>
               </Dialog>
-            </CardHeader>
-            <CardContent>
-              {loadingMembers ? (
+            </div>
+
+            {loadingMembers ? (
                 <div className="text-center py-8">Loading members...</div>
               ) : members.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -1093,14 +1016,12 @@ export default function ParishSettingsPage() {
                     <div key={member.user_id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="font-medium">
-                          {member.users?.full_name || member.users?.email || 'Parish Member'}
+                          {member.users?.email || 'Parish Member'}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {member.users?.email && member.users?.full_name && member.users.email !== member.users.full_name
-                            ? member.users.email
-                            : member.users?.created_at
-                              ? `Member since ${new Date(member.users.created_at).toLocaleDateString()}`
-                              : 'Parish team member'
+                          {member.users?.created_at
+                            ? `Member since ${new Date(member.users.created_at).toLocaleDateString()}`
+                            : 'Parish team member'
                           }
                         </div>
                         <div className="text-sm text-muted-foreground mt-2">
@@ -1127,8 +1048,7 @@ export default function ParishSettingsPage() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </FormSectionCard>
     </>
   )
 

@@ -1107,7 +1107,14 @@ const breadcrumbs = [
 ### ModuleViewPanel
 **Path:** `src/components/module-view-panel.tsx`
 
-**Purpose:** Reusable side panel for module view pages showing Edit button, Print view, PDF/Word downloads, and metadata.
+**Purpose:** Reusable side panel for module view pages with a consistent 4-section structure: Actions, Export, Details, and Delete.
+
+**Structure:**
+The sidebar is organized into 4 sections:
+1. **Actions** - Edit button, Print View button
+2. **Export** - Download PDF, Download Word
+3. **Details** - Status, Template Selector (if provided), Location (if available), Created date
+4. **Delete** - Delete button (if onDelete provided)
 
 **Props:**
 - `entity`: Entity being viewed (must have id, status, created_at)
@@ -1115,7 +1122,15 @@ const breadcrumbs = [
 - `modulePath`: URL path (e.g., "weddings", "funerals")
 - `mainEvent`: Optional event for location display
 - `generateFilename`: Function to generate download filenames
-- `printViewPath`: Optional custom print path
+- `printViewPath`: Optional custom print path (defaults to `/print/${modulePath}/${entity.id}`)
+- `statusType`: Status label type ('module' | 'mass' | 'mass-intention'), defaults to 'module'
+- `templateConfig`: Optional template selector configuration
+  - `currentTemplateId`: Current template ID
+  - `templates`: Template registry
+  - `templateFieldName`: Database field name (e.g., 'wedding_template_id')
+  - `defaultTemplateId`: Default template ID
+  - `onUpdateTemplate`: Save handler function
+- `onDelete`: Optional delete handler (shows Delete section if provided)
 
 **Usage:**
 ```tsx
@@ -1124,7 +1139,15 @@ const breadcrumbs = [
   entityType="Wedding"
   modulePath="weddings"
   mainEvent={wedding.wedding_event}
-  generateFilename={(ext) => `wedding-${wedding.id}.${ext}`}
+  generateFilename={(ext) => `${brideLastName}-${groomLastName}-${date}.${ext}`}
+  templateConfig={{
+    currentTemplateId: wedding.wedding_template_id,
+    templates: WEDDING_TEMPLATES,
+    templateFieldName: 'wedding_template_id',
+    defaultTemplateId: 'wedding-full-script-english',
+    onUpdateTemplate: handleUpdateTemplate,
+  }}
+  onDelete={deleteWedding}
 />
 ```
 

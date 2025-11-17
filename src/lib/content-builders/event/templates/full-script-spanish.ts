@@ -47,56 +47,58 @@ function buildEventDetailsSection(event: EventWithRelations): ContentSection {
     })
   }
 
-  // Date and time details
-  elements.push({
-    type: 'section-title',
-    text: 'Detalles del Evento',
-  })
+  // Date and time details (only show section if there's at least one detail)
+  if (event.start_date || hasEndDateTime(event) || event.location || (event.timezone && event.timezone !== 'UTC')) {
+    elements.push({
+      type: 'section-title',
+      text: 'Detalles del Evento',
+    })
 
-  if (event.start_date) {
-    const dateValue = formatEventDate(event.start_date, 'es')
-    const timeValue = formatEventTime(event.start_time)
+    if (event.start_date) {
+      const dateValue = formatEventDate(event.start_date, 'es')
+      const timeValue = formatEventTime(event.start_time)
 
-    if (timeValue) {
+      if (timeValue) {
+        elements.push({
+          type: 'info-row',
+          label: 'Fecha y Hora de Inicio:',
+          value: `${dateValue} a las ${timeValue}`,
+        })
+      } else {
+        elements.push({
+          type: 'info-row',
+          label: 'Fecha de Inicio:',
+          value: dateValue,
+        })
+      }
+    }
+
+    if (hasEndDateTime(event)) {
+      const endDateTime = formatEventEndDateTime(event, 'es')
+      if (endDateTime) {
+        elements.push({
+          type: 'info-row',
+          label: 'Fecha y Hora de Finalización:',
+          value: endDateTime,
+        })
+      }
+    }
+
+    if (event.location) {
       elements.push({
         type: 'info-row',
-        label: 'Fecha y Hora de Inicio:',
-        value: `${dateValue} a las ${timeValue}`,
-      })
-    } else {
-      elements.push({
-        type: 'info-row',
-        label: 'Fecha de Inicio:',
-        value: dateValue,
+        label: 'Ubicación:',
+        value: formatLocationText(event.location),
       })
     }
-  }
 
-  if (hasEndDateTime(event)) {
-    const endDateTime = formatEventEndDateTime(event, 'es')
-    if (endDateTime) {
+    if (event.timezone && event.timezone !== 'UTC') {
       elements.push({
         type: 'info-row',
-        label: 'Fecha y Hora de Finalización:',
-        value: endDateTime,
+        label: 'Zona Horaria:',
+        value: event.timezone,
       })
     }
-  }
-
-  if (event.location) {
-    elements.push({
-      type: 'info-row',
-      label: 'Ubicación:',
-      value: formatLocationText(event.location),
-    })
-  }
-
-  if (event.timezone && event.timezone !== 'UTC') {
-    elements.push({
-      type: 'info-row',
-      label: 'Zona Horaria:',
-      value: event.timezone,
-    })
   }
 
   // Notes

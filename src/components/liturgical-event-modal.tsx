@@ -1,17 +1,15 @@
 'use client'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
-import { Calendar, Book, Cross } from 'lucide-react'
+import { Calendar, Book } from 'lucide-react'
 
 interface LiturgicalEventModalProps {
   event: GlobalLiturgicalEvent | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAddMass?: () => void
 }
 
 // Map liturgical colors to Tailwind classes
@@ -25,7 +23,7 @@ const LITURGICAL_COLOR_MAP: Record<string, string> = {
   'black': 'bg-black',
 }
 
-export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: LiturgicalEventModalProps) {
+export function LiturgicalEventModal({ event, open, onOpenChange }: LiturgicalEventModalProps) {
   if (!event) return null
 
   const eventData = event.event_data
@@ -175,17 +173,6 @@ export function LiturgicalEventModal({ event, open, onOpenChange, onAddMass }: L
             </>
           )}
 
-          {/* Add Mass Button */}
-          <Separator />
-          <div className="flex justify-between items-center pt-2">
-            <div className="text-sm text-muted-foreground">
-              Would you like to schedule a Mass for this liturgical event?
-            </div>
-            <Button onClick={onAddMass} className="flex items-center gap-2">
-              <Cross className="w-4 h-4" />
-              Add Mass
-            </Button>
-          </div>
           </div>
         </div>
       </DialogContent>

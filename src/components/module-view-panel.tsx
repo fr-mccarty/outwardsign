@@ -13,13 +13,12 @@ import type { LiturgyTemplate } from '@/lib/types/liturgy-content'
 interface ModuleViewPanelProps {
   /**
    * The entity being viewed (wedding, funeral, etc.)
-   * Must have id, status, and created_at properties
+   * Must have id and created_at properties
    */
   entity: {
     id: string
-    status?: string | null
     created_at: string
-    [key: string]: any  // Allow template_id fields
+    [key: string]: any
   }
 
   /**
@@ -33,45 +32,32 @@ interface ModuleViewPanelProps {
   modulePath: string
 
   /**
-   * Main event for displaying location (optional)
-   * Can include location object if fetched with relations
+   * Action buttons for the Actions section (optional)
+   * If provided, shows Actions section with these buttons
    */
-  mainEvent?: (Event & { location?: Location | null }) | null
+  actionButtons?: React.ReactNode
 
   /**
-   * Function to generate download filenames
-   * @param extension - File extension (e.g., "pdf", "docx")
-   * @returns filename with extension
+   * Export buttons for the Export section (optional)
+   * If provided, shows Export section with these buttons
    */
-  generateFilename: (extension: string) => string
+  exportButtons?: React.ReactNode
 
   /**
-   * Custom print view path (optional)
-   * Defaults to `/print/${modulePath}/${entity.id}`
+   * Template Selector component (optional)
+   * If provided, shows Template Selector section with this component
    */
-  printViewPath?: string
+  templateSelector?: React.ReactNode
 
   /**
-   * Status type for displaying correct labels
-   * Defaults to "module" for most entities
+   * Details section content (optional)
+   * Custom content for the Details section. created_at will be automatically appended.
    */
-  statusType?: 'module' | 'mass' | 'mass-intention'
-
-  /**
-   * Template selector configuration (optional)
-   * If provided, shows template selector in metadata section
-   */
-  templateConfig?: {
-    currentTemplateId?: string | null
-    templates: Record<string, LiturgyTemplate<any>>
-    templateFieldName: string  // e.g., "wedding_template_id", "mass_template_id"
-    defaultTemplateId: string
-    onUpdateTemplate: (templateId: string) => Promise<void>
-  }
+  details?: React.ReactNode
 
   /**
    * Delete function (optional)
-   * If provided, shows delete button at bottom of panel
+   * If provided, shows delete button in Delete section
    */
   onDelete?: (id: string) => Promise<void>
 }
@@ -80,103 +66,64 @@ export function ModuleViewPanel({
   entity,
   entityType,
   modulePath,
-  mainEvent,
-  generateFilename,
-  printViewPath,
-  statusType = 'module',
-  templateConfig,
+  actionButtons,
+  exportButtons,
+  templateSelector,
+  details,
   onDelete,
 }: ModuleViewPanelProps) {
-  const defaultPrintPath = printViewPath || `/print/${modulePath}/${entity.id}`
-
   return (
     <div className="w-full md:w-80 space-y-4 print:hidden order-1 md:order-2">
       <Card>
-        <CardContent className="pt-4 px-4 pb-2 space-y-3">
-          <Button asChild className="w-full" variant="default">
-            <Link href={`/${modulePath}/${entity.id}/edit`}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit {entityType}
-            </Link>
-          </Button>
-
-          <Button
-            className="w-full"
-            variant="outline"
-            onClick={() => window.open(defaultPrintPath, '_blank')}
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Print View
-          </Button>
-
-          <div className="pt-2 border-t">
-            <h3 className="font-semibold mb-2">Download Liturgy</h3>
+        <CardContent className="pt-4 px-4 pb-4 space-y-4">
+          {/* Actions Section */}
+          {actionButtons && (
             <div className="space-y-2">
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() => {
-                  const link = document.createElement('a')
-                  link.href = `/api/${modulePath}/${entity.id}/pdf`
-                  link.download = generateFilename('pdf')
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                }}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                PDF
-              </Button>
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() => {
-                  const link = document.createElement('a')
-                  link.href = `/api/${modulePath}/${entity.id}/word`
-                  link.download = generateFilename('docx')
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                }}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Word Doc
-              </Button>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Actions
+              </h3>
+              {actionButtons}
             </div>
-          </div>
+          )}
 
-          <div className="pt-4 border-t space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">Status:</span>
-              <ModuleStatusLabel status={entity.status} statusType={statusType} />
+          {/* Export Section */}
+          {exportButtons && (
+            <div className={actionButtons ? "pt-4 border-t space-y-2" : "space-y-2"}>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Export
+              </h3>
+              {exportButtons}
             </div>
-            {templateConfig && (
-              <div className="pt-2 border-t">
-                <TemplateSelectorDialog
-                  currentTemplateId={templateConfig.currentTemplateId}
-                  templates={templateConfig.templates}
-                  moduleName={entityType}
-                  onSave={templateConfig.onUpdateTemplate}
-                  defaultTemplateId={templateConfig.defaultTemplateId}
-                />
+          )}
+
+          {/* Template Selector Section */}
+          {templateSelector && (
+            <div className={(actionButtons || exportButtons) ? "pt-4 border-t space-y-2" : "space-y-2"}>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Template Selector
+              </h3>
+              {templateSelector}
+            </div>
+          )}
+
+          {/* Details Section - Hidden on small screens */}
+          <div className={(actionButtons || exportButtons || templateSelector) ? "hidden md:block pt-4 border-t space-y-3 text-sm" : "hidden md:block space-y-3 text-sm"}>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Details
+            </h3>
+
+            {/* Custom details content */}
+            {details}
+
+            {/* Always show created_at at the bottom */}
+            {entity.created_at && (
+              <div className={details ? "text-xs text-muted-foreground pt-2 border-t" : "text-xs text-muted-foreground"}>
+                Created: {new Date(entity.created_at).toLocaleDateString()}
               </div>
             )}
-            {mainEvent?.location && (
-              <div>
-                <span className="font-medium">Location:</span> {mainEvent.location.name}
-                {(mainEvent.location.street || mainEvent.location.city || mainEvent.location.state) && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {[mainEvent.location.street, mainEvent.location.city, mainEvent.location.state]
-                      .filter(Boolean).join(', ')}
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground pt-1 border-t">
-              Created: {new Date(entity.created_at).toLocaleDateString()}
-            </div>
           </div>
 
+          {/* Delete Section */}
           {onDelete && (
             <div className="pt-4 border-t">
               <DeleteButton

@@ -52,26 +52,29 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
     }
   }
 
-  // Ministers
-  elements.push({
-    type: 'section-title',
-    text: 'Ministros',
-  })
-
-  if (mass.presider) {
+  // Ministers (only show section if at least one minister exists)
+  const hasHomilist = mass.homilist && (!mass.presider || mass.homilist.id !== mass.presider.id)
+  if (mass.presider || hasHomilist) {
     elements.push({
-      type: 'info-row',
-      label: 'Celebrante:',
-      value: formatPersonName(mass.presider),
+      type: 'section-title',
+      text: 'Ministros',
     })
-  }
 
-  if (mass.homilist && mass.homilist.id !== mass.presider?.id) {
-    elements.push({
-      type: 'info-row',
-      label: 'Homilista:',
-      value: formatPersonName(mass.homilist),
-    })
+    if (mass.presider) {
+      elements.push({
+        type: 'info-row',
+        label: 'Celebrante:',
+        value: formatPersonName(mass.presider),
+      })
+    }
+
+    if (mass.homilist && mass.homilist.id !== mass.presider?.id) {
+      elements.push({
+        type: 'info-row',
+        label: 'Homilista:',
+        value: formatPersonName(mass.homilist),
+      })
+    }
   }
 
   return {
@@ -113,6 +116,11 @@ function buildAnnouncementsSection(mass: MassWithRelations): ContentSection | nu
  * Build main export function - Spanish
  */
 export function buildMassSpanish(mass: MassWithRelations): LiturgyDocument {
+  const subtitle =
+    mass.event?.start_date && mass.event?.start_time
+      ? formatEventDateTime(mass.event)
+      : undefined
+
   const sections: ContentSection[] = []
 
   // Summary section
@@ -152,6 +160,7 @@ export function buildMassSpanish(mass: MassWithRelations): LiturgyDocument {
     language: 'es',
     template: 'mass-spanish',
     title: 'Misa',
+    subtitle,
     sections,
   }
 }

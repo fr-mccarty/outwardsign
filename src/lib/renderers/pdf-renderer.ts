@@ -282,6 +282,33 @@ function renderSection(section: ContentSection): Content[] {
 export function renderPDF(document: LiturgyDocument): Content[] {
   const content: Content[] = []
 
+  // Render title at the top using event-title styling
+  const titleStyle = resolveElementStyle('event-title')
+  if (titleStyle) {
+    content.push({
+      text: document.title,
+      ...applyResolvedStyle(titleStyle),
+    })
+  }
+
+  // Render subtitle (if present) using event-datetime styling
+  if (document.subtitle) {
+    const subtitleStyle = resolveElementStyle('event-datetime')
+    if (subtitleStyle) {
+      content.push({
+        text: document.subtitle,
+        ...applyResolvedStyle(subtitleStyle),
+      })
+    }
+  }
+
+  // Spacer after title/subtitle
+  const spacerSize = resolveSpacerSize('large')
+  content.push({
+    text: '',
+    margin: [0, 0, 0, spacerSize] as [number, number, number, number],
+  })
+
   // Render all sections
   document.sections.forEach((section) => {
     content.push(...renderSection(section))

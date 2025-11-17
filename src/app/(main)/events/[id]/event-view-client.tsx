@@ -3,8 +3,10 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, Edit, Printer, FileText, Download } from "lucide-react"
 import { MODULE_STATUS_LABELS } from "@/lib/constants"
+import { ModuleStatusLabel } from '@/components/module-status-label'
+import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import type { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleReference } from '@/lib/helpers/event-helpers'
 import Link from 'next/link'
@@ -43,6 +45,70 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
     })
   }
 
+  // Generate action buttons
+  const actionButtons = (
+    <>
+      <Button asChild className="w-full">
+        <Link href={`/events/${event.id}/edit`}>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit Event
+        </Link>
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/print/events/${event.id}`} target="_blank">
+          <Printer className="h-4 w-4 mr-2" />
+          Print View
+        </Link>
+      </Button>
+    </>
+  )
+
+  // Generate export buttons
+  const exportButtons = (
+    <>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/api/events/${event.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
+          <FileText className="h-4 w-4 mr-2" />
+          Download PDF
+        </Link>
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/api/events/${event.id}/word?filename=${generateFilename('docx')}`}>
+          <Download className="h-4 w-4 mr-2" />
+          Download Word
+        </Link>
+      </Button>
+    </>
+  )
+
+  // Generate template selector
+  const templateSelector = (
+    <TemplateSelectorDialog
+      currentTemplateId={event.event_template_id}
+      templates={EVENT_TEMPLATES}
+      moduleName="Event"
+      onSave={handleUpdateTemplate}
+      defaultTemplateId="event-full-script-english"
+    />
+  )
+
+  // Generate details section content
+  const details = (
+    <>
+      {event.location && (
+        <div>
+          <span className="font-medium">Location:</span> {event.location.name}
+          {(event.location.street || event.location.city || event.location.state) && (
+            <div className="text-xs text-muted-foreground mt-1">
+              {[event.location.street, event.location.city, event.location.state]
+                .filter(Boolean).join(', ')}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  )
+
   return (
     <ModuleViewContainer
       entity={event}
@@ -51,13 +117,10 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
       generateFilename={generateFilename}
       buildLiturgy={buildEventLiturgy}
       getTemplateId={getTemplateId}
-      templateConfig={{
-        currentTemplateId: event.event_template_id,
-        templates: EVENT_TEMPLATES,
-        templateFieldName: 'event_template_id',
-        defaultTemplateId: 'event-full-script-english',
-        onUpdateTemplate: handleUpdateTemplate,
-      }}
+      actionButtons={actionButtons}
+      exportButtons={exportButtons}
+      templateSelector={templateSelector}
+      details={details}
       onDelete={deleteEvent}
     >
       {/* Module Reference Section - rendered before liturgy content */}

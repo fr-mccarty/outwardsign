@@ -279,6 +279,53 @@ function renderSection(section: ContentSection): Paragraph[] {
 export function renderWord(document: LiturgyDocument): Paragraph[] {
   const paragraphs: Paragraph[] = []
 
+  // Render title at the top using event-title styling
+  const titleStyle = resolveElementStyle('event-title')
+  if (titleStyle) {
+    paragraphs.push(
+      applyResolvedStyleToParagraph(titleStyle, [
+        new TextRun({
+          text: document.title,
+          bold: titleStyle.bold,
+          italics: titleStyle.italic,
+          color: titleStyle.color.replace('#', ''),
+          size: convert.pointsToHalfPoints(titleStyle.fontSize),
+          font: LITURGY_FONT,
+        }),
+      ])
+    )
+  }
+
+  // Render subtitle (if present) using event-datetime styling
+  if (document.subtitle) {
+    const subtitleStyle = resolveElementStyle('event-datetime')
+    if (subtitleStyle) {
+      paragraphs.push(
+        applyResolvedStyleToParagraph(subtitleStyle, [
+          new TextRun({
+            text: document.subtitle,
+            bold: subtitleStyle.bold,
+            italics: subtitleStyle.italic,
+            color: subtitleStyle.color.replace('#', ''),
+            size: convert.pointsToHalfPoints(subtitleStyle.fontSize),
+            font: LITURGY_FONT,
+          }),
+        ])
+      )
+    }
+  }
+
+  // Spacer after title/subtitle
+  const spacerSize = resolveSpacerSize('large')
+  paragraphs.push(
+    new Paragraph({
+      text: '',
+      spacing: {
+        after: convert.pointsToTwips(spacerSize),
+      },
+    })
+  )
+
   // Render all sections
   document.sections.forEach((section) => {
     paragraphs.push(...renderSection(section))

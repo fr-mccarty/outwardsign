@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { renderHTML } from '@/lib/renderers/html-renderer'
 import type { Event } from '@/lib/types'
-import type { LiturgyDocument, LiturgyTemplate } from '@/lib/types/liturgy-content'
+import type { LiturgyDocument } from '@/lib/types/liturgy-content'
+import React from "react";
 
 interface ModuleViewContainerProps {
   /**
@@ -65,22 +66,34 @@ interface ModuleViewContainerProps {
   statusType?: 'module' | 'mass' | 'mass-intention'
 
   /**
-   * Template selector configuration (optional)
-   * If provided, shows template selector in metadata section
-   */
-  templateConfig?: {
-    currentTemplateId?: string | null
-    templates: Record<string, LiturgyTemplate<any>>
-    templateFieldName: string
-    defaultTemplateId: string
-    onUpdateTemplate: (templateId: string) => Promise<void>
-  }
-
-  /**
    * Additional content to render before the liturgy content (optional)
    * Useful for module-specific cards like Mass Intention
    */
   children?: React.ReactNode
+
+  /**
+   * Action buttons for the Actions section (optional)
+   * If provided, shows Actions section with these buttons
+   */
+  actionButtons?: React.ReactNode
+
+  /**
+   * Export buttons for the Export section (optional)
+   * If provided, shows Export section with these buttons
+   */
+  exportButtons?: React.ReactNode
+
+  /**
+   * Template Selector component (optional)
+   * If provided, shows Template Selector section with this component
+   */
+  templateSelector?: React.ReactNode
+
+  /**
+   * Details section content (optional)
+   * Custom content for the Details section. created_at will be automatically appended.
+   */
+  details?: React.ReactNode
 
   /**
    * Delete function (optional)
@@ -97,14 +110,13 @@ export function ModuleViewContainer({
   entity,
   entityType,
   modulePath,
-  mainEvent,
-  generateFilename,
   buildLiturgy,
   getTemplateId,
-  printViewPath,
-  statusType = 'module',
-  templateConfig,
   children,
+  actionButtons,
+  exportButtons,
+  templateSelector,
+  details,
   onDelete,
 }: ModuleViewContainerProps) {
   // Only build liturgy if builder functions are provided
@@ -128,11 +140,10 @@ export function ModuleViewContainer({
         entity={entity}
         entityType={entityType}
         modulePath={modulePath}
-        mainEvent={mainEvent}
-        generateFilename={generateFilename}
-        printViewPath={printViewPath}
-        statusType={statusType}
-        templateConfig={templateConfig}
+        actionButtons={actionButtons}
+        exportButtons={exportButtons}
+        templateSelector={templateSelector}
+        details={details}
         onDelete={onDelete}
       />
 

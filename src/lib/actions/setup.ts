@@ -313,10 +313,10 @@ export async function getParishMembers(parishId: string) {
       throw new Error('You do not have access to this parish')
     }
 
-    // Get all members of the parish with their profiles
+    // Get all members of the parish
     const { data: parishMembers, error: parishMembersError } = await supabase
       .from('parish_users')
-      .select('user_id, roles, created_at, profiles!inner(full_name)')
+      .select('user_id, roles, created_at')
       .eq('parish_id', parishId)
 
     if (parishMembersError) {
@@ -346,7 +346,6 @@ export async function getParishMembers(parishId: string) {
           users: {
             id: parishMember.user_id,
             email: userEmail,
-            full_name: (parishMember.profiles as any)?.full_name || userEmail,
             created_at: userCreatedAt
           }
         }

@@ -277,44 +277,48 @@ export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDo
   //   ],
   // })
 
-  // Add all reading sections
-  sections.push(
-    buildReadingSection({
-      id: 'first-reading',
-      title: 'FIRST READING',
-      reading: wedding.first_reading,
-      reader: wedding.first_reader,
-      showNoneSelected: true,
-    })
-  )
+  // Add all reading sections (only if they exist)
+  const firstReadingSection = buildReadingSection({
+    id: 'first-reading',
+    title: 'FIRST READING',
+    reading: wedding.first_reading,
+    reader: wedding.first_reader,
+    showNoneSelected: true,
+  })
+  if (firstReadingSection) {
+    sections.push(firstReadingSection)
+  }
 
-  sections.push(
-    buildPsalmSection({
-      psalm: wedding.psalm,
-      psalm_reader: wedding.psalm_reader,
-      psalm_is_sung: wedding.psalm_is_sung,
-    })
-  )
+  const psalmSection = buildPsalmSection({
+    psalm: wedding.psalm,
+    psalm_reader: wedding.psalm_reader,
+    psalm_is_sung: wedding.psalm_is_sung,
+  })
+  if (psalmSection) {
+    sections.push(psalmSection)
+  }
 
-  sections.push(
-    buildReadingSection({
-      id: 'second-reading',
-      title: 'SECOND READING',
-      reading: wedding.second_reading,
-      reader: wedding.second_reader,
-      pageBreakBefore: !!wedding.second_reading,
-    })
-  )
+  const secondReadingSection = buildReadingSection({
+    id: 'second-reading',
+    title: 'SECOND READING',
+    reading: wedding.second_reading,
+    reader: wedding.second_reader,
+    pageBreakBefore: !!wedding.second_reading,
+  })
+  if (secondReadingSection) {
+    sections.push(secondReadingSection)
+  }
 
-  sections.push(
-    buildReadingSection({
-      id: 'gospel',
-      title: 'GOSPEL',
-      reading: wedding.gospel_reading,
-      includeGospelDialogue: false,
-      pageBreakBefore: !!wedding.gospel_reading,
-    })
-  )
+  const gospelSection = buildReadingSection({
+    id: 'gospel',
+    title: 'GOSPEL',
+    reading: wedding.gospel_reading,
+    includeGospelDialogue: false,
+    pageBreakBefore: !!wedding.gospel_reading,
+  })
+  if (gospelSection) {
+    sections.push(gospelSection)
+  }
 
   // Add petitions
   const petitionsSection = buildPetitionsSection({

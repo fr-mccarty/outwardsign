@@ -94,7 +94,7 @@ export function TemplateSelectorDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-muted-foreground">Template:</span>
+          {/*<span className="text-xs text-muted-foreground">Template:</span>*/}
           <Button
             variant="outline"
             size="sm"

@@ -296,16 +296,17 @@ function buildReadings(wedding: WeddingWithRelations): ContentSection[] {
   const sections: ContentSection[] = []
 
   // First Reading (always include, show "None Selected" if missing)
-  sections.push(
-    buildReadingSection({
-      id: 'first-reading',
-      title: CONTENT.firstReading,
-      reading: wedding.first_reading,
-      reader: wedding.first_reader,
-      showNoneSelected: true,
-      pageBreakBefore: true, // Start on new page
-    })
-  )
+  // Note: No pageBreakBefore needed - cover page already has pageBreakAfter
+  const firstReadingSection = buildReadingSection({
+    id: 'first-reading',
+    title: CONTENT.firstReading,
+    reading: wedding.first_reading,
+    reader: wedding.first_reader,
+    showNoneSelected: true,
+  })
+  if (firstReadingSection) {
+    sections.push(firstReadingSection)
+  }
 
   // Psalm (only if present)
   const psalmSection = buildPsalmSection({
@@ -313,34 +314,32 @@ function buildReadings(wedding: WeddingWithRelations): ContentSection[] {
     psalm_reader: wedding.psalm_reader,
     psalm_is_sung: wedding.psalm_is_sung,
   })
-  if (psalmSection.elements.length > 0) {
+  if (psalmSection) {
     sections.push(psalmSection)
   }
 
   // Second Reading (only if present)
-  if (wedding.second_reading) {
-    sections.push(
-      buildReadingSection({
-        id: 'second-reading',
-        title: CONTENT.secondReading,
-        reading: wedding.second_reading,
-        reader: wedding.second_reader,
-        pageBreakBefore: true, // Start on new page
-      })
-    )
+  const secondReadingSection = buildReadingSection({
+    id: 'second-reading',
+    title: CONTENT.secondReading,
+    reading: wedding.second_reading,
+    reader: wedding.second_reader,
+    pageBreakBefore: true, // Start on new page
+  })
+  if (secondReadingSection) {
+    sections.push(secondReadingSection)
   }
 
   // Gospel (only if present)
-  if (wedding.gospel_reading) {
-    sections.push(
-      buildReadingSection({
-        id: 'gospel',
-        title: CONTENT.gospel,
-        reading: wedding.gospel_reading,
-        includeGospelDialogue: false,
-        pageBreakBefore: true, // Start on new page
-      })
-    )
+  const gospelSection = buildReadingSection({
+    id: 'gospel',
+    title: CONTENT.gospel,
+    reading: wedding.gospel_reading,
+    includeGospelDialogue: false,
+    pageBreakBefore: true, // Start on new page
+  })
+  if (gospelSection) {
+    sections.push(gospelSection)
   }
 
   return sections

@@ -257,8 +257,32 @@ function renderSection(section: ContentSection, index: number): React.ReactNode 
  * Render LiturgyDocument to React JSX
  */
 export function renderHTML(document: LiturgyDocument): React.ReactNode {
+  // Render title at the top using event-title styling
+  const titleStyle = resolveElementStyle('event-title')
+
+  // Render subtitle (if present) using event-datetime styling
+  const subtitleStyle = resolveElementStyle('event-datetime')
+
   return (
     <>
+      {/* Document title */}
+      {titleStyle && (
+        <div style={applyResolvedStyle(titleStyle)}>
+          {document.title}
+        </div>
+      )}
+
+      {/* Document subtitle (optional) */}
+      {document.subtitle && subtitleStyle && (
+        <div style={applyResolvedStyle(subtitleStyle)}>
+          {document.subtitle}
+        </div>
+      )}
+
+      {/* Spacer after title/subtitle */}
+      <div style={{ marginBottom: `${convert.pointsToPx(24)}px` }} />
+
+      {/* Content sections */}
       {document.sections.map((section, index) => renderSection(section, index))}
     </>
   )

@@ -37,13 +37,12 @@ function buildSummarySection(baptism: BaptismWithRelations): ContentSection {
     })
   }
 
-  // Child
-  elements.push({
-    type: 'section-title',
-    text: 'Child to be Baptized',
-  })
-
+  // Child (only show section if child exists)
   if (baptism.child) {
+    elements.push({
+      type: 'section-title',
+      text: 'Child to be Baptized',
+    })
     elements.push({
       type: 'info-row',
       label: 'Name:',
@@ -51,57 +50,60 @@ function buildSummarySection(baptism: BaptismWithRelations): ContentSection {
     })
   }
 
-  // Parents
-  elements.push({
-    type: 'section-title',
-    text: 'Parents',
-  })
-
-  if (baptism.mother) {
+  // Parents (only show section if at least one parent exists)
+  if (baptism.mother || baptism.father) {
     elements.push({
-      type: 'info-row',
-      label: 'Mother:',
-      value: formatPersonWithPhone(baptism.mother),
+      type: 'section-title',
+      text: 'Parents',
     })
+
+    if (baptism.mother) {
+      elements.push({
+        type: 'info-row',
+        label: 'Mother:',
+        value: formatPersonWithPhone(baptism.mother),
+      })
+    }
+
+    if (baptism.father) {
+      elements.push({
+        type: 'info-row',
+        label: 'Father:',
+        value: formatPersonWithPhone(baptism.father),
+      })
+    }
   }
 
-  if (baptism.father) {
+  // Sponsors/Godparents (only show section if at least one sponsor exists)
+  if (baptism.sponsor_1 || baptism.sponsor_2) {
     elements.push({
-      type: 'info-row',
-      label: 'Father:',
-      value: formatPersonWithPhone(baptism.father),
+      type: 'section-title',
+      text: 'Sponsors (Godparents)',
     })
+
+    if (baptism.sponsor_1) {
+      elements.push({
+        type: 'info-row',
+        label: 'Sponsor 1:',
+        value: formatPersonWithPhone(baptism.sponsor_1),
+      })
+    }
+
+    if (baptism.sponsor_2) {
+      elements.push({
+        type: 'info-row',
+        label: 'Sponsor 2:',
+        value: formatPersonWithPhone(baptism.sponsor_2),
+      })
+    }
   }
 
-  // Sponsors/Godparents
-  elements.push({
-    type: 'section-title',
-    text: 'Sponsors (Godparents)',
-  })
-
-  if (baptism.sponsor_1) {
-    elements.push({
-      type: 'info-row',
-      label: 'Sponsor 1:',
-      value: formatPersonWithPhone(baptism.sponsor_1),
-    })
-  }
-
-  if (baptism.sponsor_2) {
-    elements.push({
-      type: 'info-row',
-      label: 'Sponsor 2:',
-      value: formatPersonWithPhone(baptism.sponsor_2),
-    })
-  }
-
-  // Presider
-  elements.push({
-    type: 'section-title',
-    text: 'Minister',
-  })
-
+  // Presider (only show section if presider exists)
   if (baptism.presider) {
+    elements.push({
+      type: 'section-title',
+      text: 'Minister',
+    })
     elements.push({
       type: 'info-row',
       label: 'Presider:',
@@ -132,6 +134,11 @@ function buildSummarySection(baptism: BaptismWithRelations): ContentSection {
  * Main builder function for baptism summary template
  */
 export function buildSummaryEnglish(baptism: BaptismWithRelations): LiturgyDocument {
+  const subtitle =
+    baptism.baptism_event?.start_date && baptism.baptism_event?.start_time
+      ? formatEventDateTime(baptism.baptism_event)
+      : undefined
+
   const sections: ContentSection[] = []
 
   // Summary section
@@ -143,6 +150,7 @@ export function buildSummaryEnglish(baptism: BaptismWithRelations): LiturgyDocum
     language: 'en',
     template: 'summary-english',
     title: 'Baptism Summary',
+    subtitle,
     sections,
   }
 }

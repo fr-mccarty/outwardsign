@@ -234,47 +234,51 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   )
   sections.push(summarySection)
 
-  // Add all reading sections
-  sections.push(
-    buildReadingSection({
-      id: 'first-reading',
-      title: 'LITURGY OF THE WORD',
-      reading: quinceanera.first_reading,
-      reader: quinceanera.first_reader,
-      responseText: 'Thanks be to God.',
-      showNoneSelected: true,
-    })
-  )
+  // Add all reading sections (only if they exist)
+  const firstReadingSection = buildReadingSection({
+    id: 'first-reading',
+    title: 'LITURGY OF THE WORD',
+    reading: quinceanera.first_reading,
+    reader: quinceanera.first_reader,
+    responseText: 'Thanks be to God.',
+    showNoneSelected: true,
+  })
+  if (firstReadingSection) {
+    sections.push(firstReadingSection)
+  }
 
-  sections.push(
-    buildPsalmSection({
-      psalm: quinceanera.psalm,
-      psalm_reader: quinceanera.psalm_reader,
-      psalm_is_sung: quinceanera.psalm_is_sung,
-    })
-  )
+  const psalmSection = buildPsalmSection({
+    psalm: quinceanera.psalm,
+    psalm_reader: quinceanera.psalm_reader,
+    psalm_is_sung: quinceanera.psalm_is_sung,
+  })
+  if (psalmSection) {
+    sections.push(psalmSection)
+  }
 
-  sections.push(
-    buildReadingSection({
-      id: 'second-reading',
-      title: 'SECOND READING',
-      reading: quinceanera.second_reading,
-      reader: quinceanera.second_reader,
-      responseText: 'Thanks be to God.',
-      pageBreakBefore: !!quinceanera.second_reading,
-    })
-  )
+  const secondReadingSection = buildReadingSection({
+    id: 'second-reading',
+    title: 'SECOND READING',
+    reading: quinceanera.second_reading,
+    reader: quinceanera.second_reader,
+    responseText: 'Thanks be to God.',
+    pageBreakBefore: !!quinceanera.second_reading,
+  })
+  if (secondReadingSection) {
+    sections.push(secondReadingSection)
+  }
 
-  sections.push(
-    buildReadingSection({
-      id: 'gospel',
-      title: 'GOSPEL',
-      reading: quinceanera.gospel_reading,
-      reader: quinceanera.presider,
-      includeGospelAcclamations: true,
-      pageBreakBefore: !!quinceanera.gospel_reading,
-    })
-  )
+  const gospelSection = buildReadingSection({
+    id: 'gospel',
+    title: 'GOSPEL',
+    reading: quinceanera.gospel_reading,
+    reader: quinceanera.presider,
+    includeGospelAcclamations: true,
+    pageBreakBefore: !!quinceanera.gospel_reading,
+  })
+  if (gospelSection) {
+    sections.push(gospelSection)
+  }
 
   // Add petitions if present
   const petitionsSection = buildPetitionsSection({
@@ -288,10 +292,10 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   }
 
   // Add Act of Thanksgiving and Personal Commitment
+  // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
     title: 'Act of Thanksgiving and Personal Commitment',
-    pageBreakBefore: true,
     elements: [
       {
         type: 'section-title',

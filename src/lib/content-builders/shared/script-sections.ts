@@ -26,7 +26,7 @@ export interface ReadingSectionConfig {
 /**
  * Build reading section (first, second, or gospel)
  */
-export function buildReadingSection(config: ReadingSectionConfig): ContentSection {
+export function buildReadingSection(config: ReadingSectionConfig): ContentSection | null {
   const {
     id,
     title,
@@ -122,6 +122,9 @@ export function buildReadingSection(config: ReadingSectionConfig): ContentSectio
       type: 'text',
       text: 'None Selected',
     })
+  } else {
+    // No reading and not showing "None Selected" - return null to exclude section
+    return null
   }
 
   return {
@@ -143,56 +146,60 @@ export interface PsalmSectionConfig {
 /**
  * Build psalm section
  */
-export function buildPsalmSection(config: PsalmSectionConfig): ContentSection {
+export function buildPsalmSection(config: PsalmSectionConfig): ContentSection | null {
   const { psalm, psalm_reader, psalm_is_sung } = config
+
+  // No psalm selected - return null to exclude section
+  if (!psalm) {
+    return null
+  }
+
   const elements: ContentElement[] = []
 
-  if (psalm) {
+  elements.push({
+    type: 'reading-title',
+    text: 'Psalm',
+  })
+
+  elements.push({
+    type: 'pericope',
+    text: psalm.pericope || 'No pericope',
+  })
+
+  if (psalm_is_sung) {
     elements.push({
-      type: 'reading-title',
-      text: 'Psalm',
+      type: 'reader-name',
+      text: 'Sung',
     })
-
+  } else if (psalm_reader) {
     elements.push({
-      type: 'pericope',
-      text: psalm.pericope || 'No pericope',
+      type: 'reader-name',
+      text: formatPersonName(psalm_reader),
     })
+  }
 
-    if (psalm_is_sung) {
-      elements.push({
-        type: 'reader-name',
-        text: 'Sung',
-      })
-    } else if (psalm_reader) {
-      elements.push({
-        type: 'reader-name',
-        text: formatPersonName(psalm_reader),
-      })
-    }
-
-    if (psalm.introduction) {
-      elements.push({
-        type: 'introduction',
-        text: psalm.introduction,
-      })
-    }
-
+  if (psalm.introduction) {
     elements.push({
-      type: 'reading-text',
-      text: psalm.text || 'No psalm text',
+      type: 'introduction',
+      text: psalm.introduction,
     })
+  }
 
-    if (psalm.conclusion) {
-      elements.push({
-        type: 'conclusion',
-        text: psalm.conclusion,
-      })
-    }
+  elements.push({
+    type: 'reading-text',
+    text: psalm.text || 'No psalm text',
+  })
+
+  if (psalm.conclusion) {
+    elements.push({
+      type: 'conclusion',
+      text: psalm.conclusion,
+    })
   }
 
   return {
     id: 'psalm',
-    pageBreakBefore: psalm ? true : false,
+    pageBreakBefore: true,
     elements,
   }
 }
