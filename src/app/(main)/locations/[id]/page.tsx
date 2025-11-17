@@ -1,3 +1,4 @@
+import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
@@ -31,9 +32,12 @@ export default async function LocationPage({ params }: PageProps) {
   ]
 
   return (
-    <>
+    <PageContainer
+      title={location.name}
+      description="Location details"
+    >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <LocationViewClient location={location} />
-    </>
+    </PageContainer>
   )
 }

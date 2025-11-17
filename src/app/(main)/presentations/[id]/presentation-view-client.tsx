@@ -8,6 +8,7 @@ import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getPresentationFilename } from '@/lib/utils/formatters'
 
 interface PresentationViewClientProps {
   presentation: PresentationWithRelations
@@ -16,11 +17,7 @@ interface PresentationViewClientProps {
 export function PresentationViewClient({ presentation }: PresentationViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const childLastName = presentation.child?.last_name || 'Child'
-    const presentationDate = presentation.presentation_event?.start_date
-      ? new Date(presentation.presentation_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `presentation-${childLastName}-${presentationDate}.${extension}`
+    return getPresentationFilename(presentation, extension)
   }
 
   // Extract template ID from presentation record

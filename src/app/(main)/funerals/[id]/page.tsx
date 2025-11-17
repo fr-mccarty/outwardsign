@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getFuneralWithRelations } from '@/lib/actions/funerals'
 import { FuneralViewClient } from './funeral-view-client'
+import { getFuneralPageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,12 +27,7 @@ export default async function ViewFuneralPage({ params }: PageProps) {
   }
 
   // Build dynamic title from deceased name
-  const deceased = (funeral as any).deceased
-  let title = "Funeral"
-
-  if (deceased?.last_name) {
-    title = `${deceased.first_name ? deceased.first_name + ' ' : ''}${deceased.last_name}-Funeral`
-  }
+  const title = getFuneralPageTitle(funeral)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

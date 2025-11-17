@@ -6,9 +6,9 @@
 
 import { EventWithRelations } from '@/lib/actions/events'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
+import { formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   getEventTypeLabel,
-  formatLocationText,
   formatLocationAddress,
   formatEventDate,
   formatEventTime,
@@ -88,7 +88,7 @@ function buildEventDetailsSection(event: EventWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Ubicación:',
-        value: formatLocationText(event.location),
+        value: formatLocationWithAddress(event.location),
       })
     }
 

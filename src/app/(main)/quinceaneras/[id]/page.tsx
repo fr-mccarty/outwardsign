@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getQuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { QuinceaneraViewClient } from './quinceanera-view-client'
+import { getQuinceaneraPageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,12 +27,7 @@ export default async function ViewQuinceaneraPage({ params }: PageProps) {
   }
 
   // Build dynamic title from quinceañera name
-  const quinceaneraGirl = quinceanera.quinceanera
-  let title = "Quinceañera"
-
-  if (quinceaneraGirl?.last_name) {
-    title = `${quinceaneraGirl.last_name}-Quinceañera`
-  }
+  const title = getQuinceaneraPageTitle(quinceanera)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

@@ -8,6 +8,7 @@ import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getMassIntentionFilename } from '@/lib/utils/formatters'
 
 interface MassIntentionViewClientProps {
   intention: MassIntentionWithRelations
@@ -16,11 +17,7 @@ interface MassIntentionViewClientProps {
 export function MassIntentionViewClient({ intention }: MassIntentionViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const intentionFor = intention.mass_offered_for?.substring(0, 30).replace(/[^a-z0-9]/gi, '-') || 'Intention'
-    const dateRequested = intention.date_requested
-      ? new Date(intention.date_requested).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `MassIntention-${intentionFor}-${dateRequested}.${extension}`
+    return getMassIntentionFilename(intention, extension)
   }
 
   // Extract template ID from mass intention record

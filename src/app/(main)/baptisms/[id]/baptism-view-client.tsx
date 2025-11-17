@@ -8,6 +8,7 @@ import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getBaptismFilename } from '@/lib/utils/formatters'
 
 interface BaptismViewClientProps {
   baptism: BaptismWithRelations
@@ -16,11 +17,7 @@ interface BaptismViewClientProps {
 export function BaptismViewClient({ baptism }: BaptismViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const childLastName = baptism.child?.last_name || 'Child'
-    const baptismDate = baptism.baptism_event?.start_date
-      ? new Date(baptism.baptism_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `${childLastName}-Baptism-${baptismDate}.${extension}`
+    return getBaptismFilename(baptism, extension)
   }
 
   // Extract template ID from baptism record

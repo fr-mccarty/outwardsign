@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getMassWithRelations } from '@/lib/actions/masses'
 import { MassViewClient } from './mass-view-client'
+import { getMassPageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,18 +27,7 @@ export default async function ViewMassPage({ params }: PageProps) {
   }
 
   // Build dynamic title from presider name and date
-  let title = "Mass"
-
-  if (mass.presider) {
-    const presiderName = `${mass.presider.first_name} ${mass.presider.last_name}`
-    const eventDate = mass.event?.start_date
-      ? new Date(mass.event.start_date).toLocaleDateString()
-      : ''
-    title = eventDate ? `${presiderName}-${eventDate}-Mass` : `${presiderName}-Mass`
-  } else if (mass.event?.start_date) {
-    const eventDate = new Date(mass.event.start_date).toLocaleDateString()
-    title = `${eventDate}-Mass`
-  }
+  const title = getMassPageTitle(mass)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

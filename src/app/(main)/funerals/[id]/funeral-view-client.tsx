@@ -8,6 +8,7 @@ import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getFuneralFilename } from '@/lib/utils/formatters'
 
 interface FuneralViewClientProps {
   funeral: FuneralWithRelations
@@ -16,11 +17,7 @@ interface FuneralViewClientProps {
 export function FuneralViewClient({ funeral }: FuneralViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const deceasedLastName = funeral.deceased?.last_name || 'Deceased'
-    const funeralDate = funeral.funeral_event?.start_date
-      ? new Date(funeral.funeral_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `${deceasedLastName}-Funeral-${funeralDate}.${extension}`
+    return getFuneralFilename(funeral, extension)
   }
 
   // Extract template ID from funeral record

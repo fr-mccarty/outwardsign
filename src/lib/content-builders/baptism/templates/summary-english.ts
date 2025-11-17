@@ -6,8 +6,7 @@
 
 import { BaptismWithRelations } from '@/lib/actions/baptisms'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
-import { formatLocationText } from '../helpers'
+import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 
 /**
  * Build summary section with all baptism data
@@ -33,7 +32,7 @@ function buildSummarySection(baptism: BaptismWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Location:',
-      value: formatLocationText(baptism.baptism_event.location),
+      value: formatLocationWithAddress(baptism.baptism_event.location),
     })
   }
 

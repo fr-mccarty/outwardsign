@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getMassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 import { MassIntentionViewClient } from './mass-intention-view-client'
+import { getMassIntentionPageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,11 +27,7 @@ export default async function ViewMassIntentionPage({ params }: PageProps) {
   }
 
   // Build dynamic title
-  let title = "Mass Intention"
-  if (intention.mass_offered_for) {
-    const truncatedText = intention.mass_offered_for.substring(0, 50)
-    title = `${truncatedText}${intention.mass_offered_for.length > 50 ? '...' : ''}-Mass Intention`
-  }
+  const title = getMassIntentionPageTitle(intention)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

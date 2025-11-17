@@ -8,6 +8,7 @@
 import { EventWithRelations } from '@/lib/actions/events'
 import { Location } from '@/lib/types'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
+import { formatLocationWithAddress } from '@/lib/utils/formatters'
 
 // ============================================================================
 // EVENT TYPE HELPERS
@@ -23,25 +24,6 @@ export function getEventTypeLabel(eventType: string, language: 'en' | 'es'): str
 // ============================================================================
 // LOCATION HELPERS
 // ============================================================================
-
-/**
- * Format location text with name and optional address details
- *
- * @example
- * formatLocationText(location) // "St. Mary Church (123 Main St, Springfield, IL)"
- * formatLocationText(location) // "St. Mary Church" (if no address details)
- */
-export function formatLocationText(location: Location | null | undefined): string {
-  if (!location) return ''
-
-  const addressParts = [location.street, location.city, location.state].filter(Boolean)
-
-  if (addressParts.length > 0) {
-    return `${location.name} (${addressParts.join(', ')})`
-  }
-
-  return location.name
-}
 
 /**
  * Format just the address without the location name

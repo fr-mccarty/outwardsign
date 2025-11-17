@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getPresentationWithRelations } from '@/lib/actions/presentations'
 import { PresentationViewClient } from './presentation-view-client'
+import { getPresentationPageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,12 +27,7 @@ export default async function ViewPresentationPage({ params }: PageProps) {
   }
 
   // Build dynamic title from child name
-  const child = presentation.child
-  let title = "Presentation"
-
-  if (child?.last_name) {
-    title = `${child.last_name}-Presentation`
-  }
+  const title = getPresentationPageTitle(presentation)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

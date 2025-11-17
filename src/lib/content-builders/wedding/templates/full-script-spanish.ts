@@ -12,7 +12,7 @@
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -21,7 +21,6 @@ import {
 } from '@/lib/content-builders/shared/script-sections'
 import {
   hasRehearsalEvents,
-  formatLocationText,
   getReadingPericope,
   getPetitionsReaderName,
   buildTitleSpanish,
@@ -101,7 +100,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: CONTENT.labels.rehearsalLocation,
-        value: formatLocationText(wedding.rehearsal_event.location),
+        value: formatLocationWithAddress(wedding.rehearsal_event.location),
       })
     }
 
@@ -109,7 +108,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: CONTENT.labels.rehearsalDinnerLocation,
-        value: formatLocationText(wedding.rehearsal_dinner_event.location),
+        value: formatLocationWithAddress(wedding.rehearsal_dinner_event.location),
       })
     }
   }
@@ -164,7 +163,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Boda:',
-      value: formatLocationText(wedding.wedding_event.location),
+      value: formatLocationWithAddress(wedding.wedding_event.location),
     })
   }
 
@@ -172,7 +171,7 @@ function buildCoverPage(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Lugar de la Recepción:',
-      value: formatLocationText(wedding.reception_event.location),
+      value: formatLocationWithAddress(wedding.reception_event.location),
     })
   }
 

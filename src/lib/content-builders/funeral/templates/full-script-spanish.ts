@@ -6,7 +6,7 @@
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -14,7 +14,6 @@ import {
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
 import {
-  formatLocationText,
   buildTitleSpanish,
   getEventSubtitleSpanish,
 } from '../helpers'
@@ -91,7 +90,7 @@ function buildSummarySection(funeral: FuneralWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Lugar del Servicio:',
-      value: formatLocationText(funeral.funeral_event.location),
+      value: formatLocationWithAddress(funeral.funeral_event.location),
     })
   }
 

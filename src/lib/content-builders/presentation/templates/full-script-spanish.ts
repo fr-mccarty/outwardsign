@@ -9,7 +9,7 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   getChildNameSpanish,
   getMotherNameSpanish,
@@ -20,7 +20,6 @@ import {
   getParentsTextSpanish,
   getAudienceTextSpanish,
   buildTitleSpanish,
-  formatLocationText,
   getEventSubtitleSpanish,
 } from '../helpers'
 
@@ -86,7 +85,7 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
     elements.push({
       type: 'info-row',
       label: 'Lugar:',
-      value: formatLocationText(presentation.presentation_event.location),
+      value: formatLocationWithAddress(presentation.presentation_event.location),
     })
   }
 

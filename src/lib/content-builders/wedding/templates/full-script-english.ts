@@ -6,7 +6,7 @@
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -15,7 +15,6 @@ import {
 } from '@/lib/content-builders/shared/script-sections'
 import {
   hasRehearsalEvents,
-  formatLocationText,
   getReadingPericope,
   getPetitionsReaderName,
   buildTitleEnglish,
@@ -47,7 +46,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Rehearsal Location:',
-        value: formatLocationText(wedding.rehearsal_event.location),
+        value: formatLocationWithAddress(wedding.rehearsal_event.location),
       })
     }
 
@@ -55,7 +54,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Rehearsal Dinner Location:',
-        value: formatLocationText(wedding.rehearsal_dinner_event.location),
+        value: formatLocationWithAddress(wedding.rehearsal_dinner_event.location),
       })
     }
   }
@@ -110,7 +109,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Wedding Location:',
-      value: formatLocationText(wedding.wedding_event.location),
+      value: formatLocationWithAddress(wedding.wedding_event.location),
     })
   }
 
@@ -118,7 +117,7 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Reception Location:',
-      value: formatLocationText(wedding.reception_event.location),
+      value: formatLocationWithAddress(wedding.reception_event.location),
     })
   }
 

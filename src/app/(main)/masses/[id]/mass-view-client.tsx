@@ -11,6 +11,7 @@ import { MASS_INTENTION_STATUS_LABELS } from '@/lib/constants'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import Link from 'next/link'
+import { getMassFilename } from '@/lib/utils/formatters'
 
 interface MassViewClientProps {
   mass: MassWithRelations
@@ -19,13 +20,7 @@ interface MassViewClientProps {
 export function MassViewClient({ mass }: MassViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const presiderName = mass.presider
-      ? `${mass.presider.first_name}-${mass.presider.last_name}`
-      : 'Presider'
-    const massDate = mass.event?.start_date
-      ? new Date(mass.event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `Mass-${presiderName}-${massDate}.${extension}`
+    return getMassFilename(mass, extension)
   }
 
   // Extract template ID from mass record

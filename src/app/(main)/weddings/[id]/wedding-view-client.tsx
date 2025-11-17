@@ -8,6 +8,7 @@ import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getWeddingFilename } from '@/lib/utils/formatters'
 
 interface WeddingViewClientProps {
   wedding: WeddingWithRelations
@@ -16,12 +17,7 @@ interface WeddingViewClientProps {
 export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const brideLastName = wedding.bride?.last_name || 'Bride'
-    const groomLastName = wedding.groom?.last_name || 'Groom'
-    const weddingDate = wedding.wedding_event?.start_date
-      ? new Date(wedding.wedding_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `${brideLastName}-${groomLastName}-${weddingDate}.${extension}`
+    return getWeddingFilename(wedding, extension)
   }
 
   // Extract template ID from wedding record

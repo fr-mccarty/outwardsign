@@ -14,6 +14,7 @@ import { useAppContext } from '@/contexts/AppContextProvider'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildEventLiturgy, EVENT_TEMPLATES } from '@/lib/content-builders/event'
 import { updateEvent, deleteEvent } from '@/lib/actions/events'
+import { getEventFilename } from '@/lib/utils/formatters'
 
 interface EventViewClientProps {
   event: EventWithRelations
@@ -26,11 +27,7 @@ export function EventViewClient({ event, moduleReference }: EventViewClientProps
 
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const eventDate = event.start_date
-      ? new Date(event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    const sanitizedName = event.name.replace(/[^a-z0-9]/gi, '-').substring(0, 30)
-    return `Event-${sanitizedName}-${eventDate}.${extension}`
+    return getEventFilename(event, extension)
   }
 
   // Extract template ID from event record

@@ -30,11 +30,12 @@ interface ModuleViewContainerProps {
   mainEvent?: Event | null
 
   /**
-   * Function to generate download filenames
+   * Function to generate download filenames (optional)
    * @param extension - File extension (e.g., "pdf", "docx")
    * @returns filename with extension
+   * Not used by ModuleViewContainer itself - only needed if parent component generates export buttons
    */
-  generateFilename: (extension: string) => string
+  generateFilename?: (extension: string) => string
 
   /**
    * Function to build liturgy document from entity (optional)

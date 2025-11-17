@@ -8,6 +8,7 @@ import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getQuinceaneraFilename } from '@/lib/utils/formatters'
 
 interface QuinceaneraViewClientProps {
   quinceanera: QuinceaneraWithRelations
@@ -16,11 +17,7 @@ interface QuinceaneraViewClientProps {
 export function QuinceaneraViewClient({ quinceanera }: QuinceaneraViewClientProps) {
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    const quinceaneraLastName = quinceanera.quinceanera?.last_name || 'Quinceanera'
-    const quinceaneraDate = quinceanera.quinceanera_event?.start_date
-      ? new Date(quinceanera.quinceanera_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
-    return `${quinceaneraLastName}-Quinceanera-${quinceaneraDate}.${extension}`
+    return getQuinceaneraFilename(quinceanera, extension)
   }
 
   // Extract template ID from quinceanera record

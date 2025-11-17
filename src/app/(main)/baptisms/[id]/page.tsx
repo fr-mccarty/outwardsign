@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getBaptismWithRelations } from '@/lib/actions/baptisms'
 import { BaptismViewClient } from './baptism-view-client'
+import { getBaptismPageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,14 +27,7 @@ export default async function ViewBaptismPage({ params }: PageProps) {
   }
 
   // Build dynamic title from child name
-  const child = (baptism as any).child
-  let title = "Baptism"
-
-  if (child?.last_name) {
-    title = `${child.first_name || ''} ${child.last_name}-Baptism`.trim()
-  } else if (child?.first_name) {
-    title = `${child.first_name}-Baptism`
-  }
+  const title = getBaptismPageTitle(baptism)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

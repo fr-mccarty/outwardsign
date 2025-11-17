@@ -43,7 +43,7 @@ export function WeddingFormActions({ wedding }: WeddingFormActionsProps) {
   }
 
   const handleCopyInfo = () => {
-    const info = `Wedding Details\nStatus: ${wedding.status || 'N/A'}${wedding.bride_id ? `\nBride ID: ${wedding.bride_id}` : ''}${wedding.groom_id ? `\nGroom ID: ${wedding.groom_id}` : ''}${wedding.wedding_event_id ? `\nEvent ID: ${wedding.wedding_event_id}` : ''}${wedding.notes ? `\n\nNotes: ${wedding.notes}` : ''}${wedding.announcements ? `\n\nAnnouncements: ${wedding.announcements}` : ''}`
+    const info = `Wedding Details\nStatus: ${wedding.status || 'N/A'}${wedding.notes ? `\n\nNotes: ${wedding.notes}` : ''}${wedding.announcements ? `\n\nAnnouncements: ${wedding.announcements}` : ''}`
     navigator.clipboard.writeText(info)
     toast.success('Wedding information copied to clipboard')
   }

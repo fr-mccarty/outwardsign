@@ -6,11 +6,10 @@
 
 import { MassWithRelations } from '@/lib/actions/masses'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildPetitionsSection,
 } from '@/lib/content-builders/shared/script-sections'
-import { formatLocationText } from '../helpers'
 
 /**
  * Build summary section (Mass info, liturgical event, ministers)
@@ -36,7 +35,7 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Location:',
-      value: formatLocationText(mass.event.location),
+      value: formatLocationWithAddress(mass.event.location),
     })
   }
 

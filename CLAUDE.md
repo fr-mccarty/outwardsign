@@ -37,6 +37,7 @@
   - [🔴 Bilingual Implementation](#-bilingual-implementation-english--spanish)
   - [🔴 Page Title Formatting](#-page-title-formatting-critical)
   - [Abstraction Principle (Rule of Three)](#abstraction-principle-rule-of-three)
+  - [🔴 Helper Utilities Pattern](#-helper-utilities-pattern-critical)
 - [🔴 Design Principles](#-design-principles)
 - [🔴 Creating New Modules](#-creating-new-modules)
 - [Known Issues](#known-issues)
@@ -56,6 +57,9 @@ When you need detailed information on forms, styling, components, modules, testi
 **Key Documentation Files:**
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
 - **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
+- **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Complete component library reference (pickers, forms, layout components, hooks)
+- **[FORMS.md](./docs/FORMS.md)** - 🔴 CRITICAL - Form patterns, validation, styling, and component usage guidelines
+- **[FORMATTERS.md](./docs/FORMATTERS.md)** - Helper and formatting functions (dates, names, locations, page titles, filenames)
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Liturgical script system for individual entity documents (weddings, funerals, etc.) with template builders and exports
 - **[REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md)** - Report builder system for tabular reports with aggregations, filtering, and CSV/Print exports
@@ -690,6 +694,46 @@ if (dynamicContent) {
 - **Server Actions**: If three modules have identical CRUD patterns → create generic helper
 
 **Exception**: Copy-paste is acceptable for 1-2 uses. At 3 uses, refactor to remove duplication.
+
+### 🔴 Helper Utilities Pattern (CRITICAL)
+
+**For comprehensive helper function documentation, see [FORMATTERS.md](./docs/FORMATTERS.md).**
+
+**Location:** `src/lib/utils/formatters.ts` and `src/lib/utils/date-format.ts`
+
+**STRONGLY PREFER using helper functions** for all formatting needs. These centralized utilities ensure consistency across the application.
+
+**🔴 CRITICAL RULES:**
+
+1. **ALWAYS use helper functions** - Never write inline formatting code
+2. **🔴 ALWAYS format dates** - Never display raw date strings (e.g., "2025-07-15")
+   - Use `formatDatePretty()`, `formatDateLong()`, etc. from `date-format.ts`
+   - This applies to UI, view pages, forms, **content builders**, **templates**, print views, and exports
+3. **Request permission before creating new helpers** - Ask user before adding new functions
+4. **Check existing helpers first** - Search both `formatters.ts` and `date-format.ts`
+
+**Available Helper Categories:**
+
+- **Date/Time Formatting** - `formatDatePretty()`, `formatDateLong()`, `formatEventDateTime()`, etc.
+- **Person Formatting** - `formatPersonName()`, `formatPersonWithPhone()`
+- **Location Formatting** - `formatLocationWithAddress()`, `formatLocationName()`, `formatAddress()`
+- **Page Title Generators** - `getWeddingPageTitle()`, `getFuneralPageTitle()`, etc.
+- **Filename Generators** - `getWeddingFilename()`, `getFuneralFilename()`, etc.
+
+**Usage Pattern:**
+```typescript
+import { formatPersonName, getWeddingPageTitle } from '@/lib/utils/formatters'
+import { formatDatePretty } from '@/lib/utils/date-format'
+
+const brideName = formatPersonName(wedding.bride)
+const eventDate = formatDatePretty(wedding.wedding_event.start_date)
+const pageTitle = getWeddingPageTitle(wedding)
+```
+
+**See [FORMATTERS.md](./docs/FORMATTERS.md) for:**
+- Complete function reference with examples
+- Guidelines for creating new helpers
+- When NOT to use formatters
 
 ## 🔴 Design Principles
 

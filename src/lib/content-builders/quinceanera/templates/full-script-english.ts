@@ -6,7 +6,7 @@
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatPersonWithPhone, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatPersonName, formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -14,7 +14,6 @@ import {
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
 import {
-  formatLocationText,
   getReadingPericope,
   buildTitleEnglish,
   getEventSubtitleEnglish,
@@ -92,7 +91,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Celebration Location:',
-      value: formatLocationText(quinceanera.quinceanera_event.location),
+      value: formatLocationWithAddress(quinceanera.quinceanera_event.location),
     })
   }
 
@@ -108,7 +107,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Reception Location:',
-      value: formatLocationText(quinceanera.quinceanera_reception.location),
+      value: formatLocationWithAddress(quinceanera.quinceanera_reception.location),
     })
   }
 
