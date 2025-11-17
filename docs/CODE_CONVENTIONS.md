@@ -8,6 +8,7 @@ This document provides comprehensive coding standards and conventions for Outwar
 
 - [General Conventions](#general-conventions)
   - [Code Style](#code-style)
+  - [Import Order](#import-order)
   - [TypeScript](#typescript)
   - [🔴 Data Model Interfaces vs. Filter Interfaces](#-data-model-interfaces-vs-filter-interfaces)
   - [Server vs Client Components](#server-vs-client-components)
@@ -32,6 +33,42 @@ This document provides comprehensive coding standards and conventions for Outwar
 - **Quotes:** Single quotes for strings unless JSON requires double quotes
 - **Semicolons:** Use semicolons at the end of statements
 - **Trailing commas:** Use trailing commas in multi-line objects and arrays
+
+### Import Order
+
+**Import order is completely flexible** - arrange imports however you prefer. There are no enforced ordering rules in this codebase.
+
+Import statements can be organized in any way that makes sense to you:
+
+```typescript
+// ✅ All of these are acceptable - choose what works for you
+
+// Option 1: Group by type (external, internal, components)
+import { useState } from 'react'
+import Link from 'next/link'
+import { getWeddings } from '@/lib/actions/weddings'
+import { formatDate } from '@/lib/utils/formatters'
+import { Button } from '@/components/ui/button'
+import { WeddingCard } from './wedding-card'
+
+// Option 2: Alphabetical
+import { Button } from '@/components/ui/button'
+import { formatDate } from '@/lib/utils/formatters'
+import { getWeddings } from '@/lib/actions/weddings'
+import Link from 'next/link'
+import { useState } from 'react'
+import { WeddingCard } from './wedding-card'
+
+// Option 3: By usage/importance
+import { getWeddings } from '@/lib/actions/weddings'
+import { WeddingCard } from './wedding-card'
+import { formatDate } from '@/lib/utils/formatters'
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import Link from 'next/link'
+
+// All are valid - use whatever makes the most sense for the file
+```
 
 ### TypeScript
 

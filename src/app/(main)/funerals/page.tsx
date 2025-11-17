@@ -28,7 +28,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: FuneralFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as FuneralFilterParams['status']
   }
 
   // Fetch funerals server-side with filters

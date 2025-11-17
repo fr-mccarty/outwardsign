@@ -197,7 +197,7 @@ export function EventPicker({
   const handleCreateEvent = async (data: any): Promise<Event> => {
     const newEvent = await createEvent({
       name: data.name,
-      event_type: defaultEventType,
+      event_type: defaultEventType as any,
       start_date: data.start_date,
       start_time: data.start_time,
       timezone: data.timezone || getDefaultTimezone(),

@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS, PRESENTATION_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, PRESENTATION_TEMPLATE_VALUES, PRESENTATION_TEMPLATE_LABELS, PRESENTATION_DEFAULT_TEMPLATE, type ModuleStatus } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
@@ -58,7 +58,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       father_id: presentation?.father_id || null,
       coordinator_id: presentation?.coordinator_id || null,
       is_baptized: presentation?.is_baptized || false,
-      status: (presentation?.status as "ACTIVE" | "INACTIVE" | "ARCHIVED") || "ACTIVE",
+      status: (presentation?.status as ModuleStatus) || "ACTIVE",
       note: presentation?.note || null,
       presentation_template_id: presentation?.presentation_template_id || PRESENTATION_DEFAULT_TEMPLATE,
     },

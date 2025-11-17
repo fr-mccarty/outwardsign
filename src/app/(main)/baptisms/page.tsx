@@ -28,7 +28,7 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: BaptismFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as BaptismFilterParams['status']
   }
 
   // Fetch baptisms server-side with filters

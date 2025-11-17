@@ -28,7 +28,7 @@ export default async function MassesPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: MassFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as MassFilterParams['status']
   }
 
   // Fetch masses server-side with filters

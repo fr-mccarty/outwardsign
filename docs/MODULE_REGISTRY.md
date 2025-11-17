@@ -10,6 +10,7 @@
 
 - [Primary Modules](#primary-modules)
 - [Supporting Modules](#supporting-modules)
+- [Module Status Constants](#module-status-constants)
 - [Module Labels (Internationalization)](#module-labels-internationalization)
 - [Module Icons](#module-icons)
 - [Module Routes](#module-routes)
@@ -46,6 +47,63 @@
 4. **Groups** - Ministry groups and teams (uses dialog-based architecture)
 5. **Readings** - Scripture readings for liturgies
 6. **Petitions** - Prayer intentions and petitions
+
+---
+
+## Module Status Constants
+
+Each module uses specific status constants from `src/lib/constants.ts`. Modules are grouped by which status constant set they use.
+
+### Modules Using `MODULE_STATUS_VALUES`
+
+**Most sacramental/sacramental modules use the standard module status constants:**
+
+| Module | Status Constant | Status Type | Values |
+|--------|----------------|-------------|--------|
+| **Weddings** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+| **Funerals** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+| **Baptisms** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+| **Presentations** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+| **Quinceañeras** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+
+**Labels Constant:** `MODULE_STATUS_LABELS`
+**Used in:** Entity interfaces, form dropdowns, filters
+**Display Helper:** `getStatusLabel(status, language)` from `@/lib/content-builders/shared/helpers`
+
+### Modules Using `MASS_STATUS_VALUES`
+
+**The Mass module uses its own status constants with an additional SCHEDULED status:**
+
+| Module | Status Constant | Status Type | Values |
+|--------|----------------|-------------|--------|
+| **Masses** | `MASS_STATUS_VALUES` | `MassStatus` | ACTIVE, PLANNING, SCHEDULED, COMPLETED, CANCELLED |
+
+**Labels Constant:** `MASS_STATUS_LABELS`
+**Used in:** Mass entity interface, mass forms, mass filters
+**Display Helper:** `getStatusLabel(status, language)` from `@/lib/content-builders/shared/helpers`
+
+### Modules Using `MASS_INTENTION_STATUS_VALUES`
+
+**The Mass Intentions module uses its own status constants for request workflow:**
+
+| Module | Status Constant | Status Type | Values |
+|--------|----------------|-------------|--------|
+| **Mass Intentions** | `MASS_INTENTION_STATUS_VALUES` | `MassIntentionStatus` | REQUESTED, CONFIRMED, FULFILLED, CANCELLED |
+
+**Labels Constant:** `MASS_INTENTION_STATUS_LABELS`
+**Used in:** MassIntention entity interface, mass intention forms, mass intention filters
+**Display Helper:** `getStatusLabel(status, language)` from `@/lib/content-builders/shared/helpers`
+
+### Combined Status Labels
+
+**For display purposes only**, all status labels are also available in a single combined constant:
+
+- **Constant:** `ALL_STATUS_LABELS`
+- **Purpose:** Used by the `getStatusLabel()` helper function to display any status value
+- **Location:** `src/lib/constants.ts`
+- **Contains:** All status labels from all three sets (MODULE, MASS, MASS_INTENTION)
+
+**Important:** Database entity interfaces should use module-specific status types (`MassStatus`, `MassIntentionStatus`), not the combined constant. See [🔴 Data Model Interfaces vs. Filter Interfaces](./CODE_CONVENTIONS.md#-data-model-interfaces-vs-filter-interfaces) for details.
 
 ---
 

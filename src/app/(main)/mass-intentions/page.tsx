@@ -28,7 +28,7 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: MassIntentionFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as MassIntentionFilterParams['status']
   }
 
   // Fetch mass intentions server-side with filters

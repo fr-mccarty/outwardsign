@@ -228,13 +228,13 @@ export function MassIntentionsPrint() {
         <div className="grid grid-cols-3 gap-4 mb-8 text-center">
           <div className="border rounded p-3">
             <div className="text-2xl font-bold text-green-600">
-              {intentions.filter(i => i.status === 'scheduled').length}
+              {intentions.filter(i => i.mass_id !== null).length}
             </div>
             <div className="text-sm text-muted-foreground">Scheduled</div>
           </div>
           <div className="border rounded p-3">
             <div className="text-2xl font-bold text-yellow-600">
-              {intentions.filter(i => i.status === 'unscheduled').length}
+              {intentions.filter(i => i.mass_id === null).length}
             </div>
             <div className="text-sm text-muted-foreground">Unscheduled</div>
           </div>
@@ -297,9 +297,9 @@ export function MassIntentionsPrint() {
                   </td>
                   <td className="p-3 border-b align-top">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      intention.status === 'scheduled' 
+                      intention.mass_id !== null 
                         ? 'bg-green-100 text-green-800' 
-                        : intention.status === 'unscheduled'
+                        : intention.mass_id === null
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>

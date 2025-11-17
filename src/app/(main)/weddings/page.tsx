@@ -28,7 +28,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: WeddingFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as WeddingFilterParams['status']
   }
 
   // Fetch weddings server-side with filters

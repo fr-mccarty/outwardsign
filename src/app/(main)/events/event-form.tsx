@@ -15,7 +15,7 @@ import { createEvent, updateEvent, type CreateEventData, type EventWithRelations
 import type { Person, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
+import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS, type EventType, type Language } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PeoplePicker } from "@/components/people-picker"
 import { LocationPickerField } from "@/components/location-picker-field"
@@ -43,12 +43,12 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   }, [isLoading, onLoadingChange])
   const [name, setName] = useState(event?.name || "")
   const [description, setDescription] = useState(event?.description || "")
-  const [eventType, setEventType] = useState(event?.event_type || "EVENT")
+  const [eventType, setEventType] = useState<EventType>(event?.event_type || "EVENT")
   const [startDate, setStartDate] = useState(event?.start_date || "")
   const [startTime, setStartTime] = useState(event?.start_time || "")
   const [endDate, setEndDate] = useState(event?.end_date || "")
   const [endTime, setEndTime] = useState(event?.end_time || "")
-  const [language, setLanguage] = useState(event?.language || "ENGLISH")
+  const [language, setLanguage] = useState<Language>(event?.language || "ENGLISH")
   const [notes, setNotes] = useState(event?.note || "")
 
   // Responsible party picker state
@@ -139,7 +139,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             <Label htmlFor="event_type">
               Event Type <span className="text-destructive">*</span>
             </Label>
-            <Select value={eventType} onValueChange={setEventType}>
+            <Select value={eventType} onValueChange={(value) => setEventType(value as EventType)}>
               <SelectTrigger id="event_type">
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
@@ -256,7 +256,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             label="Language"
             inputType="select"
             value={language}
-            onChange={setLanguage}
+            onChange={(value) => setLanguage(value as Language)}
             options={LANGUAGE_VALUES.map((lang) => ({
               value: lang,
               label: LANGUAGE_LABELS[lang].en

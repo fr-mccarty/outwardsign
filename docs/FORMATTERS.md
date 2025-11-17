@@ -150,7 +150,11 @@ getStatusLabel('FULFILLED', 'es')   // Returns: "Cumplido"
 
 **Module-Specific Status Constants:**
 
-**Important:** Each module has its own status values and TypeScript interface defined in `src/lib/constants.ts`:
+**Important:** Each module has its own status values and TypeScript interface defined in `src/lib/constants.ts`.
+
+**For a complete registry of which modules use which status constants, see [Module Status Constants](./MODULE_REGISTRY.md#module-status-constants).**
+
+**Summary:**
 
 - **Module Status** (presentations, weddings, funerals, baptisms, quinceañeras):
   - Constants: `MODULE_STATUS_VALUES`, `MODULE_STATUS_LABELS`

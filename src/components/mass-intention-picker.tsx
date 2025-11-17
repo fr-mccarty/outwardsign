@@ -76,7 +76,7 @@ export function MassIntentionPicker({
         page,
         limit: PAGE_SIZE,
         search,
-        status: status !== 'all' ? status : undefined,
+        status: status !== 'all' ? status as any : undefined,
       })
       setMassIntentions(result.items)
       setTotalCount(result.totalCount)

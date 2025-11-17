@@ -23,7 +23,7 @@ import {
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE, type ModuleStatus, type WeddingTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -33,7 +33,7 @@ import { Button } from "@/components/ui/button"
 
 // Zod validation schema
 const weddingSchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(MODULE_STATUS_VALUES).optional(),
   wedding_event_id: z.string().optional(),
   reception_event_id: z.string().optional(),
   rehearsal_event_id: z.string().optional(),
@@ -81,11 +81,11 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(wedding?.status || "ACTIVE")
+  const [status, setStatus] = useState<ModuleStatus>(wedding?.status || "ACTIVE")
   const [notes, setNotes] = useState(wedding?.notes || "")
   const [announcements, setAnnouncements] = useState(wedding?.announcements || "")
   const [petitions, setPetitions] = useState(wedding?.petitions || "")
-  const [weddingTemplateId, setWeddingTemplateId] = useState(wedding?.wedding_template_id || WEDDING_DEFAULT_TEMPLATE)
+  const [weddingTemplateId, setWeddingTemplateId] = useState<WeddingTemplate>((wedding?.wedding_template_id as WeddingTemplate) || WEDDING_DEFAULT_TEMPLATE)
 
   // Boolean states
   const [psalmIsSung, setPsalmIsSung] = useState(wedding?.psalm_is_sung || false)
@@ -651,7 +651,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
 
           <div className="space-y-2">
             <Label htmlFor="wedding_template_id">Liturgy Template</Label>
-            <Select value={weddingTemplateId} onValueChange={setWeddingTemplateId}>
+            <Select value={weddingTemplateId} onValueChange={(value) => setWeddingTemplateId(value as WeddingTemplate)}>
               <SelectTrigger id="wedding_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -678,7 +678,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>

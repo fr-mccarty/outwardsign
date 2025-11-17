@@ -26,8 +26,8 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: ReadingFilterParams = {
     search: params.search,
-    language: params.language,
-    category: params.category
+    language: params.language as ReadingFilterParams['language'],
+    category: params.category as ReadingFilterParams['category']
   }
 
   // Fetch readings server-side with filters

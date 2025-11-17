@@ -33,8 +33,8 @@ export default async function EventsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: EventFilterParams = {
     search: params.search,
-    event_type: params.event_type,
-    language: params.language,
+    event_type: params.event_type as EventFilterParams['event_type'],
+    language: params.language as EventFilterParams['language'],
     start_date: params.start_date,
     end_date: params.end_date,
     sort: params.sort

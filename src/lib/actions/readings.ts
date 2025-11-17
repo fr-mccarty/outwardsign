@@ -246,7 +246,7 @@ export async function getIndividualReadings(): Promise<IndividualReading[]> {
     parish_id: reading.parish_id || undefined,
     pericope: reading.pericope || '',
     title: reading.pericope || 'Untitled Reading',
-    category: reading.categories?.[0] || 'general',
+    category: (reading.categories?.[0] || 'general') as any,
     // Add full categories array for filtering
     categories: reading.categories || [],
     language: reading.language || undefined,
@@ -271,7 +271,7 @@ export async function getIndividualReading(id: string): Promise<IndividualReadin
     parish_id: reading.parish_id || undefined,
     pericope: reading.pericope || '',
     title: reading.pericope || 'Untitled Reading',
-    category: reading.categories?.[0] || 'general',
+    category: (reading.categories?.[0] || 'general') as any,
     language: reading.language || undefined,
     translation_id: 1,
     sort_order: 0,
@@ -289,7 +289,7 @@ export async function createIndividualReading(data: CreateIndividualReadingData)
     pericope: data.pericope,
     text: data.reading_text,
     categories: [data.category],
-    language: 'English'
+    language: 'ENGLISH'
   }
 
   const reading = await createReading(readingData)

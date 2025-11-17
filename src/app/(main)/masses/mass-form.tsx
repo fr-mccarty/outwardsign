@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
-import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, type MassStatus, type MassTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -29,7 +29,7 @@ import { Plus, X, Heart } from "lucide-react"
 
 // Zod validation schema
 const massSchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(MASS_STATUS_VALUES).optional(),
   event_id: z.string().optional(),
   presider_id: z.string().optional(),
   homilist_id: z.string().optional(),
@@ -58,11 +58,11 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(mass?.status || "ACTIVE")
+  const [status, setStatus] = useState<MassStatus>(mass?.status || "ACTIVE")
   const [note, setNote] = useState(mass?.note || "")
   const [announcements, setAnnouncements] = useState(mass?.announcements || "")
   const [petitions, setPetitions] = useState(mass?.petitions || "")
-  const [massTemplateId, setMassTemplateId] = useState(mass?.mass_template_id || MASS_DEFAULT_TEMPLATE)
+  const [massTemplateId, setMassTemplateId] = useState<MassTemplate>((mass?.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE)
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
@@ -370,7 +370,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             label="Status"
             description="Current status of this Mass"
             value={status}
-            onChange={setStatus}
+            onChange={(value) => setStatus(value as MassStatus)}
             options={MASS_STATUS_VALUES.map((value) => ({
               value,
               label: getStatusLabel(value, 'en')
@@ -392,7 +392,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             label="Print Template"
             description="Choose the liturgy template for this Mass"
             value={massTemplateId}
-            onChange={setMassTemplateId}
+            onChange={(value) => setMassTemplateId(value as MassTemplate)}
             options={MASS_TEMPLATE_VALUES.map((value) => ({
               value,
               label: MASS_TEMPLATE_LABELS[value].en

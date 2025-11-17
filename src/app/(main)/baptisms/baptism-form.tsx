@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
-import { MODULE_STATUS_VALUES, BAPTISM_TEMPLATE_VALUES, BAPTISM_TEMPLATE_LABELS, BAPTISM_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, BAPTISM_TEMPLATE_VALUES, BAPTISM_TEMPLATE_LABELS, BAPTISM_DEFAULT_TEMPLATE, type ModuleStatus, type BaptismTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
@@ -33,8 +33,8 @@ const baptismSchema = z.object({
   sponsor_1_id: z.string().optional(),
   sponsor_2_id: z.string().optional(),
   presider_id: z.string().optional(),
-  status: z.string().optional(),
-  baptism_template_id: z.string().optional(),
+  status: z.enum(MODULE_STATUS_VALUES).optional(),
+  baptism_template_id: z.enum(BAPTISM_TEMPLATE_VALUES).optional(),
   note: z.string().optional()
 })
 
@@ -55,10 +55,10 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-   
-  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE" | "ARCHIVED">(baptism?.status as any || "ACTIVE")
+
+  const [status, setStatus] = useState<ModuleStatus>(baptism?.status || "ACTIVE")
   const [note, setNote] = useState(baptism?.note || "")
-  const [baptismTemplateId, setBaptismTemplateId] = useState(baptism?.baptism_template_id || BAPTISM_DEFAULT_TEMPLATE)
+  const [baptismTemplateId, setBaptismTemplateId] = useState<BaptismTemplate>((baptism?.baptism_template_id as BaptismTemplate) || BAPTISM_DEFAULT_TEMPLATE)
 
   // Picker states using usePickerState hook
   const baptismEvent = usePickerState<Event>()
@@ -274,7 +274,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       >
         <div className="space-y-2">
             <Label htmlFor="baptism_template_id">Ceremony Template</Label>
-            <Select value={baptismTemplateId} onValueChange={setBaptismTemplateId}>
+            <Select value={baptismTemplateId} onValueChange={(value) => setBaptismTemplateId(value as BaptismTemplate)}>
               <SelectTrigger id="baptism_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -301,7 +301,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as "ACTIVE" | "INACTIVE" | "ARCHIVED")}>
+            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>

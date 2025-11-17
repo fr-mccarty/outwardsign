@@ -28,7 +28,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: PresentationFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as PresentationFilterParams['status']
   }
 
   // Fetch presentations server-side with filters

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { createReading, updateReading, type Reading } from "@/lib/actions/readings"
-import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from "@/lib/constants"
+import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, type Language, LANGUAGE_LABELS } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 
@@ -19,7 +19,7 @@ const readingSchema = z.object({
   introduction: z.string().optional(),
   conclusion: z.string().optional(),
   categories: z.array(z.string()),
-  language: z.string().optional()
+  language: z.enum(LANGUAGE_VALUES).optional()
 })
 
 interface ReadingFormProps {
@@ -37,7 +37,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
   const [text, setText] = useState(reading?.text || "")
   const [introduction, setIntroduction] = useState(reading?.introduction || "")
   const [conclusion, setConclusion] = useState(reading?.conclusion || "")
-  const [language, setLanguage] = useState(reading?.language || "ENGLISH")
+  const [language, setLanguage] = useState<Language>(reading?.language || "ENGLISH")
 
   // Sync loading state with parent wrapper
   useEffect(() => {
@@ -111,7 +111,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
           label="Language"
           inputType="select"
           value={language}
-          onChange={setLanguage}
+          onChange={(value) => setLanguage(value as Language)}
           options={LANGUAGE_VALUES.map((lang) => ({
             value: lang,
             label: LANGUAGE_LABELS[lang].en

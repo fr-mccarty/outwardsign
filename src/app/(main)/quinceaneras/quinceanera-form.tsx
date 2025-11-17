@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS, QUINCEANERA_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS, QUINCEANERA_DEFAULT_TEMPLATE, type ModuleStatus, type QuinceaneraTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -33,7 +33,7 @@ import { EventPickerField } from "@/components/event-picker-field"
 
 // Zod validation schema
 const quinceaneraSchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(MODULE_STATUS_VALUES).optional(),
   quinceanera_event_id: z.string().optional(),
   quinceanera_reception_id: z.string().optional(),
   quinceanera_id: z.string().optional(),
@@ -77,11 +77,11 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(quinceanera?.status || "ACTIVE")
+  const [status, setStatus] = useState<ModuleStatus>(quinceanera?.status || "ACTIVE")
   const [note, setNote] = useState(quinceanera?.note || "")
   const [announcements, setAnnouncements] = useState(quinceanera?.announcements || "")
   const [petitions, setPetitions] = useState(quinceanera?.petitions || "")
-  const [quinceaneraTemplateId, setQuinceaneraTemplateId] = useState(quinceanera?.quinceanera_template_id || QUINCEANERA_DEFAULT_TEMPLATE)
+  const [quinceaneraTemplateId, setQuinceaneraTemplateId] = useState<QuinceaneraTemplate>((quinceanera?.quinceanera_template_id as QuinceaneraTemplate) || QUINCEANERA_DEFAULT_TEMPLATE)
 
   // Boolean states
   const [psalmIsSung, setPsalmIsSung] = useState(quinceanera?.psalm_is_sung || false)
@@ -577,7 +577,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
 
           <div className="space-y-2">
             <Label htmlFor="quinceanera_template_id">Liturgy Template</Label>
-            <Select value={quinceaneraTemplateId} onValueChange={setQuinceaneraTemplateId}>
+            <Select value={quinceaneraTemplateId} onValueChange={(value) => setQuinceaneraTemplateId(value as QuinceaneraTemplate)}>
               <SelectTrigger id="quinceanera_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -604,7 +604,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>

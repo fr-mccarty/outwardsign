@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { SelectItem } from "@/components/ui/select"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { MassPickerField } from "@/components/mass-picker-field"
-import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_TEMPLATE_VALUES, MASS_INTENTION_TEMPLATE_LABELS, MASS_INTENTION_DEFAULT_TEMPLATE } from "@/lib/constants"
+import { MASS_INTENTION_STATUS_VALUES, MASS_INTENTION_TEMPLATE_VALUES, MASS_INTENTION_TEMPLATE_LABELS, MASS_INTENTION_DEFAULT_TEMPLATE, type MassIntentionStatus, type MassIntentionTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
@@ -22,7 +22,7 @@ import type { MassWithNames } from "@/lib/actions/masses"
 // Zod validation schema
 const massIntentionSchema = z.object({
   mass_offered_for: z.string().min(1, 'Please enter what the Mass is offered for'),
-  status: z.string().optional(),
+  status: z.enum(MASS_INTENTION_STATUS_VALUES).optional(),
   date_requested: z.string().optional(),
   date_received: z.string().optional(),
   stipend_in_cents: z.number().optional(),
@@ -49,7 +49,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
   }, [isLoading, onLoadingChange])
 
   // State for all fields
-  const [status, setStatus] = useState(intention?.status || "REQUESTED")
+  const [status, setStatus] = useState<MassIntentionStatus>(intention?.status || "REQUESTED")
   const [massOfferedFor, setMassOfferedFor] = useState(intention?.mass_offered_for || "")
   const [dateRequested, setDateRequested] = useState(intention?.date_requested || "")
   const [dateReceived, setDateReceived] = useState(intention?.date_received || "")
@@ -57,7 +57,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
     intention?.stipend_in_cents ? (intention.stipend_in_cents / 100).toFixed(2) : ""
   )
   const [note, setNote] = useState(intention?.note || "")
-  const [massIntentionTemplateId, setMassIntentionTemplateId] = useState(intention?.mass_intention_template_id || MASS_INTENTION_DEFAULT_TEMPLATE)
+  const [massIntentionTemplateId, setMassIntentionTemplateId] = useState<MassIntentionTemplate>((intention?.mass_intention_template_id as MassIntentionTemplate) || MASS_INTENTION_DEFAULT_TEMPLATE)
 
   // Picker states
   const requestedBy = usePickerState<Person>()
@@ -156,7 +156,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label="Status"
             description="Current status of this Mass intention"
             value={status}
-            onChange={setStatus}
+            onChange={(value) => setStatus(value as MassIntentionStatus)}
           >
             {MASS_INTENTION_STATUS_VALUES.map((value) => (
               <SelectItem key={value} value={value}>
@@ -171,7 +171,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label="Print Template"
             description="Choose the template for printing this Mass intention"
             value={massIntentionTemplateId}
-            onChange={setMassIntentionTemplateId}
+            onChange={(value) => setMassIntentionTemplateId(value as MassIntentionTemplate)}
           >
             {MASS_INTENTION_TEMPLATE_VALUES.map((value) => (
               <SelectItem key={value} value={value}>

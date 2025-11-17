@@ -28,7 +28,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: QuinceaneraFilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as QuinceaneraFilterParams['status']
   }
 
   // Fetch quinceaneras server-side with filters
