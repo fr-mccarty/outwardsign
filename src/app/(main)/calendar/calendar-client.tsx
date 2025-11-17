@@ -237,7 +237,6 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
         event={selectedLiturgicalEvent}
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onAddMass={handleAddMass}
       />
     </>
   )
