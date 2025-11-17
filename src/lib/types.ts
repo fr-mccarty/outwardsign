@@ -1,9 +1,11 @@
+import type { Language, ModuleStatus, EventType, ReadingCategory, MassStatus, MassIntentionStatus } from './constants'
+
 export interface Petition {
   id: string
   parish_id: string
   title: string
   date: string
-  language: string
+  language: Language
   text?: string // Main petition text content
   details?: string // Additional details for the petition
   template?: string // Reference to template used
@@ -27,7 +29,7 @@ export interface PetitionContext {
 export interface CreatePetitionData {
   title: string
   date: string
-  language: string
+  language: Language
   details: string
   templateId?: string // Optional petition template ID to copy from
   template?: string // Optional template content directly
@@ -115,7 +117,7 @@ export interface IndividualReading {
   parish_id?: string
   pericope: string
   title: string
-  category: string
+  category: ReadingCategory
   translation_id: number
   sort_order: number
   introduction?: string
@@ -129,7 +131,7 @@ export interface IndividualReading {
 export interface CreateIndividualReadingData {
   pericope: string
   title: string
-  category: string
+  category: ReadingCategory
   translation_id?: number
   sort_order?: number
   introduction?: string
@@ -377,7 +379,7 @@ export interface LiturgicalEvent {
   start_time?: string
   end_time?: string
   location?: string
-  status: string
+  status: ModuleStatus
   template_id?: string
   liturgical_readings_id?: string
   petitions_id?: string
@@ -393,7 +395,7 @@ export interface Reading {
   text: string
   introduction?: string
   conclusion?: string
-  language?: string
+  language?: Language
   categories?: string[]
   created_at: string
   updated_at: string
@@ -408,7 +410,7 @@ export interface Presentation {
   father_id?: string
   coordinator_id?: string
   is_baptized: boolean
-  status?: string
+  status?: ModuleStatus
   note?: string
   presentation_template_id?: string
   created_at: string
@@ -421,7 +423,7 @@ export interface Event {
   name: string
   description?: string
   responsible_party_id: string | null
-  event_type: string
+  event_type: EventType
   start_date?: string
   start_time?: string
   end_date?: string
@@ -429,7 +431,7 @@ export interface Event {
   timezone: string
   is_all_day: boolean
   location_id?: string | null
-  language?: string
+  language?: Language
   event_template_id?: string
   note?: string
   created_at: string
@@ -466,7 +468,7 @@ export interface Wedding {
   rehearsal_dinner_event_id?: string
   witness_1_id?: string
   witness_2_id?: string
-  status?: string
+  status?: ModuleStatus
   first_reading_id?: string
   psalm_id?: string
   psalm_reader_id?: string
@@ -498,7 +500,7 @@ export interface Funeral {
   homilist_id?: string
   lead_musician_id?: string
   cantor_id?: string
-  status?: string
+  status?: ModuleStatus
   first_reading_id?: string
   psalm_id?: string
   psalm_reader_id?: string
@@ -530,7 +532,7 @@ export interface Quinceanera {
   homilist_id?: string
   lead_musician_id?: string
   cantor_id?: string
-  status?: string
+  status?: ModuleStatus
   first_reading_id?: string
   psalm_id?: string
   psalm_reader_id?: string
@@ -560,7 +562,7 @@ export interface Baptism {
   sponsor_1_id?: string
   sponsor_2_id?: string
   presider_id?: string
-  status?: string
+  status?: ModuleStatus
   baptism_template_id?: string
   note?: string
   created_at: string
@@ -596,7 +598,7 @@ export interface Mass {
   homilist_id?: string
   liturgical_event_id?: string
   mass_roles_template_id?: string
-  status?: string
+  status?: MassStatus
   mass_template_id?: string
   announcements?: string
   note?: string
@@ -637,7 +639,7 @@ export interface MassIntention {
   date_received?: string
   date_requested?: string
   stipend_in_cents?: number
-  status?: string
+  status?: MassIntentionStatus
   mass_intention_template_id?: string
   note?: string
   created_at: string

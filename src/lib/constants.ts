@@ -25,6 +25,7 @@ export const SEX_LABELS: Record<Sex, { en: string; es: string }> = {
 
 // Status values (stored as uppercase in database) - shared across all modules who use a general approach
 export const MODULE_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'INACTIVE', 'COMPLETED', 'CANCELLED'] as const
+export type ModuleStatus = typeof MODULE_STATUS_VALUES[number]
 
 // Status labels for display - shared across all modules
 export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = {
@@ -71,6 +72,7 @@ export const EVENT_TYPE_VALUES = [
   'EVENT',
   'OTHER'
 ] as const
+export type EventType = typeof EVENT_TYPE_VALUES[number]
 
 // Event type labels for display
 export const EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
@@ -223,6 +225,7 @@ export const MODULE_EVENT_TYPE_MAP: Record<string, {
 // Display localized labels using READING_CATEGORY_LABELS[category][lang]
 // TODO: When implementing language selection, use: READING_CATEGORY_LABELS[category][selectedLanguage]
 export const READING_CATEGORIES = ['WEDDING', 'FUNERAL', 'BAPTISM', 'QUINCEANERA', 'FIRST_READING', 'SECOND_READING', 'PSALM', 'GOSPEL'] as const
+export type ReadingCategory = typeof READING_CATEGORIES[number]
 
 export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }> = {
   WEDDING: {
@@ -261,6 +264,7 @@ export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }>
 
 // Language values (stored as uppercase in database)
 export const LANGUAGE_VALUES = ['ENGLISH', 'SPANISH', 'LATIN'] as const
+export type Language = typeof LANGUAGE_VALUES[number]
 
 // Language labels for display
 export const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import type { Language, ReadingCategory } from '@/lib/constants'
 
 export interface Reading {
   id: string
@@ -12,7 +13,7 @@ export interface Reading {
   conclusion: string | null
   created_at: string
   introduction: string | null
-  language: string | null
+  language: Language | null
   pericope: string | null
   text: string | null
   parish_id: string | null
@@ -22,15 +23,15 @@ export interface CreateReadingData {
   categories?: string[]
   conclusion?: string
   introduction?: string
-  language?: string
+  language?: Language
   pericope: string
   text: string
 }
 
 export interface ReadingFilterParams {
   search?: string
-  language?: string
-  category?: string
+  language?: Language | 'all'
+  category?: ReadingCategory | 'all'
 }
 
 export async function createReading(data: CreateReadingData): Promise<Reading> {
@@ -166,9 +167,9 @@ export async function deleteReading(id: string): Promise<void> {
   revalidatePath('/readings')
 }
 
-export async function getReadingsByCategory(category: string): Promise<Reading[]> {
+export async function getReadingsByCategory(category: ReadingCategory): Promise<Reading[]> {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
@@ -185,7 +186,7 @@ export async function getReadingsByCategory(category: string): Promise<Reading[]
   return data || []
 }
 
-export async function getReadingsByLanguage(language: string): Promise<Reading[]> {
+export async function getReadingsByLanguage(language: Language): Promise<Reading[]> {
   const supabase = await createClient()
   
   const selectedParishId = await requireSelectedParish()
@@ -210,10 +211,10 @@ export interface IndividualReading {
   parish_id?: string
   pericope: string
   title: string
-  category: string
+  category: ReadingCategory
   // Add full categories array for filtering
   categories?: string[]
-  language?: string
+  language?: Language
   translation_id: number
   sort_order: number
   introduction?: string
@@ -227,7 +228,7 @@ export interface IndividualReading {
 export interface CreateIndividualReadingData {
   pericope: string
   title: string
-  category: string
+  category: ReadingCategory
   translation_id?: number
   sort_order?: number
   introduction?: string

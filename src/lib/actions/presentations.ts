@@ -12,13 +12,14 @@ import {
   type CreatePresentationData,
   type UpdatePresentationData
 } from '@/lib/schemas/presentations'
+import type { ModuleStatus } from '@/lib/constants'
 
 // Note: Schemas and types are imported from '@/lib/schemas/presentations'
 // They cannot be re-exported from this 'use server' file
 
 export interface PresentationFilterParams {
   search?: string
-  status?: string
+  status?: ModuleStatus | 'all'
 }
 
 export interface PresentationWithNames extends Presentation {

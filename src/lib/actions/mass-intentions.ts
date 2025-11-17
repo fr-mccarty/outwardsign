@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { MassIntention, Person, Mass } from '@/lib/types'
+import type { MassIntentionStatus } from '@/lib/constants'
 
 export interface CreateMassIntentionData {
   mass_id?: string
@@ -13,7 +14,7 @@ export interface CreateMassIntentionData {
   date_received?: string
   date_requested?: string
   stipend_in_cents?: number
-  status?: string
+  status?: MassIntentionStatus
   mass_intention_template_id?: string
   note?: string
 }
@@ -25,14 +26,14 @@ export interface UpdateMassIntentionData {
   date_received?: string | null
   date_requested?: string | null
   stipend_in_cents?: number | null
-  status?: string | null
+  status?: MassIntentionStatus | null
   mass_intention_template_id?: string | null
   note?: string | null
 }
 
 export interface MassIntentionFilterParams {
   search?: string
-  status?: string
+  status?: MassIntentionStatus | 'all'
 }
 
 export interface MassIntentionWithNames extends MassIntention {
@@ -44,7 +45,7 @@ export interface PaginatedParams {
   page?: number
   limit?: number
   search?: string
-  status?: string
+  status?: MassIntentionStatus | 'all'
 }
 
 export interface PaginatedResult<T> {

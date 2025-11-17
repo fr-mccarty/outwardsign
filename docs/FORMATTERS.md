@@ -148,10 +148,36 @@ getStatusLabel('CONFIRMED', 'en')   // Returns: "Confirmed"
 getStatusLabel('FULFILLED', 'es')   // Returns: "Cumplido"
 ```
 
-The helper searches all available status label constants:
-- Module statuses (presentations, weddings, funerals, baptisms, quinceañeras): PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED
-- Mass statuses: ACTIVE, PLANNING, SCHEDULED, COMPLETED, CANCELLED
-- Mass intention statuses: REQUESTED, CONFIRMED, FULFILLED, CANCELLED
+**Module-Specific Status Constants:**
+
+**Important:** Each module has its own status values and TypeScript interface defined in `src/lib/constants.ts`:
+
+- **Module Status** (presentations, weddings, funerals, baptisms, quinceañeras):
+  - Constants: `MODULE_STATUS_VALUES`, `MODULE_STATUS_LABELS`
+  - Values: `PLANNING`, `ACTIVE`, `INACTIVE`, `COMPLETED`, `CANCELLED`
+  - Used by: Most sacrament/sacramental modules
+
+- **Mass Status** (Mass module):
+  - Constants: `MASS_STATUS_VALUES`, `MASS_STATUS_LABELS`
+  - Type: `MassStatus`
+  - Values: `ACTIVE`, `PLANNING`, `SCHEDULED`, `COMPLETED`, `CANCELLED`
+  - Used by: Mass module only
+
+- **Mass Intention Status** (Mass Intentions module):
+  - Constants: `MASS_INTENTION_STATUS_VALUES`, `MASS_INTENTION_STATUS_LABELS`
+  - Type: `MassIntentionStatus`
+  - Values: `REQUESTED`, `CONFIRMED`, `FULFILLED`, `CANCELLED`
+  - Used by: Mass Intentions module only
+
+- **Combined Constant** (for display/formatting):
+  - Constant: `ALL_STATUS_LABELS`
+  - Purpose: Used by helper functions to display any status value
+  - Contains: All status labels from all modules combined
+
+**When to use which constant:**
+- **Database columns & TypeScript types:** Use module-specific constants (`MODULE_STATUS_VALUES`, `MassStatus`, etc.)
+- **Form dropdowns:** Use module-specific constants for type safety
+- **Display/formatting:** Use `getStatusLabel()` helper which references `ALL_STATUS_LABELS`
 
 **Where this applies:**
 - Content builders (liturgical documents, PDFs)

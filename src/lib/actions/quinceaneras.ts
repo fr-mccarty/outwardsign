@@ -7,6 +7,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Quinceanera, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
+import type { ModuleStatus } from '@/lib/constants'
 
 export interface CreateQuinceaneraData {
   quinceanera_event_id?: string
@@ -18,7 +19,7 @@ export interface CreateQuinceaneraData {
   homilist_id?: string
   lead_musician_id?: string
   cantor_id?: string
-  status?: string
+  status?: ModuleStatus
   first_reading_id?: string
   psalm_id?: string
   psalm_reader_id?: string
@@ -46,7 +47,7 @@ export interface UpdateQuinceaneraData {
   homilist_id?: string | null
   lead_musician_id?: string | null
   cantor_id?: string | null
-  status?: string | null
+  status?: ModuleStatus | null
   first_reading_id?: string | null
   psalm_id?: string | null
   psalm_reader_id?: string | null
@@ -66,7 +67,7 @@ export interface UpdateQuinceaneraData {
 
 export interface QuinceaneraFilterParams {
   search?: string
-  status?: string
+  status?: ModuleStatus | 'all'
 }
 
 export interface QuinceaneraWithNames extends Quinceanera {

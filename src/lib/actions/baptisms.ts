@@ -6,6 +6,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Baptism, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
+import type { ModuleStatus } from '@/lib/constants'
 // Type definitions for baptism data
 export interface CreateBaptismData {
   baptism_event_id?: string
@@ -15,7 +16,7 @@ export interface CreateBaptismData {
   sponsor_1_id?: string
   sponsor_2_id?: string
   presider_id?: string
-  status?: string
+  status?: ModuleStatus
   baptism_template_id?: string
   note?: string
 }
@@ -28,14 +29,14 @@ export interface UpdateBaptismData {
   sponsor_1_id?: string | null
   sponsor_2_id?: string | null
   presider_id?: string | null
-  status?: string | null
+  status?: ModuleStatus | null
   baptism_template_id?: string | null
   note?: string | null
 }
 
 export interface BaptismFilterParams {
   search?: string
-  status?: string
+  status?: ModuleStatus | 'all'
 }
 
 export interface BaptismWithNames extends Baptism {

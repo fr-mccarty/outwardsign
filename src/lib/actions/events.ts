@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Event, Location, Person } from '@/lib/types'
+import type { EventType, Language } from '@/lib/constants'
 import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface EventWithRelations extends Event {
@@ -16,14 +17,14 @@ export interface CreateEventData {
   name: string
   description?: string
   responsible_party_id?: string
-  event_type: string
+  event_type: EventType
   start_date?: string
   start_time?: string
   end_date?: string
   end_time?: string
   timezone?: string
   location_id?: string
-  language?: string
+  language?: Language
   event_template_id?: string
   note?: string
 }
@@ -32,22 +33,22 @@ export interface UpdateEventData {
   name?: string
   description?: string
   responsible_party_id?: string
-  event_type?: string
+  event_type?: EventType
   start_date?: string
   start_time?: string
   end_date?: string
   end_time?: string
   timezone?: string
   location_id?: string
-  language?: string
+  language?: Language
   event_template_id?: string
   note?: string
 }
 
 export interface EventFilterParams {
   search?: string
-  event_type?: string
-  language?: string
+  event_type?: EventType | 'all'
+  language?: Language | 'all'
   start_date?: string
   end_date?: string
   sort?: string

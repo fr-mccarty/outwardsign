@@ -8,6 +8,7 @@ import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance, MassIntent
 import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { PaginatedParams, PaginatedResult } from './people'
+import type { MassStatus } from '@/lib/constants'
 
 export interface CreateMassData {
   event_id?: string
@@ -15,7 +16,7 @@ export interface CreateMassData {
   homilist_id?: string
   liturgical_event_id?: string
   mass_roles_template_id?: string
-  status?: string
+  status?: MassStatus
   mass_template_id?: string
   announcements?: string
   note?: string
@@ -28,7 +29,7 @@ export interface UpdateMassData {
   homilist_id?: string | null
   liturgical_event_id?: string | null
   mass_roles_template_id?: string | null
-  status?: string | null
+  status?: MassStatus | null
   mass_template_id?: string | null
   announcements?: string | null
   note?: string | null
@@ -37,7 +38,7 @@ export interface UpdateMassData {
 
 export interface MassFilterParams {
   search?: string
-  status?: string
+  status?: MassStatus | 'all'
 }
 
 export interface MassWithNames extends Mass {

@@ -7,6 +7,7 @@ import { getPromptTemplate } from '@/lib/actions/definitions'
 import { replaceTemplateVariables, getTemplateVariables } from '@/lib/template-utils'
 import { getPetitionTemplate } from './petition-templates'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import type { Language } from '@/lib/constants'
 
 export async function createBasicPetition(data: { title: string; date: string }) {
   const supabase = await createClient()
@@ -368,7 +369,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
   }
 }
 
-export async function updatePetitionLanguage(petitionId: string, language: string) {
+export async function updatePetitionLanguage(petitionId: string, language: Language) {
   const supabase = await createClient()
   
   const selectedParishId = await requireSelectedParish()
@@ -449,7 +450,7 @@ export async function updatePetitionDetails(petitionId: string, details: string)
   }
 }
 
-export async function updatePetitionFullDetails(id: string, data: { title: string; date: string; language: string; text: string; details?: string }) {
+export async function updatePetitionFullDetails(id: string, data: { title: string; date: string; language: Language; text: string; details?: string }) {
   const supabase = await createClient()
   
   const selectedParishId = await requireSelectedParish()
@@ -483,7 +484,7 @@ export async function updatePetitionFullDetails(id: string, data: { title: strin
   return petition
 }
 
-export async function regeneratePetitionContent(id: string, data: { title: string; date: string; language: string; template?: string; details?: string }) {
+export async function regeneratePetitionContent(id: string, data: { title: string; date: string; language: Language; template?: string; details?: string }) {
   const supabase = await createClient()
   
   const selectedParishId = await requireSelectedParish()

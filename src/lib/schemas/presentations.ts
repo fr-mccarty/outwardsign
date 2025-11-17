@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MODULE_STATUS_VALUES } from '@/lib/constants'
 
 // Zod validation schemas
 export const createPresentationSchema = z.object({
@@ -8,7 +9,7 @@ export const createPresentationSchema = z.object({
   father_id: z.string().uuid().optional().nullable(),
   coordinator_id: z.string().uuid().optional().nullable(),
   is_baptized: z.boolean().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']).optional().nullable(),
+  status: z.enum(MODULE_STATUS_VALUES).optional().nullable(),
   note: z.string().optional().nullable(),
   presentation_template_id: z.string().optional().nullable(),
 })

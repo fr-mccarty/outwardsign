@@ -7,6 +7,10 @@ This document provides comprehensive coding standards and conventions for Outwar
 ## Table of Contents
 
 - [General Conventions](#general-conventions)
+  - [Code Style](#code-style)
+  - [TypeScript](#typescript)
+  - [🔴 Data Model Interfaces vs. Filter Interfaces](#-data-model-interfaces-vs-filter-interfaces)
+  - [Server vs Client Components](#server-vs-client-components)
 - [Project Organization](#project-organization)
 - [Spelling and Typos](#spelling-and-typos)
 - [🔴 Bilingual Implementation (English & Spanish)](#-bilingual-implementation-english--spanish)
@@ -51,6 +55,51 @@ export async function getWedding(id: string): Promise<Wedding | null> {
 // ❌ BAD - Avoid 'any' type
 const data: any = await fetchData()  // Don't do this!
 ```
+
+### 🔴 Data Model Interfaces vs. Filter Interfaces
+
+**CRITICAL: Database model interfaces must use strict types, never `| 'all'`**
+
+Interfaces representing actual database records should use strict enumerated types without the `'all'` option. The `'all'` option is ONLY for UI filter states, never for database records.
+
+```typescript
+// ✅ CORRECT - Data model interface (represents actual database record)
+interface MassIntention {
+  id: string
+  status: MassIntentionStatus        // Strict type, no | 'all'
+  type: MassIntentionType            // Strict type, no | 'all'
+  mass_offered_for: string
+  // ... other fields
+}
+
+// ✅ CORRECT - Filter interface (represents UI filter state)
+interface MassIntentionFilters {
+  status?: MassIntentionStatus | 'all'  // Can include 'all' for "show all" option
+  type?: MassIntentionType | 'all'      // Can include 'all' for "show all" option
+  search?: string
+}
+
+// ❌ WRONG - Data model with 'all' option
+interface MassIntention {
+  status: MassIntentionStatus | 'all'   // NEVER do this!
+  // A database record cannot have status 'all'
+}
+```
+
+**Why this matters:**
+- **Data integrity:** Database records must have valid status/type values, never 'all'
+- **Type safety:** TypeScript will catch attempts to save invalid values to the database
+- **Clear separation:** Data models vs. UI state are different concerns
+
+**Where to use `| 'all'`:**
+- ✅ Filter state interfaces
+- ✅ Dropdown component props for filtering
+- ✅ Search/filter form values
+
+**Where NOT to use `| 'all'`:**
+- ❌ Database model interfaces (entities from `src/lib/types.ts`)
+- ❌ Server action parameters that save to database
+- ❌ Database schema types
 
 ### Server vs Client Components
 
