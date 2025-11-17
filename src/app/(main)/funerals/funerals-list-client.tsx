@@ -143,14 +143,14 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
                   </p>
                 )}
                 {funeral.family_contact && (
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground hidden md:block">
                     <span className="font-medium">Family Contact:</span> {funeral.family_contact.first_name} {funeral.family_contact.last_name}
                   </p>
                 )}
               </div>
 
               {funeral.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
                   {funeral.note}
                 </p>
               )}

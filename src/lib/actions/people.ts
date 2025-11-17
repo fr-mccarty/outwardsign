@@ -6,6 +6,58 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { Person } from '@/lib/types'
 
+/**
+ * Build robust search conditions for people queries
+ * Normalizes search input to handle periods, spaces, and phone formatting
+ */
+function buildPeopleSearchConditions(search: string): string[] {
+  // Normalize the search string: trim and collapse multiple spaces
+  const normalized = search.trim().replace(/\s+/g, ' ')
+
+  // Create search conditions array
+  const searchConditions: string[] = []
+
+  // 1. Standard field searches (case-insensitive, original search)
+  searchConditions.push(`first_name.ilike.%${normalized}%`)
+  searchConditions.push(`last_name.ilike.%${normalized}%`)
+  searchConditions.push(`email.ilike.%${normalized}%`)
+
+  // 2. Phone number search - strip all non-numeric characters for flexible matching
+  // This allows "5551234567" to match "(555) 123-4567" or "555-123-4567"
+  const numericSearch = normalized.replace(/\D/g, '')
+  if (numericSearch.length >= 3) {
+    // Only search phone if we have at least 3 digits
+    searchConditions.push(`phone_number.ilike.%${numericSearch}%`)
+  }
+
+  // 3. Handle searches with separators (spaces, periods, dashes, commas)
+  // Replace common separators with wildcard to match any separator or no separator
+  const separatorPattern = normalized.replace(/[\s.\-,]+/g, '%')
+  if (separatorPattern !== normalized && !separatorPattern.includes('%%')) {
+    searchConditions.push(`first_name.ilike.%${separatorPattern}%`)
+    searchConditions.push(`last_name.ilike.%${separatorPattern}%`)
+  }
+
+  // 4. If search contains space, period, dash, or comma - treat as "FirstName LastName" pattern
+  if (/[\s.\-,]/.test(normalized)) {
+    // Split by any separator
+    const parts = normalized.split(/[\s.\-,]+/).filter(p => p.length > 0)
+
+    if (parts.length >= 2) {
+      const firstPart = parts[0]
+      const lastPart = parts.slice(1).join(' ')
+
+      // Match first_name starting with first part AND last_name starting with last part
+      searchConditions.push(`and(first_name.ilike.${firstPart}%,last_name.ilike.${lastPart}%)`)
+
+      // Also try reversed (in case they typed "LastName FirstName")
+      searchConditions.push(`and(first_name.ilike.${lastPart}%,last_name.ilike.${firstPart}%)`)
+    }
+  }
+
+  return searchConditions
+}
+
 export interface CreatePersonData {
   first_name: string
   last_name: string
@@ -58,23 +110,11 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
   let query = supabase
     .from('people')
     .select('*')
+    .eq('parish_id', selectedParishId)
 
   // Apply filters
   if (filters?.search) {
-    const search = filters.search
-    // Search across individual fields
-    const searchConditions = [`first_name.ilike.%${search}%`, `last_name.ilike.%${search}%`, `email.ilike.%${search}%`, `phone_number.ilike.%${search}%`]
-
-    // If search contains a space, also search for "FirstName LastName" pattern
-    if (search.includes(' ')) {
-      const parts = search.trim().split(/\s+/)
-      if (parts.length >= 2) {
-        const firstPart = parts[0]
-        const lastPart = parts.slice(1).join(' ')
-        searchConditions.push(`and(first_name.ilike.%${firstPart}%,last_name.ilike.%${lastPart}%)`)
-      }
-    }
-
+    const searchConditions = buildPeopleSearchConditions(filters.search)
     query = query.or(searchConditions.join(','))
   }
 
@@ -107,22 +147,11 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
   let query = supabase
     .from('people')
     .select('*', { count: 'exact' })
+    .eq('parish_id', selectedParishId)
 
   // Apply search filter
   if (search) {
-    // Search across individual fields
-    const searchConditions = [`first_name.ilike.%${search}%`, `last_name.ilike.%${search}%`, `email.ilike.%${search}%`, `phone_number.ilike.%${search}%`]
-
-    // If search contains a space, also search for "FirstName LastName" pattern
-    if (search.includes(' ')) {
-      const parts = search.trim().split(/\s+/)
-      if (parts.length >= 2) {
-        const firstPart = parts[0]
-        const lastPart = parts.slice(1).join(' ')
-        searchConditions.push(`and(first_name.ilike.%${firstPart}%,last_name.ilike.%${lastPart}%)`)
-      }
-    }
-
+    const searchConditions = buildPeopleSearchConditions(search)
     query = query.or(searchConditions.join(','))
   }
 
@@ -159,6 +188,7 @@ export async function getPerson(id: string): Promise<Person | null> {
   const { data, error } = await supabase
     .from('people')
     .select('*')
+    .eq('parish_id', selectedParishId)
     .eq('id', id)
     .single()
 
@@ -304,22 +334,11 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
         )
       )
     `, { count: 'exact' })
+    .eq('parish_id', selectedParishId)
 
   // Apply search filter
   if (search) {
-    // Search across individual fields
-    const searchConditions = [`first_name.ilike.%${search}%`, `last_name.ilike.%${search}%`, `email.ilike.%${search}%`, `phone_number.ilike.%${search}%`]
-
-    // If search contains a space, also search for "FirstName LastName" pattern
-    if (search.includes(' ')) {
-      const parts = search.trim().split(/\s+/)
-      if (parts.length >= 2) {
-        const firstPart = parts[0]
-        const lastPart = parts.slice(1).join(' ')
-        searchConditions.push(`and(first_name.ilike.%${firstPart}%,last_name.ilike.%${lastPart}%)`)
-      }
-    }
-
+    const searchConditions = buildPeopleSearchConditions(search)
     query = query.or(searchConditions.join(','))
   }
 

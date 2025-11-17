@@ -271,6 +271,207 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     sections.push(gospelSection)
   }
 
+  // Add ceremony sections (between Gospel and Petitions)
+  const quinceaneraName = quinceanera.quinceanera ? formatPersonName(quinceanera.quinceanera) : 'N.'
+
+  // Renewal of Baptismal Promises
+  sections.push({
+    id: 'renewal-of-promises',
+    pageBreakBefore: true,
+    elements: [
+      {
+        type: 'section-title',
+        text: 'RENEWAL OF BAPTISMAL PROMISES',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'The priest addresses the quinceañera:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: `${quinceaneraName}, do you renounce Satan and all his works and all his empty promises?`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'I do.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: 'Do you believe in God, the Father almighty, Creator of heaven and earth?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'I do.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: 'Do you believe in Jesus Christ, his only Son, our Lord, who was born of the Virgin Mary, suffered death and was buried, rose again from the dead and is seated at the right hand of the Father?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'I do.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: 'Do you believe in the Holy Spirit, the holy Catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and life everlasting?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'I do.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: 'This is our faith. This is the faith of the Church. We are proud to profess it in Christ Jesus our Lord.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'ALL:',
+        text: 'Amen.',
+      },
+    ],
+  })
+
+  // Blessing of the Quinceañera
+  sections.push({
+    id: 'blessing',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'BLESSING OF THE QUINCEAÑERA',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'priest-text',
+        text: `Lord Jesus Christ, you are the way, the truth, and the life. We ask you to bless ${quinceaneraName} as she begins this new stage of her life. May she always walk in your way, live in your truth, and share your life with those around her.
+
+Grant her wisdom to discern your will, courage to follow where you lead, and love to reflect your presence to all she meets.
+
+Protect her from harm, strengthen her in times of trial, and fill her heart with joy as she grows in faith.
+
+We ask this through Christ our Lord.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'ALL:',
+        text: 'Amen.',
+      },
+    ],
+  })
+
+  // Presentation of Symbols
+  sections.push({
+    id: 'presentation-of-symbols',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'PRESENTATION OF SYMBOLS',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'The priest may bless and present symbolic gifts such as a Bible, rosary, cross, or other religious items. If a tiara or crown is presented:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `This crown is a symbol of the dignity you have as a daughter of God. May you always remember that you are a child of the King of Heaven, called to live with grace and virtue.`,
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'If a ring is presented:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `This ring is a symbol of God's eternal love for you. Just as this circle has no end, so God's love for you is without limit. Wear it as a reminder of your commitment to live as God's beloved daughter.`,
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'If a Bible is presented:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `This Bible is the Word of God. May you read it often, treasure its teachings in your heart, and let it guide your life. Through Scripture, may you come to know God's love more deeply each day.`,
+      },
+    ],
+  })
+
   // Add petitions if present
   const petitionsSection = buildPetitionsSection({
     petitions: quinceanera.petitions,
@@ -286,7 +487,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
-    title: 'Act of Thanksgiving and Personal Commitment',
     elements: [
       {
         type: 'section-title',

@@ -9,6 +9,7 @@ import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/lit
 import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildPetitionsSection,
+  buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
 
 /**
@@ -78,35 +79,6 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
 
   return {
     id: 'summary',
-    title: 'Mass Summary',
-    elements,
-  }
-}
-
-/**
- * Build announcements section (full text content)
- */
-function buildAnnouncementsSection(mass: MassWithRelations): ContentSection | null {
-  if (!mass.announcements) {
-    return null
-  }
-
-  const elements: ContentElement[] = []
-
-  // Section title
-  elements.push({
-    type: 'section-title',
-    text: 'Announcements',
-  })
-
-  elements.push({
-    type: 'text',
-    text: mass.announcements,
-  })
-
-  return {
-    id: 'announcements',
-    title: 'Announcements',
     elements,
   }
 }
@@ -122,36 +94,53 @@ export function buildMassEnglish(mass: MassWithRelations): LiturgyDocument {
 
   const sections: ContentSection[] = []
 
-  // Summary section
-  sections.push(buildSummarySection(mass))
+  // Build summary section
+  const summarySection = buildSummarySection(mass)
 
-  // Petitions
-  if (mass.petitions) {
-    const petitionsSection = buildPetitionsSection({
-      petitions: mass.petitions
-    })
-    if (petitionsSection) {
-      sections.push(petitionsSection)
-    }
-  }
+  // Build petitions section
+  const petitionsSection = mass.petitions
+    ? buildPetitionsSection({
+        petitions: mass.petitions
+      })
+    : null
 
-  // Announcements
-  const announcementsSection = buildAnnouncementsSection(mass)
-  if (announcementsSection) {
-    sections.push(announcementsSection)
-  }
+  // Build announcements section using shared builder
+  const announcementsSection = buildAnnouncementsSection(mass.announcements)
 
-  // Notes
-  if (mass.note) {
-    sections.push({
-      id: 'notes',
-      title: 'Notes',
-      elements: [{
-        type: 'text',
-        text: mass.note,
-      }],
-    })
-  }
+  // Build notes section
+  const notesSection = mass.note
+    ? {
+        id: 'notes',
+        elements: [
+          {
+            type: 'section-title' as const,
+            text: 'Notes',
+          },
+          {
+            type: 'text' as const,
+            text: mass.note,
+          }
+        ],
+      }
+    : null
+
+  // Check if there are any sections after summary
+  const hasFollowingSections = !!(
+    petitionsSection ||
+    announcementsSection ||
+    notesSection
+  )
+
+  // Only add page break after summary if there are following sections
+  summarySection.pageBreakAfter = hasFollowingSections
+
+  // Add summary section
+  sections.push(summarySection)
+
+  // Add other sections (only non-null ones)
+  if (petitionsSection) sections.push(petitionsSection)
+  if (announcementsSection) sections.push(announcementsSection)
+  if (notesSection) sections.push(notesSection)
 
   return {
     id: mass.id,

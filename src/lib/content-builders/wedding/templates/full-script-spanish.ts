@@ -407,14 +407,287 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
   // 2. Build readings (each checks individually if it has content)
   const readingSections = buildReadings(wedding)
 
-  // 3. Build petitions (returns null if no content)
+  // 3. Build ceremony sections (Marriage Rite)
+  const ceremonySections: ContentSection[] = []
+
+  // Marriage Consent
+  const brideName = wedding.bride ? formatPersonName(wedding.bride) : 'N.'
+  const groomName = wedding.groom ? formatPersonName(wedding.groom) : 'N.'
+
+  ceremonySections.push({
+    id: 'marriage-consent',
+    pageBreakBefore: true,
+    elements: [
+      {
+        type: 'section-title',
+        text: 'CONSENTIMIENTO MATRIMONIAL',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El sacerdote se dirige a los novios:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: `${brideName} y ${groomName}, ¿han venido a contraer Matrimonio sin ser coaccionados, libre y voluntariamente?`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIOS:',
+        text: 'Sí, hemos venido libremente.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: '¿Están decididos a amarse y respetarse mutuamente, siguiendo el modo de vida propio del Matrimonio, durante toda la vida?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIOS:',
+        text: 'Sí, estamos decididos.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: '¿Están dispuestos a recibir de Dios responsable y amorosamente los hijos, y a educarlos según la ley de Cristo y de su Iglesia?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIOS:',
+        text: 'Sí, estamos dispuestos.',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El sacerdote invita a la pareja a declarar su consentimiento:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: `Así, pues, ya que quieren establecer entre ustedes la Alianza santa del Matrimonio, unan sus manos derechas y manifiesten su consentimiento ante Dios y su Iglesia.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'rubric',
+        text: 'Los novios unen las manos. El novio dice:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIO:',
+        text: `Yo, ${groomName}, te recibo a ti, ${brideName}, como esposa y me entrego a ti, y prometo serte fiel en la prosperidad y en la adversidad, en la salud y en la enfermedad, y así amarte y respetarte todos los días de mi vida.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'rubric',
+        text: 'La novia dice:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIA:',
+        text: `Yo, ${brideName}, te recibo a ti, ${groomName}, como esposo y me entrego a ti, y prometo serte fiel en la prosperidad y en la adversidad, en la salud y en la enfermedad, y así amarte y respetarte todos los días de mi vida.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: 'El Señor confirme benignamente este consentimiento que han manifestado ante la Iglesia, y les otorgue su copiosa bendición. Lo que Dios ha unido, que no lo separe el hombre.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'TODOS:',
+        text: 'Amén.',
+      },
+    ],
+  })
+
+  // Exchange of Rings
+  ceremonySections.push({
+    id: 'exchange-of-rings',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'BENDICIÓN Y ENTREGA DE LOS ANILLOS',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El sacerdote bendice los anillos:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: 'El Señor bendiga ✠ estos anillos que van a entregarse uno al otro en señal de amor y de fidelidad.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'TODOS:',
+        text: 'Amén.',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El novio coloca el anillo en el dedo de la novia y dice:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIO:',
+        text: `${brideName}, recibe esta alianza, en señal de mi amor y fidelidad a ti. En el nombre del Padre, y del Hijo, y del Espíritu Santo.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'rubric',
+        text: 'La novia coloca el anillo en el dedo del novio y dice:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'NOVIA:',
+        text: `${groomName}, recibe esta alianza, en señal de mi amor y fidelidad a ti. En el nombre del Padre, y del Hijo, y del Espíritu Santo.`,
+      },
+    ],
+  })
+
+  // Nuptial Blessing
+  ceremonySections.push({
+    id: 'nuptial-blessing',
+    pageBreakBefore: true,
+    elements: [
+      {
+        type: 'section-title',
+        text: 'BENDICIÓN NUPCIAL',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El sacerdote invita a todos a orar:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: 'Oremos, hermanos, a Dios Padre todopoderoso, para que derrame la abundancia de su bendición sobre estos esposos que se han unido en el Sacramento del Matrimonio.',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'priest-text',
+        text: `Oh Dios, que con tu poder creaste de la nada todas las cosas y ordenaste el comienzo del universo formando al hombre a tu imagen, y dándole como ayuda inseparable a la mujer, de tal modo que ya no fueran dos, sino una sola carne, enseñándonos así que nunca es lícito separar lo que tú quisiste que fuera una sola cosa.
+
+Oh Dios, que consagraste la unión conyugal con misterio tan sublime, que en el pacto nupcial preludiaste el Sacramento de la unión de Cristo con su Iglesia.
+
+Oh Dios, por quien se une la mujer al marido, y se otorga a la sociedad conyugal, desde su principio, la única bendición que no fue abolida ni por la pena del pecado original ni por la sentencia del diluvio.
+
+Mira con bondad a estos hijos tuyos, que, uniéndose en Matrimonio, piden ser fortalecidos con tu bendición. Te pedimos que descienda sobre ellos la gracia del Espíritu Santo y que tu amor penetre sus corazones, para que permanezcan fieles en la alianza conyugal.
+
+Concede a tu hija ${brideName} que, por la gracia del amor y de la paz, sea siempre como aquellas santas mujeres de quienes la Escritura hace elogio.
+
+Concede a su esposo que deposite en ella su confianza, y, reconociéndola como su igual y coheredera de la vida divina, la respete y ame siempre, como Cristo ama a su Iglesia.
+
+Y ahora, Señor, te pedimos que estos hijos tuyos permanezcan en la fe y amen tus mandamientos; que, unidos en Matrimonio, sean ejemplares por la pureza de sus costumbres, y, fortalecidos con el poder del Evangelio, den a todos testimonio de Cristo; (que sean fecundos en hijos, padres de reconocida virtud, y lleguen ambos a la deseada ancianidad).
+
+Y te pedimos también, Señor, que, llegando con sus hijos a la morada celestial, consigan los gozos eternos. Por Jesucristo, nuestro Señor.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'TODOS:',
+        text: 'Amén.',
+      },
+    ],
+  })
+
+  // 4. Build petitions (returns null if no content)
   const petitions = buildPetitions(wedding)
 
-  // 4. Build announcements (returns null if no content)
+  // 5. Build announcements (returns null if no content)
   const announcements = buildAnnouncements(wedding)
 
   // Check if there are any sections after cover page
-  const hasFollowingSections = readingSections.length > 0 || petitions !== null || announcements !== null
+  const hasFollowingSections = readingSections.length > 0 || ceremonySections.length > 0 || petitions !== null || announcements !== null
 
   // Only add page break after cover page if there are following sections
   coverPage.pageBreakAfter = hasFollowingSections
@@ -424,6 +697,10 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
 
   // Add other sections (only non-null/non-empty ones)
   sections.push(...readingSections)
+
+  // Add ceremony sections (between Gospel and Petitions)
+  sections.push(...ceremonySections)
+
   if (petitions) sections.push(petitions)
   if (announcements) sections.push(announcements)
 

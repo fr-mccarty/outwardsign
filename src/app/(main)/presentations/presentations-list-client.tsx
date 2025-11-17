@@ -148,19 +148,19 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
                   </p>
                 )}
                 {presentation.mother && (
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground hidden md:block">
                     <span className="font-medium">Mother:</span> {presentation.mother.first_name} {presentation.mother.last_name}
                   </p>
                 )}
                 {presentation.father && (
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground hidden md:block">
                     <span className="font-medium">Father:</span> {presentation.father.first_name} {presentation.father.last_name}
                   </p>
                 )}
               </div>
 
               {presentation.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
                   {presentation.note}
                 </p>
               )}

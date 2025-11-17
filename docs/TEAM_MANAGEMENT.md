@@ -428,7 +428,6 @@ export interface ParishInvitationWithDetails extends ParishInvitation {
   invited_by?: {
     id: string
     email: string | null
-    full_name: string | null
   } | null
 }
 ```

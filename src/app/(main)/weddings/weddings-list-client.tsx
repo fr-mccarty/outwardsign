@@ -150,7 +150,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
               </div>
 
               {wedding.notes && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
                   {wedding.notes}
                 </p>
               )}

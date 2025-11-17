@@ -54,6 +54,20 @@ This document provides a complete reference of all test files and individual tes
 | should show error for invalid credentials | Validates error handling when signup credentials are invalid |
 | should navigate from home to signup | Confirms navigation path from homepage to signup page works correctly |
 
+### `tests/login.spec.ts` (7 tests)
+
+**Module:** Login Flow
+
+| Test | Description |
+|------|-------------|
+| should login with valid credentials and redirect to dashboard | Verifies successful login with valid credentials navigates to dashboard |
+| should show error for invalid credentials | Validates error message displays when login credentials are incorrect |
+| should show error for empty email | Confirms browser validation prevents submission without email |
+| should show error for empty password | Confirms browser validation prevents submission without password |
+| should navigate from home to login | Verifies navigation path from homepage to login page works correctly |
+| should navigate from login to signup | Confirms navigation from login page to signup page via link |
+| should show loading state during login | Validates loading state (button text changes) displays during authentication |
+
 ---
 
 ## Sacrament Modules
@@ -438,17 +452,17 @@ This document provides a complete reference of all test files and individual tes
 
 ## Test Statistics
 
-**Total Test Files:** 19 (excluding templates and backups)
+**Total Test Files:** 20 (excluding templates and backups)
 
 **Total Tests by Category:**
-- **Authentication:** 3 tests
+- **Authentication:** 10 tests (Signup: 3, Login: 7)
 - **Sacrament Modules:** 30 tests (5 modules × 5-6 tests each)
 - **Liturgical Modules:** 22 tests (Masses: 6, Mass Intentions: 9, Templates: 7)
 - **Supporting Modules:** 28 tests (People: 5, Locations: 5, Events: 8, Readings: 5, Groups: 18)
 - **Picker Components:** 12 tests (Person: 7, Event: 5)
 - **Application Features:** 45 tests (Dashboard: 19, Calendar: 10, Parish Settings: 16)
 
-**Total Active Tests:** ~140 tests (some skipped in groups-membership)
+**Total Active Tests:** ~147 tests (some skipped in groups-membership)
 
 **Skipped Tests:** 11 tests (all in groups-membership.spec.ts)
 

@@ -776,6 +776,7 @@ He leads me beside still waters.`
 
 ## Related Documentation
 
+- **[CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md)** - Section types, interfaces, strict vs. flexible patterns, shared builders
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)** - Setup and architecture for new modules
 - **[STYLE_VALUES.md](./STYLE_VALUES.md)** - Easy-to-edit style value reference
 - **[liturgical-script-styles.ts](../src/lib/styles/liturgical-script-styles.ts)** - Central styling configuration

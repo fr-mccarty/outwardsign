@@ -23,21 +23,14 @@
 - [Testing](#testing)
 - [Tools](#tools)
 - [🔴 Accessing Records](#-accessing-records)
-- [🔴 Role Permissions](#-role-permissions)
 - [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
+- [📖 Architecture](#-architecture)
 - [📖 Styling](#-styling)
 - [🔴 Forms](#-forms)
 - [🔴 Module Structure (Main Files)](#-module-structure-main-files)
 - [📖 Additional Module Essentials](#-additional-module-essentials)
   - [🔴 Constants Pattern](#-constants-pattern-critical)
-- [📖 Data Flow Pattern](#-data-flow-pattern)
-- [Breadcrumbs](#breadcrumbs)
-- [Code Conventions](#code-conventions)
-  - [🔴 Bilingual Implementation](#-bilingual-implementation-english--spanish)
-  - [🔴 Page Title Formatting](#-page-title-formatting-critical)
-  - [Abstraction Principle (Rule of Three)](#abstraction-principle-rule-of-three)
-  - [🔴 Helper Utilities Pattern](#-helper-utilities-pattern-critical)
+- [📖 Code Conventions](#-code-conventions)
 - [🔴 Design Principles](#-design-principles)
 - [🔴 Creating New Modules](#-creating-new-modules)
 - [Known Issues](#known-issues)
@@ -54,7 +47,12 @@
 
 When you need detailed information on forms, styling, components, modules, testing, liturgical calendar system, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.
 
+**New to the project?** Start with [DEFINITIONS.md](./docs/DEFINITIONS.md) to understand liturgical terminology (reader, presider, sacraments vs sacramentals) used throughout the application.
+
 **Key Documentation Files:**
+- **[DEFINITIONS.md](./docs/DEFINITIONS.md)** - Liturgical and application terminology (reader, presider, sacraments vs sacramentals, event types)
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, role permissions, component communication, performance
+- **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Coding standards including bilingual implementation, page title formatting, UI patterns, helper utilities
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
 - **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
 - **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Complete component library reference (pickers, forms, layout components, hooks)
@@ -62,6 +60,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[FORMATTERS.md](./docs/FORMATTERS.md)** - Helper and formatting functions (dates, names, locations, page titles, filenames)
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Liturgical script system for individual entity documents (weddings, funerals, etc.) with template builders and exports
+- **[CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)** - Content builder section types (cover, readings, psalm, gospel, petitions, announcements) with strict interfaces and shared builders
 - **[REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md)** - Report builder system for tabular reports with aggregations, filtering, and CSV/Print exports
 - **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
 - **[USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md)** - User documentation system structure, adding pages, sidebar navigation, breadcrumbs, and multi-language support
@@ -163,45 +162,44 @@ During development, **DO NOT use the Supabase MCP server** for any database oper
 ## 🔴 Accessing Records
 The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
 
-## 🔴 Role Permissions
-
-**Roles are assigned at invitation time** - when inviting someone to the parish, the inviter selects their role and (for ministry-leaders) which modules they can access.
-
-- **Admin**: Parish settings, parish management, manage parishioners, manage templates, full access to all modules
-- **Staff**: Can create, read, update, and delete all sacrament/event modules (weddings, funerals, baptisms, etc.), can invite parishioners to parish
-- **Ministry-Leader**: Configurable per-user module access - when inviting someone as a ministry-leader, admin/staff selects which specific modules (masses, groups, weddings, etc.) they can access
-- **Parishioner**: Read-only access to modules shared with them, can share modules with family
-
-**Note**: Roles cannot be changed after invitation - if someone needs a different role, they must be removed and re-invited.
-
 ## Tech Stack
-**Frontend:** Next.js 13+ with App Router  
-**Database:** Supabase (PostgreSQL)  
-**Authentication:** Supabase Auth with server-side session management  
-**API:** Server Actions for secure data operations  
-**UI Components:** Radix UI primitives with shadcn/ui styling  
-**Icons:** Lucide React  
-**Styling:** Tailwind CSS (mobile-first approach)  
-**Coding Tool:** Claude Code  
+**Frontend:** Next.js 13+ with App Router
+**Database:** Supabase (PostgreSQL)
+**Authentication:** Supabase Auth with server-side session management
+**API:** Server Actions for secure data operations
+**UI Components:** Radix UI primitives with shadcn/ui styling
+**Icons:** Lucide React
+**Styling:** Tailwind CSS (mobile-first approach)
+**Coding Tool:** Claude Code
 **Deployment:** Vercel
 
-## Architecture
+## 📖 Architecture
 
-### Data Architecture
-**Parish Structure:**
-- Each main record everywhere (excluding pivot tables) should have a `parish_id`
-- Data is scoped to parishes
-- Shared access within team boundaries
+**For comprehensive architecture documentation, see [ARCHITECTURE.md](./docs/ARCHITECTURE.md).**
 
-**Naming Conventions:**
-- Database tables: plural form (e.g., `petitions`, `baptisms`)
-- Database columns: singular form (e.g., `note`, not `notes`)
-- TypeScript interfaces: singular form (e.g., `Petition`, `Baptism`)
-- **React state variables**: Match database column names (singular form)
-  - State variable: `note` (not `notes`)
-  - Setter function: `setNote` (not `setNotes`)
-  - Example: `const [note, setNote] = useState('')` for a `note` column
-- **Special Case:** For simplification, "Quinceañeras" is spelled without the ñ in all programming contexts (file names, variables, types, routes, etc.). Use "Quinceanera" in code, "Quinceañera" in user-facing text only.
+### Quick Reference
+
+**Data Architecture:**
+- Parish-scoped multi-tenancy (all records have `parish_id`)
+- Naming: Tables plural, columns singular, interfaces singular
+- React state variables match database column names (singular)
+
+**Role Permissions:**
+- Admin: Full access to all modules and parish management
+- Staff: CRUD access to all sacrament/event modules
+- Ministry-Leader: Configurable per-module access
+- Parishioner: Read-only access to shared modules
+
+**Data Flow:**
+- Server → Client: Props (serializable data)
+- Client → Server: Server Actions
+- WithRelations pattern for fetching entities with related data
+
+**Authentication:**
+- All server pages check auth via `createClient()` and `getUser()`
+- RLS policies enforce permissions automatically
+
+**See [ARCHITECTURE.md](./docs/ARCHITECTURE.md) for complete details on data flow patterns, server actions, component communication, performance optimization, and breadcrumbs.**
 
 ## 📖 Styling
 
@@ -465,275 +463,46 @@ export async function get[Entity]WithRelations(id: string): Promise<[Entity]With
 - Eliminates unsafe `as any` type casts
 - View pages need full entity details for rendering
 
-## 📖 Data Flow Pattern
-Server → Client: Pass serializable data as props
-- List: initialData={entities}
-- Form: entity={entity} (edit) or no prop (create)
-- Actions: entity={entity}
+## 📖 Code Conventions
 
-### Server Actions (lib/actions/[entity].ts)
-Required exports:
-- get[Entities](filters?: FilterParams) - Fetch list with optional server-side filtering
-- get[Entity](id) - Fetch single entity (basic)
-- get[Entity]WithRelations(id) - Fetch entity with all related data (for view/edit pages)
-- create[Entity](data) - Create
-- update[Entity](id, data) - Update
-- delete[Entity](id) - Delete
-- Types: [Entity], [Entity]WithRelations, Create[Entity]Data, Update[Entity]Data
+**For comprehensive coding standards, see [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md).**
 
-**Simplified Update Pattern:**
-Use Object.fromEntries to filter undefined values instead of 30+ if statements:
+### Quick Reference
 
-```tsx
-export async function update[Entity](id: string, data: Update[Entity]Data): Promise<[Entity]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+**General:**
+- Indentation: 2 spaces
+- Language: TypeScript for all new files
+- Component type: Server Components by default, Client Components only when needed
+- Task storage: Use `/tasks` directory (not `/todos`)
 
-  // Build update object from only defined values (filters out undefined)
-  const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
-  )
+**🔴 Bilingual Implementation (CRITICAL):**
+- Most content is bilingual (English & Spanish)
+- All user-facing text must have both `en` and `es` translations
+- Currently hard-coded to `.en` (temporary until language selector is implemented)
 
-  const { data: entity, error } = await supabase
-    .from('[entities]')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single()
+**🔴 Page Title Formatting (CRITICAL):**
+- Format: `[Dynamic Content]-[Module Name]`
+- Module name ALWAYS at the end
+- Examples: `"Smith-Jones-Wedding"`, `"John Doe-Funeral"`, `"Wedding"` (fallback)
 
-  if (error) {
-    console.error('Error updating [entity]:', error)
-    throw new Error('Failed to update [entity]')
-  }
+**🔴 Helper Utilities (CRITICAL):**
+- **ALWAYS use helper functions** for formatting (never inline)
+- **ALWAYS format dates** - never display raw date strings like "2025-07-15"
+- Use `formatDatePretty()`, `formatPersonName()`, `getWeddingPageTitle()`, etc.
+- See [FORMATTERS.md](./docs/FORMATTERS.md) for complete reference
 
-  revalidatePath('/[entities]')
-  revalidatePath(`/[entities]/${id}`)
-  revalidatePath(`/[entities]/${id}/edit`)
-  return entity
-}
-```
+**UI Patterns:**
+- Use shadcn components, not system dialogs
+- Empty states must have a "Create New" button
+- **NEVER nest clickable elements** (button inside card, link inside button)
+- Modals should be scrollable with fixed header/footer
 
-**Cache revalidation:** After mutations (create/update/delete), use revalidatePath() to invalidate Next.js cache for affected routes. Always revalidate both list pages and detail pages.
+**Abstraction Principle (Rule of Three):**
+- Wait for 3 uses before abstracting
+- Copy-paste acceptable for 1-2 uses
+- At 3 uses, refactor to remove duplication
 
-### Authentication Pattern
-Every server page starts with:
-const supabase = await createClient()
-const { data: { user } } = await supabase.auth.getUser()
-if (!user) redirect('/login')
-
-### Error Handling
-- Not found: notFound() when entity doesn't exist
-- Client errors: toast.error() + try/catch
-- Server redirects: redirect('/path')
-
-### Component Communication
-- Server to Client: Props only (serializable data)
-- Client to Server: Server Actions via 'use server'
-- Client state: useState for form fields, temporary UI state
-- URL search params: Filters, pagination, search (shareable state)
-- Context: UI state only (theme, breadcrumbs, modals) - NEVER for data fetching
-- No prop drilling: Use Server Actions for data operations
-
-**For form event handling (nested forms, e.stopPropagation), see [FORMS.md](./docs/FORMS.md).**
-
-### 🔴 Picker Modal Behavior (Critical)
-
-**For detailed picker behavior patterns, see [PICKER_PATTERNS.md](./docs/PICKER_PATTERNS.md).**
-
-**CRITICAL RULE:** When creating entities from picker modals (PeoplePicker, EventPicker), follow this pattern:
-1. Save immediately to database
-2. Auto-select newly created entity
-3. Close modal
-4. **NO REDIRECT** - stay on parent form
-
-See PICKER_PATTERNS.md for implementation details, verification checklist, and common mistakes to avoid.
-
-### Performance Patterns
-**Server-side filtering:** List pages accept searchParams prop. Pass these to get[Entities]() functions to filter on the server, not the client.
-**Parallel data fetching:** Use Promise.all() when fetching multiple independent data sources in server components.
-**URL state management:** Client components should update URL search params via router.push() instead of maintaining local filter state. This makes state shareable and linkable.
-
-### Loading and Error States
-**Pattern:** Create reusable skeleton and error components in components/ directory. Route-level loading.tsx and error.tsx files import and render these reusable components. This ensures consistent UX across modules.
-
-**For form validation patterns with Zod, see [FORMS.md](./docs/FORMS.md).**
-
-## Breadcrumbs
-Client Component (BreadcrumbSetter):
-- Sets breadcrumbs in context via useBreadcrumbs() hook
-- Returns null (invisible component)
-
-## Code Conventions
-
-### General
-- **Indentation:** 2 spaces
-- **Language:** TypeScript for all new files
-- **Component type:** Server Components by default, Client Components only when needed
-
-### Project Organization
-- **Task storage:** Use the `/tasks` directory to store task files and documentation
-- **No `/todos` directory:** Do NOT use a `/todos` directory - agents commonly misunderstand the spelling (todos vs to-dos)
-- **Naming convention:** All task-related files should be stored in `/tasks/[task-name].md`
-- **Why:** Consistent spelling and directory naming prevents confusion and makes task management more reliable
-
-### Spelling and Typos
-- **Proactive corrections:** Always suggest spelling corrections when you notice typos, misspellings, or grammatical errors in code comments, documentation, user-facing text, or variable names
-- **Scope:** This applies to all text content including comments, strings, documentation files, README files, and identifiers (where appropriate and safe to rename)
-- **User preference:** The user wants to maintain high-quality, professional text throughout the codebase
-
-### 🔴 Bilingual Implementation (English & Spanish)
-**CRITICAL:** Most content in the application is bilingual (English and Spanish). Always check the language implementation of each change.
-
-- **Homepage:** All text must be in both English and Spanish in the translations object
-- **User-facing content:** Forms, labels, messages, and UI text should support both languages where applicable
-- **Verification:** After making changes to user-facing text, especially on the homepage, verify that both English and Spanish translations are complete and accurate
-- **Translation pattern:** Follow the existing pattern in `src/app/page.tsx` with translations object containing `en` and `es` keys
-
-**🔴 TEMPORARY: Hard-Coded English in Constants**
-- **Current state:** All constant label usage (status labels, event type labels, etc.) currently hard-codes `.en` throughout the application
-- **Example:** `MODULE_STATUS_LABELS[status].en` instead of dynamic language selection
-- **Why:** Temporary approach while full language selector system is being implemented
-- **Infrastructure exists:** All labels have both `.en` and `.es` properties ready for use
-- **Coming soon:** See [ROADMAP.md](./docs/ROADMAP.md) Phase I - Multilingual Support for planned language selector implementation
-- **See:** [CONSTANTS_PATTERN.md](./docs/CONSTANTS_PATTERN.md) for detailed documentation
-
-**When in doubt:** Check existing bilingual implementations (homepage, constants file) for the correct pattern.
-
-### UI Patterns
-- Do not use the system dialog for confirming or alerting the user. Use shadcn components.
-- Handling an empty table: make sure there is always a button to create new, unless otherwise specified. Be sure to use the icon which the module is using in the main-sidebar.
-- Table content should always be fetched server-side. Pagination should always be available. Use shadcn components.
-- **Modals should be scrollable:** When creating modals with content that may overflow, use flexbox layout with a fixed header and scrollable content area. Structure: `DialogContent` with `flex flex-col`, `DialogHeader` with `flex-shrink-0`, and content wrapper with `overflow-y-auto flex-1`. Reference implementation: `src/components/calendar/day-events-modal.tsx`
-- **Language selector placement:** Ordinarily, the language selector should be positioned in the upper right-hand corner of the interface.
-- **🔴 CRITICAL - Click Hierarchy:** NEVER nest clickable elements inside other clickable elements (button inside button, link inside clickable card, etc.). This causes confusion, accessibility problems, and unpredictable behavior. See [DESIGN_PRINCIPLES.md](./docs/DESIGN_PRINCIPLES.md) Click Hierarchy section for solution patterns.
-
-### 🔴 Page Title Formatting (CRITICAL)
-
-**All module view and edit pages MUST follow this title format:**
-
-**Format:** `[Dynamic Content]-[Module Name]`
-
-**Rules:**
-- Module name (Wedding, Funeral, Baptism, etc.) ALWAYS comes at the END
-- Use dashes with NO SPACES around them
-- Dynamic content (names, dates) comes BEFORE the module name
-- Default fallback is just the module name if no dynamic content exists
-
-**Examples:**
-```typescript
-// Weddings
-title = "Smith-Jones-Wedding"        // Bride and groom last names
-title = "Smith-Wedding"              // Single last name
-title = "Wedding"                    // Fallback
-
-// Funerals
-title = "John Doe-Funeral"          // Full name (spaces allowed in name, not around dash)
-title = "Funeral"                    // Fallback
-
-// Baptisms
-title = "Jane Smith-Baptism"        // Full name
-title = "Jane-Baptism"              // First name only
-title = "Baptism"                    // Fallback
-
-// Masses
-title = "Fr. John Smith-12/25/2024-Mass"  // Presider and date
-title = "Fr. John Smith-Mass"             // Presider only
-title = "12/25/2024-Mass"                 // Date only
-title = "Mass"                            // Fallback
-
-// Mass Intentions
-title = "For John Doe-Mass Intention"     // Intention text
-title = "Mass Intention"                  // Fallback
-
-// Templates
-title = "Sunday Mass-Template"            // Template name
-title = "Template"                        // Fallback
-```
-
-**Implementation Pattern:**
-```typescript
-// In view and edit page.tsx files
-let title = "ModuleName"  // Set fallback first
-
-if (dynamicContent) {
-  title = `${dynamicContent}-ModuleName`  // NO SPACES around dash
-}
-```
-
-**This pattern applies to:**
-- All module view pages (`[id]/page.tsx`)
-- All module edit pages (`[id]/edit/page.tsx`)
-- Any other page showing a specific module entity
-
-### Development Guidelines
-- **Always use custom components** before falling back to shadcn/ui components
-- **Always use shadcn/ui components** before falling back to creating something completely new or even creating a new component
-- You may create new components, but always ask before doing it.
-- **Follow TypeScript patterns** established in existing components
-- **Maintain responsive design** across all new components
-- **Integrate with Supabase Auth** for user-facing features
-- **Use consistent design patterns** from existing component library
-
-### Abstraction Principle (Rule of Three)
-
-**When to abstract code into reusable patterns:**
-
-- **Wait for three uses** - Don't create abstractions (helper functions, components, utilities) until a pattern appears at least three times
-- **Abstract at three uses** - Once something is used three times, it SHOULD be abstracted into a reusable component, function, or utility
-- **Why this matters:**
-  - Premature abstraction creates unnecessary complexity
-  - Waiting reveals the actual pattern and variation points
-  - Three instances provide enough data to design a good abstraction
-  - Prevents "one-off" abstractions that only serve a single use case
-
-**Examples:**
-- **Components**: If three forms need the same input pattern → create reusable FormField component
-- **Utilities**: If three files format dates the same way → create formatDate() utility
-- **Hooks**: If three components manage the same state pattern → create custom hook
-- **Server Actions**: If three modules have identical CRUD patterns → create generic helper
-
-**Exception**: Copy-paste is acceptable for 1-2 uses. At 3 uses, refactor to remove duplication.
-
-### 🔴 Helper Utilities Pattern (CRITICAL)
-
-**For comprehensive helper function documentation, see [FORMATTERS.md](./docs/FORMATTERS.md).**
-
-**Location:** `src/lib/utils/formatters.ts` and `src/lib/utils/date-format.ts`
-
-**STRONGLY PREFER using helper functions** for all formatting needs. These centralized utilities ensure consistency across the application.
-
-**🔴 CRITICAL RULES:**
-
-1. **ALWAYS use helper functions** - Never write inline formatting code
-2. **🔴 ALWAYS format dates** - Never display raw date strings (e.g., "2025-07-15")
-   - Use `formatDatePretty()`, `formatDateLong()`, etc. from `date-format.ts`
-   - This applies to UI, view pages, forms, **content builders**, **templates**, print views, and exports
-3. **Request permission before creating new helpers** - Ask user before adding new functions
-4. **Check existing helpers first** - Search both `formatters.ts` and `date-format.ts`
-
-**Available Helper Categories:**
-
-- **Date/Time Formatting** - `formatDatePretty()`, `formatDateLong()`, `formatEventDateTime()`, etc.
-- **Person Formatting** - `formatPersonName()`, `formatPersonWithPhone()`
-- **Location Formatting** - `formatLocationWithAddress()`, `formatLocationName()`, `formatAddress()`
-- **Page Title Generators** - `getWeddingPageTitle()`, `getFuneralPageTitle()`, etc.
-- **Filename Generators** - `getWeddingFilename()`, `getFuneralFilename()`, etc.
-
-**Usage Pattern:**
-```typescript
-import { formatPersonName, getWeddingPageTitle } from '@/lib/utils/formatters'
-import { formatDatePretty } from '@/lib/utils/date-format'
-
-const brideName = formatPersonName(wedding.bride)
-const eventDate = formatDatePretty(wedding.wedding_event.start_date)
-const pageTitle = getWeddingPageTitle(wedding)
-```
-
-**See [FORMATTERS.md](./docs/FORMATTERS.md) for:**
-- Complete function reference with examples
-- Guidelines for creating new helpers
-- When NOT to use formatters
+**See [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md) for complete details on all coding standards, patterns, and examples.**
 
 ## 🔴 Design Principles
 

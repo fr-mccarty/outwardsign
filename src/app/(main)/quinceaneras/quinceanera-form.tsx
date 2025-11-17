@@ -274,6 +274,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             onShowPickerChange={quinceaneraGirl.setShowPicker}
             placeholder="Select Quinceañera"
             openToNewPerson={!quinceaneraGirl.value}
+            testId="quinceanera"
           />
           <EventPickerField
             label="Mass Event"

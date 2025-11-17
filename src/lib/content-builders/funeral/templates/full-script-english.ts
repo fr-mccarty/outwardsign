@@ -213,6 +213,154 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
     pageBreakBefore: !!funeral.gospel_reading,
   })
 
+  // Build ceremony sections (Final Commendation)
+  const ceremonySections: ContentSection[] = []
+
+  const deceasedName = funeral.deceased ? formatPersonName(funeral.deceased) : 'N.'
+
+  // Final Commendation
+  ceremonySections.push({
+    id: 'final-commendation',
+    pageBreakBefore: true,
+    elements: [
+      {
+        type: 'section-title',
+        text: 'FINAL COMMENDATION',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'The priest invites those present to pray:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: 'Before we go our separate ways, let us take leave of our brother/sister. May our farewell express our affection for him/her; may it ease our sadness and strengthen our hope. One day we shall joyfully greet him/her again when the love of Christ, which conquers all things, destroys even death itself.',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'The priest may sprinkle the coffin with holy water and incense it. Then he says the prayer of commendation:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `Into your hands, Father of mercies, we commend our brother/sister ${deceasedName}, in the sure and certain hope that, together with all who have died in Christ, he/she will rise with him on the last day.
+
+We give you thanks for the blessings which you have bestowed upon ${deceasedName} in this life: they are signs to us of your goodness and of our fellowship with the saints in Christ.
+
+Merciful Lord, turn toward us and listen to our prayers: open the gates of paradise to your servant and help us who remain to comfort one another with assurances of faith, until we all meet in Christ and are with you and with our brother/sister forever.
+
+We ask this through Christ our Lord.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'ALL:',
+        text: 'Amen.',
+      },
+    ],
+  })
+
+  // Song of Farewell
+  ceremonySections.push({
+    id: 'song-of-farewell',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'SONG OF FAREWELL',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'The following or another suitable song may be sung:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'ALL:',
+        text: `Saints of God, come to his/her aid!
+Hasten to meet him/her, angels of the Lord!
+
+Receive his/her soul and present him/her to God the Most High.
+
+May Christ, who called you, take you to himself;
+may angels lead you to the bosom of Abraham.
+
+Receive his/her soul and present him/her to God the Most High.
+
+Eternal rest grant unto him/her, O Lord,
+and let perpetual light shine upon him/her.
+
+Receive his/her soul and present him/her to God the Most High.`,
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'priest-dialogue',
+        text: 'In peace let us take our brother/sister to his/her place of rest.',
+      },
+    ],
+  })
+
+  // Procession to Place of Committal
+  ceremonySections.push({
+    id: 'procession',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'PROCESSION TO PLACE OF COMMITTAL',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'The following or another suitable song may be sung during the procession:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'prayer-text',
+        text: `May the angels lead you into paradise;
+may the martyrs come to welcome you
+and take you to the holy city,
+the new and eternal Jerusalem.
+
+May choirs of angels welcome you
+and lead you to the bosom of Abraham;
+and where Lazarus is poor no longer
+may you find eternal rest.`,
+      },
+    ],
+  })
+
   const petitionsSection = buildPetitionsSection({
     petitions: funeral.petitions,
     petition_reader: funeral.petition_reader,
@@ -228,6 +376,7 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
     psalmSection ||
     secondReadingSection ||
     gospelSection ||
+    ceremonySections.length > 0 ||
     petitionsSection ||
     announcementsSection
   )
@@ -243,6 +392,10 @@ export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDo
   if (psalmSection) sections.push(psalmSection)
   if (secondReadingSection) sections.push(secondReadingSection)
   if (gospelSection) sections.push(gospelSection)
+
+  // Add ceremony sections (between Gospel and Petitions)
+  sections.push(...ceremonySections)
+
   if (petitionsSection) sections.push(petitionsSection)
   if (announcementsSection) sections.push(announcementsSection)
 

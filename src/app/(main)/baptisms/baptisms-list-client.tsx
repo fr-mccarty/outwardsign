@@ -145,7 +145,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
               </div>
 
               {baptism.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
                   {baptism.note}
                 </p>
               )}

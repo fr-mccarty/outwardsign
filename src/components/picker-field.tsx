@@ -20,6 +20,7 @@ interface BasePickerFieldProps<T> {
   children: ReactNode
   descriptionPosition?: 'before' | 'after'
   displayLayout?: 'single-line' | 'multi-line'
+  testId?: string // Optional override for data-testid
 }
 
 export function PickerField<T>({
@@ -36,8 +37,9 @@ export function PickerField<T>({
   children,
   descriptionPosition = 'after',
   displayLayout = 'single-line',
+  testId,
 }: BasePickerFieldProps<T>) {
-  const labelId = label.toLowerCase().replace(/\s+/g, '-')
+  const labelId = testId || label.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div className="space-y-2">

@@ -143,14 +143,14 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
                   </p>
                 )}
                 {quinceanera.family_contact && (
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground hidden md:block">
                     <span className="font-medium">Family Contact:</span> {quinceanera.family_contact.first_name} {quinceanera.family_contact.last_name}
                   </p>
                 )}
               </div>
 
               {quinceanera.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
                   {quinceanera.note}
                 </p>
               )}

@@ -53,16 +53,16 @@ export default defineConfig({
         storageState: path.join(__dirname, 'playwright/.auth/staff.json'),
       },
       dependencies: ['setup'], // Run setup before this project
-      testIgnore: [/signup\.spec\.ts/, /TEST_TEMPLATE\.spec\.ts/], // Exclude signup tests and template from authenticated project
+      testIgnore: [/signup\.spec\.ts/, /login\.spec\.ts/, /TEST_TEMPLATE\.spec\.ts/], // Exclude auth tests and template from authenticated project
     },
-    // Unauthenticated tests project (for signup flow)
+    // Unauthenticated tests project (for signup and login flows)
     {
       name: 'chromium-unauth',
       use: {
         ...devices['Desktop Chrome'],
         // No storageState - tests run without authentication
       },
-      testMatch: /signup\.spec\.ts/, // Only run signup tests in this project
+      testMatch: [/signup\.spec\.ts/, /login\.spec\.ts/], // Run authentication tests in this project
     },
   ],
 

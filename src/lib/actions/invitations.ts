@@ -36,7 +36,6 @@ export interface ParishInvitationWithDetails extends ParishInvitation {
   invited_by?: {
     id: string
     email: string | null
-    full_name: string | null
   } | null
 }
 
@@ -95,7 +94,6 @@ export async function getInvitationByToken(token: string): Promise<ParishInvitat
   const invitedByUser = inviterData?.user ? {
     id: inviterData.user.id,
     email: inviterData.user.email,
-    full_name: inviterData.user.user_metadata?.full_name || null
   } : null
 
   return {
@@ -161,7 +159,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   }
 
   // Send invitation email
-  const inviterName = user.user_metadata?.full_name || user.email || 'A parish member'
+  const inviterName = user.email || 'A parish member'
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/accept-invitation?token=${token}`
 
   const emailResult = await sendParishInvitationEmail(

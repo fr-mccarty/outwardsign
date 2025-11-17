@@ -1,7 +1,7 @@
 /**
  * Default petition templates for weddings
  * Variables use {{variable_name}} syntax
- * Available variables: {{bride_name}}, {{groom_name}}, {{bride_full_name}}, {{groom_full_name}}
+ * Available variables: {{bride_name}}, {{groom_name}}
  */
 
 export interface PetitionTemplate {

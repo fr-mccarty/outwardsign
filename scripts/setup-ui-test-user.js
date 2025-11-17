@@ -62,9 +62,6 @@ async function setupUITestUser() {
         email: UI_TEST_EMAIL,
         password: UI_TEST_PASSWORD,
         email_confirm: true,
-        user_metadata: {
-          full_name: 'Playwright UI Tester'
-        }
       });
 
       if (createError) {

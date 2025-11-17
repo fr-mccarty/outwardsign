@@ -1035,6 +1035,74 @@ const breadcrumbs = [
   - Sacrament modules: `entity.[entity]_event?.language`
   - Masses: `mass.event?.language`
 
+**Responsive Content Pattern:**
+
+To maintain readability on mobile devices while showing full details on desktop, use responsive utility classes to hide supplementary content on small screens:
+
+**Content Priority:**
+1. **Essential (Always visible)**: Event date/time, primary person name
+2. **Secondary (Hidden on mobile)**: Additional contacts, secondary people
+3. **Supplementary (Hidden on mobile)**: Notes, descriptions
+
+**Implementation Pattern:**
+```tsx
+<ListViewCard
+  title="Module Name"
+  editHref={`/modules/${entity.id}/edit`}
+  viewHref={`/modules/${entity.id}`}
+  status={entity.status}
+  statusType="module"
+  language={entity.event?.language}
+>
+  {/* ESSENTIAL - Always visible */}
+  {entity.event && (
+    <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+        <Calendar className="h-3 w-3" />
+        {formatDatePretty(entity.event.start_date)}
+        {entity.event.start_time && ` at ${formatTime(entity.event.start_time)}`}
+      </div>
+    </div>
+  )}
+
+  <div className="text-sm space-y-1">
+    {/* PRIMARY PERSON - Always visible */}
+    {entity.primary_person && (
+      <p className="text-muted-foreground">
+        <span className="font-medium">Label:</span> {entity.primary_person.first_name} {entity.primary_person.last_name}
+      </p>
+    )}
+
+    {/* SECONDARY CONTACTS - Hidden on mobile, visible on tablet+ */}
+    {entity.secondary_person && (
+      <p className="text-muted-foreground hidden md:block">
+        <span className="font-medium">Label:</span> {entity.secondary_person.first_name} {entity.secondary_person.last_name}
+      </p>
+    )}
+  </div>
+
+  {/* NOTES - Hidden on mobile, visible on tablet+ */}
+  {entity.notes && (
+    <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
+      {entity.notes}
+    </p>
+  )}
+</ListViewCard>
+```
+
+**Module-Specific Responsive Rules:**
+- **Weddings**: Keep visible: Date/time, Bride, Groom | Hide on mobile: Notes
+- **Funerals**: Keep visible: Date/time, Deceased | Hide on mobile: Family Contact, Notes
+- **Baptisms**: Keep visible: Date/time, Child | Hide on mobile: Notes
+- **Quinceaneras**: Keep visible: Date/time, Celebrant | Hide on mobile: Notes
+- **Presentations**: Keep visible: Date/time, Child | Hide on mobile: Notes
+
+**Rationale:**
+- Users need essential information (who, when) to identify records
+- Hiding all content on mobile forces unnecessary taps to view details
+- Secondary contacts and notes are useful but not critical for identification
+- Desktop users still see full content
+
 ---
 
 ### ModuleStatusLabel

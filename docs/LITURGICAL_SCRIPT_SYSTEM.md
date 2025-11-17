@@ -38,6 +38,8 @@
 
 **For element types and styling parameters, see [LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md).**
 
+**For section types and structure patterns, see [CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md).**
+
 ---
 
 ## Modules Using Content Builders
@@ -1090,6 +1092,7 @@ When adding liturgical scripts to a new module:
 
 ## Related Documentation
 
+- **[CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md)** - Section types, interfaces, strict vs. flexible patterns, shared builders
 - **[RENDERER.md](./RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word converters)
 - **[LITURGICAL_SCRIPT_REFERENCE.md](./LITURGICAL_SCRIPT_REFERENCE.md)** - Element types, usage rules, styling parameters, examples
 - **[STYLE_VALUES.md](./STYLE_VALUES.md)** - Easy-to-edit style value reference

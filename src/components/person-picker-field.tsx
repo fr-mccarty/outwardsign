@@ -19,6 +19,7 @@ interface PersonPickerFieldProps {
   visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
   requiredFields?: string[] // Fields that should be marked as required in the picker form
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
+  testId?: string // Optional override for data-testid
 }
 
 export function PersonPickerField({
@@ -34,6 +35,7 @@ export function PersonPickerField({
   visibleFields,
   requiredFields,
   autoSetSex,
+  testId,
 }: PersonPickerFieldProps) {
   return (
     <PickerField
@@ -47,6 +49,7 @@ export function PersonPickerField({
       required={required}
       icon={User}
       renderValue={(person) => `${person.first_name} ${person.last_name}`}
+      testId={testId}
     >
       <PeoplePicker
         open={showPicker}

@@ -271,6 +271,207 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
     sections.push(gospelSection)
   }
 
+  // Add ceremony sections (between Gospel and Petitions)
+  const quinceaneraName = quinceanera.quinceanera ? formatPersonName(quinceanera.quinceanera) : 'N.'
+
+  // Renewal of Baptismal Promises
+  sections.push({
+    id: 'renewal-of-promises',
+    pageBreakBefore: true,
+    elements: [
+      {
+        type: 'section-title',
+        text: 'RENOVACIÓN DE LAS PROMESAS BAUTISMALES',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El sacerdote se dirige a la quinceañera:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: `${quinceaneraName}, ¿renuncias a Satanás, a todas sus obras y a todas sus seducciones?`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'Sí, renuncio.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: '¿Crees en Dios, Padre todopoderoso, Creador del cielo y de la tierra?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'Sí, creo.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: '¿Crees en Jesucristo, su único Hijo, nuestro Señor, que nació de la Virgen María, padeció y fue sepultado, resucitó de entre los muertos y está sentado a la derecha del Padre?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'Sí, creo.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-dialogue',
+        text: '¿Crees en el Espíritu Santo, en la santa Iglesia católica, en la comunión de los santos, en el perdón de los pecados, en la resurrección de los muertos y en la vida eterna?',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'QUINCEAÑERA:',
+        text: 'Sí, creo.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: 'Esta es nuestra fe. Esta es la fe de la Iglesia que nos gloriamos de profesar en Cristo Jesús, Señor nuestro.',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'TODOS:',
+        text: 'Amén.',
+      },
+    ],
+  })
+
+  // Blessing of the Quinceañera
+  sections.push({
+    id: 'blessing',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'BENDICIÓN DE LA QUINCEAÑERA',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'priest-text',
+        text: `Señor Jesucristo, tú eres el camino, la verdad y la vida. Te pedimos que bendigas a ${quinceaneraName} al comenzar esta nueva etapa de su vida. Que siempre camine en tu camino, viva en tu verdad y comparta tu vida con quienes la rodean.
+
+Concédele sabiduría para discernir tu voluntad, valor para seguir donde tú guíes, y amor para reflejar tu presencia a todos los que encuentre.
+
+Protégela del mal, fortalécela en tiempos de prueba y llena su corazón de alegría mientras crece en la fe.
+
+Te lo pedimos por Cristo nuestro Señor.`,
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'response',
+        label: 'TODOS:',
+        text: 'Amén.',
+      },
+    ],
+  })
+
+  // Presentation of Symbols
+  sections.push({
+    id: 'presentation-of-symbols',
+    elements: [
+      {
+        type: 'section-title',
+        text: 'PRESENTACIÓN DE SÍMBOLOS',
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'El sacerdote puede bendecir y presentar regalos simbólicos como una Biblia, rosario, cruz u otros artículos religiosos. Si se presenta una tiara o corona:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `Esta corona es un símbolo de la dignidad que tienes como hija de Dios. Que siempre recuerdes que eres una hija del Rey del Cielo, llamada a vivir con gracia y virtud.`,
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'Si se presenta un anillo:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `Este anillo es un símbolo del amor eterno de Dios por ti. Así como este círculo no tiene fin, el amor de Dios por ti no tiene límites. Úsalo como un recordatorio de tu compromiso de vivir como la amada hija de Dios.`,
+      },
+      {
+        type: 'spacer',
+        size: 'medium',
+      },
+      {
+        type: 'rubric',
+        text: 'Si se presenta una Biblia:',
+      },
+      {
+        type: 'spacer',
+        size: 'small',
+      },
+      {
+        type: 'priest-text',
+        text: `Esta Biblia es la Palabra de Dios. Que la leas a menudo, atesores sus enseñanzas en tu corazón y dejes que guíe tu vida. A través de las Escrituras, que llegues a conocer el amor de Dios más profundamente cada día.`,
+      },
+    ],
+  })
+
   // Add petitions if present
   const petitionsSection = buildPetitionsSection({
     petitions: quinceanera.petitions,
@@ -286,7 +487,6 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
   // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
-    title: 'Acto de Acción de Gracias y Compromiso Personal',
     elements: [
       {
         type: 'section-title',

@@ -161,6 +161,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             placeholder="Select Child"
             openToNewPerson={!child.value}
             visibleFields={['email', 'phone_number', 'sex', 'note']}
+            testId="child"
           />
           <EventPickerField
             label="Event Information"
@@ -192,6 +193,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               placeholder="Select Family Contact"
               openToNewPerson={!mother.value}
               visibleFields={['email', 'phone_number', 'note']}
+              testId="mother"
             />
             <PersonPickerField
               label="Father"
