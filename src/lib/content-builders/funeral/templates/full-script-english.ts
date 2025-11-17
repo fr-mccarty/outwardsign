@@ -13,7 +13,11 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
-import { formatLocationText } from '../helpers'
+import {
+  formatLocationText,
+  buildTitleEnglish,
+  getEventSubtitleEnglish,
+} from '../helpers'
 
 /**
  * Build summary section (funeral service info)
@@ -162,31 +166,14 @@ function buildSummarySection(funeral: FuneralWithRelations): ContentSection {
  * Main builder function
  */
 export function buildFullScriptEnglish(funeral: FuneralWithRelations): LiturgyDocument {
-  // Build funeral title
-  const funeralTitle = funeral.deceased
-    ? `Funeral Liturgy for ${formatPersonName(funeral.deceased)}`
-    : 'Funeral Liturgy'
-
-  const eventDateTime =
-    funeral.funeral_event?.start_date && funeral.funeral_event?.start_time
-      ? formatEventDateTime(funeral.funeral_event)
-      : 'Missing Date and Time'
+  // Build funeral title and subtitle using helpers
+  const funeralTitle = buildTitleEnglish(funeral)
+  const eventDateTime = getEventSubtitleEnglish(funeral)
 
   const sections: ContentSection[] = []
 
-  // Add header to summary section
-  const summarySection = buildSummarySection(funeral)
-  summarySection.elements.unshift(
-    {
-      type: 'event-title',
-      text: funeralTitle,
-    },
-    {
-      type: 'event-datetime',
-      text: eventDateTime,
-    }
-  )
-  sections.push(summarySection)
+  // Add summary section (title/subtitle handled at document level)
+  sections.push(buildSummarySection(funeral))
 
   // Add all reading sections (only if they exist)
   const firstReadingSection = buildReadingSection({

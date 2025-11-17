@@ -382,6 +382,70 @@ text: formatLocationText(location)
 - String concatenation with conditionals (move to helpers)
 - Any logic that could be reused across templates
 
+### 🔴 CRITICAL - Title/Subtitle Pattern (NO Duplication!)
+
+**RULE:** Title and subtitle must ONLY be set at the document level. NEVER add them to section elements.
+
+**Why this matters:**
+- **Prevents duplication:** Renderers display the document title/subtitle automatically
+- **Consistency:** All formats (HTML, PDF, Word) render the title/subtitle in the same way
+- **Maintainability:** Change title rendering in one place (the renderer), not in every template
+
+**✅ CORRECT Pattern:**
+
+```typescript
+export function buildFullScriptEnglish(entity: EntityWithRelations): LiturgyDocument {
+  const title = buildTitleEnglish(entity)
+  const subtitle = getEventSubtitleEnglish(entity)
+
+  const sections: ContentSection[] = []
+
+  // NO title/subtitle elements added to sections!
+  sections.push(buildSummarySection(entity))
+
+  // Return with title/subtitle at document level
+  return {
+    id: entity.id,
+    type: 'module',
+    language: 'en',
+    template: 'module-full-script-english',
+    title,        // ← Set ONLY here
+    subtitle,     // ← Set ONLY here
+    sections,
+  }
+}
+```
+
+**❌ WRONG Pattern (causes duplication):**
+
+```typescript
+function buildSummarySection(entity: EntityWithRelations): ContentSection {
+  const elements: ContentElement[] = []
+
+  // ❌ NEVER DO THIS - causes title to appear twice!
+  elements.push({
+    type: 'event-title',
+    text: buildTitleEnglish(entity),
+  })
+
+  elements.push({
+    type: 'event-datetime',
+    text: getEventSubtitleEnglish(entity),
+  })
+
+  // ... rest of summary
+
+  return { id: 'summary', elements }
+}
+```
+
+**Common mistake locations:**
+- `summarySection.elements.unshift({ type: 'event-title', ... })` - NO!
+- `buildCoverPage()` adding title/datetime elements - NO!
+- Any use of `type: 'event-title'` or `type: 'event-datetime'` - NO!
+
+**Exception:** The `event-title` and `event-datetime` element types exist for legacy reasons but should NOT be used in new templates. The document-level `title` and `subtitle` fields are the correct approach.
+
 ```typescript
 import { [Module]WithRelations } from '@/lib/actions/[modules]'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'

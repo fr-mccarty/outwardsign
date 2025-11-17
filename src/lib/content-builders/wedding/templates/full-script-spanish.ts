@@ -24,6 +24,8 @@ import {
   formatLocationText,
   getReadingPericope,
   getPetitionsReaderName,
+  buildTitleSpanish,
+  getEventSubtitleSpanish,
 } from '../helpers'
 
 // ============================================================================
@@ -389,16 +391,9 @@ function buildAnnouncements(wedding: WeddingWithRelations): ContentSection | nul
  * 7. Announcements (if present)
  */
 export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDocument {
-  // Calculate title and datetime
-  const title =
-    wedding.bride && wedding.groom
-      ? `${wedding.bride.first_name} ${wedding.bride.last_name} & ${wedding.groom.first_name} ${wedding.groom.last_name}`
-      : CONTENT.defaultTitle
-
-  const subtitle =
-    wedding.wedding_event?.start_date && wedding.wedding_event?.start_time
-      ? formatEventDateTime(wedding.wedding_event)
-      : CONTENT.defaultDateTime
+  // Calculate title and datetime using helpers
+  const title = buildTitleSpanish(wedding)
+  const subtitle = getEventSubtitleSpanish(wedding)
 
   // Build all sections in order
   const sections: ContentSection[] = []

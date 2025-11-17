@@ -18,6 +18,8 @@ import {
   formatLocationText,
   getReadingPericope,
   getPetitionsReaderName,
+  buildTitleEnglish,
+  getEventSubtitleEnglish,
 } from '../helpers'
 
 /**
@@ -234,31 +236,13 @@ function buildSummarySection(wedding: WeddingWithRelations): ContentSection {
  * Build full wedding script (English)
  */
 export function buildFullScriptEnglish(wedding: WeddingWithRelations): LiturgyDocument {
-  const weddingTitle =
-    wedding.bride && wedding.groom
-      ? `${wedding.bride.first_name} ${wedding.bride.last_name} & ${wedding.groom.first_name} ${wedding.groom.last_name}`
-      : 'Wedding'
-
-  const eventDateTime =
-    wedding.wedding_event?.start_date && wedding.wedding_event?.start_time
-      ? formatEventDateTime(wedding.wedding_event)
-      : 'Missing Date and Time'
+  const weddingTitle = buildTitleEnglish(wedding)
+  const eventDateTime = getEventSubtitleEnglish(wedding)
 
   const sections: ContentSection[] = []
 
-  // Add header to summary section
-  const summarySection = buildSummarySection(wedding)
-  summarySection.elements.unshift(
-    {
-      type: 'event-title',
-      text: weddingTitle,
-    },
-    {
-      type: 'event-datetime',
-      text: eventDateTime,
-    }
-  )
-  sections.push(summarySection)
+  // Add summary section (title/subtitle handled at document level)
+  sections.push(buildSummarySection(wedding))
 
   // Add header before readings
   // sections.push({

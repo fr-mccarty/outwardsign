@@ -567,6 +567,12 @@ Client Component (BreadcrumbSetter):
 - **Language:** TypeScript for all new files
 - **Component type:** Server Components by default, Client Components only when needed
 
+### Project Organization
+- **Task storage:** Use the `/tasks` directory to store task files and documentation
+- **No `/todos` directory:** Do NOT use a `/todos` directory - agents commonly misunderstand the spelling (todos vs to-dos)
+- **Naming convention:** All task-related files should be stored in `/tasks/[task-name].md`
+- **Why:** Consistent spelling and directory naming prevents confusion and makes task management more reliable
+
 ### Spelling and Typos
 - **Proactive corrections:** Always suggest spelling corrections when you notice typos, misspellings, or grammatical errors in code comments, documentation, user-facing text, or variable names
 - **Scope:** This applies to all text content including comments, strings, documentation files, README files, and identifiers (where appropriate and safe to rename)
@@ -596,6 +602,7 @@ Client Component (BreadcrumbSetter):
 - Table content should always be fetched server-side. Pagination should always be available. Use shadcn components.
 - **Modals should be scrollable:** When creating modals with content that may overflow, use flexbox layout with a fixed header and scrollable content area. Structure: `DialogContent` with `flex flex-col`, `DialogHeader` with `flex-shrink-0`, and content wrapper with `overflow-y-auto flex-1`. Reference implementation: `src/components/calendar/day-events-modal.tsx`
 - **Language selector placement:** Ordinarily, the language selector should be positioned in the upper right-hand corner of the interface.
+- **🔴 CRITICAL - Click Hierarchy:** NEVER nest clickable elements inside other clickable elements (button inside button, link inside clickable card, etc.). This causes confusion, accessibility problems, and unpredictable behavior. See [DESIGN_PRINCIPLES.md](./docs/DESIGN_PRINCIPLES.md) Click Hierarchy section for solution patterns.
 
 ### 🔴 Page Title Formatting (CRITICAL)
 
@@ -694,6 +701,7 @@ These core principles guide all development decisions in Outward Sign:
 - **Clarity** - No ambiguity about what UI elements do
 - **Feedback** - System responds to every user action appropriately
 - **Affordances** - Things should look like what they do
+- **Click Hierarchy** - Never nest clickable elements inside other clickable elements
 - **Recognition over Recall** - Show options, don't require memorization
 - **Forgiving Design** - Make actions reversible, handle errors gracefully
 - **Progressive Disclosure** - Show basics first, reveal complexity as needed

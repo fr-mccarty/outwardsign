@@ -21,7 +21,7 @@ import { getQuinceaneras } from "@/lib/actions/quinceaneras"
 import { getPeople } from "@/lib/actions/people"
 import { getLocations } from "@/lib/actions/locations"
 import { getEvents } from "@/lib/actions/events"
-import { formatDistance } from "date-fns"
+import { formatDistance, format } from "date-fns"
 import { MiniCalendar } from "@/components/mini-calendar"
 
 export const dynamic = 'force-dynamic'
@@ -54,17 +54,27 @@ export default async function DashboardPage() {
   ])
 
   // Calculate statistics
-  const totalSacraments = weddings.length + funerals.length + presentations.length + quinceaneras.length
-
-  // This month's sacraments (based on created_at)
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const thisMonthSacraments = [
-    ...weddings.filter(w => new Date(w.created_at) >= startOfMonth),
-    ...funerals.filter(f => new Date(f.created_at) >= startOfMonth),
-    ...presentations.filter(p => new Date(p.created_at) >= startOfMonth),
-    ...quinceaneras.filter(q => new Date(q.created_at) >= startOfMonth)
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+  // Total sacraments (for empty state check)
+  const totalSacraments = weddings.length + funerals.length + presentations.length + quinceaneras.length
+
+  // Active sacraments (status = 'ACTIVE')
+  const activeSacraments = [
+    ...weddings.filter(w => w.status === 'ACTIVE'),
+    ...funerals.filter(f => f.status === 'ACTIVE'),
+    ...presentations.filter(p => p.status === 'ACTIVE'),
+    ...quinceaneras.filter(q => q.status === 'ACTIVE')
   ].length
+
+  // Scheduled this month (events with start_date in current month)
+  const scheduledThisMonth = events.filter(e => {
+    if (!e.start_date) return false
+    const eventDate = new Date(e.start_date)
+    return eventDate >= startOfMonth && eventDate <= endOfMonth
+  }).length
 
   // Upcoming events (next 7 days)
   const sevenDaysFromNow = new Date()
@@ -140,68 +150,76 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sacraments</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Sacraments</CardTitle>
             <Sparkles className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalSacraments}</div>
+            <div className="text-2xl font-bold">{activeSacraments}</div>
             <p className="text-xs text-muted-foreground">
-              Celebrations in preparation
+              In preparation now
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{thisMonthSacraments}</div>
-            <p className="text-xs text-muted-foreground">
-              New sacraments added
-            </p>
-          </CardContent>
-        </Card>
+        <Link href={`/calendar?view=month&date=${format(now, 'yyyy-MM-dd')}`} className="block hover:opacity-80 transition-opacity">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Scheduled This Month</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{scheduledThisMonth}</div>
+              <p className="text-xs text-muted-foreground">
+                Ceremonies this month
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">People Directory</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{people.length}</div>
-            <p className="text-xs text-muted-foreground">
-              People in your parish
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/people" className="block hover:opacity-80 transition-opacity">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">People Directory</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{people.length}</div>
+              <p className="text-xs text-muted-foreground">
+                People in your parish
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Locations</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{locations.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Venues registered
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/locations" className="block hover:opacity-80 transition-opacity">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Locations</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{locations.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Venues registered
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{upcomingEvents.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Events in next 7 days
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/events" className="block hover:opacity-80 transition-opacity">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">This Week</CardTitle>
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{upcomingEvents.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Events in next 7 days
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Main Content Cards */}

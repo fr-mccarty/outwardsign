@@ -28,6 +28,24 @@ These core design principles guide all development decisions in Outward Sign. Ev
 - Interactive elements should have clear visual indicators (icons, colors, borders)
 - Form fields should look like form fields
 
+## Click Hierarchy
+- **NEVER nest clickable elements inside other clickable elements**
+- Examples of what to avoid:
+  - Button inside a button
+  - Link inside a button
+  - Button inside a clickable card
+  - Link inside a clickable table row
+- This prevents:
+  - Confusing user interactions (which element responds?)
+  - Event propagation issues (both elements triggering)
+  - Accessibility problems for keyboard and screen reader users
+  - Unpredictable behavior across different browsers and devices
+- **Solution patterns:**
+  - If a card/row needs to be clickable, put action buttons OUTSIDE the clickable area
+  - Use `e.stopPropagation()` only when absolutely necessary (rare cases)
+  - Consider making the entire container clickable OR add separate action buttons (not both)
+  - Use visual hierarchy to make clear which element is the primary action
+
 ## Recognition over Recall
 - Show available options rather than requiring users to remember or type them
 - Use picker modals (PeoplePicker, EventPicker) instead of free-text input where possible
@@ -123,6 +141,7 @@ When implementing new features or reviewing code, ask:
 - Is this the simplest solution that could work?
 - Will users clearly understand what this does?
 - Does the UI provide appropriate feedback?
+- Are there any nested clickable elements that will confuse users?
 - Can users easily undo or recover from mistakes?
 - Are we showing too much complexity upfront?
 - Could this common task be made more efficient?

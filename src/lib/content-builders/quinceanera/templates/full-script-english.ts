@@ -13,7 +13,12 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
-import { formatLocationText, getReadingPericope } from '../helpers'
+import {
+  formatLocationText,
+  getReadingPericope,
+  buildTitleEnglish,
+  getEventSubtitleEnglish,
+} from '../helpers'
 
 /**
  * Build summary section (quinceañera celebration info)
@@ -209,30 +214,13 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
  * Build full quinceañera script (English)
  */
 export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): LiturgyDocument {
-  const quinceaneraTitle = quinceanera.quinceanera
-    ? `Quinceañera Celebration for ${formatPersonName(quinceanera.quinceanera)}`
-    : 'Quinceañera Celebration'
-
-  const eventDateTime =
-    quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event?.start_time
-      ? formatEventDateTime(quinceanera.quinceanera_event)
-      : 'Missing Date and Time'
+  const quinceaneraTitle = buildTitleEnglish(quinceanera)
+  const eventDateTime = getEventSubtitleEnglish(quinceanera)
 
   const sections: ContentSection[] = []
 
-  // Add header to summary section
-  const summarySection = buildSummarySection(quinceanera)
-  summarySection.elements.unshift(
-    {
-      type: 'event-title',
-      text: quinceaneraTitle,
-    },
-    {
-      type: 'event-datetime',
-      text: eventDateTime,
-    }
-  )
-  sections.push(summarySection)
+  // Add summary section (title/subtitle handled at document level)
+  sections.push(buildSummarySection(quinceanera))
 
   // Add all reading sections (only if they exist)
   const firstReadingSection = buildReadingSection({

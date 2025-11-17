@@ -26,20 +26,7 @@ import {
 function buildCoverPage(presentation: PresentationWithRelations): ContentSection {
   const elements: ContentElement[] = []
 
-  // Title and subtitle header
-  const childName = getChildNameBilingual(presentation)
-  const title = `Presentation in the Temple / Presentación en el Templo - ${childName}`
-  const subtitle = getEventSubtitleBilingual(presentation)
-
-  elements.push({
-    type: 'event-title',
-    text: title,
-  })
-
-  elements.push({
-    type: 'event-datetime',
-    text: subtitle,
-  })
+  // Title and subtitle handled at document level
 
   // Presentation Information subsection
   elements.push({
