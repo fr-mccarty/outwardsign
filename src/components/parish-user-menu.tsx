@@ -175,15 +175,15 @@ export function ParishUserMenu() {
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarFallback className="text-xs">
-                {currentParish ? getParishInitials(currentParish) : getInitials(user.email)}
+                {getInitials(user.email)}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col items-start min-w-0 flex-1">
               <span className="text-sm font-medium truncate max-w-full block">
-                {currentParish ? currentParish.name : user.email}
+                {user.email}
               </span>
               <span className="text-xs text-muted-foreground truncate max-w-full block">
-                {currentParish ? `${currentParish.city}, ${currentParish.state}` : 'No parish selected'}
+                {currentParish ? currentParish.name : 'No parish selected'}
               </span>
             </div>
           </div>
@@ -191,6 +191,21 @@ export function ParishUserMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
+        {/* User Section */}
+        <DropdownMenuLabel className="uppercase tracking-wide">
+          User Account
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <div className="px-2 py-1.5 text-sm">
+          <div className="font-medium">{user.email}</div>
+          <div className="text-xs text-muted-foreground">
+            {currentParish ? `${currentParish.name} • ${currentParish.city}, ${currentParish.state}` : 'No parish selected'}
+          </div>
+        </div>
+
+        <DropdownMenuSeparator />
+
         {/* Parish Section */}
         <DropdownMenuLabel className="uppercase tracking-wide">
           Parish Management
@@ -220,7 +235,7 @@ export function ParishUserMenu() {
                 </span>
               </div>
               {isCurrentParish && (
-                <Check className="ml-auto h-4 w-4 text-green-600" />
+                <Check className="ml-auto h-4 w-4" />
               )}
             </DropdownMenuItem>
           )
@@ -231,12 +246,6 @@ export function ParishUserMenu() {
           <span>Create or Join Parish</span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
-        
-        {/* User Section */}
-        <DropdownMenuLabel className="uppercase tracking-wide">
-          User Account
-        </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         <DropdownMenuSub>
@@ -287,9 +296,9 @@ export function ParishUserMenu() {
 
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleLogout}
-          className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2"
+          className="cursor-pointer text-destructive focus:text-destructive flex items-center gap-2"
         >
           <LogOut className="h-4 w-4" />
           Logout

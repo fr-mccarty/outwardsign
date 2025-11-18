@@ -149,7 +149,7 @@ export default function GroupsPage() {
                         <h3 className="font-medium">
                           {group.name}
                           {!group.is_active && (
-                            <span className="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                            <span className="ml-2 px-2 py-1 text-xs bg-muted text-muted-foreground rounded">
                               Inactive
                             </span>
                           )}

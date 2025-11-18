@@ -239,10 +239,10 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
         columns={columns}
         keyExtractor={(template) => template.id}
         emptyState={{
-          icon: <FileText className="h-12 w-12 text-gray-400" />,
+          icon: <FileText className="h-12 w-12 text-muted-foreground" />,
           title: searchTerm ? "No templates found" : "No templates yet",
-          description: searchTerm 
-            ? "No templates found matching your search." 
+          description: searchTerm
+            ? "No templates found matching your search."
             : "No templates yet. Create your first template!",
           action: !searchTerm && (
             <Button asChild>

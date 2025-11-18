@@ -421,3 +421,16 @@ export const PETITION_LANGUAGE_LABELS: Record<PetitionLanguage, { en: string; es
   'es': { en: 'Spanish', es: 'Español' },
   'bilingual': { en: 'Bilingual', es: 'Bilingüe' }
 }
+
+// Liturgical Calendar API Color Mapping
+// Maps color strings from the liturgical calendar API to our CSS variable color names
+export const LITURGICAL_CALENDAR_API_COLOR_MAPPING: Record<string, string> = {
+  'white': 'liturgy-white',
+  'red': 'liturgy-red',
+  'purple': 'liturgy-purple',
+  'violet': 'liturgy-purple', // violet maps to purple
+  'green': 'liturgy-green',
+  'gold': 'liturgy-gold',
+  'rose': 'liturgy-rose',
+  'black': 'liturgy-black'
+}

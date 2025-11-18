@@ -29,7 +29,7 @@
 4. **Presentations** - Presentation of children in the temple (Latino tradition)
 5. **Quinceañeras** - Quinceañera celebrations
 6. **Masses** - Mass celebrations
-7. **Mass Intentions** - Mass intention requests and tracking
+7. **Mass Intentions** - Mass intention requests and tracking *(Admin-only, not available for staff or ministry-leader roles)*
 
 ### Planned Modules (Not Yet Implemented)
 

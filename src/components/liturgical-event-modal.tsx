@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { Calendar, Book } from 'lucide-react'
+import { getLiturgicalBgClass, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 
 interface LiturgicalEventModalProps {
   event: GlobalLiturgicalEvent | null
@@ -12,23 +13,12 @@ interface LiturgicalEventModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-// Map liturgical colors to Tailwind classes
-const LITURGICAL_COLOR_MAP: Record<string, string> = {
-  'purple': 'bg-purple-500',
-  'white': 'bg-white border border-border',
-  'red': 'bg-red-500',
-  'green': 'bg-green-500',
-  'gold': 'bg-yellow-500',
-  'rose': 'bg-pink-400',
-  'black': 'bg-black',
-}
-
 export function LiturgicalEventModal({ event, open, onOpenChange }: LiturgicalEventModalProps) {
   if (!event) return null
 
   const eventData = event.event_data
   const primaryColor = eventData.color[0] || 'white'
-  const colorClass = LITURGICAL_COLOR_MAP[primaryColor.toLowerCase()] || 'bg-muted'
+  const colorClass = getLiturgicalBgClass(primaryColor)
 
   // Format date
   const date = new Date(event.date)
@@ -85,16 +75,22 @@ export function LiturgicalEventModal({ event, open, onOpenChange }: LiturgicalEv
           <div>
             <div className="text-sm font-medium text-muted-foreground mb-2">Liturgical Colors</div>
             <div className="flex gap-2 flex-wrap">
-              {eventData.color.map((color, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="capitalize"
-                >
-                  <div className={`w-3 h-3 rounded-full mr-2 ${LITURGICAL_COLOR_MAP[color.toLowerCase()] || 'bg-muted'}`} />
-                  {color}
-                </Badge>
-              ))}
+              {eventData.color.map((color, index) => {
+                const cssVar = getLiturgicalCssVarValue(color)
+                return (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className="capitalize"
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: cssVar }}
+                    />
+                    {color}
+                  </Badge>
+                )
+              })}
             </div>
           </div>
 

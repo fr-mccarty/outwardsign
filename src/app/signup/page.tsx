@@ -83,10 +83,16 @@ function SignupForm() {
           }),
         })
 
+        const acceptData = await acceptResponse.json()
+
         if (!acceptResponse.ok) {
-          const errorData = await acceptResponse.json()
-          setError(`Account created but failed to join parish: ${errorData.error}`)
+          setError(`Account created but failed to join parish: ${acceptData.error}`)
           return
+        }
+
+        // Log any warnings but continue
+        if (acceptData.warning) {
+          console.warn('Invitation acceptance warning:', acceptData.warning)
         }
       }
 
@@ -183,17 +189,17 @@ function SignupForm() {
               required
             />
             {error && (
-              <div className="text-red-500 text-sm">{error}</div>
+              <div className="text-destructive text-sm">{error}</div>
             )}
             {message && (
-              <div className="text-green-500 text-sm">{message}</div>
+              <div className="text-sm">{message}</div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : invitationToken ? `Join ${parishName}` : 'Sign up'}
             </Button>
             <p className="text-center text-sm">
               Already have an account?{' '}
-              <Link href="/login" className="text-blue-500 hover:underline">
+              <Link href="/login" className="text-primary hover:underline">
                 Login
               </Link>
             </p>

@@ -331,13 +331,18 @@ export async function getParishMembers(parishId: string) {
 
         try {
           // Get email from auth.users using admin API
-          const { data: authUser } = await supabase.auth.admin.getUserById(parishMember.user_id)
-          if (authUser.user) {
+          const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(parishMember.user_id)
+
+          if (authError) {
+            console.error(`Error fetching user ${parishMember.user_id} from auth:`, authError)
+          } else if (authUser?.user) {
             userEmail = authUser.user.email || null
             userCreatedAt = authUser.user.created_at
+          } else {
+            console.warn(`No user data returned for user_id ${parishMember.user_id}`)
           }
         } catch (error) {
-          console.error(`Error fetching email for user ${parishMember.user_id}:`, error)
+          console.error(`Exception fetching email for user ${parishMember.user_id}:`, error)
         }
 
         return {

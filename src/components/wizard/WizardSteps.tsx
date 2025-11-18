@@ -42,10 +42,10 @@ export function WizardSteps({
                       ? 'bg-green-500 border-green-500 text-white'
                       : step.id === currentStep
                       ? 'bg-blue-500 border-blue-500 text-white'
-                      : 'border-gray-300 text-gray-500'
+                      : 'border text-muted-foreground'
                   } ${
-                    allowPreviousNavigation && step.id <= currentStep 
-                      ? 'cursor-pointer hover:opacity-80' 
+                    allowPreviousNavigation && step.id <= currentStep
+                      ? 'cursor-pointer hover:opacity-80'
                       : 'cursor-default'
                   }`}
                   disabled={!allowPreviousNavigation || step.id > currentStep}
@@ -57,11 +57,11 @@ export function WizardSteps({
                   )}
                 </button>
               </div>
-              
+
               {index < steps.length - 1 && (
-                <div 
+                <div
                   className={`w-16 h-0.5 mx-4 ${
-                    step.id < currentStep ? 'bg-green-500' : 'bg-gray-300'
+                    step.id < currentStep ? 'bg-green-500' : 'bg-border'
                   }`}
                 />
               )}

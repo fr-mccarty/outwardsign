@@ -37,6 +37,20 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-liturgy-white: var(--liturgy-white);
+  --color-liturgy-white-foreground: var(--liturgy-white-foreground);
+  --color-liturgy-red: var(--liturgy-red);
+  --color-liturgy-red-foreground: var(--liturgy-red-foreground);
+  --color-liturgy-purple: var(--liturgy-purple);
+  --color-liturgy-purple-foreground: var(--liturgy-purple-foreground);
+  --color-liturgy-green: var(--liturgy-green);
+  --color-liturgy-green-foreground: var(--liturgy-green-foreground);
+  --color-liturgy-gold: var(--liturgy-gold);
+  --color-liturgy-gold-foreground: var(--liturgy-gold-foreground);
+  --color-liturgy-rose: var(--liturgy-rose);
+  --color-liturgy-rose-foreground: var(--liturgy-rose-foreground);
+  --color-liturgy-black: var(--liturgy-black);
+  --color-liturgy-black-foreground: var(--liturgy-black-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -76,7 +90,20 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --liturgy-white: oklch(1 0 0);
+  --liturgy-white-foreground: oklch(0.145 0 0);
   --liturgy-red: oklch(0.577 0.245 27.325);
+  --liturgy-red-foreground: oklch(1 0 0);
+  --liturgy-purple: oklch(0.488 0.243 264.376);
+  --liturgy-purple-foreground: oklch(1 0 0);
+  --liturgy-green: oklch(0.6 0.118 184.704);
+  --liturgy-green-foreground: oklch(1 0 0);
+  --liturgy-gold: oklch(0.828 0.189 84.429);
+  --liturgy-gold-foreground: oklch(0.145 0 0);
+  --liturgy-rose: oklch(0.769 0.188 70.08);
+  --liturgy-rose-foreground: oklch(1 0 0);
+  --liturgy-black: oklch(0.269 0 0);
+  --liturgy-black-foreground: oklch(0.985 0 0);
 }
 
 .dark {
@@ -111,6 +138,20 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --liturgy-white: oklch(0.97 0 0);
+  --liturgy-white-foreground: oklch(0.145 0 0);
+  --liturgy-red: oklch(0.704 0.191 22.216);
+  --liturgy-red-foreground: oklch(1 0 0);
+  --liturgy-purple: oklch(0.627 0.265 303.9);
+  --liturgy-purple-foreground: oklch(1 0 0);
+  --liturgy-green: oklch(0.696 0.17 162.48);
+  --liturgy-green-foreground: oklch(1 0 0);
+  --liturgy-gold: oklch(0.828 0.189 84.429);
+  --liturgy-gold-foreground: oklch(0.145 0 0);
+  --liturgy-rose: oklch(0.769 0.188 70.08);
+  --liturgy-rose-foreground: oklch(1 0 0);
+  --liturgy-black: oklch(0.398 0 0);
+  --liturgy-black-foreground: oklch(0.985 0 0);
 }
 
 @layer base {

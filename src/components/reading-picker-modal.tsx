@@ -342,7 +342,7 @@ export function ReadingPickerModal({
                   </div>
 
                   {reading.text && (
-                    <div className="text-sm text-gray-700 line-clamp-2">
+                    <div className="text-sm text-foreground line-clamp-2">
                       {reading.text.substring(0, 120)}
                       {reading.text.length > 120 && '...'}
                     </div>

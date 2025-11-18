@@ -123,8 +123,8 @@ export function ParishSelection() {
         <Card>
           <CardContent className="pt-6">
             <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
             </div>
           </CardContent>
         </Card>
@@ -159,7 +159,7 @@ export function ParishSelection() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       Role: {parishAssoc.roles.join(', ') || 'Member'}
                     </div>
                     <Button
@@ -176,7 +176,7 @@ export function ParishSelection() {
           </div>
           
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Don&apos;t see your parish?
             </p>
             <Button variant="outline" onClick={handleCreateParish}>
@@ -189,26 +189,26 @@ export function ParishSelection() {
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
-                <div className="text-gray-600">
+                <div className="text-muted-foreground">
                   <p className="mb-2">You&apos;re not associated with any parishes yet.</p>
                   <p className="text-sm">You can either:</p>
                 </div>
-                
+
                 <div className="space-y-3">
                   <Button onClick={handleCreateParish} className="w-full">
                     Create New Parish
                   </Button>
-                  
-                  <Button 
-                    onClick={handleCreateTestParish} 
-                    variant="outline" 
+
+                  <Button
+                    onClick={handleCreateTestParish}
+                    variant="outline"
                     className="w-full"
                     disabled={selecting === 'test'}
                   >
                     {selecting === 'test' ? 'Creating...' : 'Create Test Parish (Development)'}
                   </Button>
-                  
-                  <div className="text-sm text-gray-500">
+
+                  <div className="text-sm text-muted-foreground">
                     or ask your parish administrator to invite you to an existing parish
                   </div>
                 </div>

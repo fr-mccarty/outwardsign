@@ -67,7 +67,7 @@ function AcceptInvitationForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="flex items-center justify-center p-8">
             <Loader2 className="w-8 h-8 animate-spin" />
@@ -80,10 +80,10 @@ function AcceptInvitationForm() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="flex items-center text-red-600">
+            <CardTitle className="flex items-center text-destructive">
               <AlertCircle className="w-5 h-5 mr-2" />
               Invalid Invitation
             </CardTitle>
@@ -92,8 +92,8 @@ function AcceptInvitationForm() {
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-            <Button 
-              onClick={() => router.push('/')} 
+            <Button
+              onClick={() => router.push('/')}
               className="w-full mt-4"
               variant="outline"
             >
@@ -107,20 +107,20 @@ function AcceptInvitationForm() {
 
   if (!invitation) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="flex items-center text-red-600">
+            <CardTitle className="flex items-center text-destructive">
               <AlertCircle className="w-5 h-5 mr-2" />
               Invitation Not Found
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               This invitation link is invalid or has expired.
             </p>
-            <Button 
-              onClick={() => router.push('/')} 
+            <Button
+              onClick={() => router.push('/')}
               className="w-full"
               variant="outline"
             >
@@ -133,10 +133,10 @@ function AcceptInvitationForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex items-center text-green-600">
+          <CardTitle className="flex items-center">
             <CheckCircle className="w-5 h-5 mr-2" />
             You're Invited!
           </CardTitle>
@@ -147,21 +147,21 @@ function AcceptInvitationForm() {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 You've been invited to join <strong>{invitation.parish_name}</strong> as a {invitation.roles.join(', ')}.
               </p>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Email: <strong>{invitation.email}</strong>
               </p>
             </div>
-            
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-sm text-blue-800">
+
+            <div className="bg-muted p-3 rounded-lg">
+              <p className="text-sm text-muted-foreground">
                 Click the button below to create your account and join the parish.
               </p>
             </div>
 
-            <Button 
+            <Button
               onClick={acceptInvitation}
               disabled={accepting}
               className="w-full"
@@ -175,8 +175,8 @@ function AcceptInvitationForm() {
                 'Accept Invitation & Create Account'
               )}
             </Button>
-            
-            <p className="text-xs text-gray-500 text-center">
+
+            <p className="text-xs text-muted-foreground text-center">
               By accepting, you'll be redirected to create your account.
             </p>
           </div>

@@ -17,19 +17,10 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // Fetch invitation with parish details
+    // Fetch invitation details
     const { data: invitation, error } = await supabase
       .from('parish_invitations')
-      .select(`
-        email,
-        token,
-        roles,
-        expires_at,
-        accepted_at,
-        parishes (
-          name
-        )
-      `)
+      .select('*')
       .eq('token', token)
       .single()
 
@@ -43,7 +34,7 @@ export async function GET(
     // Check if invitation has expired
     const now = new Date()
     const expiresAt = new Date(invitation.expires_at)
-    
+
     if (now > expiresAt) {
       return NextResponse.json(
         { error: 'Invitation has expired' },
@@ -59,13 +50,22 @@ export async function GET(
       )
     }
 
+    // Fetch parish name separately
+    const { data: parish } = await supabase
+      .from('parishes')
+      .select('name')
+      .eq('id', invitation.parish_id)
+      .single()
+
+    const parishName = parish?.name || 'Unknown Parish'
+
     return NextResponse.json({
       invitation: {
         email: invitation.email,
         token: invitation.token,
         roles: invitation.roles,
         expires_at: invitation.expires_at,
-        parish_name: (invitation.parishes as any)?.name || 'Unknown Parish'
+        parish_name: parishName
       }
     })
 

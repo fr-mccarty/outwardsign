@@ -108,8 +108,8 @@ export function ParishSwitcher() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 p-2">
-        <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
-        <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+        <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+        <div className="h-4 w-20 animate-pulse rounded bg-muted" />
       </div>
     )
   }

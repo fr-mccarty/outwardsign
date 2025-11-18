@@ -17,6 +17,7 @@ import { Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-r
 import { getGlobalLiturgicalEventsPaginated, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { getLiturgicalBgClass, getLiturgicalTextClass, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 
 interface GlobalLiturgicalEventPickerProps {
   open: boolean
@@ -248,24 +249,16 @@ export function GlobalLiturgicalEventPicker({
   const getColorBadge = (colors: string[] | undefined) => {
     if (!colors || colors.length === 0) return null
 
-    const colorMap: Record<string, string> = {
-      white: 'bg-white text-black border border-border',
-      red: 'bg-red-600 text-white',
-      green: 'bg-green-600 text-white',
-      violet: 'bg-purple-600 text-white',
-      purple: 'bg-purple-600 text-white',
-      rose: 'bg-pink-500 text-white',
-      gold: 'bg-yellow-500 text-black',
-    }
-
     const primaryColor = colors[0].toLowerCase()
-    const colorClass = colorMap[primaryColor] || 'bg-gray-500 text-white'
+    const bgClass = getLiturgicalBgClass(primaryColor)
+    const textClass = getLiturgicalTextClass(primaryColor)
 
     return (
       <span
         className={cn(
           'inline-block px-2 py-0.5 rounded text-xs capitalize',
-          colorClass
+          bgClass,
+          textClass
         )}
       >
         {primaryColor}
@@ -615,17 +608,8 @@ export function GlobalLiturgicalEventPicker({
                         <div className="space-y-1">
                           {day.events.slice(0, 2).map((event) => {
                             const color = event.event_data?.color?.[0]
-                            const bgColor =
-                              color === 'white' ? 'bg-gray-200' :
-                              color === 'red' ? 'bg-red-600' :
-                              color === 'green' ? 'bg-green-600' :
-                              color === 'violet' ? 'bg-purple-600' :
-                              color === 'purple' ? 'bg-purple-600' :
-                              color === 'rose' ? 'bg-pink-500' :
-                              color === 'gold' ? 'bg-yellow-500' :
-                              'bg-gray-500'
-
-                            const textColor = color === 'white' || color === 'gold' ? 'text-black' : 'text-white'
+                            const bgColor = getLiturgicalBgClass(color)
+                            const textColor = getLiturgicalTextClass(color)
                             const isSelected = selectedEventId === event.id
 
                             return (

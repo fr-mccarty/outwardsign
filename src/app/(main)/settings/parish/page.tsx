@@ -67,6 +67,7 @@ interface ParishMember {
 
 export default function ParishSettingsPage() {
   const [currentParish, setCurrentParish] = useState<Parish | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [parishSettings, setParishSettings] = useState<ParishSettings | null>(null)
   const [formData, setFormData] = useState({
@@ -122,6 +123,14 @@ export default function ParishSettingsPage() {
   async function loadParishData() {
     try {
       setLoading(true)
+
+      // Get current user ID
+      const supabase = (await import('@/lib/supabase/client')).createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+      }
+
       const parish = await getCurrentParish()
       if (parish) {
         setCurrentParish(parish)
@@ -782,7 +791,7 @@ export default function ParishSettingsPage() {
                   ]}
                   keyExtractor={(template) => template.id}
                   emptyState={{
-                    icon: <FileText className="h-12 w-12 text-gray-400" />,
+                    icon: <FileText className="h-12 w-12 text-muted-foreground" />,
                     title: petitionSearchTerm ? 'No templates found' : 'No templates yet',
                     description: petitionSearchTerm
                       ? 'No templates found matching your search.'
@@ -951,7 +960,7 @@ export default function ParishSettingsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleRevokeInvitation(invitation.id)}
-                            className="text-red-600"
+                            className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Revoke Invitation
@@ -1085,16 +1094,18 @@ export default function ParishSettingsPage() {
                               member.roles,
                               member.enabled_modules || []
                             )}
+                            disabled={member.user_id === currentUserId}
                           >
                             <Edit className="h-4 w-4 mr-2" />
-                            Edit Role
+                            {member.user_id === currentUserId ? 'Edit Role (You)' : 'Edit Role'}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleOpenRemoveDialog(member.user_id, member.users?.email || 'Unknown')}
-                            className="text-red-600"
+                            className="text-destructive"
+                            disabled={member.user_id === currentUserId}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Remove from Parish
+                            {member.user_id === currentUserId ? 'Cannot Remove Yourself' : 'Remove from Parish'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

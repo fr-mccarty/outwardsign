@@ -72,10 +72,12 @@ const [notes, setNotes] = useState('')  // for a 'note' column
 - Parish settings and parish management
 - Manage parishioners and templates
 - Full access to all modules
+- Exclusive access to Mass Intentions module
 - Can invite all role types
 
 **Staff:**
-- Can create, read, update, and delete all sacrament/event modules (weddings, funerals, baptisms, etc.)
+- Can create, read, update, and delete all sacrament/event modules (weddings, funerals, baptisms, masses, presentations, quinceañeras, groups, etc.)
+- **Cannot access Mass Intentions** (admin-only)
 - Can invite parishioners to parish
 - Cannot manage parish settings
 
