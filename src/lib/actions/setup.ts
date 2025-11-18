@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { readingsData } from '@/lib/data/readings'
 import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
@@ -323,6 +324,9 @@ export async function getParishMembers(parishId: string) {
       throw new Error(`Failed to fetch parish members: ${parishMembersError.message}`)
     }
 
+    // Create admin client for fetching user emails
+    const adminClient = createAdminClient()
+
     // Get user emails from auth for each member
     const members = await Promise.all(
       (parishMembers || []).map(async (parishMember) => {
@@ -331,7 +335,7 @@ export async function getParishMembers(parishId: string) {
 
         try {
           // Get email from auth.users using admin API
-          const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(parishMember.user_id)
+          const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(parishMember.user_id)
 
           if (authError) {
             console.error(`Error fetching user ${parishMember.user_id} from auth:`, authError)
