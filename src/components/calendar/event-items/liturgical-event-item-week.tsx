@@ -20,7 +20,7 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
   const primaryColor = (colors[0] || event.liturgicalColor || '').toLowerCase()
 
   // Get liturgical color classes (handles empty/null internally)
-  const bgStyles = getLiturgicalColorClasses(primaryColor, 10)
+  const colorStyles = getLiturgicalColorClasses(primaryColor, 10)
 
   // Width of each individual liturgical bar (in pixels)
   const liturgicalBarWidth = 6
@@ -30,7 +30,7 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
     <div
       className={cn(
         "relative text-sm py-2 rounded cursor-pointer hover:brightness-110 transition-all overflow-hidden",
-        bgStyles
+        colorStyles
       )}
       onClick={onClick}
     >

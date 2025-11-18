@@ -19,41 +19,63 @@ export function getLiturgicalCssVar(apiColor: string): string | null {
 export function getLiturgicalBgClass(apiColor: string | null | undefined, opacity?: number): string {
   if (!apiColor) return 'bg-muted'
 
-  const cssVar = getLiturgicalCssVar(apiColor)
-  if (!cssVar) return 'bg-muted'
+  const normalized = apiColor.toLowerCase()
 
-  if (opacity) {
-    return `bg-${cssVar}/${opacity}`
+  // Return explicit class names so Tailwind can see them at build time
+  const classMap: Record<string, string> = {
+    'white': opacity ? `bg-liturgy-white/${opacity}` : 'bg-liturgy-white',
+    'red': opacity ? `bg-liturgy-red/${opacity}` : 'bg-liturgy-red',
+    'purple': opacity ? `bg-liturgy-purple/${opacity}` : 'bg-liturgy-purple',
+    'violet': opacity ? `bg-liturgy-purple/${opacity}` : 'bg-liturgy-purple',
+    'green': opacity ? `bg-liturgy-green/${opacity}` : 'bg-liturgy-green',
+    'gold': opacity ? `bg-liturgy-gold/${opacity}` : 'bg-liturgy-gold',
+    'rose': opacity ? `bg-liturgy-rose/${opacity}` : 'bg-liturgy-rose',
+    'black': opacity ? `bg-liturgy-black/${opacity}` : 'bg-liturgy-black',
   }
-  return `bg-${cssVar}`
+
+  return classMap[normalized] || 'bg-muted'
 }
 
 /**
  * Get Tailwind text color classes for a liturgical color
  * @param apiColor - Color string from liturgical calendar API (can be empty/null)
- * @returns Tailwind classes string (with fallback to 'text-muted-foreground')
+ * @returns Tailwind classes string (with fallback to empty string for default text color)
  */
 export function getLiturgicalTextClass(apiColor: string | null | undefined): string {
-  if (!apiColor) return 'text-muted-foreground'
+  if (!apiColor) return ''
 
-  const cssVar = getLiturgicalCssVar(apiColor)
-  return cssVar ? `text-${cssVar}-foreground` : 'text-muted-foreground'
+  const normalized = apiColor.toLowerCase()
+
+  // Return explicit class names so Tailwind can see them at build time
+  const classMap: Record<string, string> = {
+    'white': 'text-liturgy-white-foreground',
+    'red': 'text-liturgy-red-foreground',
+    'purple': 'text-liturgy-purple-foreground',
+    'violet': 'text-liturgy-purple-foreground',
+    'green': 'text-liturgy-green-foreground',
+    'gold': 'text-liturgy-gold-foreground',
+    'rose': 'text-liturgy-rose-foreground',
+    'black': 'text-liturgy-black-foreground',
+  }
+
+  return classMap[normalized] || ''
 }
 
 /**
  * Get combined background and text classes for a liturgical color
  * @param apiColor - Color string from liturgical calendar API (can be empty/null)
  * @param bgOpacity - Optional background opacity value
- * @returns Tailwind classes string (with fallback to 'bg-muted/50 text-foreground')
+ * @returns Tailwind classes string (with fallback to 'bg-muted/50')
  */
 export function getLiturgicalColorClasses(apiColor: string | null | undefined, bgOpacity?: number): string {
   if (!apiColor) {
-    return bgOpacity ? `bg-muted/${bgOpacity} text-foreground` : 'bg-muted/50 text-foreground'
+    return bgOpacity ? `bg-muted/${bgOpacity}` : 'bg-muted/50'
   }
 
   const bgClass = getLiturgicalBgClass(apiColor, bgOpacity)
   const textClass = getLiturgicalTextClass(apiColor)
-  return `${bgClass} ${textClass}`
+
+  return textClass ? `${bgClass} ${textClass}` : bgClass
 }
 
 /**
