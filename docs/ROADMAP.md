@@ -50,7 +50,12 @@
 **Authentication & Permissions:**
 - ✅ User authentication (Supabase Auth)
 - ✅ Parish selection
-- ✅ Role-based permissions (super-admin, admin, staff, parishioner)
+- ✅ Role-based permissions (admin, staff, ministry-leader, parishioner)
+- ✅ Module-level access control for ministry-leaders
+- ✅ Team member invitation system
+- ✅ Parish member management
+- ✅ Permission functions (canAccessModule, canManageParishSettings, etc.)
+- ✅ Sidebar filtering based on user permissions
 
 **Technical Foundation:**
 - ✅ Dark mode support
@@ -60,13 +65,6 @@
 - ✅ RLS policies for parish-scoped data
 
 ### Current Limitations
-
-**❌ Team Collaboration (Not Yet Available):**
-- Cannot invite team members to the application
-- Cannot add staff members to the team
-- No structure in place for team member invitations
-- Cannot assign specific people to specific events/modules
-- No member-level permissions for individual sacraments
 
 **❌ Communication:**
 - No email functionality
@@ -80,54 +78,6 @@
 - No ministry scheduling for sacraments (weddings, funerals, baptisms, etc.)
 - No unified ministry schedule view across all sacraments
 - No conflict detection for ministry assignments
-
-### Recently Completed
-
-**2025-01-18:**
-- [x] Fixed liturgical color rendering in calendar views
-  - Updated `getLiturgicalBgClass` and `getLiturgicalTextClass` to use explicit class maps
-  - Ensured Tailwind can see all liturgical color classes at build time
-  - Fixed text color display for all liturgical colors including white
-- [x] Resolved FormField dark mode issue (no actual issue found)
-  - Verified custom FormField components use semantic tokens correctly
-  - Documented rule: Never edit `src/components/ui/` (shadcn components)
-- [x] Added Automated Mass Scheduling System section to roadmap
-  - Comprehensive wizard design with 6 steps
-  - Algorithm considerations and implementation phases
-
-**2025-01-15:**
-- [x] Completed renderer structure migration
-  - Migrated all 29 occurrences of deprecated `multi-part-text` to specific element types
-  - Removed `MultiPartTextElement` from type system
-  - Cleaned up all three renderers (HTML, PDF, Word)
-  - Updated documentation (RENDERER.md, LITURGICAL_SCRIPT_REFERENCE.md)
-
-**2025-11-15:**
-- [x] Fixed Zod v4 compatibility across all forms (error.issues vs error.errors)
-- [x] Updated validation documentation with Zod v4 guidance
-- [x] Created comprehensive MASSES.md documentation
-- [x] Verified build passes successfully
-
-**2025-11-10:**
-- [x] Created docs folder for documentation organization
-- [x] Moved all capitalized MD files to docs
-- [x] Updated all documentation references in CLAUDE.md and README.md
-- [x] Created FORMS.md with comprehensive form guidelines
-- [x] Added Component Registry section to CLAUDE.md
-- [x] Improved EventPicker and PeoplePicker components
-- [x] Added LocationPicker component
-
-**Earlier:**
-- [x] Implemented Weddings module (reference implementation)
-- [x] Implemented Funerals module
-- [x] Implemented Baptisms module
-- [x] Implemented Presentations module
-- [x] Implemented Quinceañeras module
-- [x] Added liturgical calendar integration (2025-2026)
-- [x] Implemented dark mode support
-- [x] Created test infrastructure with automatic setup/cleanup
-- [x] Added PDF/Word export functionality
-- [x] Implemented parish-scoped data with RLS
 
 ---
 
@@ -151,73 +101,209 @@
 
 ## Phase I - Foundation
 
-**Status:** ✅ Mostly Complete
+**Status:** ✅ Complete
 
-**Completed:**
-1. ✅ All 7 primary sacramental modules operational
-2. ✅ Liturgical script system with multiple output formats
-3. ✅ Basic authentication and parish management
-4. ✅ Core data models (people, events, locations, readings)
-5. ✅ Calendar integration
-6. ✅ Print and export functionality (PDF, Word)
+Phase I focused on establishing the foundation for single-parish usage with basic team structure. All core modules, authentication, permissions, and team management are now operational.
 
-**Remaining Phase I Work:**
+### Remaining Work
 
-### Team Member System (CRITICAL)
-- [ ] Database tables for team membership
-- [ ] Invitation flow (invite → accept → join parish)
-- [ ] Team member list/management UI
-- [ ] Permission structure for team roles
+**Internationalization (i18n) System:**
 
-### ~~Core Module Completions~~ (EXCLUDED)
+**Problem:** Currently, all user-facing text is hard-coded in English with Spanish content stored in parallel `.es` properties on database records. This approach:
+- Requires duplicate code for each language
+- Makes adding new languages extremely difficult
+- Scatters translations across hundreds of files
+- No centralized translation management
+- Inconsistent translation keys
 
-**⚠️ EXCLUDED FROM ROADMAP - User Decision 2025-11-17**
+**Solution:** Centralized translation file system with language-specific JSON files containing all translatable strings.
 
-These modules are explicitly excluded and should NOT be created:
-- ❌ ~~**Confirmations Module**~~ - EXCLUDED
-- ❌ ~~**First Communion Module**~~ - EXCLUDED
-- ❌ ~~**Anointing of the Sick**~~ - EXCLUDED
-- ❌ ~~**Reconciliation Preparation**~~ - EXCLUDED
+**Architecture:**
 
-**Reason:** Focus on existing modules and collaboration features. Current module coverage (Weddings, Funerals, Baptisms, Presentations, Quinceañeras, Masses, Mass Intentions) is sufficient.
+**Translation File Structure:**
+```
+src/locales/
+  ├── en.json          # English translations (complete reference)
+  ├── es.json          # Spanish translations
+  ├── fr.json          # French translations (future)
+  ├── pt.json          # Portuguese translations (future)
+  └── index.ts         # Translation loader and utilities
+```
 
-### Multilingual Support
+**Translation File Format (en.json example):**
+```json
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "weddings": "Weddings",
+    "funerals": "Funerals",
+    "baptisms": "Baptisms",
+    "masses": "Masses",
+    "calendar": "Calendar",
+    "people": "People"
+  },
+  "weddings": {
+    "title": "Weddings",
+    "createNew": "Create New Wedding",
+    "bride": "Bride",
+    "groom": "Groom",
+    "weddingDate": "Wedding Date",
+    "ceremony": "Ceremony",
+    "rehearsal": "Rehearsal",
+    "status": {
+      "planning": "Planning",
+      "confirmed": "Confirmed",
+      "completed": "Completed"
+    }
+  },
+  // ... all modules and features
+}
+```
+
+**Implementation Phases:**
+
+**Phase 1: Core i18n Infrastructure**
+- [ ] Set up translation file structure (`src/locales/`)
+- [ ] Create translation loader utility (`useTranslation` hook)
+- [ ] Implement language context provider
+- [ ] Add language selector in user settings
+- [ ] Store user language preference in database
+- [ ] **Migrate all label constants from `constants.ts` to translation files**
+  - `SEX_LABELS`, `MODULE_STATUS_LABELS`, `EVENT_TYPE_LABELS`
+  - `READING_CATEGORY_LABELS`, `LANGUAGE_LABELS`
+  - `MASS_TEMPLATE_LABELS`, `WEDDING_TEMPLATE_LABELS`, `QUINCEANERA_TEMPLATE_LABELS`
+  - `FUNERAL_TEMPLATE_LABELS`, `BAPTISM_TEMPLATE_LABELS`, `PRESENTATION_TEMPLATE_LABELS`
+  - `MASS_INTENTION_TEMPLATE_LABELS`, `USER_PARISH_ROLE_LABELS`
+  - `PETITION_MODULE_LABELS`, `PETITION_LANGUAGE_LABELS`
+  - Remove `.en` and `.es` properties from constants
+  - Convert to simple enum values, translations in i18n files
+- [ ] Migrate 20-30 most common UI strings to translation system (proof of concept)
+
+**Phase 2: Module-by-Module Migration**
+- [ ] Migrate common UI elements (buttons, labels, validation messages)
+- [ ] Migrate navigation and sidebar
+- [ ] Migrate authentication/onboarding flows
+- [ ] Migrate Weddings module
+- [ ] Migrate Funerals module
+- [ ] Migrate Baptisms module
+- [ ] Migrate Presentations module
+- [ ] Migrate Quinceañeras module
+- [ ] Migrate Masses module
+- [ ] Migrate Mass Intentions module
+- [ ] Migrate Events module
+- [ ] Migrate People module
+- [ ] Migrate Locations module
+- [ ] Migrate Groups module
+- [ ] Migrate Calendar module
+- [ ] Migrate Settings pages
+
+**Phase 3: Database Content Translation**
+- [ ] Migrate liturgical content (readings, psalms, petitions)
+- [ ] Migrate content builders (liturgical script sections)
+- [ ] Migrate status labels and constants
+- [ ] Migrate role names and descriptions
+- [ ] Migrate form field labels and descriptions
+- [ ] Migrate error messages and validation text
+
+**Phase 4: Print/Export Translation**
+- [ ] Migrate PDF templates to use translations
+- [ ] Migrate Word document templates to use translations
+- [ ] Migrate print view templates to use translations
+- [ ] Support language selection per document (override user preference)
+
+**Technical Implementation:**
+
+**Translation Hook (useTranslation):**
+```typescript
+// Usage in components
+const { t } = useTranslation()
+
+// Simple translation
+<button>{t('common.save')}</button>
+
+// Translation with interpolation
+<p>{t('weddings.greeting', { name: bride.name })}</p>
+
+// Translation with pluralization
+<p>{t('weddings.guestCount', { count: guests.length })}</p>
+
+// Nested keys
+<h1>{t('weddings.status.planning')}</h1>
+```
+
+**Language Switcher:**
+- Add language dropdown in user settings
+- Support per-user language preference
+- Default to parish language setting
+- Option to override language per-document (for bilingual parishes)
+
+**Translation Management:**
+- All translations in one place per language
+- Easy to review completeness (compare file sizes)
+- Translation keys enforce consistency
+- TypeScript support for translation keys (type safety)
+- Missing translation warnings in development
+
+**Database Schema Changes:**
+- Add `preferred_language` column to `users` table
+- Add `default_language` column to `parishes` table
+- Keep existing bilingual content (`.en`, `.es` properties) for backward compatibility during migration
+- Gradually phase out database-level translations in favor of i18n system
+
+**Benefits:**
+- ✅ Single source of truth for all translations
+- ✅ Easy to add new languages (just add new JSON file)
+- ✅ Centralized translation management
+- ✅ Consistent translation keys across app
+- ✅ Type-safe translation access with TypeScript
+- ✅ Easy to audit translation completeness
+- ✅ Reduces code duplication
+- ✅ Professional i18n approach (industry standard)
+
+**Current State:**
+- Bilingual content (English/Spanish) stored in database records
+- Hard-coded English strings throughout UI
+- Spanish translations incomplete
+- No framework for adding additional languages
+
+**Future Languages:**
+- French (for Canadian/African parishes)
+- Portuguese (for Brazilian parishes)
+- Vietnamese
+- Tagalog (Philippines)
+- Polish
+
+**Related Work:**
 - [ ] Complete Spanish translations for all modules
-- [ ] Add language selector throughout app
+- [ ] Add language selector in UI
 - [ ] Liturgical content in multiple languages
 - [ ] Bilingual print outputs
-
-**Phase I Goal:** Establish foundation for single-parish usage with basic team structure.
+- [ ] User documentation in multiple languages
 
 ---
 
 ## Phase II - Collaboration & Communication
 
-**Status:** 🔜 Planned
+**Status:** 🚧 In Progress
 
-### 1. Team Member Invitations (HIGH PRIORITY)
-
-**Problem:** Currently cannot add people to the parish team or invite staff members.
-
-**Solution:**
-- Invitation system allowing parish admin to invite team members via email
-- Invitation acceptance flow for new users
-- Team member management (view, edit, remove)
-- Role assignment per team member (admin, staff, etc.)
-
-**Database Requirements:**
-- `team_invitations` table (parish_id, email, role, status, token, expires_at)
-- `parish_members` or `team_members` table (parish_id, user_id, role, joined_at)
-- RLS policies for invitation management
-
-**User Flow:**
-1. Admin clicks "Invite Team Member"
-2. Enters email address and selects role (admin, staff)
-3. System sends invitation email with unique link
-4. Recipient clicks link → creates account or signs in → joins parish team
-5. Team member appears in parish team list
-
-### 2. Event-Specific Member Assignment
+### 1. Event-Specific Member Assignment
 
 **Problem:** Cannot invite or assign specific people to specific events (weddings, funerals, masses).
 
@@ -481,9 +567,7 @@ These modules are explicitly excluded and should NOT be created:
 - [ ] Calendar export improvements (.ics format)
 
 ### 8. User Management
-- [ ] Parish team management interface
-- [ ] Role assignment UI (super-admin, admin, staff, parishioner)
-- [ ] User permissions management
+- [ ] Remove team members from parish
 - [ ] Parishioner self-service portal
 
 ---
@@ -677,28 +761,6 @@ These modules are explicitly excluded and should NOT be created:
 
 ## Decision Points
 
-### Team Member System (Immediate)
-
-**Decision Required:** How to implement team member invitations?
-
-**Options:**
-1. **Simple Email Invitation**
-   - Admin enters email + role
-   - System sends email with signup/login link
-   - User creates account and automatically joins parish
-
-2. **Invitation Code System**
-   - Generate unique invitation codes
-   - Admin shares code with staff members
-   - Staff uses code during signup to join parish
-
-3. **Manual Approval**
-   - Staff requests to join via parish lookup
-   - Admin approves/denies requests
-   - More control, but more friction
-
-**Recommendation:** Option 1 (Simple Email Invitation) - Most streamlined UX, industry standard pattern.
-
 ### Communication Approach (Phase II)
 
 **Decision Required:** Start with free options or build paid integration from the start?
@@ -709,14 +771,16 @@ These modules are explicitly excluded and should NOT be created:
 - Add paid integrations (email/SMS services) in Phase II.B based on actual need
 - Avoids upfront costs and commitment before product-market fit
 
-### Member vs. Collaborator Model
+### Event Collaborators vs Team Members
 
-**Decision Required:** Should event-specific access be through the same "team member" system or a separate "collaborator" system?
+**Decision Required:** How to implement event-specific access (e.g., invite wedding coordinator to one wedding)?
+
+**Current State:** Team member system is complete with parish-wide access. Event-specific access not yet implemented.
 
 **Recommendation:**
 - **Separate systems**:
-  - **Team Members** = Parish staff with broad access (invite to parish team)
-  - **Event Collaborators** = Event-specific access only (invite to specific wedding/funeral/etc.)
+  - **Team Members** (✅ Implemented) = Parish staff with broad module access
+  - **Event Collaborators** (❌ Not implemented) = Event-specific access only
 - Different permission models, different UI, different use cases
 - Keeps parish team management clean and focused
 
@@ -736,9 +800,9 @@ These modules are explicitly excluded and should NOT be created:
 - Review and update priorities monthly
 
 ### Key Insights
-- **Phase II is the critical next step** - Without team collaboration, the app is limited to single-user or very small teams
+- **Team collaboration foundation is complete** - Parish-wide team invitations, roles, and permissions fully functional
 - **Communication features should start simple** - Don't overengineer before understanding usage patterns
-- **Event-specific invitations are a key differentiator** - Most parish software doesn't allow granular event-level access
+- **Event-specific invitations are next priority** - Most parish software doesn't allow granular event-level access
 - **Keep cost low initially** - Free-tier options for communication reduce barrier to adoption
 
 ### Contributing
@@ -753,13 +817,6 @@ When adding new roadmap items:
 
 ## Update History
 
+- **2025-11-18** - Deleted all completed items from roadmap (team management, permissions, recently completed section)
+- **2025-11-18** - Marked Phase I as complete, focused roadmap on future work only
 - **2025-11-17** - Excluded 4 sacramental modules from roadmap (Confirmations, First Communion, Anointing, Reconciliation) per user decision
-- **2025-11-17** - Note: Time estimates should NOT be included in future roadmap updates per user preference
-- **2025-01-15** - Completed renderer migration (removed deprecated multi-part-text element)
-- **2025-01-15** - Added Parish Default Module Templates feature to Phase III roadmap
-- **2025-11-15** - Merged TIMELINE.md into ROADMAP.md for comprehensive single-source roadmap
-- **2025-11-15** - Added Zod v4 compatibility fixes to Recently Completed
-- **2025-11-15** - Added MASSES.md documentation to Recently Completed
-- **2025-11-11** - Added Phase II feature: Ministry Scheduling for Sacraments & Sacramentals
-- **2025-11-11** - Renamed from TIMELINE.md to ROADMAP.md for clarity
-- **2025-11-11** - Initial document created based on current state and Phase II planning discussions

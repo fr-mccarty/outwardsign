@@ -1,0 +1,127 @@
+# Example Task File for Orchestrator
+# Save as: tasks/YYYY-MM-DD.yaml
+
+date: 2025-11-18
+max_cost_usd: 50.00
+priority: high
+
+tasks:
+  - id: task-001
+    name: "Create Mass Role Preferences Documentation"
+    description: |
+      Document the mass role preferences system that was recently implemented.
+      Include:
+      - Database schema (mass_role_preferences table, blackout_dates table)
+      - Server actions (getMassRolePreferences, updateMassRolePreferences, etc.)
+      - UI components and integration points
+      - Template system usage
+      - How preferences affect scheduling
+
+      The documentation should help future developers understand how the system works
+      and how to maintain/extend it.
+
+    module: mass-roles
+    estimated_complexity: medium
+    context_files:
+      - CLAUDE.md
+      - docs/MODULE_DEVELOPMENT.md
+      - docs/CODE_CONVENTIONS.md
+      - docs/MODULE_REGISTRY.md
+      - src/app/(main)/mass-roles/
+      - src/lib/actions/mass-role-preferences.ts
+      - supabase/migrations/20251118000001_create_mass_role_preferences_table.sql
+      - supabase/migrations/20251118000002_create_mass_role_blackout_dates_table.sql
+
+    deliverables:
+      - docs/MASS_ROLE_PREFERENCES.md
+      - Updated docs/MODULE_REGISTRY.md (add reference if needed)
+
+  - id: task-002
+    name: "Implement Pagination for Baptisms Module"
+    description: |
+      Add pagination to the baptisms list page following the patterns in PAGINATION.md.
+
+      Steps:
+      1. Update baptisms/page.tsx to accept and pass page searchParam
+      2. Update baptisms-list-client.tsx to include PaginationControls component
+      3. Modify getBaptisms server action to accept limit and offset
+      4. Calculate total pages in server component
+      5. Ensure page number persists across navigation
+      6. Write tests for pagination functionality
+
+      Default page size should be 20 items.
+
+    module: baptisms
+    estimated_complexity: low
+    context_files:
+      - docs/PAGINATION.md
+      - src/app/(main)/weddings/page.tsx
+      - src/app/(main)/weddings/weddings-list-client.tsx
+      - src/app/(main)/baptisms/page.tsx
+      - src/app/(main)/baptisms/baptisms-list-client.tsx
+      - src/lib/actions/baptisms.ts
+
+    deliverables:
+      - Updated src/app/(main)/baptisms/page.tsx
+      - Updated src/app/(main)/baptisms/baptisms-list-client.tsx
+      - Updated src/lib/actions/baptisms.ts
+      - tests/baptisms/pagination.spec.ts
+
+  - id: task-003
+    name: "Write Comprehensive Tests for Funerals Module"
+    description: |
+      Create comprehensive Playwright tests for the funerals module covering:
+      - Create funeral (all required fields)
+      - Read/view funeral details
+      - Update funeral information
+      - Delete funeral (with confirmation)
+      - Search and filtering
+      - Form validation (test error cases)
+
+      Follow TESTING_GUIDE.md patterns:
+      - Use role-based selectors first
+      - Tests are pre-authenticated (no auth setup needed)
+      - Use Page Object Model if appropriate
+      - Test user workflows, not implementation details
+      - Don't test for toast messages - test navigation instead
+
+    module: funerals
+    estimated_complexity: medium
+    context_files:
+      - docs/TESTING_GUIDE.md
+      - docs/TESTING_ARCHITECTURE.md
+      - tests/weddings/weddings-crud.spec.ts
+      - src/app/(main)/funerals/
+
+    deliverables:
+      - tests/funerals/funerals-crud.spec.ts
+      - tests/funerals/funerals-page-object.ts (if using Page Object Model)
+
+  - id: task-004
+    name: "Fix Dark Mode Issues in Presentations Module"
+    description: |
+      Audit and fix dark mode compatibility issues in the presentations module.
+
+      The presentations module uses some hardcoded colors that break in dark mode.
+      Find all instances of:
+      - bg-white, text-gray-900, or other hardcoded color classes
+      - Hex colors in inline styles
+      - Colors that don't use semantic tokens
+
+      Replace with semantic tokens:
+      - bg-background, text-foreground
+      - bg-card, text-card-foreground
+      - bg-muted, text-muted-foreground
+      - etc.
+
+      Test in both light and dark mode to verify fixes.
+
+    module: presentations
+    estimated_complexity: low
+    context_files:
+      - docs/STYLES.md
+      - src/app/(main)/presentations/
+
+    deliverables:
+      - Updated presentations module files (list specific files changed)
+      - Workspace notes documenting all changes made

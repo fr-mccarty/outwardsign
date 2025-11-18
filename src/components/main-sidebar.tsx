@@ -22,7 +22,7 @@ import {
   Settings,
   Church,
   Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
-  BookHeart, CalendarDays, Building, LayoutTemplate
+  BookHeart, CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -163,6 +163,16 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       title: "New Mass",
                       url: "/masses/create",
                       icon: Plus,
+                    },
+                    {
+                      title: "Mass Roles",
+                      url: "/mass-roles",
+                      icon: UserCog,
+                    },
+                    {
+                      title: "Role Directory",
+                      url: "/mass-role-directory",
+                      icon: UsersIcon,
                     },
                     {
                       title: "Templates",

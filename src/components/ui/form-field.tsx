@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 
 interface BaseFormFieldProps {
@@ -44,7 +45,13 @@ interface SelectFieldProps extends BaseFormFieldProps {
   options?: Array<{value: string; label: string}>
 }
 
-type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps
+interface CheckboxFieldProps extends BaseFormFieldProps {
+  inputType: 'checkbox'
+  value: boolean
+  onChange: (value: boolean) => void
+}
+
+type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps | CheckboxFieldProps
 
 export function FormField(props: FormFieldProps) {
   const { id, label, description, required = false, disabled = false, className = '', error } = props
@@ -54,6 +61,17 @@ export function FormField(props: FormFieldProps) {
     const hasError = !!error
 
     switch (props.inputType) {
+      case 'checkbox':
+        return (
+          <Checkbox
+            id={id}
+            checked={(props as CheckboxFieldProps).value}
+            onCheckedChange={(props as CheckboxFieldProps).onChange}
+            disabled={disabled}
+            aria-describedby={errorId}
+            aria-invalid={hasError}
+          />
+        )
       case 'textarea':
         const rows = (props as TextareaFieldProps).rows || 12
         return (
@@ -97,17 +115,18 @@ export function FormField(props: FormFieldProps) {
           </Select>
         )
       default:
+        const inputProps = props as InputFieldProps
         return (
           <Input
             id={id}
-            type={props.inputType || 'text'}
-            value={props.value}
-            onChange={(e) => props.onChange(e.target.value)}
-            placeholder={(props as InputFieldProps).placeholder}
-            min={(props as InputFieldProps).min}
-            max={(props as InputFieldProps).max}
-            step={(props as InputFieldProps).step}
-            maxLength={(props as InputFieldProps).maxLength}
+            type={inputProps.inputType || 'text'}
+            value={inputProps.value}
+            onChange={(e) => inputProps.onChange(e.target.value)}
+            placeholder={inputProps.placeholder}
+            min={inputProps.min}
+            max={inputProps.max}
+            step={inputProps.step}
+            maxLength={inputProps.maxLength}
             className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
             required={required}
             disabled={disabled}
@@ -118,6 +137,32 @@ export function FormField(props: FormFieldProps) {
     }
   }
 
+  // Checkbox has a different layout - label next to checkbox
+  if (props.inputType === 'checkbox') {
+    return (
+      <div className={cn('flex items-start space-x-3', className)}>
+        <div className="flex items-center h-6">
+          {renderInput()}
+        </div>
+        <div className="flex-1">
+          <Label htmlFor={id} className="text-sm font-medium cursor-pointer">
+            {label}
+            {required && <span className="text-destructive ml-1">*</span>}
+          </Label>
+          {description && (
+            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+          )}
+          {error && (
+            <p id={errorId} className="text-sm text-destructive mt-1">
+              {error}
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Standard layout for other input types
   return (
     <div className={className}>
       <Label htmlFor={id} className={`text-sm font-medium ${description ? '' : 'mb-1'}`}>

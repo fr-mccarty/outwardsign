@@ -1,0 +1,50 @@
+import { PageContainer } from '@/components/page-container'
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { getPeopleWithMassRolePreferences } from "@/lib/actions/mass-role-preferences"
+import { getMassRoles } from "@/lib/actions/mass-roles"
+import { getPeople } from "@/lib/actions/people"
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { MassRoleDirectoryListClient } from './mass-role-directory-list-client'
+
+interface PageProps {
+  searchParams: Promise<{ search?: string; role?: string; status?: string }>
+}
+
+export default async function MassRoleDirectoryPage({ searchParams }: PageProps) {
+  const supabase = await createClient()
+
+  // Check authentication server-side
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const params = await searchParams
+
+  // Fetch people who have mass role preferences (serve in mass roles)
+  const peopleInDirectory = await getPeopleWithMassRolePreferences()
+  const massRoles = await getMassRoles()
+
+  // Fetch all people for the picker
+  const allPeople = await getPeople()
+
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Mass Role Directory" }
+  ]
+
+  return (
+    <PageContainer
+      title="Mass Role Directory"
+      description="View and manage people serving in liturgical roles."
+    >
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+      <MassRoleDirectoryListClient
+        initialData={peopleInDirectory}
+        massRoles={massRoles}
+        allPeople={allPeople}
+      />
+    </PageContainer>
+  )
+}

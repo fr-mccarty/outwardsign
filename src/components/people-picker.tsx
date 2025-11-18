@@ -59,7 +59,17 @@ export function PeoplePicker({
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const PAGE_SIZE = 10
+
+  // Debounce search query with 1000ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
@@ -80,9 +90,9 @@ export function PeoplePicker({
   // Load people when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadPeople(currentPage, searchQuery)
+      loadPeople(currentPage, debouncedSearchQuery)
     }
-  }, [open, currentPage, searchQuery])
+  }, [open, currentPage, debouncedSearchQuery])
 
   const loadPeople = async (page: number, search: string) => {
     try {
@@ -121,7 +131,7 @@ export function PeoplePicker({
     setCurrentPage(page)
   }
 
-  // Handle search change
+  // Handle search change - debounced via useEffect above
   const handleSearchChange = (search: string) => {
     setSearchQuery(search)
     setCurrentPage(1) // Reset to first page when searching

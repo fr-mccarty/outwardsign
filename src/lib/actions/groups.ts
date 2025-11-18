@@ -377,3 +377,136 @@ export async function getActiveGroups(): Promise<Group[]> {
 
   return data || []
 }
+
+// ========== GROUP MEMBER DIRECTORY FUNCTIONS ==========
+
+export interface GroupMemberWithDetails extends GroupMember {
+  person: {
+    id: string
+    first_name: string
+    last_name: string
+    email?: string
+    phone_number?: string
+  }
+  group_role: {
+    id: string
+    name: string
+    description?: string
+  } | null
+}
+
+export interface PersonGroupMembership {
+  id: string
+  group_id: string
+  person_id: string
+  group_role_id?: string | null
+  joined_at: string
+  group: {
+    id: string
+    name: string
+    description?: string
+    is_active: boolean
+  }
+  group_role: {
+    id: string
+    name: string
+    description?: string
+  } | null
+}
+
+export async function getPeopleWithGroupMemberships() {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('group_members')
+    .select(`
+      id,
+      group_id,
+      person_id,
+      group_role_id,
+      joined_at,
+      person:person_id (
+        id,
+        first_name,
+        last_name,
+        email,
+        phone_number
+      ),
+      group_role:group_role_id (
+        id,
+        name,
+        description
+      )
+    `)
+    .order('joined_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching people with group memberships:', error)
+    throw new Error('Failed to fetch people with group memberships')
+  }
+
+  // Group by person
+  const peopleMap = new Map()
+
+  for (const membership of (data || [])) {
+    const personId = membership.person_id
+    if (!peopleMap.has(personId)) {
+      peopleMap.set(personId, {
+        person: membership.person,
+        memberships: []
+      })
+    }
+    peopleMap.get(personId).memberships.push(membership)
+  }
+
+  return Array.from(peopleMap.values())
+}
+
+export async function getPersonGroupMemberships(personId: string): Promise<PersonGroupMembership[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('group_members')
+    .select(`
+      id,
+      group_id,
+      person_id,
+      group_role_id,
+      joined_at,
+      group:group_id (
+        id,
+        name,
+        description,
+        is_active
+      ),
+      group_role:group_role_id (
+        id,
+        name,
+        description
+      )
+    `)
+    .eq('person_id', personId)
+    .order('joined_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching person group memberships:', error)
+    throw new Error('Failed to fetch person group memberships')
+  }
+
+  // Transform the data to match the expected type
+  const memberships: PersonGroupMembership[] = (data || []).map((item: any) => ({
+    id: item.id,
+    group_id: item.group_id,
+    person_id: item.person_id,
+    group_role_id: item.group_role_id,
+    joined_at: item.joined_at,
+    group: Array.isArray(item.group) ? item.group[0] : item.group,
+    group_role: item.group_role_id && item.group_role ? (Array.isArray(item.group_role) ? item.group_role[0] : item.group_role) : undefined
+  }))
+
+  return memberships
+}

@@ -630,6 +630,114 @@ export interface MassRoleInstance {
   updated_at: string
 }
 
+// Mass role template items (role requirements within a template)
+export interface MassRoleTemplateItem {
+  id: string
+  template_id: string
+  mass_role_id: string
+  count: number
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+// Mass role template item with role details
+export interface MassRoleTemplateItemWithRole extends MassRoleTemplateItem {
+  mass_role: MassRole
+}
+
+// Mass role template with items
+export interface MassRoleTemplateWithItems extends MassRolesTemplate {
+  items: MassRoleTemplateItemWithRole[]
+}
+
+// Mass role instance with details
+export interface MassRoleInstanceWithDetails extends MassRoleInstance {
+  person: Person | null
+  template_item: MassRoleTemplateItemWithRole
+}
+
+// Mass role preferences (availability and scheduling preferences)
+export interface MassRolePreference {
+  id: string
+  person_id: string
+  parish_id: string
+  mass_role_id: string | null
+  preferred_days: string[] | null
+  available_days: string[] | null
+  unavailable_days: string[] | null
+  preferred_times: string[] | null
+  unavailable_times: string[] | null
+  desired_frequency: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'OCCASIONAL' | null
+  max_per_month: number | null
+  languages: { language: string; level: string }[] | null
+  notes: string | null
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Mass role preference with person and role details
+export interface MassRolePreferenceWithDetails extends MassRolePreference {
+  person: Person
+  mass_role: MassRole | null
+}
+
+// Blackout dates (unavailability periods)
+export interface MassRoleBlackoutDate {
+  id: string
+  person_id: string
+  start_date: string
+  end_date: string
+  reason: string | null
+  created_at: string
+}
+
+// Blackout date with person details
+export interface MassRoleBlackoutDateWithPerson extends MassRoleBlackoutDate {
+  person: Person
+}
+
+// Create/Update data types
+export interface CreateMassRolePreferenceData {
+  person_id: string
+  mass_role_id?: string | null
+  preferred_days?: string[]
+  available_days?: string[]
+  unavailable_days?: string[]
+  preferred_times?: string[]
+  unavailable_times?: string[]
+  desired_frequency?: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'OCCASIONAL'
+  max_per_month?: number
+  languages?: { language: string; level: string }[]
+  notes?: string
+  active?: boolean
+}
+
+export interface UpdateMassRolePreferenceData extends Partial<CreateMassRolePreferenceData> {}
+
+export interface CreateMassRoleBlackoutDateData {
+  person_id: string
+  start_date: string
+  end_date: string
+  reason?: string
+}
+
+export interface UpdateMassRoleBlackoutDateData {
+  start_date?: string
+  end_date?: string
+  reason?: string
+}
+
+// Person role statistics
+export interface PersonRoleStats {
+  total_assignments: number
+  assignments_this_month: number
+  assignments_this_year: number
+  last_assignment_date: string | null
+  roles: string[]
+}
+
 export interface MassIntention {
   id: string
   parish_id: string

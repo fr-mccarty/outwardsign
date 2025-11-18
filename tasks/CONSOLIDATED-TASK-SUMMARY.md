@@ -1,169 +1,54 @@
 # Consolidated Task Summary
 
-> **Last Updated:** 2025-11-17
+> **Last Updated:** 2025-11-18
 >
-> **Purpose:** Single source of truth for all remaining tasks (excluding content builder refactoring)
+> **Purpose:** Single source of truth for all remaining tasks
 
-This document consolidates all outstanding work from ROADMAP.md and other planning documents, organized by priority and category.
+This document consolidates all outstanding work organized by priority and category.
 
 ---
 
 ## Table of Contents
 
-- [Current State Summary](#current-state-summary)
 - [🔴 Critical Priority Tasks](#-critical-priority-tasks)
 - [🟡 High Priority Tasks](#-high-priority-tasks)
 - [🟢 Medium Priority Tasks](#-medium-priority-tasks)
 - [⚪ Low Priority / Future](#-low-priority--future)
-- [📊 Task Statistics](#-task-statistics)
-- [Decision Points](#decision-points)
 
 ---
 
-## Current State Summary
+## Current Gaps
 
-### What Works Now ✅
+**Communication:**
+- No email functionality
+- No SMS/text messaging
+- No notifications or reminders
 
-**Core Modules (All Operational):**
-- ✅ Weddings - Complete with liturgy planning, readings, petitions, PDF/Word export
-- ✅ Funerals - Full liturgy management with export
-- ✅ Baptisms - Tracking and summary generation
-- ✅ Presentations - Latino presentation ceremonies
-- ✅ Quinceañeras - Celebration planning with liturgy
-- ✅ Masses - Scheduling and liturgy planning
-- ✅ Mass Intentions - Tracking and reports
-
-**Support Systems:**
-- ✅ People directory, Events, Locations, Readings, Groups, Calendar
-- ✅ Liturgical Script System (Print, PDF, Word export)
-- ✅ Authentication, Parish selection, Role-based permissions
-- ✅ Dark mode, Bilingual content (EN/ES), Liturgical calendar (2025-2026)
-- ✅ Automated test infrastructure
-
-### Critical Gaps ❌
-
-**1. Team Collaboration (BLOCKING):**
-- ❌ Cannot invite team members to parish
-- ❌ Cannot add staff members
-- ❌ No team member management UI
-- ❌ No event-specific permissions
-
-**2. Communication:**
-- ❌ No email functionality
-- ❌ No SMS/text messaging
-- ❌ No notifications or reminders
-
-**3. Mass Ministry Scheduling:**
-- ❌ Cannot assign lectors, EMHCs, altar servers to masses
-- ❌ No ministry scheduling for any sacraments
-- ❌ No conflict detection for ministry assignments
+**Mass Ministry Scheduling:**
+- Cannot assign lectors, EMHCs, altar servers to masses
+- No ministry scheduling for any sacraments
+- No conflict detection for ministry assignments
 
 ---
 
 ## 🔴 Critical Priority Tasks
 
-**These tasks are BLOCKING basic collaboration and must be completed for Phase I.**
-
-### 1. Team Member System (CRITICAL)
-
-**Status:** Not Started
-**Estimated Time:** 20-30 hours
-**Blocks:** All collaboration features, multi-user functionality
-
-**Requirements:**
-
-#### Database Layer
-- [ ] Create `team_invitations` table
-  - Fields: parish_id, email, role, status, token, expires_at, invited_by, invited_at
-  - RLS policies for invitation management
-- [ ] Create `parish_members` (or `team_members`) table
-  - Fields: parish_id, user_id, role, joined_at, invited_by
-  - RLS policies for team access
-- [ ] Migration to add tables with proper indexes
-- [ ] Test RLS policies thoroughly
-
-#### Server Actions
-- [ ] `createTeamInvitation(parishId, email, role)`
-- [ ] `getTeamInvitations(parishId)` - List pending invitations
-- [ ] `acceptInvitation(token)` - User accepts invitation
-- [ ] `revokeInvitation(invitationId)` - Admin cancels invitation
-- [ ] `getTeamMembers(parishId)` - List current team
-- [ ] `removeTeamMember(parishId, userId)` - Remove from team
-- [ ] `updateTeamMemberRole(parishId, userId, newRole)` - Change role
-
-#### UI Components
-- [ ] Team management page (`/settings/team`)
-- [ ] "Invite Team Member" button + modal
-- [ ] Team member list with roles
-- [ ] Invitation acceptance flow (public page with token)
-- [ ] Invitation email template (copy-paste or actual email)
-- [ ] Remove team member confirmation dialog
-- [ ] Role selector component
-
-#### User Flow
-1. Admin clicks "Invite Team Member"
-2. Enters email address and selects role (admin, staff, ministry-leader)
-3. System creates invitation record with unique token
-4. Invitation link/email sent to recipient
-5. Recipient clicks link → creates account or signs in
-6. User automatically added to parish team with assigned role
-7. User now has access based on role permissions
-
-**See:** ROADMAP.md - Phase II, Section 1
-
----
-
-### 2. Form Validation Improvements (CRITICAL)
+### 1. Form Validation Improvements
 
 **Status:** Partially Complete
-**Estimated Time:** 8-12 hours
 
 **Remaining Tasks:**
-- [ ] Fix FormField color tokens for dark mode
-  - Current issue: Some form inputs don't respect dark mode properly
-  - Files: `src/components/forms/form-field.tsx`
 - [ ] Add client-side validation with Zod across all forms
-  - Some forms still lack proper validation
-  - Add Zod schemas to all create/update forms
 - [ ] Ensure server-side validation in all server actions
-  - Audit all server actions for input validation
-  - Add validation before database operations
-
-**See:** ROADMAP.md - In Progress, Form Validation
-
----
-
-### 3. ~~Missing Sacramental Modules~~ (EXCLUDED FROM ROADMAP)
-
-**Status:** ❌ EXCLUDED - User Decision
-**Estimated Time:** N/A
-
-**⚠️ IMPORTANT: These modules are explicitly EXCLUDED from the roadmap and should NOT be created:**
-
-- ❌ **Confirmations Module** - EXCLUDED
-- ❌ **First Communion Module** - EXCLUDED
-- ❌ **Anointing of the Sick** - EXCLUDED
-- ❌ **Reconciliation Preparation** - EXCLUDED
-
-**Reason:** User prioritization decision - focusing on existing modules and collaboration features instead of adding more sacramental modules at this time.
-
-**Current Module Coverage is Sufficient:**
-- ✅ Weddings, Funerals, Baptisms, Presentations, Quinceañeras, Masses, Mass Intentions
-
-**Phase I Completion:** Does NOT require these additional modules. Phase I is effectively complete with current module set.
-
-**See:** User decision 2025-11-17
+- [ ] Audit all server actions for input validation
 
 ---
 
 ## 🟡 High Priority Tasks
 
-**These tasks significantly improve the application but don't block basic functionality.**
-
-### 4. Mass Ministry Roles System
+### 2. Mass Ministry Roles System
 
 **Status:** In Progress (database structure exists, UI incomplete)
-**Estimated Time:** 25-35 hours
 **See:** MASSES.md for complete detailed plan
 
 **Remaining Tasks:**
@@ -207,10 +92,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 5. Event-Specific Member Assignment
+### 3. Event-Specific Member Assignment
 
 **Status:** Not Started
-**Estimated Time:** 15-20 hours
 
 **Problem:** Cannot assign specific people to specific events (weddings, funerals, masses).
 
@@ -243,10 +127,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 6. Ministry Scheduling for All Sacraments
+### 4. Ministry Scheduling for All Sacraments
 
 **Status:** Not Started
-**Estimated Time:** 30-40 hours
 **Depends On:** Mass Ministry Roles System
 
 **Description:** Extend ministry role assignment beyond masses to all sacramental celebrations.
@@ -270,10 +153,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 7. Multilingual Support (Phase I Completion)
+### 5. Multilingual Support
 
 **Status:** Partially Complete (infrastructure exists, incomplete implementation)
-**Estimated Time:** 20-30 hours
 
 **Remaining Tasks:**
 - [ ] Complete Spanish translations for all modules
@@ -305,12 +187,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ## 🟢 Medium Priority Tasks
 
-**These improve UX and code quality but aren't blocking.**
-
-### 8. Communication System (Free Options First)
+### 6. Communication System (Free Options First)
 
 **Status:** Not Started
-**Estimated Time:** 12-18 hours for Phase II.A
 
 **Phase II.A - Cost-Free Approach:**
 
@@ -344,10 +223,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 9. Calendar & Scheduling Improvements
+### 7. Calendar & Scheduling Improvements
 
 **Status:** Partially Complete
-**Estimated Time:** 15-20 hours
 
 **Remaining Tasks:**
 - [ ] Add Spanish language liturgical events (2025, 2026)
@@ -370,10 +248,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 10. Known Issues & Technical Debt
+### 8. Known Issues & Technical Debt
 
 **Status:** Ongoing
-**Estimated Time:** Varies by issue
 
 **High Priority:**
 - [ ] Review and fix any RLS policy gaps
@@ -397,10 +274,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 11. UI/UX Improvements
+### 9. UI/UX Improvements
 
 **Status:** Ongoing
-**Estimated Time:** 15-25 hours
 
 **Design System:**
 - [ ] Review and standardize spacing patterns
@@ -426,10 +302,9 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-### 12. Testing Improvements
+### 10. Testing Improvements
 
 **Status:** In Progress
-**Estimated Time:** 20-30 hours
 
 **Test Coverage:**
 - [ ] Add tests for Masses module
@@ -450,9 +325,7 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ## ⚪ Low Priority / Future
 
-**Phase III features - not needed for initial launch.**
-
-### 13. Advanced Liturgical Features (Phase III)
+### 11. Advanced Liturgical Features (Phase III)
 
 - [ ] Parish Default Module Templates - Set default templates per module
 - [ ] Custom liturgy templates builder
@@ -461,7 +334,7 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 - [ ] Integration with liturgical calendar API for automatic Mass creation
 - [ ] Template sharing marketplace
 
-### 14. Reporting & Analytics (Phase III)
+### 12. Reporting & Analytics (Phase III)
 
 - [ ] Sacrament statistics dashboard
 - [ ] Annual sacrament reports
@@ -471,14 +344,14 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 - [ ] Role coverage reports
 - [ ] No-show tracking and analytics
 
-### 15. Advanced Collaboration (Phase III)
+### 13. Advanced Collaboration (Phase III)
 
 - [ ] Real-time collaboration (multiple coordinators editing simultaneously)
 - [ ] Version history for Mass assignments and records
 - [ ] Advanced search functionality across all modules
 - [ ] Bulk operations for multiple records
 
-### 16. Integrations (Phase III)
+### 14. Integrations (Phase III)
 
 - [ ] Church management system integrations
 - [ ] Donor management integration
@@ -486,14 +359,14 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 - [ ] Outlook Calendar sync
 - [ ] Zoom/video conferencing integration
 
-### 17. Mobile & Performance (Phase III)
+### 15. Mobile & Performance (Phase III)
 
 - [ ] Progressive Web App (PWA) enhancements
 - [ ] Offline support
 - [ ] Mobile-optimized views
 - [ ] Native mobile app (iOS/Android)
 
-### 18. Multi-Parish & Enterprise (Phase III)
+### 16. Multi-Parish & Enterprise (Phase III)
 
 - [ ] Multi-parish support (manage multiple parishes from one account)
 - [ ] Multi-parish coordination (for shared ministers)
@@ -504,144 +377,18 @@ This document consolidates all outstanding work from ROADMAP.md and other planni
 
 ---
 
-## 📊 Task Statistics
-
-### By Priority
-
-**🔴 Critical:** 2 major task groups (28-42 hours total)
-- Team Member System (20-30 hours)
-- Form Validation (8-12 hours)
-- ~~Missing Modules~~ (EXCLUDED - 0 hours)
-
-**🟡 High Priority:** 5 major task groups (105-145 hours total)
-- Mass Ministry Roles (25-35 hours)
-- Event-Specific Assignment (15-20 hours)
-- Ministry Scheduling for All (30-40 hours)
-- Multilingual Support (20-30 hours)
-- Communication System (12-18 hours)
-
-**🟢 Medium Priority:** 4 major task groups (62-98 hours total)
-- Calendar Improvements (15-20 hours)
-- Technical Debt (varies)
-- UI/UX Improvements (15-25 hours)
-- Testing (20-30 hours)
-
-**⚪ Low Priority (Phase III):** Deferred until after Phase I & II complete
-
-### By Category
-
-**Collaboration Features:** 3 tasks (65-90 hours)
-**~~Sacramental Modules~~:** EXCLUDED (0 hours)
-**Ministry Management:** 2 tasks (55-75 hours)
-**Communication:** 1 task (12-18 hours)
-**Technical Quality:** 3 tasks (35-55 hours)
-**User Experience:** 1 task (15-25 hours)
-**Internationalization:** 1 task (20-30 hours)
-
-### Estimated Total (Critical + High Priority)
-
-**Minimum:** 133 hours (~3.5 weeks full-time)
-**Maximum:** 187 hours (~4.5 weeks full-time)
-
----
-
-## Decision Points
-
-### 1. Team Member System - Immediate Decision Required
-
-**Decision:** How to implement team member invitations?
-
-**Recommended:** Option 1 - Simple Email Invitation
-- Admin enters email + role
-- System sends email with signup/login link
-- User creates account and automatically joins parish
-- Most streamlined UX, industry standard
-
-**See:** ROADMAP.md - Decision Points
-
----
-
-### 2. Communication Approach - Phase II Decision
-
-**Decision:** Start with free options or build paid integration from the start?
-
-**Recommended:** Start with cost-free options
-- Copy-paste email templates
-- Calendar .ics files
-- Printable contact sheets
-- Validate user demand first
-- Add paid integrations (email/SMS) in Phase II.B based on need
-
-**See:** ROADMAP.md - Decision Points
-
----
-
-### 3. Member vs. Collaborator Model
-
-**Decision:** Same system or separate systems for team members vs event collaborators?
-
-**Recommended:** Separate systems
-- **Team Members** = Parish staff with broad access
-- **Event Collaborators** = Event-specific access only
-- Different permission models, different UI
-- Keeps parish team management clean
-
-**See:** ROADMAP.md - Decision Points
-
----
-
-## Next Steps
-
-### Recommended Order (Critical Path)
-
-**Week 1-2: Foundation**
-1. Team Member System (20-30 hours)
-   - Enables all collaboration features
-   - CRITICAL BLOCKER
-
-**Week 3-4: Ministry & Validation**
-2. Form Validation Improvements (8-12 hours)
-3. Mass Ministry Roles System (25-35 hours)
-   - High value, frequently requested
-
-**Week 5-6: Collaboration**
-4. Event-Specific Assignment (15-20 hours)
-5. Ministry Scheduling for All Sacraments (30-40 hours)
-
-**Week 7-8: Multilingual & Communication**
-6. Multilingual Support (20-30 hours)
-7. Communication System - Free Options (12-18 hours)
-
-**Week 9-10: Polish & Improvements**
-8. Calendar Improvements (15-20 hours)
-9. UI/UX Improvements (15-25 hours)
-10. Testing (20-30 hours)
-
-**Total Estimated Time:** 165-245 hours (~4-6 weeks full-time)
-
-**Note:** ~~Missing Sacramental Modules~~ have been EXCLUDED from the roadmap per user decision 2025-11-17.
-
 ---
 
 ## Notes
 
-**Content Builder Tasks (Excluded):**
-All content builder refactoring tasks are documented separately in:
-- `/tasks/content-builder-implementation.md`
-- `/tasks/CONTENT-BUILDER-SUMMARY.md`
-
-These tasks are optional optimization work (60% code reduction) but not required for functionality.
-
-**Phase I Completion:**
-Completing the Critical Priority tasks (Team Member System + Missing Modules) achieves Phase I goals as defined in ROADMAP.md.
-
-**Phase II Readiness:**
-Completing all Critical + High Priority tasks enables full Phase II collaboration and communication features.
+**No additional notes at this time.**
 
 ---
 
 ## Update History
 
-- **2025-11-17** - Excluded 4 sacramental modules from roadmap (Confirmations, First Communion, Anointing, Reconciliation) per user decision
-- **2025-11-17** - Note: Time estimates included in this document for initial planning only - future updates should NOT include time estimates per user preference
-- **2025-11-17** - Initial consolidated task summary created from ROADMAP.md and task files
+- **2025-11-18** - Removed completed team management system and content builder implementation
+- **2025-11-18** - Deleted 7 redundant task files (all content-builder planning docs + helper functions)
+- **2025-11-18** - Confirmed content builders are implemented and in use (13/19 templates, 68% adoption)
+- **2025-11-18** - Removed all time estimates, statistics, decision points, and scheduling sections
+- **2025-11-18** - Simplified to focus only on future work
