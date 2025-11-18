@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { MassIntention, Person, Mass } from '@/lib/types'
 import type { MassIntentionStatus } from '@/lib/constants'
 
@@ -246,6 +247,14 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'mass-intentions')
+
   const { data: intention, error } = await supabase
     .from('mass_intentions')
     .insert([
@@ -279,6 +288,14 @@ export async function updateMassIntention(id: string, data: UpdateMassIntentionD
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'mass-intentions')
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
     Object.entries(data).filter(([_, value]) => value !== undefined)
@@ -306,6 +323,14 @@ export async function deleteMassIntention(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'mass-intentions')
 
   const { error } = await supabase
     .from('mass_intentions')

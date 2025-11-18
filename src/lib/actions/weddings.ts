@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Wedding, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
@@ -284,6 +285,14 @@ export async function createWedding(data: CreateWeddingData): Promise<Wedding> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'weddings')
+
   const { data: wedding, error } = await supabase
     .from('weddings')
     .insert([
@@ -337,6 +346,14 @@ export async function updateWedding(id: string, data: UpdateWeddingData): Promis
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'weddings')
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
     Object.entries(data).filter(([_, value]) => value !== undefined)
@@ -364,6 +381,14 @@ export async function deleteWedding(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'weddings')
 
   const { error } = await supabase
     .from('weddings')

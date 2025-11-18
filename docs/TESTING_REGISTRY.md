@@ -14,6 +14,7 @@ This document provides a complete reference of all test files and individual tes
 ## Table of Contents
 
 - [Authentication & Onboarding](#authentication--onboarding)
+- [Permissions & Authorization](#permissions--authorization)
 - [Sacrament Modules](#sacrament-modules)
   - [Weddings](#weddings)
   - [Funerals](#funerals)
@@ -67,6 +68,73 @@ This document provides a complete reference of all test files and individual tes
 | should navigate from home to login | Verifies navigation path from homepage to login page works correctly |
 | should navigate from login to signup | Confirms navigation from login page to signup page via link |
 | should show loading state during login | Validates loading state (button text changes) displays during authentication |
+
+---
+
+## Permissions & Authorization
+
+### `tests/permissions.spec.ts` (16 tests)
+
+**Module:** Role-Based Access Control
+
+| Test | Description |
+|------|-------------|
+| admin should see all modules in sidebar | Verifies admin users see all module navigation links in the sidebar |
+| staff should see all modules in sidebar | Verifies staff users see all module navigation links in the sidebar |
+| ministry-leader should only see enabled modules in sidebar | Validates ministry-leaders only see navigation links for their enabled modules |
+| ministry-leader with multiple modules should see all enabled modules | Confirms ministry-leaders with multiple enabled modules see all their assigned modules |
+| parishioner should not see any modules in sidebar | Validates parishioners do not see any module navigation links |
+| admin can access all module URLs | Verifies admin users can directly navigate to all module URLs |
+| staff can access all module URLs | Verifies staff users can directly navigate to all module URLs |
+| ministry-leader can only access enabled module URLs | Validates ministry-leaders are redirected when accessing disabled module URLs |
+| ministry-leader cannot access specific record URLs for disabled modules | Confirms ministry-leaders cannot access individual records in disabled modules |
+| parishioner cannot access any module URLs | Validates parishioners are redirected when attempting to access any module URL |
+| ministry-leader with multiple modules can access all enabled URLs | Verifies ministry-leaders with multiple enabled modules can access all assigned module URLs |
+| ministry-leader can access create page for enabled modules | Confirms ministry-leaders can access create pages for their enabled modules |
+| ministry-leader cannot access create page for disabled modules | Validates ministry-leaders are redirected when accessing create pages for disabled modules |
+| parishioner cannot access create pages | Confirms parishioners are redirected when attempting to access any create page |
+| ministry-leader can access edit page for enabled modules | Verifies ministry-leaders can access edit pages for their enabled modules |
+| ministry-leader cannot access edit page for disabled modules | Validates ministry-leaders are redirected when accessing edit pages for disabled modules |
+| only admin can access parish settings | Confirms only admin users can access parish settings page |
+| staff cannot access parish settings | Validates staff users cannot access parish settings and don't see link in sidebar |
+| ministry-leader cannot access parish settings | Confirms ministry-leaders cannot access parish settings and don't see link in sidebar |
+| dashboard should show error message when permission denied | Verifies dashboard displays error message when user is redirected due to insufficient permissions |
+
+### `tests/permissions-server-actions.spec.ts` (12 tests)
+
+**Module:** Server Action Authorization
+
+| Test | Description |
+|------|-------------|
+| ministry-leader with weddings enabled can create wedding | Verifies ministry-leaders with weddings module can successfully create wedding records |
+| ministry-leader without weddings enabled cannot create wedding | Validates ministry-leaders without weddings module are blocked from creating wedding records |
+| parishioner cannot create wedding | Confirms parishioners are blocked from creating wedding records |
+| ministry-leader with weddings enabled can update wedding | Verifies ministry-leaders with weddings module can successfully update wedding records |
+| ministry-leader without weddings enabled cannot update wedding | Validates ministry-leaders without weddings module are blocked from updating wedding records |
+| ministry-leader with weddings enabled can delete wedding | Confirms ministry-leaders with weddings module can successfully delete wedding records |
+| ministry-leader with funerals enabled can create funeral | Verifies ministry-leaders with funerals module can successfully create funeral records |
+| ministry-leader without funerals enabled cannot create funeral | Validates ministry-leaders without funerals module are blocked from creating funeral records |
+| ministry-leader with funerals enabled can update funeral | Confirms ministry-leaders with funerals module can successfully update funeral records |
+| ministry-leader without funerals enabled cannot update funeral | Validates ministry-leaders without funerals module are blocked from updating funeral records |
+| ministry-leader can only access their enabled modules | Verifies ministry-leaders can access enabled modules but are redirected for disabled modules |
+
+### `tests/parish-isolation.spec.ts` (11 tests)
+
+**Module:** Parish Data Isolation
+
+| Test | Description |
+|------|-------------|
+| should isolate weddings by parish | Verifies users from Parish B cannot see or access wedding records from Parish A |
+| should isolate funerals by parish | Validates users from Parish B cannot see or access funeral records from Parish A |
+| should isolate baptisms by parish | Confirms users from Parish B cannot see or access baptism records from Parish A |
+| should isolate presentations by parish | Verifies users from Parish B cannot see or access presentation records from Parish A |
+| should isolate quinceaneras by parish | Validates users from Parish B cannot see or access quinceanera records from Parish A |
+| should isolate masses by parish | Confirms users from Parish B cannot see or access mass records from Parish A |
+| should isolate mass intentions by parish | Verifies users from Parish B cannot see or access mass intention records from Parish A |
+| should isolate people by parish | Validates users from Parish B cannot see or access people records from Parish A |
+| should isolate events by parish | Confirms users from Parish B cannot see or access event records from Parish A |
+| should isolate locations by parish | Verifies users from Parish B cannot see or access location records from Parish A |
+| should isolate readings by parish | Validates users from Parish B cannot see or access reading records from Parish A |
 
 ---
 

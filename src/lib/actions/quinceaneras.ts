@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Quinceanera, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
@@ -260,6 +261,14 @@ export async function createQuinceanera(data: CreateQuinceaneraData): Promise<Qu
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'quinceaneras')
+
   const { data: quinceanera, error } = await supabase
     .from('quinceaneras')
     .insert([
@@ -309,6 +318,14 @@ export async function updateQuinceanera(id: string, data: UpdateQuinceaneraData)
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'quinceaneras')
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
     Object.entries(data).filter(([_, value]) => value !== undefined)
@@ -336,6 +353,14 @@ export async function deleteQuinceanera(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'quinceaneras')
 
   const { error } = await supabase
     .from('quinceaneras')

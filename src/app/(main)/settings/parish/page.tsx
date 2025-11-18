@@ -4,7 +4,6 @@ import { getCurrentParish } from '@/lib/auth/parish'
 import { getParishMembers, getParishSettings } from '@/lib/actions/setup'
 import { getParishInvitations } from '@/lib/actions/invitations'
 import { getPetitionTemplates, ensureDefaultContexts } from '@/lib/actions/petition-templates'
-import { getReadingsStats } from '@/lib/actions/import-readings'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ParishSettingsClient } from './parish-settings-client'
 
@@ -29,13 +28,11 @@ export default async function ParishSettingsPage() {
   const [
     settingsResult,
     membersResult,
-    invitations,
-    readingsStats
+    invitations
   ] = await Promise.all([
     getParishSettings(parish.id),
     getParishMembers(parish.id),
-    getParishInvitations().catch(() => []),
-    getReadingsStats().catch(() => ({ totalReadings: 0, categories: [], translations: [] }))
+    getParishInvitations().catch(() => [])
   ])
 
   // Load petition templates
@@ -57,7 +54,6 @@ export default async function ParishSettingsPage() {
         initialMembers={membersResult.members || []}
         initialInvitations={invitations}
         initialPetitionTemplates={petitionTemplates}
-        initialReadingsStats={readingsStats}
         currentUserId={user.id}
       />
     </>

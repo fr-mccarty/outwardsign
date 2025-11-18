@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 
 export interface Group {
   id: string
@@ -128,8 +129,16 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
 export async function createGroup(data: CreateGroupData): Promise<Group> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'groups')
 
   const { data: group, error } = await supabase
     .from('groups')
@@ -159,6 +168,14 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
 
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'groups')
+
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
   if (data.description !== undefined) updateData.description = data.description || null
@@ -184,8 +201,16 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
 export async function deleteGroup(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'groups')
 
   const { error } = await supabase
     .from('groups')
@@ -205,6 +230,14 @@ export async function addGroupMember(groupId: string, personId: string, groupRol
   await ensureJWTClaims()
 
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'groups')
 
   // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
@@ -248,6 +281,14 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
 
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'groups')
+
   // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
     .from('groups')
@@ -279,6 +320,14 @@ export async function updateGroupMemberRole(groupId: string, personId: string, g
   await ensureJWTClaims()
 
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'groups')
 
   // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase

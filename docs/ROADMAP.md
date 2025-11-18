@@ -83,6 +83,18 @@
 
 ### Recently Completed
 
+**2025-01-18:**
+- [x] Fixed liturgical color rendering in calendar views
+  - Updated `getLiturgicalBgClass` and `getLiturgicalTextClass` to use explicit class maps
+  - Ensured Tailwind can see all liturgical color classes at build time
+  - Fixed text color display for all liturgical colors including white
+- [x] Resolved FormField dark mode issue (no actual issue found)
+  - Verified custom FormField components use semantic tokens correctly
+  - Documented rule: Never edit `src/components/ui/` (shadcn components)
+- [x] Added Automated Mass Scheduling System section to roadmap
+  - Comprehensive wizard design with 6 steps
+  - Algorithm considerations and implementation phases
+
 **2025-01-15:**
 - [x] Completed renderer structure migration
   - Migrated all 29 occurrences of deprecated `multi-part-text` to specific element types
@@ -131,7 +143,6 @@
 - [ ] Minister directory
 
 ### Form Validation
-- [ ] Fix FormField color tokens for dark mode (see `/todos/formfield-improvements.md`)
 - [ ] Implement React Hook Form integration for new forms
 - [ ] Add client-side validation with Zod across all forms
 - [ ] Ensure server-side validation in all server actions
@@ -253,6 +264,129 @@ These modules are explicitly excluded and should NOT be created:
 - Mass role schedule report page
 - Minister self-service portal
 - Calendar view showing role assignments
+
+### 3.5. Automated Mass Scheduling System (Wizard)
+
+**Description:** A systematic, automated approach to assign ministers to multiple masses over a time period based on their preferences, availability, and group memberships.
+
+**Problem:** Manually assigning ministers to each mass individually is time-consuming and error-prone. Parish schedulers need to:
+- Consider minister preferences (which masses, which roles)
+- Respect availability and blackout dates
+- Balance workload fairly across ministers
+- Account for group assignments (e.g., all altar servers from Youth Group)
+- Schedule multiple masses at once (e.g., entire month or liturgical season)
+
+**Solution:** Multi-step wizard that guides the scheduler through configuration and generates assignments automatically.
+
+**Wizard Steps:**
+
+**Step 1: Date Range Selection**
+- Select start and end dates for scheduling period
+- Option to select by: Custom range, Month, Liturgical season, or Specific masses
+- Display all masses within selected range
+- Allow filtering by mass time, location, or type
+- Show count of masses to be scheduled
+
+**Step 2: Role Configuration**
+- Select which roles to schedule (Lector, EMHC, Altar Server, etc.)
+- Set quantity needed per role (e.g., 2 Lectors, 4 EMHCs per mass)
+- Option to use Mass Role Templates for consistent role patterns
+- Preview role requirements across all selected masses
+
+**Step 3: Minister Pool Selection**
+- Select ministers available for scheduling (individual or by group)
+- Filter by role capability (only show qualified ministers per role)
+- View minister preferences and availability at a glance
+- Option to include/exclude specific ministers
+- Display minister stats (availability, recent assignments, blackout dates)
+
+**Step 4: Scheduling Rules & Preferences**
+- **Distribution Rules:**
+  - Minimize consecutive assignments (e.g., don't assign same person 2 weeks in a row)
+  - Maximum assignments per minister per period
+  - Preferred frequency per minister (weekly, bi-weekly, monthly)
+  - Fair distribution algorithm (balance workload)
+- **Priority Rules:**
+  - Respect minister preferences (preferred masses, preferred roles)
+  - Honor blackout dates (vacations, unavailability)
+  - Group assignments (schedule youth group together for certain masses)
+  - Avoid conflicts with other parish commitments
+- **Fallback Behavior:**
+  - What to do if insufficient ministers available
+  - Option to leave slots empty vs. over-assign
+
+**Step 5: Review & Adjust**
+- Display generated schedule in calendar/table view
+- Highlight potential issues:
+  - Unfilled roles (insufficient ministers)
+  - Over-assigned ministers (exceeds preferences)
+  - Conflicts with blackout dates
+  - Unbalanced distribution
+- Manual override capability:
+  - Drag-and-drop to reassign
+  - Swap ministers between masses
+  - Add/remove assignments
+  - Lock specific assignments (won't change on re-generate)
+- Re-generate button (recalculates with same rules)
+
+**Step 6: Finalize & Notify**
+- Review summary statistics:
+  - Total assignments per minister
+  - Coverage percentage (filled roles vs. total needed)
+  - Distribution fairness score
+- Bulk publish assignments to calendar
+- Generate notification list (ministers to contact)
+- Option to send notifications immediately or copy templates
+- Export schedule (PDF, CSV, print)
+
+**Database Requirements:**
+- `mass_scheduling_sessions` - Save wizard progress and rules
+- `minister_preferences` - Role preferences, frequency preferences, preferred masses
+- `minister_blackout_dates` - Unavailability periods
+- `minister_groups` - Group memberships for bulk scheduling
+- `mass_roles` - Generated assignments
+- `scheduling_rules` - Parish-level default rules
+
+**Algorithm Considerations:**
+- **Constraint satisfaction problem** - Some rules are hard constraints (blackout dates), others are soft (preferences)
+- **Fair distribution** - Track assignment counts, rotate through minister pool
+- **Preference scoring** - Weight assignments by how well they match minister preferences
+- **Conflict detection** - Check for overlapping commitments across all modules
+- **Iterative improvement** - Allow re-generation with adjustments
+
+**UI/UX Considerations:**
+- Wizard should feel guided but flexible
+- Allow saving draft schedules (don't commit until finalized)
+- Visual feedback on schedule quality (coverage %, fairness score)
+- Quick filters and search in review step
+- Undo/redo capability for manual adjustments
+- Compare multiple generated schedules side-by-side
+
+**Implementation Phases:**
+
+**Phase 1: Basic Wizard (Manual with Assistance)**
+- Wizard UI for date range, role selection, minister pool
+- Display all masses and roles in table/calendar view
+- Manual assignment with validation (prevent conflicts, respect blackout dates)
+- Save and publish schedule
+
+**Phase 2: Semi-Automated Suggestions**
+- Algorithm suggests assignments based on availability
+- Show "suggested" vs "assigned" states
+- User reviews and accepts/modifies suggestions
+- Re-generate suggestions as needed
+
+**Phase 3: Fully Automated Scheduling**
+- Complete algorithm with preference scoring and fair distribution
+- Automatic conflict resolution with fallback strategies
+- Iterative improvement based on user adjustments
+- Learn from past schedules (ML-enhanced suggestions)
+
+**Related Features:**
+- Minister self-service portal (update preferences, mark unavailability)
+- Group management (assign ministers to groups for bulk scheduling)
+- Scheduling history (view past schedules, copy patterns)
+- Recurring schedule templates (use last month's pattern)
 
 ### 4. Ministry Scheduling for Sacraments & Sacramentals
 

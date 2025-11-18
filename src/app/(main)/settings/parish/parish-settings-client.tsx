@@ -36,11 +36,10 @@ import {
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { SettingsPage } from '@/components/settings-page'
-import { Save, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Send, FileText, BookOpen, Download, AlertCircle, CheckCircle, Edit } from "lucide-react"
+import { Save, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Send, FileText, Edit } from "lucide-react"
 import { updateParish, getParishMembers, removeParishMember, updateMemberRole, updateParishSettings } from '@/lib/actions/setup'
 import { createParishInvitation, revokeParishInvitation, resendParishInvitation, type ParishInvitation } from '@/lib/actions/invitations'
 import { getPetitionTemplates, deletePetitionTemplate, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
-import { importReadings, getReadingsStats } from '@/lib/actions/import-readings'
 import { Parish, ParishSettings } from '@/lib/types'
 import { USER_PARISH_ROLE_LABELS, USER_PARISH_ROLE_VALUES, type UserParishRoleType } from '@/lib/constants'
 import { toast } from 'sonner'
@@ -69,7 +68,6 @@ interface ParishSettingsClientProps {
   initialMembers: ParishMember[]
   initialInvitations: ParishInvitation[]
   initialPetitionTemplates: PetitionContextTemplate[]
-  initialReadingsStats: { totalReadings: number; categories: string[]; translations: string[] }
   currentUserId: string
 }
 
@@ -79,7 +77,6 @@ export function ParishSettingsClient({
   initialMembers,
   initialInvitations,
   initialPetitionTemplates,
-  initialReadingsStats,
   currentUserId
 }: ParishSettingsClientProps) {
   const [formData, setFormData] = useState({
@@ -109,16 +106,12 @@ export function ParishSettingsClient({
   const [editModules, setEditModules] = useState<string[]>([])
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<UserParishRoleType>('parishioner')
+  const [inviteRole, setInviteRole] = useState<UserParishRoleType>('staff')
   const [inviteModules, setInviteModules] = useState<string[]>([])
   const [petitionTemplates, setPetitionTemplates] = useState<PetitionContextTemplate[]>(initialPetitionTemplates)
   const [petitionSearchTerm, setPetitionSearchTerm] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null)
-  const [isImportingReadings, setIsImportingReadings] = useState(false)
-  const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [importMessage, setImportMessage] = useState('')
-  const [importStats, setImportStats] = useState(initialReadingsStats)
   const router = useRouter()
 
   async function loadPetitionTemplates() {
@@ -128,15 +121,6 @@ export function ParishSettingsClient({
     } catch (error) {
       console.error('Error loading petition templates:', error)
       toast.error('Failed to load petition templates')
-    }
-  }
-
-  async function loadReadingsStats() {
-    try {
-      const stats = await getReadingsStats()
-      setImportStats(stats)
-    } catch (error) {
-      console.error('Failed to load reading stats:', error)
     }
   }
 
@@ -264,7 +248,7 @@ export function ParishSettingsClient({
       toast.success('Invitation sent successfully!')
       setInviteDialogOpen(false)
       setInviteEmail('')
-      setInviteRole('parishioner')
+      setInviteRole('staff')
       setInviteModules([])
       router.refresh()
     } catch (error) {
@@ -359,46 +343,6 @@ export function ParishSettingsClient({
     } catch (error) {
       toast.error('Failed to delete template. Please try again.')
       throw error
-    }
-  }
-
-  const handleImportReadings = async () => {
-    setIsImportingReadings(true)
-    setImportStatus('idle')
-    setImportMessage('')
-
-    try {
-      const loadingToast = toast.loading('Importing readings...')
-      const result = await importReadings()
-
-      toast.dismiss(loadingToast)
-
-      const message = `Successfully imported ${result.imported} readings (${result.skipped} already existed)`
-      setImportStatus('success')
-      setImportMessage(message)
-
-      if (result.imported > 0) {
-        toast.success(`Imported ${result.imported} new readings!`)
-      } else if (result.skipped > 0) {
-        toast.info(`All ${result.skipped} readings already exist in your collection`)
-      } else {
-        toast.info('No readings were imported')
-      }
-
-      if (result.errors.length > 0) {
-        result.errors.forEach(error => toast.error(error))
-      }
-
-      await loadReadingsStats()
-    } catch (error) {
-      toast.dismiss()
-
-      setImportStatus('error')
-      const errorMessage = error instanceof Error ? error.message : 'Failed to import readings'
-      setImportMessage(errorMessage)
-      toast.error(errorMessage)
-    } finally {
-      setIsImportingReadings(false)
     }
   }
 
@@ -506,35 +450,25 @@ export function ParishSettingsClient({
           {quickAmountsData.map((quickAmount, index) => (
             <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
               <div className="flex-1 grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={`amount-${index}`}>
-                    Amount (cents)
-                  </Label>
-                  <Input
-                    id={`amount-${index}`}
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={quickAmount.amount}
-                    onChange={(e) => handleQuickAmountChange(index, 'amount', parseInt(e.target.value) || 0)}
-                    placeholder="100"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    ${(quickAmount.amount / 100).toFixed(2)}
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor={`label-${index}`}>
-                    Display Label
-                  </Label>
-                  <Input
-                    id={`label-${index}`}
-                    type="text"
-                    value={quickAmount.label}
-                    onChange={(e) => handleQuickAmountChange(index, 'label', e.target.value)}
-                    placeholder="$1"
-                  />
-                </div>
+                <FormField
+                  id={`amount-${index}`}
+                  label="Amount (cents)"
+                  inputType="number"
+                  value={quickAmount.amount.toString()}
+                  onChange={(value) => handleQuickAmountChange(index, 'amount', parseInt(value) || 0)}
+                  placeholder="100"
+                  description={`$${(quickAmount.amount / 100).toFixed(2)}`}
+                  min="1"
+                  step="1"
+                />
+                <FormField
+                  id={`label-${index}`}
+                  label="Display Label"
+                  value={quickAmount.label}
+                  onChange={(value) => handleQuickAmountChange(index, 'label', value)}
+                  placeholder="$1"
+                  description="Text shown on button"
+                />
               </div>
               <Button
                 type="button"
@@ -684,119 +618,6 @@ export function ParishSettingsClient({
     </>
   )
 
-  // Readings Tab Content
-  const readingsContent = (
-    <>
-      {importStatus !== 'idle' && (
-        <Alert className={importStatus === 'success' ? 'border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/20' : 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20'}>
-          {importStatus === 'success' ? (
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          ) : (
-            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-          )}
-          <AlertDescription className={importStatus === 'success' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}>
-            {importMessage}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {importStats && (
-        <FormSectionCard title="Current Reading Collection">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{importStats.totalReadings}</div>
-              <div className="text-sm text-muted-foreground">Total Readings</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{importStats.categories.length}</div>
-              <div className="text-sm text-muted-foreground">Categories</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{importStats.translations.length}</div>
-              <div className="text-sm text-muted-foreground">Translations</div>
-            </div>
-          </div>
-
-          {importStats.categories.length > 0 && (
-            <div className="mt-6">
-              <h4 className="font-medium mb-3">Available Categories</h4>
-              <div className="flex flex-wrap gap-2">
-                {importStats.categories.map(category => (
-                  <Badge key={category} variant="secondary">
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </FormSectionCard>
-      )}
-
-      <FormSectionCard
-        title="Import Readings"
-        description="Import a comprehensive collection of readings from our curated database. This includes readings for weddings, funerals, and other liturgical celebrations with proper introductions and conclusions."
-      >
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-950/20 dark:border-blue-900/50">
-          <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">What will be imported:</h4>
-          <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-            <li>• Wedding readings (Old Testament, Psalms, New Testament, Gospel)</li>
-            <li>• Funeral readings (Old Testament, Psalms, New Testament, Gospel)</li>
-            <li>• Complete biblical texts with proper liturgical introductions</li>
-            <li>• Categorized by liturgical context and biblical book</li>
-            <li>• Formatted for liturgical proclamation</li>
-          </ul>
-        </div>
-
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-950/20 dark:border-amber-900/50">
-          <h4 className="font-medium text-amber-900 dark:text-amber-200 mb-2">Important Notes:</h4>
-          <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1">
-            <li>• This will add readings to your parish collection</li>
-            <li>• Duplicate readings will be skipped automatically</li>
-            <li>• You can edit or delete imported readings after import</li>
-            <li>• Import may take a few moments to complete</li>
-          </ul>
-        </div>
-
-        <Button
-          onClick={handleImportReadings}
-          disabled={isImportingReadings}
-          className="w-full"
-          size="lg"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          {isImportingReadings ? 'Importing Readings...' : 'Import Readings'}
-        </Button>
-      </FormSectionCard>
-
-      <FormSectionCard
-        title="Reading Management"
-        description="Manage your reading collection and organize readings for different liturgical occasions."
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Button variant="outline" asChild className="justify-between h-auto p-4">
-            <Link href="/readings">
-              <div className="text-left">
-                <div className="font-medium">View All Readings</div>
-                <div className="text-sm text-muted-foreground">Browse and search your complete reading collection</div>
-              </div>
-              <BookOpen className="h-4 w-4" />
-            </Link>
-          </Button>
-
-          <Button variant="outline" asChild className="justify-between h-auto p-4">
-            <Link href="/readings/create">
-              <div className="text-left">
-                <div className="font-medium">Add New Reading</div>
-                <div className="text-sm text-muted-foreground">Create custom readings for special occasions</div>
-              </div>
-              <BookOpen className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </FormSectionCard>
-    </>
-  )
-
   // Members Tab Content
   const membersContent = (
     <>
@@ -874,27 +695,22 @@ export function ParishSettingsClient({
                   placeholder="member@example.com"
                   required
                 />
-                <div className="space-y-2">
-                  <Label htmlFor="invite-role">Role</Label>
-                  <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as UserParishRoleType)}>
-                    <SelectTrigger id="invite-role">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {USER_PARISH_ROLE_VALUES.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {USER_PARISH_ROLE_LABELS[role].en}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {inviteRole === 'admin' && 'Full access to parish settings, templates, and all modules'}
-                    {inviteRole === 'staff' && 'Can create and manage all sacrament modules'}
-                    {inviteRole === 'ministry-leader' && 'Access to specific modules (select below)'}
-                    {inviteRole === 'parishioner' && 'Read-only access to shared modules'}
-                  </p>
-                </div>
+                <FormField
+                  id="invite-role"
+                  label="Role"
+                  inputType="select"
+                  value={inviteRole}
+                  onChange={(value) => setInviteRole(value as UserParishRoleType)}
+                  options={USER_PARISH_ROLE_VALUES.filter(role => role !== 'parishioner').map((role) => ({
+                    value: role,
+                    label: USER_PARISH_ROLE_LABELS[role].en
+                  }))}
+                  description={
+                    inviteRole === 'admin' ? 'Full access to parish settings, templates, and all modules' :
+                    inviteRole === 'staff' ? 'Can create and manage all sacrament modules' :
+                    inviteRole === 'ministry-leader' ? 'Access to specific modules (select below)' : ''
+                  }
+                />
                 {inviteRole === 'ministry-leader' && (
                   <div className="space-y-2">
                     <Label>Enabled Modules</Label>
@@ -1011,12 +827,6 @@ export function ParishSettingsClient({
       content: petitionsContent
     },
     {
-      value: 'readings',
-      label: 'Readings',
-      icon: <BookOpen className="h-4 w-4" />,
-      content: readingsContent
-    },
-    {
       value: 'members',
       label: 'Members',
       icon: <Users className="h-4 w-4" />,
@@ -1050,27 +860,22 @@ export function ParishSettingsClient({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-role">Role</Label>
-              <Select value={editRole} onValueChange={(value) => setEditRole(value as UserParishRoleType)}>
-                <SelectTrigger id="edit-role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {USER_PARISH_ROLE_VALUES.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {USER_PARISH_ROLE_LABELS[role].en}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {editRole === 'admin' && 'Full access to parish settings, templates, and all modules'}
-                {editRole === 'staff' && 'Can create and manage all sacrament modules'}
-                {editRole === 'ministry-leader' && 'Access to specific modules (select below)'}
-                {editRole === 'parishioner' && 'Read-only access to shared modules'}
-              </p>
-            </div>
+            <FormField
+              id="edit-role"
+              label="Role"
+              inputType="select"
+              value={editRole}
+              onChange={(value) => setEditRole(value as UserParishRoleType)}
+              options={USER_PARISH_ROLE_VALUES.filter(role => role !== 'parishioner').map((role) => ({
+                value: role,
+                label: USER_PARISH_ROLE_LABELS[role].en
+              }))}
+              description={
+                editRole === 'admin' ? 'Full access to parish settings, templates, and all modules' :
+                editRole === 'staff' ? 'Can create and manage all sacrament modules' :
+                editRole === 'ministry-leader' ? 'Access to specific modules (select below)' : ''
+              }
+            />
             {editRole === 'ministry-leader' && (
               <div className="space-y-2">
                 <Label>Enabled Modules</Label>

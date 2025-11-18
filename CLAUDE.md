@@ -192,6 +192,16 @@ The ideal way that we want to access the records is by using the RLS feature on 
 **Coding Tool:** Claude Code
 **Deployment:** Vercel
 
+## 🔴 Component Directory Rules
+
+**CRITICAL - Do NOT Edit shadcn/ui Components:**
+- **NEVER edit files in `src/components/ui/`** - These are shadcn/ui components and should remain unchanged
+- Only edit components in:
+  - `src/components/` (root level custom components)
+  - Custom subdirectories within `src/components/` (e.g., `calendar/`, `data-table/`, `wizard/`)
+- If a shadcn component needs customization, create a wrapper component in the root `src/components/` directory
+- Exception: Initial setup/installation of shadcn components is allowed, but not subsequent modifications
+
 ## 📖 Architecture
 
 **For comprehensive architecture documentation, see [ARCHITECTURE.md](./docs/ARCHITECTURE.md).**

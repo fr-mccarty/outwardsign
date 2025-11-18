@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Presentation, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import {
@@ -166,6 +167,14 @@ export async function createPresentation(data: CreatePresentationData): Promise<
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'presentations')
+
   // Server-side validation (security boundary)
   const validatedData = createPresentationSchema.parse(data)
 
@@ -202,6 +211,14 @@ export async function updatePresentation(id: string, data: UpdatePresentationDat
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'presentations')
+
   // Server-side validation (security boundary)
   const validatedData = updatePresentationSchema.parse(data)
 
@@ -232,6 +249,14 @@ export async function deletePresentation(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'presentations')
 
   const { error } = await supabase
     .from('presentations')

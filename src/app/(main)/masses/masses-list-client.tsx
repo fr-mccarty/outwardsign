@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassWithNames } from '@/lib/actions/masses'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Church, Calendar, Search, Filter, X } from "lucide-react"
+import { Plus, Church, Calendar, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
@@ -36,31 +37,56 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
 
   // Get current filter values from URL
   const selectedStatus = searchParams.get('status') || 'all'
+  const selectedSort = searchParams.get('sort') || 'date_asc'
+  const currentPage = parseInt(searchParams.get('page') || '1')
+  const currentLimit = parseInt(searchParams.get('limit') || '50')
+
+  // Get today's date as default
+  const today = new Date().toISOString().split('T')[0]
+
   const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  const [startDate, setStartDate] = useState(searchParams.get('start_date') || today)
+  const [endDate, setEndDate] = useState(searchParams.get('end_date') || '')
 
   // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
+  const updateFilters = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value !== 'all' && value !== '') {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    })
+
+    // Reset to page 1 when filters change (unless we're specifically updating the page)
+    if (!updates.page) {
+      params.set('page', '1')
     }
+
     const newUrl = `/masses${params.toString() ? `?${params.toString()}` : ''}`
     router.push(newUrl)
   }
 
   const clearSearch = () => {
     setSearchValue('')
-    updateFilters('search', '')
+    updateFilters({ search: '' })
   }
 
   const clearFilters = () => {
     setSearchValue('')
+    setStartDate(today)
+    setEndDate('')
     router.push('/masses')
   }
 
-  const hasActiveFilters = searchValue || selectedStatus !== 'all'
+  const hasActiveFilters = searchValue || selectedStatus !== 'all' || startDate !== today || endDate
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(stats.filtered / currentLimit)
+  const hasNextPage = currentPage < totalPages
+  const hasPreviousPage = currentPage > 1
 
 
   return (
@@ -68,19 +94,20 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
       {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Search</CardTitle>
-          <CardDescription>Search for a Mass</CardDescription>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Filter and search for Masses</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by presider or homilist name..."
+                placeholder="Search by presider, homilist, or event name..."
                 value={searchValue}
                 onChange={(e) => {
                   setSearchValue(e.target.value)
-                  updateFilters('search', e.target.value)
+                  updateFilters({ search: e.target.value })
                 }}
                 className="pl-10 pr-10"
               />
@@ -94,74 +121,169 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
                 </button>
               )}
             </div>
-            <div className="flex gap-2">
-              <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  {MASS_STATUS_VALUES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {getStatusLabel(status, 'en')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+            {/* Date Range and Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Start Date */}
+              <div className="space-y-2">
+                <Label htmlFor="start_date">Start Date</Label>
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value)
+                    updateFilters({ start_date: e.target.value })
+                  }}
+                />
+              </div>
+
+              {/* End Date */}
+              <div className="space-y-2">
+                <Label htmlFor="end_date">End Date</Label>
+                <Input
+                  id="end_date"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value)
+                    updateFilters({ end_date: e.target.value })
+                  }}
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={selectedStatus} onValueChange={(value) => updateFilters({ status: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    {MASS_STATUS_VALUES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {getStatusLabel(status, 'en')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort Order */}
+              <div className="space-y-2">
+                <Label>Sort By</Label>
+                <Select value={selectedSort} onValueChange={(value) => updateFilters({ sort: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date_asc">Date (Earliest First)</SelectItem>
+                    <SelectItem value="date_desc">Date (Latest First)</SelectItem>
+                    <SelectItem value="created_desc">Recently Created</SelectItem>
+                    <SelectItem value="created_asc">Oldest Created</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={clearFilters} size="sm">
+                  <X className="h-4 w-4 mr-2" />
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Masses List */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((mass) => (
-            <ListViewCard
-              key={mass.id}
-              title="Mass"
-              editHref={`/masses/${mass.id}/edit`}
-              viewHref={`/masses/${mass.id}`}
-              viewButtonText="Preview"
-              language={mass.event?.language || undefined}
-            >
-              {mass.event && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {mass.event.start_date && formatDatePretty(mass.event.start_date)}
-                    {mass.event.start_time && ` at ${formatTime(mass.event.start_time)}`}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {initialData.map((mass) => (
+              <ListViewCard
+                key={mass.id}
+                title="Mass"
+                editHref={`/masses/${mass.id}/edit`}
+                viewHref={`/masses/${mass.id}`}
+                viewButtonText="Preview"
+                language={mass.event?.language || undefined}
+              >
+                {mass.event && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {mass.event.start_date && formatDatePretty(mass.event.start_date)}
+                      {mass.event.start_time && ` at ${formatTime(mass.event.start_time)}`}
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-sm space-y-1">
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">Presider:</span>{' '}
+                    {mass.presider ? `${mass.presider.first_name} ${mass.presider.last_name}` : 'Not assigned'}
+                  </p>
+                  {mass.homilist && (
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">Homilist:</span>{' '}
+                      {mass.homilist.first_name} {mass.homilist.last_name}
+                    </p>
+                  )}
+                  {mass.event?.location && (
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">Location:</span>{' '}
+                      {mass.event.location.name}
+                    </p>
+                  )}
+                </div>
+
+                {mass.note && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {mass.note}
+                  </p>
+                )}
+              </ListViewCard>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <Card>
+              <CardContent className="py-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages} ({stats.filtered} results)
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateFilters({ page: String(currentPage - 1) })}
+                      disabled={!hasPreviousPage}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateFilters({ page: String(currentPage + 1) })}
+                      disabled={!hasNextPage}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
                   </div>
                 </div>
-              )}
-
-              <div className="text-sm space-y-1">
-                <p className="text-muted-foreground">
-                  <span className="font-medium">Presider:</span>{' '}
-                  {mass.presider ? `${mass.presider.first_name} ${mass.presider.last_name}` : 'Not assigned'}
-                </p>
-                {mass.homilist && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Homilist:</span>{' '}
-                    {mass.homilist.first_name} {mass.homilist.last_name}
-                  </p>
-                )}
-                {mass.event?.location && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Location:</span>{' '}
-                    {mass.event.location.name}
-                  </p>
-                )}
-              </div>
-
-              {mass.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {mass.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       ) : (
         <Card>
           <CardContent className="text-center py-12">

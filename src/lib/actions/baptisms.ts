@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Baptism, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleStatus } from '@/lib/constants'
@@ -179,6 +180,14 @@ export async function createBaptism(data: CreateBaptismData): Promise<Baptism> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'baptisms')
+
   const { data: baptism, error } = await supabase
     .from('baptisms')
     .insert([
@@ -209,9 +218,17 @@ export async function createBaptism(data: CreateBaptismData): Promise<Baptism> {
 }
 
 export async function updateBaptism(id: string, data: UpdateBaptismData): Promise<Baptism> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'baptisms')
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
@@ -237,9 +254,17 @@ export async function updateBaptism(id: string, data: UpdateBaptismData): Promis
 }
 
 export async function deleteBaptism(id: string): Promise<void> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'baptisms')
 
   const { error } = await supabase
     .from('baptisms')

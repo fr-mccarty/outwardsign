@@ -23,6 +23,7 @@ import { getLocations } from "@/lib/actions/locations"
 import { getEvents } from "@/lib/actions/events"
 import { formatDistance, format } from "date-fns"
 import { MiniCalendar } from "@/components/mini-calendar"
+import { DashboardErrorHandler } from "./dashboard-error-handler"
 
 export const dynamic = 'force-dynamic'
 
@@ -142,10 +143,12 @@ export default async function DashboardPage() {
     .slice(0, 5)
 
   return (
-    <PageContainer
-      title="Dashboard"
-      description="Your sacramental ministry at a glance"
-    >
+    <>
+      <DashboardErrorHandler />
+      <PageContainer
+        title="Dashboard"
+        description="Your sacramental ministry at a glance"
+      >
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <Card>
@@ -398,6 +401,7 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </PageContainer>
+      </PageContainer>
+    </>
   )
 }

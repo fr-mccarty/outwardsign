@@ -11,7 +11,15 @@ import { MassesListClient } from './masses-list-client'
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    start_date?: string
+    end_date?: string
+    sort?: string
+    page?: string
+    limit?: string
+  }>
 }
 
 export default async function MassesPage({ searchParams }: PageProps) {
@@ -25,17 +33,25 @@ export default async function MassesPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
+  // Get current date for default start_date filter
+  const today = new Date().toISOString().split('T')[0]
+
   // Build filters from search params
   const filters: MassFilterParams = {
     search: params.search,
-    status: params.status as MassFilterParams['status']
+    status: params.status as MassFilterParams['status'],
+    start_date: params.start_date || today, // Default to today
+    end_date: params.end_date,
+    sort: (params.sort as MassFilterParams['sort']) || 'date_asc', // Default to date ascending (chronological)
+    page: params.page ? parseInt(params.page) : 1,
+    limit: params.limit ? parseInt(params.limit) : 50
   }
 
   // Fetch masses server-side with filters
   const masses = await getMasses(filters)
 
   // Compute stats server-side
-  const allMasses = await getMasses()
+  const allMasses = await getMasses({ limit: 10000 }) // Get all for count
   const stats = {
     total: allMasses.length,
     filtered: masses.length,

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance, MassIntention } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
@@ -39,6 +40,11 @@ export interface UpdateMassData {
 export interface MassFilterParams {
   search?: string
   status?: MassStatus | 'all'
+  start_date?: string
+  end_date?: string
+  sort?: 'date_asc' | 'date_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
 }
 
 export interface MassWithNames extends Mass {
@@ -51,6 +57,10 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  const page = filters?.page || 1
+  const limit = filters?.limit || 50
+  const offset = (page - 1) * limit
 
   let query = supabase
     .from('masses')
@@ -66,7 +76,28 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply sorting
+  const sort = filters?.sort || 'date_desc'
+  switch (sort) {
+    case 'date_asc':
+      // Sort by event start_date ascending (nulls last)
+      query = query.order('event.start_date', { ascending: true, nullsFirst: false })
+      break
+    case 'date_desc':
+      // Sort by event start_date descending (nulls last)
+      query = query.order('event.start_date', { ascending: false, nullsFirst: false })
+      break
+    case 'created_asc':
+      query = query.order('created_at', { ascending: true })
+      break
+    case 'created_desc':
+    default:
+      query = query.order('created_at', { ascending: false })
+      break
+  }
+
+  // Apply pagination
+  query = query.range(offset, offset + limit - 1)
 
   const { data, error } = await query
 
@@ -77,6 +108,27 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
 
   let masses = data || []
 
+  // Apply date range filters in application layer (filtering on related table)
+  if (filters?.start_date || filters?.end_date) {
+    masses = masses.filter(mass => {
+      if (!mass.event?.start_date) return false
+
+      const massDate = new Date(mass.event.start_date)
+
+      if (filters.start_date) {
+        const startDate = new Date(filters.start_date)
+        if (massDate < startDate) return false
+      }
+
+      if (filters.end_date) {
+        const endDate = new Date(filters.end_date)
+        if (massDate > endDate) return false
+      }
+
+      return true
+    })
+  }
+
   // Apply search filter in application layer (searching related table fields)
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
@@ -85,12 +137,14 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
       const presiderLastName = mass.presider?.last_name?.toLowerCase() || ''
       const homilistFirstName = mass.homilist?.first_name?.toLowerCase() || ''
       const homilistLastName = mass.homilist?.last_name?.toLowerCase() || ''
+      const eventName = mass.event?.name?.toLowerCase() || ''
 
       return (
         presiderFirstName.includes(searchTerm) ||
         presiderLastName.includes(searchTerm) ||
         homilistFirstName.includes(searchTerm) ||
-        homilistLastName.includes(searchTerm)
+        homilistLastName.includes(searchTerm) ||
+        eventName.includes(searchTerm)
       )
     })
   }
@@ -263,6 +317,14 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
+
   const { data: mass, error } = await supabase
     .from('masses')
     .insert([
@@ -297,6 +359,14 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mass
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
     Object.entries(data).filter(([_, value]) => value !== undefined)
@@ -324,6 +394,14 @@ export async function deleteMass(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
 
   const { error } = await supabase
     .from('masses')
@@ -392,6 +470,14 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
+
   const { data: massRoleInstance, error } = await supabase
     .from('mass_role_instances')
     .insert([
@@ -419,6 +505,14 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
@@ -458,6 +552,14 @@ export async function deleteMassRole(id: string): Promise<void> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
+
   // Get the mass_id before deleting for revalidation
   const { data: instanceData } = await supabase
     .from('mass_role_instances')
@@ -486,6 +588,14 @@ export async function bulkCreateMassRoles(massId: string, assignments: CreateMas
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
 
   const instancesToInsert = assignments.map(assignment => ({
     mass_id: massId,
