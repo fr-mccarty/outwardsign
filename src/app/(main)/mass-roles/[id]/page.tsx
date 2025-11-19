@@ -4,6 +4,8 @@ import { redirect, notFound } from "next/navigation"
 import { MassRoleViewClient } from "./mass-role-view-client"
 import { getUserParishRole } from "@/lib/auth/permissions"
 import { getSelectedParishId } from "@/lib/auth/parish"
+import { PageContainer } from "@/components/page-container"
+import { BreadcrumbSetter } from "@/components/breadcrumb-setter"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -37,10 +39,23 @@ export default async function MassRoleViewPage({ params }: PageProps) {
   const massRole = await getMassRole(id)
   if (!massRole) notFound()
 
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Masses", href: "/masses" },
+    { label: "Mass Roles", href: "/mass-roles" },
+    { label: massRole.name }
+  ]
+
   return (
-    <MassRoleViewClient
-      massRole={massRole}
-      userParish={userParish}
-    />
+    <PageContainer
+      title={massRole.name}
+      description="View and manage Mass role details."
+    >
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+      <MassRoleViewClient
+        massRole={massRole}
+        userParish={userParish}
+      />
+    </PageContainer>
   )
 }

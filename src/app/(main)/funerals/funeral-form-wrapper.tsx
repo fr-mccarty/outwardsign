@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { FuneralForm } from './funeral-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { Funeral } from '@/lib/types'
 
 interface FuneralFormWrapperProps {
@@ -29,12 +27,7 @@ export function FuneralFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/funerals/${funeral.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Funeral
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Funeral" href={`/funerals/${funeral.id}`} />
       )}
       <ModuleSaveButton moduleName="Funeral" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

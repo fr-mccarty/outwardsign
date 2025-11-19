@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { BaptismForm } from './baptism-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { Baptism } from '@/lib/types'
 
 interface BaptismFormWrapperProps {
@@ -29,12 +27,7 @@ export function BaptismFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/baptisms/${baptism.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Baptism
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Baptism" href={`/baptisms/${baptism.id}`} />
       )}
       <ModuleSaveButton moduleName="Baptism" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { LocationForm } from './location-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { Location } from '@/lib/types'
 
 interface LocationFormWrapperProps {
@@ -29,12 +27,7 @@ export function LocationFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/locations/${location.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Location
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Location" href={`/locations/${location.id}`} />
       )}
       <ModuleSaveButton moduleName="Location" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

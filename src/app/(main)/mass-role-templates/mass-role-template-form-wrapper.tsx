@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { MassRoleTemplateForm } from './mass-role-template-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { MassRoleTemplate } from '@/lib/actions/mass-role-templates'
 
 interface MassRoleTemplateFormWrapperProps {
@@ -23,7 +24,12 @@ export function MassRoleTemplateFormWrapper({
   const isEditing = !!template
 
   const actions = (
-    <ModuleSaveButton moduleName="Mass Role Template" isLoading={isLoading} isEditing={isEditing} form={formId} />
+    <>
+      {isEditing && (
+        <ModuleViewButton moduleName="Template" href={`/mass-role-templates/${template.id}`} />
+      )}
+      <ModuleSaveButton moduleName="Mass Role Template" isLoading={isLoading} isEditing={isEditing} form={formId} />
+    </>
   )
 
   return (

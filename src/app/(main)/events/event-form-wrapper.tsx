@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { EventForm } from './event-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { EventWithRelations } from '@/lib/actions/events'
 
 interface EventFormWrapperProps {
@@ -29,12 +27,7 @@ export function EventFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/events/${event.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Event
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Event" href={`/events/${event.id}`} />
       )}
       <ModuleSaveButton moduleName="Event" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

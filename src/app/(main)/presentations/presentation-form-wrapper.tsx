@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { PresentationForm } from './presentation-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { PresentationWithRelations } from '@/lib/actions/presentations'
 
 interface PresentationFormWrapperProps {
@@ -29,12 +27,7 @@ export function PresentationFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/presentations/${presentation.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Presentation
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Presentation" href={`/presentations/${presentation.id}`} />
       )}
       <ModuleSaveButton moduleName="Presentation" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

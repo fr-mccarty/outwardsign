@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { MassForm } from './mass-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { MassWithRelations } from '@/lib/actions/masses'
 
 interface MassFormWrapperProps {
@@ -29,12 +27,7 @@ export function MassFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/masses/${mass.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Mass
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Mass" href={`/masses/${mass.id}`} />
       )}
       <ModuleSaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { WeddingForm } from './wedding-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { Wedding } from '@/lib/types'
 
 interface WeddingFormWrapperProps {
@@ -29,12 +27,7 @@ export function WeddingFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/weddings/${wedding.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Wedding
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Wedding" href={`/weddings/${wedding.id}`} />
       )}
       <ModuleSaveButton moduleName="Wedding" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>

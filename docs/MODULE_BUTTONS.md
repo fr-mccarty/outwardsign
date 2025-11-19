@@ -93,6 +93,70 @@ The Groups module uses a different pattern with a dialog-based form instead of a
 
 ---
 
+### ModuleViewButton
+
+**File:** `src/components/module-view-button.tsx`
+
+Standardized view button for module edit pages. Shows "View [ModuleName]" with Eye icon. Only displayed in edit mode (when entity exists).
+
+**Props:**
+```typescript
+interface ModuleViewButtonProps {
+  moduleName: string  // The module name (e.g., "Wedding", "Location", "Mass Role")
+  href: string        // View page URL (e.g., "/weddings/123")
+}
+```
+
+**Behavior:**
+- Displays "View [ModuleName]" with Eye icon
+- Outline button styling (not filled)
+- Links to the entity's view page
+- Only shown in edit mode (when `isEditing` is true)
+
+**Usage Example:**
+```tsx
+{isEditing && (
+  <ModuleViewButton moduleName="Wedding" href={`/weddings/${wedding.id}`} />
+)}
+```
+
+**Output Examples:**
+- `👁 View Wedding`
+- `👁 View Location`
+- `👁 View Template`
+
+**Implementation Pattern:**
+
+All module form wrappers include ModuleViewButton in the actions area (edit mode only):
+
+```tsx
+import { ModuleViewButton } from '@/components/module-view-button'
+import { ModuleSaveButton } from '@/components/module-save-button'
+
+export function ModuleFormWrapper({ entity, title, description }: Props) {
+  const formId = 'module-form'
+  const [isLoading, setIsLoading] = useState(false)
+  const isEditing = !!entity
+
+  const actions = (
+    <>
+      {isEditing && (
+        <ModuleViewButton moduleName="Module" href={`/modules/${entity.id}`} />
+      )}
+      <ModuleSaveButton moduleName="Module" isLoading={isLoading} isEditing={isEditing} form={formId} />
+    </>
+  )
+
+  return (
+    <PageContainer title={title} description={description} actions={actions}>
+      <ModuleForm entity={entity} formId={formId} onLoadingChange={setIsLoading} />
+    </PageContainer>
+  )
+}
+```
+
+---
+
 ### ModuleSaveButton
 
 **File:** `src/components/module-save-button.tsx`
@@ -286,12 +350,18 @@ export function ModuleForm({ entity, formId, onLoadingChange }: Props) {
 
 ## Button Placement
 
-### Top of Page (PageContainer Header)
-- **Save button only** (from ModuleSaveButton)
+### List Pages (PageContainer Header)
+- **Create button** (from ModuleCreateButton)
+- Positioned in the actions area of PageContainer
+- Takes user to create page for new entity
+
+### Edit Pages - Top (PageContainer Header)
+- **View button** (from ModuleViewButton) - Only in edit mode
+- **Save button** (from ModuleSaveButton)
 - Positioned in the actions area of PageContainer
 - Visible when scrolling through long forms
 
-### Bottom of Page (After Form Content)
+### Edit Pages - Bottom (After Form Content)
 - **Both Save and Cancel buttons** (from FormBottomActions)
 - Provides convenient access after filling out form
 - Standard placement for form actions
@@ -302,20 +372,21 @@ export function ModuleForm({ entity, formId, onLoadingChange }: Props) {
 
 All modules have been updated with consistent naming:
 
-| Module | List Page Create Button | Form Save Button (Create) | Form Save Button (Edit) |
-|--------|------------------------|---------------------------|------------------------|
-| Weddings | New Wedding | Save Wedding | Update Wedding |
-| Baptisms | New Baptism | Save Baptism | Update Baptism |
-| Funerals | New Funeral | Save Funeral | Update Funeral |
-| Presentations | New Presentation | Save Presentation | Update Presentation |
-| Quinceañeras | New Quinceañera | Save Quinceañera | Update Quinceañera |
-| Events | New Event | Save Event | Update Event |
-| Mass Intentions | New Mass Intention | Save Mass Intention | Update Mass Intention |
-| Masses | New Mass | Save Mass | Update Mass |
-| People | New Person | Save Person | Update Person |
-| Locations | New Location | Save Location | Update Location |
-| Readings | New Reading | Save Reading | Update Reading |
-| Mass Role Templates | New Template | Save Mass Role Template | Update Mass Role Template |
+| Module | List Page Create | Form View (Edit) | Form Save (Create) | Form Save (Edit) |
+|--------|-----------------|------------------|--------------------|--------------------|
+| Weddings | New Wedding | View Wedding | Save Wedding | Update Wedding |
+| Baptisms | New Baptism | View Baptism | Save Baptism | Update Baptism |
+| Funerals | New Funeral | View Funeral | Save Funeral | Update Funeral |
+| Presentations | New Presentation | View Presentation | Save Presentation | Update Presentation |
+| Quinceañeras | New Quinceañera | View Quinceañera | Save Quinceañera | Update Quinceañera |
+| Events | New Event | View Event | Save Event | Update Event |
+| Mass Intentions | New Mass Intention | View Intention | Save Mass Intention | Update Mass Intention |
+| Masses | New Mass | View Mass | Save Mass | Update Mass |
+| People | New Person | View Person | Save Person | Update Person |
+| Locations | New Location | View Location | Save Location | Update Location |
+| Readings | New Reading | View Reading | Save Reading | Update Reading |
+| Mass Roles | - | View Mass Role | Save Mass Role | Update Mass Role |
+| Mass Role Templates | New Template | View Template | Save Mass Role Template | Update Mass Role Template |
 
 ---
 
@@ -341,8 +412,30 @@ All modules have been updated with consistent naming:
 
 **Not Implemented:**
 - Groups (uses dialog-based create, not separate page)
+- Mass Roles (no list page, accessed via settings)
 
 **Total: 12 modules using ModuleCreateButton**
+
+### ModuleViewButton (Edit Pages)
+
+**Liturgical Modules (7)**
+✅ Weddings
+✅ Baptisms
+✅ Funerals
+✅ Presentations
+✅ Quinceañeras
+✅ Events
+✅ Mass Intentions
+
+**Supporting Modules (6)**
+✅ Masses
+✅ People
+✅ Locations
+✅ Readings
+✅ Mass Roles
+✅ Mass Role Templates
+
+**Total: 13 modules using ModuleViewButton**
 
 ### ModuleSaveButton & ModuleCancelButton (Form Pages)
 
@@ -433,19 +526,30 @@ When creating or modifying a module list page, verify:
 - [ ] Button has primary (filled) styling
 - [ ] If multiple buttons, they are wrapped in flex container with gap-2
 
-### Form Page (ModuleSaveButton & ModuleCancelButton)
+### Edit Page (ModuleViewButton, ModuleSaveButton & ModuleCancelButton)
 
-When creating or modifying a module form, verify:
+When creating or modifying a module edit page, verify:
 
-- [ ] Save button appears in PageContainer header
+**View Button:**
+- [ ] View button appears in PageContainer header (edit mode only)
+- [ ] Button shows "View [Module]" with Eye icon
+- [ ] Button links to correct view page (e.g., `/weddings/123`)
+- [ ] Button has outline styling
+- [ ] Button does NOT appear in create mode
+
+**Save Button:**
+- [ ] Save button appears in PageContainer header (after View button)
 - [ ] Save button appears at bottom of form (with Cancel)
 - [ ] Create mode shows "Save [Module]"
 - [ ] Edit mode shows "Update [Module]"
 - [ ] Loading state shows "Saving..." with spinner
 - [ ] Buttons are disabled during loading
-- [ ] Cancel button navigates to correct location
-- [ ] Form submission triggers loading state
 - [ ] Loading state propagates to both top and bottom buttons
+
+**Cancel Button:**
+- [ ] Cancel button appears at bottom of form (with Save)
+- [ ] Cancel button navigates to correct location
+- [ ] Cancel button is disabled during loading
 
 ---
 

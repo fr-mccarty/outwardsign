@@ -3,10 +3,8 @@
 import React, { useState } from 'react'
 import { QuinceaneraForm } from './quinceanera-form'
 import { PageContainer } from '@/components/page-container'
-import { Button } from '@/components/ui/button'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { Eye } from 'lucide-react'
-import Link from 'next/link'
+import { ModuleViewButton } from '@/components/module-view-button'
 import type { Quinceanera } from '@/lib/types'
 
 interface QuinceaneraFormWrapperProps {
@@ -29,12 +27,7 @@ export function QuinceaneraFormWrapper({
   const actions = (
     <>
       {isEditing && (
-        <Button variant="outline" asChild>
-          <Link href={`/quinceaneras/${quinceanera.id}`}>
-            <Eye className="h-4 w-4 mr-2" />
-            View Quinceañera
-          </Link>
-        </Button>
+        <ModuleViewButton moduleName="Quinceañera" href={`/quinceaneras/${quinceanera.id}`} />
       )}
       <ModuleSaveButton moduleName="Quinceañera" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>
