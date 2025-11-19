@@ -119,7 +119,7 @@ tasks:
 
 ```bash
 cd /Users/joshmccarty/Code-2025Macbook/outwardsign
-python3 orchestrator/orchestrator.py start orchestrator/tasks/test-2025-11-19.yaml
+python3 orchestrator/orchestrator.py start orchestrator/tasks/example-2025-11-18.yaml
 ```
 
 ### What to Watch For

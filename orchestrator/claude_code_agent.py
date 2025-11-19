@@ -146,11 +146,11 @@ class ClaudeCodeAgent:
             # Open log file
             self.log_handle = open(self.log_file, 'wb')
 
-            # Start Claude Code using pexpect
-            # Command: claude (assumes it's in PATH)
+            # Start Claude Code using pexpect with shell wrapper
+            # Using bash -lc to support aliases and properly load PATH
+            command = f"bash -lc 'cd {self.project_root} && {CLAUDE_CODE_BINARY}'"
             self.process = pexpect.spawn(
-                CLAUDE_CODE_BINARY,
-                cwd=self.project_root,
+                command,
                 timeout=30,  # Timeout for expect operations (not total runtime)
                 encoding='utf-8',
                 logfile=self.log_handle

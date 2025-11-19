@@ -68,5 +68,5 @@ ALLOWED_FILE_EXTENSIONS = [
 ]
 
 # Claude Code CLI
-CLAUDE_CODE_BINARY = "claude"  # Assumes claude is in PATH
+CLAUDE_CODE_BINARY = "claude"  # Assumes claude is in PATH (not alias)
 CLAUDE_CODE_TIMEOUT_SECONDS = 14400  # 4 hours max per agent session
