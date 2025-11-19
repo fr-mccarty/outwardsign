@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { LocationForm } from './location-form'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { SaveButton } from '@/components/save-button'
+import { ModuleSaveButton } from '@/components/module-save-button'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import type { Location } from '@/lib/types'
@@ -36,9 +36,7 @@ export function LocationFormWrapper({
           </Link>
         </Button>
       )}
-      <SaveButton isLoading={isLoading} form={formId}>
-        {saveButtonLabel}
-      </SaveButton>
+      <ModuleSaveButton moduleName="Location" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>
   )
 

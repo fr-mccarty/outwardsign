@@ -321,7 +321,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
         isEditing={isEditing}
         cancelHref={isEditing && baptism ? `/baptisms/${baptism.id}` : "/baptisms"}
         isLoading={isLoading}
-        saveLabel={isEditing ? "Save Changes" : "Create Baptism"}
+        moduleName="Baptism"
       />
     </form>
   )

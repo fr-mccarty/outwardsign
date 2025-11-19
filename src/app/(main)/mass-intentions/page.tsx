@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getMassIntentions, type MassIntentionFilterParams } from "@/lib/actions/mass-intentions"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -50,14 +48,7 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Mass Intentions"
       description="Manage Mass intentions for your parish."
-      actions={
-        <Button asChild>
-          <Link href="/mass-intentions/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Mass Intention
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Mass Intention" href="/mass-intentions/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassIntentionsListClient initialData={intentions} stats={stats} />

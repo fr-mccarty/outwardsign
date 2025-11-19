@@ -698,7 +698,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/weddings/${wedding.id}` : '/weddings'}
-        saveLabel={isEditing ? 'Update Wedding' : 'Save Wedding'}
+        moduleName="Wedding"
       />
 
       {/* Reading Pickers */}

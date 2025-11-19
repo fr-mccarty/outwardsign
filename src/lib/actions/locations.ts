@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { requireEditSharedResources } from '@/lib/auth/permissions'
 import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface Location {
@@ -143,6 +144,13 @@ export async function createLocation(data: CreateLocationData): Promise<Location
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
   const { data: location, error } = await supabase
     .from('locations')
     .insert([
@@ -174,6 +182,13 @@ export async function updateLocation(id: string, data: UpdateLocationData): Prom
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
     Object.entries(data).filter(([_, value]) => value !== undefined)
@@ -201,6 +216,13 @@ export async function deleteLocation(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const { error } = await supabase
     .from('locations')

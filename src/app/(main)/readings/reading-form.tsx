@@ -181,7 +181,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/readings/${reading.id}` : "/readings"}
-        saveLabel={isEditing ? "Save Reading" : "Create Reading"}
+        moduleName="Reading"
       />
     </form>
   )

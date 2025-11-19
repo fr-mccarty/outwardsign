@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { PresentationForm } from './presentation-form'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { SaveButton } from '@/components/save-button'
+import { ModuleSaveButton } from '@/components/module-save-button'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import type { PresentationWithRelations } from '@/lib/actions/presentations'
@@ -36,9 +36,7 @@ export function PresentationFormWrapper({
           </Link>
         </Button>
       )}
-      <SaveButton isLoading={isLoading} form={formId}>
-        {saveButtonLabel}
-      </SaveButton>
+      <ModuleSaveButton moduleName="Presentation" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>
   )
 

@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getEvents, getEventsWithModuleLinks, type EventFilterParams } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -72,14 +70,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Events"
       description="Manage parish events and activities."
-      actions={
-        <Button asChild>
-          <Link href="/events/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Event
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Event" href="/events/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventsListClient initialData={events} stats={stats} />

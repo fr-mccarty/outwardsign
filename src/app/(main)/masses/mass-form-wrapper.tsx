@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { MassForm } from './mass-form'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { SaveButton } from '@/components/save-button'
+import { ModuleSaveButton } from '@/components/module-save-button'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import type { MassWithRelations } from '@/lib/actions/masses'
@@ -36,9 +36,7 @@ export function MassFormWrapper({
           </Link>
         </Button>
       )}
-      <SaveButton isLoading={isLoading} form={formId}>
-        {saveButtonLabel}
-      </SaveButton>
+      <ModuleSaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>
   )
 

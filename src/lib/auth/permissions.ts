@@ -116,3 +116,29 @@ export async function checkModuleAccess(
 
   return userParish!
 }
+
+/**
+ * Check if user can edit shared resources (people, locations, events, readings)
+ * Admin, staff, and ministry-leaders can edit. Parishioners cannot.
+ *
+ * @param userId - User ID
+ * @param parishId - Parish ID
+ * @throws Error if user doesn't have permission
+ */
+export async function requireEditSharedResources(userId: string, parishId: string): Promise<void> {
+  const userParish = await getUserParishRole(userId, parishId)
+
+  if (!userParish) {
+    throw new Error('User is not a member of this parish')
+  }
+
+  const { roles } = userParish
+
+  // Admin, staff, and ministry-leaders can edit shared resources
+  if (roles.includes('admin') || roles.includes('staff') || roles.includes('ministry-leader')) {
+    return
+  }
+
+  // Parishioners cannot edit
+  throw new Error('You do not have permission to edit shared resources')
+}

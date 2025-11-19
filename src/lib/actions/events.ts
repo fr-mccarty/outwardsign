@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { requireEditSharedResources } from '@/lib/auth/permissions'
 import { Event, Location, Person } from '@/lib/types'
 import type { EventType, Language } from '@/lib/constants'
 import type { PaginatedParams, PaginatedResult } from './people'
@@ -215,6 +216,13 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
   const { data: event, error } = await supabase
     .from('events')
     .insert([
@@ -248,9 +256,16 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
 }
 
 export async function updateEvent(id: string, data: UpdateEventData): Promise<Event> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
@@ -285,9 +300,16 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const { error } = await supabase
     .from('events')

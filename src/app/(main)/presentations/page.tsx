@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getPresentations, type PresentationFilterParams } from "@/lib/actions/presentations"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -50,14 +48,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Presentations"
       description="Manage child presentations in your parish."
-      actions={
-        <Button asChild>
-          <Link href="/presentations/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Presentation
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Presentation" href="/presentations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PresentationsListClient initialData={presentations} stats={stats} />

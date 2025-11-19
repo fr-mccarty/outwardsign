@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { requireEditSharedResources } from '@/lib/auth/permissions'
 import type { Language, ReadingCategory } from '@/lib/constants'
 
 export interface Reading {
@@ -39,6 +40,13 @@ export async function createReading(data: CreateReadingData): Promise<Reading> {
 
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const { data: reading, error } = await supabase
     .from('readings')
@@ -121,9 +129,16 @@ export async function getReading(id: string): Promise<Reading | null> {
 
 export async function updateReading(id: string, data: CreateReadingData): Promise<Reading> {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const { data: reading, error } = await supabase
     .from('readings')
@@ -151,9 +166,16 @@ export async function updateReading(id: string, data: CreateReadingData): Promis
 
 export async function deleteReading(id: string): Promise<void> {
   const supabase = await createClient()
-  
+
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const { error } = await supabase
     .from('readings')

@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { ModuleCreateButton } from '@/components/module-create-button'
 import Link from "next/link"
-import { Plus, Download } from "lucide-react"
+import { Download } from "lucide-react"
 import { getPeople, type PersonFilterParams } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -57,12 +58,7 @@ export default async function PeoplePage({ searchParams }: PageProps) {
               Download CSV
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/people/create">
-              <Plus className="h-4 w-4 mr-2" />
-              New Person
-            </Link>
-          </Button>
+          <ModuleCreateButton moduleName="Person" href="/people/create" />
         </div>
       }
     >

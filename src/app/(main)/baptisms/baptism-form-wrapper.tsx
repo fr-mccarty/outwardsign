@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { BaptismForm } from './baptism-form'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { SaveButton } from '@/components/save-button'
+import { ModuleSaveButton } from '@/components/module-save-button'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import type { Baptism } from '@/lib/types'
@@ -36,9 +36,7 @@ export function BaptismFormWrapper({
           </Link>
         </Button>
       )}
-      <SaveButton isLoading={isLoading} form={formId}>
-        {saveButtonLabel}
-      </SaveButton>
+      <ModuleSaveButton moduleName="Baptism" isLoading={isLoading} isEditing={isEditing} form={formId} />
     </>
   )
 

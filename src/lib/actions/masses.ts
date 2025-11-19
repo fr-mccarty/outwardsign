@@ -76,24 +76,12 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
     query = query.eq('status', filters.status)
   }
 
-  // Apply sorting
+  // Apply sorting at database level for created_at, otherwise will sort in memory
   const sort = filters?.sort || 'date_desc'
-  switch (sort) {
-    case 'date_asc':
-      // Sort by event start_date ascending (nulls last)
-      query = query.order('event.start_date', { ascending: true, nullsFirst: false })
-      break
-    case 'date_desc':
-      // Sort by event start_date descending (nulls last)
-      query = query.order('event.start_date', { ascending: false, nullsFirst: false })
-      break
-    case 'created_asc':
-      query = query.order('created_at', { ascending: true })
-      break
-    case 'created_desc':
-    default:
-      query = query.order('created_at', { ascending: false })
-      break
+  if (sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
   }
 
   // Apply pagination
@@ -146,6 +134,21 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
         homilistLastName.includes(searchTerm) ||
         eventName.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date-based sorting in application layer (since we can't sort by nested relations in Supabase)
+  if (sort === 'date_asc' || sort === 'date_desc') {
+    masses.sort((a, b) => {
+      const dateA = a.event?.start_date ? new Date(a.event.start_date).getTime() : 0
+      const dateB = b.event?.start_date ? new Date(b.event.start_date).getTime() : 0
+
+      // Nulls last for both ascending and descending
+      if (!a.event?.start_date && !b.event?.start_date) return 0
+      if (!a.event?.start_date) return 1
+      if (!b.event?.start_date) return 1
+
+      return sort === 'date_asc' ? dateA - dateB : dateB - dateA
     })
   }
 

@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getBaptisms, type BaptismFilterParams } from "@/lib/actions/baptisms"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -50,14 +48,7 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Baptisms"
       description="Manage baptism celebrations in your parish."
-      actions={
-        <Button asChild>
-          <Link href="/baptisms/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Baptism
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Baptism" href="/baptisms/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <BaptismsListClient initialData={baptisms} stats={stats} />

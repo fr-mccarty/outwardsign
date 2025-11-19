@@ -165,7 +165,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={cancelHref}
-        saveLabel={isEditing ? 'Update Template' : 'Create Template'}
+        moduleName="Mass Role Template"
       />
     </form>
   )

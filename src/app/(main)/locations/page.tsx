@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getLocations, type LocationFilterParams } from "@/lib/actions/locations"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -48,14 +46,7 @@ export default async function LocationsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Locations"
       description="Manage parish locations."
-      actions={
-        <Button asChild>
-          <Link href="/locations/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Location
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Location" href="/locations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <LocationsListClient initialData={locations} stats={stats} />

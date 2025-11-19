@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { requireEditSharedResources } from '@/lib/auth/permissions'
 import { Person } from '@/lib/types'
 
 /**
@@ -208,6 +209,13 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
   const { data: person, error } = await supabase
     .from('people')
     .insert([
@@ -244,6 +252,13 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
   const updateData: Record<string, unknown> = {}
   if (data.first_name !== undefined) updateData.first_name = data.first_name
   if (data.last_name !== undefined) updateData.last_name = data.last_name
@@ -277,6 +292,13 @@ export async function deletePerson(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
 
   const { error } = await supabase
     .from('people')

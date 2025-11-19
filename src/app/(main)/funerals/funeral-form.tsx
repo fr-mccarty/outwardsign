@@ -623,7 +623,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/funerals/${funeral.id}` : '/funerals'}
-        saveLabel={isEditing ? 'Update Funeral' : 'Save Funeral'}
+        moduleName="Funeral"
       />
 
       {/* Reading Pickers */}

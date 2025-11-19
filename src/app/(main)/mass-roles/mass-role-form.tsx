@@ -134,7 +134,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/mass-roles/${massRole.id}` : '/mass-roles'}
-        saveLabel={isEditing ? "Save Mass Role" : "Create Mass Role"}
+        moduleName="Mass Role"
       />
     </form>
   )

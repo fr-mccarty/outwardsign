@@ -624,7 +624,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/quinceaneras/${quinceanera.id}` : '/quinceaneras'}
-        saveLabel={isEditing ? 'Update Quinceañera' : 'Save Quinceañera'}
+        moduleName="Quinceañera"
       />
 
       {/* Reading Pickers */}

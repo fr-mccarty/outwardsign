@@ -285,7 +285,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/events/${event.id}` : "/events"}
-        saveLabel={isEditing ? "Save Changes" : "Create Event"}
+        moduleName="Event"
       />
     </form>
   )

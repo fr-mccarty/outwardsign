@@ -5,6 +5,8 @@ import { redirect } from "next/navigation"
 import { getUserParishRole } from "@/lib/auth/permissions"
 import { getSelectedParishId } from "@/lib/auth/parish"
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   searchParams: Promise<{ search?: string }>
 }

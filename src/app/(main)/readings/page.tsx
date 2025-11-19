@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getReadings, type ReadingFilterParams } from "@/lib/actions/readings"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -56,14 +54,7 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Readings"
       description="Manage your collection of scripture readings and liturgical texts."
-      actions={
-        <Button asChild>
-          <Link href="/readings/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Reading
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Reading" href="/readings/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <ReadingsListClient initialData={readings} stats={stats} />

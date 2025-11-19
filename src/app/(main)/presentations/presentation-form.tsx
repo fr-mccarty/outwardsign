@@ -306,7 +306,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         isEditing={isEditing}
         isLoading={isSubmitting}
         cancelHref={isEditing ? `/presentations/${presentation.id}` : '/presentations'}
-        saveLabel={isEditing ? 'Update Presentation' : 'Save Presentation'}
+        moduleName="Presentation"
       />
     </form>
   )

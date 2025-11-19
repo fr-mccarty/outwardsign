@@ -184,7 +184,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/people/${person.id}` : "/people"}
-        saveLabel={isEditing ? "Save Person" : "Create Person"}
+        moduleName="Person"
       />
     </form>
   )

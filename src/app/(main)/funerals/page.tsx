@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getFunerals, type FuneralFilterParams } from "@/lib/actions/funerals"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -50,14 +48,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Funerals"
       description="Manage funeral services in your parish."
-      actions={
-        <Button asChild>
-          <Link href="/funerals/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Funeral
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Funeral" href="/funerals/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <FuneralsListClient initialData={funerals} stats={stats} />

@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getMassRoleTemplates } from "@/lib/actions/mass-role-templates"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -52,14 +50,7 @@ export default async function MassRoleTemplatesPage({ searchParams }: PageProps)
     <PageContainer
       title="Mass Role Templates"
       description="Manage role assignment templates for different Mass types."
-      actions={
-        <Button asChild>
-          <Link href="/mass-role-templates/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Template
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Template" href="/mass-role-templates/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassRoleTemplatesListClient initialData={filteredTemplates} stats={stats} />

@@ -1,13 +1,13 @@
 'use client'
 
-import { SaveButton } from '@/components/save-button'
-import { CancelButton } from '@/components/cancel-button'
+import { ModuleSaveButton } from '@/components/module-save-button'
+import { ModuleCancelButton } from '@/components/module-cancel-button'
 
 interface FormBottomActionsProps {
   isEditing: boolean
   isLoading: boolean
   cancelHref: string
-  saveLabel?: string
+  moduleName: string
 }
 
 /**
@@ -24,21 +24,20 @@ interface FormBottomActionsProps {
  *   isEditing={isEditing}
  *   isLoading={isLoading}
  *   cancelHref={isEditing ? `/module/${id}` : '/module'}
- *   saveLabel={isEditing ? 'Update Item' : 'Save Item'}
+ *   moduleName="Wedding"
  * />
  */
 export function FormBottomActions({
+  isEditing,
   isLoading,
   cancelHref,
-  saveLabel = 'Save'
+  moduleName
 }: FormBottomActionsProps) {
   // Both create and edit modes: Show Save + Cancel
   return (
     <div className="flex gap-4 justify-end">
-      <CancelButton href={cancelHref} disabled={isLoading} />
-      <SaveButton isLoading={isLoading}>
-        {saveLabel}
-      </SaveButton>
+      <ModuleCancelButton href={cancelHref} disabled={isLoading} />
+      <ModuleSaveButton moduleName={moduleName} isLoading={isLoading} isEditing={isEditing} />
     </div>
   )
 }

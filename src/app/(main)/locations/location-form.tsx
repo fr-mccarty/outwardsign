@@ -151,7 +151,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         isEditing={isEditing}
         cancelHref="/locations"
         isLoading={isLoading}
-        saveLabel={isEditing ? "Save Changes" : "Create Location"}
+        moduleName="Location"
       />
     </form>
   )

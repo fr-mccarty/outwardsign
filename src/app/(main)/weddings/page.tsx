@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getWeddings, type WeddingFilterParams } from "@/lib/actions/weddings"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -50,14 +48,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Weddings"
       description="Manage wedding celebrations in your parish."
-      actions={
-        <Button asChild>
-          <Link href="/weddings/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Wedding
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Wedding" href="/weddings/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <WeddingsListClient initialData={weddings} stats={stats} />

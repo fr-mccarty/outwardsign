@@ -235,7 +235,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         isEditing={isEditing}
         isLoading={isLoading}
         cancelHref={isEditing ? `/mass-intentions/${intention.id}` : '/mass-intentions'}
-        saveLabel={isEditing ? "Save Mass Intention" : "Create Mass Intention"}
+        moduleName="Mass Intention"
       />
 
       {/* Mass Picker Modal */}

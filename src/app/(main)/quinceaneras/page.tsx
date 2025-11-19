@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getQuinceaneras, type QuinceaneraFilterParams } from "@/lib/actions/quinceaneras"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -50,14 +48,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Quinceañeras"
       description="Manage quinceañera celebrations in your parish."
-      actions={
-        <Button asChild>
-          <Link href="/quinceaneras/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Quinceañera
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Quinceañera" href="/quinceaneras/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <QuinceanerasListClient initialData={quinceaneras} stats={stats} />

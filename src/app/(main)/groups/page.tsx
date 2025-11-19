@@ -104,18 +104,16 @@ export default function GroupsPage() {
   }
 
   return (
-    <PageContainer 
+    <PageContainer
       title="Groups"
       description="Manage groups of people who serve together in liturgical ministries"
-    >
-      <div className="flex items-center justify-between mb-6">
-        <div></div>
+      actions={
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Create Group
         </Button>
-      </div>
-
+      }
+    >
       <Card>
         <CardHeader>
           <CardTitle>Ministry Groups</CardTitle>

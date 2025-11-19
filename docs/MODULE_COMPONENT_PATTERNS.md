@@ -4,6 +4,25 @@ This document provides detailed implementation patterns for the 9 main component
 
 **Reference Module:** Always use the Wedding module (`src/app/(main)/weddings/`) as the canonical implementation example.
 
+---
+
+## 🔴 Critical: PageContainer & ModuleViewContainer Usage
+
+**View Page Structure:**
+1. **Server Page** (`[id]/page.tsx`) - **Must wrap in `PageContainer`** with title and description
+2. **View Client** (`[id]/[entity]-view-client.tsx`) - **Must use `ModuleViewContainer`** which internally manages `ModuleViewPanel`
+
+**Never use `ModuleViewContainer` without `PageContainer` wrapping it in the server page.**
+
+This two-layer pattern ensures:
+- Consistent page headers and metadata (PageContainer)
+- Standardized module view layout with side panel (ModuleViewContainer)
+- Proper breadcrumb and navigation structure
+
+**See:** [MODULE_VIEW_CONTAINER_PATTERN.md](./MODULE_VIEW_CONTAINER_PATTERN.md) for complete details.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -402,6 +421,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { [Entity]ViewClient } from './[entity]-view-client'
 import { get[Entity]WithRelations } from '@/lib/actions/[entities]'
+import { get[Entity]PageTitle } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -416,14 +436,20 @@ export default async function [Entity]Page({ params }: PageProps) {
   const entity = await get[Entity]WithRelations(id)
   if (!entity) notFound()
 
+  // Build dynamic title from entity data
+  const title = get[Entity]PageTitle(entity)
+
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: '[Entities]', href: '/[entities]' },
-    { label: entity.name || 'View', href: `/[entities]/${id}` }
+    { label: 'Our [Entities]', href: '/[entities]' },
+    { label: 'View' }
   ]
 
   return (
-    <PageContainer>
+    <PageContainer
+      title={title}
+      description="Preview and download [entity] liturgy documents."
+    >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <[Entity]ViewClient entity={entity} />
     </PageContainer>
@@ -435,8 +461,10 @@ export default async function [Entity]Page({ params }: PageProps) {
 
 - ✅ Fetch entity **with relations** using `get[Entity]WithRelations()`
 - ✅ Return `notFound()` if entity doesn't exist
+- ✅ **Must wrap in PageContainer** with dynamic title and description
+- ✅ Use formatter helper to generate page title from entity data
 - ✅ Pass full entity with relations to view client
-- ✅ Wrap in PageContainer (not FormWrapper)
+- ✅ View client will use ModuleViewContainer internally
 
 **Reference:** `src/app/(main)/weddings/[id]/page.tsx`
 
@@ -744,70 +772,131 @@ export function [Entity]Form({
 
 **File:** `[entity]-view-client.tsx` in `app/(main)/[entity-plural]/[id]/`
 
-**Purpose:** Displays entity details, renders liturgy content, and integrates ModuleViewPanel.
+**Purpose:** Displays entity details, renders liturgy content, and integrates ModuleViewContainer with ModuleViewPanel.
 
 ### Structure
 
 ```tsx
 'use client'
 
-import { ModuleViewPanel } from '@/components/module-view-panel'
-import { renderHTML } from '@/lib/renderers/html-renderer'
-import { build[Entity]Liturgy } from '@/lib/content-builders/[entity]'
-import { [Entity]FormActions } from './[entity]-form-actions'
-import type { [Entity]WithRelations } from '@/lib/actions/[entities]'
+import { [Entity]WithRelations, update[Entity], delete[Entity] } from '@/lib/actions/[entities]'
+import { ModuleViewContainer } from '@/components/module-view-container'
+import { build[Entity]Liturgy, [ENTITY]_TEMPLATES } from '@/lib/content-builders/[entity]'
+import { Button } from '@/components/ui/button'
+import { ModuleStatusLabel } from '@/components/module-status-label'
+import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
+import { Edit, Printer, FileText, Download } from 'lucide-react'
+import Link from 'next/link'
+import { get[Entity]Filename } from '@/lib/utils/formatters'
 
 interface [Entity]ViewClientProps {
   entity: [Entity]WithRelations
 }
 
 export function [Entity]ViewClient({ entity }: [Entity]ViewClientProps) {
-  // Build liturgy document
-  const templateId = entity.[entity]_template_id || 'default'
-  const liturgyDocument = build[Entity]Liturgy(entity, templateId)
+  // Generate filename for downloads
+  const generateFilename = (extension: string) => {
+    return get[Entity]Filename(entity, extension)
+  }
 
-  // Render to HTML
-  const liturgyHTML = renderHTML(liturgyDocument)
+  // Extract template ID from entity record
+  const getTemplateId = (entity: [Entity]WithRelations) => {
+    return entity.[entity]_template_id || '[entity]-full-script-english'
+  }
+
+  // Handle template update
+  const handleUpdateTemplate = async (templateId: string) => {
+    await update[Entity](entity.id, {
+      [entity]_template_id: templateId,
+    })
+  }
+
+  // Generate action buttons
+  const actionButtons = (
+    <>
+      <Button asChild className="w-full">
+        <Link href={`/[entities]/${entity.id}/edit`}>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit [Entity]
+        </Link>
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/print/[entities]/${entity.id}`} target="_blank">
+          <Printer className="h-4 w-4 mr-2" />
+          Print View
+        </Link>
+      </Button>
+    </>
+  )
+
+  // Generate export buttons
+  const exportButtons = (
+    <>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/api/[entities]/${entity.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
+          <FileText className="h-4 w-4 mr-2" />
+          Download PDF
+        </Link>
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/api/[entities]/${entity.id}/word?filename=${generateFilename('docx')}`}>
+          <Download className="h-4 w-4 mr-2" />
+          Download Word
+        </Link>
+      </Button>
+    </>
+  )
+
+  // Generate template selector
+  const templateSelector = (
+    <TemplateSelectorDialog
+      currentTemplateId={entity.[entity]_template_id}
+      templates={[ENTITY]_TEMPLATES}
+      moduleName="[Entity]"
+      onSave={handleUpdateTemplate}
+      defaultTemplateId="[entity]-full-script-english"
+    />
+  )
+
+  // Build status label
+  const statusLabel = <ModuleStatusLabel status={entity.status} />
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Main Content */}
-      <div className="flex-1">
-        <[Entity]FormActions entity={entity} />
-
-        {/* Liturgy Content */}
-        <div
-          className="prose dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: liturgyHTML }}
-        />
-      </div>
-
-      {/* Side Panel */}
-      <ModuleViewPanel
-        entityId={entity.id}
-        modulePath="[entities]"
-        metadata={[
-          { label: 'Status', value: entity.status },
-          { label: 'Created', value: new Date(entity.created_at).toLocaleDateString() },
-          // ... other metadata
-        ]}
-      />
-    </div>
+    <ModuleViewContainer
+      entity={entity}
+      entityType="[Entity]"
+      modulePath="[entities]"
+      mainEvent={entity.[entity]_event}
+      buildLiturgy={build[Entity]Liturgy}
+      getTemplateId={getTemplateId}
+      generateFilename={generateFilename}
+      actionButtons={actionButtons}
+      exportButtons={exportButtons}
+      templateSelector={templateSelector}
+      statusLabel={statusLabel}
+      onDelete={delete[Entity]}
+    />
   )
 }
 ```
 
 ### Key Points
 
-- ✅ Builds liturgy using content builder
-- ✅ Renders HTML using `renderHTML()`
-- ✅ Integrates ModuleViewPanel for actions and metadata
-- ✅ Shows FormActions at top of content
-- ✅ Uses prose classes for liturgy content
+- ✅ **Uses ModuleViewContainer** which internally manages ModuleViewPanel
+- ✅ Passes content builder function to ModuleViewContainer
+- ✅ Provides action buttons, export buttons, and template selector
+- ✅ ModuleViewContainer handles layout and liturgy rendering automatically
+- ✅ **PageContainer is used in the server page**, not here
+
+**Important:** The view page structure is:
+1. **Server Page** (`page.tsx`) - Wraps everything in `PageContainer`
+2. **View Client** (this component) - Uses `ModuleViewContainer` which includes `ModuleViewPanel`
 
 **Reference:** `src/app/(main)/weddings/[id]/wedding-view-client.tsx`
 
-**See Also:** [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)
+**See Also:**
+- [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)
+- [MODULE_VIEW_CONTAINER_PATTERN.md](./MODULE_VIEW_CONTAINER_PATTERN.md)
 
 ---
 

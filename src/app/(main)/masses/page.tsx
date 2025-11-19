@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import Link from "next/link"
-import { Plus } from "lucide-react"
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { getMasses, type MassFilterParams } from "@/lib/actions/masses"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -66,14 +64,7 @@ export default async function MassesPage({ searchParams }: PageProps) {
     <PageContainer
       title="Masses"
       description="Manage Mass celebrations in your parish."
-      actions={
-        <Button asChild>
-          <Link href="/masses/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Mass
-          </Link>
-        </Button>
-      }
+      actions={<ModuleCreateButton moduleName="Mass" href="/masses/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassesListClient initialData={masses} stats={stats} />
