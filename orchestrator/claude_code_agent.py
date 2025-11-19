@@ -112,19 +112,24 @@ class ClaudeCodeAgent:
         context_files = self.task_data.get("context_files", [])
         context_files_list = "\n".join(f"- {f}" for f in context_files)
 
-        # Replace placeholders
-        instructions = template.format(
-            task_id=self.task_id,
-            task_name=self.task_data.get("name", "Unknown"),
-            module=self.task_data.get("module", "general"),
-            estimated_complexity=self.task_data.get("estimated_complexity", "medium"),
-            task_description=self.task_data.get("description", ""),
-            deliverables_list=deliverables_list,
-            context_files_list=context_files_list,
-            workspace_path=self.workspace_dir,
-            status_file_path=self.status_file,
-            question_file_path=self.question_file
-        )
+        # Create replacements dict
+        replacements = {
+            '{task_id}': self.task_id,
+            '{task_name}': self.task_data.get("name", "Unknown"),
+            '{module}': self.task_data.get("module", "general"),
+            '{estimated_complexity}': self.task_data.get("estimated_complexity", "medium"),
+            '{task_description}': self.task_data.get("description", ""),
+            '{deliverables_list}': deliverables_list,
+            '{context_files_list}': context_files_list,
+            '{workspace_path}': self.workspace_dir,
+            '{status_file_path}': self.status_file,
+            '{question_file_path}': self.question_file
+        }
+
+        # Replace placeholders using string replace (not .format())
+        instructions = template
+        for placeholder, value in replacements.items():
+            instructions = instructions.replace(placeholder, value)
 
         return instructions
 
