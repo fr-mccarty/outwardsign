@@ -22,7 +22,7 @@ test.describe('Mass Role Picker Component', () => {
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     console.log('Created test mass role template');
 
@@ -66,7 +66,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', templateName);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     const templateUrl = page.url();
     console.log(`Created template at: ${templateUrl}`);
@@ -128,7 +128,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', templateName);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     // Open mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
@@ -191,7 +191,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', 'Temporary Template');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     // Add a role to this template (which creates it in the database)
     await page.getByRole('button', { name: /Add Role/i }).click();
@@ -216,7 +216,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', newTemplateName);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     const templateUrl = page.url();
 
@@ -274,7 +274,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', 'Temp Template 1');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     const role1Name = `Lector ${Date.now()}`;
     await page.getByRole('button', { name: /Add Role/i }).click();
@@ -293,7 +293,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', 'Temp Template 2');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     const role2Name = `Usher ${Date.now()}`;
     await page.getByRole('button', { name: /Add Role/i }).click();
@@ -314,7 +314,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', 'Search Test Template');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     // Open the mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
@@ -358,7 +358,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', 'Validation Test Template');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     // Open mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
@@ -408,7 +408,7 @@ test.describe('Mass Role Picker Component', () => {
     await page.fill('#name', templateName);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/mass-role-templates\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT }); // CREATE redirects to EDIT page
 
     const templateUrl = page.url();
 

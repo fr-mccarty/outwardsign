@@ -22,6 +22,7 @@
 - [🔴 Database](#-database)
 - [Testing](#testing)
 - [Linting](#linting)
+- [🔴 Build Process](#-build-process)
 - [Tools](#tools)
 - [🔴 Accessing Records](#-accessing-records)
 - [Tech Stack](#tech-stack)
@@ -173,6 +174,20 @@ During initial development, modify existing migrations instead of creating new m
 - Configuration is in `eslint.config.mjs` (not `.eslintignore`)
 
 **For complete linting documentation, see [LINTING.md](./docs/LINTING.md).**
+
+## 🔴 Build Process
+
+**🔴 CRITICAL - Build Errors:**
+- When there is an error in the build process (`npm run build`), **ALWAYS check the documentation first**
+- Build errors often indicate violations of established patterns or coding standards
+- Common sources of build errors:
+  - TypeScript type mismatches (check interfaces in `src/lib/types/`)
+  - Missing imports or incorrect import paths
+  - Violations of form patterns (see [FORMS.md](./docs/FORMS.md))
+  - Incorrect module structure (see [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md))
+  - Server/Client component boundaries
+- Before attempting fixes, consult relevant documentation to understand the correct pattern
+- Fix the root cause, not just the symptom
 
 ## Tools
 

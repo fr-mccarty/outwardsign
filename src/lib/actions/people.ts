@@ -31,7 +31,17 @@ function buildPeopleSearchConditions(search: string): string[] {
     searchConditions.push(`phone_number.ilike.%${numericSearch}%`)
   }
 
-  // 3. Handle searches with separators (spaces, periods, dashes, commas)
+  // 3. Full-name search - treat periods, dashes, commas as spaces
+  // This handles searches like "John.Doe" or "John-Doe" by converting them to "John Doe"
+  const cleanSearch = normalized.replace(/[.\-,]/g, ' ').replace(/\s+/g, ' ').trim()
+  if (cleanSearch !== normalized && cleanSearch.length > 0) {
+    // Search in concatenated first_name + space + last_name
+    // PostgreSQL concat() function combines fields
+    // This matches "John Doe" in the combined "John Doe" field
+    searchConditions.push(`concat(first_name,' ',last_name).ilike.%${cleanSearch}%`)
+  }
+
+  // 4. Handle searches with separators (spaces, periods, dashes, commas)
   // Replace common separators with wildcard to match any separator or no separator
   const separatorPattern = normalized.replace(/[\s.\-,]+/g, '%')
   if (separatorPattern !== normalized && !separatorPattern.includes('%%')) {
@@ -39,7 +49,7 @@ function buildPeopleSearchConditions(search: string): string[] {
     searchConditions.push(`last_name.ilike.%${separatorPattern}%`)
   }
 
-  // 4. If search contains space, period, dash, or comma - treat as "FirstName LastName" pattern
+  // 5. If search contains space, period, dash, or comma - treat as "FirstName LastName" pattern
   if (/[\s.\-,]/.test(normalized)) {
     // Split by any separator
     const parts = normalized.split(/[\s.\-,]+/).filter(p => p.length > 0)

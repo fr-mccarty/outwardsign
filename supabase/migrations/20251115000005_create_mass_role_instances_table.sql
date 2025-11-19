@@ -3,7 +3,7 @@
 CREATE TABLE mass_role_instances (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   mass_id UUID NOT NULL REFERENCES masses(id) ON DELETE CASCADE,
-  person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+  person_id UUID REFERENCES people(id) ON DELETE CASCADE, -- NULL = unassigned
   mass_roles_template_item_id UUID NOT NULL REFERENCES mass_roles_template_items(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -11,6 +11,7 @@ CREATE TABLE mass_role_instances (
 
 -- Add comment documenting the purpose
 COMMENT ON TABLE mass_role_instances IS 'Actual assignments of people to liturgical roles for specific masses';
+COMMENT ON COLUMN mass_role_instances.person_id IS 'Person assigned to this role instance. NULL means unassigned (awaiting auto-assignment or manual assignment)';
 
 -- Enable RLS
 ALTER TABLE mass_role_instances ENABLE ROW LEVEL SECURITY;
@@ -26,7 +27,7 @@ CREATE INDEX idx_mass_role_instances_person_id ON mass_role_instances(person_id)
 CREATE INDEX idx_mass_role_instances_template_item_id ON mass_role_instances(mass_roles_template_item_id);
 
 -- RLS Policies for mass_role_instances
-CREATE POLICY "Parish members can read mass_role_instances for their parish masses"
+CREATE POLICY "mass_role_instances_select"
   ON mass_role_instances
   FOR SELECT
   TO anon, authenticated
@@ -39,7 +40,7 @@ CREATE POLICY "Parish members can read mass_role_instances for their parish mass
     )
   );
 
-CREATE POLICY "Parish members can create mass_role_instances for their parish masses"
+CREATE POLICY "mass_role_instances_insert"
   ON mass_role_instances
   FOR INSERT
   TO anon, authenticated
@@ -52,7 +53,7 @@ CREATE POLICY "Parish members can create mass_role_instances for their parish ma
     )
   );
 
-CREATE POLICY "Parish members can update mass_role_instances for their parish masses"
+CREATE POLICY "mass_role_instances_update"
   ON mass_role_instances
   FOR UPDATE
   TO anon, authenticated
@@ -65,7 +66,7 @@ CREATE POLICY "Parish members can update mass_role_instances for their parish ma
     )
   );
 
-CREATE POLICY "Parish members can delete mass_role_instances for their parish masses"
+CREATE POLICY "mass_role_instances_delete"
   ON mass_role_instances
   FOR DELETE
   TO anon, authenticated

@@ -22,7 +22,7 @@ import {
   Settings,
   Church,
   Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
-  BookHeart, CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon
+  BookHeart, CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -173,6 +173,31 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       title: "Role Directory",
                       url: "/mass-role-directory",
                       icon: UsersIcon,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
+              {canAccess('masses') && (
+                <CollapsibleNavSection
+                  name="Mass Scheduling"
+                  icon={Clock}
+                  items={[
+                    {
+                      title: "Schedule Masses",
+                      url: "/masses/schedule",
+                      icon: CalendarDays,
+                    },
+                    {
+                      title: "Our Mass Times",
+                      url: "/mass-times",
+                      icon: Clock,
+                    },
+                    {
+                      title: "Mass Types",
+                      url: "/mass-types",
+                      icon: List,
                     },
                     {
                       title: "Templates",

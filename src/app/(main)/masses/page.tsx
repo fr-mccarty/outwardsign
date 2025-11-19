@@ -1,10 +1,13 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
+import { Button } from '@/components/ui/button'
 import { getMasses, type MassFilterParams } from "@/lib/actions/masses"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
+import { CalendarClock } from 'lucide-react'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +58,15 @@ export default async function MassesPage({ searchParams }: PageProps) {
     filtered: masses.length,
   }
 
+  // Get user role for schedule button permission
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const canSchedule = profile && (profile.role === 'ADMIN' || profile.role === 'STAFF')
+
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Masses" }
@@ -64,7 +76,19 @@ export default async function MassesPage({ searchParams }: PageProps) {
     <PageContainer
       title="Masses"
       description="Manage Mass celebrations in your parish."
-      actions={<ModuleCreateButton moduleName="Mass" href="/masses/create" />}
+      actions={
+        <div className="flex gap-2">
+          {canSchedule && (
+            <Button asChild variant="outline">
+              <Link href="/masses/schedule">
+                <CalendarClock className="h-4 w-4 mr-2" />
+                Schedule Masses
+              </Link>
+            </Button>
+          )}
+          <ModuleCreateButton moduleName="Mass" href="/masses/create" />
+        </div>
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassesListClient initialData={masses} stats={stats} />

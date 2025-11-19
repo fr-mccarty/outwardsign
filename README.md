@@ -41,11 +41,16 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 ## ✨ Features
 
 - **Sacrament & Sacramental Planning:** Manage Masses, weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type
+- **Mass Scheduling System:** Bulk scheduling wizard for creating multiple Masses over date ranges with automatic minister assignment based on preferences and availability
+- **Mass Role Management:** Dedicated system for managing liturgical roles (Lectors, EMHCs, Altar Servers, Cantors, Ushers) with templates, preferences, and blackout dates
+- **Mass Intentions:** Track and manage Mass intention requests with dedicated workflow for requesting, confirming, and fulfilling intentions
+- **Team Management:** Role-based permission system with parish invitations for admins, staff, ministry-leaders, and parishioners with configurable module-level access
+- **Ministry Groups:** Organize parish ministries and committees with role-based membership tracking through the group member directory
 - **Complete Preparation Tools:** Organize all aspects of sacramental preparation from initial planning to printed scripts
-- **Parish Calendar:** Unified calendar view showing all sacramental events and parish activities
+- **Parish Calendar:** Unified calendar view showing all sacramental events and parish activities with liturgical calendar integration
 - **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word export for all sacraments)
 - **Data Export:** Download parish directory as CSV from the People page for easy data management and backup
-- **Multilingual Support:** Full English and Spanish language support throughout the application, including the public homepage with language selector, liturgical content, and all user interfaces for diverse parish communities
+- **Multilingual Support:** Full English and Spanish language support throughout the application, including the public homepage with language selector, liturgical content (English, Spanish, Latin), and all user interfaces for diverse parish communities
 - **Liturgical Calendar Integration:** Built-in Catholic liturgical calendar data with global observances, feasts, and solemnities
 
 ## 🎨 Sacrament & Sacramental Icons

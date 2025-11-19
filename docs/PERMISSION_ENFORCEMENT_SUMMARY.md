@@ -50,10 +50,32 @@ Added permission checks to all create, update, and delete functions in the follo
 
 ### 3. Pattern Implemented
 
-All create/update/delete functions now follow this pattern:
+All create/update/delete functions now follow one of these patterns:
+
+**For Module-Specific Resources** (weddings, funerals, baptisms, masses, etc.):
 
 ```typescript
-export async function createResource(data: CreateResourceData): Promise<Resource> {
+export async function createWedding(data: CreateWeddingData): Promise<Wedding> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'weddings')
+
+  // ... rest of function
+}
+```
+
+**For Shared Resources** (people, locations, events, readings):
+
+```typescript
+export async function createPerson(data: CreatePersonData): Promise<Person> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -68,6 +90,10 @@ export async function createResource(data: CreateResourceData): Promise<Resource
   // ... rest of function
 }
 ```
+
+**Key Differences:**
+- **Module resources** use `getUserParishRole()` + `requireModuleAccess(userParish, 'moduleName')`
+- **Shared resources** use `requireEditSharedResources(userId, parishId)` directly
 
 ### 4. Build Verification
 

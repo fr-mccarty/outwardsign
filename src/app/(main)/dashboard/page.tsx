@@ -10,7 +10,12 @@ import {
   MapPin,
   CalendarDays,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  CirclePlus,
+  Heart,
+  Droplet,
+  CalendarCheck,
+  UserCog
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
@@ -370,34 +375,62 @@ export default async function DashboardPage() {
           <CardTitle>Quick Access</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            <Link
+              href="/masses/create"
+              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+            >
+              <CirclePlus className="h-6 w-6" />
+              <span className="text-sm font-medium text-center">New Mass</span>
+            </Link>
+            <Link
+              href="/masses/schedule"
+              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+            >
+              <CalendarCheck className="h-6 w-6" />
+              <span className="text-sm font-medium text-center">Schedule Masses</span>
+            </Link>
             <Link
               href="/weddings/create"
               className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
             >
               <VenusAndMars className="h-6 w-6" />
-              <span className="text-sm font-medium">New Wedding</span>
+              <span className="text-sm font-medium text-center">New Wedding</span>
             </Link>
             <Link
               href="/funerals/create"
               className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
             >
               <Cross className="h-6 w-6" />
-              <span className="text-sm font-medium">New Funeral</span>
+              <span className="text-sm font-medium text-center">New Funeral</span>
+            </Link>
+            <Link
+              href="/baptisms/create"
+              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+            >
+              <Droplet className="h-6 w-6" />
+              <span className="text-sm font-medium text-center">New Baptism</span>
             </Link>
             <Link
               href="/presentations/create"
               className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
             >
               <HandHeartIcon className="h-6 w-6" />
-              <span className="text-sm font-medium">New Presentation</span>
+              <span className="text-sm font-medium text-center">New Presentation</span>
             </Link>
             <Link
               href="/quinceaneras/create"
               className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
             >
               <BookHeart className="h-6 w-6" />
-              <span className="text-sm font-medium">New Quinceañera</span>
+              <span className="text-sm font-medium text-center">New Quinceañera</span>
+            </Link>
+            <Link
+              href="/mass-intentions/create"
+              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+            >
+              <Heart className="h-6 w-6" />
+              <span className="text-sm font-medium text-center">New Mass Intention</span>
             </Link>
           </div>
         </CardContent>

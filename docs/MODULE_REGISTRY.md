@@ -8,12 +8,95 @@
 
 ## Table of Contents
 
+- [Main Sidebar Navigation Structure](#main-sidebar-navigation-structure)
 - [Primary Modules](#primary-modules)
 - [Supporting Modules](#supporting-modules)
 - [Module Status Constants](#module-status-constants)
 - [Module Labels (Internationalization)](#module-labels-internationalization)
 - [Module Icons](#module-icons)
 - [Module Routes](#module-routes)
+
+---
+
+## Main Sidebar Navigation Structure
+
+**Source:** `src/components/main-sidebar.tsx`
+
+The main sidebar follows a specific ordering and grouping structure. All navigation items are organized under the "Application" group.
+
+### Navigation Order
+
+1. **Dashboard** (`/dashboard`) - Always visible, no permission check
+2. **Calendar** (`/calendar?view=month`) - Always visible, no permission check
+3. **Events** (Collapsible Section) - Always visible
+   - Our Events (`/events`)
+   - Create Event (`/events/create`)
+4. **Locations** (Collapsible Section) - Always visible
+   - Our Locations (`/locations`)
+   - New Location (`/locations/create`)
+5. **Readings** (Collapsible Section) - Always visible
+   - Our Readings (`/readings`)
+   - Create Reading (`/readings/create`)
+6. **Masses** (Collapsible Section) - Permission check: `canAccess('masses')`
+   - Our Masses (`/masses`)
+   - New Mass (`/masses/create`)
+   - Mass Roles (`/mass-roles`)
+   - Role Directory (`/mass-role-directory`)
+7. **Mass Scheduling** (Collapsible Section) - Permission check: `canAccess('masses')`
+   - Schedule Masses (`/masses/schedule`)
+   - Our Mass Times (`/mass-times`)
+   - Mass Types (`/mass-types`)
+   - Templates (`/mass-role-templates`)
+8. **Weddings** (Collapsible Section) - Permission check: `canAccess('weddings')`
+   - Our Weddings (`/weddings`)
+   - New Wedding (`/weddings/create`)
+9. **Funerals** (Collapsible Section) - Permission check: `canAccess('funerals')`
+   - Our Funerals (`/funerals`)
+   - New Funeral (`/funerals/create`)
+10. **Presentations** (Collapsible Section) - Permission check: `canAccess('presentations')`
+    - Our Presentations (`/presentations`)
+    - New Presentation (`/presentations/create`)
+11. **People** (Collapsible Section) - Always visible
+    - Our People (`/people`)
+    - Create Person (`/people/create`)
+12. **Groups** (Collapsible Section) - Permission check: `canAccess('groups')`
+    - Our Groups (`/groups`)
+    - New Group (`/groups`)
+13. **Mass Intentions** (Collapsible Section) - Permission check: `canAccess('mass-intentions')`
+    - Our Mass Intentions (`/mass-intentions`)
+    - Create Mass Intention (`/mass-intentions/create`)
+    - Report (`/mass-intentions/report`)
+14. **Baptisms** (Collapsible Section) - Permission check: `canAccess('baptisms')`
+    - Our Baptisms (`/baptisms`)
+    - New Baptisms (`/baptisms/create`)
+15. **Quinceañeras** (Collapsible Section) - Permission check: `canAccess('quinceaneras')`
+    - Our Quinceañeras (`/quinceaneras`)
+    - New Quinceañera (`/quinceaneras/create`)
+
+### Settings Section (Bottom of Sidebar)
+
+Separate from the main "Application" group, settings appear in their own group at the bottom:
+
+- **Parish Settings** (`/settings/parish`) - Permission check: `canManageParishSettings(userParish)` - Admin only
+- **User Settings** (`/settings`) - Always visible
+
+### Ordering Principles
+
+1. **Core Navigation First** - Dashboard and Calendar appear first as the most frequently accessed pages
+2. **Supporting Modules Early** - Events, Locations, and Readings appear before sacramental modules because they provide foundational data
+3. **Masses Module Prominence** - Masses module appears before other sacramental modules due to its central importance in parish life
+4. **Sacramental Modules Grouped** - Weddings, Funerals, and Presentations appear consecutively
+5. **People Before Groups** - People module (foundational data) appears before Groups module (uses people data)
+6. **Administrative Last** - Mass Intentions, Baptisms, and Quinceañeras appear toward the end
+7. **Settings Separated** - Settings section is visually separated at the bottom
+
+### Permission-Based Display
+
+- **Always Visible:** Dashboard, Calendar, Events, Locations, Readings, People, User Settings
+- **Permission-Gated:** Masses, Mass Scheduling, Weddings, Funerals, Presentations, Groups, Mass Intentions, Baptisms, Quinceañeras
+- **Admin-Only:** Parish Settings
+
+**Note:** All permission checks use the `canAccessModule(userParish, moduleName)` helper function from `@/lib/auth/permissions-client`.
 
 ---
 
@@ -47,6 +130,7 @@
 4. **Groups** - Ministry groups and teams (uses dialog-based architecture)
 5. **Readings** - Scripture readings for liturgies
 6. **Petitions** - Prayer intentions and petitions
+7. **Mass Times** - Recurring mass schedule management
 
 ---
 

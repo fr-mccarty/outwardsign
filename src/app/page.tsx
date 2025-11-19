@@ -119,11 +119,29 @@ const translations = {
       },
       teamCollaboration: {
         title: "Team Collaboration",
-        description: "Work together with presiders, staff, and families throughout the preparation process. Everyone stays informed and prepared.",
+        description: "Invite team members with role-based permissions. Admins, staff, ministry-leaders, and parishioners each have appropriate access levels.",
         features: [
-          "Shared access for parish staff",
-          "Role-based permissions",
-          "Coordinate with families and participants"
+          "Parish team invitations with secure tokens",
+          "Four-tier role system (admin, staff, ministry-leader, parishioner)",
+          "Configurable module access for ministry leaders"
+        ]
+      },
+      massScheduling: {
+        title: "Mass Scheduling & Role Management",
+        description: "Bulk schedule Masses over date ranges with automatic minister assignment based on preferences, availability, and workload balancing.",
+        features: [
+          "Wizard-based Mass scheduling for weeks or months",
+          "Automatic minister assignment with preference tracking",
+          "Template system for recurring role requirements"
+        ]
+      },
+      ministryGroups: {
+        title: "Ministry Groups & Directories",
+        description: "Organize parish ministries and committees with role-based membership tracking and dedicated directory views.",
+        features: [
+          "Group member directory for ministry participants",
+          "Mass role directory for liturgical ministers",
+          "Role preferences and blackout date management"
         ]
       },
       freeOpenSource: {
@@ -368,11 +386,29 @@ const translations = {
       },
       teamCollaboration: {
         title: "Colaboración en Equipo",
-        description: "Trabaja junto con presidentes, personal y familias durante todo el proceso de preparación. Todos se mantienen informados y preparados.",
+        description: "Invita miembros del equipo con permisos basados en roles. Administradores, personal, líderes ministeriales y feligreses tienen niveles de acceso apropiados.",
         features: [
-          "Acceso compartido para el personal parroquial",
-          "Permisos basados en roles",
-          "Coordina con familias y participantes"
+          "Invitaciones de equipo parroquial con tokens seguros",
+          "Sistema de cuatro niveles de roles",
+          "Acceso configurable a módulos para líderes ministeriales"
+        ]
+      },
+      massScheduling: {
+        title: "Programación de Misas y Gestión de Roles",
+        description: "Programa misas en masa durante períodos de fechas con asignación automática de ministros basada en preferencias, disponibilidad y equilibrio de carga.",
+        features: [
+          "Asistente de programación de misas para semanas o meses",
+          "Asignación automática de ministros con seguimiento de preferencias",
+          "Sistema de plantillas para requisitos de roles recurrentes"
+        ]
+      },
+      ministryGroups: {
+        title: "Grupos Ministeriales y Directorios",
+        description: "Organiza ministerios y comités parroquiales con seguimiento de membresía basado en roles y vistas de directorio dedicadas.",
+        features: [
+          "Directorio de miembros de grupos para participantes ministeriales",
+          "Directorio de roles de misa para ministros litúrgicos",
+          "Gestión de preferencias de roles y fechas no disponibles"
         ]
       },
       freeOpenSource: {
@@ -819,10 +855,24 @@ function HomeContent() {
             />
 
             <HomeFeatureCard
-              icon={Users}
+              icon={UserCog}
               title={t.features.teamCollaboration.title}
               description={t.features.teamCollaboration.description}
               features={t.features.teamCollaboration.features}
+            />
+
+            <HomeFeatureCard
+              icon={CalendarCheck}
+              title={t.features.massScheduling.title}
+              description={t.features.massScheduling.description}
+              features={t.features.massScheduling.features}
+            />
+
+            <HomeFeatureCard
+              icon={Users}
+              title={t.features.ministryGroups.title}
+              description={t.features.ministryGroups.description}
+              features={t.features.ministryGroups.features}
             />
           </div>
 
