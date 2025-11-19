@@ -148,8 +148,8 @@ class ClaudeCodeAgent:
             with open(instructions_file, 'w') as f:
                 f.write(instructions)
 
-            # Open log file
-            self.log_handle = open(self.log_file, 'wb')
+            # Open log file in text mode (because we're using encoding='utf-8' in pexpect)
+            self.log_handle = open(self.log_file, 'w', encoding='utf-8')
 
             # Start Claude Code using pexpect with shell wrapper
             # Using bash -lc to support aliases and properly load PATH
