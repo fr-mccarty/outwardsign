@@ -31,7 +31,20 @@ setup('authenticate as staff user', async ({ page }) => {
   await page.click('button[type="submit"]');
 
   // Wait for successful login - could redirect to dashboard or onboarding
-  await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
+  // Use networkidle instead of load event (dashboard has slow client hydration)
+  await page.waitForURL(/\/(dashboard|onboarding)/, { waitUntil: 'networkidle', timeout: 20000 });
+
+  // Wait for the page to actually be ready by checking for a visible element
+  const isDashboard = page.url().includes('/dashboard');
+  const isOnboarding = page.url().includes('/onboarding');
+
+  if (isDashboard) {
+    // Wait for dashboard to be fully loaded
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 15000 });
+  } else if (isOnboarding) {
+    // Wait for onboarding form to be visible
+    await page.waitForSelector('input#parishName', { state: 'visible', timeout: 15000 });
+  }
 
   // If redirected to onboarding, complete it
   if (page.url().includes('/onboarding')) {
@@ -45,11 +58,17 @@ setup('authenticate as staff user', async ({ page }) => {
 
     // Wait for preparing screen and then dashboard
     await expect(page.locator('text=/One minute while we get your parish ready for you/i')).toBeVisible({ timeout: 5000 });
-    await page.waitForURL('/dashboard', { timeout: 20000 });
+    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: 25000 });
+
+    // Wait for dashboard to be fully loaded
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 20000 });
   }
 
   // Verify we're authenticated by checking we're on dashboard
   await expect(page).toHaveURL('/dashboard');
+
+  // Verify dashboard is fully loaded
+  await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
   console.log('Successfully authenticated and on dashboard');
 
   // Save authentication state to file

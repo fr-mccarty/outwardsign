@@ -6,7 +6,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import { Event, Location, Person } from '@/lib/types'
-import type { EventType, Language } from '@/lib/constants'
+import type { EventType, LiturgicalLanguage } from '@/lib/constants'
 import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface EventWithRelations extends Event {
@@ -25,7 +25,7 @@ export interface CreateEventData {
   end_time?: string
   timezone?: string
   location_id?: string
-  language?: Language
+  language?: LiturgicalLanguage
   event_template_id?: string
   note?: string
 }
@@ -41,7 +41,7 @@ export interface UpdateEventData {
   end_time?: string
   timezone?: string
   location_id?: string
-  language?: Language
+  language?: LiturgicalLanguage
   event_template_id?: string
   note?: string
 }
@@ -49,7 +49,7 @@ export interface UpdateEventData {
 export interface EventFilterParams {
   search?: string
   event_type?: EventType | 'all'
-  language?: Language | 'all'
+  language?: LiturgicalLanguage | 'all'
   start_date?: string
   end_date?: string
   sort?: string

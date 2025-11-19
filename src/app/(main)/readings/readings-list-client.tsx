@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, BookOpen, Search, Filter } from "lucide-react"
-import { READING_CATEGORY_LABELS, LANGUAGE_LABELS } from "@/lib/constants"
+import { READING_CATEGORY_LABELS, LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -82,7 +82,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
                   <SelectItem value="all">All Languages</SelectItem>
                   {stats.languages.map(lang => (
                     <SelectItem key={lang} value={lang}>
-                      {LANGUAGE_LABELS[lang]?.en || lang}
+                      {LITURGICAL_LANGUAGE_LABELS[lang]?.en || lang}
                     </SelectItem>
                   ))}
                 </SelectContent>

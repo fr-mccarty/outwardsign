@@ -7,6 +7,10 @@ export const HOME_LANGUAGES = ['en', 'es'] as const
 export type HomeLanguage = typeof HOME_LANGUAGES[number]
 export const DEFAULT_HOME_LANGUAGE: HomeLanguage = 'en'
 
+// General Language type (used for UI language, petition language, etc.)
+// Lowercase ISO codes: en, es
+export type Language = HomeLanguage
+
 // Sex values (stored as uppercase in database)
 export const SEX_VALUES = ['MALE', 'FEMALE'] as const
 export type Sex = typeof SEX_VALUES[number]
@@ -262,21 +266,23 @@ export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }>
   }
 }
 
-// Language values (stored as uppercase in database)
-export const LANGUAGE_VALUES = ['ENGLISH', 'SPANISH', 'LATIN'] as const
-export type Language = typeof LANGUAGE_VALUES[number]
+// Liturgical Language values (lowercase ISO codes in database)
+// Used for events, masses, and readings
+// Lowercase ISO codes: en, es, la (Latin)
+export const LITURGICAL_LANGUAGE_VALUES = ['en', 'es', 'la'] as const
+export type LiturgicalLanguage = typeof LITURGICAL_LANGUAGE_VALUES[number]
 
-// Language labels for display
-export const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
-  ENGLISH: {
+// Liturgical Language labels for display
+export const LITURGICAL_LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
+  en: {
     en: 'English',
     es: 'Inglés'
   },
-  SPANISH: {
+  es: {
     en: 'Spanish',
     es: 'Español'
   },
-  LATIN: {
+  la: {
     en: 'Latin',
     es: 'Latín'
   }
@@ -285,6 +291,50 @@ export const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
 // Mass Status Constants
 export const MASS_STATUS_VALUES = ['ACTIVE', 'PLANNING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'] as const
 export type MassStatus = typeof MASS_STATUS_VALUES[number]
+
+// Days of Week Constants (shared across modules)
+export const DAYS_OF_WEEK_VALUES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const
+export type DayOfWeek = typeof DAYS_OF_WEEK_VALUES[number]
+
+export const DAYS_OF_WEEK_LABELS: Record<DayOfWeek, { en: string; es: string }> = {
+  SUNDAY: { en: 'Sunday', es: 'Domingo' },
+  MONDAY: { en: 'Monday', es: 'Lunes' },
+  TUESDAY: { en: 'Tuesday', es: 'Martes' },
+  WEDNESDAY: { en: 'Wednesday', es: 'Miércoles' },
+  THURSDAY: { en: 'Thursday', es: 'Jueves' },
+  FRIDAY: { en: 'Friday', es: 'Viernes' },
+  SATURDAY: { en: 'Saturday', es: 'Sábado' }
+}
+
+// Months of Year Constants (shared across modules)
+export const MONTHS_OF_YEAR_VALUES = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'] as const
+export type MonthOfYear = typeof MONTHS_OF_YEAR_VALUES[number]
+
+export const MONTHS_OF_YEAR_LABELS: Record<MonthOfYear, { en: string; es: string }> = {
+  JANUARY: { en: 'January', es: 'Enero' },
+  FEBRUARY: { en: 'February', es: 'Febrero' },
+  MARCH: { en: 'March', es: 'Marzo' },
+  APRIL: { en: 'April', es: 'Abril' },
+  MAY: { en: 'May', es: 'Mayo' },
+  JUNE: { en: 'June', es: 'Junio' },
+  JULY: { en: 'July', es: 'Julio' },
+  AUGUST: { en: 'August', es: 'Agosto' },
+  SEPTEMBER: { en: 'September', es: 'Septiembre' },
+  OCTOBER: { en: 'October', es: 'Octubre' },
+  NOVEMBER: { en: 'November', es: 'Noviembre' },
+  DECEMBER: { en: 'December', es: 'Diciembre' }
+}
+
+// Mass Times Schedule Type Constants
+export const MASS_TIMES_SCHEDULE_TYPE_VALUES = ['WEEKEND', 'DAILY', 'HOLIDAY', 'SPECIAL'] as const
+export type MassTimesScheduleType = typeof MASS_TIMES_SCHEDULE_TYPE_VALUES[number]
+
+export const MASS_TIMES_SCHEDULE_TYPE_LABELS: Record<MassTimesScheduleType, { en: string; es: string }> = {
+  WEEKEND: { en: 'Weekend', es: 'Fin de Semana' },
+  DAILY: { en: 'Daily', es: 'Diario' },
+  HOLIDAY: { en: 'Holiday', es: 'Día Festivo' },
+  SPECIAL: { en: 'Special', es: 'Especial' }
+}
 
 // Mass Template Constants
 export const MASS_TEMPLATE_VALUES = ['mass-full-script-english', 'mass-full-script-spanish'] as const

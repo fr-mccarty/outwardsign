@@ -15,7 +15,7 @@ import { createEvent, updateEvent, type CreateEventData, type EventWithRelations
 import type { Person, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS, type EventType, type Language } from "@/lib/constants"
+import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, type EventType, type LiturgicalLanguage } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PeoplePicker } from "@/components/people-picker"
 import { LocationPickerField } from "@/components/location-picker-field"
@@ -48,7 +48,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const [startTime, setStartTime] = useState(event?.start_time || "")
   const [endDate, setEndDate] = useState(event?.end_date || "")
   const [endTime, setEndTime] = useState(event?.end_time || "")
-  const [language, setLanguage] = useState<Language>(event?.language || "ENGLISH")
+  const [language, setLanguage] = useState<LiturgicalLanguage>(event?.language || "en")
   const [notes, setNotes] = useState(event?.note || "")
 
   // Responsible party picker state
@@ -256,10 +256,10 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             label="Language"
             inputType="select"
             value={language}
-            onChange={(value) => setLanguage(value as Language)}
-            options={LANGUAGE_VALUES.map((lang) => ({
+            onChange={(value) => setLanguage(value as LiturgicalLanguage)}
+            options={LITURGICAL_LANGUAGE_VALUES.map((lang) => ({
               value: lang,
-              label: LANGUAGE_LABELS[lang].en
+              label: LITURGICAL_LANGUAGE_LABELS[lang].en
             }))}
           />
         </div>

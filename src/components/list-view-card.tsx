@@ -4,7 +4,7 @@ import Link from "next/link"
 import { SquarePen } from "lucide-react"
 import { ReactNode } from "react"
 import { ModuleStatusLabel } from "./module-status-label"
-import { LANGUAGE_LABELS } from "@/lib/constants"
+import { LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
 
 interface ListViewCardProps {
   title: string
@@ -66,7 +66,7 @@ export function ListViewCard({
             </div>
             {language && (
               <div className="text-xs text-muted-foreground">
-                {LANGUAGE_LABELS[language]?.en || language}
+                {LITURGICAL_LANGUAGE_LABELS[language]?.en || language}
               </div>
             )}
           </div>

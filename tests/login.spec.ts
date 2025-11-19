@@ -22,11 +22,15 @@ test.describe('Login Flow', () => {
     // 4. Submit the form
     await page.getByRole('button', { name: /sign in/i }).click();
 
-    // 5. Wait for redirect to dashboard (navigation proves success)
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    // 5. Wait for redirect to dashboard (use networkidle - load event doesn't fire due to client hydration)
+    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: 20000 });
 
-    // 6. Verify we're on the dashboard page
+    // 6. Wait for dashboard to be fully loaded
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 15000 });
+
+    // 7. Verify we're on the dashboard page
     await expect(page).toHaveURL('/dashboard');
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
   });
 
   test('should show error for invalid credentials', async ({ page }) => {
@@ -74,9 +78,12 @@ test.describe('Login Flow', () => {
   test('should navigate from home to login', async ({ page }) => {
     await page.goto('/');
 
-    // Find and click the login link
-    const loginLink = page.locator('a[href="/login"]').first();
-    await expect(loginLink).toBeVisible();
+    // Wait for page to be fully loaded and interactive
+    await page.waitForLoadState('networkidle');
+
+    // Find and click the login link (use data-testid for reliability)
+    const loginLink = page.locator('[data-testid="home-login-button"]');
+    await expect(loginLink).toBeVisible({ timeout: 10000 });
     await loginLink.click();
 
     // Should be on login page
@@ -87,9 +94,12 @@ test.describe('Login Flow', () => {
   test('should navigate from login to signup', async ({ page }) => {
     await page.goto('/login');
 
-    // Find and click the signup link
-    const signupLink = page.locator('a[href="/signup"]');
-    await expect(signupLink).toBeVisible();
+    // Wait for page to be fully loaded
+    await page.waitForLoadState('networkidle');
+
+    // Find and click the signup link (use data-testid for reliability)
+    const signupLink = page.locator('[data-testid="login-signup-link"]');
+    await expect(signupLink).toBeVisible({ timeout: 10000 });
     await expect(signupLink).toHaveText(/sign up/i);
 
     await signupLink.click();
@@ -119,7 +129,10 @@ test.describe('Login Flow', () => {
       // Loading state might be too fast to catch - that's okay
     }
 
-    // Eventually should redirect to dashboard
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    // Eventually should redirect to dashboard (use networkidle - load event doesn't fire)
+    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: 20000 });
+
+    // Wait for dashboard to be fully loaded
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 15000 });
   });
 });

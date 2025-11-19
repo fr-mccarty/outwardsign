@@ -7,6 +7,7 @@ interface PageContainerProps {
   children: React.ReactNode
   className?: string
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl'
+  'data-testid'?: string
 }
 
 export function PageContainer({
@@ -15,7 +16,8 @@ export function PageContainer({
   actions,
   children,
   className,
-  maxWidth = '6xl'
+  maxWidth = '6xl',
+  'data-testid': dataTestId
 }: PageContainerProps) {
   const maxWidthClasses = {
     'sm': 'max-w-sm',
@@ -31,7 +33,7 @@ export function PageContainer({
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6" data-testid={dataTestId}>
       <div className={cn(maxWidthClasses[maxWidth], "mx-auto", className)}>
         <div className="mb-4">
           {actions ? (

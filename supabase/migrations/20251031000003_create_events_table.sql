@@ -13,7 +13,7 @@ CREATE TABLE events (
   timezone TEXT NOT NULL DEFAULT 'UTC',
   is_all_day BOOLEAN NOT NULL DEFAULT false,
   location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
-  language TEXT,
+  language TEXT NOT NULL DEFAULT 'en', -- Lowercase ISO codes: en, es, la (Latin)
   event_template_id TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

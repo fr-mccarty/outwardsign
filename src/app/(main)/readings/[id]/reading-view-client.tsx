@@ -7,7 +7,7 @@ import { deleteReading, type Reading } from "@/lib/actions/readings"
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { ReadingCategoryLabel } from '@/components/reading-category-label'
-import { LANGUAGE_LABELS } from '@/lib/constants'
+import { LITURGICAL_LANGUAGE_LABELS } from '@/lib/constants'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 
 interface ReadingViewClientProps {
@@ -48,7 +48,7 @@ export function ReadingViewClient({ reading }: ReadingViewClientProps) {
       {reading.language && (
         <div>
           <span className="font-medium">Language:</span>{' '}
-          {LANGUAGE_LABELS[reading.language]?.en || reading.language}
+          {LITURGICAL_LANGUAGE_LABELS[reading.language]?.en || reading.language}
         </div>
       )}
       {reading.categories && reading.categories.length > 0 && (

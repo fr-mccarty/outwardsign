@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
-import type { Language, ReadingCategory } from '@/lib/constants'
+import type { LiturgicalLanguage, ReadingCategory } from '@/lib/constants'
 
 export interface Reading {
   id: string
@@ -14,7 +14,7 @@ export interface Reading {
   conclusion: string | null
   created_at: string
   introduction: string | null
-  language: Language | null
+  language: LiturgicalLanguage | null
   pericope: string | null
   text: string | null
   parish_id: string | null
@@ -24,14 +24,14 @@ export interface CreateReadingData {
   categories?: string[]
   conclusion?: string
   introduction?: string
-  language?: Language
+  language?: LiturgicalLanguage
   pericope: string
   text: string
 }
 
 export interface ReadingFilterParams {
   search?: string
-  language?: Language | 'all'
+  language?: LiturgicalLanguage | 'all'
   category?: ReadingCategory | 'all'
 }
 
@@ -208,7 +208,7 @@ export async function getReadingsByCategory(category: ReadingCategory): Promise<
   return data || []
 }
 
-export async function getReadingsByLanguage(language: Language): Promise<Reading[]> {
+export async function getReadingsByLanguage(language: LiturgicalLanguage): Promise<Reading[]> {
   const supabase = await createClient()
   
   const selectedParishId = await requireSelectedParish()
@@ -236,7 +236,7 @@ export interface IndividualReading {
   category: ReadingCategory
   // Add full categories array for filtering
   categories?: string[]
-  language?: Language
+  language?: LiturgicalLanguage
   translation_id: number
   sort_order: number
   introduction?: string
@@ -311,7 +311,7 @@ export async function createIndividualReading(data: CreateIndividualReadingData)
     pericope: data.pericope,
     text: data.reading_text,
     categories: [data.category],
-    language: 'ENGLISH'
+    language: 'en'
   }
 
   const reading = await createReading(readingData)

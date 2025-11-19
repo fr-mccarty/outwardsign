@@ -590,7 +590,7 @@ function HomeContent() {
 
             <div className="flex items-center space-x-3">
               {/* Login Button - visible at md+ */}
-              <Button asChild variant="ghost" className="hidden md:inline-flex">
+              <Button asChild variant="ghost" className="hidden md:inline-flex" data-testid="home-login-button">
                 <Link href="/login">{t.nav.login}</Link>
               </Button>
 

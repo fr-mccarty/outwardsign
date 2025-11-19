@@ -53,6 +53,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[DEFINITIONS.md](./docs/DEFINITIONS.md)** - Liturgical and application terminology (reader, presider, sacraments vs sacramentals, event types)
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, role permissions, component communication, performance
 - **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Coding standards including bilingual implementation, page title formatting, UI patterns, helper utilities
+- **[LANGUAGE.md](./docs/LANGUAGE.md)** - Language system documentation (liturgical language vs UI language, database schema, constants)
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
 - **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
 - **[MODULE_DEVELOPMENT.md](./docs/MODULE_DEVELOPMENT.md)** - File naming, directory structure, constants pattern, reusable components, content builders, type patterns

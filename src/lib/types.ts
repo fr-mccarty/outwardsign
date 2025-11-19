@@ -1,11 +1,11 @@
-import type { Language, ModuleStatus, EventType, ReadingCategory, MassStatus, MassIntentionStatus } from './constants'
+import type { LiturgicalLanguage, ModuleStatus, EventType, ReadingCategory, MassStatus, MassIntentionStatus } from './constants'
 
 export interface Petition {
   id: string
   parish_id: string
   title: string
   date: string
-  language: Language
+  language: LiturgicalLanguage
   text?: string // Main petition text content
   details?: string // Additional details for the petition
   template?: string // Reference to template used
@@ -29,7 +29,7 @@ export interface PetitionContext {
 export interface CreatePetitionData {
   title: string
   date: string
-  language: Language
+  language: LiturgicalLanguage
   details: string
   templateId?: string // Optional petition template ID to copy from
   template?: string // Optional template content directly
@@ -395,7 +395,7 @@ export interface Reading {
   text: string
   introduction?: string
   conclusion?: string
-  language?: Language
+  language?: LiturgicalLanguage
   categories?: string[]
   created_at: string
   updated_at: string
@@ -431,7 +431,7 @@ export interface Event {
   timezone: string
   is_all_day: boolean
   location_id?: string | null
-  language?: Language
+  language?: LiturgicalLanguage
   event_template_id?: string
   note?: string
   created_at: string

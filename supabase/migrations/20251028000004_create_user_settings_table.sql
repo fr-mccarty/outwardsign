@@ -82,7 +82,7 @@ CREATE TABLE user_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
   selected_parish_id UUID REFERENCES parishes(id) ON DELETE SET NULL,
-  language TEXT NOT NULL DEFAULT 'en',
+  language TEXT NOT NULL DEFAULT 'en', -- Lowercase ISO codes: en, es, la (Latin)
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

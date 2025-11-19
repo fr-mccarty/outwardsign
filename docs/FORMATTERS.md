@@ -110,7 +110,7 @@ This applies to all enumerated database fields with corresponding label constant
 - **Status fields** (`status`, `ACTIVE`, `PLANNING`, `COMPLETED`, etc.)
 - **Event types** (`event_type`, `WEDDING`, `FUNERAL`, etc.)
 - **Reading categories** (`category`, `WEDDING`, `FUNERAL`, etc.)
-- **Language fields** (`language`, `ENGLISH`, `SPANISH`, etc.)
+- **Language fields** (`language`, `en`, `es`, `la`, etc.)
 - **Sex fields** (`sex`, `MALE`, `FEMALE`)
 
 **Always use the helper function to get the localized label:**

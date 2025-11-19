@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BookOpen, Filter, Check, Eye } from "lucide-react"
 import type { IndividualReading } from '@/lib/actions/readings'
 import { toast } from 'sonner'
-import { READING_CATEGORIES, READING_CATEGORY_LABELS, LANGUAGE_VALUES, LANGUAGE_LABELS } from '@/lib/constants'
+import { READING_CATEGORIES, READING_CATEGORY_LABELS, LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS } from '@/lib/constants'
 
 interface ReadingPickerModalProps {
   isOpen: boolean
@@ -102,15 +102,15 @@ export function ReadingPickerModal({
 
   // Get available languages from constants
   const availableLanguages = useMemo(() => {
-    return [...LANGUAGE_VALUES]
+    return [...LITURGICAL_LANGUAGE_VALUES]
   }, [])
 
   // Get display labels for categories
   const categoryLabels = READING_CATEGORIES.map(cat => READING_CATEGORY_LABELS[cat].en)
 
   const getReadingLanguage = useCallback((reading: IndividualReading): string => {
-    // Return uppercase language value (ENGLISH, SPANISH, LATIN)
-    return (reading.language || 'ENGLISH').toUpperCase()
+    // Return lowercase ISO code (en, es, la)
+    return (reading.language || 'en').toLowerCase()
   }, [])
 
   // Pre-select categories when picker opens (only once)
@@ -259,13 +259,13 @@ export function ReadingPickerModal({
             <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
               <SelectTrigger className="w-full sm:w-1/2">
                 <SelectValue placeholder="Select language">
-                  {selectedLanguage === 'all' ? 'All Languages' : LANGUAGE_LABELS[selectedLanguage]?.en || selectedLanguage}
+                  {selectedLanguage === 'all' ? 'All Languages' : LITURGICAL_LANGUAGE_LABELS[selectedLanguage]?.en || selectedLanguage}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Languages</SelectItem>
                 {availableLanguages.map(lang => (
-                  <SelectItem key={lang} value={lang}>{LANGUAGE_LABELS[lang].en}</SelectItem>
+                  <SelectItem key={lang} value={lang}>{LITURGICAL_LANGUAGE_LABELS[lang].en}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

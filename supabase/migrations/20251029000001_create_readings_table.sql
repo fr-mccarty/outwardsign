@@ -6,7 +6,7 @@ CREATE TABLE readings (
   text TEXT NOT NULL,
   introduction TEXT,
   conclusion TEXT,
-  language TEXT DEFAULT 'ENGLISH',
+  language TEXT NOT NULL DEFAULT 'en', -- Lowercase ISO codes: en, es, la (Latin)
   categories TEXT[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
