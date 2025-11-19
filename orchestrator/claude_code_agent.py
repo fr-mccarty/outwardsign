@@ -176,8 +176,13 @@ class ClaudeCodeAgent:
 
         except Exception as e:
             print(f"✗ Failed to start agent {self.agent_id}: {e}")
+            import traceback
+            traceback.print_exc()  # Print full stack trace for debugging
             self.status = AgentStatus.FAILED
-            self.write_status()
+            try:
+                self.write_status()
+            except Exception as status_error:
+                print(f"Also failed to write status: {status_error}")
             if self.log_handle:
                 self.log_handle.close()
             return False
