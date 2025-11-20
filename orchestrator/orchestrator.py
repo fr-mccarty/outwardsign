@@ -83,7 +83,7 @@ class Orchestrator:
         # Config (will be loaded from file in future)
         self.config = {
             "claude_command": "claude -p",
-            "claude_flags": "--dangerously-skip-permissions",
+            "claude_flags": "",
             "timeout": 300,  # 5 minutes
             "approval_mode": "required",
             "n8n_notify_url": os.getenv("N8N_NOTIFY_URL", "")
