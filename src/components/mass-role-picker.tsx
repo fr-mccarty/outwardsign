@@ -207,6 +207,7 @@ export function MassRolePicker({
       selectedItem={selectedRole}
       onSelect={onSelect}
       title="Select Mass Role"
+      entityName="mass role"
       searchPlaceholder={placeholder}
       searchFields={['name', 'description']}
       getItemLabel={(massRole) => massRole.name}

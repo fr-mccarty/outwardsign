@@ -50,6 +50,7 @@ export function CorePicker<T>({
 
   // Display configuration
   title,
+  entityName,
   searchPlaceholder = 'Search...',
   searchFields,
   getItemLabel,
@@ -268,7 +269,7 @@ export function CorePicker<T>({
       handleItemSelect(resultItem)
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} item:`, error)
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} ${title.toLowerCase()}`)
+      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} ${entityName}`)
     } finally {
       setIsCreating(false)
     }

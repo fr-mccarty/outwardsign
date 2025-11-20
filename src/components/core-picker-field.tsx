@@ -36,6 +36,7 @@ export function CorePickerField<T>({
   // CorePicker props
   items,
   title,
+  entityName,
   searchPlaceholder,
   searchFields,
   getItemLabel,
@@ -106,6 +107,7 @@ export function CorePickerField<T>({
                 field.onChange(getItemId(item))
               }}
               title={title}
+              entityName={entityName}
               searchPlaceholder={searchPlaceholder}
               searchFields={searchFields}
               getItemLabel={getItemLabel}

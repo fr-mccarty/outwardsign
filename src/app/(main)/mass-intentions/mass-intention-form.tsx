@@ -16,7 +16,6 @@ import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
-import { Textarea } from "@/components/ui/textarea"
 import type { MassWithNames } from "@/lib/actions/masses"
 
 // Zod validation schema
@@ -217,17 +216,33 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           />
       </FormSectionCard>
 
-      {/* Notes */}
+      {/* Template and Notes */}
       <FormSectionCard
-        title="Notes"
-        description="Additional information or special requests"
+        title="Template and Notes"
+        description="Liturgy template selection and additional information"
       >
-        <Textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Add any additional notes or special requests..."
-            rows={3}
-          />
+        <FormField
+          id="mass_intention_template_id"
+          label="Liturgy Template"
+          inputType="select"
+          value={massIntentionTemplateId}
+          onChange={(value) => setMassIntentionTemplateId(value as MassIntentionTemplate)}
+          options={MASS_INTENTION_TEMPLATE_VALUES.map((templateId) => ({
+            value: templateId,
+            label: MASS_INTENTION_TEMPLATE_LABELS[templateId].en,
+          }))}
+        />
+
+        <FormField
+          id="note"
+          label="Notes (Optional)"
+          description="Additional information or special requests"
+          inputType="textarea"
+          value={note}
+          onChange={setNote}
+          placeholder="Add any additional notes or special requests..."
+          rows={3}
+        />
       </FormSectionCard>
 
       {/* Form Actions */}

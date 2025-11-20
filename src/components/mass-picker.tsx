@@ -367,6 +367,7 @@ export function MassPicker({
         selectedItem={selectedMass}
         onSelect={onSelect}
         title="Select Mass"
+        entityName="mass"
         searchPlaceholder={placeholder}
         searchFields={['presider', 'homilist', 'status']}
         getItemLabel={getMassDisplayName}

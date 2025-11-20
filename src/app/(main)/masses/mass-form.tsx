@@ -635,14 +635,27 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           />
       </FormSectionCard>
 
-      {/* Notes */}
+      {/* Liturgy Template and Notes */}
       <FormSectionCard
-        title="Notes"
-        description="Internal notes and reminders (not included in printed liturgy)"
+        title="Template and Notes"
+        description="Liturgy template selection and internal notes"
       >
         <FormField
+          id="mass_template_id"
+          label="Liturgy Template"
+          inputType="select"
+          value={massTemplateId}
+          onChange={(value) => setMassTemplateId(value as MassTemplate)}
+          options={MASS_TEMPLATE_VALUES.map((templateId) => ({
+            value: templateId,
+            label: MASS_TEMPLATE_LABELS[templateId].en,
+          }))}
+        />
+
+        <FormField
             id="note"
-            label="Notes"
+            label="Notes (Optional)"
+            description="Internal notes and reminders (not included in printed liturgy)"
             inputType="textarea"
             value={note}
             onChange={setNote}

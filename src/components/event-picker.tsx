@@ -163,8 +163,10 @@ export function EventPicker({
       },
     ]
 
-    // Add location validation if visible and required
-    if (isFieldVisible('location') && isFieldRequired('location')) {
+    // Add location validation if required
+    // Note: We only need to validate if required, not if visible
+    // The EventFormFields component handles visibility separately
+    if (isFieldRequired('location')) {
       fields.push({
         key: 'location_id',
         label: 'Location',
@@ -277,6 +279,7 @@ export function EventPicker({
       selectedItem={currentSelectedEvent}
       onSelect={onSelect}
       title="Select Event"
+      entityName="event"
       testId="event-picker-dialog"
       searchPlaceholder={placeholder}
       searchFields={['name', 'event_type', 'start_date']}

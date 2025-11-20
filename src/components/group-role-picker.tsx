@@ -226,6 +226,7 @@ export function GroupRolePicker({
       selectedItem={selectedRole}
       onSelect={onSelect}
       title="Select Group Role"
+      entityName="group role"
       searchPlaceholder={placeholder}
       searchFields={['name', 'description']}
       getItemLabel={(role) => role.name}

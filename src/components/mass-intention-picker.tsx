@@ -366,6 +366,7 @@ export function MassIntentionPicker({
         selectedItem={selectedMassIntention}
         onSelect={onSelect}
         title="Select Mass Intention"
+        entityName="mass intention"
         searchPlaceholder={placeholder}
         searchFields={['mass_offered_for', 'requested_by', 'status']}
         getItemLabel={getMassIntentionDisplayName}

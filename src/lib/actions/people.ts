@@ -33,12 +33,13 @@ function buildPeopleSearchConditions(search: string): string[] {
 
   // 3. Full-name search - treat periods, dashes, commas as spaces
   // This handles searches like "John.Doe" or "John-Doe" by converting them to "John Doe"
+  // Also strips periods from database fields to match "fr. josh mccarty" with "fr. josh."
   const cleanSearch = normalized.replace(/[.\-,]/g, ' ').replace(/\s+/g, ' ').trim()
   if (cleanSearch !== normalized && cleanSearch.length > 0) {
-    // Search in concatenated first_name + space + last_name
-    // PostgreSQL concat() function combines fields
-    // This matches "John Doe" in the combined "John Doe" field
-    searchConditions.push(`concat(first_name,' ',last_name).ilike.%${cleanSearch}%`)
+    // Search in concatenated first_name + space + last_name, stripping periods from both
+    // PostgreSQL replace() function removes periods from database fields
+    // This matches "fr josh mccarty" search with "fr. josh. mccarty" in database
+    searchConditions.push(`replace(replace(concat(first_name,' ',last_name),'.',''),'-','').ilike.%${cleanSearch.replace(/[\s]+/g, '%')}%`)
   }
 
   // 4. Handle searches with separators (spaces, periods, dashes, commas)

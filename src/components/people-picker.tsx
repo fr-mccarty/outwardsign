@@ -289,6 +289,7 @@ export function PeoplePicker({
       selectedItem={selectedPerson}
       onSelect={onSelect}
       title="Select Person"
+      entityName="person"
       searchPlaceholder={placeholder}
       searchFields={['first_name', 'last_name', 'email', 'phone_number']}
       getItemLabel={(person) => getPersonDisplayName(person)}

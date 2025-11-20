@@ -65,6 +65,8 @@ export interface CorePickerProps<T> {
   // Display configuration
   /** Modal title */
   title: string
+  /** Entity name for error messages (e.g., 'person', 'location', 'event') */
+  entityName: string
   /** Search input placeholder */
   searchPlaceholder?: string
   /** Fields to include in search (array of property keys) */
