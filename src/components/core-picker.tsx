@@ -18,6 +18,7 @@ import { Search, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { CorePickerProps, PickerFieldConfig } from '@/types/core-picker'
 import { cn } from '@/lib/utils'
+import { capitalizeFirstLetter } from '@/lib/utils/formatters'
 
 /**
  * STABLE DEFAULTS
@@ -255,11 +256,11 @@ export function CorePicker<T>({
       if (isEditMode && entityIdBeingEdited && onUpdateSubmit) {
         // Update existing item
         resultItem = await onUpdateSubmit(entityIdBeingEdited, createFormData)
-        toast.success(`${title} updated successfully`)
+        toast.success(`${capitalizeFirstLetter(entityName)} updated successfully`)
       } else if (onCreateSubmit) {
         // Create new item
         resultItem = await onCreateSubmit(createFormData)
-        toast.success(`${title} created successfully`)
+        toast.success(`${capitalizeFirstLetter(entityName)} created successfully`)
       } else {
         return
       }

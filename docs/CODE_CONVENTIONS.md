@@ -8,6 +8,7 @@ This document provides comprehensive coding standards and conventions for Outwar
 
 - [General Conventions](#general-conventions)
   - [Code Style](#code-style)
+  - [🔴 No Inline/Bespoke Functions (CRITICAL)](#-no-inlinebespoke-functions-critical)
   - [Import Order](#import-order)
   - [TypeScript](#typescript)
   - [🔴 Data Model Interfaces vs. Filter Interfaces](#-data-model-interfaces-vs-filter-interfaces)
@@ -33,6 +34,47 @@ This document provides comprehensive coding standards and conventions for Outwar
 - **Quotes:** Single quotes for strings unless JSON requires double quotes
 - **Semicolons:** Use semicolons at the end of statements
 - **Trailing commas:** Use trailing commas in multi-line objects and arrays
+
+### 🔴 No Inline/Bespoke Functions (CRITICAL)
+
+**NEVER create inline or bespoke utility functions within components, actions, or other files.**
+
+All utility functions MUST be:
+1. Defined in `/src/lib/utils/formatters.ts` (for formatting functions)
+2. Defined in `/src/lib/utils/*.ts` (for other utility functions)
+3. Imported at the top of the file where they're used
+
+**❌ BAD - Inline function creation:**
+```typescript
+// DON'T DO THIS
+function MyComponent({ entityName }) {
+  const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+  return <div>{capitalize(entityName)}</div>
+}
+```
+
+**✅ GOOD - Use existing helper:**
+```typescript
+// DO THIS
+import { capitalizeFirstLetter } from '@/lib/utils/formatters'
+
+function MyComponent({ entityName }) {
+  return <div>{capitalizeFirstLetter(entityName)}</div>
+}
+```
+
+**Why this matters:**
+- **Reusability:** Functions can be used across the entire application
+- **Consistency:** Same behavior everywhere, easier to test
+- **Performance:** No function recreation on each render
+- **Maintainability:** Single source of truth for utility logic
+- **Discoverability:** Developers know where to find utility functions
+
+**When you need a new utility function:**
+1. Check if it already exists in `formatters.ts` or other utility files
+2. If not, add it to the appropriate utility file
+3. Document it with JSDoc comments and examples
+4. Import and use it
 
 ### Import Order
 
