@@ -625,17 +625,7 @@ function HomeContent() {
             </div>
 
             <div className="flex items-center space-x-3">
-              {/* Login Button - visible at md+ */}
-              <Button asChild variant="ghost" className="hidden md:inline-flex" data-testid="home-login-button">
-                <Link href="/login">{t.nav.login}</Link>
-              </Button>
-
-              {/* Get Started Button - visible at md+ */}
-              <Button asChild className="hidden md:inline-flex">
-                <Link href="/signup">{t.nav.getStarted}</Link>
-              </Button>
-
-              {/* Hamburger Menu (contains nav links, theme, language) - Always on the right */}
+              {/* Hamburger Menu (contains nav links, theme, language, login, get started) - Always on the right */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -730,12 +720,12 @@ function HomeContent() {
               />
             </div>
 
-            {/* Action Buttons - Only visible on mobile (< md) */}
-            <div className="md:hidden flex flex-col gap-6">
+            {/* Action Buttons - Always visible */}
+            <div className="flex flex-col gap-6">
               <Separator />
 
               <div className="flex flex-col gap-3">
-                <Button asChild variant="outline" className="w-full">
+                <Button asChild variant="outline" className="w-full" data-testid="home-login-button">
                   <Link href="/login">{t.nav.login}</Link>
                 </Button>
                 <Button asChild className="w-full">
