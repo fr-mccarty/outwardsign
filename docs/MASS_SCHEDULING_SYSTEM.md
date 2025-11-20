@@ -1,945 +1,442 @@
-# Mass Scheduling System - Data Structure
+# Mass Scheduling System
 
 ## Overview
 
-The Mass Scheduling System is designed to manage recurring mass schedules and assign people to liturgical roles for Catholic parishes. The system handles:
+The Mass Scheduling system in Outward Sign provides parishes with tools to schedule recurring Masses, define role requirements for liturgical ministers, and assign people to serve in various capacities. This system is designed to handle the complexity of parish Mass schedules, including multiple Masses per week, varying role requirements, and minister availability.
 
-- **Recurring Mass Schedules** - Define mass times for weekends, daily masses, holidays, and special occasions
-- **Role Templates** - Define which roles are needed for different types of masses
-- **Individual Mass Instances** - Track specific masses tied to calendar dates
-- **Role Assignments** - Assign people to specific roles for specific masses
-- **Availability & Preferences** - Track when people are available and their role preferences
-- **Blackout Dates** - Track when people are unavailable (vacations, travel, etc.)
+## Key Concepts
 
----
+### Mass Scheduling Workflow
 
-## Core Concepts
+1. **Define Mass Roles** - Create roles that ministers can fill (e.g., Usher, Extraordinary Minister of Holy Communion, Lector)
+2. **Create Role Templates** - Define standard role requirements for different types of Masses (e.g., Sunday 10:00am needs 3 ushers, 4 EEMs, 2 lectors)
+3. **Create Time Templates** - Define when Masses occur (e.g., Saturday 5:00pm, Sunday 8:00am, Sunday 10:00am)
+4. **Configure Minister Availability** - Track which Masses each minister is available to serve at
+5. **Schedule Masses** - Create individual Mass events with specific dates and times
+6. **Assign Ministers** - Assign specific people to fill roles at each Mass
 
-### Three-Tier Structure
+### Terminology
 
-The system operates on a three-tier architecture:
+- **Mass** - A single liturgical celebration on a specific date and time
+- **Mass Role** - A type of ministerial service (e.g., Usher, Extraordinary Minister of Holy Communion, Lector, Altar Server)
+- **Mass Role Template** - A reusable configuration defining role requirements for a type of Mass (e.g., "Sunday 10:00am" needs 3 ushers, 4 EEMs)
+- **Mass Role Template Item** - A specific role requirement within a template (e.g., "3 ushers" in the Sunday 10:00am template)
+- **Mass Time Template** - A collection of recurring Mass times for a parish
+- **Mass Time Template Item** - A specific time slot within a template (e.g., Sunday 10:00am, Saturday 5:00pm vigil)
+- **Mass Assignment** - The assignment of a specific person to a specific role at a specific Mass
+- **Day Type** - Whether a Mass occurs on the actual day (`IS_DAY`) or the day before (`DAY_BEFORE`, e.g., Saturday vigil for Sunday)
 
-1. **Templates** - Reusable definitions (mass schedules, role requirements)
-2. **Instances** - Specific occurrences (individual masses on specific dates)
-3. **Assignments** - People assigned to roles for specific mass instances
+## Database Schema
 
-### Mass vs. Event Relationship
+### Core Tables
 
-- **Event** - A calendar entry (date, time, location)
-- **Mass** - A liturgical celebration that can be linked to an Event
-- A Mass can exist independently OR be linked to an Event for calendar integration
+#### `masses`
+Individual Mass events scheduled on specific dates.
 
----
+**Key Fields:**
+- `parish_id` - Parish this Mass belongs to
+- `event_id` - Reference to the calendar event (for scheduling and ICS export)
+- `mass_role_template_item_id` - Which role template this Mass uses (nullable)
+- `global_liturgical_event_id` - Reference to the liturgical calendar event (e.g., 3rd Sunday of Advent) (nullable)
+- `mass_time_template_item_id` - Which time template item this Mass corresponds to (nullable)
+- `name` - Name of the Mass (e.g., "Sunday Mass - 3rd Sunday of Advent")
+- `description` - Additional details about this Mass
+- `note` - Internal notes for staff
 
-## Tables & Relationships
-
-### 1. Global Liturgical Events (Read-Only Reference Data)
-
-**Table:** `global_liturgical_events`
-
-Imported liturgical calendar data from [John Romano D'Orazio's API](https://litcal.johnromanodorazio.com). This is read-only global data shared across all parishes.
-
-```sql
-CREATE TABLE global_liturgical_events (
-  id UUID PRIMARY KEY,
-  event_key TEXT NOT NULL,           -- 'Advent1', 'StFrancisXavier', etc.
-  date DATE NOT NULL,
-  year INTEGER NOT NULL,
-  locale TEXT NOT NULL DEFAULT 'en_US',
-  event_data JSONB NOT NULL,         -- Full liturgical event details
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ,
-  UNIQUE(event_key, date, locale)
-);
-```
-
-**Purpose:** Provides liturgical context for masses (feast days, solemnities, ordinary time, etc.)
-
-**Key Points:**
-- Global data (no `parish_id`)
-- Read-only for parishes
-- Used for reference, not scheduling
+**Relationships:**
+- Belongs to Parish
+- Belongs to Event (calendar integration)
+- Belongs to Mass Role Template Item (defines role requirements)
+- Belongs to Global Liturgical Event (liturgical calendar)
+- Belongs to Mass Time Template Item (defines when it occurs)
+- Has many Mass Assignments (people assigned to roles)
 
 ---
 
-### 2. Mass Types (Parish-Customizable Category Tags)
+#### `mass_types`
+Categories or types of Masses to help organize different styles of celebrations.
 
-**Table:** `mass_types`
+**Key Fields:**
+- `parish_id` - Parish this Mass type belongs to
+- `name` - Type name (e.g., "Feast Day", "Children's Mass", "Sunday at 10")
+- `description` - Details about this type of Mass
 
-Define mass category tags that parishes can customize. These are flexible labels that can be applied to masses in any combination.
+**Relationships:**
+- Belongs to Parish
 
-```sql
-CREATE TABLE mass_types (
-  id UUID PRIMARY KEY,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  key TEXT NOT NULL,                 -- 'WEEKEND', 'DAILY', 'HOLIDAY', 'SPECIAL', 'YOUTH', 'BILINGUAL', or custom
-  label_en TEXT NOT NULL,
-  label_es TEXT NOT NULL,
-  description TEXT,
-  color TEXT,                        -- UI color (hex)
-  display_order INTEGER DEFAULT 0,
-  active BOOLEAN DEFAULT true,
-  is_system BOOLEAN DEFAULT false,   -- System types cannot be deleted
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ,
-  UNIQUE(parish_id, key)
-);
-```
-
-**Purpose:** Provide flexible category tags for organizing, filtering, and identifying masses
-
-**Key Points:**
-- Each parish has default system types (WEEKEND, DAILY, HOLIDAY, SPECIAL)
-- Parishes can add custom types (e.g., 'YOUTH_MASS', 'LATIN_MASS', 'BILINGUAL', 'FAMILY_MASS')
-- System types cannot be deleted
-- Bilingual labels (English/Spanish)
-- **Multiple tags can be applied to a single mass** (stored as JSONB array on masses and templates)
-
-**Example Tags:**
-- "Weekend" + "Youth Mass" → Sunday 10:00 AM youth-focused liturgy
-- "Daily" + "Bilingual" → Weekday mass in English and Spanish
-- "Holiday" + "Special" → Christmas or Easter celebration
+**Usage:**
+Mass types are optional organizational tools. They can be used to categorize Masses (e.g., "Children's Mass" might have different music or liturgical practices) but are not required for the core scheduling functionality.
 
 ---
 
-### 3. Mass Times (Recurring Schedule Templates)
+#### `mass_times_templates`
+A collection of recurring Mass times for a parish. Each parish might have different active templates for different seasons or time periods.
 
-**Table:** `mass_times`
+**Key Fields:**
+- `parish_id` - Parish this template belongs to
+- `is_active` - Whether this template is currently in use
+- `name` - Template name (e.g., "Regular Schedule", "Summer Schedule", "Advent Schedule")
+- `description` - Details about when this template applies
 
-Define recurring mass schedules (e.g., "Sunday 9:00 AM", "Saturday 5:00 PM vigil"). This is a **reference table only** - it does not auto-create mass records.
+**Relationships:**
+- Belongs to Parish
+- Has many Mass Time Template Items
 
-```sql
-CREATE TABLE mass_times (
-  id UUID PRIMARY KEY,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
+**Usage:**
+A parish might have multiple time templates for different seasons:
+- "Regular Schedule" (active most of the year)
+- "Summer Schedule" (active June-August with reduced Masses)
+- "Holy Week Schedule" (active during Holy Week with special times)
 
-  -- Schedule items: [{"day": "SUNDAY", "time": "09:00"}, {"day": "SATURDAY", "time": "17:00"}]
-  schedule_items JSONB NOT NULL,
-
-  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
-  language TEXT DEFAULT 'en',        -- en, es, la (Latin)
-  special_designation TEXT,          -- 'Youth Mass', 'Family Mass', 'Traditional Latin Mass'
-
-  effective_start_date DATE,         -- When schedule begins (null = always)
-  effective_end_date DATE,           -- When schedule ends (null = no end)
-
-  active BOOLEAN DEFAULT true,
-  notes TEXT,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
-);
-```
-
-**Purpose:** Define recurring mass schedules for internal reference (does NOT auto-create mass records)
-
-**Key Points:**
-- `schedule_items` is a JSONB array: `[{"day": "SUNDAY", "time": "09:00"}]`
-- Days: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
-- Times: 24-hour format (HH:MM)
-- Can have effective date ranges for seasonal schedules
-- Internal reference only - does not auto-create individual mass records
+Only one template should typically be active at a time, though the system allows for flexibility.
 
 ---
 
-### 4. Mass Role Definitions
+#### `mass_times_template_items`
+Individual time slots within a Mass Time Template.
 
-**Table:** `mass_roles`
+**Key Fields:**
+- `mass_times_template_id` - Which template this item belongs to
+- `time` - The time of day for this Mass (e.g., "10:00:00")
+- `day_type` - Enum: `IS_DAY` or `DAY_BEFORE`
+  - `IS_DAY` - Mass occurs on the actual day (e.g., Sunday 10:00am)
+  - `DAY_BEFORE` - Mass occurs the day before (e.g., Saturday 5:00pm vigil for Sunday)
 
-Define the liturgical roles available at a parish (Lector, Usher, Server, Eucharistic Minister, etc.).
-
-```sql
-CREATE TABLE mass_roles (
-  id UUID PRIMARY KEY,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  description TEXT,
-  note TEXT,
-  is_active BOOLEAN DEFAULT true,
-  display_order INTEGER,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ,
-  UNIQUE(parish_id, name)
-);
-```
-
-**Purpose:** Define available liturgical roles per parish
-
-**Key Points:**
-- Parish-specific (different parishes may have different roles)
-- Examples: "Lector", "Usher", "Server", "Eucharistic Minister", "Cantor", "Sacristan"
-- Can be ordered for consistent display
-
----
-
-### 5. Mass Templates
-
-**Table:** `mass_templates`
-
-**Container for grouping related mass definitions.** This is the top-level template that contains multiple mass template items.
-
-```sql
-CREATE TABLE mass_templates (
-  id UUID PRIMARY KEY,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,                -- 'Weekend Masses', 'Daily Mass Schedule', 'Holiday Masses'
-  description TEXT,
-  note TEXT,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
-);
-```
-
-**Purpose:** Group related mass definitions together for organization and bulk operations
-
-**Key Points:**
-- Container only - does not define specific mass details
-- Each template contains multiple `mass_template_items` which define actual masses
-- Examples: "Weekend Masses" (contains Sunday 9am, Sunday 11am, Saturday 5pm)
-- Used for bulk mass creation (e.g., "Create all weekend masses for next month")
-
-**Example Templates:**
-- "Weekend Masses" → Contains multiple Sunday/Saturday mass definitions
-- "Daily Mass Schedule" → Contains weekday mass definitions
-- "Holiday Masses" → Contains Christmas, Easter, etc.
-
----
-
-### 6. Mass Template Items
-
-**Table:** `mass_template_items`
-
-**Defines individual masses that will be created from the template.** Each template item becomes a `masses` record when used.
-
-```sql
-CREATE TABLE mass_template_items (
-  id UUID PRIMARY KEY,
-  mass_template_id UUID NOT NULL REFERENCES mass_templates(id) ON DELETE CASCADE,
-  day TEXT NOT NULL,                 -- 'SUNDAY', 'MONDAY', etc.
-  time TIME NOT NULL,                -- 09:00, 17:00, etc.
-  mass_type_ids JSONB DEFAULT '[]'::jsonb,  -- Array of mass_type UUIDs
-  language TEXT DEFAULT 'en',        -- en, es, la
-  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
-  mass_role_template_id UUID REFERENCES mass_role_templates(id) ON DELETE SET NULL,
-  position INTEGER DEFAULT 0,
-  special_designation TEXT,          -- 'Youth Mass', 'Family Mass', etc.
-  notes TEXT,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
-);
-```
-
-**Purpose:** Define specific mass instances that will be created, including day, time, language, tags, and role requirements
-
-**Key Points:**
-- **Each template item represents ONE mass definition** that will become a `masses` record
-- `day` and `time` specify when this mass occurs (day: SUNDAY/MONDAY/etc, time: HH:MM)
-- `mass_type_ids` define the category tags (e.g., ["uuid1", "uuid2"])
-- `mass_role_template_id` links to role requirements (how many Lectors, Ushers, etc.)
-- `language` specifies the liturgical language
-- Multiple items can share the same role template but have different times/languages/tags
-
-**Example Template Items:**
-```
-mass_template: "Weekend Masses"
-  ├─ Item 1: day=SUNDAY, time=09:00, language=en, mass_type_ids=["weekend-uuid"], role_template="Standard Sunday"
-  ├─ Item 2: day=SUNDAY, time=11:00, language=es, mass_type_ids=["weekend-uuid","bilingual-uuid"], role_template="Standard Sunday"
-  └─ Item 3: day=SATURDAY, time=17:00, language=en, mass_type_ids=["weekend-uuid","vigil-uuid"], role_template="Standard Sunday"
-```
-
----
-
-### 7. Mass Role Templates
-
-**Table:** `mass_role_templates`
-
-**Reusable role requirement sets.** Defines which roles and how many of each are needed for a type of mass.
-
-```sql
-CREATE TABLE mass_role_templates (
-  id UUID PRIMARY KEY,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,                -- 'Standard Sunday Roles', 'Simple Daily Mass', 'Funeral Mass Roles'
-  description TEXT,
-  note TEXT,
-  parameters JSONB,                  -- Future use for template-level settings
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
-);
-```
-
-**Purpose:** Define reusable sets of role requirements
-
-**Key Points:**
-- Defines role counts (e.g., "2 Lectors, 4 Eucharistic Ministers, 3 Ushers")
-- Referenced by `mass_template_items` to specify which roles are needed
-- Can be reused across multiple mass template items
-
-**Example Templates:**
-- "Standard Sunday Roles" → needs 2 Lectors, 4 Eucharistic Ministers, 3 Ushers
-- "Simple Daily Mass" → needs 1 Lector, 2 Eucharistic Ministers
-- "Funeral Mass Roles" → needs 1 Lector, 2 Eucharistic Ministers, 2 Ushers
-
----
-
-### 8. Mass Role Template Items
-
-**Table:** `mass_role_template_items`
-
-Individual role requirements within a role template (e.g., "3 Ushers", "2 Lectors").
-
-```sql
-CREATE TABLE mass_role_template_items (
-  id UUID PRIMARY KEY,
-  mass_role_template_id UUID NOT NULL REFERENCES mass_role_templates(id) ON DELETE CASCADE,
-  mass_role_id UUID NOT NULL REFERENCES mass_roles(id) ON DELETE RESTRICT,
-  count INTEGER NOT NULL DEFAULT 1 CHECK (count > 0),
-  position INTEGER NOT NULL CHECK (position >= 0),
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ,
-  UNIQUE(mass_role_template_id, mass_role_id),  -- Each role appears once per template
-  UNIQUE(mass_role_template_id, position)        -- Each position is unique
-);
-```
-
-**Purpose:** Define how many of each role are needed for a role template
-
-**Key Points:**
-- `count` = number of people needed for this role (e.g., 3 ushers)
-- `position` = ordering for display (drag-and-drop sorting)
-- Each role template can have each role only once
+**Relationships:**
+- Belongs to Mass Times Template
+- Referenced by Persons (availability tracking)
 
 **Example:**
-```
-Role Template: "Standard Sunday Roles"
-  - Item 1: mass_role_id = "Lector", count = 2, position = 0
-  - Item 2: mass_role_id = "Usher", count = 3, position = 1
-  - Item 3: mass_role_id = "Eucharistic Minister", count = 4, position = 2
-```
+A typical Sunday Mass schedule might include:
+- Saturday 5:00pm (day_type: `DAY_BEFORE`) - Vigil Mass
+- Sunday 8:00am (day_type: `IS_DAY`)
+- Sunday 10:00am (day_type: `IS_DAY`)
+- Sunday 12:00pm (day_type: `IS_DAY`)
 
 ---
 
-### 9. Masses (Individual Mass Instances)
+#### `mass_roles_templates`
+Templates defining the ministerial role requirements for different types of Masses.
 
-**Table:** `masses`
+**Key Fields:**
+- `parish_id` - Parish this template belongs to
+- `is_active` - Whether this template is currently in use
+- `name` - Template name (e.g., "Sunday @ 10:00am", "Weekday Mass", "Children's Mass")
+- `description` - Details about this template (e.g., "Sunday @ 10:00 - High attendance, full choir")
 
-Individual mass records for specific dates. **Created from `mass_template_items`.**
+**Relationships:**
+- Belongs to Parish
+- Has many Mass Role Template Items
 
-```sql
-CREATE TABLE masses (
-  id UUID PRIMARY KEY,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  mass_type_ids JSONB DEFAULT '[]'::jsonb,  -- Array of mass_type UUIDs (inherited from template item, editable)
-  mass_template_item_id UUID REFERENCES mass_template_items(id) ON DELETE SET NULL,
-  event_id UUID REFERENCES events(id) ON DELETE SET NULL,
-  presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  liturgical_event_id UUID REFERENCES global_liturgical_events(id) ON DELETE SET NULL,
-  status TEXT DEFAULT 'PLANNING',
-  announcements TEXT,
-  note TEXT,
-  petitions TEXT,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
-);
-```
-
-**Purpose:** Represent a specific mass on a specific date
-
-**Key Points:**
-- **Created from a `mass_template_item`** - inherits day, time, language, tags, and role requirements
-- Can be linked to an `Event` (for calendar integration)
-- Can reference a `global_liturgical_events` entry (for liturgical context)
-- `mass_template_item_id` links back to the template item that created this mass
-- Has presider and homilist (typically priests/deacons)
-- Status field for workflow management (PLANNING, CONFIRMED, COMPLETED, etc.)
-- **`mass_type_ids`** are automatically copied from the template item when the mass is created, but can be edited afterward
-
-**Date/Time Storage:**
-- Mass date/time comes from the linked `Event` (if `event_id` is set)
-- If no event is linked, the mass exists independently without calendar integration
-
-**Mass Creation Workflow:**
-1. Template item defines: `day=SUNDAY, time=09:00, mass_type_ids=["WEEKEND", "YOUTH_MASS"], language=en, role_template_id=X`
-2. When mass is created from template item, all attributes are copied:
-   - `mass.mass_type_ids = ["WEEKEND", "YOUTH_MASS"]`
-   - `mass.mass_template_item_id = [template item id]`
-   - Event created with Sunday 9:00 AM
-   - Role instances created based on role template
-3. User can edit tags, presider, notes, etc. on individual mass after creation
+**Usage:**
+Different Masses might have different ministerial needs:
+- **Sunday 10:00am** (high attendance): 4 ushers, 6 EEMs, 2 lectors, 4 altar servers
+- **Weekday Mass** (low attendance): 1 usher, 2 EEMs, 1 lector, 1 altar server
+- **Children's Mass**: 2 ushers, 4 EEMs, 1 lector, 6 altar servers
 
 ---
 
-### 10. Mass Role Instances (Actual Role Assignments)
+#### `mass_roles_template_items`
+Individual role requirements within a Mass Role Template.
 
-**Table:** `mass_role_instances`
+**Key Fields:**
+- `mass_roles_template_id` - Which template this item belongs to
+- `mass_role_id` - Which role this requirement is for (e.g., Usher, EEM)
+- `count` - How many ministers are needed for this role
+- `note` - Additional notes about this requirement
 
-Actual assignments of people to roles for specific masses.
+**Relationships:**
+- Belongs to Mass Role Template
+- Belongs to Mass Role
+- Has many Mass Assignments (people assigned to fulfill this requirement)
 
-```sql
-CREATE TABLE mass_role_instances (
-  id UUID PRIMARY KEY,
-  mass_id UUID NOT NULL REFERENCES masses(id) ON DELETE CASCADE,
-  person_id UUID REFERENCES people(id) ON DELETE CASCADE,  -- NULL = unassigned
-  mass_role_template_item_id UUID NOT NULL REFERENCES mass_role_template_items(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
-);
-```
-
-**Purpose:** Assign specific people to specific roles for specific masses
-
-**Key Points:**
-- `person_id` can be NULL (unassigned slot awaiting assignment)
-- Linked to `mass_role_template_item_id` to inherit role definition (which role, position, count)
-- When a mass is created from a template item, role instances are created automatically (unassigned)
-
-**Example Workflow:**
-1. Create a mass from `mass_template_item` (which references a `mass_role_template`)
-2. System auto-creates role instances based on the role template:
-   - Instance 1: mass_id, person_id = NULL, mass_role_template_item_id = "Lector (count=2, position=0)"
-   - Instance 2: mass_id, person_id = NULL, mass_role_template_item_id = "Lector (count=2, position=0)"
-   - Instance 3: mass_id, person_id = NULL, mass_role_template_item_id = "Usher (count=3, position=1)"
-   - (and so on...)
-3. Staff assigns people: Update `person_id` for each instance
+**Example:**
+The "Sunday @ 10:00am" template might have these items:
+- Usher (count: 4)
+- Extraordinary Minister of Holy Communion (count: 6)
+- Lector (count: 2, note: "1st and 2nd readings")
+- Altar Server (count: 4)
 
 ---
 
-### 11. Mass Role Preferences (Person Availability)
+#### `mass_roles`
+Types of ministerial roles that can be assigned at Masses.
 
-**Table:** `mass_role_preferences`
+**Key Fields:**
+- `parish_id` - Parish this role belongs to
+- `name` - Role name (e.g., "Usher", "Extraordinary Minister of Holy Communion", "Lector", "Altar Server")
+- `description` - Details about this role and its responsibilities
 
-Track when people are available and their preferences for serving in mass roles.
+**Relationships:**
+- Belongs to Parish
+- Has many Mass Role Template Items
+- Has many Mass Assignments
 
-```sql
-CREATE TABLE mass_role_preferences (
-  id UUID PRIMARY KEY,
-  person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
-  parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  mass_role_id UUID REFERENCES mass_roles(id) ON DELETE CASCADE,
-
-  -- Day/Time preferences
-  preferred_days JSONB,              -- ["SUNDAY", "SATURDAY"]
-  available_days JSONB,              -- ["MONDAY", "WEDNESDAY"]
-  unavailable_days JSONB,            -- ["FRIDAY"]
-  preferred_times JSONB,             -- ["09:00-12:00", "17:00-19:00"]
-  unavailable_times JSONB,           -- ["06:00-08:00"]
-
-  -- Frequency preferences
-  desired_frequency TEXT,            -- 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'OCCASIONAL'
-  max_per_month INTEGER,
-
-  -- Language capabilities
-  languages JSONB,                   -- [{"language": "en", "level": "fluent"}, {"language": "es", "level": "intermediate"}]
-
-  notes TEXT,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ,
-  UNIQUE(person_id, parish_id, mass_role_id)
-);
-```
-
-**Purpose:** Store ongoing availability preferences for scheduling
-
-**Key Points:**
-- One preference record per person per role per parish
-- Stores general availability patterns (not specific dates)
-- Used for auto-assignment and manual scheduling
-- Language capabilities important for multilingual parishes
-
-**Preference Types:**
-- `preferred_days` - Days person prefers to serve
-- `available_days` - Days person is willing to serve
-- `unavailable_days` - Days person cannot serve
-- `preferred_times` / `unavailable_times` - Time ranges
-- `desired_frequency` - How often they want to serve
+**Common Roles:**
+- **Usher** - Greets parishioners, takes up collection, helps with seating
+- **Extraordinary Minister of Holy Communion (EEM)** - Assists with distribution of Holy Communion
+- **Lector/Reader** - Proclaims the Scripture readings
+- **Altar Server** - Assists the priest during Mass
+- **Cantor** - Leads the singing
+- **Music Minister** - Plays instruments or sings
+- **Sacristan** - Prepares the sanctuary and sacred vessels
 
 ---
 
-### 12. Person Blackout Dates (Temporary Unavailability)
+#### `mass_assignment`
+The assignment of a specific person to a specific role at a specific Mass.
 
-**Table:** `person_blackout_dates`
+**Key Fields:**
+- `person_id` - Who is assigned (nullable - allows for unfilled assignments)
+- `mass_role_template_item_id` - Which role requirement this fulfills
+- `mass_id` - Which Mass this is for (required)
 
-Track specific date ranges when people are unavailable for any ministry activities.
+**Relationships:**
+- Belongs to Person (nullable)
+- Belongs to Mass Role Template Item
+- Belongs to Mass
 
-```sql
-CREATE TABLE person_blackout_dates (
-  id UUID PRIMARY KEY,
-  person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
-  start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
-  reason TEXT,                       -- 'Vacation', 'Out of town', 'Personal commitment'
-  created_at TIMESTAMPTZ,
-  CHECK (end_date >= start_date)
-);
-```
-
-**Purpose:** Track temporary unavailability (vacations, travel, personal commitments)
-
-**Key Points:**
-- Applies to ALL roles and activities (person-level, not role-level)
-- Date range is inclusive (start_date through end_date)
-- Optional reason for tracking purposes
-- Overrides general preferences during blackout period
-
-**Design Decision: Person-Level vs. Role-Level**
-- **Chosen: Person-Level** - Blackout dates are attached to the person, not to specific roles
-- **Rationale:** When someone is on vacation or traveling, they're unavailable for ALL roles, not just one role
-- **Simplicity:** Easier to manage one blackout entry per vacation instead of multiple entries per role
-- **UI/UX:** Simpler for users to say "I'm unavailable from X to Y" rather than specifying per-role
-- **Table Name:** Named `person_blackout_dates` (not `mass_role_blackout_dates`) to reflect that unavailability applies to the entire person
-
----
-
-## Data Flow Examples
-
-### Example 1: Creating a Weekend Mass Schedule
-
-1. **Create Mass Type Tags:**
-   ```
-   mass_type_1: id=uuid1, key='WEEKEND', label_en='Weekend', label_es='Fin de Semana'
-   mass_type_2: id=uuid2, key='YOUTH_MASS', label_en='Youth Mass', label_es='Misa Juvenil'
-   ```
-
-2. **Create Mass Role Template:**
-   ```
-   mass_role_template: id=roletemplate1, name='Standard Sunday Roles'
-   ```
-
-3. **Add Role Template Items:**
-   ```
-   role_item_1: role='Lector', count=2, position=0
-   role_item_2: role='Usher', count=3, position=1
-   role_item_3: role='Eucharistic Minister', count=4, position=2
-   ```
-
-4. **Create Mass Template:**
-   ```
-   mass_template: id=template1, name='Weekend Masses'
-   ```
-
-5. **Add Mass Template Items:**
-   ```
-   mass_template_item_1:
-     day='SUNDAY', time='09:00', language='en'
-     mass_type_ids=['uuid1']  // WEEKEND
-     mass_role_template_id=roletemplate1
-
-   mass_template_item_2:
-     day='SUNDAY', time='11:00', language='es'
-     mass_type_ids=['uuid1', 'uuid2']  // WEEKEND + YOUTH_MASS
-     mass_role_template_id=roletemplate1
-   ```
-
-6. **Create Individual Mass for Next Sunday from Template Item:**
-   ```
-   mass: mass_template_item_id=mass_template_item_1, event_id=[calendar event for Sunday 9am]
-   ```
-
-7. **System Auto-Creates Role Instances AND Copies Tags:**
-   ```
-   mass.mass_type_ids = ['uuid1']  // Auto-copied from mass_template_item_1
-
-   mass_role_instance_1: mass_id=[mass], mass_role_template_item_id=[Lector item], person_id=NULL
-   mass_role_instance_2: mass_id=[mass], mass_role_template_item_id=[Lector item], person_id=NULL
-   mass_role_instance_3: mass_id=[mass], mass_role_template_item_id=[Usher item], person_id=NULL
-   mass_role_instance_4: mass_id=[mass], mass_role_template_item_id=[Usher item], person_id=NULL
-   mass_role_instance_5: mass_id=[mass], mass_role_template_item_id=[Usher item], person_id=NULL
-   mass_role_instance_6-9: [Eucharistic Ministers, unassigned]
-   ```
-
-8. **Staff Assigns People:**
-   ```
-   Update mass_role_instance_1: person_id=[John Doe]
-   Update mass_role_instance_2: person_id=[Jane Smith]
-   ... etc.
-   ```
-
----
-
-### Example 2: Checking Availability for Assignment
-
-**Query Logic (Conceptual):**
-
-When assigning a person to a mass role for a specific date, check:
-
-1. **Blackout Dates:**
-   ```sql
-   SELECT * FROM person_blackout_dates
-   WHERE person_id = [person]
-     AND [mass_date] BETWEEN start_date AND end_date
-   ```
-   If found → Person is unavailable
-
-2. **Role Preferences:**
-   ```sql
-   SELECT * FROM mass_role_preferences
-   WHERE person_id = [person]
-     AND mass_role_id = [role]
-     AND parish_id = [parish]
-   ```
-   Check:
-   - Is `[mass_day]` in `unavailable_days`? → Person cannot serve
-   - Is `[mass_time]` in `unavailable_times`? → Person cannot serve
-   - Is `[mass_day]` in `preferred_days`? → Prefer this person
-   - Is `[mass_time]` in `preferred_times`? → Prefer this person
-   - Check `desired_frequency` and `max_per_month` against recent assignments
-
-3. **Language Match:**
-   - Check if person's language capabilities match mass language
-
----
-
-### Example 3: Viewing a Person's Schedule
-
-**Query (Conceptual):**
-
-```sql
-SELECT
-  m.id as mass_id,
-  e.start_date,
-  e.start_time,
-  mr.name as role_name,
-  m.status
-FROM mass_role_instances mri
-JOIN masses m ON mri.mass_id = m.id
-JOIN events e ON m.event_id = e.id
-JOIN mass_role_template_items mrti ON mri.mass_role_template_item_id = mrti.id
-JOIN mass_roles mr ON mrti.mass_role_id = mr.id
-WHERE mri.person_id = [person_id]
-  AND e.start_date >= [today]
-ORDER BY e.start_date, e.start_time
-```
-
-Result: List of all upcoming masses this person is assigned to.
-
----
-
-## Key Design Decisions
-
-### 1. Templates vs. Instances
-
-**Decision:** Use a template pattern where reusable definitions are separate from specific instances.
-
-**Rationale:**
-- Reduces data duplication
-- Makes it easy to create masses consistently
-- Allows updating templates without affecting past masses
-- Supports "Create next Sunday's mass" with one action
-
----
-
-### 2. Mass Times Are Reference, Not Auto-Creation
-
-**Decision:** `mass_times` table is for internal reference only and does NOT auto-create mass records.
-
-**Rationale:**
-- Simpler implementation (no background jobs required)
-- Parish staff has full control over which masses to create
-- Avoids creating masses for dates when parish is closed
-- Allows for exceptions and special handling
+**Usage:**
+When a Mass is scheduled using a role template, the system can create empty Mass Assignments based on the template items. For example, if the template requires 4 ushers, 4 Mass Assignment records are created with `person_id` = null. Schedulers can then assign specific people to fill these slots.
 
 **Workflow:**
-- Staff manually creates masses for specific dates
-- `mass_times` serves as a reference guide for what the normal schedule is
+1. Mass is created with a `mass_role_template_item_id`
+2. System creates Mass Assignment records for each required role (based on template items)
+3. Scheduler assigns specific people to each Mass Assignment
+4. Ministers can view their upcoming assignments
 
 ---
 
-### 3. Blackout Dates are Person-Level, Not Role-Level
+#### `persons` (Mass Scheduling Addition)
+The existing `persons` table is extended to track minister availability.
 
-**Decision:** Blackout dates are attached to the person, not to specific roles.
+**New Field:**
+- `mass_times_template_item_ids` - Array of Mass Time Template Item IDs indicating which Masses this person is available to serve at
 
-**Rationale:**
-- When someone is unavailable (vacation, travel), they're unavailable for ALL roles
-- Simpler data model and UI
-- Easier for users to manage
+**Usage:**
+This field allows ministers to indicate their general availability. For example:
+- Minister A is available for: Saturday 5:00pm, Sunday 10:00am
+- Minister B is available for: Sunday 8:00am, Sunday 12:00pm
 
-**Alternative Considered:** Role-level blackouts would allow someone to say "I can't be a Lector on X date, but I can still be an Usher."
-- **Rejected:** Added complexity for minimal benefit; vacations/travel affect all roles equally
+When creating schedules, the system can use this availability data to suggest appropriate assignments and avoid scheduling people for times they're not available.
 
----
-
-### 4. Preferences Are Role-Specific
-
-**Decision:** A person can have different preferences for different roles.
-
-**Rationale:**
-- Someone might prefer to be a Lector at 10 AM masses but prefer to be an Usher at 5 PM masses
-- Allows fine-grained scheduling
-- Supports parishes where people serve in multiple roles
+**Migration Note:**
+The `persons` migration must run AFTER the `mass_times_templates` migration since it references `mass_times_template_items`.
 
 ---
 
-### 5. Mass Can Exist With or Without an Event
+## Data Relationships
 
-**Decision:** Masses can be linked to Events (for calendar integration) or exist independently.
+### Template System Hierarchy
 
-**Rationale:**
-- Flexibility for different workflows
-- Some parishes may want masses on the calendar, others may not
-- Allows for "planning" phase before adding to public calendar
-
----
-
-### 6. Mass Types Are Flexible Tags, Not Structural Categories
-
-**Decision:** Mass types are stored as JSONB arrays allowing multiple tags per mass, rather than single foreign key relationships.
-
-**Rationale:**
-- A mass can have multiple characteristics simultaneously (e.g., "Weekend" + "Youth Mass" + "Bilingual")
-- Flexibility for filtering and reporting (can filter by any combination of tags)
-- Simpler than creating complex many-to-many relationship tables
-- Tags are purely organizational, not structural constraints
-- Parishes can create custom tags that are meaningful to them
-
-**Implementation:**
-- `mass_template_items.mass_type_ids` defines default tags for each mass definition in the template
-- When a mass is created from a template item, tags are copied to `masses.mass_type_ids`
-- Users can edit tags on individual masses after creation
-- Tags are NOT on `mass_templates` (parent container) or `mass_role_templates` (role definitions)
-
-**Alternative Considered:** Single `mass_type_id` foreign key
-- **Rejected:** Too restrictive - couldn't represent masses that are both "Weekend" AND "Youth Mass"
-
-**Alternative Considered:** Many-to-many join table
-- **Rejected:** More complex schema for same functionality; JSONB arrays are simpler and perform well with proper indexing
-
----
-
-### 7. Separation of Mass Templates and Role Templates
-
-**Decision:** Split into two separate template systems: `mass_templates` (defines masses) and `mass_role_templates` (defines role requirements).
-
-**Rationale:**
-- **Reusability:** Multiple mass template items can share the same role template
-  - Example: Sunday 9am, Sunday 11am, and Saturday 5pm all use "Standard Sunday Roles"
-- **Flexibility:** Can create different masses with same role requirements but different times/languages/tags
-- **Clarity:** Clear separation between "what masses exist" and "what roles are needed"
-- **Maintainability:** Change role requirements once, applies to all masses using that role template
-
-**Example:**
 ```
-mass_role_template: "Standard Sunday Roles" (2 Lectors, 4 EMs, 3 Ushers)
-  ↓ referenced by
-mass_template_item_1: Sunday 9am English, tags=[WEEKEND]
-mass_template_item_2: Sunday 11am Spanish, tags=[WEEKEND, BILINGUAL]
-mass_template_item_3: Saturday 5pm English, tags=[WEEKEND, VIGIL]
+mass_times_template (e.g., "Regular Schedule")
+  └── mass_times_template_items (e.g., Saturday 5pm, Sunday 10am)
+      └── Referenced by persons.mass_times_template_item_ids (availability)
+
+mass_role_templates (e.g., "Sunday @ 10:00am")
+  └── mass_role_template_items (e.g., 4 ushers, 6 EEMs)
+      └── mass_role_id (e.g., "Usher")
+```
+
+### Mass Scheduling Flow
+
+```
+1. Mass is created
+   └── References event_id (calendar event)
+   └── References mass_role_template_item_id (defines role requirements)
+   └── References mass_time_template_item_id (defines time)
+   └── References global_liturgical_event_id (liturgical calendar)
+
+2. Mass Assignments are created (based on role template)
+   └── mass_id (which Mass)
+   └── mass_role_template_item_id (which role requirement)
+   └── person_id (who is assigned - initially null)
+
+3. People are assigned to fulfill Mass Assignments
+   └── person_id is updated from null to specific person
 ```
 
 ---
 
-## Field Details & Constraints
+## Use Cases
 
-### JSONB Field Structures
+### Use Case 1: Creating a New Mass Role Template
 
-#### `mass_type_ids` (masses, mass_template_items)
-```json
-[
-  "uuid-of-weekend-type",
-  "uuid-of-youth-mass-type",
-  "uuid-of-bilingual-type"
-]
-```
-- Array of mass_type UUIDs
-- Can be empty array `[]`
-- Multiple tags can be applied to represent multiple characteristics
-- Used on `mass_template_items` (template definition) and `masses` (copied from template item)
-- Example combinations:
-  - `["weekend-uuid"]` - Simple weekend mass
-  - `["weekend-uuid", "youth-uuid"]` - Weekend youth mass
-  - `["daily-uuid", "bilingual-uuid"]` - Daily bilingual mass
+**Scenario:** A parish wants to create a template for their main Sunday Mass that requires specific numbers of ministers.
 
-#### `mass_times.schedule_items`
-```json
-[
-  {"day": "SUNDAY", "time": "09:00"},
-  {"day": "SATURDAY", "time": "17:00"}
-]
-```
-- `day`: SUNDAY | MONDAY | TUESDAY | WEDNESDAY | THURSDAY | FRIDAY | SATURDAY
-- `time`: 24-hour format (HH:MM)
+**Steps:**
+1. Create a new `mass_role_template` record:
+   - name: "Sunday @ 10:00am"
+   - description: "Main Sunday Mass with full choir and high attendance"
+   - is_active: true
 
-#### `mass_role_preferences.preferred_days`
-```json
-["SUNDAY", "SATURDAY"]
-```
+2. Create `mass_roles_template_items` for each role:
+   - Usher: count = 4
+   - EEM: count = 6
+   - Lector: count = 2
+   - Altar Server: count = 4
+   - Cantor: count = 1
 
-#### `mass_role_preferences.available_days`
-```json
-["MONDAY", "WEDNESDAY", "FRIDAY"]
-```
-
-#### `mass_role_preferences.unavailable_days`
-```json
-["TUESDAY", "THURSDAY"]
-```
-
-#### `mass_role_preferences.preferred_times`
-```json
-["09:00-12:00", "17:00-19:00"]
-```
-- Format: "HH:MM-HH:MM" (24-hour format)
-
-#### `mass_role_preferences.unavailable_times`
-```json
-["06:00-08:00", "20:00-22:00"]
-```
-
-#### `mass_role_preferences.languages`
-```json
-[
-  {"language": "en", "level": "fluent"},
-  {"language": "es", "level": "intermediate"},
-  {"language": "la", "level": "basic"}
-]
-```
-- `language`: ISO code (en, es, la, etc.)
-- `level`: fluent | intermediate | basic
+**Result:** This template can now be applied to any Sunday 10:00am Mass to automatically create the required role slots.
 
 ---
 
-### Enum Values
+### Use Case 2: Scheduling Masses for a Month
 
-#### `mass_role_preferences.desired_frequency`
-- `WEEKLY` - Every week
-- `BIWEEKLY` - Every other week
-- `MONTHLY` - Once per month
-- `OCCASIONAL` - As needed, infrequent
+**Scenario:** A parish wants to schedule all Masses for the month of December using their regular Mass times template.
 
-#### `masses.status`
-Suggested values (not enforced by database):
-- `PLANNING` - Initial state, roles not yet assigned
-- `DRAFT` - Partially assigned
-- `READY` - All roles assigned, ready for publication
-- `PUBLISHED` - Publicly visible
-- `COMPLETED` - Mass has occurred
+**Steps:**
+1. Retrieve the active `mass_times_templates` (e.g., "Regular Schedule")
+2. For each Sunday in December:
+   - Create `masses` records based on `mass_times_template_items`:
+     - Saturday 5:00pm vigil (using DAY_BEFORE item)
+     - Sunday 8:00am, 10:00am, 12:00pm (using IS_DAY items)
+   - Associate each Mass with the appropriate `mass_role_template_item_id`
+   - Link to `global_liturgical_event_id` if available (e.g., 3rd Sunday of Advent)
 
-#### `events.language` / `mass_times.language`
-- `en` - English
-- `es` - Spanish
-- `la` - Latin (Traditional Latin Mass)
-- (Other ISO 639-1 codes as needed)
+3. For each Mass created, generate `mass_assignment` records based on the role template:
+   - If Sunday 10am uses the "Sunday @ 10:00am" template with 4 ushers:
+     - Create 4 `mass_assignment` records with `person_id` = null
+     - Ready for schedulers to assign specific people
+
+**Result:** All Masses for December are scheduled with proper role requirements, ready for minister assignment.
 
 ---
 
-## Relationships Diagram (Conceptual)
+### Use Case 3: Assigning Ministers Based on Availability
 
-```
-global_liturgical_events (global, read-only)
-                 │
-                 │ (optional reference)
-                 ▼
-              masses ─────────► events (optional, for calendar integration)
-                 │
-                 ├──► mass_type_ids (JSONB array) ──► mass_types (tags)
-                 ├──► mass_template_item_id ──► mass_template_items
-                 ├──► presider (person)                      │
-                 ├──► homilist (person)                      │
-                 │                                            ├──► mass_template (parent container)
-                 │                                            ├──► mass_type_ids (JSONB array) ──► mass_types (tags)
-                 │                                            │
-                 │                                            └──► mass_role_template_id ──► mass_role_templates
-                 │                                                                                 │
-                 │                                                                                 └──► mass_role_template_items
-                 │                                                                                          │
-                 │                                                                                          └──► mass_roles
-                 │
-                 └──► mass_role_instances
-                           │
-                           ├──► person
-                           └──► mass_role_template_item_id ──► mass_role_template_items
-                                                                     │
-                                                                     └──► mass_roles
+**Scenario:** A scheduler wants to assign ministers to the Sunday 10:00am Masses for December, taking into account their availability.
 
+**Steps:**
+1. Retrieve all `mass_assignment` records for Sunday 10:00am Masses where `person_id` IS NULL
+2. For the "Usher" role:
+   - Query `persons` where `mass_times_template_item_ids` includes the Sunday 10:00am item
+   - Filter by those who are already trained/approved for the Usher role
+   - Display available ushers to the scheduler
+3. Scheduler assigns specific people to each `mass_assignment`
+4. System updates `person_id` in the `mass_assignment` record
 
-mass_times (reference only, no direct relationships to other tables)
-
-
-people ──┬──► mass_role_preferences ──► mass_roles
-         │
-         └──► person_blackout_dates
-```
-
-**Key Relationships:**
-1. **`mass_templates`** → **`mass_template_items`** (one-to-many container)
-2. **`mass_template_items`** → **`mass_role_templates`** (many-to-one: multiple mass definitions can share role requirements)
-3. **`mass_template_items`** → **`masses`** (one-to-many: template item creates multiple masses over time)
-4. **`mass_role_templates`** → **`mass_role_template_items`** (one-to-many: role requirements)
-5. **`masses`** → **`mass_role_instances`** (one-to-many: actual role assignments)
-6. **`mass_role_instances`** → **`mass_role_template_items`** (many-to-one: inherit role definition)
+**Result:** Ministers are assigned to specific Masses based on their stated availability.
 
 ---
 
-## Future Considerations
+### Use Case 4: Minister Viewing Their Schedule
 
-### Auto-Assignment Algorithm (Future)
+**Scenario:** A minister wants to see which Masses they're assigned to serve at in the coming month.
 
-When implementing auto-assignment, consider:
+**Steps:**
+1. Query `mass_assignment` records where:
+   - `person_id` = current user
+   - Associated `masses.event_id` has dates in the next 30 days
+2. For each assignment, display:
+   - Mass date and time (from `event`)
+   - Mass name (from `masses`)
+   - Role assigned (from `mass_roles_template_items` → `mass_roles`)
+   - Location/additional notes
 
-1. **Hard Constraints** (must be satisfied):
-   - Person not in blackout period
-   - Person not in unavailable days/times
-   - Person has language capability for mass
-   - Person not already assigned to another mass at same time
-
-2. **Soft Constraints** (preferences):
-   - Person in preferred days/times
-   - Person within desired frequency
-   - Person under max_per_month limit
-   - Balance assignments across people
-
-3. **Optimization Goals:**
-   - Maximize preference satisfaction
-   - Balance workload
-   - Minimize gaps (fill all slots)
+**Result:** Minister sees their upcoming assignments with all relevant details.
 
 ---
 
-### Recurring Mass Creation Tool (Future)
+## Integration Points
 
-Potential feature: Bulk-create masses for a date range based on `mass_times` schedule.
+### Calendar Integration (`event_id`)
+Each Mass is linked to an `event` record, which allows:
+- ICS feed export for personal calendars
+- Calendar view of upcoming Masses
+- Integration with the broader parish event system
 
-**Input:**
-- Start date
-- End date
-- Mass time IDs to create
+### Liturgical Calendar (`global_liturgical_event_id`)
+Masses can be linked to liturgical calendar events (e.g., Sundays of Advent, Feast Days), which enables:
+- Automatic naming based on the liturgical calendar
+- Color-coding based on liturgical seasons
+- Integration with readings and prayers for that day
 
-**Output:**
-- Creates individual `mass` records
-- Links to appropriate `event` records
-- Auto-creates `mass_role_instances` (unassigned)
-- Skips dates marked as parish closures
-
----
-
-### Schedule Conflicts & Warnings (Future)
-
-Potential features:
-- Warn when assigning person to two masses at same time
-- Warn when person exceeds max_per_month
-- Warn when person assigned outside their available days/times
-- Suggest alternate people based on preferences
+### People Management
+The `persons` table integration allows:
+- Tracking minister availability through `mass_times_template_item_ids`
+- Assigning specific people to roles through `mass_assignment`
+- Viewing individual minister schedules and histories
 
 ---
 
-## Summary
+## Technical Considerations
 
-This data structure provides:
+### Migration Order
+When setting up the database, migrations must run in this order:
+1. `mass_times_templates` and `mass_times_template_items` (defines available times)
+2. `persons` (can now reference `mass_times_template_item_ids`)
+3. `mass_roles` (defines role types)
+4. `mass_roles_templates` and `mass_roles_template_items` (defines role requirements)
+5. `mass_types` (optional categorization)
+6. `masses` (can now reference templates, events, and liturgical calendar)
+7. `mass_assignment` (links people to masses through role requirements)
 
-✅ **Reusability** - Templates for mass schedules and role requirements
-✅ **Flexibility** - Masses can exist independently or link to calendar; multiple category tags per mass
-✅ **Granularity** - Person-level and role-level preferences
-✅ **Simplicity** - Blackout dates at person level for ease of use; JSONB arrays for tags instead of join tables
-✅ **Scalability** - Supports multiple parishes with different configurations
-✅ **Liturgical Integration** - Links to global liturgical calendar for context
-✅ **Categorization** - Flexible tagging system allows parishes to define and combine custom mass categories
+### Data Integrity
+- All tables (except `mass_*_template_items` and `mass_assignment`) should have `parish_id` for multi-tenancy
+- Standard `created_at` and `updated_at` timestamps on all tables
+- Foreign key constraints should enforce referential integrity
+- RLS policies should enforce parish-level access control
 
-**Key Design Highlights:**
-- **Mass Types as Tags** - Multiple tags per mass (e.g., "Weekend" + "Youth Mass") stored as JSONB arrays on `mass_template_items` and `masses`
-- **Separation of Templates** - `mass_templates` define masses (day/time/language/tags), `mass_role_templates` define role requirements (reusable across multiple masses)
-- **Template-Based Mass Creation** - Mass template items define default attributes (tags, language, role requirements) that are auto-copied to new masses
-- **Manual Scheduling** - Staff creates masses manually from template items (no auto-creation from schedules)
-- **Person-Centric Availability** - Blackout dates and preferences tied to people, not individual roles
+### Template Flexibility
+The template system allows parishes to:
+- Define multiple role templates for different types of Masses
+- Define multiple time templates for different seasons
+- Mix and match templates as needed
+- Override templates on a per-Mass basis if necessary
 
-The system is designed for **manual management** with **template assistance**, providing a foundation for future auto-assignment features while remaining simple and maintainable.
+---
+
+## Future Enhancements
+
+### Potential Features
+1. **Auto-scheduling Algorithm** - Automatically assign ministers based on availability, past assignments, and preferences
+2. **Substitute Requests** - Allow ministers to request substitutes if they can't make an assigned Mass
+3. **Training Tracking** - Track which ministers are trained/certified for which roles
+4. **Assignment History** - Track how often each minister serves and ensure fair distribution
+5. **Communication Tools** - Send reminders to ministers about upcoming assignments
+6. **Scheduling Conflicts** - Prevent double-booking of ministers across multiple Masses
+7. **Recurring Schedules** - Create repeating assignment patterns (e.g., "1st Sunday of each month")
+
+---
+
+## Best Practices
+
+### Template Management
+- Keep the number of active templates minimal to avoid confusion
+- Use descriptive names that clearly indicate when the template applies
+- Document any special requirements or notes in the description field
+- Regularly review and update templates as parish needs change
+
+### Minister Assignment
+- Respect minister availability preferences (`mass_times_template_item_ids`)
+- Distribute assignments fairly across all available ministers
+- Provide advance notice for assignments (typically 2-4 weeks)
+- Have a backup plan for unfilled assignments or last-minute cancellations
+
+### Data Organization
+- Use consistent naming conventions for templates and roles
+- Keep role names standardized across the parish
+- Document any parish-specific roles or terminology
+- Regular cleanup of old or unused templates
+
+---
+
+## Glossary
+
+**Day Type** - Indicates whether a Mass occurs on the actual day (`IS_DAY`) or the day before (`DAY_BEFORE`)
+
+**EEM** - Extraordinary Minister of Holy Communion
+
+**Liturgical Event** - A celebration in the liturgical calendar (e.g., Sunday, Feast Day, Solemnity)
+
+**Mass Assignment** - The assignment of a person to a role at a specific Mass
+
+**Role Template** - A reusable configuration of role requirements for a type of Mass
+
+**Template Item** - An individual component within a template (e.g., a specific time slot or role requirement)
+
+**Time Template** - A collection of recurring Mass times for a parish
+
+**Vigil Mass** - A Mass celebrated the evening before a Solemnity or Sunday (typically Saturday evening for Sunday)
