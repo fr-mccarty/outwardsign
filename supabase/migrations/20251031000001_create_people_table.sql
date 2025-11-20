@@ -12,9 +12,16 @@ CREATE TABLE people (
   zipcode TEXT,
   sex TEXT CHECK (sex IN ('Male', 'Female')),
   note TEXT,
+
+  -- Mass scheduling availability
+  mass_times_template_item_ids UUID[] DEFAULT '{}',
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Add comment documenting the mass scheduling field
+COMMENT ON COLUMN people.mass_times_template_item_ids IS 'Array of Mass Time Template Item IDs indicating which Masses this person is available to serve at (e.g., Saturday 5pm, Sunday 10am)';
 
 -- Enable RLS
 ALTER TABLE people ENABLE ROW LEVEL SECURITY;
@@ -29,6 +36,7 @@ CREATE INDEX idx_people_parish_id ON people(parish_id);
 CREATE INDEX idx_people_last_name ON people(last_name);
 CREATE INDEX idx_people_first_name ON people(first_name);
 CREATE INDEX idx_people_email ON people(email);
+CREATE INDEX idx_people_mass_times_template_item_ids ON people USING GIN (mass_times_template_item_ids);
 
 -- RLS Policies for people
 -- Parish members can read people from their parish

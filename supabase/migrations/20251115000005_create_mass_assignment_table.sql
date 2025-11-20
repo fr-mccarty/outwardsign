@@ -1,6 +1,6 @@
--- Create mass_role_instances table
+-- Create mass_assignment table
 -- This table stores the actual assignments of people to roles for specific masses
-CREATE TABLE mass_role_instances (
+CREATE TABLE mass_assignment (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   mass_id UUID NOT NULL REFERENCES masses(id) ON DELETE CASCADE,
   person_id UUID REFERENCES people(id) ON DELETE CASCADE, -- NULL = unassigned
@@ -10,25 +10,25 @@ CREATE TABLE mass_role_instances (
 );
 
 -- Add comment documenting the purpose
-COMMENT ON TABLE mass_role_instances IS 'Actual assignments of people to liturgical roles for specific masses';
-COMMENT ON COLUMN mass_role_instances.person_id IS 'Person assigned to this role instance. NULL means unassigned (awaiting auto-assignment or manual assignment)';
+COMMENT ON TABLE mass_assignment IS 'Actual assignments of people to liturgical roles for specific masses';
+COMMENT ON COLUMN mass_assignment.person_id IS 'Person assigned to this role. NULL means unassigned (awaiting auto-assignment or manual assignment)';
 
 -- Enable RLS
-ALTER TABLE mass_role_instances ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mass_assignment ENABLE ROW LEVEL SECURITY;
 
 -- Grant access
-GRANT ALL ON mass_role_instances TO anon;
-GRANT ALL ON mass_role_instances TO authenticated;
-GRANT ALL ON mass_role_instances TO service_role;
+GRANT ALL ON mass_assignment TO anon;
+GRANT ALL ON mass_assignment TO authenticated;
+GRANT ALL ON mass_assignment TO service_role;
 
 -- Add indexes
-CREATE INDEX idx_mass_role_instances_mass_id ON mass_role_instances(mass_id);
-CREATE INDEX idx_mass_role_instances_person_id ON mass_role_instances(person_id);
-CREATE INDEX idx_mass_role_instances_template_item_id ON mass_role_instances(mass_roles_template_item_id);
+CREATE INDEX idx_mass_assignment_mass_id ON mass_assignment(mass_id);
+CREATE INDEX idx_mass_assignment_person_id ON mass_assignment(person_id);
+CREATE INDEX idx_mass_assignment_template_item_id ON mass_assignment(mass_roles_template_item_id);
 
--- RLS Policies for mass_role_instances
-CREATE POLICY "mass_role_instances_select"
-  ON mass_role_instances
+-- RLS Policies for mass_assignment
+CREATE POLICY "mass_assignment_select"
+  ON mass_assignment
   FOR SELECT
   TO anon, authenticated
   USING (
@@ -40,8 +40,8 @@ CREATE POLICY "mass_role_instances_select"
     )
   );
 
-CREATE POLICY "mass_role_instances_insert"
-  ON mass_role_instances
+CREATE POLICY "mass_assignment_insert"
+  ON mass_assignment
   FOR INSERT
   TO anon, authenticated
   WITH CHECK (
@@ -53,8 +53,8 @@ CREATE POLICY "mass_role_instances_insert"
     )
   );
 
-CREATE POLICY "mass_role_instances_update"
-  ON mass_role_instances
+CREATE POLICY "mass_assignment_update"
+  ON mass_assignment
   FOR UPDATE
   TO anon, authenticated
   USING (
@@ -66,8 +66,8 @@ CREATE POLICY "mass_role_instances_update"
     )
   );
 
-CREATE POLICY "mass_role_instances_delete"
-  ON mass_role_instances
+CREATE POLICY "mass_assignment_delete"
+  ON mass_assignment
   FOR DELETE
   TO anon, authenticated
   USING (
@@ -80,7 +80,7 @@ CREATE POLICY "mass_role_instances_delete"
   );
 
 -- Add trigger to update updated_at timestamp
-CREATE TRIGGER update_mass_role_instances_updated_at
-  BEFORE UPDATE ON mass_role_instances
+CREATE TRIGGER update_mass_assignment_updated_at
+  BEFORE UPDATE ON mass_assignment
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();

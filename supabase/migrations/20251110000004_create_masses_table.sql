@@ -7,14 +7,22 @@ CREATE TABLE masses (
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
   liturgical_event_id UUID REFERENCES global_liturgical_events(id) ON DELETE SET NULL,
   mass_roles_template_id UUID REFERENCES mass_roles_templates(id) ON DELETE SET NULL,
+  mass_time_template_item_id UUID REFERENCES mass_times_template_items(id) ON DELETE SET NULL,
   status TEXT DEFAULT 'PLANNING',
   mass_template_id TEXT,
+  name TEXT,
+  description TEXT,
   announcements TEXT,
   note TEXT,
   petitions TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Add comments documenting mass scheduling fields
+COMMENT ON COLUMN masses.mass_time_template_item_id IS 'Which time template item this Mass corresponds to (e.g., Sunday 10:00am from Regular Schedule)';
+COMMENT ON COLUMN masses.name IS 'Name of the Mass (e.g., "Sunday Mass - 3rd Sunday of Advent")';
+COMMENT ON COLUMN masses.description IS 'Additional details about this Mass';
 
 -- Enable RLS
 ALTER TABLE masses ENABLE ROW LEVEL SECURITY;
@@ -30,6 +38,7 @@ CREATE INDEX idx_masses_event_id ON masses(event_id);
 CREATE INDEX idx_masses_presider_id ON masses(presider_id);
 CREATE INDEX idx_masses_liturgical_event_id ON masses(liturgical_event_id);
 CREATE INDEX idx_masses_mass_roles_template_id ON masses(mass_roles_template_id);
+CREATE INDEX idx_masses_mass_time_template_item_id ON masses(mass_time_template_item_id);
 CREATE INDEX idx_masses_status ON masses(status);
 
 -- RLS Policies for masses

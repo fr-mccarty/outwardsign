@@ -36,8 +36,8 @@ Individual Mass events scheduled on specific dates.
 **Key Fields:**
 - `parish_id` - Parish this Mass belongs to
 - `event_id` - Reference to the calendar event (for scheduling and ICS export)
-- `mass_role_template_item_id` - Which role template this Mass uses (nullable)
-- `global_liturgical_event_id` - Reference to the liturgical calendar event (e.g., 3rd Sunday of Advent) (nullable)
+- `mass_roles_template_id` - Which role template this Mass uses (nullable)
+- `liturgical_event_id` - Reference to the liturgical calendar event (e.g., 3rd Sunday of Advent) (nullable)
 - `mass_time_template_item_id` - Which time template item this Mass corresponds to (nullable)
 - `name` - Name of the Mass (e.g., "Sunday Mass - 3rd Sunday of Advent")
 - `description` - Additional details about this Mass
@@ -46,7 +46,7 @@ Individual Mass events scheduled on specific dates.
 **Relationships:**
 - Belongs to Parish
 - Belongs to Event (calendar integration)
-- Belongs to Mass Role Template Item (defines role requirements)
+- Belongs to Mass Roles Template (defines role requirements)
 - Belongs to Global Liturgical Event (liturgical calendar)
 - Belongs to Mass Time Template Item (defines when it occurs)
 - Has many Mass Assignments (people assigned to roles)
@@ -188,19 +188,19 @@ The assignment of a specific person to a specific role at a specific Mass.
 
 **Key Fields:**
 - `person_id` - Who is assigned (nullable - allows for unfilled assignments)
-- `mass_role_template_item_id` - Which role requirement this fulfills
+- `mass_roles_template_item_id` - Which role requirement this fulfills
 - `mass_id` - Which Mass this is for (required)
 
 **Relationships:**
 - Belongs to Person (nullable)
-- Belongs to Mass Role Template Item
+- Belongs to Mass Roles Template Item
 - Belongs to Mass
 
 **Usage:**
 When a Mass is scheduled using a role template, the system can create empty Mass Assignments based on the template items. For example, if the template requires 4 ushers, 4 Mass Assignment records are created with `person_id` = null. Schedulers can then assign specific people to fill these slots.
 
 **Workflow:**
-1. Mass is created with a `mass_role_template_item_id`
+1. Mass is created with a `mass_roles_template_id`
 2. System creates Mass Assignment records for each required role (based on template items)
 3. Scheduler assigns specific people to each Mass Assignment
 4. Ministers can view their upcoming assignments
@@ -234,8 +234,8 @@ mass_times_template (e.g., "Regular Schedule")
   └── mass_times_template_items (e.g., Saturday 5pm, Sunday 10am)
       └── Referenced by persons.mass_times_template_item_ids (availability)
 
-mass_role_templates (e.g., "Sunday @ 10:00am")
-  └── mass_role_template_items (e.g., 4 ushers, 6 EEMs)
+mass_roles_templates (e.g., "Sunday @ 10:00am")
+  └── mass_roles_template_items (e.g., 4 ushers, 6 EEMs)
       └── mass_role_id (e.g., "Usher")
 ```
 
@@ -244,13 +244,13 @@ mass_role_templates (e.g., "Sunday @ 10:00am")
 ```
 1. Mass is created
    └── References event_id (calendar event)
-   └── References mass_role_template_item_id (defines role requirements)
+   └── References mass_roles_template_item_id (defines role requirements)
    └── References mass_time_template_item_id (defines time)
    └── References global_liturgical_event_id (liturgical calendar)
 
 2. Mass Assignments are created (based on role template)
    └── mass_id (which Mass)
-   └── mass_role_template_item_id (which role requirement)
+   └── mass_roles_template_item_id (which role requirement)
    └── person_id (who is assigned - initially null)
 
 3. People are assigned to fulfill Mass Assignments
@@ -266,7 +266,7 @@ mass_role_templates (e.g., "Sunday @ 10:00am")
 **Scenario:** A parish wants to create a template for their main Sunday Mass that requires specific numbers of ministers.
 
 **Steps:**
-1. Create a new `mass_role_template` record:
+1. Create a new `mass_roles_template` record:
    - name: "Sunday @ 10:00am"
    - description: "Main Sunday Mass with full choir and high attendance"
    - is_active: true
@@ -292,7 +292,7 @@ mass_role_templates (e.g., "Sunday @ 10:00am")
    - Create `masses` records based on `mass_times_template_items`:
      - Saturday 5:00pm vigil (using DAY_BEFORE item)
      - Sunday 8:00am, 10:00am, 12:00pm (using IS_DAY items)
-   - Associate each Mass with the appropriate `mass_role_template_item_id`
+   - Associate each Mass with the appropriate `mass_roles_template_item_id`
    - Link to `global_liturgical_event_id` if available (e.g., 3rd Sunday of Advent)
 
 3. For each Mass created, generate `mass_assignment` records based on the role template:

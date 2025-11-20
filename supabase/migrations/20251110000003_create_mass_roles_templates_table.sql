@@ -4,11 +4,16 @@ CREATE TABLE mass_roles_templates (
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT false,
   note TEXT,
   parameters JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Add comments documenting the purpose
+COMMENT ON TABLE mass_roles_templates IS 'Templates defining ministerial role requirements for different types of Masses';
+COMMENT ON COLUMN mass_roles_templates.is_active IS 'Whether this template is currently in use';
 
 -- Enable RLS
 ALTER TABLE mass_roles_templates ENABLE ROW LEVEL SECURITY;
