@@ -1,0 +1,31 @@
+# Orchestrator gitignore
+
+# Environment variables
+.env
+
+# State file (contains session data)
+state.json
+
+# Logs
+orchestrator_logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Test output
+test_output.md
+
+# Question responses
+response.json
+
+# OS
+.DS_Store
+Thumbs.db

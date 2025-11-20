@@ -1,0 +1,15 @@
+# Orchestrator Python Dependencies
+
+# Phase 2: Webhook Server
+flask==3.0.0
+pyyaml==6.0
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Phase 1 (Core) - Python standard library:
+# - subprocess
+# - json
+# - argparse
+# - pathlib
+# - re
+# - datetime

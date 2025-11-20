@@ -1,0 +1,54 @@
+# Orchestrator Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+
+orchestrator:
+  # How to handle approvals: 'required' | 'auto'
+  approval_mode: 'auto'
+
+  # Checkpoint after these task types
+  checkpoint_after:
+    - database
+    - deployment
+
+  # Auto-approve these task types
+  auto_approve:
+    - documentation
+    - testing
+
+webhooks:
+  # Webhook secret for authentication (use env var in production)
+  secret: "${WEBHOOK_SECRET}"
+
+  # n8n webhook URL to send notifications
+  n8n_notify_url: "${N8N_NOTIFY_URL}"
+
+  # Enable/disable webhook server
+  enabled: true
+
+claude:
+  # Claude CLI command
+  command: "claude -p"
+
+  # Additional flags
+  flags: "--dangerously-skip-permissions"
+
+  # Timeout per task (seconds)
+  timeout: 300
+
+paths:
+  # Where to find/store files
+  tasks_dir: "orchestrator_tasks"
+  logs_dir: "orchestrator_logs"
+  daily_dir: "daily_logs"
+  state_file: "state.json"
+
+logging:
+  # Log level: DEBUG | INFO | WARNING | ERROR
+  level: "INFO"
+
+  # Separate log file per task
+  task_logs: true
