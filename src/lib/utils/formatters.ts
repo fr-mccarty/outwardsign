@@ -5,6 +5,23 @@
  */
 
 // ============================================================================
+// STRING FORMATTING FUNCTIONS
+// ============================================================================
+
+/**
+ * Capitalize first letter of a string
+ *
+ * @example
+ * capitalizeFirstLetter('person') // "Person"
+ * capitalizeFirstLetter('mass role') // "Mass role"
+ * capitalizeFirstLetter('') // ""
+ */
+export function capitalizeFirstLetter(str: string): string {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+// ============================================================================
 // PERSON FORMATTING FUNCTIONS
 // ============================================================================
 
