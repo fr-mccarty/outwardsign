@@ -139,8 +139,11 @@ test.describe('Calendar Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should redirect to event detail page
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    // Should redirect to event edit page
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const urlParts = page.url().split('/');
+    const eventId = urlParts[urlParts.length - 2];
 
     console.log(`Created event: ${eventName}`);
 
@@ -176,9 +179,9 @@ test.describe('Calendar Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
-    const eventUrl = page.url();
-    const eventId = eventUrl.split('/').pop();
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    const urlParts = page.url().split('/');
+    const eventId = urlParts[urlParts.length - 2];
 
     console.log(`Created clickable event: ${eventName} with ID: ${eventId}`);
 

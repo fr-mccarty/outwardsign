@@ -10,7 +10,7 @@ test.describe('Event Picker Component', () => {
     await page.getByLabel('Name').fill('St. Mary Cathedral');
     await page.getByLabel('Street').fill('123 Church Street');
     await page.getByLabel('City').fill('Springfield');
-    await page.getByRole('button', { name: /Create Location/i }).last().click();
+    await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Now go to wedding form to test event picker
@@ -105,8 +105,10 @@ test.describe('Event Picker Component', () => {
     const locationDialog = page.getByTestId('location-picker-dialog');
     await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Location picker auto-opens creation form when no location is selected
-    // Wait for the Save Location button to be visible (confirms form is loaded)
+    // Click "Add New Location" to open the creation form
+    await locationDialog.getByRole('button', { name: /Add New Location/i }).click();
+
+    // Wait for the form to be visible
     await locationDialog.getByRole('button', { name: /Save Location/i }).waitFor({ state: 'visible', timeout: 5000 });
 
     // Find and fill the name input (first text input in the form)
@@ -114,8 +116,7 @@ test.describe('Event Picker Component', () => {
     await locationNameInput.fill('InlineTestChurch');
 
     // Submit location creation (button text is "Save Location")
-    // Use force: true because the button might be re-rendering
-    await locationDialog.getByRole('button', { name: /Save Location/i }).click({ force: true });
+    await locationDialog.getByRole('button', { name: /Save Location/i }).click();
 
     // Wait for location dialog to close (indicates successful creation and selection)
     await expect(locationDialog).not.toBeVisible({ timeout: 5000 });
@@ -169,16 +170,17 @@ test.describe('Event Picker Component', () => {
     const locationDialog = page.getByTestId('location-picker-dialog');
     await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Location picker auto-opens creation form when no location is selected
-    // Wait for the Save Location button to be visible (confirms form is loaded)
+    // Click "Add New Location" to open the creation form
+    await locationDialog.getByRole('button', { name: /Add New Location/i }).click();
+
+    // Wait for the form to be visible
     await locationDialog.getByRole('button', { name: /Save Location/i }).waitFor({ state: 'visible', timeout: 5000 });
 
     // Find and fill the name input (first text input in the form)
     const locationNameInput = locationDialog.locator('input[type="text"]').first();
     await locationNameInput.fill('ContextTestLocation');
     // Submit location creation (button text is "Save Location")
-    // Use force: true because the button might be re-rendering
-    await locationDialog.getByRole('button', { name: /Save Location/i }).click({ force: true });
+    await locationDialog.getByRole('button', { name: /Save Location/i }).click();
     await page.waitForTimeout(1000);
 
     // Submit event (button text is "Save Event")
@@ -201,7 +203,7 @@ test.describe('Event Picker Component', () => {
     // Create a location first
     await page.goto('/locations/create');
     await page.getByLabel('Name').fill('Blessed Sacrament Church');
-    await page.getByRole('button', { name: /Create Location/i }).last().click();
+    await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
@@ -285,10 +287,9 @@ test.describe('Event Picker Component', () => {
 
     // Submit should work now (button text is "Save Event")
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
-    await page.waitForTimeout(1500);
 
     // Dialog should close and event should be selected
-    await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
+    await expect(eventDialog).not.toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
   });
 });

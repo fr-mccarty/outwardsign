@@ -21,8 +21,8 @@ test.describe('Dashboard', () => {
     await expect(page.getByText('Your sacramental ministry at a glance')).toBeVisible();
 
     // Verify all quick stats cards are present
-    await expect(page.getByText('Total Sacraments').first()).toBeVisible();
-    await expect(page.getByText('This Month').first()).toBeVisible();
+    await expect(page.getByText('Active Sacraments').first()).toBeVisible();
+    await expect(page.getByText('Scheduled This Month').first()).toBeVisible();
     await expect(page.getByText('People Directory').first()).toBeVisible();
     // Use a more specific selector for Locations to avoid sidebar conflict
     await expect(page.getByRole('main').getByText('Locations')).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Dashboard', () => {
 
     // Verify main content sections (CardTitle may not be a semantic heading)
     await expect(page.getByText('Sacraments by Type')).toBeVisible();
-    await expect(page.getByText('Upcoming Celebrations', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Upcoming Events', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Recent Activity', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Calendar', { exact: true }).first()).toBeVisible(); // .first() to avoid sidebar
     await expect(page.getByText('Quick Access')).toBeVisible();
@@ -146,12 +146,12 @@ test.describe('Dashboard', () => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Check if there are upcoming celebrations or empty state
-    const upcomingSection = page.getByText('Upcoming Celebrations', { exact: true }).first();
+    // Check if there are upcoming events or empty state
+    const upcomingSection = page.getByText('Upcoming Events', { exact: true }).first();
     await expect(upcomingSection).toBeVisible();
 
     // Either should have events or show empty state message
-    const hasEmptyState = await page.getByText('No upcoming celebrations in the next 30 days').isVisible();
+    const hasEmptyState = await page.getByText('No upcoming events').isVisible();
     const hasScheduleLink = await page.getByRole('link', { name: 'Schedule an event' }).isVisible();
 
     if (hasEmptyState) {
@@ -230,8 +230,8 @@ test.describe('Dashboard', () => {
     if (await eventLink.isVisible({ timeout: 2000 })) {
       await eventLink.click();
 
-      // Should navigate to event detail page
-      await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.NAVIGATION });
+      // Should navigate to event view page (from dashboard)
+      await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.NAVIGATION });
     } else {
       console.log('Event not found in upcoming celebrations (may be outside 30-day window)');
     }
@@ -278,9 +278,9 @@ test.describe('Dashboard', () => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Find the total sacraments count (should be a large number displayed prominently)
-    const totalSacramentsCard = page.getByText('Total Sacraments');
-    await expect(totalSacramentsCard).toBeVisible();
+    // Find the active sacraments count (should be a large number displayed prominently)
+    const activeSacramentsCard = page.getByText('Active Sacraments');
+    await expect(activeSacramentsCard).toBeVisible();
 
     // Get the count value using a more specific selector
     // The count is displayed as a large number in the Total Sacraments card
@@ -336,8 +336,8 @@ test.describe('Dashboard', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify all stat card descriptions
-    await expect(page.getByText('Celebrations in preparation')).toBeVisible();
-    await expect(page.getByText('New sacraments added')).toBeVisible();
+    await expect(page.getByText('In preparation now')).toBeVisible();
+    await expect(page.getByText('Ceremonies this month')).toBeVisible();
     await expect(page.getByText('People in your parish')).toBeVisible();
     await expect(page.getByText('Venues registered')).toBeVisible();
     await expect(page.getByText('Events in next 7 days')).toBeVisible();

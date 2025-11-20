@@ -59,18 +59,15 @@ test.describe('Events Template System', () => {
     // Verify event details are displayed
     await expect(page.getByRole('heading', { name: eventName }).first()).toBeVisible();
 
-    // STEP 1: Verify template selector is visible in sidebar
-    const templateSelectorLabel = page.locator('text=/^Template:$/').first();
-    await expect(templateSelectorLabel).toBeVisible();
-
-    // Verify default template is "Full Script (English)"
+    // STEP 1: Verify template selector is visible (shows current template name as button)
+    // The "Template:" label is no longer displayed, just the template button
     const englishTemplateButton = page.locator('button:has-text("Full Script (English)")').first();
     await expect(englishTemplateButton).toBeVisible();
 
     // STEP 2: Verify export buttons are available
-    await expect(page.locator('button:has-text("Print View")').first()).toBeVisible();
-    await expect(page.locator('button:has-text("PDF")').first()).toBeVisible();
-    await expect(page.locator('button:has-text("Word Doc")').first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Print View/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download PDF/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download Word/i })).toBeVisible();
 
     // STEP 3: Click template selector to open dialog
     await englishTemplateButton.click();
@@ -151,20 +148,21 @@ test.describe('Events Template System', () => {
     await page.goto(`/events/${eventId}`);
     await expect(page).toHaveURL(`/events/${eventId}`, { timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Verify all three export buttons are visible in the sidebar
-    const printButton = page.locator('button:has-text("Print View")');
+    // Verify all three export buttons are visible
+    const printButton = page.getByRole('link', { name: /Print View/i });
     await expect(printButton).toBeVisible();
 
-    const pdfButton = page.locator('button:has-text("PDF")');
+    const pdfButton = page.getByRole('link', { name: /Download PDF/i });
     await expect(pdfButton).toBeVisible();
 
-    const wordButton = page.locator('button:has-text("Word Doc")');
+    const wordButton = page.getByRole('link', { name: /Download Word/i });
     await expect(wordButton).toBeVisible();
 
-    // Verify buttons are enabled (not disabled)
-    await expect(printButton).toBeEnabled();
-    await expect(pdfButton).toBeEnabled();
-    await expect(wordButton).toBeEnabled();
+    // Links don't have enabled/disabled state like buttons
+    // Just verify they have href attributes
+    await expect(printButton).toHaveAttribute('href');
+    await expect(pdfButton).toHaveAttribute('href');
+    await expect(wordButton).toHaveAttribute('href');
 
     console.log(`Successfully verified export buttons for event: ${eventId}`);
   });

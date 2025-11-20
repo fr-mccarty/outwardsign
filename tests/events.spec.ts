@@ -40,7 +40,7 @@ test.describe('Events Module - Standalone Events', () => {
     await page.fill('input#start_time', eventTime);
 
     // Fill in language
-    await page.fill('input#language', 'English');
+    // Language field was removed from the form - skip this step
 
     // Fill in notes
     await page.fill('textarea#notes', eventNotes);
@@ -54,8 +54,14 @@ test.describe('Events Module - Standalone Events', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should redirect to the event detail page (navigation proves success)
+    // Should redirect to the event edit page
     await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const urlParts = page.url().split('/');
+    const eventId = urlParts[urlParts.length - 2];
+
+    // Navigate to view page to verify event details
+    await page.goto(`/events/${eventId}`);
 
     // Verify event details are displayed on the view page
     await expect(page.getByRole('heading', { name: eventName }).first()).toBeVisible();
@@ -86,8 +92,14 @@ test.describe('Events Module - Standalone Events', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Navigation to detail page proves success
+    // Navigation to edit page proves success
     await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    const urlParts = page.url().split('/');
+    const eventId = urlParts[urlParts.length - 2];
+
+    // Navigate to view page to verify
+    await page.goto(`/events/${eventId}`);
 
     // Verify the event name is shown as heading
     await expect(page.getByRole('heading', { name: 'Youth Group Social' }).first()).toBeVisible();
@@ -108,13 +120,18 @@ test.describe('Events Module - Standalone Events', () => {
     await submitBtn.scrollIntoViewIfNeeded();
     await submitBtn.click();
 
-    // Navigation to detail page proves success
+    // Navigation to edit page proves success
     await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify export buttons exist
-    await expect(page.locator('button:has-text("Print")')).toBeVisible();
-    await expect(page.locator('button:has-text("PDF")')).toBeVisible();
-    await expect(page.locator('button:has-text("Word")')).toBeVisible();
+    // Get event ID and navigate to view page
+    const urlParts = page.url().split('/');
+    const eventId = urlParts[urlParts.length - 2];
+    await page.goto(`/events/${eventId}`);
+
+    // Verify export buttons exist (they're links, not buttons)
+    await expect(page.getByRole('link', { name: /Print View/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download PDF/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download Word/i })).toBeVisible();
   });
 
   test('should show events list and filter standalone events', async ({ page }) => {
@@ -238,14 +255,17 @@ test.describe('Events Module - Standalone Events', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should redirect to the event detail page (navigation proves success)
+    // Should redirect to the event edit page (navigation proves success)
     await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Get the event ID from URL for later use
-    const eventUrl = page.url();
-    const eventId = eventUrl.split('/').pop();
+    // Get the event ID from URL
+    const urlParts = page.url().split('/');
+    const eventId = urlParts[urlParts.length - 2];
 
     console.log(`Created event with ID: ${eventId}`);
+
+    // Navigate to view page
+    await page.goto(`/events/${eventId}`);
 
     // Verify we're on the view page
     await expect(page.getByRole('heading', { name: eventName }).first()).toBeVisible();
