@@ -34,22 +34,17 @@ test.describe('Funerals Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should redirect to the funeral detail page (navigation proves success)
+    // Should redirect to the funeral edit page (navigation proves success)
     await page.waitForURL(/\/funerals\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Get the funeral ID from URL for later use
-    const funeralUrl = page.url();
-    const funeralId = funeralUrl.split('/').pop();
+    // Get the funeral ID from URL
+    const urlParts = page.url().split('/');
+    const funeralId = urlParts[urlParts.length - 2]; // Get ID before /edit
 
     console.log(`Created funeral with ID: ${funeralId}`);
 
-    // Verify we're on the view page
+    // Verify we're on the edit page (heading is dynamic based on deceased name or just "Funeral")
     await expect(page.getByRole('heading', { name: /Funeral/i }).first()).toBeVisible();
-
-    // Navigate to edit page
-    await page.goto(`/funerals/${funeralId}/edit`);
-    await expect(page).toHaveURL(`/funerals/${funeralId}/edit`, { timeout: TEST_TIMEOUTS.NAVIGATION });
-    await expect(page.getByRole('heading', { name: 'Edit Funeral' })).toBeVisible();
 
     // Edit the funeral - add more information
     const updatedNotes = 'Updated notes: Memorial service scheduled for Saturday. Family gathering afterward.';
@@ -150,11 +145,16 @@ test.describe('Funerals Module', () => {
     await submitBtn.click();
     await page.waitForURL(/\/funerals\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify action buttons exist
-    await expect(page.getByRole('link', { name: /Edit Funeral/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Print View/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
+    // Extract funeral ID and navigate to view page to check action buttons
+    const urlParts = page.url().split('/');
+    const funeralId = urlParts[urlParts.length - 2];
+    await page.goto(`/funerals/${funeralId}`);
+
+    // Verify action buttons exist on view page
+    await expect(page.getByRole('link', { name: /Edit/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Print View/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download PDF/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download Word/i })).toBeVisible();
   });
 
   test('should update funeral and verify persistence after page refresh', async ({ page }) => {
@@ -171,17 +171,11 @@ test.describe('Funerals Module', () => {
     await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/funerals\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const funeralId = page.url().split('/').pop();
+    const urlParts = page.url().split('/');
+    const funeralId = urlParts[urlParts.length - 2];
 
-    // Verify initial data is displayed on view page
-    await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();
-
-    // Navigate to edit page
-    await page.goto(`/funerals/${funeralId}/edit`);
-    await expect(page).toHaveURL(`/funerals/${funeralId}/edit`);
-
-    // Verify initial value is pre-filled
-    await expect(page.locator('textarea#note')).toHaveValue(initialNote);
+    // Verify initial value is pre-filled on edit page
+    await expect(page.locator('textarea#note').first()).toHaveValue(initialNote);
 
     // Update with NEW value
     const updatedNote = 'UPDATED: Memorial service confirmed for Saturday April 20th at 10am. Reception to follow in parish hall.';
@@ -217,7 +211,7 @@ test.describe('Funerals Module', () => {
     await page.goto(`/funerals/${funeralId}/edit`);
 
     // PERSISTENCE TEST: Verify form field contains UPDATED value
-    await expect(page.locator('textarea#note')).toHaveValue(updatedNote);
+    await expect(page.locator('textarea#note').first()).toHaveValue(updatedNote);
 
     console.log(`Successfully verified update persistence for funeral: ${funeralId}`);
   });

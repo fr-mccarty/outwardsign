@@ -29,9 +29,20 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
 
     // In month view, only show parish events (liturgical shown as color blocks)
     // In week/day views, show all events
-    const itemsToShow = view === 'month'
+    let itemsToShow = view === 'month'
       ? day.items.filter(item => !isLiturgicalEvent(item))
       : day.items
+
+    // In week/day views, sort so liturgical events appear first
+    if (view === 'week' || view === 'day') {
+      itemsToShow = [...itemsToShow].sort((a, b) => {
+        const aIsLiturgical = isLiturgicalEvent(a)
+        const bIsLiturgical = isLiturgicalEvent(b)
+        if (aIsLiturgical && !bIsLiturgical) return -1
+        if (!aIsLiturgical && bIsLiturgical) return 1
+        return 0
+      })
+    }
 
     return (
       <div className="space-y-1">

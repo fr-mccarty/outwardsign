@@ -66,10 +66,12 @@ class GroupMembershipPage {
     }
 
     await this.page.click('button[type="submit"]');
-    await this.page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    // Forms now redirect to edit page instead of view page
+    await this.page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const personUrl = this.page.url();
-    const personId = personUrl.split('/').pop();
+    // Extract person ID from URL (before /edit)
+    const urlParts = this.page.url().split('/');
+    const personId = urlParts[urlParts.length - 2];
 
     if (!personId) {
       throw new Error('Failed to extract person ID from created person');
