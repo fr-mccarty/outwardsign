@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DialogButton } from "@/components/dialog-button"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -162,12 +163,10 @@ export default function PetitionContextsPage() {
     >
       <div className="flex justify-end items-center mb-6">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openCreateDialog}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Context
-            </Button>
-          </DialogTrigger>
+          <DialogButton onClick={openCreateDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Context
+          </DialogButton>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>

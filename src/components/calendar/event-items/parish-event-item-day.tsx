@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
 import { useAppContext } from '@/contexts/AppContextProvider'
+import { getModuleIcon } from '@/components/calendar/module-icons'
 
 interface ParishEventItemDayProps {
   event: {
@@ -10,6 +11,7 @@ interface ParishEventItemDayProps {
     title: string
     event_type?: string
     description?: string
+    moduleType?: string | null
   }
   onClick?: (e: React.MouseEvent) => void
 }
@@ -24,6 +26,8 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
     ? EVENT_TYPE_LABELS[event.event_type]?.[userLanguage]
     : undefined
 
+  const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
+
   return (
     <div
       className={cn(
@@ -32,7 +36,10 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
       )}
       onClick={onClick}
     >
-      <div className="font-semibold text-base">{event.title}</div>
+      <div className="font-semibold text-base flex items-center gap-2">
+        {ModuleIcon && <ModuleIcon className="h-5 w-5 flex-shrink-0" />}
+        <span>{event.title}</span>
+      </div>
       {(eventTypeLabel || event.description) && (
         <div className="mt-2 space-y-1">
           {eventTypeLabel && (

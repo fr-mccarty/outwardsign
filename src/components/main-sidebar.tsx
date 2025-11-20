@@ -170,8 +170,8 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       icon: UserCog,
                     },
                     {
-                      title: "Role Directory",
-                      url: "/mass-role-directory",
+                      title: "Role Members",
+                      url: "/mass-role-members",
                       icon: UsersIcon,
                     },
                   ]}
@@ -190,7 +190,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       icon: CalendarDays,
                     },
                     {
-                      title: "Our Mass Times",
+                      title: "Mass Times Templates",
                       url: "/mass-times",
                       icon: Clock,
                     },
@@ -200,7 +200,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       icon: List,
                     },
                     {
-                      title: "Templates",
+                      title: "Role Templates",
                       url: "/mass-role-templates",
                       icon: LayoutTemplate,
                     },

@@ -387,6 +387,7 @@ All modules have been updated with consistent naming:
 | Readings | New Reading | View Reading | Save Reading | Update Reading |
 | Mass Roles | - | View Mass Role | Save Mass Role | Update Mass Role |
 | Mass Role Templates | New Template | View Template | Save Mass Role Template | Update Mass Role Template |
+| Mass Role Members | New Mass Role Member | - | - | - |
 
 ---
 

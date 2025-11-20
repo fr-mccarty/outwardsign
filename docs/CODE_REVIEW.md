@@ -45,6 +45,42 @@ This document contains a checklist of items to verify during code review. Use th
 
   See MODULE_DEVELOPMENT.md § Type Patterns for proper type structure.
 
+- [ ] **Verify src/lib/types.ts matches ALL database migrations** - The main `src/lib/types.ts` file contains TypeScript interfaces for all database tables. This file must be kept in sync with the database schema. For comprehensive verification:
+
+  **How to check:**
+  1. Review ALL migration files in `supabase/migrations/*.sql`
+  2. For each CREATE TABLE statement, find the corresponding TypeScript interface in `src/lib/types.ts`
+  3. Verify that every database column has a corresponding TypeScript property
+  4. Verify that every TypeScript property has a corresponding database column
+  5. Check data types match (UUID → string, TEXT → string, BOOLEAN → boolean, INTEGER → number, TIMESTAMPTZ → string)
+  6. Check nullable columns have optional properties (column allows NULL → property uses `field?:` or `field: string | null`)
+  7. Check array columns match (TEXT[] → string[], UUID[] → string[], JSONB → Record<string, any> or specific type)
+
+  **Common discrepancies to watch for:**
+  - **Missing fields in types.ts** - Database has columns that aren't represented in the TypeScript interface
+  - **Missing fields in database** - TypeScript interface has properties that don't exist in database
+  - **Type mismatches** - TypeScript type doesn't match SQL type (e.g., number vs string for UUIDs)
+  - **Nullability mismatches** - Database allows NULL but TypeScript property is required, or vice versa
+  - **Array type mismatches** - Database uses array column but TypeScript doesn't reflect array type
+  - **Table missing from types.ts** - Migration creates a table but no corresponding interface exists
+
+  **Critical interfaces to verify:**
+  - Parish, ParishUser, ParishSettings, UserSettings
+  - Person, PersonBlackoutDate (check naming: table is `person_blackout_dates`)
+  - Event, Location, Reading
+  - Wedding, Funeral, Baptism, Quinceanera, Presentation
+  - Mass, MassRole, MassRolesTemplate, MassRoleTemplateItem, MassRoleMember, MassIntention
+  - Group, GroupMember, GroupRole
+
+  **Known patterns:**
+  - All tables have `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
+  - Most tables have `updated_at TIMESTAMPTZ NOT NULL DEFAULT now()` with trigger
+  - All parish-scoped tables have `parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE`
+  - Junction tables typically have composite primary keys
+  - Foreign keys typically use `ON DELETE CASCADE` or `ON DELETE SET NULL`
+
+  See ARCHITECTURE.md § Data Architecture for naming conventions and patterns.
+
 ## Code Quality
 
 - [ ] **Check for unused imports** - Verify that all imports are being used and delete any unused imports. Run the linter to identify unused imports automatically.

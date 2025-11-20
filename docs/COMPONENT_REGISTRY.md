@@ -9,6 +9,7 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 - [Form Components](#form-components)
 - [Picker Components](#picker-components)
 - [Layout Components](#layout-components)
+- [Button Components](#button-components)
 - [Display Components](#display-components)
 - [UI Components (shadcn/ui)](#ui-components-shadcnui)
 
@@ -943,6 +944,83 @@ const breadcrumbs = [
 - Presentations: `HandHeartIcon`
 - Quinceañeras: `BookHeart`
 - Confirmations: `Flame`
+
+---
+
+## Button Components
+
+### DialogButton
+**Path:** `src/components/dialog-button.tsx`
+
+**Purpose:** Button component that triggers dialogs with proper cursor styling. Wraps the shadcn Button with DialogTrigger and automatically handles cursor-pointer to prevent CSS specificity issues from Radix UI's prop merging.
+
+**🔴 CRITICAL:** ALWAYS use DialogButton instead of manually wrapping Button with DialogTrigger. This ensures consistent hover states across all browsers and styling contexts.
+
+**Key Features:**
+- Automatically applies `cursor-pointer` className
+- Accepts all standard Button props (variant, size, className, onClick, etc.)
+- Handles Radix UI `asChild` prop merging correctly
+- Reduces boilerplate and ensures consistency
+
+**Props:**
+- All props from `Button` component (variant, size, className, disabled, onClick, etc.)
+- `children`: Button content (required)
+
+**Usage:**
+```tsx
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { DialogButton } from '@/components/dialog-button'
+
+// Basic usage
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogButton>
+    <Plus className="h-4 w-4 mr-2" />
+    Create New
+  </DialogButton>
+  <DialogContent>
+    {/* Dialog content */}
+  </DialogContent>
+</Dialog>
+
+// With variant and className
+<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+  <DialogButton variant="destructive" className="w-full">
+    <Trash2 className="h-4 w-4 mr-2" />
+    Delete
+  </DialogButton>
+  <DialogContent>
+    {/* Confirmation dialog */}
+  </DialogContent>
+</Dialog>
+
+// With onClick handler
+<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+  <DialogButton onClick={handleDialogOpen} variant="outline">
+    <Settings className="h-4 w-4 mr-2" />
+    Settings
+  </DialogButton>
+  <DialogContent>
+    {/* Settings dialog */}
+  </DialogContent>
+</Dialog>
+```
+
+**Why this component exists:**
+When `DialogTrigger` uses `asChild`, Radix UI merges props with the child component through polymorphism. This can cause CSS specificity issues that override the browser's default button cursor, resulting in inconsistent hover states. DialogButton solves this automatically by always including `cursor-pointer` in the className.
+
+**❌ Don't do this:**
+```tsx
+// Manual wrapping - inconsistent cursor behavior
+<DialogTrigger asChild>
+  <Button>Create New</Button>
+</DialogTrigger>
+```
+
+**✅ Do this instead:**
+```tsx
+// Use DialogButton - guaranteed consistent behavior
+<DialogButton>Create New</DialogButton>
+```
 
 ---
 

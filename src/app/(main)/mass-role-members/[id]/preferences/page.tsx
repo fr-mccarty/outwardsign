@@ -1,7 +1,7 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getPerson } from "@/lib/actions/people"
-import { getMassRolePreferences, getBlackoutDates } from "@/lib/actions/mass-role-preferences"
+import { getMassRolePreferences, getBlackoutDates } from "@/lib/actions/mass-role-members-compat"
 import { getMassRoles } from "@/lib/actions/mass-roles"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
@@ -36,8 +36,8 @@ export default async function MassRolePreferencesPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Mass Role Directory", href: "/mass-role-directory" },
-    { label: `${person.first_name} ${person.last_name}`, href: `/mass-role-directory/${person.id}` },
+    { label: "Mass Role Directory", href: "/mass-role-members" },
+    { label: `${person.first_name} ${person.last_name}`, href: `/mass-role-members/${person.id}` },
     { label: "Preferences" }
   ]
 

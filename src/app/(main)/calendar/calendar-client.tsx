@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/calendar/calendar'
 import { CalendarView, CalendarItem } from '@/components/calendar/types'
 import { PageContainer } from '@/components/page-container'
-import { Event } from '@/lib/types'
-import { getEventModuleLink } from '@/lib/actions/events'
+import { EventWithModuleLink, getEventModuleLink } from '@/lib/actions/events'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getGlobalLiturgicalEventsByMonth, GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { LiturgicalEventModal } from '@/components/liturgical-event-modal'
@@ -16,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 interface CalendarClientProps {
-  events: Event[]
+  events: EventWithModuleLink[]
   initialView: CalendarView
   initialDate?: string
 }
@@ -25,20 +24,24 @@ interface LiturgicalCalendarItem extends CalendarItem {
   isLiturgical: boolean
   liturgicalEvent?: GlobalLiturgicalEvent
   liturgicalColor?: string
+  moduleType?: string | null
 }
 
 // Transform Event to CalendarItem
-function eventToCalendarItem(event: Event): CalendarItem {
+function eventToCalendarItem(event: EventWithModuleLink): LiturgicalCalendarItem {
   return {
     id: event.id,
     date: event.start_date || '',
     title: event.name,
     event_type: event.event_type,
+    isLiturgical: false,
+    moduleType: event.moduleLink?.moduleType || null,
   }
 }
 
 export function CalendarClient({ events, initialView, initialDate }: CalendarClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { setBreadcrumbs } = useBreadcrumbs()
 
   // Parse initial date if provided, otherwise use today
@@ -54,15 +57,34 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
   // Ensure URL has view parameter on initial load
   useEffect(() => {
     // Check if URL has view parameter, if not, set it
-    const urlParams = new URLSearchParams(window.location.search)
-    if (!urlParams.has('view')) {
-      const dateParam = urlParams.get('date')
+    if (!searchParams.has('view')) {
+      const dateParam = searchParams.get('date')
       const newUrl = dateParam
         ? `/calendar?view=${initialView}&date=${dateParam}`
         : `/calendar?view=${initialView}`
       router.replace(newUrl, { scroll: false })
     }
   }, []) // Only run on mount
+
+  // Sync state with URL parameters when they change
+  useEffect(() => {
+    const urlView = searchParams.get('view') as CalendarView | null
+    const urlDate = searchParams.get('date')
+
+    // Update view if URL view parameter differs from current state
+    if (urlView && urlView !== view) {
+      setView(urlView)
+    }
+
+    // Update date if URL date parameter differs from current state
+    if (urlDate) {
+      const newDate = new Date(urlDate)
+      // Only update if the date is different (compare date strings to avoid time differences)
+      if (format(newDate, 'yyyy-MM-dd') !== format(currentDate, 'yyyy-MM-dd')) {
+        setCurrentDate(newDate)
+      }
+    }
+  }, [searchParams])
 
   // Load toggle state from localStorage
   useEffect(() => {
@@ -115,10 +137,13 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
   // Convert parish events to calendar items
   const parishCalendarItems: LiturgicalCalendarItem[] = events
     .filter(event => event.start_date)
-    .map(event => ({
-      ...eventToCalendarItem(event),
-      isLiturgical: false
-    }))
+    .map(event => {
+      const item = eventToCalendarItem(event)
+      return {
+        ...item,
+        isLiturgical: false,
+      }
+    })
 
   // Convert liturgical events to calendar items
   const liturgicalCalendarItems: LiturgicalCalendarItem[] = liturgicalEvents.map(event => ({

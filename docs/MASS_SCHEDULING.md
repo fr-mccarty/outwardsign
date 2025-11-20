@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Database Structure](#database-structure)
 - [User Workflow](#user-workflow)
 - [Architecture](#architecture)
 - [File Structure](#file-structure)
@@ -25,7 +26,7 @@
 
 ## Overview
 
-The Mass Scheduling Module provides a wizard-based interface for creating multiple Mass records with automatic minister assignments over a specified period. Instead of manually creating each Mass individually, users can define a recurring schedule pattern and let the system generate all Masses and attempt automatic role assignments based on minister preferences and availability.
+The Mass Scheduling Module provides a wizard-based interface for creating multiple Mass records with automatic minister assignments over a specified period. Instead of manually creating each Mass individually, users can define a recurring schedule pattern and let the system generate all Masses and attempt automatic role assignments based on role membership and availability (blackout dates).
 
 **Key Features:**
 - **Date Range Selection** - Define scheduling period (days, weeks, or months)
@@ -34,6 +35,40 @@ The Mass Scheduling Module provides a wizard-based interface for creating multip
 - **Automatic Assignment** - Algorithm attempts to assign ministers based on preferences and availability
 - **Review & Confirm** - Preview all Masses before creation
 - **Bulk Creation** - Creates all Mass records and Events in a single operation
+
+---
+
+## Database Structure
+
+The Mass Scheduling system uses a simplified database structure focused on role membership and unavailability tracking:
+
+### Core Tables
+
+**`mass_role_members`** - People who serve in liturgical roles
+- Links people to specific mass roles (Lector, EMHC, Altar Server, etc.)
+- Each person can have multiple role memberships
+- Fields: `person_id`, `parish_id`, `mass_role_id`, `membership_type`, `notes`, `active`
+- Membership types: `MEMBER` (default) or `LEADER`
+- Simple membership model - no complex preference fields
+
+**`person_blackout_dates`** - Person unavailability periods
+- General-purpose unavailability tracking for any person
+- Not specific to mass roles - applies to all scheduling
+- Fields: `person_id`, `start_date`, `end_date`, `reason`
+- Used to prevent assignments during vacations, travel, etc.
+
+### Key Design Decisions
+
+**Simplified Architecture:**
+- No complex preference fields (preferred_days, desired_frequency, max_per_month, etc.)
+- Role membership is binary: active or inactive
+- All scheduling constraints handled via blackout dates
+- Manual adjustments expected for fine-tuning assignments
+
+**Person-Centric Blackouts:**
+- Blackout dates are not role-specific
+- When a person is unavailable, they're unavailable for ALL roles
+- Simplifies data entry and reduces administrative burden
 
 ---
 
@@ -76,8 +111,8 @@ scheduleMasses() Server Action
 ├─────────────────────────────────────┤
 │ Phase 4: Create Role Instances      │ → mass_role_instances table
 ├─────────────────────────────────────┤
-│ Phase 5: Auto-Assignment (TODO)     │ ← mass_role_preferences
-│                                      │ ← mass_role_blackout_dates
+│ Phase 5: Auto-Assignment (TODO)     │ ← mass_role_members
+│                                      │ ← person_blackout_dates
 └─────────────────────────────────────┘
   ↓
 Result Summary
@@ -94,8 +129,8 @@ Redirect to Masses List
 
 **Read:**
 - `mass_roles_template_items` - Role requirements from template
-- `mass_role_preferences` - Minister preferences for assignment
-- `mass_role_blackout_dates` - Minister unavailability periods
+- `mass_role_members` - People who serve in each role
+- `person_blackout_dates` - Person unavailability periods
 
 ---
 
@@ -254,11 +289,6 @@ A template defines:
 
 #### Algorithm Options (Checkboxes)
 
-**Respect Minister Preferences** (Default: ON)
-- Honor preferred_days, desired_frequency
-- Respect max_per_month limits
-- Consider language preferences
-
 **Balance Workload** (Default: ON)
 - Distribute assignments evenly across eligible ministers
 - Track assignment counts per minister
@@ -266,7 +296,7 @@ A template defines:
 
 **Respect Blackout Dates** (Default: ON)
 - Never assign during unavailable periods
-- Check mass_role_blackout_dates table
+- Check person_blackout_dates table
 - Hard constraint (cannot be overridden by algorithm)
 
 **Allow Manual Adjustments** (Default: ON)
@@ -362,7 +392,6 @@ interface ScheduleMassesParams {
   schedule: MassScheduleEntry[]
   templateId: string
   algorithmOptions: {
-    respectPreferences: boolean
     balanceWorkload: boolean
     respectBlackoutDates: boolean
     allowManualAdjustments: boolean
@@ -460,23 +489,17 @@ For each Mass:
 FOR each Mass:
   FOR each role instance:
     1. Get eligible ministers (via getAvailableMinisters):
-       - Query mass_role_preferences for people with this role
-       - Filter out people with blackout dates on this date
+       - Query mass_role_members for people with this role and active=true
+       - Filter out people with blackout dates on this date (via person_blackout_dates)
 
-    2. IF respectPreferences:
-       - Filter by preferred_days and available_days (matchesPreferences)
-       - Check language capability
-       - Check max_per_month limits
-       - Exclude if outside preferences (hard constraints)
-
-    3. Check for conflicts (hasConflict):
+    2. Check for conflicts (hasConflict):
        - Exclude if already assigned to another role at same Mass time
 
-    4. IF balanceWorkload:
+    3. IF balanceWorkload:
        - Sort eligible ministers by assignmentCount ascending
        - Prefer ministers with fewer assignments
 
-    5. IF eligible_ministers.length > 0:
+    4. IF eligible_ministers.length > 0:
        - Assign first eligible minister
        - UPDATE mass_role_instances SET person_id = X WHERE id = Y
        - Mark as ASSIGNED
@@ -487,19 +510,12 @@ FOR each Mass:
 **Assignment Constraints:**
 
 **Hard Constraints** (cannot violate):
-- Person has blackout date covering this date (checked in getAvailableMinisters)
+- Person has blackout date covering this date (checked in getAvailableMinisters via person_blackout_dates)
 - Person already assigned to different role at same Mass time (checked in hasConflict)
-- Person does not have preferences for this role (checked in getAvailableMinisters)
-- Person marked unavailable on this day of week (checked in matchesPreferences)
-- Person does not speak required language (checked in matchesPreferences)
-- Person exceeds max_per_month limit (checked in algorithm)
-
-**Soft Constraints** (warning, but allowed):
-- Person assigned outside preferred_days (allowed with warning in matchesPreferences)
+- Person does not have active membership for this role (checked in getAvailableMinisters via mass_role_members)
 
 **Helper Functions Implemented:**
 - `getAvailableMinisters()` - Get all eligible ministers for role/date/time
-- `matchesPreferences()` - Check if person matches preferences for Mass
 - `hasConflict()` - Check for double-booking conflicts
 - `getMonthlyAssignmentCount()` - Get assignment count for workload balancing
 
@@ -521,8 +537,8 @@ export async function getAvailableMinisters(
 ```
 
 **Implementation:**
-1. Query `mass_role_preferences` for people with this role and active preferences
-2. For each person, check for blackout dates covering the requested date
+1. Query `mass_role_members` for people with this role where active=true
+2. For each person, check for blackout dates covering the requested date (via `person_blackout_dates`)
 3. Get current assignment count for workload balancing
 4. Return array sorted by assignment count (if balanceWorkload enabled)
 
@@ -551,7 +567,7 @@ export async function getPersonSchedulingConflicts(
 ): Promise<Array<{ date: string; reason: string }>>
 ```
 
-Queries `mass_role_blackout_dates` and returns conflicts.
+Queries `person_blackout_dates` and returns conflicts.
 
 ---
 
@@ -563,8 +579,8 @@ Queries `mass_role_blackout_dates` and returns conflicts.
 
 **Input:**
 - All unassigned role instances (sorted by date ascending)
-- All people with each required role
-- All preferences and blackout dates
+- All people with each required role (from mass_role_members)
+- All blackout dates (from person_blackout_dates)
 
 **Output:**
 - Updated mass_role_instances with person_id assignments
@@ -572,24 +588,25 @@ Queries `mass_role_blackout_dates` and returns conflicts.
 
 ### Assignment Priority
 
-1. **Respect Blackout Dates** (if enabled)
-   - Filter out people with blackouts on this date
+1. **Get Role Members**
+   - Query mass_role_members for people with this role where active=true
+   - Only active members are eligible for assignment
+
+2. **Respect Blackout Dates** (if enabled)
+   - Filter out people with blackouts on this date (via person_blackout_dates)
    - Hard constraint - never violated
 
-2. **Respect Preferences** (if enabled)
-   - Filter by preferred_days (soft constraint)
-   - Filter by available_days (hard constraint)
-   - Filter by max_per_month (hard constraint)
-   - Filter by language preferences (soft constraint)
+3. **Check Conflicts**
+   - Filter out people already assigned to another role at same Mass time
+   - Prevents double-booking
 
-3. **Balance Workload** (if enabled)
+4. **Balance Workload** (if enabled)
    - Sort eligible ministers by assignment_count ascending
    - Assign to person with fewest current assignments
    - Prevents overloading popular ministers
 
-4. **Assign First Eligible** (if no balancing)
-   - Random shuffle
-   - Assign to first person in list
+5. **Assign First Eligible** (if no balancing)
+   - Assign to first person in filtered list
 
 ### Conflict Detection
 
@@ -606,14 +623,10 @@ SELECT * FROM mass_role_instances mri
     AND e.start_time = :time
 ```
 
-**Max Per Month Exceeded:**
-Count assignments for person in current month, check against preference.max_per_month.
-
 **Blackout Period:**
 ```sql
-SELECT * FROM mass_role_blackout_dates
+SELECT * FROM person_blackout_dates
   WHERE person_id = :personId
-    AND parish_id = :parishId
     AND start_date <= :date
     AND end_date >= :date
 ```
@@ -623,8 +636,8 @@ SELECT * FROM mass_role_blackout_dates
 When no eligible ministers found, record reason:
 - "No available ministers for this role"
 - "All ministers have blackout dates"
-- "All ministers exceeded max_per_month"
 - "Conflict with existing assignment"
+- "No active members for this role"
 
 ---
 

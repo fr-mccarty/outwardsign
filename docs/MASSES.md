@@ -1,21 +1,21 @@
 # MASSES.md
 
-> **Purpose:** This document defines the Mass module architecture, components, and future features for complete Mass scheduling, role management, and communication workflows.
+> **Purpose:** Comprehensive documentation for the Mass module including architecture, role templates, scheduling, and workflow guides.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Current Implementation](#current-implementation)
+- [Current Implementation Status](#current-implementation-status)
 - [Mass Components](#mass-components)
 - [Role System Architecture](#role-system-architecture)
 - [Template System](#template-system)
-- [Scheduling & Assignment](#scheduling--assignment)
-- [Communication System](#communication-system)
-- [Substitute Management](#substitute-management)
-- [Preference Management](#preference-management)
+- [Role Membership & Availability](#role-membership--availability)
+- [Mass Scheduling Workflows](#mass-scheduling-workflows)
+- [Database Schema Reference](#database-schema-reference)
+- [Server Actions](#server-actions)
 - [User Interfaces](#user-interfaces)
-- [Database Schema](#database-schema)
 - [Future Enhancements](#future-enhancements)
+- [Related Documentation](#related-documentation)
 
 ---
 
@@ -34,9 +34,46 @@
 
 ---
 
-## Current Implementation
+## Current Implementation Status
 
-### Database Tables (Implemented)
+### What's Implemented ✅
+
+**Core Tables:**
+- ✅ `masses` - Individual Mass events
+- ✅ `mass_roles` - Role definitions (Lector, Usher, etc.)
+- ✅ `mass_roles_templates` - Template containers
+- ✅ `mass_roles_template_items` - Role requirements per template
+- ✅ `mass_role_instances` - Actual role assignments
+- ✅ `mass_role_members` - People serving in roles (simple membership)
+- ✅ `person_blackout_dates` - Unavailability tracking
+
+**Features:**
+- ✅ Standard 9-file module structure (CRUD operations)
+- ✅ Event picker integration
+- ✅ People picker for presider/homilist
+- ✅ Liturgical event picker
+- ✅ Mass Intentions (separate module, linked via event)
+- ✅ Bulk scheduling wizard with auto-assignment algorithm
+
+**Auto-Assignment Algorithm:**
+- ✅ Role membership filtering (`mass_role_members`)
+- ✅ Blackout date checking (`person_blackout_dates`)
+- ✅ Conflict detection (double-booking prevention)
+- ✅ Workload balancing across ministers
+- See [MASS_SCHEDULING.md](./MASS_SCHEDULING.md) for details
+
+### What's Not Yet Implemented ⏳
+
+- ❌ Role assignment UI in Mass form (currently basic)
+- ❌ Confirmation workflow (ministers confirm/decline assignments)
+- ❌ Substitute request system
+- ❌ Email/SMS notifications
+- ❌ Minister self-service portal
+- ❌ Assignment history tracking and reporting
+
+---
+
+## Database Tables (Implemented)
 
 **`masses` table:**
 - `id` - UUID primary key
@@ -273,6 +310,47 @@
 
 ## Template System
 
+### Architecture Overview
+
+The template system consists of interconnected tables that work together:
+
+```
+mass_roles (Role Definitions)
+    ↓
+mass_roles_templates (Template Container)
+    ↓
+mass_roles_template_items (Template Composition)
+    ↓
+masses (Individual Mass Events)
+    ↓
+mass_role_instances (Actual Assignments)
+```
+
+### Data Flow: From Template to Assignment
+
+**Step 1:** Define roles (one-time setup)
+- Parish creates role definitions (Lector, Usher, etc.) in `mass_roles` table
+- File reference: `supabase/migrations/*_create_mass_roles_table.sql`
+
+**Step 2:** Create template (one-time setup)
+- Parish creates template in `mass_roles_templates` (e.g., "Sunday Morning Mass")
+
+**Step 3:** Add items to template (one-time setup)
+- Define which roles needed in `mass_roles_template_items`
+- Example: 2 Lectors, 4 EMs, 4 Ushers, 2 Servers
+
+**Step 4:** Create Mass with template (recurring)
+- Mass created with `mass_roles_template_id` reference
+- File reference: `src/lib/actions/masses.ts:createMass()`
+
+**Step 5:** Generate role instances (automatic)
+- System creates `mass_role_instances` based on template items
+- Each instance initially has `person_id` = NULL (unfilled)
+
+**Step 6:** Assign people (manual or automated)
+- Staff assigns people to fill slots via UI or auto-assignment algorithm
+- Updates `mass_role_instances.person_id`
+
 ### Mass Type Templates
 
 **Purpose:** Define standard role configurations for different types of Masses.
@@ -393,278 +471,36 @@
 5. Role requirement builder (drag-and-drop or form-based)
 6. Validation (ensure critical roles are covered)
 
----
-
-## Scheduling & Assignment
-
-### Assignment Workflow
-
-**1. Create Mass Event**
-- Select date/time (via Event Picker)
-- Select location (church/chapel)
-- Select liturgical calendar date (auto-populated or manual)
-- Select Mass template (or start blank)
-
-**2. Assign Presider/Homilist**
-- Required for every Mass
-- Use People Picker filtered by role (priest/deacon)
-
-**3. Assign Ministers (Role-by-Role)**
-- Template pre-populates role requirements
-- For each role:
-  - View required count
-  - View list of qualified people
-  - See availability/preferences
-  - Assign person(s)
-  - Mark as confirmed/tentative
-  - Add notes
-
-**4. Auto-Assignment (Future Feature)**
-- Algorithm to suggest assignments based on:
-  - Availability preferences
-  - Recent assignment history (rotate fairly)
-  - Training/certification status
-  - Language requirements (for bilingual Masses)
-  - Preference level (preferred > willing > available)
-
-**5. Confirmation & Communication**
-- Send notifications to assigned ministers
-- Track confirmation status
-- Send reminders as Mass approaches
-
-### Assignment Status Tracking
-
-**Per assignment in `mass_roles` table:**
-- `status`: 'ASSIGNED' | 'CONFIRMED' | 'DECLINED' | 'SUBSTITUTE_REQUESTED' | 'SUBSTITUTE_FOUND' | 'NO_SHOW'
-- `confirmed_at`: Timestamp when minister confirmed
-- `notified_at`: Timestamp when notification sent
-- `notes`: Any assignment-specific notes
-
-**Proposed additional fields for `mass_roles` table:**
-```sql
-ALTER TABLE mass_roles ADD COLUMN status TEXT DEFAULT 'ASSIGNED';
-ALTER TABLE mass_roles ADD COLUMN confirmed_at TIMESTAMPTZ;
-ALTER TABLE mass_roles ADD COLUMN notified_at TIMESTAMPTZ;
-ALTER TABLE mass_roles ADD COLUMN notes TEXT;
-```
 
 ---
 
-## Communication System
+## Role Membership & Availability
 
-### Notification Types
+### Minister Role Membership
 
-**1. Initial Assignment Notification**
-- Sent when minister is first assigned to Mass
-- Includes: Mass date/time, location, role, template details
-- Action: Confirm or Request Substitute
-- Delivery: Email + in-app notification
+**Purpose:** Track which people serve in which liturgical roles using a simple membership model.
 
-**2. Reminder Notifications**
-- Sent X days before Mass (configurable per role)
-- Default: 7 days, 3 days, 1 day before
-- Includes: Mass details, role details, preparation notes
-- Action: Confirm attendance or Request Substitute
+### Simplified Architecture
 
-**3. Substitute Request Notifications**
-- Sent to eligible substitutes when someone requests replacement
-- Includes: Mass details, role, original assignee (optional)
-- Action: Accept or Decline
-- Delivery: Email + in-app notification + SMS (optional)
+**Design Philosophy:**
+- Simple role membership model (active/inactive)
+- No complex preference fields (preferred days, frequency limits, etc.)
+- All scheduling constraints handled via blackout dates
+- Manual adjustments expected for fine-tuning assignments
+- Focus on availability tracking rather than preference optimization
 
-**4. Substitute Found Notification**
-- Sent to original assignee confirming substitute found
-- Sent to substitute confirming acceptance
+### Database Structure
 
-**5. Last-Minute Changes**
-- Urgent notification for day-of changes
-- Delivery: SMS + email + in-app (all channels)
-
-**6. Post-Mass Follow-Up**
-- Thank you message
-- Feedback request (optional)
-- Report any issues (no-shows, etc.)
-
-### Communication Channels
-
-**Email:**
-- Primary channel for all notifications
-- Template-based with parish branding
-- Include calendar invite (.ics file) for assignments
-
-**In-App Notifications:**
-- Bell icon in app header
-- Notification center
-- Badge counts
-
-**SMS (Optional, Future):**
-- Requires phone number + opt-in
-- For urgent/last-minute only
-- Integration with Twilio or similar
-
-**Calendar Integration:**
-- Generate .ics files for email
-- Direct integration with Google Calendar (future)
-- Direct integration with Apple Calendar (future)
-
-### Message Templates
-
-**Template Variables:**
-- `{minister_name}` - Assigned minister's name
-- `{mass_date}` - Date of Mass
-- `{mass_time}` - Time of Mass
-- `{location}` - Church/chapel name
-- `{role}` - Minister's role
-- `{presider_name}` - Presiding priest/deacon
-- `{confirmation_link}` - Link to confirm assignment
-- `{substitute_request_link}` - Link to request substitute
-- `{preparation_notes}` - Role-specific preparation notes
-
-**Sample Template (Initial Assignment):**
-```
-Subject: Mass Assignment - {role} on {mass_date}
-
-Dear {minister_name},
-
-You have been scheduled to serve as {role} for Mass on {mass_date} at {mass_time} at {location}.
-
-Presider: {presider_name}
-
-Please confirm your availability or request a substitute by clicking below:
-- Confirm: {confirmation_link}
-- Request Substitute: {substitute_request_link}
-
-{preparation_notes}
-
-Thank you for your ministry!
-
-[Parish Name] Liturgy Team
-```
-
----
-
-## Substitute Management
-
-### Substitute Request Workflow
-
-**1. Minister Requests Substitute**
-- Minister clicks "Request Substitute" in notification or app
-- Optionally provide reason (illness, travel, conflict, etc.)
-- System marks assignment as 'SUBSTITUTE_REQUESTED'
-
-**2. System Identifies Eligible Substitutes**
-- Query for people with same role certification
-- Filter by availability preferences (if set)
-- Exclude recently assigned (rotation fairness)
-- Sort by preference level and recency
-
-**3. Notify Eligible Substitutes**
-- Send substitute request notification to eligible people
-- First-come-first-served OR coordinator approval
-- Include deadline for response (e.g., 24 hours)
-
-**4. Substitute Accepts**
-- Substitute clicks "Accept" in notification
-- System creates new `mass_roles` entry for substitute
-- Original assignment marked as 'SUBSTITUTE_FOUND'
-- Both parties notified
-
-**5. No Substitute Found**
-- If deadline passes with no acceptance:
-  - Escalate to liturgy coordinator
-  - Coordinator manually finds substitute or reassigns
-
-**6. Coordinator Override**
-- Coordinators can manually assign substitutes at any time
-- Can bypass automated process for urgent needs
-
-### Substitute Database Structure
-
-**New table: `mass_role_substitutions`**
+**Table: `mass_role_members`** (Implemented)
 ```sql
-CREATE TABLE mass_role_substitutions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  original_mass_role_id UUID NOT NULL REFERENCES mass_roles(id) ON DELETE CASCADE,
-  substitute_mass_role_id UUID REFERENCES mass_roles(id) ON DELETE SET NULL,
-  requested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  requested_by UUID NOT NULL REFERENCES people(id),
-  reason TEXT,
-  substitute_found_at TIMESTAMPTZ,
-  substitute_person_id UUID REFERENCES people(id),
-  status TEXT DEFAULT 'REQUESTED', -- 'REQUESTED' | 'FOUND' | 'NOT_FOUND' | 'CANCELLED'
-  coordinator_notes TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-**Indexes:**
-```sql
-CREATE INDEX idx_substitutions_original_role ON mass_role_substitutions(original_mass_role_id);
-CREATE INDEX idx_substitutions_substitute_role ON mass_role_substitutions(substitute_mass_role_id);
-CREATE INDEX idx_substitutions_status ON mass_role_substitutions(status);
-```
-
----
-
-## Preference Management
-
-### Minister Availability Preferences
-
-**Purpose:** Allow ministers to set their general availability preferences to improve scheduling efficiency.
-
-### Preference Types
-
-**1. Day of Week Preferences**
-- Preferred days (e.g., "I prefer Sundays at 10:30 AM")
-- Available days (e.g., "I'm available for weekday Masses")
-- Unavailable days (e.g., "Never schedule me for Saturday evening")
-
-**2. Time Preferences**
-- Preferred times (e.g., "Morning Masses only")
-- Available times (e.g., "Willing to do evening Masses occasionally")
-- Unavailable times (e.g., "Not available before 9:00 AM")
-
-**3. Frequency Preferences**
-- Desired frequency (e.g., "Once per month", "Twice per month", "Weekly")
-- Maximum frequency (e.g., "No more than 2x per month")
-- Blackout dates (specific dates unavailable - vacation, etc.)
-
-**4. Role Preferences**
-- Primary role (e.g., "Lector - First Reading")
-- Secondary roles (e.g., "Willing to do Petitions if needed")
-- Not willing to do (e.g., "Not available for EEM")
-
-**5. Language Preferences**
-- Language abilities (e.g., "English fluent", "Spanish intermediate")
-- Willing to serve at bilingual Masses
-
-**6. Special Preferences**
-- Notes (e.g., "Prefer to serve with spouse", "Need wheelchair access")
-
-### Preference Database Structure
-
-**New table: `minister_preferences`**
-```sql
-CREATE TABLE minister_preferences (
+CREATE TABLE mass_role_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  role_id UUID REFERENCES group_roles(id) ON DELETE CASCADE, -- NULL = general preferences
+  mass_role_id UUID REFERENCES mass_roles(id) ON DELETE CASCADE,
 
-  -- Day/Time preferences
-  preferred_days JSONB, -- ["SUNDAY", "SATURDAY"]
-  available_days JSONB, -- ["MONDAY", "WEDNESDAY"]
-  unavailable_days JSONB, -- ["FRIDAY"]
-  preferred_times JSONB, -- ["09:00-12:00", "17:00-19:00"]
-  unavailable_times JSONB, -- ["06:00-08:00"]
-
-  -- Frequency preferences
-  desired_frequency TEXT, -- 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'OCCASIONAL'
-  max_per_month INTEGER, -- Maximum assignments per month
-
-  -- Language
-  languages JSONB, -- [{"language": "en", "level": "fluent"}, {"language": "es", "level": "intermediate"}]
+  -- Membership type (MEMBER or LEADER)
+  membership_type TEXT NOT NULL DEFAULT 'MEMBER',
 
   -- Special notes
   notes TEXT,
@@ -675,13 +511,17 @@ CREATE TABLE minister_preferences (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-  UNIQUE(person_id, parish_id, role_id)
+  -- Each person can have one membership record per role per parish
+  UNIQUE(person_id, parish_id, mass_role_id),
+
+  -- Ensure membership_type is valid
+  CHECK (membership_type IN ('MEMBER', 'LEADER'))
 );
 ```
 
-**New table: `minister_blackout_dates`**
+**Table: `person_blackout_dates`** (Implemented)
 ```sql
-CREATE TABLE minister_blackout_dates (
+CREATE TABLE person_blackout_dates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
@@ -693,23 +533,33 @@ CREATE TABLE minister_blackout_dates (
 );
 ```
 
+**Key Design Decisions:**
+- **Binary Membership** - Person is either an active member of a role or not
+- **Membership Types** - Each membership has a type: `MEMBER` (default) or `LEADER`
+  - Leaders can be identified for coordination and communication purposes
+  - Both members and leaders are eligible for scheduling assignments
+- **Person-Centric Blackouts** - Blackout dates apply to all roles (not role-specific)
+- **Notes Field** - Capture special requirements or preferences as free text
+- **Simple Querying** - Easy to find all active members for a role
+- **Manual Fine-Tuning** - Coordinators make final scheduling decisions
+
 **Indexes:**
 ```sql
-CREATE INDEX idx_minister_prefs_person ON minister_preferences(person_id);
-CREATE INDEX idx_minister_prefs_parish ON minister_preferences(parish_id);
-CREATE INDEX idx_minister_prefs_role ON minister_preferences(role_id);
-CREATE INDEX idx_blackout_person ON minister_blackout_dates(person_id);
-CREATE INDEX idx_blackout_dates ON minister_blackout_dates(start_date, end_date);
+CREATE INDEX idx_mass_role_members_person ON mass_role_members(person_id);
+CREATE INDEX idx_mass_role_members_parish ON mass_role_members(parish_id);
+CREATE INDEX idx_mass_role_members_role ON mass_role_members(mass_role_id);
+CREATE INDEX idx_mass_role_members_active ON mass_role_members(active);
+CREATE INDEX idx_person_blackout_person ON person_blackout_dates(person_id);
+CREATE INDEX idx_person_blackout_dates ON person_blackout_dates(start_date, end_date);
 ```
 
 ### Preference Management UI (To Be Built)
 
 **Minister Self-Service Portal:**
 1. **My Availability** page
-   - Set day/time preferences
-   - Set frequency preferences
-   - Manage blackout dates
-   - Role preferences
+   - View my role memberships (which roles I serve in)
+   - Manage blackout dates (vacation, travel, commitments)
+   - Add notes about special requirements
 
 2. **My Assignments** page
    - Upcoming assignments (calendar view)
@@ -723,20 +573,142 @@ CREATE INDEX idx_blackout_dates ON minister_blackout_dates(start_date, end_date)
    - My substitute history
 
 **Coordinator Interface:**
-1. **Minister Directory**
-   - Filter by role, availability, language
-   - View minister preferences
-   - Override preferences for individual assignments
+1. **Role Membership Management**
+   - List all people who serve in each role
+   - Filter by role, active/inactive status
+   - View blackout dates for each person
+   - Add/remove people from roles
+   - Mark memberships as active/inactive
 
 2. **Assignment Dashboard**
    - Unfilled roles highlighted
-   - Suggested assignments based on preferences
-   - Drag-and-drop assignment interface
+   - List of available ministers for each role (active members only)
+   - Check blackout dates before assigning
+   - Manual assignment interface
 
 3. **Substitute Management**
    - Pending substitute requests
-   - Manually assign substitutes
+   - Manually assign substitutes from active role members
    - Contact ministers directly
+
+---
+
+## Mass Scheduling Workflows
+
+### Individual Mass Creation
+
+**Standard workflow for creating a single Mass:**
+
+1. Navigate to `/masses` → Click "Create New Mass"
+2. Fill Mass Form:
+   - Select/create Event (date, time, location)
+   - Select presider and homilist (People Picker)
+   - Select liturgical calendar date (optional)
+   - Select Mass Role Template (optional)
+   - Add announcements, petitions, notes
+3. Save Mass
+4. (Future) Assign ministers to roles via role assignment UI
+
+**File References:**
+- Form: `src/app/(main)/masses/mass-form.tsx`
+- Create page: `src/app/(main)/masses/create/page.tsx`
+- Server action: `src/lib/actions/masses.ts:createMass()`
+
+### Bulk Mass Scheduling
+
+**For scheduling multiple Masses over a period:**
+
+Use the Mass Scheduling Wizard at `/masses/schedule`. This provides:
+- Date range selection
+- Recurring schedule pattern (days/times)
+- Template-based role requirements
+- Automatic minister assignment algorithm
+- Interactive assignment editor
+
+**See [MASS_SCHEDULING.md](./MASS_SCHEDULING.md) for complete documentation** of the bulk scheduling workflow, including:
+- Wizard steps (5-step process)
+- Auto-assignment algorithm details
+- Assignment editor features
+- Server action specifications
+- Testing guidelines
+
+**File References:**
+- Wizard: `src/app/(main)/masses/schedule/schedule-masses-client.tsx`
+- Server action: `src/lib/actions/mass-scheduling.ts:scheduleMasses()`
+- Assignment grid: `src/components/mass-schedule-assignment-grid.tsx`
+
+---
+
+## Database Schema Reference
+
+### Core Tables
+
+See [Current Implementation Status](#current-implementation-status) for complete table listing.
+
+**Key Relationships:**
+```sql
+-- A Mass references a template
+masses.mass_roles_template_id → mass_roles_templates.id
+
+-- Template items define role requirements
+mass_roles_template_items.template_id → mass_roles_templates.id
+mass_roles_template_items.mass_role_id → mass_roles.id
+
+-- Role instances link Masses to specific assignments
+mass_role_instances.mass_id → masses.id
+mass_role_instances.person_id → people.id
+mass_role_instances.mass_roles_template_item_id → mass_roles_template_items.id
+
+-- Role membership tracks who serves in which roles
+mass_role_members.person_id → people.id
+mass_role_members.mass_role_id → mass_roles.id
+
+-- Blackout dates track unavailability
+person_blackout_dates.person_id → people.id
+```
+
+**Migration Files:**
+- Core tables: `supabase/migrations/20251118000001_create_mass_role_members_table.sql`
+- See migration directory for complete schema
+
+---
+
+## Server Actions
+
+### Mass CRUD Operations
+
+**File:** `src/lib/actions/masses.ts`
+
+**Key Functions:**
+- `getMasses(filters?)` - Fetch masses with presider/homilist/event relations
+- `getMassesPaginated(params?)` - Paginated mass list
+- `getMass(id)` - Fetch single mass
+- `getMassWithRelations(id)` - Fetch mass with ALL relations including mass_roles array
+- `createMass(data)` - Create new mass
+- `updateMass(id, data)` - Update mass
+- `deleteMass(id)` - Delete mass
+
+**TypeScript Interfaces:**
+- `Mass` - Base mass type
+- `MassWithNames` - Mass with presider/homilist/event names
+- `MassWithRelations` - Mass with all related data including mass_roles array
+- `CreateMassData` - Create payload
+- `UpdateMassData` - Update payload (all optional)
+
+### Mass Scheduling Operations
+
+**File:** `src/lib/actions/mass-scheduling.ts`
+
+**Primary Function:**
+- `scheduleMasses(params)` - Bulk create Masses with auto-assignment
+- Returns: Created masses count, assignment statistics, detailed results
+
+**Supporting Functions:**
+- `getAvailableMinisters(roleId, date, time, parishId)` - Get eligible ministers
+- `assignMinisterToRole(massRoleInstanceId, personId)` - Manual assignment
+- `getPersonSchedulingConflicts(personId, startDate, endDate)` - Check blackouts
+
+**See [MASS_SCHEDULING.md](./MASS_SCHEDULING.md)** for complete server action specifications.
 
 ---
 
@@ -797,136 +769,91 @@ CREATE INDEX idx_blackout_dates ON minister_blackout_dates(start_date, end_date)
 - Drag-and-drop interface (future)
 - Bulk actions: Notify all, Confirm all
 
-**4. Minister Directory** (`/ministers`)
+**4. Minister List** (`/ministers`)
 - Filterable list of all ministers
-- Columns: Name, Roles, Preferences, Recent Assignments, Status
-- Actions: View Preferences, Assign to Mass, Contact
+- Columns: Name, Role Memberships, Recent Assignments, Status
+- Actions: View Details, Assign to Mass, Contact
 
 **5. Minister Detail** (`/ministers/[id]`)
 - Minister profile
-- Roles and certifications
-- Availability preferences
+- Role memberships (active/inactive)
+- Blackout dates
 - Assignment history
 - Communication log
+- Notes
 
-**6. Template Management** (`/mass-templates`)
+**6. Role Membership Management** (`/mass-role-members`)
+- List people serving in each role
+- Filter by role, active status
+- Add/remove people from roles
+- View blackout dates
+- Bulk operations
+
+**7. Template Management** (`/mass-templates`)
 - List of templates
 - Create/Edit/Clone/Delete templates
 - Role requirement builder
 
-**7. Substitute Management** (`/substitutes`)
+**8. Substitute Management** (`/substitutes`)
 - Pending substitute requests
 - Filter by date, role, status
 - Manually assign substitutes
 - Communication tools
 
-**8. Reports** (`/reports/masses`)
+**9. Reports** (`/reports/masses`)
 - Minister participation reports
 - Role coverage reports
 - No-show tracking
 - Communication effectiveness
 
----
-
-## Database Schema
-
-### Current Tables (Implemented)
-
-See [Current Implementation](#current-implementation) section above.
-
-### Proposed New Tables
-
-**1. `minister_preferences`** - See [Preference Management](#preference-management)
-
-**2. `minister_blackout_dates`** - See [Preference Management](#preference-management)
-
-**3. `mass_role_substitutions`** - See [Substitute Management](#substitute-management)
-
-**4. `mass_role_notifications`** (Optional - for tracking communication)
-```sql
-CREATE TABLE mass_role_notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  mass_role_id UUID NOT NULL REFERENCES mass_roles(id) ON DELETE CASCADE,
-  notification_type TEXT NOT NULL, -- 'ASSIGNMENT' | 'REMINDER' | 'SUBSTITUTE_REQUEST' | 'CONFIRMATION' | 'CHANGE'
-  sent_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  delivery_method TEXT NOT NULL, -- 'EMAIL' | 'SMS' | 'IN_APP'
-  status TEXT DEFAULT 'SENT', -- 'SENT' | 'DELIVERED' | 'FAILED' | 'OPENED' | 'CLICKED'
-  recipient_email TEXT,
-  recipient_phone TEXT,
-  message_body TEXT,
-  metadata JSONB, -- For tracking opens, clicks, etc.
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-### Proposed Table Modifications
-
-**Modify `mass_roles` table:**
-```sql
--- Add status tracking
-ALTER TABLE mass_roles ADD COLUMN status TEXT DEFAULT 'ASSIGNED';
-ALTER TABLE mass_roles ADD COLUMN confirmed_at TIMESTAMPTZ;
-ALTER TABLE mass_roles ADD COLUMN notified_at TIMESTAMPTZ;
-ALTER TABLE mass_roles ADD COLUMN notes TEXT;
-
--- Add indexes
-CREATE INDEX idx_mass_roles_status ON mass_roles(status);
-```
-
-**Modify `people` table (if needed for contact preferences):**
-```sql
--- Add communication preferences
-ALTER TABLE people ADD COLUMN notification_email TEXT;
-ALTER TABLE people ADD COLUMN notification_phone TEXT;
-ALTER TABLE people ADD COLUMN sms_opt_in BOOLEAN DEFAULT false;
-ALTER TABLE people ADD COLUMN email_opt_in BOOLEAN DEFAULT true;
-```
 
 ---
 
 ## Future Enhancements
 
-### Phase 1 (Immediate Needs)
-- [ ] Role assignment UI in Mass form
-- [ ] Basic notification system (email)
-- [ ] Confirmation workflow (confirm/decline)
-- [ ] Template role configuration UI
-- [ ] Minister directory
+### Implemented Features ✅
+- ✅ Role membership tables (`mass_role_members`, `person_blackout_dates`)
+- ✅ Bulk scheduling wizard with auto-assignment algorithm
+- ✅ Workload balancing across ministers
+- ✅ Blackout date enforcement
+- ✅ Conflict detection (double-booking prevention)
+- ✅ Interactive assignment grid for manual adjustments
 
-### Phase 2 (Short Term)
-- [ ] Substitute request workflow
-- [ ] Minister preference management
-- [ ] Blackout dates
-- [ ] Assignment history tracking
-- [ ] Basic reporting
+### Phase 1: Enhanced Assignment UI
+- [ ] Role assignment section in individual Mass form
+- [ ] Visual indicators for filled/unfilled roles
+- [ ] Quick assign from available ministers list
+- [ ] Template role configuration UI (create/edit templates)
 
-### Phase 3 (Medium Term)
-- [ ] Auto-assignment algorithm
-- [ ] SMS notifications
+### Phase 2: Communication & Workflow
+- [ ] Email notification system for assignments
+- [ ] Minister confirmation workflow (confirm/decline)
+- [ ] Substitute request system with automated matching
 - [ ] Calendar integration (.ics files)
+- [ ] Assignment history tracking per minister
+
+### Phase 3: Minister Portal
+- [ ] Minister self-service dashboard (`/my-ministry`)
+- [ ] View upcoming assignments
+- [ ] Manage blackout dates
+- [ ] Request substitutes
+- [ ] Confirm/decline assignments
+- [ ] View assignment history
+
+### Phase 4: Advanced Features
+- [ ] SMS notifications (Twilio integration)
+- [ ] Mobile-optimized interface
+- [ ] Advanced reporting (minister utilization, coverage gaps)
+- [ ] Training/certification tracking
 - [ ] Drag-and-drop assignment interface
-- [ ] Mobile-optimized minister portal
-
-### Phase 4 (Long Term)
-- [ ] Mobile app (iOS/Android)
-- [ ] Advanced analytics/reporting
-- [ ] AI-powered scheduling suggestions
-- [ ] Multi-parish coordination (for shared ministers)
-- [ ] Integration with parish management systems
-- [ ] Music ministry scheduling (separate module)
-- [ ] Training/certification tracking module
-- [ ] Volunteer hour tracking for ministers
-
-### Advanced Features (Future Vision)
-- [ ] Real-time collaboration (multiple coordinators)
-- [ ] Version history for Mass assignments
-- [ ] Template sharing marketplace
-- [ ] Automated reminder escalation
 - [ ] No-show tracking and analytics
+
+### Future Vision
+- [ ] Mobile app (iOS/Android)
+- [ ] Multi-parish coordination
+- [ ] AI-powered scheduling suggestions
+- [ ] Template sharing marketplace
 - [ ] Minister appreciation/recognition system
-- [ ] Integration with liturgical calendar API for automatic Mass creation
-- [ ] Bilingual support throughout interface
-- [ ] Accessibility features (screen reader optimization, high contrast, keyboard navigation)
 
 ---
 
@@ -940,11 +867,12 @@ ALTER TABLE people ADD COLUMN email_opt_in BOOLEAN DEFAULT true;
 
 ### High Priority (Should Have Soon)
 1. **Substitute Requests** - Ministers need ability to find substitutes
-2. **Preference Management** - Ministers set availability preferences
-3. **Minister Directory** - View all ministers and their roles/preferences
+2. **Role Membership Management** - Add/remove people from roles, manage active status
+3. **Blackout Date Management** - UI for ministers to set unavailable periods
+4. **Minister List** - View all ministers and their role memberships
 
 ### Medium Priority (Nice to Have)
-1. **Auto-Assignment** - Suggest assignments based on preferences
+1. **Auto-Assignment** - Suggest assignments based on role membership and blackout dates
 2. **Reporting** - Track minister participation and role coverage
 3. **Calendar Integration** - .ics files for email notifications
 
@@ -979,22 +907,29 @@ ALTER TABLE people ADD COLUMN email_opt_in BOOLEAN DEFAULT true;
 ### Edge Cases
 - Minister assigned to multiple roles in same Mass
 - Last-minute cancellations (day-of)
-- No qualified substitutes available
-- Minister preferences conflict with parish needs
+- No active role members available for assignment
+- Minister on blackout dates but needed urgently
 - Bilingual Mass coverage
-- Minister leaves parish (archive assignments)
+- Minister leaves parish (mark memberships inactive, archive assignments)
 
 ---
 
 ## Related Documentation
 
+**Mass Module Specific:**
+- **[MASS_SCHEDULING.md](./MASS_SCHEDULING.md)** - Complete bulk scheduling wizard documentation (workflow, algorithm, UI components)
+
+**General Patterns:**
 - [MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md) - Standard 9-file module structure
 - [FORMS.md](./FORMS.md) - Form patterns and component usage
-- [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md) - Reusable components
-- [PICKER_PATTERNS.md](./PICKER_PATTERNS.md) - Picker modal behavior
+- [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md) - Reusable components (pickers, form components)
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Data architecture and server actions patterns
+
+**Related Modules:**
+- [GROUP_MEMBER_DIRECTORY.md](./GROUP_MEMBER_DIRECTORY.md) - Similar person-role membership pattern (different use case)
 
 ---
 
-**Last Updated:** 2025-11-15
-**Status:** Planning/Architecture Document
-**Next Steps:** Begin Phase 1 implementation (Role Assignment UI)
+**Last Updated:** 2025-11-20
+**Status:** Active Development
+**Current Focus:** Bulk scheduling wizard (implemented), enhanced assignment UI (planned)

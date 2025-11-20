@@ -44,6 +44,9 @@
 > - **Developer/AI Documentation** (this file and `docs/` directory) - Technical documentation for AI agents and developers building and maintaining the application. Includes architecture patterns, API references, implementation guidelines, and internal system documentation.
 > - **User Documentation** (`src/app/documentation/content/`) - Public-facing, bilingual end-user guides, tutorials, and help content for parish staff and administrators using Outward Sign. Located at `/documentation` route in the application.
 
+> **📝 Documentation Best Practice:**
+> - **Do not repeat code snippets that are already in the project** - Reference existing code with file paths and line numbers instead of duplicating code in documentation. This prevents documentation from becoming outdated when code changes.
+
 **The `docs/` directory contains comprehensive, in-depth developer/AI documentation on specialized topics.**
 
 When you need detailed information on forms, styling, components, modules, testing, liturgical calendar system, or other specific topics, search the `docs/` directory. Files are named descriptively to make them easy to discover.

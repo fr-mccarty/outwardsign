@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
+import { DialogButton } from '@/components/dialog-button'
 import {
   Select,
   SelectContent,
@@ -92,19 +92,17 @@ export function TemplateSelectorDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <div className="flex flex-col gap-1">
-          {/*<span className="text-xs text-muted-foreground">Template:</span>*/}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-auto py-2 px-3 justify-start text-left font-normal"
-          >
-            <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span className="text-sm truncate">{currentTemplate?.name || 'Default'}</span>
-          </Button>
-        </div>
-      </DialogTrigger>
+      <div className="flex flex-col gap-1">
+        {/*<span className="text-xs text-muted-foreground">Template:</span>*/}
+        <DialogButton
+          variant="outline"
+          size="sm"
+          className="h-auto py-2 px-3 justify-start text-left font-normal"
+        >
+          <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
+          <span className="text-sm truncate">{currentTemplate?.name || 'Default'}</span>
+        </DialogButton>
+      </div>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Change {moduleName} Template</DialogTitle>

@@ -1,26 +1,31 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { getModuleIcon } from '@/components/calendar/module-icons'
 
 interface ParishEventItemMonthProps {
   event: {
     id: string
     title: string
+    moduleType?: string | null
   }
   onClick?: (e: React.MouseEvent) => void
 }
 
 export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthProps) {
+  const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
+
   return (
     <div
       className={cn(
-        "text-xs px-2 py-1 rounded truncate cursor-pointer transition-all",
+        "text-xs px-2 py-1 rounded cursor-pointer transition-all flex items-center gap-1",
         "bg-card text-card-foreground border",
         "hover:shadow-md hover:scale-[1.02] hover:border-primary/50 hover:bg-accent/50"
       )}
       onClick={onClick}
     >
-      {event.title}
+      {ModuleIcon && <ModuleIcon className="h-3 w-3 flex-shrink-0" />}
+      <span className="truncate">{event.title}</span>
     </div>
   )
 }

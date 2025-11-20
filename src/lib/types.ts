@@ -203,6 +203,7 @@ export interface ParishUser {
   parish_id: string
   roles: string[]
   enabled_modules: string[]
+  created_at: string
 }
 
 export interface UserSettings {
@@ -323,7 +324,7 @@ export interface GroupMember {
   id: string
   group_id: string
   person_id: string
-  role?: string
+  group_role_id?: string
   joined_at: string
   person?: {
     id: string
@@ -346,6 +347,7 @@ export interface Person {
   zipcode?: string
   sex?: 'Male' | 'Female'
   note?: string
+  mass_times_template_item_ids?: string[]
   created_at: string
   updated_at: string
 }
@@ -575,6 +577,8 @@ export interface GroupRole {
   name: string
   description?: string
   note?: string
+  is_active: boolean
+  display_order?: number
   created_at: string
   updated_at: string
 }
@@ -584,6 +588,7 @@ export interface MassRolesTemplate {
   parish_id: string
   name: string
   description?: string
+  is_active: boolean
   note?: string
   parameters?: Record<string, any>
   created_at: string
@@ -598,8 +603,11 @@ export interface Mass {
   homilist_id?: string
   liturgical_event_id?: string
   mass_roles_template_id?: string
+  mass_time_template_item_id?: string
   status?: MassStatus
   mass_template_id?: string
+  name?: string
+  description?: string
   announcements?: string
   note?: string
   petitions?: string
@@ -620,6 +628,25 @@ export interface MassRole {
   updated_at: string
 }
 
+// Mass role members (people who serve in liturgical mass roles)
+export interface MassRoleMember {
+  id: string
+  person_id: string
+  parish_id: string
+  mass_role_id?: string
+  membership_type: 'MEMBER' | 'LEADER'
+  notes?: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Mass role member with person and role details
+export interface MassRoleMemberWithDetails extends MassRoleMember {
+  person: Person
+  mass_role: MassRole | null
+}
+
 // Actual mass role assignments (person assigned to a mass role)
 export interface MassRoleInstance {
   id: string
@@ -633,9 +660,10 @@ export interface MassRoleInstance {
 // Mass role template items (role requirements within a template)
 export interface MassRoleTemplateItem {
   id: string
-  template_id: string
+  mass_roles_template_id: string
   mass_role_id: string
   count: number
+  note?: string
   position: number
   created_at: string
   updated_at: string

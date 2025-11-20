@@ -31,7 +31,6 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
 
   // Step 4: Algorithm Options
   const [algorithmOptions, setAlgorithmOptions] = useState({
-    respectPreferences: true,
     balanceWorkload: true,
     respectBlackoutDates: true,
     allowManualAdjustments: true,

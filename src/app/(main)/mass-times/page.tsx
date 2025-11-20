@@ -8,9 +8,7 @@ import { getMassTimesPaginated } from '@/lib/actions/mass-times'
 interface PageProps {
   searchParams: Promise<{
     search?: string
-    mass_type_id?: string
-    language?: string
-    active?: string
+    is_active?: string
   }>
 }
 
@@ -29,29 +27,27 @@ export default async function MassTimesPage({ searchParams }: PageProps) {
   const params = await searchParams
   const filters = {
     search: params.search,
-    mass_type_id: params.mass_type_id,
-    language: params.language as any,
-    active: params.active === 'true' ? true : params.active === 'false' ? false : undefined,
+    is_active: params.is_active === 'true' ? true : params.is_active === 'false' ? false : undefined,
   }
 
-  // Fetch mass times server-side with filters using paginated query to get relations
+  // Fetch mass times templates server-side with filters using paginated query
   const result = await getMassTimesPaginated({ ...filters, limit: 1000 })
 
   // Compute stats server-side
   const stats = {
     total: result.items.length,
-    active: result.items.filter((mt) => mt.active).length,
+    active: result.items.filter((mt) => mt.is_active).length,
   }
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Mass Times', href: '/mass-times' },
+    { label: 'Mass Times Templates', href: '/mass-times' },
   ]
 
   return (
     <PageContainer
-      title="Mass Times"
-      description="Manage recurring mass schedules for your parish."
+      title="Mass Times Templates"
+      description="Manage mass times templates for different seasons and periods."
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassTimesListClient initialData={result.items} stats={stats} />

@@ -434,6 +434,15 @@ export const USER_PARISH_ROLE_LABELS: Record<UserParishRoleType, { en: string; e
 // See: src/lib/actions/mass-roles.ts for CRUD operations
 // Default roles are seeded during parish creation in src/lib/actions/setup.ts
 
+// Mass Role Membership Type Constants
+export const MASS_ROLE_MEMBERSHIP_TYPE_VALUES = ['MEMBER', 'LEADER'] as const
+export type MassRoleMembershipType = typeof MASS_ROLE_MEMBERSHIP_TYPE_VALUES[number]
+
+export const MASS_ROLE_MEMBERSHIP_TYPE_LABELS: Record<MassRoleMembershipType, { en: string; es: string }> = {
+  MEMBER: { en: 'Member', es: 'Miembro' },
+  LEADER: { en: 'Leader', es: 'Líder' }
+}
+
 // ============================================================================
 // PETITION TEMPLATES
 // ============================================================================

@@ -32,8 +32,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import { DialogButton } from "@/components/dialog-button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { SettingsPage } from '@/components/settings-page'
 import { Save, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Send, FileText, Edit } from "lucide-react"
@@ -672,12 +672,10 @@ export function ParishSettingsClient({
       <FormSectionCard title={`Parish Members (${members.length})`}>
         <div className="flex justify-end mb-4">
           <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Invite Member
-              </Button>
-            </DialogTrigger>
+            <DialogButton>
+              <Plus className="h-4 w-4 mr-2" />
+              Invite Member
+            </DialogButton>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Invite Parish Member</DialogTitle>

@@ -25,25 +25,25 @@ export default async function MassTimeViewPage({ params }: PageProps) {
   // Parse params (Next.js 15 requires await)
   const { id } = await params
 
-  // Fetch mass time with relations
+  // Fetch mass times template
   const massTime = await getMassTimeWithRelations(id)
   if (!massTime) {
     notFound()
   }
 
-  // Build dynamic title from mass type
-  const title = massTime.mass_type?.label_en || 'Mass Time'
+  // Build dynamic title from template name
+  const title = massTime.name || 'Mass Times Template'
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Mass Times', href: '/mass-times' },
+    { label: 'Mass Times Templates', href: '/mass-times' },
     { label: 'View' },
   ]
 
   return (
     <PageContainer
       title={title}
-      description="View mass time details and schedule information."
+      description="View mass times template details."
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassTimeViewClient massTime={massTime} />

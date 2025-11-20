@@ -1,16 +1,16 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getPerson } from "@/lib/actions/people"
-import { getMassRolePreferences, getBlackoutDates, getPersonRoleStats } from "@/lib/actions/mass-role-preferences"
+import { getMassRolePreferences, getBlackoutDates, getPersonRoleStats } from "@/lib/actions/mass-role-members-compat"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { MassRoleDirectoryViewClient } from './mass-role-directory-view-client'
+import { MassRoleMembersViewClient } from './mass-role-members-view-client'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function MassRoleDirectoryDetailPage({ params }: PageProps) {
+export default async function MassRoleMembersDetailPage({ params }: PageProps) {
   const supabase = await createClient()
 
   // Check authentication server-side
@@ -35,7 +35,7 @@ export default async function MassRoleDirectoryDetailPage({ params }: PageProps)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Mass Role Directory", href: "/mass-role-directory" },
+    { label: "Mass Role Directory", href: "/mass-role-members" },
     { label: `${person.first_name} ${person.last_name}` }
   ]
 
@@ -45,7 +45,7 @@ export default async function MassRoleDirectoryDetailPage({ params }: PageProps)
       description="Mass role assignments and preferences"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <MassRoleDirectoryViewClient
+      <MassRoleMembersViewClient
         person={person}
         preferences={preferences}
         blackoutDates={blackoutDates}

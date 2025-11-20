@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Save, X, CalendarX } from "lucide-react"
-import { MassRoleBlackoutDate } from "@/lib/types"
-import { createBlackoutDate, deleteBlackoutDate } from "@/lib/actions/mass-role-preferences"
+import type { MassRoleBlackoutDate } from "@/lib/actions/mass-role-members-compat"
+import { createBlackoutDate, deleteBlackoutDate } from "@/lib/actions/mass-role-members-compat"
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { formatDate } from "@/lib/utils/formatters"

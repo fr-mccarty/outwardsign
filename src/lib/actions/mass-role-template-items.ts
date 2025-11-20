@@ -8,7 +8,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 // Types
 export interface MassRoleTemplateItem {
   id: string
-  template_id: string
+  mass_roles_template_id: string
   mass_role_id: string
   count: number
   position: number
@@ -25,7 +25,7 @@ export interface MassRoleTemplateItemWithRole extends MassRoleTemplateItem {
 }
 
 export interface CreateTemplateItemData {
-  template_id: string
+  mass_roles_template_id: string
   mass_role_id: string
   count?: number
 }
@@ -46,7 +46,7 @@ export async function getTemplateItems(templateId: string): Promise<MassRoleTemp
       *,
       mass_role:mass_roles(id, name, description)
     `)
-    .eq('template_id', templateId)
+    .eq('mass_roles_template_id', templateId)
     .order('position', { ascending: true })
 
   if (error) {
@@ -67,7 +67,7 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
   const { data: existingItems } = await supabase
     .from('mass_roles_template_items')
     .select('position')
-    .eq('template_id', data.template_id)
+    .eq('mass_roles_template_id', data.mass_roles_template_id)
     .order('position', { ascending: false })
     .limit(1)
 
@@ -78,7 +78,7 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
   const { data: item, error } = await supabase
     .from('mass_roles_template_items')
     .insert({
-      template_id: data.template_id,
+      mass_roles_template_id: data.mass_roles_template_id,
       mass_role_id: data.mass_role_id,
       count: data.count || 1,
       position: nextPosition
@@ -94,8 +94,8 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
     throw new Error('Failed to add mass role to template')
   }
 
-  revalidatePath(`/mass-role-templates/${data.template_id}`)
-  revalidatePath(`/mass-role-templates/${data.template_id}/edit`)
+  revalidatePath(`/mass-role-templates/${data.mass_roles_template_id}`)
+  revalidatePath(`/mass-role-templates/${data.mass_roles_template_id}/edit`)
   return item
 }
 
@@ -121,16 +121,16 @@ export async function updateTemplateItem(id: string, data: UpdateTemplateItemDat
     throw new Error('Failed to update template item')
   }
 
-  // Get template_id for revalidation
+  // Get mass_roles_template_id for revalidation
   const { data: templateItem } = await supabase
     .from('mass_roles_template_items')
-    .select('template_id')
+    .select('mass_roles_template_id')
     .eq('id', id)
     .single()
 
   if (templateItem) {
-    revalidatePath(`/mass-role-templates/${templateItem.template_id}`)
-    revalidatePath(`/mass-role-templates/${templateItem.template_id}/edit`)
+    revalidatePath(`/mass-role-templates/${templateItem.mass_roles_template_id}`)
+    revalidatePath(`/mass-role-templates/${templateItem.mass_roles_template_id}/edit`)
   }
 
   return item
@@ -142,10 +142,10 @@ export async function deleteTemplateItem(id: string): Promise<void> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Get the item to find template_id and position
+  // Get the item to find mass_roles_template_id and position
   const { data: itemToDelete } = await supabase
     .from('mass_roles_template_items')
-    .select('template_id, position')
+    .select('mass_roles_template_id, position')
     .eq('id', id)
     .single()
 
@@ -168,7 +168,7 @@ export async function deleteTemplateItem(id: string): Promise<void> {
   const { data: remainingItems } = await supabase
     .from('mass_roles_template_items')
     .select('id, position')
-    .eq('template_id', itemToDelete.template_id)
+    .eq('mass_roles_template_id', itemToDelete.mass_roles_template_id)
     .gt('position', itemToDelete.position)
     .order('position', { ascending: true })
 
@@ -182,8 +182,8 @@ export async function deleteTemplateItem(id: string): Promise<void> {
     }
   }
 
-  revalidatePath(`/mass-role-templates/${itemToDelete.template_id}`)
-  revalidatePath(`/mass-role-templates/${itemToDelete.template_id}/edit`)
+  revalidatePath(`/mass-role-templates/${itemToDelete.mass_roles_template_id}`)
+  revalidatePath(`/mass-role-templates/${itemToDelete.mass_roles_template_id}/edit`)
 }
 
 // Reorder template items based on drag-and-drop
@@ -198,7 +198,7 @@ export async function reorderTemplateItems(templateId: string, itemIds: string[]
       .from('mass_roles_template_items')
       .update({ position: i })
       .eq('id', itemIds[i])
-      .eq('template_id', templateId) // Extra safety check
+      .eq('mass_roles_template_id', templateId) // Extra safety check
 
     if (error) {
       console.error('Error reordering template items:', error)

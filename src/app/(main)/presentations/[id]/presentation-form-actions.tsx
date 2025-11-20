@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import { DialogButton } from "@/components/dialog-button"
 import Link from "next/link"
 import { Edit, Copy, Trash2 } from "lucide-react"
 import { deletePresentation, type PresentationWithRelations } from "@/lib/actions/presentations"
@@ -65,12 +65,10 @@ export function PresentationFormActions({ presentation }: PresentationFormAction
         </Link>
       </Button>
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="destructive">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </DialogTrigger>
+        <DialogButton variant="destructive">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </DialogButton>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Presentation</DialogTitle>

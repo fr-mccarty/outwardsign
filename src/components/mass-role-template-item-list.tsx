@@ -121,7 +121,7 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
 
       // Add mass role to template
       await createTemplateItem({
-        template_id: templateId,
+        mass_roles_template_id: templateId,
         mass_role_id: massRole.id,
         count: 1
       })

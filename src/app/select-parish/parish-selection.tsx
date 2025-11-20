@@ -38,6 +38,7 @@ export function ParishSelection() {
           parish_id,
           roles,
           enabled_modules,
+          created_at,
           parishes (
             id,
             name,
@@ -59,6 +60,7 @@ export function ParishSelection() {
         parish_id: item.parish_id,
         roles: item.roles || [],
         enabled_modules: item.enabled_modules || [],
+        created_at: item.created_at,
         parish: item.parishes as unknown as Parish
       })) || []
 

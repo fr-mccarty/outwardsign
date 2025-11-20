@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
+import { DialogButton } from '@/components/dialog-button'
 import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -70,12 +70,10 @@ export function DeleteButton({
 
   return (
     <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive" className="w-full">
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete {entityType}
-        </Button>
-      </DialogTrigger>
+      <DialogButton variant="destructive" className="w-full">
+        <Trash2 className="h-4 w-4 mr-2" />
+        Delete {entityType}
+      </DialogButton>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete {entityType}</DialogTitle>

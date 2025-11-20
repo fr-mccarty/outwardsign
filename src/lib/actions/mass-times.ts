@@ -5,115 +5,89 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
-import type { Location } from '@/lib/types'
-import type { DayOfWeek, LiturgicalLanguage } from '@/lib/constants'
-import type { PaginatedParams, PaginatedResult } from './people'
-import type { MassType } from './mass-types'
+import type { PaginatedResult } from './people'
 
-// Schedule item interface
-export interface ScheduleItem {
-  day: DayOfWeek
-  time: string // HH:MM format
-}
-
-// MassTime interface
-export interface MassTime {
+// MassTimesTemplate interface (matches mass_times_templates table)
+export interface MassTimesTemplate {
   id: string
   parish_id: string
-  mass_type_id: string
-  schedule_items: ScheduleItem[]
-  location_id: string | null
-  language: LiturgicalLanguage
-  special_designation: string | null
-  effective_start_date: string | null
-  effective_end_date: string | null
-  active: boolean
-  notes: string | null
+  name: string
+  description: string | null
+  is_active: boolean
   created_at: string
   updated_at: string
 }
 
-// MassTime with relations
-export interface MassTimeWithRelations extends MassTime {
-  mass_type?: MassType | null
-  location?: Location | null
-}
+// For backward compatibility
+export type MassTime = MassTimesTemplate
+export type MassTimeWithRelations = MassTimesTemplate
 
 // Create data interface
 export interface CreateMassTimeData {
-  mass_type_id: string
-  schedule_items: ScheduleItem[]
-  location_id?: string
-  language: LiturgicalLanguage
-  special_designation?: string
-  effective_start_date?: string
-  effective_end_date?: string
-  active?: boolean
-  notes?: string
+  name: string
+  description?: string
+  is_active?: boolean
 }
 
 // Update data interface
 export interface UpdateMassTimeData {
-  mass_type_id?: string
-  schedule_items?: ScheduleItem[]
-  location_id?: string | null
-  language?: LiturgicalLanguage
-  special_designation?: string | null
-  effective_start_date?: string | null
-  effective_end_date?: string | null
-  active?: boolean
-  notes?: string | null
+  name?: string
+  description?: string | null
+  is_active?: boolean
 }
 
 // Filter params interface
 export interface MassTimeFilterParams {
   search?: string
-  mass_type_id?: string | 'all'
-  language?: LiturgicalLanguage | 'all'
-  active?: boolean
+  is_active?: boolean
+}
+
+// Paginated params interface
+export interface MassTimePaginatedParams {
+  page?: number
+  limit?: number
+  search?: string
+  is_active?: boolean
 }
 
 /**
- * Get all mass times with optional filters
+ * Get all mass times templates with optional filters
  */
 export async function getMassTimes(filters?: MassTimeFilterParams): Promise<MassTime[]> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   let query = supabase
-    .from('mass_times')
+    .from('mass_times_templates')
     .select('*')
+    .eq('parish_id', selectedParishId)
     .order('created_at', { ascending: false })
 
   // Apply filters
-  if (filters?.mass_type_id && filters.mass_type_id !== 'all') {
-    query = query.eq('mass_type_id', filters.mass_type_id)
+  if (filters?.is_active !== undefined) {
+    query = query.eq('is_active', filters.is_active)
   }
 
-  if (filters?.language && filters.language !== 'all') {
-    query = query.eq('language', filters.language)
-  }
-
-  if (filters?.active !== undefined) {
-    query = query.eq('active', filters.active)
+  if (filters?.search) {
+    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
   }
 
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching mass times:', error)
-    throw new Error('Failed to fetch mass times')
+    console.error('Error fetching mass times templates:', error)
+    throw new Error('Failed to fetch mass times templates')
   }
 
   return data || []
 }
 
 /**
- * Get paginated mass times with relations
+ * Get paginated mass times templates
  */
 export async function getMassTimesPaginated(
-  params?: PaginatedParams
+  params?: MassTimePaginatedParams
 ): Promise<PaginatedResult<MassTimeWithRelations>> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -123,24 +97,29 @@ export async function getMassTimesPaginated(
   const limit = params?.limit || 50
   const offset = (page - 1) * limit
 
-  // Build query with relations
+  // Build query
   let query = supabase
-    .from('mass_times')
-    .select('*, mass_type:mass_types(*), location:locations(*)', { count: 'exact' })
+    .from('mass_times_templates')
+    .select('*', { count: 'exact' })
     .eq('parish_id', selectedParishId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
   // Apply search filter if provided
   if (params?.search) {
-    query = query.or(`special_designation.ilike.%${params.search}%,notes.ilike.%${params.search}%`)
+    query = query.or(`name.ilike.%${params.search}%,description.ilike.%${params.search}%`)
+  }
+
+  // Apply is_active filter
+  if (params?.is_active !== undefined) {
+    query = query.eq('is_active', params.is_active)
   }
 
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated mass times:', error)
-    throw new Error('Failed to fetch mass times')
+    console.error('Error fetching paginated mass times templates:', error)
+    throw new Error('Failed to fetch mass times templates')
   }
 
   return {
@@ -153,43 +132,22 @@ export async function getMassTimesPaginated(
 }
 
 /**
- * Get a single mass time by ID with relations
+ * Get a single mass times template by ID with relations
  */
 export async function getMassTimeWithRelations(id: string): Promise<MassTimeWithRelations | null> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('mass_times')
-    .select('*, mass_type:mass_types(*), location:locations(*)')
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    console.error('Error fetching mass time:', error)
-    return null
-  }
-
-  return data
-}
-
-/**
- * Get a single mass time by ID
- */
-export async function getMassTime(id: string): Promise<MassTime | null> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('mass_times')
+    .from('mass_times_templates')
     .select('*')
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
     .single()
 
   if (error) {
-    console.error('Error fetching mass time:', error)
+    console.error('Error fetching mass times template:', error)
     return null
   }
 
@@ -197,7 +155,30 @@ export async function getMassTime(id: string): Promise<MassTime | null> {
 }
 
 /**
- * Create a new mass time
+ * Get a single mass times template by ID
+ */
+export async function getMassTime(id: string): Promise<MassTime | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('mass_times_templates')
+    .select('*')
+    .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .single()
+
+  if (error) {
+    console.error('Error fetching mass times template:', error)
+    return null
+  }
+
+  return data
+}
+
+/**
+ * Create a new mass times template
  */
 export async function createMassTime(data: CreateMassTimeData): Promise<MassTime> {
   const selectedParishId = await requireSelectedParish()
@@ -215,36 +196,30 @@ export async function createMassTime(data: CreateMassTimeData): Promise<MassTime
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'masses')
 
-  const { data: massTime, error } = await supabase
-    .from('mass_times')
+  const { data: massTimesTemplate, error } = await supabase
+    .from('mass_times_templates')
     .insert([
       {
         parish_id: selectedParishId,
-        mass_type_id: data.mass_type_id,
-        schedule_items: data.schedule_items,
-        location_id: data.location_id || null,
-        language: data.language,
-        special_designation: data.special_designation || null,
-        effective_start_date: data.effective_start_date || null,
-        effective_end_date: data.effective_end_date || null,
-        active: data.active !== undefined ? data.active : true,
-        notes: data.notes || null,
+        name: data.name,
+        description: data.description || null,
+        is_active: data.is_active !== undefined ? data.is_active : false,
       },
     ])
     .select()
     .single()
 
   if (error) {
-    console.error('Error creating mass time:', error)
-    throw new Error(`Failed to create mass time: ${error.message}`)
+    console.error('Error creating mass times template:', error)
+    throw new Error(`Failed to create mass times template: ${error.message}`)
   }
 
   revalidatePath('/mass-times')
-  return massTime
+  return massTimesTemplate
 }
 
 /**
- * Update a mass time
+ * Update a mass times template
  */
 export async function updateMassTime(id: string, data: UpdateMassTimeData): Promise<MassTime> {
   const selectedParishId = await requireSelectedParish()
@@ -263,18 +238,12 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
   requireModuleAccess(userParish, 'masses')
 
   const updateData: Record<string, unknown> = {}
-  if (data.mass_type_id !== undefined) updateData.mass_type_id = data.mass_type_id
-  if (data.schedule_items !== undefined) updateData.schedule_items = data.schedule_items
-  if (data.location_id !== undefined) updateData.location_id = data.location_id
-  if (data.language !== undefined) updateData.language = data.language
-  if (data.special_designation !== undefined) updateData.special_designation = data.special_designation
-  if (data.effective_start_date !== undefined) updateData.effective_start_date = data.effective_start_date
-  if (data.effective_end_date !== undefined) updateData.effective_end_date = data.effective_end_date
-  if (data.active !== undefined) updateData.active = data.active
-  if (data.notes !== undefined) updateData.notes = data.notes
+  if (data.name !== undefined) updateData.name = data.name
+  if (data.description !== undefined) updateData.description = data.description
+  if (data.is_active !== undefined) updateData.is_active = data.is_active
 
-  const { data: massTime, error } = await supabase
-    .from('mass_times')
+  const { data: massTimesTemplate, error } = await supabase
+    .from('mass_times_templates')
     .update(updateData)
     .eq('id', id)
     .eq('parish_id', selectedParishId)
@@ -282,18 +251,18 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
     .single()
 
   if (error) {
-    console.error('Error updating mass time:', error)
-    throw new Error('Failed to update mass time')
+    console.error('Error updating mass times template:', error)
+    throw new Error('Failed to update mass times template')
   }
 
   revalidatePath('/mass-times')
   revalidatePath(`/mass-times/${id}`)
   revalidatePath(`/mass-times/${id}/edit`)
-  return massTime
+  return massTimesTemplate
 }
 
 /**
- * Delete a mass time
+ * Delete a mass times template
  */
 export async function deleteMassTime(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
@@ -312,14 +281,14 @@ export async function deleteMassTime(id: string): Promise<void> {
   requireModuleAccess(userParish, 'masses')
 
   const { error } = await supabase
-    .from('mass_times')
+    .from('mass_times_templates')
     .delete()
     .eq('id', id)
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting mass time:', error)
-    throw new Error('Failed to delete mass time')
+    console.error('Error deleting mass times template:', error)
+    throw new Error('Failed to delete mass times template')
   }
 
   revalidatePath('/mass-times')

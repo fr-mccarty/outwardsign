@@ -193,7 +193,7 @@ export async function deleteMassRole(id: string): Promise<void> {
 
   // Check if role is in use in mass role instances (through template items)
   const { data: roleInstances, error: instanceCheckError } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select('id, mass_roles_template_item:mass_roles_template_items!inner(mass_role_id)')
     .eq('mass_roles_template_item.mass_role_id', id)
     .limit(1)
@@ -247,7 +247,7 @@ export async function getMassRoleInstances(massId: string): Promise<MassRoleInst
   const supabase = await createClient()
 
   const { data, error} = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select(`
       *,
       person:people(*),
@@ -273,7 +273,7 @@ export async function getMassRoleInstance(id: string): Promise<MassRoleInstance 
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select('*')
     .eq('id', id)
     .single()
@@ -295,7 +295,7 @@ export async function createMassRoleInstance(data: CreateMassRoleInstanceData): 
   const supabase = await createClient()
 
   const { data: massRoleInstance, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .insert([
       {
         mass_id: data.mass_id,
@@ -327,7 +327,7 @@ export async function updateMassRoleInstance(id: string, data: UpdateMassRoleIns
   )
 
   const { data: massRoleInstance, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .update(updateData)
     .eq('id', id)
     .select()
@@ -340,7 +340,7 @@ export async function updateMassRoleInstance(id: string, data: UpdateMassRoleIns
 
   // Get mass_id to revalidate correct paths
   const { data: massRoleInstanceData } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select('mass_id')
     .eq('id', id)
     .single()
@@ -360,13 +360,13 @@ export async function deleteMassRoleInstance(id: string): Promise<void> {
 
   // Get mass_id before deletion for revalidation
   const { data: massRoleInstanceData } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select('mass_id')
     .eq('id', id)
     .single()
 
   const { error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .delete()
     .eq('id', id)
 

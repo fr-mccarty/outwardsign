@@ -44,9 +44,9 @@ The main sidebar follows a specific ordering and grouping structure. All navigat
    - Role Directory (`/mass-role-directory`)
 7. **Mass Scheduling** (Collapsible Section) - Permission check: `canAccess('masses')`
    - Schedule Masses (`/masses/schedule`)
-   - Our Mass Times (`/mass-times`)
+   - Mass Times Templates (`/mass-times`)
    - Mass Types (`/mass-types`)
-   - Templates (`/mass-role-templates`)
+   - Role Templates (`/mass-role-templates`)
 8. **Weddings** (Collapsible Section) - Permission check: `canAccess('weddings')`
    - Our Weddings (`/weddings`)
    - New Wedding (`/weddings/create`)

@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import { DialogButton } from "@/components/dialog-button"
 import Link from "next/link"
 import { Edit, Copy, Trash2 } from "lucide-react"
 import { deleteMassTime } from "@/lib/actions/mass-times"
@@ -31,30 +31,24 @@ export function MassTimeFormActions({ massTime }: MassTimeFormActionsProps) {
     setIsDeleting(true)
     try {
       await deleteMassTime(massTime.id)
-      toast.success('Mass time deleted successfully')
+      toast.success('Template deleted successfully')
       setDeleteDialogOpen(false)
       router.push('/mass-times')
     } catch (error) {
-      console.error('Failed to delete mass time:', error)
-      toast.error('Failed to delete mass time. Please try again.')
+      console.error('Failed to delete template:', error)
+      toast.error('Failed to delete template. Please try again.')
     } finally {
       setIsDeleting(false)
     }
   }
 
   const handleCopyInfo = () => {
-    const massType = massTime.mass_type?.label_en || 'Unknown Type'
-    const scheduleItems = massTime.schedule_items
-      .map(item => `${item.day}: ${item.time}`)
-      .join('\n')
-
-    const info = `Mass Time Details
-Mass Type: ${massType}
-Schedule:
-${scheduleItems}${massTime.special_designation ? `\nSpecial: ${massTime.special_designation}` : ''}${massTime.notes ? `\n\nNotes: ${massTime.notes}` : ''}`
+    const info = `Mass Times Template
+Name: ${massTime.name}${massTime.description ? `\nDescription: ${massTime.description}` : ''}
+Status: ${massTime.is_active ? 'Active' : 'Inactive'}`
 
     navigator.clipboard.writeText(info)
-    toast.success('Mass time information copied to clipboard')
+    toast.success('Template information copied to clipboard')
   }
 
   return (
@@ -70,17 +64,15 @@ ${scheduleItems}${massTime.special_designation ? `\nSpecial: ${massTime.special_
         </Link>
       </Button>
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="destructive">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </DialogTrigger>
+        <DialogButton variant="destructive">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </DialogButton>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Mass Time</DialogTitle>
+            <DialogTitle>Delete Template</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this mass time schedule? This action cannot be undone.
+              Are you sure you want to delete this mass times template? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

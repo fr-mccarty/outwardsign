@@ -5,22 +5,23 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Mail, Phone, MapPin, Calendar, CalendarX, TrendingUp, Settings, AlertCircle } from "lucide-react"
 import Link from "next/link"
-import { Person, MassRolePreference, MassRoleBlackoutDate, PersonRoleStats } from "@/lib/types"
+import { Person, PersonRoleStats } from "@/lib/types"
+import type { MassRolePreferenceWithDetails, MassRoleBlackoutDate } from "@/lib/actions/mass-role-members-compat"
 import { formatDate } from "@/lib/utils/formatters"
 
-interface MassRoleDirectoryViewClientProps {
+interface MassRoleMembersViewClientProps {
   person: Person
-  preferences: MassRolePreference[]
+  preferences: MassRolePreferenceWithDetails[]
   blackoutDates: MassRoleBlackoutDate[]
   stats: PersonRoleStats
 }
 
-export function MassRoleDirectoryViewClient({
+export function MassRoleMembersViewClient({
   person,
   preferences,
   blackoutDates,
   stats
-}: MassRoleDirectoryViewClientProps) {
+}: MassRoleMembersViewClientProps) {
   const activePreferences = preferences.filter(p => p.active)
   const upcomingBlackouts = blackoutDates.filter(
     bd => new Date(bd.end_date) >= new Date()
@@ -37,7 +38,7 @@ export function MassRoleDirectoryViewClient({
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
         <Button asChild>
-          <Link href={`/mass-role-directory/${person.id}/preferences`}>
+          <Link href={`/mass-role-members/${person.id}/preferences`}>
             <Settings className="h-4 w-4 mr-2" />
             Manage Preferences
           </Link>
@@ -140,52 +141,36 @@ export function MassRoleDirectoryViewClient({
         </CardContent>
       </Card>
 
-      {/* Role Preferences */}
+      {/* Role Memberships */}
       <Card>
         <CardHeader>
-          <CardTitle>Role Preferences</CardTitle>
+          <CardTitle>Mass Role Memberships</CardTitle>
         </CardHeader>
         <CardContent>
           {activePreferences.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No role preferences set</p>
+              <p>Not assigned to any mass roles</p>
               <Button variant="link" asChild className="mt-2">
-                <Link href={`/mass-role-directory/${person.id}/preferences`}>
-                  Set preferences
+                <Link href={`/mass-role-members/${person.id}/preferences`}>
+                  Assign roles
                 </Link>
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              {activePreferences.map((pref) => (
-                <div key={pref.id} className="border-l-2 border-primary pl-4 space-y-2">
+              {activePreferences.map((member) => (
+                <div key={member.id} className="border-l-2 border-primary pl-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">
-                      {pref.mass_role_id ? 'Role-Specific Preferences' : 'General Preferences'}
+                      {member.mass_role?.name || 'Unknown Role'}
                     </h4>
-                    <Badge variant="secondary">{pref.desired_frequency || 'Not specified'}</Badge>
+                    <Badge variant={member.membership_type === 'LEADER' ? 'default' : 'secondary'}>
+                      {member.membership_type}
+                    </Badge>
                   </div>
-                  {pref.preferred_days && pref.preferred_days.length > 0 && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Preferred days:</span>{' '}
-                      {pref.preferred_days.join(', ')}
-                    </div>
-                  )}
-                  {pref.max_per_month && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Max per month:</span>{' '}
-                      {pref.max_per_month}
-                    </div>
-                  )}
-                  {pref.languages && pref.languages.length > 0 && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Languages:</span>{' '}
-                      {pref.languages.map(l => `${l.language} (${l.level})`).join(', ')}
-                    </div>
-                  )}
-                  {pref.notes && (
+                  {member.notes && (
                     <div className="text-sm text-muted-foreground italic">
-                      {pref.notes}
+                      {member.notes}
                     </div>
                   )}
                 </div>

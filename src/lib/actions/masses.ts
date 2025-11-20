@@ -300,7 +300,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     mass.liturgical_event_id ? supabase.from('global_liturgical_events').select('*').eq('id', mass.liturgical_event_id).single() : Promise.resolve({ data: null }),
     mass.mass_roles_template_id ? supabase.from('mass_roles_templates').select('*').eq('id', mass.mass_roles_template_id).single() : Promise.resolve({ data: null }),
     supabase.from('mass_intentions').select('*, requested_by:people!requested_by_id(*)').eq('mass_id', id).maybeSingle(),
-    supabase.from('mass_role_instances').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
+    supabase.from('mass_assignment').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
   ])
 
   return {
@@ -448,7 +448,7 @@ export async function getMassRoles(massId: string): Promise<MassRoleInstanceWith
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select(`
       *,
       person:people(*),
@@ -482,7 +482,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
   requireModuleAccess(userParish, 'masses')
 
   const { data: massRoleInstance, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .insert([
       {
         mass_id: data.mass_id,
@@ -523,7 +523,7 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
   )
 
   const { data: massRoleInstance, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .update(updateData)
     .eq('id', id)
     .select()
@@ -536,7 +536,7 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
 
   // Get the mass_id for revalidation
   const { data: instanceData } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select('mass_id')
     .eq('id', id)
     .single()
@@ -565,13 +565,13 @@ export async function deleteMassRole(id: string): Promise<void> {
 
   // Get the mass_id before deleting for revalidation
   const { data: instanceData } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select('mass_id')
     .eq('id', id)
     .single()
 
   const { error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .delete()
     .eq('id', id)
 
@@ -607,7 +607,7 @@ export async function bulkCreateMassRoles(massId: string, assignments: CreateMas
   }))
 
   const { data: massRoleInstances, error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .insert(instancesToInsert)
     .select()
 

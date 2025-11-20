@@ -11,8 +11,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
+import { DialogButton } from '@/components/dialog-button'
 import {
   Select,
   SelectContent,
@@ -90,12 +90,10 @@ export function PetitionEditor({
       <div className="space-y-4">
         {/* Format Info Modal */}
         <Dialog open={showFormatInfo} onOpenChange={setShowFormatInfo}>
-          <DialogTrigger asChild>
-            <Button type="button" variant="ghost" size="sm">
-              <Info className="h-4 w-4 mr-2" />
-              Format Information
-            </Button>
-          </DialogTrigger>
+          <DialogButton type="button" variant="ghost" size="sm">
+            <Info className="h-4 w-4 mr-2" />
+            Format Information
+          </DialogButton>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Petition Format</DialogTitle>

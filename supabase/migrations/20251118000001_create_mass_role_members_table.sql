@@ -5,6 +5,9 @@ CREATE TABLE mass_role_members (
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   mass_role_id UUID REFERENCES mass_roles(id) ON DELETE CASCADE,
 
+  -- Membership type (MEMBER or LEADER)
+  membership_type TEXT NOT NULL DEFAULT 'MEMBER',
+
   -- Special notes
   notes TEXT,
 
@@ -15,7 +18,10 @@ CREATE TABLE mass_role_members (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
   -- Each person can have one membership record per role per parish
-  UNIQUE(person_id, parish_id, mass_role_id)
+  UNIQUE(person_id, parish_id, mass_role_id),
+
+  -- Ensure membership_type is valid
+  CHECK (membership_type IN ('MEMBER', 'LEADER'))
 );
 
 -- Add comment documenting the purpose

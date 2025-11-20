@@ -17,6 +17,11 @@ This document provides comprehensive coding standards and conventions for Outwar
 - [Spelling and Typos](#spelling-and-typos)
 - [🔴 Bilingual Implementation (English & Spanish)](#-bilingual-implementation-english--spanish)
 - [UI Patterns](#ui-patterns)
+  - [Dialog and Modal Standards](#dialog-and-modal-standards)
+  - [🔴 DialogButton Component](#-dialogbutton-component-critical)
+  - [Empty States](#empty-states)
+  - [Tables](#tables)
+  - [Scrollable Modals](#scrollable-modals)
 - [🔴 Page Title Formatting](#-page-title-formatting)
 - [Development Guidelines](#development-guidelines)
 - [Abstraction Principle (Rule of Three)](#abstraction-principle-rule-of-three)
@@ -405,6 +410,51 @@ toast.success('Wedding saved!')
   </AlertDialogContent>
 </AlertDialog>
 ```
+
+**🔴 DialogButton Component (CRITICAL):**
+
+When creating buttons that trigger dialogs, **ALWAYS use the `DialogButton` component** instead of manually wrapping Button with DialogTrigger. This component automatically handles cursor styling and ensures consistent behavior.
+
+```typescript
+// ❌ BAD - Manual DialogTrigger wrapping
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogTrigger asChild>
+    <Button>
+      <Plus className="h-4 w-4 mr-2" />
+      Create New
+    </Button>
+  </DialogTrigger>
+  {/* ... */}
+</Dialog>
+
+// ✅ GOOD - Use DialogButton component
+import { DialogButton } from '@/components/dialog-button'
+
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogButton>
+    <Plus className="h-4 w-4 mr-2" />
+    Create New
+  </DialogButton>
+  {/* ... */}
+</Dialog>
+
+// ✅ GOOD - DialogButton accepts all Button props
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogButton variant="destructive" className="w-full">
+    <Trash2 className="h-4 w-4 mr-2" />
+    Delete
+  </DialogButton>
+  {/* ... */}
+</Dialog>
+```
+
+**Why use DialogButton:**
+- Automatically applies `cursor-pointer` to prevent CSS specificity issues
+- Handles Radix UI's `asChild` prop merging correctly
+- Reduces boilerplate and ensures consistency
+- Accepts all standard Button props (variant, size, className, onClick, etc.)
+
+**When `DialogTrigger` uses `asChild`**, Radix UI merges props with the child component through polymorphism. This can cause CSS specificity issues that override the browser's default button cursor, resulting in inconsistent hover states. The DialogButton component solves this automatically.
 
 ### Empty States
 

@@ -13,7 +13,6 @@ export interface ScheduleMassesParams {
   schedule: MassScheduleEntry[]
   templateId: string
   algorithmOptions: {
-    respectPreferences: boolean
     balanceWorkload: boolean
     respectBlackoutDates: boolean
     allowManualAdjustments: boolean
@@ -66,7 +65,7 @@ export async function scheduleMasses(
         *,
         mass_role:mass_roles(*)
       `)
-      .eq('template_id', params.templateId)
+      .eq('mass_roles_template_id', params.templateId)
       .order('position')
 
     if (templateError) {
@@ -173,7 +172,7 @@ export async function scheduleMasses(
       }
 
       const { data: createdInstances, error: instanceError } = await supabase
-        .from('mass_role_instances')
+        .from('mass_assignment')
         .insert(roleInstances)
         .select()
 
@@ -214,19 +213,17 @@ export async function scheduleMasses(
       0
     )
 
-    if (params.algorithmOptions.respectPreferences ||
-        params.algorithmOptions.balanceWorkload ||
-        params.algorithmOptions.respectBlackoutDates) {
+    if (params.algorithmOptions.respectBlackoutDates ||
+        params.algorithmOptions.balanceWorkload) {
 
-      // Run auto-assignment algorithm
+      // Run simplified auto-assignment algorithm
       for (const mass of createdMasses) {
         for (const assignment of mass.assignments) {
-          // Role ID is already in the assignment object
           const roleId = assignment.roleId
 
           if (!roleId) continue
 
-          // Get eligible ministers for this role
+          // Get eligible ministers (already filters by active membership and blackout dates)
           let eligibleMinisters = await getAvailableMinisters(
             roleId,
             mass.date,
@@ -234,34 +231,7 @@ export async function scheduleMasses(
             selectedParishId
           )
 
-          // Filter by preferences if enabled
-          if (params.algorithmOptions.respectPreferences) {
-            const filteredMinisters = []
-
-            for (const minister of eligibleMinisters) {
-              const prefCheck = await matchesPreferences(
-                supabase,
-                minister.id,
-                roleId,
-                selectedParishId,
-                mass.date,
-                mass.time,
-                mass.language
-              )
-
-              // Only include if matches preferences (hard constraints)
-              if (prefCheck.matches && !prefCheck.reason) {
-                filteredMinisters.push(minister)
-              } else if (prefCheck.matches && prefCheck.reason) {
-                // Soft constraint violation - include but note
-                filteredMinisters.push(minister)
-              }
-            }
-
-            eligibleMinisters = filteredMinisters
-          }
-
-          // Check for conflicts
+          // Check for double-booking conflicts
           const conflictFreeMinisters = []
           for (const minister of eligibleMinisters) {
             const conflict = await hasConflict(
@@ -278,40 +248,7 @@ export async function scheduleMasses(
 
           eligibleMinisters = conflictFreeMinisters
 
-          // Check max per month limit if respecting preferences
-          if (params.algorithmOptions.respectPreferences) {
-            const withinLimitMinisters = []
-
-            for (const minister of eligibleMinisters) {
-              // Get preference for max per month
-              const { data: pref } = await supabase
-                .from('mass_role_preferences')
-                .select('max_per_month')
-                .eq('person_id', minister.id)
-                .eq('parish_id', selectedParishId)
-                .eq('mass_role_id', roleId)
-                .single()
-
-              if (pref && pref.max_per_month) {
-                const monthlyCount = await getMonthlyAssignmentCount(
-                  supabase,
-                  minister.id,
-                  mass.date
-                )
-
-                if (monthlyCount < pref.max_per_month) {
-                  withinLimitMinisters.push(minister)
-                }
-              } else {
-                // No limit set, include minister
-                withinLimitMinisters.push(minister)
-              }
-            }
-
-            eligibleMinisters = withinLimitMinisters
-          }
-
-          // Balance workload if enabled (sort by assignment count)
+          // Balance workload if enabled (sort by assignment count ascending)
           if (params.algorithmOptions.balanceWorkload) {
             eligibleMinisters.sort((a, b) => a.assignmentCount - b.assignmentCount)
           }
@@ -322,7 +259,7 @@ export async function scheduleMasses(
 
             // Update the role instance with person_id
             const { error: assignError } = await supabase
-              .from('mass_role_instances')
+              .from('mass_assignment')
               .update({ person_id: selectedMinister.id })
               .eq('id', assignment.roleInstanceId)
 
@@ -368,7 +305,7 @@ export async function scheduleMasses(
 
 /**
  * Get available ministers for a specific role and date/time
- * Considers blackout dates and existing assignments
+ * Considers role membership, blackout dates, and existing assignments
  */
 export async function getAvailableMinisters(
   roleId: string,
@@ -378,9 +315,9 @@ export async function getAvailableMinisters(
 ): Promise<Array<{ id: string; name: string; assignmentCount: number }>> {
   const supabase = await createClient()
 
-  // 1. Get all people with preferences for this role
-  const { data: preferences } = await supabase
-    .from('mass_role_preferences')
+  // 1. Get all active members for this role
+  const { data: members } = await supabase
+    .from('mass_role_members')
     .select(`
       person_id,
       person:people(id, first_name, last_name, preferred_name)
@@ -389,20 +326,20 @@ export async function getAvailableMinisters(
     .eq('mass_role_id', roleId)
     .eq('active', true)
 
-  if (!preferences || preferences.length === 0) {
+  if (!members || members.length === 0) {
     return []
   }
 
   const ministers: Array<{ id: string; name: string; assignmentCount: number }> = []
 
-  for (const pref of preferences) {
-    if (!pref.person || !Array.isArray(pref.person) || pref.person.length === 0) continue
+  for (const member of members) {
+    if (!member.person || !Array.isArray(member.person) || member.person.length === 0) continue
 
-    const person = pref.person[0] as { id: string; first_name: string; last_name: string; preferred_name: string | null }
+    const person = member.person[0] as { id: string; first_name: string; last_name: string; preferred_name: string | null }
 
-    // 2. Check for blackout dates
+    // 2. Check for blackout dates (person-centric, not role-specific)
     const { data: blackouts } = await supabase
-      .from('mass_role_blackout_dates')
+      .from('person_blackout_dates')
       .select('*')
       .eq('person_id', person.id)
       .lte('start_date', date)
@@ -415,7 +352,7 @@ export async function getAvailableMinisters(
 
     // 3. Get assignment count for this person (for workload balancing)
     const { count } = await supabase
-      .from('mass_role_instances')
+      .from('mass_assignment')
       .select('*', { count: 'exact', head: true })
       .eq('person_id', person.id)
 
@@ -450,7 +387,7 @@ export async function assignMinisterToRole(
   requireModuleAccess(userParish, 'masses')
 
   const { error } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .update({ person_id: personId })
     .eq('id', massRoleInstanceId)
 
@@ -474,9 +411,9 @@ export async function getPersonSchedulingConflicts(
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check blackout dates
+  // Check blackout dates (person-centric, not role-specific)
   const { data: blackoutDates } = await supabase
-    .from('mass_role_blackout_dates')
+    .from('person_blackout_dates')
     .select('*')
     .eq('person_id', personId)
     .gte('end_date', startDate)
@@ -503,63 +440,6 @@ export async function getPersonSchedulingConflicts(
   return conflicts
 }
 
-/**
- * Check if a person matches preferences for a given Mass
- */
-async function matchesPreferences(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  personId: string,
-  roleId: string,
-  parishId: string,
-  date: string,
-  time: string,
-  language: string
-): Promise<{ matches: boolean; reason?: string }> {
-  // Get the person's preferences for this role
-  const { data: pref } = await supabase
-    .from('mass_role_preferences')
-    .select('*')
-    .eq('person_id', personId)
-    .eq('parish_id', parishId)
-    .eq('mass_role_id', roleId)
-    .single()
-
-  if (!pref) {
-    return { matches: false, reason: 'No preferences set for this role' }
-  }
-
-  // Check preferred/available days
-  const massDate = new Date(date)
-  const dayOfWeek = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][massDate.getDay()]
-
-  if (pref.unavailable_days && Array.isArray(pref.unavailable_days) && pref.unavailable_days.includes(dayOfWeek)) {
-    return { matches: false, reason: `Not available on ${dayOfWeek}s` }
-  }
-
-  // Check if within available days (soft constraint)
-  const inPreferredDays = pref.preferred_days && Array.isArray(pref.preferred_days) && pref.preferred_days.includes(dayOfWeek)
-  const inAvailableDays = pref.available_days && Array.isArray(pref.available_days) && pref.available_days.includes(dayOfWeek)
-
-  if (!inPreferredDays && !inAvailableDays && (pref.preferred_days || pref.available_days)) {
-    // Soft constraint - allow but with warning
-    return { matches: true, reason: 'Outside preferred days' }
-  }
-
-  // Check language capability
-  if (pref.languages && Array.isArray(pref.languages)) {
-    const hasLanguage = pref.languages.some((lang: { language: string }) => {
-      if (language.toLowerCase() === 'en') return lang.language === 'en'
-      if (language.toLowerCase() === 'es') return lang.language === 'es'
-      return false
-    })
-
-    if (!hasLanguage && language !== 'BILINGUAL') {
-      return { matches: false, reason: `Does not speak ${language}` }
-    }
-  }
-
-  return { matches: true }
-}
 
 /**
  * Check if a person has a scheduling conflict for a specific date/time
@@ -572,7 +452,7 @@ async function hasConflict(
 ): Promise<{ hasConflict: boolean; reason?: string }> {
   // Check if person is already assigned to a different role at same time
   const { data: existingAssignments } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select(`
       id,
       mass:masses(
@@ -613,7 +493,7 @@ async function getMonthlyAssignmentCount(
   const endOfMonth = new Date(massDate.getFullYear(), massDate.getMonth() + 1, 0).toISOString().split('T')[0]
 
   const { count } = await supabase
-    .from('mass_role_instances')
+    .from('mass_assignment')
     .select(`
       id,
       mass:masses!inner(

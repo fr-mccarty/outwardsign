@@ -26,7 +26,6 @@ interface Step4ReviewProps {
   templateId: string | null
   templates: MassRoleTemplate[]
   algorithmOptions: {
-    respectPreferences: boolean
     balanceWorkload: boolean
     respectBlackoutDates: boolean
     allowManualAdjustments: boolean
@@ -220,24 +219,6 @@ export function Step4Review({
         <CardContent className="space-y-4">
           <div className="flex items-start space-x-3">
             <Checkbox
-              id="respectPreferences"
-              checked={algorithmOptions.respectPreferences}
-              onCheckedChange={(checked) =>
-                onAlgorithmOptionChange('respectPreferences', checked as boolean)
-              }
-            />
-            <div className="space-y-1">
-              <Label htmlFor="respectPreferences" className="font-medium cursor-pointer">
-                Respect Minister Preferences
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Honor preferred days, desired frequency, and maximum assignments per month
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <Checkbox
               id="balanceWorkload"
               checked={algorithmOptions.balanceWorkload}
               onCheckedChange={(checked) =>
@@ -267,7 +248,7 @@ export function Step4Review({
                 Respect Blackout Dates
               </Label>
               <p className="text-sm text-muted-foreground">
-                Never assign ministers during their unavailable periods
+                Never assign ministers during their unavailable periods (vacations, travel, etc.)
               </p>
             </div>
           </div>

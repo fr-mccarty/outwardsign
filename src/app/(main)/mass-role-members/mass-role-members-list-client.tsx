@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DialogButton } from '@/components/dialog-button'
 import { Search, User, Mail, Phone, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -12,21 +13,21 @@ import { Person, MassRole } from '@/lib/types'
 import { Badge } from '@/components/ui/badge'
 import { PersonPickerField } from '@/components/person-picker-field'
 import { MassRolePickerField } from '@/components/mass-role-picker-field'
-import { createMassRolePreference } from '@/lib/actions/mass-role-preferences'
+import { createMassRolePreference } from '@/lib/actions/mass-role-members-compat'
 import { toast } from 'sonner'
-import type { PersonWithMassRoles } from '@/lib/actions/mass-role-preferences'
+import type { PersonWithMassRoles } from '@/lib/actions/mass-role-members-compat'
 
-interface MassRoleDirectoryListClientProps {
+interface MassRoleMembersListClientProps {
   initialData: PersonWithMassRoles[]
   massRoles: MassRole[]
   allPeople: Person[]
 }
 
-export function MassRoleDirectoryListClient({
+export function MassRoleMembersListClient({
   initialData,
   massRoles,
   allPeople
-}: MassRoleDirectoryListClientProps) {
+}: MassRoleMembersListClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -42,7 +43,7 @@ export function MassRoleDirectoryListClient({
     if (value) {
       params.set('search', value)
     }
-    router.push(`/mass-role-directory${value ? `?${params.toString()}` : ''}`)
+    router.push(`/mass-role-members${value ? `?${params.toString()}` : ''}`)
   }
 
   const filteredPeople = search
@@ -87,17 +88,15 @@ export function MassRoleDirectoryListClient({
 
   return (
     <div className="space-y-6">
-      {/* New Role Assignment Dialog */}
+      {/* New Mass Role Member Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button>
-            <UserPlus className="h-4 w-4 mr-2" />
-            New Role Assignment
-          </Button>
-        </DialogTrigger>
+        <DialogButton>
+          <UserPlus className="h-4 w-4 mr-2" />
+          New Mass Role Member
+        </DialogButton>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Role Assignment</DialogTitle>
+            <DialogTitle>New Mass Role Member</DialogTitle>
             <DialogDescription>
               Select a mass role and assign a person to serve in that role.
             </DialogDescription>
@@ -201,7 +200,7 @@ export function MassRoleDirectoryListClient({
           {filteredPeople.map((person) => (
             <Link
               key={person.id}
-              href={`/mass-role-directory/${person.id}`}
+              href={`/mass-role-members/${person.id}`}
             >
               <Card className="p-6 hover:bg-accent transition-colors cursor-pointer h-full">
                 <div className="space-y-3">

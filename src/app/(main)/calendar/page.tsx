@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getEvents } from '@/lib/actions/events'
+import { getEventsWithModuleLinks } from '@/lib/actions/events'
 import { CalendarClient } from './calendar-client'
 
 interface CalendarPageProps {
@@ -15,8 +15,8 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch all events
-  const events = await getEvents()
+  // Fetch all events with module links
+  const events = await getEventsWithModuleLinks()
 
   const params = await searchParams
   const view = (params.view || 'month') as 'month' | 'week' | 'day'
