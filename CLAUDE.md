@@ -118,9 +118,9 @@ When implementing features or evaluating the application, refer to the personas 
 
 **Migration Workflow:**
 1. Create or modify migration files in `supabase/migrations/`
-2. Tell the user to push to remote using: `supabase db push`
-3. Confirm at the end of your message when a new migration has been created
-4. Ensure the user has run the push command before moving on
+2. For **local development**: Tell the user to run `npm run db:fresh` to reset and apply all migrations
+3. For **pushing to remote** (maintainer only): `supabase db push` - **DO NOT use this for local development**
+4. Confirm at the end of your message when a new migration has been created
 
 **Important Notes:**
 - Problems and policies need to be fixed at the migration level

@@ -1,5 +1,5 @@
--- Create mass_role_blackout_dates table for tracking unavailability periods for people serving in mass roles
-CREATE TABLE mass_role_blackout_dates (
+-- Create person_blackout_dates table for tracking unavailability periods for people
+CREATE TABLE person_blackout_dates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
@@ -12,30 +12,30 @@ CREATE TABLE mass_role_blackout_dates (
 );
 
 -- Add comment documenting the purpose
-COMMENT ON TABLE mass_role_blackout_dates IS 'Periods when people serving in mass roles are unavailable (vacations, travel, personal commitments)';
-COMMENT ON COLUMN mass_role_blackout_dates.start_date IS 'First date of unavailability (inclusive)';
-COMMENT ON COLUMN mass_role_blackout_dates.end_date IS 'Last date of unavailability (inclusive)';
-COMMENT ON COLUMN mass_role_blackout_dates.reason IS 'Optional reason for unavailability (e.g., "Vacation", "Out of town", "Personal commitment")';
+COMMENT ON TABLE person_blackout_dates IS 'Periods when people are unavailable (vacations, travel, personal commitments)';
+COMMENT ON COLUMN person_blackout_dates.start_date IS 'First date of unavailability (inclusive)';
+COMMENT ON COLUMN person_blackout_dates.end_date IS 'Last date of unavailability (inclusive)';
+COMMENT ON COLUMN person_blackout_dates.reason IS 'Optional reason for unavailability (e.g., "Vacation", "Out of town", "Personal commitment")';
 
 -- Enable RLS
-ALTER TABLE mass_role_blackout_dates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE person_blackout_dates ENABLE ROW LEVEL SECURITY;
 
 -- Grant access
-GRANT ALL ON mass_role_blackout_dates TO anon;
-GRANT ALL ON mass_role_blackout_dates TO authenticated;
-GRANT ALL ON mass_role_blackout_dates TO service_role;
+GRANT ALL ON person_blackout_dates TO anon;
+GRANT ALL ON person_blackout_dates TO authenticated;
+GRANT ALL ON person_blackout_dates TO service_role;
 
 -- Add indexes for performance
-CREATE INDEX idx_mass_role_blackout_person ON mass_role_blackout_dates(person_id);
-CREATE INDEX idx_mass_role_blackout_dates ON mass_role_blackout_dates(start_date, end_date);
-CREATE INDEX idx_mass_role_blackout_start_date ON mass_role_blackout_dates(start_date);
-CREATE INDEX idx_mass_role_blackout_end_date ON mass_role_blackout_dates(end_date);
+CREATE INDEX idx_person_blackout_person ON person_blackout_dates(person_id);
+CREATE INDEX idx_person_blackout_dates ON person_blackout_dates(start_date, end_date);
+CREATE INDEX idx_person_blackout_start_date ON person_blackout_dates(start_date);
+CREATE INDEX idx_person_blackout_end_date ON person_blackout_dates(end_date);
 
--- RLS Policies for mass_role_blackout_dates
+-- RLS Policies for person_blackout_dates
 
 -- Parish members can read blackout dates for people in their parish
 CREATE POLICY "Parish members can read blackout dates for their parish"
-  ON mass_role_blackout_dates
+  ON person_blackout_dates
   FOR SELECT
   TO anon, authenticated
   USING (
@@ -49,7 +49,7 @@ CREATE POLICY "Parish members can read blackout dates for their parish"
 
 -- Parish members can create blackout dates for people in their parish
 CREATE POLICY "Parish members can create blackout dates for their parish"
-  ON mass_role_blackout_dates
+  ON person_blackout_dates
   FOR INSERT
   TO anon, authenticated
   WITH CHECK (
@@ -63,7 +63,7 @@ CREATE POLICY "Parish members can create blackout dates for their parish"
 
 -- Parish members can update blackout dates for people in their parish
 CREATE POLICY "Parish members can update blackout dates for their parish"
-  ON mass_role_blackout_dates
+  ON person_blackout_dates
   FOR UPDATE
   TO anon, authenticated
   USING (
@@ -77,7 +77,7 @@ CREATE POLICY "Parish members can update blackout dates for their parish"
 
 -- Parish members can delete blackout dates for people in their parish
 CREATE POLICY "Parish members can delete blackout dates for their parish"
-  ON mass_role_blackout_dates
+  ON person_blackout_dates
   FOR DELETE
   TO anon, authenticated
   USING (
