@@ -216,7 +216,7 @@ test.describe('Dashboard', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     console.log(`Created event: ${eventName}`);
 
@@ -231,7 +231,7 @@ test.describe('Dashboard', () => {
       await eventLink.click();
 
       // Should navigate to event detail page
-      await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.NAVIGATION });
+      await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.NAVIGATION });
     } else {
       console.log('Event not found in upcoming celebrations (may be outside 30-day window)');
     }
@@ -251,7 +251,7 @@ test.describe('Dashboard', () => {
     await submitButton.click();
 
     // Should redirect to wedding detail page
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     console.log('Created wedding');
 
@@ -296,7 +296,7 @@ test.describe('Dashboard', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    await page.waitForURL(/\/presentations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go back to dashboard
     await page.goto('/dashboard');

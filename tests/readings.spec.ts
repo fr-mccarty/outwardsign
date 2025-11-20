@@ -38,7 +38,7 @@ test.describe('Readings Module', () => {
     await page.click('button[type="submit"]');
 
     // Should redirect to the reading detail page (navigation proves success)
-    await page.waitForURL(/\/readings\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.waitForURL(/\/readings\/[a-f0-9-]+\/edit$/, { timeout: 5000 });
 
     // Verify reading details are displayed (use first heading to avoid duplicates)
     await expect(page.getByRole('heading', { name: testPericope }).first()).toBeVisible();
@@ -91,7 +91,7 @@ test.describe('Readings Module', () => {
 
     await page.fill('textarea#text', 'Blessed are the poor in spirit...');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/readings\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.waitForURL(/\/readings\/[a-f0-9-]+\/edit$/, { timeout: 5000 });
 
     // Go to readings list
     await page.goto('/readings');
@@ -143,7 +143,7 @@ test.describe('Readings Module', () => {
     await page.fill('input#pericope', 'Breadcrumb Test');
     await page.fill('textarea#text', 'Test content for breadcrumb navigation');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/readings\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.waitForURL(/\/readings\/[a-f0-9-]+\/edit$/, { timeout: 5000 });
 
     // Should have breadcrumbs visible - use more specific selectors
     const breadcrumbNav = page.getByLabel('breadcrumb');

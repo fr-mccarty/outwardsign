@@ -35,7 +35,7 @@ test.describe('Presentations Module', () => {
     await submitButton.click();
 
     // Should redirect to the presentation detail page (navigation proves success)
-    await page.waitForURL(/\/presentations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the presentation ID from URL for later use
     const presentationUrl = page.url();
@@ -116,7 +116,7 @@ test.describe('Presentations Module', () => {
     await submitButton.click();
 
     // Should successfully create and redirect (even with minimal data)
-    await page.waitForURL(/\/presentations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify we're on a presentation detail page
     await expect(page.getByRole('heading', { name: /Presentation/i }).first()).toBeVisible();
@@ -131,7 +131,7 @@ test.describe('Presentations Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/presentations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -154,7 +154,7 @@ test.describe('Presentations Module', () => {
     const submitBtn = page.locator('button[type="submit"]').last();
     await submitBtn.scrollIntoViewIfNeeded();
     await submitBtn.click();
-    await page.waitForURL(/\/presentations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify action buttons exist (ModuleViewPanel buttons)
     await expect(page.getByRole('link', { name: /Edit Presentation/i })).toBeVisible();
@@ -175,7 +175,7 @@ test.describe('Presentations Module', () => {
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/presentations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     const presentationId = page.url().split('/').pop();
 

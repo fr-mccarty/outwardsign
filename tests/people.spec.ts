@@ -32,7 +32,7 @@ test.describe('People Module', () => {
     await page.click('button[type="submit"]');
 
     // Should redirect to the person detail page (navigation proves success)
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the person ID from URL for later use
     const personUrl = page.url();
@@ -99,7 +99,7 @@ test.describe('People Module', () => {
     await page.fill('input#first_name', 'SearchTest');
     await page.fill('input#last_name', 'Person');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to people list
     await page.goto('/people');
@@ -127,7 +127,7 @@ test.describe('People Module', () => {
     await page.fill('input#first_name', 'Breadcrumb');
     await page.fill('input#last_name', 'Test');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');

@@ -35,7 +35,7 @@ test.describe('Quinceaneras Module', () => {
     await submitButton.click();
 
     // Should redirect to the quinceanera detail page (navigation proves success)
-    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the quinceanera ID from URL for later use
     const quinceaneraUrl = page.url();
@@ -110,7 +110,7 @@ test.describe('Quinceaneras Module', () => {
     await submitButton.click();
 
     // Should successfully create and redirect
-    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify we're on a quinceanera detail page
     await expect(page.getByRole('heading', { name: /Quincea.*era/i }).first()).toBeVisible();
@@ -125,7 +125,7 @@ test.describe('Quinceaneras Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -148,7 +148,7 @@ test.describe('Quinceaneras Module', () => {
     const submitBtn = page.locator('button[type="submit"]').last();
     await submitBtn.scrollIntoViewIfNeeded();
     await submitBtn.click();
-    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify action buttons exist
     await expect(page.getByRole('link', { name: /Edit Quincea.*era/i })).toBeVisible();
@@ -169,7 +169,7 @@ test.describe('Quinceaneras Module', () => {
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     const quinceaneraId = page.url().split('/').pop();
 

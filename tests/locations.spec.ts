@@ -35,7 +35,7 @@ test.describe('Locations Module', () => {
     await submitButton.click();
 
     // Should redirect to the location detail page (navigation proves success)
-    await page.waitForURL(/\/locations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the location ID from URL for later use
     const locationUrl = page.url();
@@ -114,7 +114,7 @@ test.describe('Locations Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/locations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to locations list
     await page.goto('/locations');
@@ -144,7 +144,7 @@ test.describe('Locations Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/locations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');

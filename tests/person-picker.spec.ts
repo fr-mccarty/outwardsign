@@ -12,7 +12,7 @@ test.describe('Person Picker Component', () => {
     await page.getByLabel('Email').fill('sarah.johnson@test.com');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
     await page.getByRole('button', { name: /Create Person/i }).last().click();
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Now go to a wedding form to test the picker
     await page.goto('/weddings/create');
@@ -138,14 +138,14 @@ test.describe('Person Picker Component', () => {
     await page.getByLabel('Last Name').fill('Cooper');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
     await page.getByRole('button', { name: /Create Person/i }).last().click();
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     await page.goto('/people/create');
     await page.getByLabel('First Name').fill('Bob');
     await page.getByLabel('Last Name').fill('Dylan');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
     await page.getByRole('button', { name: /Create Person/i }).last().click();
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
     await page.goto('/weddings/create');
@@ -268,7 +268,7 @@ test.describe('Person Picker Component', () => {
     await page.getByLabel('Email').fill('emily.watson@test.com');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
     await page.getByRole('button', { name: /Create Person/i }).last().click();
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     await page.goto('/people/create');
     await page.getByLabel('First Name').fill('Michael');
@@ -276,7 +276,7 @@ test.describe('Person Picker Component', () => {
     await page.getByLabel('Email').fill('michael.chen@test.com');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
     await page.getByRole('button', { name: /Create Person/i }).last().click();
-    await page.waitForURL(/\/people\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
     await page.goto('/weddings/create');

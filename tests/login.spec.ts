@@ -81,7 +81,12 @@ test.describe('Login Flow', () => {
     // Wait for page to be fully loaded and interactive
     await page.waitForLoadState('networkidle');
 
-    // Find and click the login link (use data-testid for reliability)
+    // Open the mobile menu by clicking the hamburger button (contains Menu icon)
+    const menuButton = page.locator('nav button').first();
+    await expect(menuButton).toBeVisible({ timeout: 10000 });
+    await menuButton.click();
+
+    // Wait for the Sheet to open and find the login link inside
     const loginLink = page.locator('[data-testid="home-login-button"]');
     await expect(loginLink).toBeVisible({ timeout: 10000 });
     await loginLink.click();

@@ -11,7 +11,7 @@ test.describe('Event Picker Component', () => {
     await page.getByLabel('Street').fill('123 Church Street');
     await page.getByLabel('City').fill('Springfield');
     await page.getByRole('button', { name: /Create Location/i }).last().click();
-    await page.waitForURL(/\/locations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Now go to wedding form to test event picker
     await page.goto('/weddings/create');
@@ -202,7 +202,7 @@ test.describe('Event Picker Component', () => {
     await page.goto('/locations/create');
     await page.getByLabel('Name').fill('Blessed Sacrament Church');
     await page.getByRole('button', { name: /Create Location/i }).last().click();
-    await page.waitForURL(/\/locations\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
     await page.goto('/weddings/create');

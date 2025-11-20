@@ -34,22 +34,19 @@ test.describe('Baptisms Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should redirect to the baptism detail page (navigation proves success)
-    await page.waitForURL(/\/baptisms\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    // Should redirect to the baptism edit page (navigation proves success)
+    await page.waitForURL(/\/baptisms\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the baptism ID from URL for later use
     const baptismUrl = page.url();
-    const baptismId = baptismUrl.split('/').pop();
+    const urlParts = baptismUrl.split('/');
+    const baptismId = urlParts[urlParts.length - 2]; // Get ID before /edit
 
     console.log(`Created baptism with ID: ${baptismId}`);
 
-    // Verify we're on the view page
-    await expect(page.getByRole('heading', { name: /Baptism/i }).first()).toBeVisible();
-
-    // Navigate to edit page
-    await page.goto(`/baptisms/${baptismId}/edit`);
+    // Verify we're on the edit page
     await expect(page).toHaveURL(`/baptisms/${baptismId}/edit`, { timeout: TEST_TIMEOUTS.NAVIGATION });
-    await expect(page.getByRole('heading', { name: 'Edit Baptism' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Baptism/i })).toBeVisible();
 
     // Edit the baptism - add more information
     const updatedNotes = 'Updated notes: Baptism scheduled for Sunday. Family celebration afterward.';
@@ -109,11 +106,11 @@ test.describe('Baptisms Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should successfully create and redirect
-    await page.waitForURL(/\/baptisms\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    // Should successfully create and redirect to edit page
+    await page.waitForURL(/\/baptisms\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify we're on a baptism detail page
-    await expect(page.getByRole('heading', { name: /Baptism/i }).first()).toBeVisible();
+    // Verify we're on a baptism edit page
+    await expect(page.getByRole('heading', { name: /Baptism/i })).toBeVisible();
   });
 
   test('should navigate through breadcrumbs', async ({ page }) => {
@@ -125,7 +122,7 @@ test.describe('Baptisms Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/baptisms\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/baptisms\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -148,13 +145,18 @@ test.describe('Baptisms Module', () => {
     const submitBtn = page.locator('button[type="submit"]').last();
     await submitBtn.scrollIntoViewIfNeeded();
     await submitBtn.click();
-    await page.waitForURL(/\/baptisms\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/baptisms\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify action buttons exist
+    // Extract baptism ID from URL and navigate to view page
+    const urlParts = page.url().split('/');
+    const baptismId = urlParts[urlParts.length - 2];
+    await page.goto(`/baptisms/${baptismId}`);
+
+    // Verify action buttons exist on view page
     await expect(page.getByRole('link', { name: /Edit Baptism/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Print View/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Print View/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Download PDF' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Download Word' })).toBeVisible();
   });
 
   test('should update baptism and verify persistence after page refresh', async ({ page }) => {
@@ -169,11 +171,13 @@ test.describe('Baptisms Module', () => {
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/baptisms\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/baptisms\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const baptismId = page.url().split('/').pop();
+    const urlParts = page.url().split('/');
+    const baptismId = urlParts[urlParts.length - 2];
 
-    // Verify initial data is displayed on view page
+    // Navigate to view page to verify initial data
+    await page.goto(`/baptisms/${baptismId}`);
     await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();
 
     // Navigate to edit page
@@ -181,7 +185,7 @@ test.describe('Baptisms Module', () => {
     await expect(page).toHaveURL(`/baptisms/${baptismId}/edit`);
 
     // Verify initial value is pre-filled
-    await expect(page.locator('textarea#note')).toHaveValue(initialNote);
+    await expect(page.locator('textarea#note').first()).toHaveValue(initialNote);
 
     // Update with NEW value
     const updatedNote = 'UPDATED: Baptism confirmed for Sunday March 15th. Godparents will attend rehearsal on Saturday.';
@@ -217,7 +221,7 @@ test.describe('Baptisms Module', () => {
     await page.goto(`/baptisms/${baptismId}/edit`);
 
     // PERSISTENCE TEST: Verify form field contains UPDATED value
-    await expect(page.locator('textarea#note')).toHaveValue(updatedNote);
+    await expect(page.locator('textarea#note').first()).toHaveValue(updatedNote);
 
     console.log(`Successfully verified update persistence for baptism: ${baptismId}`);
   });

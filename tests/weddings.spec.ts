@@ -36,27 +36,22 @@ test.describe('Weddings Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should redirect to the wedding detail page (navigation proves success)
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    // Should redirect to the wedding edit page (navigation proves success)
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the wedding ID from URL for later use
     const weddingUrl = page.url();
-    const weddingId = weddingUrl.split('/').pop();
+    const weddingId = weddingUrl.split('/')[2]; // Extract ID from /weddings/{id}/edit
 
     console.log(`Created wedding with ID: ${weddingId}`);
 
-    // Verify we're on the view page (page title is dynamic based on couple names, defaults to "Wedding Liturgy")
-    await expect(page.getByRole('heading', { name: /Wedding/i }).first()).toBeVisible();
-
-    // Verify the notes are displayed
-    await expect(page.locator(`text=${initialNotes}`).first()).toBeVisible();
-
-    // Navigate to edit page
-    await page.goto(`/weddings/${weddingId}/edit`);
-    await expect(page).toHaveURL(`/weddings/${weddingId}/edit`, { timeout: TEST_TIMEOUTS.NAVIGATION });
+    // Verify we're on the edit page
     await expect(page.getByRole('heading', { name: 'Edit Wedding' })).toBeVisible();
 
-    // Edit the wedding - add more information
+    // Verify the notes are in the form
+    await expect(page.locator('textarea#notes').first()).toHaveValue(initialNotes);
+
+    // Edit the wedding - add more information (we're already on the edit page)
     const updatedNotes = 'Updated notes: Couple has selected June 15th for the ceremony. Main church at 2pm.';
     await page.fill('textarea#notes', updatedNotes);
 
@@ -120,11 +115,11 @@ test.describe('Weddings Module', () => {
     await submitButton.scrollIntoViewIfNeeded();
     await submitButton.click();
 
-    // Should successfully create and redirect (even with minimal data)
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    // Should successfully create and redirect to edit page (even with minimal data)
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify we're on a wedding detail page
-    await expect(page.getByRole('heading', { name: /Wedding/i }).first()).toBeVisible();
+    // Verify we're on the wedding edit page
+    await expect(page.getByRole('heading', { name: 'Edit Wedding' })).toBeVisible();
   });
 
   test('should navigate through breadcrumbs', async ({ page }) => {
@@ -136,7 +131,7 @@ test.describe('Weddings Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -159,7 +154,12 @@ test.describe('Weddings Module', () => {
     const submitBtn = page.locator('button[type="submit"]').last();
     await submitBtn.scrollIntoViewIfNeeded();
     await submitBtn.click();
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    // Extract wedding ID and navigate to view page to check action buttons
+    const weddingId = page.url().split('/')[2];
+    await page.goto(`/weddings/${weddingId}`);
+    await expect(page).toHaveURL(`/weddings/${weddingId}`);
 
     // Verify action buttons exist (ModuleViewPanel buttons)
     await expect(page.getByRole('link', { name: /Edit Wedding/i })).toBeVisible();
@@ -182,11 +182,17 @@ test.describe('Weddings Module', () => {
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const weddingId = page.url().split('/').pop();
+    const weddingId = page.url().split('/')[2];
 
-    // Verify initial data is displayed on view page
+    // Verify initial data is in the edit form
+    await expect(page.locator('textarea#notes').first()).toHaveValue(initialNotes);
+    await expect(page.locator('textarea#announcements').first()).toHaveValue(initialAnnouncements);
+
+    // Navigate to view page to verify data is displayed
+    await page.goto(`/weddings/${weddingId}`);
+    await expect(page).toHaveURL(`/weddings/${weddingId}`);
     await expect(page.locator(`text=${initialNotes}`).first()).toBeVisible();
     await expect(page.locator(`text=${initialAnnouncements}`).first()).toBeVisible();
 

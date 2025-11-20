@@ -55,7 +55,7 @@ test.describe('Events Module - Standalone Events', () => {
     await submitButton.click();
 
     // Should redirect to the event detail page (navigation proves success)
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify event details are displayed on the view page
     await expect(page.getByRole('heading', { name: eventName }).first()).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('Events Module - Standalone Events', () => {
     await submitButton.click();
 
     // Navigation to detail page proves success
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify the event name is shown as heading
     await expect(page.getByRole('heading', { name: 'Youth Group Social' }).first()).toBeVisible();
@@ -109,7 +109,7 @@ test.describe('Events Module - Standalone Events', () => {
     await submitBtn.click();
 
     // Navigation to detail page proves success
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify export buttons exist
     await expect(page.locator('button:has-text("Print")')).toBeVisible();
@@ -133,7 +133,7 @@ test.describe('Events Module - Standalone Events', () => {
     await submit.click();
 
     // Wait for navigation to complete before moving to list
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to events list
     await page.goto('/events');
@@ -156,7 +156,7 @@ test.describe('Events Module - Standalone Events', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -239,7 +239,7 @@ test.describe('Events Module - Standalone Events', () => {
     await submitButton.click();
 
     // Should redirect to the event detail page (navigation proves success)
-    await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the event ID from URL for later use
     const eventUrl = page.url();

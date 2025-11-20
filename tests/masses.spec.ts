@@ -31,7 +31,7 @@ test.describe('Masses Module', () => {
     await submitButton.click();
 
     // Should redirect to the mass detail page (navigation proves success)
-    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the mass ID from URL for later use
     const massUrl = page.url();
@@ -112,7 +112,7 @@ test.describe('Masses Module', () => {
     await submitButton.click();
 
     // Should successfully create and redirect (even with minimal data)
-    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify we're on a mass detail page
     await expect(page.getByRole('heading', { name: /Mass/i }).first()).toBeVisible();
@@ -127,7 +127,7 @@ test.describe('Masses Module', () => {
     const btn = page.locator('button[type="submit"]').last();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
-    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -150,7 +150,7 @@ test.describe('Masses Module', () => {
     const submitBtn = page.locator('button[type="submit"]').last();
     await submitBtn.scrollIntoViewIfNeeded();
     await submitBtn.click();
-    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Verify action buttons exist (ModuleViewPanel buttons)
     await expect(page.getByRole('link', { name: /Edit Mass/i })).toBeVisible();
@@ -256,7 +256,7 @@ test.describe('Masses Module', () => {
     await submitButton.click();
 
     // Should redirect to the mass detail page (navigation proves success)
-    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Get the mass ID from URL
     const massUrl = page.url();
@@ -294,7 +294,7 @@ test.describe('Masses Module', () => {
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-    await page.waitForURL(/\/masses\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await page.waitForURL(/\/masses\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     const massId = page.url().split('/').pop();
 
