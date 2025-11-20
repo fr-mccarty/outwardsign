@@ -211,7 +211,10 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
 
     if (moduleLink.moduleType && moduleLink.moduleId) {
       // Navigate to the module
-      const modulePath = `/${moduleLink.moduleType}s` // weddings, funerals, baptisms, etc.
+      // Special case: "mass" → "masses" (not "masss")
+      const modulePath = moduleLink.moduleType === 'mass'
+        ? '/masses'
+        : `/${moduleLink.moduleType}s` // weddings, funerals, baptisms, etc.
       router.push(`${modulePath}/${moduleLink.moduleId}`)
     } else {
       // No module found, go to event page

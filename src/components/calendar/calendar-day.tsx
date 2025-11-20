@@ -14,17 +14,7 @@ import {
 } from './event-items'
 import { DayEventsModal } from './day-events-modal'
 import { Button } from '@/components/ui/button'
-
-// Map liturgical colors to CSS color values
-const LITURGICAL_BORDER_COLORS: Record<string, string> = {
-  'purple': 'rgb(168, 85, 247)', // purple-500
-  'white': 'rgb(209, 213, 219)', // gray-300
-  'red': 'rgb(239, 68, 68)', // red-500
-  'green': 'rgb(34, 197, 94)', // green-500
-  'gold': 'rgb(234, 179, 8)', // yellow-500
-  'rose': 'rgb(244, 114, 182)', // pink-400
-  'black': 'rgb(0, 0, 0)',
-}
+import { getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 
 export function CalendarDay<T extends CalendarItem = CalendarItem>({
   day,
@@ -153,7 +143,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
                       key={colorIndex}
                       className="w-2 h-4"
                       style={{
-                        backgroundColor: LITURGICAL_BORDER_COLORS[color.toLowerCase()] || 'rgb(156, 163, 175)',
+                        backgroundColor: getLiturgicalCssVarValue(color.toLowerCase()),
                       }}
                     />
                   ))}

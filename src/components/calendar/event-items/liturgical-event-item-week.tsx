@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { getLiturgicalColorClasses, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
+import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 
 interface LiturgicalEventItemWeekProps {
   event: {
@@ -27,42 +28,44 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
   const totalBarsWidth = colors.length > 0 ? colors.length * liturgicalBarWidth : liturgicalBarWidth
 
   return (
-    <div
-      className={cn(
-        "relative text-sm py-2 rounded cursor-pointer hover:brightness-110 transition-all overflow-hidden",
-        colorStyles
-      )}
-      onClick={onClick}
-    >
-      {/* Vertical liturgical bars on the left */}
+    <CalendarTooltip title={event.title}>
       <div
-        className="absolute left-0 top-0 bottom-0 flex flex-row"
-        style={{ width: `${totalBarsWidth}px` }}
+        className={cn(
+          "relative text-sm py-2 rounded cursor-pointer hover:brightness-110 transition-all overflow-hidden",
+          colorStyles
+        )}
+        onClick={onClick}
       >
-        {colors.length > 0 ? (
-          colors.map((color, index) => (
+        {/* Vertical liturgical bars on the left */}
+        <div
+          className="absolute left-0 top-0 bottom-0 flex flex-row"
+          style={{ width: `${totalBarsWidth}px` }}
+        >
+          {colors.length > 0 ? (
+            colors.map((color, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: getLiturgicalCssVarValue(color),
+                  width: `${liturgicalBarWidth}px`,
+                }}
+              />
+            ))
+          ) : primaryColor ? (
             <div
-              key={index}
               style={{
-                backgroundColor: getLiturgicalCssVarValue(color),
+                backgroundColor: getLiturgicalCssVarValue(primaryColor),
                 width: `${liturgicalBarWidth}px`,
               }}
             />
-          ))
-        ) : primaryColor ? (
-          <div
-            style={{
-              backgroundColor: getLiturgicalCssVarValue(primaryColor),
-              width: `${liturgicalBarWidth}px`,
-            }}
-          />
-        ) : null}
-      </div>
+          ) : null}
+        </div>
 
-      {/* Content with left padding to account for liturgical bars */}
-      <div style={{ paddingLeft: `${totalBarsWidth + 12}px`, paddingRight: '12px' }}>
-        <div className="font-medium">{event.title}</div>
+        {/* Content with left padding to account for liturgical bars */}
+        <div style={{ paddingLeft: `${totalBarsWidth + 12}px`, paddingRight: '12px' }}>
+          <div className="font-medium truncate">{event.title}</div>
+        </div>
       </div>
-    </div>
+    </CalendarTooltip>
   )
 }

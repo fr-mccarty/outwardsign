@@ -81,6 +81,58 @@ This document contains a checklist of items to verify during code review. Use th
 
   See ARCHITECTURE.md § Data Architecture for naming conventions and patterns.
 
+- [ ] **Server actions implement all interface parameters** - Verify that all server action functions (create, update) implement ALL parameters defined in the corresponding TypeScript interfaces in `src/lib/types.ts`. Server actions should accept and handle every field that exists in the interface, ensuring complete data persistence.
+
+  **How to check:**
+  1. Identify the module's base interface in `src/lib/types.ts` (e.g., `Wedding`, `Funeral`, `MassTime`)
+  2. Find the module's server action file: `src/lib/actions/[module-plural].ts`
+  3. Review the `create` and `update` functions
+  4. For each property in the interface (excluding `id`, `created_at`, `updated_at`):
+     - Verify the server action accepts this parameter
+     - Verify the parameter is included in the database INSERT/UPDATE operation
+     - Check that the parameter name matches the interface property exactly
+  5. Check for any parameters in server actions that don't exist in the interface
+
+  **Common issues to watch for:**
+  - **Missing parameters** - Interface has a field but server action doesn't accept/handle it
+  - **Parameter name mismatch** - Server action uses different name than interface (e.g., `startDate` vs `start_date`)
+  - **Incomplete updates** - Update action doesn't accept all updatable fields
+  - **Extra parameters** - Server action accepts parameters that don't exist in the interface
+  - **Required vs optional mismatch** - Interface marks field as optional but server action treats it as required, or vice versa
+
+  **What to verify:**
+  - CREATE actions: Should accept all interface properties except `id`, `created_at`, `updated_at` (auto-generated)
+  - UPDATE actions: Should accept `id` plus all updatable interface properties (typically all except timestamps)
+  - Required fields from interface should be validated in server actions
+  - Optional fields from interface should be handled properly (allow undefined/null)
+
+  **Example check for Wedding module:**
+  ```typescript
+  // In src/lib/types.ts
+  interface Wedding {
+    id: string
+    parish_id: string
+    partner_1_id: string
+    partner_2_id: string
+    wedding_date?: string | null
+    location_id?: string | null
+    presider_id?: string | null
+    // ... etc
+  }
+
+  // In src/lib/actions/weddings.ts - should accept ALL these fields
+  export async function createWedding({
+    partner_1_id,
+    partner_2_id,
+    wedding_date,
+    location_id,
+    presider_id,
+    // Must include ALL other fields from interface
+  }: Omit<Wedding, 'id' | 'created_at' | 'updated_at'>)
+  ```
+
+  See MODULE_DEVELOPMENT.md for server action patterns and ARCHITECTURE.md § Data Flow for server action guidelines.
+
 ## Code Quality
 
 - [ ] **Check for unused imports** - Verify that all imports are being used and delete any unused imports. Run the linter to identify unused imports automatically.

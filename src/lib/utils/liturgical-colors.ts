@@ -66,6 +66,9 @@ export function getLiturgicalTextClass(apiColor: string | null | undefined): str
  * @param apiColor - Color string from liturgical calendar API (can be empty/null)
  * @param bgOpacity - Optional background opacity value
  * @returns Tailwind classes string (with fallback to 'bg-muted/50')
+ *
+ * Note: When using opacity, foreground colors are NOT applied because they're designed
+ * for full-opacity backgrounds. With transparent backgrounds, use default text color for contrast.
  */
 export function getLiturgicalColorClasses(apiColor: string | null | undefined, bgOpacity?: number): string {
   if (!apiColor) {
@@ -73,7 +76,10 @@ export function getLiturgicalColorClasses(apiColor: string | null | undefined, b
   }
 
   const bgClass = getLiturgicalBgClass(apiColor, bgOpacity)
-  const textClass = getLiturgicalTextClass(apiColor)
+
+  // Only apply foreground color for full-opacity backgrounds
+  // With transparent backgrounds, use default text color for proper contrast
+  const textClass = bgOpacity ? '' : getLiturgicalTextClass(apiColor)
 
   return textClass ? `${bgClass} ${textClass}` : bgClass
 }
@@ -85,5 +91,5 @@ export function getLiturgicalColorClasses(apiColor: string | null | undefined, b
  */
 export function getLiturgicalCssVarValue(apiColor: string): string {
   const cssVar = getLiturgicalCssVar(apiColor)
-  return cssVar ? `var(--${cssVar})` : 'rgb(156, 163, 175)'
+  return cssVar ? `var(--${cssVar})` : 'var(--muted)'
 }

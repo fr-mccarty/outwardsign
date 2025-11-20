@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { EVENT_TYPE_LABELS } from '@/lib/constants'
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { getModuleIcon } from '@/components/calendar/module-icons'
+import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 
 interface ParishEventItemDayProps {
   event: {
@@ -29,29 +30,31 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
   const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
 
   return (
-    <div
-      className={cn(
-        "px-4 py-3 rounded cursor-pointer hover:shadow-md transition-all",
-        "bg-card text-card-foreground border"
-      )}
-      onClick={onClick}
-    >
-      <div className="font-semibold text-base flex items-center gap-2">
-        {ModuleIcon && <ModuleIcon className="h-5 w-5 flex-shrink-0" />}
-        <span>{event.title}</span>
-      </div>
-      {(eventTypeLabel || event.description) && (
-        <div className="mt-2 space-y-1">
-          {eventTypeLabel && (
-            <div className="text-sm font-medium opacity-90">
-              {eventTypeLabel}
-            </div>
-          )}
-          {event.description && (
-            <p className="text-sm opacity-80">{event.description}</p>
-          )}
+    <CalendarTooltip title={event.title}>
+      <div
+        className={cn(
+          "px-4 py-3 rounded cursor-pointer hover:shadow-md transition-all",
+          "bg-card text-card-foreground border"
+        )}
+        onClick={onClick}
+      >
+        <div className="font-semibold text-base flex items-center gap-2 min-w-0">
+          {ModuleIcon && <ModuleIcon className="h-5 w-5 flex-shrink-0" />}
+          <span className="truncate">{event.title}</span>
         </div>
-      )}
-    </div>
+        {(eventTypeLabel || event.description) && (
+          <div className="mt-2 space-y-1">
+            {eventTypeLabel && (
+              <div className="text-sm font-medium opacity-90">
+                {eventTypeLabel}
+              </div>
+            )}
+            {event.description && (
+              <p className="text-sm opacity-80">{event.description}</p>
+            )}
+          </div>
+        )}
+      </div>
+    </CalendarTooltip>
   )
 }
