@@ -16,6 +16,10 @@ from pathlib import Path
 import re
 import time
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class Task:
