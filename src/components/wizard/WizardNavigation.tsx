@@ -52,18 +52,20 @@ export function WizardNavigation({
 
   return (
     <div className="flex justify-between">
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         onClick={onPrevious}
         disabled={isFirstStep || disablePrevious}
+        className="cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         {previousButtonText}
       </Button>
-      
-      <Button 
+
+      <Button
         onClick={handleNext}
         disabled={disableNext}
+        className="cursor-pointer"
       >
         {getNextButtonText()}
         {!isLastStep && <ArrowRight className="h-4 w-4 ml-2" />}

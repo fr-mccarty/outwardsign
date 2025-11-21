@@ -72,8 +72,8 @@ export function WizardNavigation({
                   index === currentStep
                     ? 'bg-primary text-primary-foreground'
                     : index < currentStep
-                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    : 'bg-muted text-muted-foreground hover:bg-muted'
                 }`}
                 disabled={index > currentStep}
               >

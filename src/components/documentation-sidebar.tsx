@@ -209,7 +209,7 @@ function NavItemComponent({ item, pathname }: { item: NavItem; pathname: string 
                     'block px-3 py-2 text-sm rounded-md transition-colors',
                     isSubActive
                       ? 'bg-accent text-accent-foreground font-medium'
-                      : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                 >
                   {subItem.title}
@@ -229,7 +229,7 @@ function NavItemComponent({ item, pathname }: { item: NavItem; pathname: string 
         'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors',
         isActive
           ? 'bg-accent text-accent-foreground'
-          : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       )}
     >
       {item.icon && <item.icon className="h-4 w-4" />}

@@ -89,7 +89,7 @@ export default async function DocumentationHome({ params }: DocumentationHomePro
         <div className="grid md:grid-cols-2 gap-3">
           {t.topics.map((topic, index) => (
             <Link key={index} href={topic.href}>
-              <div className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="p-4 border border-border rounded-lg hover:bg-accent transition-colors cursor-pointer">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 bg-primary rounded-full" />
                   <span className="text-sm text-foreground">{topic.title}</span>

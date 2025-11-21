@@ -51,7 +51,7 @@ export function DraggableListItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 px-3 py-2 bg-card border rounded-md hover:bg-accent/50 transition-colors overflow-hidden w-full"
+      className="flex items-center gap-3 px-3 py-2 bg-card border rounded-md hover:bg-accent transition-colors overflow-hidden w-full"
     >
       <button
         className="cursor-grab active:cursor-grabbing touch-none flex-shrink-0"

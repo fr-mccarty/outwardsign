@@ -53,19 +53,29 @@ export function Step2SchedulePattern({
   selectedTemplateIds,
   onTemplateSelectionChange
 }: Step2SchedulePatternProps) {
-  // Track if auto-selection has already happened
-  const hasAutoSelectedRef = useRef(false)
+  // Track if auto-selection has already happened (use template IDs as key)
+  const prevTemplateIdsRef = useRef<string>('')
 
-  // Auto-select all templates on first load if none are selected
+  // Auto-select all templates when templates first load or change
   useEffect(() => {
+    // Create a stable key from template IDs to detect when templates change
+    const templateIdsKey = massTimesTemplates.map(t => t.id).sort().join(',')
+
+    // Auto-select if:
+    // 1. We have templates
+    // 2. No templates are currently selected
+    // 3. This is a new set of templates (or first load)
     if (
-      !hasAutoSelectedRef.current &&
       massTimesTemplates.length > 0 &&
-      selectedTemplateIds.length === 0
+      selectedTemplateIds.length === 0 &&
+      prevTemplateIdsRef.current !== templateIdsKey
     ) {
       const allTemplateIds = massTimesTemplates.map(t => t.id)
       onTemplateSelectionChange(allTemplateIds)
-      hasAutoSelectedRef.current = true
+      prevTemplateIdsRef.current = templateIdsKey
+    } else if (templateIdsKey) {
+      // Update ref even if we didn't auto-select
+      prevTemplateIdsRef.current = templateIdsKey
     }
   }, [massTimesTemplates, selectedTemplateIds, onTemplateSelectionChange])
 
@@ -185,7 +195,11 @@ export function Step2SchedulePattern({
                     {templates.map((template) => (
                       <div
                         key={template.id}
-                        className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer"
+                        onClick={() => {
+                          const isCurrentlySelected = selectedTemplateIds.includes(template.id)
+                          handleTemplateToggle(template.id, !isCurrentlySelected)
+                        }}
                       >
                         <Checkbox
                           id={`template-${template.id}`}

@@ -288,7 +288,7 @@ export function PetitionWizard({
                 {generatedPetitions.map(petition => (
                   <div
                     key={petition.id}
-                    className="flex items-start gap-3 p-3 border rounded-md hover:bg-muted/50 transition-colors"
+                    className="flex items-start gap-3 p-3 border rounded-md hover:bg-muted transition-colors"
                   >
                     <Checkbox
                       checked={selectedPetitions.has(petition.id)}

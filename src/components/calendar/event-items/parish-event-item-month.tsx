@@ -27,7 +27,7 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
         className={cn(
           "text-xs px-2 py-1 rounded cursor-pointer transition-all flex items-center gap-1",
           "bg-card text-card-foreground border",
-          "hover:shadow-md hover:scale-[1.02] hover:border-primary/50 hover:bg-accent/50"
+          "hover:shadow-md hover:scale-[1.02] hover:border-primary/50 hover:bg-accent"
         )}
         onClick={onClick}
       >

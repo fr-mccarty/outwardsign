@@ -110,7 +110,11 @@ export function Step3TemplateSelection({
                 return (
                   <div
                     key={template.id}
-                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer"
+                    onClick={() => {
+                      const isCurrentlySelected = selectedTemplateIds.includes(template.id)
+                      handleTemplateToggle(template.id, !isCurrentlySelected)
+                    }}
                   >
                     <Checkbox
                       id={`role-template-${template.id}`}
@@ -148,6 +152,7 @@ export function Step3TemplateSelection({
                         e.stopPropagation()
                         setViewingTemplate(template)
                       }}
+                      className="cursor-pointer"
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View

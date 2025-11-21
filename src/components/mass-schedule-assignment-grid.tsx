@@ -159,7 +159,7 @@ export function MassScheduleAssignmentGrid({
                   }, {} as Record<string, typeof mass.assignments>)
 
                   return (
-                    <tr key={mass.id} className="hover:bg-muted/50">
+                    <tr key={mass.id} className="hover:bg-muted">
                       {/* Mass Info Column (Sticky) */}
                       <td className="px-4 py-3 text-sm sticky left-0 bg-background border-r">
                         <div className="space-y-1">

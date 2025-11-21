@@ -163,7 +163,7 @@ export function Step4LiturgicalEvents({
                   return (
                   <div
                     key={event.id}
-                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer"
                     onClick={() => handleEventToggle(event.id, !isSelected)}
                   >
                     <Checkbox
