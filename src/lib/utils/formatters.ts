@@ -633,6 +633,25 @@ export function getEventPageTitle(event: {
   return event.name || 'Event'
 }
 
+/**
+ * Get person page title
+ *
+ * Format: "FirstName LastName" or "Person"
+ *
+ * @example
+ * getPersonPageTitle(person) // "John Smith"
+ * getPersonPageTitle({}) // "Person"
+ */
+export function getPersonPageTitle(person: {
+  first_name?: string
+  last_name?: string
+}): string {
+  if (person.first_name || person.last_name) {
+    return [person.first_name, person.last_name].filter(Boolean).join(' ')
+  }
+  return 'Person'
+}
+
 // ============================================================================
 // FILENAME GENERATOR FUNCTIONS
 // ============================================================================
@@ -816,4 +835,34 @@ export function getEventFilename(
     .substring(0, 30) || 'Event'
   const eventDate = formatDateForFilename(event.start_date)
   return `Event-${sanitizedName}-${eventDate}.${extension}`
+}
+
+/**
+ * Get person filename for downloads
+ *
+ * Format: "FirstName-LastName.ext" or "Person.ext"
+ *
+ * @example
+ * getPersonFilename(person, 'pdf') // "John-Smith.pdf"
+ * getPersonFilename({}, 'pdf') // "Person.pdf"
+ */
+export function getPersonFilename(
+  person: {
+    first_name?: string
+    last_name?: string
+  },
+  extension: string
+): string {
+  const firstName = person.first_name?.replace(/[^a-z0-9]/gi, '-') || ''
+  const lastName = person.last_name?.replace(/[^a-z0-9]/gi, '-') || ''
+
+  if (firstName && lastName) {
+    return `${firstName}-${lastName}.${extension}`
+  } else if (firstName) {
+    return `${firstName}.${extension}`
+  } else if (lastName) {
+    return `${lastName}.${extension}`
+  }
+
+  return `Person.${extension}`
 }

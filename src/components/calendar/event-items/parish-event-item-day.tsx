@@ -12,6 +12,8 @@ interface ParishEventItemDayProps {
     event_type?: string
     description?: string
     moduleType?: string | null
+    liturgicalColor?: string // Hex color from liturgical calendar
+    [key: string]: any
   }
   onClick?: (e: React.MouseEvent) => void
 }
@@ -27,6 +29,7 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
     : undefined
 
   const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
+  const liturgicalColor = event.liturgicalColor
 
   return (
     <div
@@ -38,6 +41,12 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
     >
       <div className="font-semibold text-base flex items-center gap-2 min-w-0">
         {ModuleIcon && <ModuleIcon className="h-5 w-5 flex-shrink-0" />}
+        {liturgicalColor && (
+          <div
+            className="w-3 h-3 rounded-full border border-background shadow-sm flex-shrink-0"
+            style={{ backgroundColor: liturgicalColor }}
+          />
+        )}
         <span className="truncate">{event.title}</span>
       </div>
       {(eventTypeLabel || event.description) && (

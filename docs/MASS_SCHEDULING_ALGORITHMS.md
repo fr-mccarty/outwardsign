@@ -33,51 +33,97 @@ FOR each date FROM start_date TO end_date
   day_of_week = getDayOfWeek(current_date)
 ```
 
-#### Step 2: Match Mass Times Templates
+The algorithm loops through every single day in the selected date range. For each date, it determines what day of the week it is (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, or Sunday).
+
+**Example**:
+- Nov 1, 2025 → Saturday
+- Nov 2, 2025 → Sunday
+- Nov 3, 2025 → Monday
+
+#### Step 2: Match to Liturgical Calendar Events
+```
+  liturgical_events = []
+
+  FOR each liturgical_event in global_liturgical_calendar
+    IF event.date == current_date THEN
+      liturgical_events.add(event)
+    END IF
+  END FOR
+```
+
+The algorithm checks the global liturgical calendar and retrieves all liturgical events that fall on the current date.
+
+**Important Notes**:
+- There should be **at least one liturgical event for every day** in the liturgical calendar (even if it's just an ordinary weekday in Ordinary Time)
+- **Multiple liturgical events possible** - Some dates may have more than one liturgical event (e.g., a saint's feast day on a Sunday)
+- Liturgical events do NOT prevent Mass creation. They only provide context/metadata.
+
+**Example 1 - Special Solemnity**:
+- Current date: November 23, 2025 (Sunday)
+- Liturgical events: ["Christ the King Sunday"]
+
+**Example 2 - Ordinary Day**:
+- Current date: November 4, 2025 (Tuesday)
+- Liturgical events: ["Tuesday of the 31st Week in Ordinary Time"]
+
+#### Step 3: Match Mass Times Templates
 ```
   FOR each selected_mass_times_template
     IF template.day_of_week == day_of_week THEN
       // This template applies to this date
-
-      FOR each item in template.items
-        IF item.day_type == 'IS_DAY' THEN
-          // Mass occurs on the actual day
-          mass_date = current_date
-          create_proposed_mass = true
-        ELSE IF item.day_type == 'DAY_BEFORE' THEN
-          // Vigil Mass: occurs the day before (e.g., Saturday vigil for Sunday)
-          mass_date = current_date - 1 day
-          create_proposed_mass = true
-        END IF
-      END FOR
+      matched_templates.add(template)
     END IF
   END FOR
 ```
 
-#### Step 3: Check for Liturgical Events (Optional Context)
-```
-  liturgical_event = NULL
+The algorithm loops through each Mass Times Template selected by the user and checks if that template's `day_of_week` matches the current day.
 
-  FOR each selected_liturgical_event
-    IF event.date == current_date THEN
-      liturgical_event = event
-      BREAK
+**If there's a match**, the algorithm looks at all the **items** in that template. Each item represents a Mass time.
+
+**If there's no match** (e.g., current date is Monday and you only selected "Sunday Schedule"), the algorithm skips this date and moves to the next one.
+
+**Example items in "Sunday Schedule"**:
+1. Saturday 5:00 PM - `day_type: DAY_BEFORE` (vigil Mass)
+2. Sunday 9:00 AM - `day_type: IS_DAY`
+3. Sunday 11:00 AM - `day_type: IS_DAY`
+
+#### Step 4: Determine Mass Date Based on Day Type
+```
+  FOR each item in template.items
+    IF item.day_type == 'IS_DAY' THEN
+      // Mass occurs on the actual day
+      mass_date = current_date
+      create_proposed_mass = true
+    ELSE IF item.day_type == 'DAY_BEFORE' THEN
+      // Vigil Mass: occurs the day before (e.g., Saturday vigil for Sunday)
+      mass_date = current_date - 1 day
+      create_proposed_mass = true
     END IF
   END FOR
 ```
 
-**Important**: Liturgical events do NOT prevent Mass creation. They only provide context/metadata.
+For each item in the matched template, the algorithm determines **when the Mass should actually occur** based on the item's `day_type`.
 
-#### Step 4: Create Mass Record
+**Two possibilities**:
+
+1. **`day_type: IS_DAY`** - Mass occurs on the current date
+   - Example: Sunday 9:00 AM on November 2
+   - Mass date = November 2 (the current date)
+
+2. **`day_type: DAY_BEFORE`** - Mass occurs the day before (vigil)
+   - Example: Saturday 5:00 PM vigil for Sunday
+   - Current date being processed = November 2 (Sunday)
+   - Mass date = November 1 (the day BEFORE)
+
+#### Step 5: Create Mass Record
 ```
   IF create_proposed_mass THEN
     mass = {
-      date: current_date,
-      time: template.time,
-      language: template.language,
+      date: mass_date,
+      time: item.time,
+      language: item.language,
       mass_times_template_id: template.id,
-      liturgical_event_id: liturgical_event?.id (optional),
-      liturgical_event_name: liturgical_event?.name (optional),
+      liturgical_events: liturgical_events (from Step 2),
       role_assignments: [] (empty, to be filled by Algorithm 2)
     }
 
@@ -85,7 +131,11 @@ FOR each date FROM start_date TO end_date
   END IF
 ```
 
-#### Step 5: User Review & Manual Adjustments
+For each Mass time identified in Step 4, the algorithm creates a Mass record object with all the information gathered from the previous steps.
+
+**Important Note**: The `role_assignments` array is empty at this point. This will be populated later by Algorithm 2 (Minister Assignment), which assigns specific people to specific roles.
+
+#### Step 6: User Review & Manual Adjustments
 ```
 User can:
 - View all proposed Masses in calendar
@@ -432,33 +482,30 @@ Currently preview only shows 3 sample Masses. Consider:
 - Progressive rendering (show results as they come in)
 - Cache results for faster re-preview
 
-### Separate UI Steps
-Consider breaking the wizard into clearer steps:
+### Current UI Steps
 
-**Current**:
-1. Date Range
-2. Mass Times Templates
-3. Role Templates
-4. Liturgical Events
-5. Review
-6. Proposed Schedule (mixed: schedule + assignment preview)
-7. Assignment Summary
-8. Confirmation
-9. Results
+The mass scheduling wizard follows these steps:
 
-**Proposed**:
-1. Date Range
-2. Mass Times Templates
-3. Liturgical Events (optional context)
-4. Review Schedule
-5. **Generate Masses** (Algorithm 1 completes here)
-6. Select Role Template
-7. Configure Assignment Options
-8. Preview Assignments
-9. **Generate Assignments** (Algorithm 2 completes here)
-10. Results
+**Current Implementation**:
+1. **Date Range** - Select scheduling period (start date and end date)
+2. **Mass Times Templates** - Select which Mass times templates to use
+3. **Role Templates** - Select which role template defines needed roles
+4. **Liturgical Events** - Select which liturgical events to associate with Masses
+5. **Proposed Schedule** - Review and adjust generated Masses (Algorithm 1 output)
+6. **Assignment Summary** - Review minister workload distribution (Algorithm 2 preview)
+7. **Confirmation** - Final confirmation before creating Masses
+8. **Results** - View created Masses and any unassigned roles
 
-This makes it clearer which algorithm is running at which stage.
+**Algorithm Execution**:
+- **Algorithm 1 (Mass Schedule Generation)** runs between Steps 4 and 5
+  - Input: Date range, Mass times templates, liturgical events
+  - Output: Proposed Mass records shown in Step 5
+- **Algorithm 2 (Minister Assignment)** runs after Step 7 (on confirmation)
+  - Input: Proposed Masses, role template, algorithm options
+  - Output: Mass records with role assignments shown in Step 8
+
+**Future Consideration**:
+Consider adding explicit "algorithm options" configuration (balance workload, respect blackout dates, etc.) as a separate step before confirmation to make the assignment algorithm configuration more visible to users.
 
 ---
 

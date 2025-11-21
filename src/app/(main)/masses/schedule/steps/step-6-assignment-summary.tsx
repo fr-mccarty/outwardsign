@@ -30,7 +30,7 @@ import {
   ArrowUpDown
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
-import { ProposedMass } from './step-6-proposed-schedule'
+import { ProposedMass } from './step-5-proposed-schedule'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/utils/formatters'
 
@@ -55,7 +55,7 @@ interface Step7AssignmentSummaryProps {
   proposedMasses: ProposedMass[]
 }
 
-export function Step7AssignmentSummary({
+export function Step6AssignmentSummary({
   proposedMasses
 }: Step7AssignmentSummaryProps) {
   const [selectedMinister, setSelectedMinister] = useState<MinisterSummary | null>(null)

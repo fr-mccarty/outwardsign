@@ -81,6 +81,7 @@ export interface CreatePersonData {
   zipcode?: string
   sex?: 'Male' | 'Female'
   note?: string
+  mass_times_template_item_ids?: string[]
 }
 
 export interface UpdatePersonData {
@@ -94,6 +95,7 @@ export interface UpdatePersonData {
   zipcode?: string
   sex?: 'Male' | 'Female'
   note?: string
+  mass_times_template_item_ids?: string[]
 }
 
 export interface PersonFilterParams {
@@ -257,6 +259,7 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
         zipcode: data.zipcode || null,
         sex: data.sex || null,
         note: data.note || null,
+        mass_times_template_item_ids: data.mass_times_template_item_ids || [],
       }
     ])
     .select()
@@ -296,6 +299,7 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
   if (data.zipcode !== undefined) updateData.zipcode = data.zipcode || null
   if (data.sex !== undefined) updateData.sex = data.sex || null
   if (data.note !== undefined) updateData.note = data.note || null
+  if (data.mass_times_template_item_ids !== undefined) updateData.mass_times_template_item_ids = data.mass_times_template_item_ids || []
 
   const { data: person, error } = await supabase
     .from('people')

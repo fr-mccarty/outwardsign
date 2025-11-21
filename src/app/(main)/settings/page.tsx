@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageContainer } from '@/components/page-container'
-import { User, FileText, ChevronRight, BookOpen, Church, Users } from 'lucide-react'
+import { User, FileText, ChevronRight, BookOpen, Church } from 'lucide-react'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import Link from 'next/link'
 
@@ -104,25 +104,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-primary" />
-              Mass Roles
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Manage liturgical roles for Mass ministries and assignments.
-            </p>
-            <Button asChild variant="outline" className="w-full justify-between">
-              <Link href="/settings/mass-roles">
-                Manage Mass Roles
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
     </PageContainer>

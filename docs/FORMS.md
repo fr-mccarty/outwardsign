@@ -249,6 +249,8 @@ The following components should be used in all forms for consistency:
 ### Exceptions:
 
 - Picker components (PeoplePicker, EventPicker, ReadingPickerModal) have their own internal structure
+- Radio button groups (not yet supported by FormField - use base shadcn/ui components)
+- File upload inputs (not yet supported by FormField - use base shadcn/ui components)
 - Special UI patterns explicitly approved by the user
 - **If you encounter a situation where FormField cannot be used, ALWAYS ask the user before proceeding with an alternative approach**
 

@@ -30,9 +30,9 @@ import {
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Calendar } from '@/components/calendar/calendar'
 import { CalendarItem, CalendarView } from '@/components/calendar/types'
-import { MassTimesTemplate } from "@/lib/actions/mass-times-templates"
+import { MassTimesTemplate, MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from "@/lib/constants"
-import { formatDate, getDayOfWeekNumber } from "@/lib/utils/date-format"
+import { formatDate, formatTime, getDayOfWeekNumber } from "@/lib/utils/date-format"
 import { format } from 'date-fns'
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'
@@ -83,7 +83,7 @@ function getDayLabel(day: string): string {
   return labels?.en ?? day
 }
 
-export function Step6ProposedSchedule({
+export function Step5ProposedSchedule({
   startDate,
   endDate,
   massTimesTemplates,
@@ -134,7 +134,11 @@ export function Step6ProposedSchedule({
         id: mass.id,
         date: mass.date,
         title: mass.templateName,
-        mass
+        mass,
+        // Add liturgical color for calendar item rendering
+        liturgicalColor: mass.liturgicalEventColor && mass.liturgicalEventColor.length > 0
+          ? mass.liturgicalEventColor[0]
+          : undefined
       }))
   }, [proposedMasses])
 
@@ -295,12 +299,7 @@ export function Step6ProposedSchedule({
   const getItemColor = (item: ProposedMassCalendarItem) => {
     const mass = item.mass
 
-    // If there's a liturgical event with color, show it on the left
-    if (mass.liturgicalEventColor && mass.liturgicalEventColor.length > 0) {
-      const color = mass.liturgicalEventColor[0] // Use first color if multiple
-      return `bg-card border-l-4 border-background shadow-sm`
-    }
-
+    // Let the parish-event-item components handle liturgical color circle rendering
     if (mass.hasConflict) return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-200 dark:border-amber-700'
     const missingAssignment = mass.assignments?.some(a => !a.personId)
     if (missingAssignment) return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-200 dark:border-orange-700'
@@ -737,7 +736,7 @@ export function generateProposedMasses(
                 id: `proposed-${idCounter++}`,
                 date: massDate,
                 templateId: template.id,
-                templateName: `${template.name} - ${item.time}${item.day_type === 'DAY_BEFORE' ? ' (Vigil)' : ''}`,
+                templateName: `${template.name} - ${formatTime(item.time)}${item.day_type === 'DAY_BEFORE' ? ' (Vigil)' : ''}`,
                 dayOfWeek: template.day_of_week,
                 isIncluded: true,
                 hasConflict,

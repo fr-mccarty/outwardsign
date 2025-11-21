@@ -14,7 +14,7 @@ import {
   Sparkles
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
-import { ProposedMass } from './step-6-proposed-schedule'
+import { ProposedMass } from './step-5-proposed-schedule'
 import { MassTimesTemplate } from "@/lib/actions/mass-times-templates"
 import { MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { formatDate } from "@/lib/utils/formatters"
@@ -31,7 +31,7 @@ interface Step8ConfirmationProps {
   selectedRoleTemplateIds: string[]
 }
 
-export function Step8Confirmation({
+export function Step7Confirmation({
   startDate,
   endDate,
   proposedMasses,

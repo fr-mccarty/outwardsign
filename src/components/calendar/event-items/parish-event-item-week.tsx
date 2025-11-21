@@ -12,6 +12,8 @@ interface ParishEventItemWeekProps {
     title: string
     event_type?: string
     moduleType?: string | null
+    liturgicalColor?: string // Hex color from liturgical calendar
+    [key: string]: any
   }
   onClick?: (e: React.MouseEvent) => void
 }
@@ -27,6 +29,7 @@ export function ParishEventItemWeek({ event, onClick }: ParishEventItemWeekProps
     : undefined
 
   const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
+  const liturgicalColor = event.liturgicalColor
 
   return (
     <CalendarTooltip title={event.title}>
@@ -39,6 +42,12 @@ export function ParishEventItemWeek({ event, onClick }: ParishEventItemWeekProps
       >
         <div className="font-medium flex items-center gap-2 min-w-0">
           {ModuleIcon && <ModuleIcon className="h-4 w-4 flex-shrink-0" />}
+          {liturgicalColor && (
+            <div
+              className="w-2.5 h-2.5 rounded-full border border-background shadow-sm flex-shrink-0"
+              style={{ backgroundColor: liturgicalColor }}
+            />
+          )}
           <span className="truncate">{event.title}</span>
         </div>
         {eventTypeLabel && (

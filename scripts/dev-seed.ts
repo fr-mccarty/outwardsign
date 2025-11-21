@@ -165,6 +165,35 @@ async function seedDevData() {
 
   console.log('')
 
+  // Fetch weekend mass time template items (Sunday masses) for assigning to people
+  console.log('📅 Fetching weekend mass times for people assignment...')
+  const { data: sundayTemplate } = await supabase
+    .from('mass_times_templates')
+    .select('id')
+    .eq('parish_id', parishId)
+    .eq('day_of_week', 'SUNDAY')
+    .single()
+
+  let weekendMassTimeItems: Array<{ id: string }> = []
+
+  if (sundayTemplate) {
+    const { data: massTimeItems } = await supabase
+      .from('mass_times_template_items')
+      .select('id')
+      .eq('mass_times_template_id', sundayTemplate.id)
+
+    if (massTimeItems && massTimeItems.length > 0) {
+      weekendMassTimeItems = massTimeItems
+      console.log(`   ✅ Found ${weekendMassTimeItems.length} weekend mass times`)
+    } else {
+      console.log('   ⚠️  No weekend mass times found')
+    }
+  } else {
+    console.log('   ⚠️  Sunday template not found')
+  }
+
+  console.log('')
+
   // Seed sample groups (DEVELOPMENT ONLY - not in onboarding)
   console.log('👥 Creating sample groups...')
   const { data: groups, error: groupsError } = await supabase
@@ -221,7 +250,8 @@ async function seedDevData() {
         last_name: 'Doe',
         email: 'john.doe@example.com',
         phone_number: '(555) 123-4567',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[0 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -229,7 +259,8 @@ async function seedDevData() {
         last_name: 'Smith',
         email: 'jane.smith@example.com',
         phone_number: '(555) 987-6543',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[1 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -237,7 +268,8 @@ async function seedDevData() {
         last_name: 'Johnson',
         email: 'bob.johnson@example.com',
         phone_number: '(555) 246-8101',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[2 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -245,7 +277,8 @@ async function seedDevData() {
         last_name: 'Garcia',
         email: 'maria.garcia@example.com',
         phone_number: '(555) 369-1214',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[3 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -253,7 +286,8 @@ async function seedDevData() {
         last_name: 'Chen',
         email: 'michael.chen@example.com',
         phone_number: '(555) 482-1357',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[4 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -261,7 +295,8 @@ async function seedDevData() {
         last_name: 'Williams',
         email: 'sarah.williams@example.com',
         phone_number: '(555) 159-2634',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[5 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -269,7 +304,8 @@ async function seedDevData() {
         last_name: 'Martinez',
         email: 'david.martinez@example.com',
         phone_number: '(555) 753-9514',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[6 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -277,7 +313,8 @@ async function seedDevData() {
         last_name: 'Taylor',
         email: 'emily.taylor@example.com',
         phone_number: '(555) 951-7532',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[7 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -285,7 +322,8 @@ async function seedDevData() {
         last_name: 'Anderson',
         email: 'james.anderson@example.com',
         phone_number: '(555) 357-1593',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[8 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -293,7 +331,8 @@ async function seedDevData() {
         last_name: 'Brown',
         email: 'lisa.brown@example.com',
         phone_number: '(555) 753-8642',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[9 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -301,7 +340,8 @@ async function seedDevData() {
         last_name: 'Wilson',
         email: 'robert.wilson@example.com',
         phone_number: '(555) 951-3578',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[10 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -309,7 +349,8 @@ async function seedDevData() {
         last_name: 'Moore',
         email: 'patricia.moore@example.com',
         phone_number: '(555) 159-7534',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[11 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -317,7 +358,8 @@ async function seedDevData() {
         last_name: 'Lee',
         email: 'thomas.lee@example.com',
         phone_number: '(555) 357-9512',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[12 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -325,7 +367,8 @@ async function seedDevData() {
         last_name: 'White',
         email: 'jennifer.white@example.com',
         phone_number: '(555) 753-1596',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[13 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -333,7 +376,8 @@ async function seedDevData() {
         last_name: 'Harris',
         email: 'christopher.harris@example.com',
         phone_number: '(555) 951-7538',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[14 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -341,7 +385,8 @@ async function seedDevData() {
         last_name: 'Clark',
         email: 'linda.clark@example.com',
         phone_number: '(555) 159-3574',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[15 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -349,7 +394,8 @@ async function seedDevData() {
         last_name: 'Rodriguez',
         email: 'daniel.rodriguez@example.com',
         phone_number: '(555) 357-7539',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[16 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -357,7 +403,8 @@ async function seedDevData() {
         last_name: 'Lewis',
         email: 'barbara.lewis@example.com',
         phone_number: '(555) 753-9516',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[17 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -365,7 +412,8 @@ async function seedDevData() {
         last_name: 'Walker',
         email: 'matthew.walker@example.com',
         phone_number: '(555) 951-1597',
-        sex: 'Male'
+        sex: 'Male',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[18 % weekendMassTimeItems.length].id] : []
       },
       {
         parish_id: parishId,
@@ -373,7 +421,8 @@ async function seedDevData() {
         last_name: 'Hall',
         email: 'nancy.hall@example.com',
         phone_number: '(555) 159-7535',
-        sex: 'Female'
+        sex: 'Female',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[19 % weekendMassTimeItems.length].id] : []
       },
     ])
     .select()

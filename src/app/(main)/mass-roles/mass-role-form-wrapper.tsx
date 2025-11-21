@@ -1,15 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { MassRole } from "@/lib/types"
 import { PageContainer } from "@/components/page-container"
 import { ModuleSaveButton } from "@/components/module-save-button"
 import { ModuleViewButton } from "@/components/module-view-button"
 import { MassRoleForm } from "./mass-role-form"
 import { BreadcrumbSetter } from "@/components/breadcrumb-setter"
+import { MassRoleWithRelations } from "@/lib/actions/mass-roles"
 
 interface MassRoleFormWrapperProps {
-  massRole?: MassRole
+  massRole?: MassRoleWithRelations
   breadcrumbs: { href?: string; label: string }[]
 }
 

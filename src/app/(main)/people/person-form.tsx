@@ -5,6 +5,7 @@ import { z } from "zod"
 import { FormField } from "@/components/ui/form-field"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
+import { MassAttendanceSelector } from "@/components/mass-attendance-selector"
 import { createPerson, updatePerson } from "@/lib/actions/people"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -20,7 +21,8 @@ const personSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zipcode: z.string().optional(),
-  note: z.string().optional()
+  note: z.string().optional(),
+  mass_times_template_item_ids: z.array(z.string()).optional()
 })
 
 interface PersonFormProps {
@@ -42,6 +44,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
   const [state, setState] = useState(person?.state || "")
   const [zipcode, setZipcode] = useState(person?.zipcode || "")
   const [note, setNote] = useState(person?.note || "")
+  const [massTimeIds, setMassTimeIds] = useState<string[]>(person?.mass_times_template_item_ids || [])
 
   // Sync loading state with parent wrapper
   useEffect(() => {
@@ -66,6 +69,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         state: state || undefined,
         zipcode: zipcode || undefined,
         note: note || undefined,
+        mass_times_template_item_ids: massTimeIds.length > 0 ? massTimeIds : undefined,
       })
 
       if (isEditing) {
@@ -177,6 +181,17 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           onChange={setNote}
           placeholder="Enter any additional notes..."
           rows={4}
+        />
+      </FormSectionCard>
+
+      <FormSectionCard
+        title="Mass Attendance"
+        description="Select which masses this person typically attends"
+      >
+        <MassAttendanceSelector
+          selectedIds={massTimeIds}
+          onChange={setMassTimeIds}
+          disabled={isLoading}
         />
       </FormSectionCard>
 

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, Users, Sparkles, ArrowRight } from 'lucide-react'
+import { DOCUMENTATION_HOME_LABELS } from '@/lib/constants'
 
 interface DocumentationHomeProps {
   params: Promise<{ lang: string }>
@@ -9,67 +10,7 @@ interface DocumentationHomeProps {
 
 export default async function DocumentationHome({ params }: DocumentationHomeProps) {
   const { lang } = await params as { lang: 'en' | 'es' }
-
-  const content = {
-    en: {
-      title: 'Welcome to Outward Sign Documentation',
-      subtitle: 'Everything you need to know about managing sacraments and sacramentals in your parish',
-      gettingStarted: {
-        title: 'Getting Started',
-        description: 'New to Outward Sign? Start here to learn the basics',
-        button: 'Get Started',
-      },
-      userGuides: {
-        title: 'User Guides',
-        description: 'Role-based guides for admins, staff, and parishioners',
-        button: 'View Guides',
-      },
-      features: {
-        title: 'Features',
-        description: 'Explore weddings, funerals, masses, and more',
-        button: 'Explore Features',
-      },
-      popularTopics: 'Popular Topics',
-      topics: [
-        { title: 'Planning a Wedding', href: '/documentation/en/features/weddings' },
-        { title: 'Managing Mass Intentions', href: '/documentation/en/features/masses' },
-        { title: 'Creating Events', href: '/documentation/en/user-guides/events' },
-        { title: 'Managing People', href: '/documentation/en/user-guides/people' },
-        { title: 'Setting up Your Parish', href: '/documentation/en/getting-started/parish-setup' },
-        { title: 'Inviting Staff Members', href: '/documentation/en/user-guides/inviting-staff' },
-      ],
-    },
-    es: {
-      title: 'Bienvenido a la Documentación de Outward Sign',
-      subtitle: 'Todo lo que necesita saber sobre la gestión de sacramentos y sacramentales en su parroquia',
-      gettingStarted: {
-        title: 'Comenzando',
-        description: 'Nuevo en Outward Sign? Comience aquí para aprender lo básico',
-        button: 'Comenzar',
-      },
-      userGuides: {
-        title: 'Guías de Usuario',
-        description: 'Guías basadas en roles para administradores, personal y feligreses',
-        button: 'Ver Guías',
-      },
-      features: {
-        title: 'Características',
-        description: 'Explore bodas, funerales, misas y más',
-        button: 'Explorar Características',
-      },
-      popularTopics: 'Temas Populares',
-      topics: [
-        { title: 'Planificación de una Boda', href: '/documentation/es/features/weddings' },
-        { title: 'Gestión de Intenciones de Misa', href: '/documentation/es/features/masses' },
-        { title: 'Creación de Eventos', href: '/documentation/es/user-guides/events' },
-        { title: 'Gestión de Personas', href: '/documentation/es/user-guides/people' },
-        { title: 'Configuración de su Parroquia', href: '/documentation/es/getting-started/parish-setup' },
-        { title: 'Invitación de Miembros del Personal', href: '/documentation/es/user-guides/inviting-staff' },
-      ],
-    },
-  }
-
-  const t = content[lang]
+  const t = DOCUMENTATION_HOME_LABELS[lang]
 
   return (
     <div className="space-y-8">

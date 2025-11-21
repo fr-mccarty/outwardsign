@@ -23,7 +23,7 @@ interface Step9ResultsProps {
   startDate: string
 }
 
-export function Step9Results({ result, startDate }: Step9ResultsProps) {
+export function Step8Results({ result, startDate }: Step9ResultsProps) {
   const router = useRouter()
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isSaving, setIsSaving] = useState(false)

@@ -26,22 +26,23 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 
 **How it works:** FormField is a **props-based component** - you pass field configuration as props, and it renders everything internally including the label (connected via `htmlFor`/`id`), the input, optional description, and error messages.
 
-**Current Limitation:** FormField currently supports plain inputs (text, email, password), textareas, and select dropdowns only. It does NOT support checkboxes, radio buttons, date pickers, file uploads, or other complex form elements. For those, use the base shadcn/ui components directly with proper Label association.
+**Supported Input Types:** FormField supports plain inputs (text, email, password, number, date, time), textareas, select dropdowns, and checkboxes. For radio buttons, date pickers, file uploads, or other complex form elements not listed, use the base shadcn/ui components directly with proper Label association.
 
 **Props:**
 - `id` (required): Field identifier
 - `label` (required): Field label text
-- `value` (required): Current field value
+- `value` (required): Current field value (string for text/textarea/select, boolean for checkbox)
 - `onChange` (required): Value change handler
-- `inputType`: `'text' | 'email' | 'password' | 'textarea' | 'select'` (default: 'text')
+- `inputType`: `'text' | 'email' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select' | 'checkbox'` (default: 'text')
 - `description`: Optional help text below label
 - `required`: Show required indicator
 - `disabled`: Disable the field
 - `error`: Validation error message
-- `placeholder`: Placeholder text
+- `placeholder`: Placeholder text (text/textarea inputs only)
 - `options`: Array of `{value, label}` for select inputs
 - `rows`: Number of rows for textarea
-- `maxLength`: Max character length
+- `maxLength`: Max character length (text inputs only)
+- `min`, `max`, `step`: Number/date/time input constraints
 
 **Usage:**
 ```tsx
@@ -75,6 +76,36 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
     { value: 'ACTIVE', label: 'Active' },
     { value: 'INACTIVE', label: 'Inactive' }
   ]}
+/>
+
+// Checkbox
+<FormField
+  id="is_active"
+  label="Active"
+  inputType="checkbox"
+  description="Check to mark as active"
+  value={isActive}
+  onChange={setIsActive}
+/>
+
+// Number input
+<FormField
+  id="age"
+  label="Age"
+  inputType="number"
+  value={age}
+  onChange={setAge}
+  min="0"
+  max="120"
+/>
+
+// Date input
+<FormField
+  id="event_date"
+  label="Event Date"
+  inputType="date"
+  value={eventDate}
+  onChange={setEventDate}
 />
 ```
 

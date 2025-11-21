@@ -7,11 +7,10 @@ import { Step1DateRange } from './steps/step-1-date-range'
 import { Step2SchedulePattern, type MassScheduleEntry } from './steps/step-2-schedule-pattern'
 import { Step3TemplateSelection } from './steps/step-3-template-selection'
 import { Step4LiturgicalEvents } from './steps/step-4-liturgical-events'
-import { Step5Review } from './steps/step-5-review'
-import { Step6ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-6-proposed-schedule'
-import { Step7AssignmentSummary } from './steps/step-7-assignment-summary'
-import { Step8Confirmation } from './steps/step-8-confirmation'
-import { Step9Results } from './steps/step-9-results'
+import { Step5ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-5-proposed-schedule'
+import { Step6AssignmentSummary } from './steps/step-6-assignment-summary'
+import { Step7Confirmation } from './steps/step-7-confirmation'
+import { Step8Results } from './steps/step-8-results'
 import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
 import { MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
@@ -68,7 +67,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   // Step 5: Proposed Schedule
   const [proposedMasses, setProposedMasses] = useState<ProposedMass[]>([])
 
-  // Step 6: Algorithm Options
+  // Algorithm Options
   const [algorithmOptions, setAlgorithmOptions] = useState({
     balanceWorkload: true,
     respectBlackoutDates: true,
@@ -312,7 +311,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     setProposedMasses(masses)
   }, [startDate, endDate, massTimesTemplates, selectedMassTimesTemplateIds, selectedRoleTemplateIds, selectedLiturgicalEventIds, templates])
 
-  // Regenerate when entering step 5 or when key inputs change
+  // Regenerate when entering proposed schedule step or when key inputs change
   useEffect(() => {
     if (startDate && endDate && selectedMassTimesTemplateIds.length > 0 && selectedRoleTemplateIds.length > 0) {
       regenerateProposedMasses()
@@ -344,15 +343,15 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
 
       toast.success(`Successfully created ${result.massesCreated} Masses`)
 
-      // Store result and navigate to Step 5 if manual adjustments enabled
+      // Store result and navigate to results if manual adjustments enabled
       setSchedulingResult(result)
 
       // Clear saved wizard state on successful completion
       clearSavedState()
 
       if (algorithmOptions.allowManualAdjustments && result.rolesUnassigned > 0) {
-        // Navigate to Step 9 to show results
-        setCurrentWizardStep(9)
+        // Navigate to Step 8 to show results
+        setCurrentWizardStep(8)
       } else {
         // Go directly to masses list
         router.push(`/masses?start_date=${startDate}`)
@@ -383,18 +382,14 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   }
 
   const isStep5Valid = () => {
-    return true // Review step is always valid if we got here
-  }
-
-  const isStep6Valid = () => {
     return proposedMasses.filter(m => m.isIncluded).length > 0
   }
 
-  const isStep7Valid = () => {
+  const isStep6Valid = () => {
     return true // Summary step is always valid
   }
 
-  const isStep8Valid = () => {
+  const isStep7Valid = () => {
     return true // Confirmation step is always valid
   }
 
@@ -414,34 +409,30 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         return !isStep6Valid()
       case 7:
         return !isStep7Valid()
-      case 8:
-        return !isStep8Valid()
       default:
         return false
     }
   }
 
-  const wizardSteps = currentWizardStep === 9
+  const wizardSteps = currentWizardStep === 8
     ? [
         { id: 1, title: 'Date Range', description: 'Select scheduling period' },
         { id: 2, title: 'Mass Times', description: 'Select Mass times' },
         { id: 3, title: 'Role Template', description: 'Select assignments' },
         { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
-        { id: 5, title: 'Review & Confirm', description: 'Finalize settings' },
-        { id: 6, title: 'Proposed Schedule', description: 'Review and adjust' },
-        { id: 7, title: 'Assignment Summary', description: 'Review workload' },
-        { id: 8, title: 'Confirm', description: 'Final confirmation' },
-        { id: 9, title: 'Results', description: 'View created masses' },
+        { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
+        { id: 6, title: 'Assignment Summary', description: 'Review workload' },
+        { id: 7, title: 'Confirm', description: 'Final confirmation' },
+        { id: 8, title: 'Results', description: 'View created masses' },
       ]
     : [
         { id: 1, title: 'Date Range', description: 'Select scheduling period' },
         { id: 2, title: 'Mass Times', description: 'Select Mass times' },
         { id: 3, title: 'Role Template', description: 'Select assignments' },
         { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
-        { id: 5, title: 'Review & Confirm', description: 'Finalize settings' },
-        { id: 6, title: 'Proposed Schedule', description: 'Review and adjust' },
-        { id: 7, title: 'Assignment Summary', description: 'Review workload' },
-        { id: 8, title: 'Confirm', description: 'Final confirmation' },
+        { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
+        { id: 6, title: 'Assignment Summary', description: 'Review workload' },
+        { id: 7, title: 'Confirm', description: 'Final confirmation' },
       ]
 
   const renderStepContent = (currentStep: number, goToStep: (step: number) => void) => {
@@ -486,22 +477,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         )
       case 5:
         return (
-          <Step5Review
-            startDate={startDate}
-            endDate={endDate}
-            massTimesTemplates={massTimesTemplates}
-            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
-            templateIds={selectedRoleTemplateIds}
-            templates={templates}
-            algorithmOptions={algorithmOptions}
-            onAlgorithmOptionChange={handleAlgorithmOptionChange}
-            onEditStep={goToStep}
-            totalMassCount={totalMassCount}
-          />
-        )
-      case 6:
-        return (
-          <Step6ProposedSchedule
+          <Step5ProposedSchedule
             startDate={startDate}
             endDate={endDate}
             massTimesTemplates={massTimesTemplates}
@@ -510,15 +486,15 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
             onProposedMassesChange={setProposedMasses}
           />
         )
-      case 7:
+      case 6:
         return (
-          <Step7AssignmentSummary
+          <Step6AssignmentSummary
             proposedMasses={proposedMasses}
           />
         )
-      case 8:
+      case 7:
         return (
-          <Step8Confirmation
+          <Step7Confirmation
             startDate={startDate}
             endDate={endDate}
             proposedMasses={proposedMasses}
@@ -528,9 +504,9 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
             selectedRoleTemplateIds={selectedRoleTemplateIds}
           />
         )
-      case 9:
+      case 8:
         return schedulingResult ? (
-          <Step9Results
+          <Step8Results
             result={schedulingResult}
             startDate={startDate}
           />
