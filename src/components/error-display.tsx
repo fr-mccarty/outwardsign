@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AlertCircle } from "lucide-react"
+import { PAGE_MAX_WIDTH_CLASS } from "@/lib/constants"
 
 interface ErrorDisplayProps {
   error: Error & { digest?: string }
@@ -11,7 +12,7 @@ interface ErrorDisplayProps {
 
 export function ErrorDisplay({ error, reset }: ErrorDisplayProps) {
   return (
-    <div className="px-6">
+    <div className={`p-6 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
       <Card className="border-destructive">
         <CardContent className="p-6">
           <div className="flex flex-col items-center text-center space-y-4">

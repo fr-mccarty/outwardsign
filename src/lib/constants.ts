@@ -2,6 +2,9 @@ export const APP_NAME = 'Outward Sign'
 export const APP_TAGLINE = 'Bloom in Christ'
 export const GITHUB_URL = 'https://github.com/fr-mccarty/outwardsign'
 
+// Page layout
+export const PAGE_MAX_WIDTH_CLASS = 'max-w-6xl'
+
 // Homepage language support
 export const HOME_LANGUAGES = ['en', 'es'] as const
 export type HomeLanguage = typeof HOME_LANGUAGES[number]
