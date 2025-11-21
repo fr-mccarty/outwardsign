@@ -19,7 +19,7 @@ export function PageContainer({
   'data-testid': dataTestId
 }: PageContainerProps) {
   return (
-    <div className="space-y-6 p-6" data-testid={dataTestId}>
+    <div className="space-y-6 p-6 pb-12" data-testid={dataTestId}>
       <div className={cn(PAGE_MAX_WIDTH_CLASS, "mx-auto", className)}>
         <div className="mb-4">
           {actions ? (
