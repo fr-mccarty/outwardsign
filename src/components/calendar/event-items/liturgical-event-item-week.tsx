@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { getLiturgicalColorClasses, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
+import { LITURGICAL_COLOR_BAR_TOTAL_WIDTH } from '@/lib/constants'
 
 interface LiturgicalEventItemWeekProps {
   event: {
@@ -23,9 +24,9 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
   // Get liturgical color classes (handles empty/null internally)
   const colorStyles = getLiturgicalColorClasses(primaryColor, 10)
 
-  // Width of each individual liturgical bar (in pixels)
-  const liturgicalBarWidth = 6
-  const totalBarsWidth = colors.length > 0 ? colors.length * liturgicalBarWidth : liturgicalBarWidth
+  // Total width of all liturgical bars combined (in pixels)
+  const colorCount = colors.length > 0 ? colors.length : 1
+  const liturgicalBarWidth = LITURGICAL_COLOR_BAR_TOTAL_WIDTH / colorCount
 
   return (
     <CalendarTooltip title={event.title}>
@@ -39,7 +40,7 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
         {/* Vertical liturgical bars on the left */}
         <div
           className="absolute left-0 top-0 bottom-0 flex flex-row"
-          style={{ width: `${totalBarsWidth}px` }}
+          style={{ width: `${LITURGICAL_COLOR_BAR_TOTAL_WIDTH}px` }}
         >
           {colors.length > 0 ? (
             colors.map((color, index) => (
@@ -62,7 +63,7 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
         </div>
 
         {/* Content with left padding to account for liturgical bars */}
-        <div style={{ paddingLeft: `${totalBarsWidth + 12}px`, paddingRight: '12px' }}>
+        <div style={{ paddingLeft: `${LITURGICAL_COLOR_BAR_TOTAL_WIDTH + 12}px`, paddingRight: '12px' }}>
           <div className="font-medium truncate">{event.title}</div>
         </div>
       </div>

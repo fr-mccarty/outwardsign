@@ -1175,6 +1175,11 @@ export const HOME_PAGE_TRANSLATIONS = {
   }
 }
 
+// Liturgical Calendar Constants
+// Total width (in pixels) for liturgical color bars across all calendar views
+// Individual bar width = LITURGICAL_COLOR_BAR_TOTAL_WIDTH / number of colors
+export const LITURGICAL_COLOR_BAR_TOTAL_WIDTH = 12
+
 // Liturgical Calendar API Color Mapping
 // Maps color strings from the liturgical calendar API to our CSS variable color names
 export const LITURGICAL_CALENDAR_API_COLOR_MAPPING: Record<string, string> = {

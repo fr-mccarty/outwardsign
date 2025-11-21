@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { getLiturgicalColorClasses, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
+import { LITURGICAL_COLOR_BAR_TOTAL_WIDTH } from '@/lib/constants'
 
 interface LiturgicalEventItemDayProps {
   event: {
@@ -22,9 +23,9 @@ export function LiturgicalEventItemDay({ event, onClick }: LiturgicalEventItemDa
   // Get liturgical color classes (handles empty/null internally)
   const colorStyles = getLiturgicalColorClasses(primaryColor, 10)
 
-  // Width of each individual liturgical bar (in pixels)
-  const liturgicalBarWidth = 6
-  const totalBarsWidth = colors.length > 0 ? colors.length * liturgicalBarWidth : liturgicalBarWidth
+  // Total width of all liturgical bars combined (in pixels)
+  const colorCount = colors.length > 0 ? colors.length : 1
+  const liturgicalBarWidth = LITURGICAL_COLOR_BAR_TOTAL_WIDTH / colorCount
 
   return (
     <div
@@ -37,7 +38,7 @@ export function LiturgicalEventItemDay({ event, onClick }: LiturgicalEventItemDa
       {/* Vertical liturgical bars on the left */}
       <div
         className="absolute left-0 top-0 bottom-0 flex flex-row"
-        style={{ width: `${totalBarsWidth}px` }}
+        style={{ width: `${LITURGICAL_COLOR_BAR_TOTAL_WIDTH}px` }}
       >
         {colors.length > 0 ? (
           colors.map((color, index) => (
@@ -60,7 +61,7 @@ export function LiturgicalEventItemDay({ event, onClick }: LiturgicalEventItemDa
       </div>
 
       {/* Content with left padding to account for liturgical bars */}
-      <div style={{ paddingLeft: `${totalBarsWidth + 16}px`, paddingRight: '16px' }}>
+      <div style={{ paddingLeft: `${LITURGICAL_COLOR_BAR_TOTAL_WIDTH + 16}px`, paddingRight: '16px' }}>
         <div className="font-semibold text-base">{event.title}</div>
         {event.liturgicalEvent && colors.length > 0 && (
           <div className="mt-2 space-y-1">

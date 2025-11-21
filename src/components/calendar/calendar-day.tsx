@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { CalendarDayProps, CalendarItem } from "./types"
 import type { CalendarDay } from "./types"
+import { LITURGICAL_COLOR_BAR_TOTAL_WIDTH } from '@/lib/constants'
 import {
   ParishEventItemMonth,
   ParishEventItemWeek,
@@ -109,6 +110,11 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
     }
   })
 
+  // Calculate width for each color block
+  const calculateColorWidth = (colorCount: number) => {
+    return colorCount > 0 ? LITURGICAL_COLOR_BAR_TOTAL_WIDTH / colorCount : LITURGICAL_COLOR_BAR_TOTAL_WIDTH
+  }
+
   // Format date for URL parameter (YYYY-MM-DD)
   const formattedDate = day.date.toISOString().split('T')[0]
   const dayViewUrl = `/calendar?view=day&date=${formattedDate}`
@@ -153,9 +159,10 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
                     {group.colors.map((color, colorIndex) => (
                       <div
                         key={colorIndex}
-                        className="w-2 h-4"
+                        className="h-4"
                         style={{
                           backgroundColor: getLiturgicalCssVarValue(color.toLowerCase()),
+                          width: `${calculateColorWidth(group.colors.length)}px`
                         }}
                       />
                     ))}
