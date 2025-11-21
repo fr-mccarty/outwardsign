@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { FormField } from '@/components/form-field';
-import { Save, Loader2, FileText } from "lucide-react";
+import { FormBottomActions } from '@/components/form-bottom-actions';
+import { FileText } from "lucide-react";
 import { createPetitionTemplate, updatePetitionTemplate, PetitionContextTemplate } from '@/lib/actions/petition-templates';
 import { getDefaultPetitions } from '@/lib/actions/parish-settings';
 import { PETITION_MODULE_VALUES, PETITION_MODULE_LABELS, PETITION_LANGUAGE_VALUES, PETITION_LANGUAGE_LABELS } from '@/lib/constants';
@@ -160,29 +161,12 @@ export default function PetitionTemplateForm({ template }: PetitionTemplateFormP
       </FormSectionCard>
 
 
-      <div className="flex gap-4">
-        <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              {template ? 'Update Template' : 'Create Template'}
-            </>
-          )}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push('/settings/petitions')}
-          className="flex-1"
-        >
-          Cancel
-        </Button>
-      </div>
+      <FormBottomActions
+        isEditing={!!template}
+        isLoading={loading}
+        cancelHref={template ? `/settings/petitions/${template.id}` : '/settings/petitions'}
+        moduleName="Petition Template"
+      />
     </form>
   );
 }

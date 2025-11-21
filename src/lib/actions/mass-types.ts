@@ -10,7 +10,6 @@ import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 export interface MassType {
   id: string
   parish_id: string
-  key: string
   name: string
   description: string | null
   display_order: number
@@ -22,7 +21,6 @@ export interface MassType {
 
 // Create data interface
 export interface CreateMassTypeData {
-  key: string
   name: string
   description?: string
   display_order?: number
@@ -31,7 +29,6 @@ export interface CreateMassTypeData {
 
 // Update data interface
 export interface UpdateMassTypeData {
-  key?: string
   name?: string
   description?: string | null
   display_order?: number
@@ -132,7 +129,6 @@ export async function createMassType(data: CreateMassTypeData): Promise<MassType
     .insert([
       {
         parish_id: selectedParishId,
-        key: data.key.toUpperCase().replace(/\s+/g, '_'),
         name: data.name,
         description: data.description || null,
         display_order: data.display_order ?? 0,
@@ -173,7 +169,6 @@ export async function updateMassType(id: string, data: UpdateMassTypeData): Prom
   requireModuleAccess(userParish, 'masses')
 
   const updateData: Record<string, unknown> = {}
-  if (data.key !== undefined) updateData.key = data.key.toUpperCase().replace(/\s+/g, '_')
   if (data.name !== undefined) updateData.name = data.name
   if (data.description !== undefined) updateData.description = data.description
   if (data.display_order !== undefined) updateData.display_order = data.display_order

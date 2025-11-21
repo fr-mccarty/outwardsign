@@ -145,9 +145,9 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   // 5. Seed Mass Types
   // =====================================================
   const defaultMassTypes = [
-    { key: 'SUNDAY_DAY', name: 'Sunday Day', display_order: 1 },
-    { key: 'SUNDAY_VIGIL', name: 'Sunday Vigil', display_order: 2 },
-    { key: 'SUNDAY_VIGIL_SPANISH', name: 'Sunday Vigil - Spanish', display_order: 3 },
+    { name: 'Sunday Day', display_order: 1 },
+    { name: 'Sunday Vigil', display_order: 2 },
+    { name: 'Sunday Vigil - Spanish', display_order: 3 },
   ]
 
   const { error: massTypesError } = await supabase
@@ -155,7 +155,6 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .insert(
       defaultMassTypes.map((mt) => ({
         parish_id: parishId,
-        key: mt.key,
         name: mt.name,
         display_order: mt.display_order,
         is_system: false,
@@ -236,31 +235,31 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     {
       name: 'Holiday',
       description: 'Holiday Mass schedule',
-      is_active: false,
+      is_active: true,
       items: [{ time: '09:00:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Monday',
       description: 'Monday Mass schedule',
-      is_active: false,
+      is_active: true,
       items: [{ time: '12:05:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Wednesday',
       description: 'Wednesday Mass schedule',
-      is_active: false,
+      is_active: true,
       items: [{ time: '18:00:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Thursday',
       description: 'Thursday Mass schedule',
-      is_active: false,
+      is_active: true,
       items: [{ time: '06:00:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Friday',
       description: 'Friday Mass schedule',
-      is_active: false,
+      is_active: true,
       items: [{ time: '12:05:00', day_type: 'IS_DAY' as const }],
     },
   ]

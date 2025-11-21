@@ -4,6 +4,9 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { MassTimesListClient } from './mass-times-list-client'
 import { getMassTimesPaginated } from '@/lib/actions/mass-times'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { Plus } from 'lucide-react'
 
 interface PageProps {
   searchParams: Promise<{
@@ -41,13 +44,21 @@ export default async function MassTimesPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Mass Times Templates', href: '/mass-times' },
+    { label: 'Mass Times Templates', href: '/mass-times-templates' },
   ]
 
   return (
     <PageContainer
       title="Mass Times Templates"
       description="Manage mass times templates for different seasons and periods."
+      actions={
+        <Button asChild>
+          <Link href="/mass-times-templates/create">
+            <Plus className="h-4 w-4 mr-2" />
+            New Template
+          </Link>
+        </Button>
+      }
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassTimesListClient initialData={result.items} stats={stats} />

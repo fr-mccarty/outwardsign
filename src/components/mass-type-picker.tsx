@@ -60,7 +60,6 @@ export function MassTypePicker({ value, onChange, disabled }: MassTypePickerProp
     try {
       const newMassType = await createMassType({
         name: name.trim(),
-        key: name.toUpperCase().replace(/\s+/g, '_'),
       })
 
       toast.success('Mass type created successfully')

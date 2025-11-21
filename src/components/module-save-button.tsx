@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Save } from 'lucide-react'
 
 interface ModuleSaveButtonProps {
   moduleName: string
@@ -44,7 +44,10 @@ export function ModuleSaveButton({
           Saving...
         </>
       ) : (
-        `${action} ${moduleName}`
+        <>
+          <Save className="h-4 w-4 mr-2" />
+          {action} {moduleName}
+        </>
       )}
     </Button>
   )

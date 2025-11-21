@@ -38,7 +38,7 @@ const getStatusVariant = (status: string, statusType: StatusType): "default" | "
       case 'PLANNING':
         return 'secondary'
       case 'ACTIVE':
-        return 'default'
+        return 'outline'
       case 'INACTIVE':
         return 'secondary'
       case 'COMPLETED':

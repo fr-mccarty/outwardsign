@@ -16,7 +16,7 @@ export default async function CreateMassTimePage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Mass Times Templates', href: '/mass-times' },
+    { label: 'Mass Times Templates', href: '/mass-times-templates' },
     { label: 'Create' },
   ]
 

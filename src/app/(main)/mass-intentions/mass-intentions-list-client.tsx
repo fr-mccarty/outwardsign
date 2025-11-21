@@ -126,6 +126,9 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
               title={intention.mass_offered_for || 'No intention specified'}
               editHref={`/mass-intentions/${intention.id}/edit`}
               viewHref={`/mass-intentions/${intention.id}`}
+              viewButtonText="Preview"
+              status={intention.status}
+              statusType="module"
             >
               {intention.stipend_in_cents && (
                 <div className="flex items-center gap-2 flex-wrap">

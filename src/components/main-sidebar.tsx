@@ -164,16 +164,6 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       url: "/masses/create",
                       icon: Plus,
                     },
-                    {
-                      title: "Mass Roles",
-                      url: "/mass-roles",
-                      icon: UserCog,
-                    },
-                    {
-                      title: "Role Members",
-                      url: "/mass-role-members",
-                      icon: UsersIcon,
-                    },
                   ]}
                   defaultOpen={false}
                 />
@@ -191,7 +181,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                     },
                     {
                       title: "Mass Times Templates",
-                      url: "/mass-times",
+                      url: "/mass-times-templates",
                       icon: Clock,
                     },
                     {
@@ -203,6 +193,16 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       title: "Role Templates",
                       url: "/mass-role-templates",
                       icon: LayoutTemplate,
+                    },
+                    {
+                      title: "Mass Roles",
+                      url: "/mass-roles",
+                      icon: UserCog,
+                    },
+                    {
+                      title: "Role Members",
+                      url: "/mass-role-members",
+                      icon: UsersIcon,
                     },
                   ]}
                   defaultOpen={false}

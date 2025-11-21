@@ -126,21 +126,16 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
               status={presentation.status}
               statusType="module"
               language={presentation.presentation_event?.language || undefined}
+              datetime={presentation.presentation_event?.start_date ? {
+                date: presentation.presentation_event.start_date,
+                time: presentation.presentation_event.start_time || undefined
+              } : undefined}
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                {presentation.is_baptized && (
-                  <Badge variant="secondary" className="text-xs">
-                    Baptized
-                  </Badge>
-                )}
-                {presentation.presentation_event && (
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {presentation.presentation_event.start_date && formatDatePretty(presentation.presentation_event.start_date)}
-                    {presentation.presentation_event.start_time && ` at ${formatTime(presentation.presentation_event.start_time)}`}
-                  </div>
-                )}
-              </div>
+              {presentation.is_baptized && (
+                <Badge variant="secondary" className="text-xs">
+                  Baptized
+                </Badge>
+              )}
 
               <div className="text-sm space-y-1">
                 {presentation.child && (

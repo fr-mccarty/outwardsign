@@ -218,6 +218,33 @@ export async function deleteMassRole(id: string): Promise<void> {
   }
 
   revalidatePath('/settings/mass-roles')
+  revalidatePath('/mass-roles')
+}
+
+export async function reorderMassRoles(orderedIds: string[]): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Update each mass role's display_order
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from('mass_roles')
+      .update({ display_order: index })
+      .eq('id', id)
+      .eq('parish_id', selectedParishId)
+  )
+
+  const results = await Promise.all(updates)
+
+  // Check for errors
+  const errors = results.filter((r) => r.error)
+  if (errors.length > 0) {
+    console.error('Error reordering mass roles:', errors)
+    throw new Error('Failed to reorder mass roles')
+  }
+
+  revalidatePath('/mass-roles')
 }
 
 // ========== MASS ROLE INSTANCES ==========

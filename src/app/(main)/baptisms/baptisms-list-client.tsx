@@ -125,17 +125,11 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
               status={baptism.status}
               statusType="module"
               language={baptism.baptism_event?.language || undefined}
+              datetime={baptism.baptism_event?.start_date ? {
+                date: baptism.baptism_event.start_date,
+                time: baptism.baptism_event.start_time || undefined
+              } : undefined}
             >
-              {baptism.baptism_event && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {baptism.baptism_event.start_date && formatDatePretty(baptism.baptism_event.start_date)}
-                    {baptism.baptism_event.start_time && ` at ${formatTime(baptism.baptism_event.start_time)}`}
-                  </div>
-                </div>
-              )}
-
               <div className="text-sm space-y-1">
                 {baptism.child && (
                   <p className="text-muted-foreground">

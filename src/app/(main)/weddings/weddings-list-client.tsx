@@ -125,17 +125,11 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
               status={wedding.status}
               statusType="module"
               language={wedding.wedding_event?.language || undefined}
+              datetime={wedding.wedding_event?.start_date ? {
+                date: wedding.wedding_event.start_date,
+                time: wedding.wedding_event.start_time || undefined
+              } : undefined}
             >
-              {wedding.wedding_event && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {wedding.wedding_event.start_date && formatDatePretty(wedding.wedding_event.start_date)}
-                    {wedding.wedding_event.start_time && ` at ${formatTime(wedding.wedding_event.start_time)}`}
-                  </div>
-                </div>
-              )}
-
               <div className="text-sm space-y-1">
                 {wedding.bride && (
                   <p className="text-muted-foreground">

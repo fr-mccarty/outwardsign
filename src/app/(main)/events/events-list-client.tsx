@@ -184,12 +184,22 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                 title={event.name}
                 editHref={editHref}
                 viewHref={`/events/${event.id}`}
+                viewButtonText="Preview"
                 language={event.language || undefined}
+                datetime={event.start_date ? {
+                  date: event.start_date,
+                  time: event.start_time || undefined
+                } : undefined}
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-xs font-medium">
                     {EVENT_TYPE_LABELS[event.event_type]?.[userLanguage] || event.event_type}
                   </Badge>
+                  {isUpcoming && (
+                    <Badge variant="default" className="text-xs font-medium bg-green-700 hover:bg-green-700 text-white">
+                      Upcoming
+                    </Badge>
+                  )}
                 </div>
 
                 {event.description && (
@@ -197,25 +207,6 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                     {event.description}
                   </p>
                 )}
-
-                <div className="text-sm space-y-2">
-                  {event.start_date && (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <CalendarDays className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {formatDatePretty(event.start_date)}
-                          {event.start_time && ` at ${formatTime(event.start_time)}`}
-                        </span>
-                      </div>
-                      {isUpcoming && (
-                        <Badge variant="default" className="text-xs font-medium bg-green-700 hover:bg-green-700 text-white">
-                          Upcoming
-                        </Badge>
-                      )}
-                    </>
-                  )}
-                </div>
               </ListViewCard>
             )
           })}

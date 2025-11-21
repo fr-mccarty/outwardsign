@@ -33,10 +33,8 @@ export function MassTypeFormDialog({
   const isEditing = !!massType
 
   // Form state
-  const [key, setKey] = useState('')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [displayOrder, setDisplayOrder] = useState('0')
   const [active, setActive] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -44,17 +42,13 @@ export function MassTypeFormDialog({
   useEffect(() => {
     if (open) {
       if (massType) {
-        setKey(massType.key)
         setName(massType.name)
         setDescription(massType.description || '')
-        setDisplayOrder(String(massType.display_order))
         setActive(massType.active)
       } else {
         // Reset to defaults for create
-        setKey('')
         setName('')
         setDescription('')
-        setDisplayOrder('0')
         setActive(true)
       }
     }
@@ -73,10 +67,8 @@ export function MassTypeFormDialog({
       }
 
       const data = {
-        key: key.trim() || name.toUpperCase().replace(/\s+/g, '_'),
         name: name.trim(),
         description: description.trim() || undefined,
-        display_order: parseInt(displayOrder) || 0,
         active,
       }
 
@@ -100,7 +92,7 @@ export function MassTypeFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Edit Mass Type' : 'Create Mass Type'}</DialogTitle>
@@ -124,24 +116,6 @@ export function MassTypeFormDialog({
               />
             </div>
 
-            {/* Key (optional, auto-generated from name) */}
-            <div className="space-y-2">
-              <Label htmlFor="key">
-                Key <span className="text-xs text-muted-foreground">(optional)</span>
-              </Label>
-              <Input
-                id="key"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-                placeholder="Auto-generated from name"
-                className="font-mono text-sm"
-                disabled={isEditing && massType?.is_system}
-              />
-              <p className="text-xs text-muted-foreground">
-                Unique identifier (uppercase, underscores). Leave blank to auto-generate.
-              </p>
-            </div>
-
             {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">
@@ -154,22 +128,6 @@ export function MassTypeFormDialog({
                 placeholder="Brief description of this mass type"
                 rows={2}
               />
-            </div>
-
-            {/* Display Order */}
-            <div className="space-y-2">
-              <Label htmlFor="display_order">Display Order</Label>
-              <Input
-                id="display_order"
-                type="number"
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(e.target.value)}
-                placeholder="0"
-                min="0"
-              />
-              <p className="text-xs text-muted-foreground">
-                Lower numbers appear first in dropdowns
-              </p>
             </div>
 
             {/* Active Checkbox */}

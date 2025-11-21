@@ -87,13 +87,6 @@ export function MassRoleTemplatesListClient({ initialData, stats }: MassRoleTemp
         </CardContent>
       </Card>
 
-      {/* Stats */}
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">
-          Showing {stats.filtered} of {stats.total} template{stats.total !== 1 ? 's' : ''}
-        </p>
-      </div>
-
       {/* Templates Grid */}
       {initialData.length === 0 ? (
         <Card>
@@ -118,29 +111,34 @@ export function MassRoleTemplatesListClient({ initialData, stats }: MassRoleTemp
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((template) => (
-            <ListViewCard
-              key={template.id}
-              title={template.name}
-              editHref={`/mass-role-templates/${template.id}/edit`}
-              viewHref={`/mass-role-templates/${template.id}`}
-              viewButtonText="Preview"
-            >
-              {template.description && (
-                <p className="text-sm text-muted-foreground">
-                  {template.description}
-                </p>
-              )}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {initialData.map((template) => (
+              <ListViewCard
+                key={template.id}
+                title={template.name}
+                editHref={`/mass-role-templates/${template.id}/edit`}
+                viewHref={`/mass-role-templates/${template.id}`}
+                viewButtonText="Preview"
+              >
+                {template.description && (
+                  <p className="text-sm text-muted-foreground">
+                    {template.description}
+                  </p>
+                )}
 
-              {template.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {template.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+                {template.note && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {template.note}
+                  </p>
+                )}
+              </ListViewCard>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
+            Showing {stats.filtered} of {stats.total} template{stats.total !== 1 ? 's' : ''}
+          </p>
+        </>
       )}
     </div>
   )

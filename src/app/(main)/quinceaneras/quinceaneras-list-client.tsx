@@ -125,17 +125,11 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
               status={quinceanera.status}
               statusType="module"
               language={quinceanera.quinceanera_event?.language || undefined}
+              datetime={quinceanera.quinceanera_event?.start_date ? {
+                date: quinceanera.quinceanera_event.start_date,
+                time: quinceanera.quinceanera_event.start_time || undefined
+              } : undefined}
             >
-              {quinceanera.quinceanera_event && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {quinceanera.quinceanera_event.start_date && formatDatePretty(quinceanera.quinceanera_event.start_date)}
-                    {quinceanera.quinceanera_event.start_time && ` at ${formatTime(quinceanera.quinceanera_event.start_time)}`}
-                  </div>
-                </div>
-              )}
-
               <div className="text-sm space-y-1">
                 {quinceanera.quinceanera && (
                   <p className="text-muted-foreground">

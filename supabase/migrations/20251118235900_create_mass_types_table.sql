@@ -9,9 +9,6 @@ CREATE TABLE IF NOT EXISTS mass_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
 
-  -- Type identification
-  key TEXT NOT NULL, -- 'WEEKEND', 'DAILY', 'HOLIDAY', 'SPECIAL', or custom key
-
   -- Display name
   name TEXT NOT NULL,
 
@@ -24,10 +21,7 @@ CREATE TABLE IF NOT EXISTS mass_types (
   is_system BOOLEAN NOT NULL DEFAULT false, -- System types cannot be deleted
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-  -- Ensure unique keys per parish
-  UNIQUE(parish_id, key)
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Create indexes

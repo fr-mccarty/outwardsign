@@ -69,61 +69,50 @@ function SortableMassTypeItem({
   }
 
   return (
-    <Card ref={setNodeRef} style={style}>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <button
-            className="cursor-grab active:cursor-grabbing touch-none"
-            {...attributes}
-            {...listeners}
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 py-2 px-3 border rounded-md bg-card"
+    >
+      <button
+        className="cursor-grab active:cursor-grabbing touch-none"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </button>
+
+      <div className="flex-1 flex items-center gap-2 min-w-0">
+        <span className="font-medium text-sm truncate">{massType.name}</span>
+        {massType.is_system && (
+          <Badge variant="secondary" className="text-xs py-0">System</Badge>
+        )}
+        {!massType.active && (
+          <Badge variant="outline" className="text-xs py-0">Inactive</Badge>
+        )}
+      </div>
+
+      <div className="flex gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => onEdit(massType)}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+        {!massType.is_system && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onDelete(massType)}
           >
-            <GripVertical className="h-5 w-5 text-muted-foreground" />
-          </button>
-
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold">{massType.name}</h3>
-              {massType.is_system && (
-                <Badge variant="secondary" className="text-xs">
-                  System
-                </Badge>
-              )}
-              {!massType.active && (
-                <Badge variant="outline" className="text-xs">
-                  Inactive
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="font-mono text-xs">{massType.key}</span>
-              {massType.description && (
-                <span className="text-xs">{massType.description}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(massType)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            {!massType.is_system && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(massType)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+    </div>
   )
 }
 

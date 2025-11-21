@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DialogButton } from '@/components/dialog-button'
@@ -14,6 +14,7 @@ import { UserPlus, Mail, Phone, Users } from 'lucide-react'
 import { formatPersonName } from '@/lib/utils/formatters'
 import { addGroupMember } from '@/lib/actions/groups'
 import { toast } from 'sonner'
+import { ListViewCard } from '@/components/list-view-card'
 import type { Person } from '@/lib/types'
 import type { GroupRole } from '@/lib/actions/group-roles'
 import type { Group } from '@/lib/actions/groups'
@@ -213,39 +214,33 @@ export function GroupMemberDirectoryListClient({
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredPeople.map(({ person, memberships }) => (
-              <Card
+              <ListViewCard
                 key={person.id}
-                className="cursor-pointer hover:bg-accent transition-colors"
-                onClick={() => router.push(`/group-member-directory/${person.id}`)}
+                title={formatPersonName(person)}
+                editHref={`/group-member-directory/${person.id}/memberships`}
+                viewHref={`/group-member-directory/${person.id}`}
+                viewButtonText="View Details"
               >
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {formatPersonName(person)}
-                  </CardTitle>
-                  <CardDescription className="space-y-1">
-                    {person.email && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-3 w-3" />
-                        {person.email}
-                      </div>
-                    )}
-                    {person.phone_number && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-3 w-3" />
-                        {person.phone_number}
-                      </div>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium">Group Memberships:</div>
-                    <div className="text-sm text-muted-foreground">
-                      {memberships.length} {memberships.length === 1 ? 'group' : 'groups'}
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  {person.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3" />
+                      {person.email}
                     </div>
+                  )}
+                  {person.phone_number && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3 w-3" />
+                      {person.phone_number}
+                    </div>
+                  )}
+                  <div className="pt-1">
+                    <span className="font-medium text-foreground">
+                      {memberships.length} {memberships.length === 1 ? 'group' : 'groups'}
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </ListViewCard>
             ))}
           </div>
         )}

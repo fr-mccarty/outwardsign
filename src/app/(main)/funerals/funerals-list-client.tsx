@@ -125,17 +125,11 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
               status={funeral.status}
               statusType="module"
               language={funeral.funeral_event?.language || undefined}
+              datetime={funeral.funeral_event?.start_date ? {
+                date: funeral.funeral_event.start_date,
+                time: funeral.funeral_event.start_time || undefined
+              } : undefined}
             >
-              {funeral.funeral_event && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {funeral.funeral_event.start_date && formatDatePretty(funeral.funeral_event.start_date)}
-                    {funeral.funeral_event.start_time && ` at ${formatTime(funeral.funeral_event.start_time)}`}
-                  </div>
-                </div>
-              )}
-
               <div className="text-sm space-y-1">
                 {funeral.deceased && (
                   <p className="text-muted-foreground">

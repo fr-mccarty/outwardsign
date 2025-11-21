@@ -1,10 +1,11 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { SquarePen } from "lucide-react"
+import { SquarePen, Eye, Calendar } from "lucide-react"
 import { ReactNode } from "react"
 import { ModuleStatusLabel } from "./module-status-label"
 import { LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
+import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
 
 interface ListViewCardProps {
   title: string
@@ -14,28 +15,18 @@ interface ListViewCardProps {
   status?: string
   statusType?: 'module'
   language?: string
+  datetime?: { date: string; time?: string }
   children: ReactNode
 }
 
 /**
  * ListViewCard - Reusable card component for list views
  *
- * Layout:
- * - Title (truncated) in upper left
- * - Optional status badge between title and edit button (if status prop provided)
- * - Edit icon button in upper right
- * - Optional language text directly under title (if language prop provided)
- * - Custom content in the body (passed as children)
- * - View button in bottom right (text customizable)
- *
- * Status Badge:
- * - Pass `status` and `statusType` props to automatically render ModuleStatusLabel
- * - Status appears between title and edit button in the header row
- * - Title will truncate to make room for status badge
- *
- * Language Text:
- * - Pass `language` prop to display language as plain text under title
- * - Language appears directly below title in header section with muted foreground color
+ * Layout (top to bottom):
+ * - Title (truncated) + Edit button
+ * - Language badge (only if language prop provided)
+ * - Children/Description
+ * - Status (bottom left) + View/Preview button (bottom right)
  */
 export function ListViewCard({
   title,
@@ -45,28 +36,27 @@ export function ListViewCard({
   status,
   statusType = 'module',
   language,
+  datetime,
   children
 }: ListViewCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 overflow-hidden">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-lg line-clamp-1">
-                {title}
-              </CardTitle>
-              {status && (
-                <ModuleStatusLabel
-                  status={status}
-                  statusType={statusType}
-                  className="text-xs flex-shrink-0"
-                />
-              )}
-            </div>
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg truncate">
+              {title}
+            </CardTitle>
             {language && (
-              <div className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground uppercase">
                 {LITURGICAL_LANGUAGE_LABELS[language]?.en || language}
+              </p>
+            )}
+            {datetime && (
+              <div className="flex items-center gap-1.5 text-base text-muted-foreground pt-1">
+                <Calendar className="h-4 w-4" />
+                <span>{formatDatePretty(datetime.date)}</span>
+                {datetime.time && <span>at {formatTime(datetime.time)}</span>}
               </div>
             )}
           </div>
@@ -77,12 +67,22 @@ export function ListViewCard({
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="pt-0">
         {children}
 
-        <div className="flex justify-end items-center pt-2">
+        <div className="flex justify-between items-center pt-3">
+          {status ? (
+            <ModuleStatusLabel
+              status={status}
+              statusType={statusType}
+              className="text-xs"
+            />
+          ) : (
+            <div />
+          )}
           <Button variant="outline" size="sm" asChild>
             <Link href={viewHref}>
+              <Eye className="h-4 w-4 mr-1" />
               {viewButtonText}
             </Link>
           </Button>

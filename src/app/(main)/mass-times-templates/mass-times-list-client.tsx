@@ -12,10 +12,17 @@ import {
 } from '@/components/ui/select'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Plus, Clock, Search, X } from 'lucide-react'
 import Link from 'next/link'
+import { ListViewCard } from '@/components/list-view-card'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import type { MassTimeWithRelations } from '@/lib/actions/mass-times'
+
+// Helper to convert boolean to status and get label
+const getActiveStatusLabel = (isActive: boolean): string => {
+  const status = isActive ? 'ACTIVE' : 'INACTIVE'
+  return getStatusLabel(status, 'en')
+}
 
 interface Stats {
   total: number
@@ -54,7 +61,7 @@ export function MassTimesListClient({ initialData, stats }: MassTimesListClientP
 
   const clearFilters = () => {
     setSearchValue('')
-    router.push('/mass-times')
+    router.push('/mass-times-templates')
   }
 
   const hasActiveFilters = searchValue || selectedActiveFilter !== 'all'
@@ -116,20 +123,6 @@ export function MassTimesListClient({ initialData, stats }: MassTimesListClientP
         </CardContent>
       </Card>
 
-      {/* Stats and Create Button */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          Showing {initialData.length} of {stats.total} templates
-          {stats.active < stats.total && ` • ${stats.active} active`}
-        </div>
-        <Button asChild>
-          <Link href="/mass-times/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New Template
-          </Link>
-        </Button>
-      </div>
-
       {/* Mass Times Templates Grid */}
       {initialData.length === 0 ? (
         <Card>
@@ -142,7 +135,7 @@ export function MassTimesListClient({ initialData, stats }: MassTimesListClientP
                 : 'Get started by creating your first mass times template.'}
             </p>
             <Button asChild>
-              <Link href="/mass-times/create">
+              <Link href="/mass-times-templates/create">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Template
               </Link>
@@ -150,31 +143,30 @@ export function MassTimesListClient({ initialData, stats }: MassTimesListClientP
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {initialData.map((template) => (
-            <Link key={template.id} href={`/mass-times/${template.id}`}>
-              <Card className="hover:bg-accent transition-colors cursor-pointer h-full">
-                <CardContent className="p-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-lg">
-                        {template.name}
-                      </span>
-                      <Badge variant={template.is_active ? 'default' : 'secondary'}>
-                        {template.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </div>
-                    {template.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {template.description}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {initialData.map((template) => (
+              <ListViewCard
+                key={template.id}
+                title={template.name}
+                editHref={`/mass-times-templates/${template.id}/edit`}
+                viewHref={`/mass-times-templates/${template.id}`}
+                viewButtonText="Preview"
+                status={template.is_active ? 'ACTIVE' : 'INACTIVE'}
+              >
+                {template.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {template.description}
+                  </p>
+                )}
+              </ListViewCard>
+            ))}
+          </div>
+          <div className="text-sm text-muted-foreground text-center">
+            Showing {initialData.length} of {stats.total} templates
+            {stats.active < stats.total && ` • ${stats.active} active`}
+          </div>
+        </>
       )}
     </div>
   )

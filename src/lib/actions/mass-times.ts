@@ -214,7 +214,7 @@ export async function createMassTime(data: CreateMassTimeData): Promise<MassTime
     throw new Error(`Failed to create mass times template: ${error.message}`)
   }
 
-  revalidatePath('/mass-times')
+  revalidatePath('/mass-times-templates')
   return massTimesTemplate
 }
 
@@ -255,9 +255,9 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
     throw new Error('Failed to update mass times template')
   }
 
-  revalidatePath('/mass-times')
-  revalidatePath(`/mass-times/${id}`)
-  revalidatePath(`/mass-times/${id}/edit`)
+  revalidatePath('/mass-times-templates')
+  revalidatePath(`/mass-times-templates/${id}`)
+  revalidatePath(`/mass-times-templates/${id}/edit`)
   return massTimesTemplate
 }
 
@@ -291,5 +291,5 @@ export async function deleteMassTime(id: string): Promise<void> {
     throw new Error('Failed to delete mass times template')
   }
 
-  revalidatePath('/mass-times')
+  revalidatePath('/mass-times-templates')
 }

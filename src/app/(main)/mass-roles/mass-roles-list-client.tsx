@@ -3,25 +3,82 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
 import { MassRole } from "@/lib/types"
 import { PageContainer } from "@/components/page-container"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Search, CheckCircle2, XCircle } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Plus, Search } from "lucide-react"
 import { canAccessModule, type UserParishRole } from "@/lib/auth/permissions-client"
+import { DraggableListItem } from "@/components/draggable-list-item"
+import { reorderMassRoles } from "@/lib/actions/mass-roles"
+import { toast } from "sonner"
 
 interface MassRolesListClientProps {
   massRoles: MassRole[]
   userParish: UserParishRole
 }
 
-export function MassRolesListClient({ massRoles, userParish }: MassRolesListClientProps) {
+export function MassRolesListClient({ massRoles: initialData, userParish }: MassRolesListClientProps) {
   const router = useRouter()
+  const [items, setItems] = useState<MassRole[]>(initialData)
   const [searchQuery, setSearchQuery] = useState("")
 
   const canManageRoles = canAccessModule(userParish, "masses")
+
+  // Set up drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) {
+      return
+    }
+
+    const oldIndex = items.findIndex((item) => item.id === active.id)
+    const newIndex = items.findIndex((item) => item.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return
+    }
+
+    // Optimistically update UI
+    const reorderedItems = arrayMove(items, oldIndex, newIndex)
+    setItems(reorderedItems)
+
+    try {
+      // Save to server
+      const itemIds = reorderedItems.map((item) => item.id)
+      await reorderMassRoles(itemIds)
+      toast.success("Order updated")
+    } catch (error) {
+      console.error("Failed to reorder items:", error)
+      toast.error("Failed to update order")
+      // Revert on error
+      setItems(initialData)
+    }
+  }
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
@@ -31,14 +88,19 @@ export function MassRolesListClient({ massRoles, userParish }: MassRolesListClie
     router.push(`/mass-roles${value ? `?${params.toString()}` : ""}`)
   }
 
-  const handleCardClick = (id: string) => {
-    router.push(`/mass-roles/${id}`)
-  }
+  // Filter items based on search
+  const filteredItems = searchQuery
+    ? items.filter(
+        (role) =>
+          role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          role.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : items
 
   return (
     <PageContainer
       title="Mass Roles"
-      description="Define liturgical roles for Mass celebrations"
+      description="Define liturgical roles for Mass celebrations. Drag to reorder."
       actions={
         canManageRoles ? (
           <Link href="/mass-roles/create">
@@ -50,22 +112,28 @@ export function MassRolesListClient({ massRoles, userParish }: MassRolesListClie
         ) : undefined
       }
     >
-      {/* Search Bar */}
-      <div className="flex items-center gap-2 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search mass roles..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      {/* Search Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Search</CardTitle>
+          <CardDescription>Search for a Mass Role</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search mass roles..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Mass Roles List */}
-      {massRoles.length === 0 ? (
+      {filteredItems.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent className="flex flex-col items-center gap-4">
             <div className="text-muted-foreground">
@@ -86,45 +154,30 @@ export function MassRolesListClient({ massRoles, userParish }: MassRolesListClie
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {massRoles.map((role) => (
-            <Card
-              key={role.id}
-              className="cursor-pointer hover:bg-accent/50 transition-colors"
-              onClick={() => handleCardClick(role.id)}
-              data-testid={`mass-role-card-${role.id}`}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-lg">{role.name}</h3>
-                  <Badge variant={role.is_active ? "default" : "secondary"} className="ml-2">
-                    {role.is_active ? (
-                      <>
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Active
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="h-3 w-3 mr-1" />
-                        Inactive
-                      </>
-                    )}
-                  </Badge>
-                </div>
-                {role.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {role.description}
-                  </p>
-                )}
-                {role.display_order !== null && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    Display Order: {role.display_order}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={filteredItems.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="flex flex-col gap-2 overflow-hidden">
+              {filteredItems.map((role) => (
+                <DraggableListItem
+                  key={role.id}
+                  id={role.id}
+                  title={role.name}
+                  description={role.description}
+                  editHref={`/mass-roles/${role.id}/edit`}
+                  viewHref={`/mass-roles/${role.id}`}
+                  status={role.is_active ? "ACTIVE" : "INACTIVE"}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </PageContainer>
   )
