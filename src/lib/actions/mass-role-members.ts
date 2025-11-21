@@ -373,3 +373,191 @@ export async function getActiveMembersForRole(roleId: string): Promise<Array<{
     }
   }) || []
 }
+
+/**
+ * Interface for mass time availability
+ */
+export interface MassTimeAvailability {
+  mass_time_template_item_id: string
+  mass_time_name: string
+  mass_time: string
+  day_of_week: string
+  available_count: number
+}
+
+/**
+ * Interface for person available for a mass time
+ */
+export interface PersonAvailableForMassTime {
+  id: string
+  person_id: string
+  person_name: string
+  membership_type: 'MEMBER' | 'LEADER'
+}
+
+/**
+ * Get list of people available for a specific mass time and role
+ */
+export async function getPeopleAvailableForMassTime(
+  roleId: string,
+  massTimeTemplateItemId: string
+): Promise<PersonAvailableForMassTime[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get all active members for this role who have this mass time in their availability
+  const { data: members, error: membersError } = await supabase
+    .from('mass_role_members')
+    .select(`
+      id,
+      person_id,
+      membership_type,
+      person:people(id, first_name, last_name, mass_times_template_item_ids)
+    `)
+    .eq('parish_id', selectedParishId)
+    .eq('mass_role_id', roleId)
+    .eq('active', true)
+
+  if (membersError) {
+    console.error('Error fetching mass role members:', membersError)
+    throw new Error('Failed to fetch mass role members')
+  }
+
+  if (!members || members.length === 0) {
+    return []
+  }
+
+  // Filter to only members who have this mass time in their availability
+  const availableMembers = members
+    .filter((member: any) => {
+      const person = Array.isArray(member.person) ? member.person[0] : member.person
+      const massTimeIds = person?.mass_times_template_item_ids || []
+      return massTimeIds.includes(massTimeTemplateItemId)
+    })
+    .map((member: any) => {
+      const person = Array.isArray(member.person) ? member.person[0] : member.person
+      return {
+        id: member.id,
+        person_id: member.person_id,
+        person_name: `${person.first_name} ${person.last_name}`,
+        membership_type: member.membership_type
+      }
+    })
+
+  // Sort by membership type (leaders first), then by name
+  return availableMembers.sort((a, b) => {
+    if (a.membership_type !== b.membership_type) {
+      return a.membership_type === 'LEADER' ? -1 : 1
+    }
+    return a.person_name.localeCompare(b.person_name)
+  })
+}
+
+/**
+ * Get availability by mass time for a specific role
+ * Returns how many active members are available for each mass time
+ */
+export async function getMassRoleAvailabilityByMassTime(
+  roleId: string
+): Promise<MassTimeAvailability[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get all active members for this role with their available mass times
+  const { data: members, error: membersError } = await supabase
+    .from('mass_role_members')
+    .select(`
+      id,
+      person_id,
+      active,
+      person:people(id, mass_times_template_item_ids)
+    `)
+    .eq('parish_id', selectedParishId)
+    .eq('mass_role_id', roleId)
+    .eq('active', true)
+
+  if (membersError) {
+    console.error('Error fetching mass role members:', membersError)
+    throw new Error('Failed to fetch mass role members')
+  }
+
+  if (!members || members.length === 0) {
+    return []
+  }
+
+  // Get all mass times template items for this parish
+  const { data: massTimesTemplates, error: templatesError } = await supabase
+    .from('mass_times_templates')
+    .select(`
+      id,
+      name,
+      day_of_week,
+      items:mass_times_template_items(id, time, day_type)
+    `)
+    .eq('parish_id', selectedParishId)
+    .eq('is_active', true)
+
+  if (templatesError) {
+    console.error('Error fetching mass times templates:', templatesError)
+    throw new Error('Failed to fetch mass times templates')
+  }
+
+  // Build a map of mass time item ID to mass time details
+  const massTimeItemMap = new Map<string, { name: string; time: string; day_of_week: string }>()
+  massTimesTemplates?.forEach((template: any) => {
+    template.items?.forEach((item: any) => {
+      massTimeItemMap.set(item.id, {
+        name: template.name,
+        time: item.time,
+        day_of_week: template.day_of_week
+      })
+    })
+  })
+
+  // Count how many members are available for each mass time
+  const availabilityMap = new Map<string, number>()
+
+  members.forEach((member: any) => {
+    const person = Array.isArray(member.person) ? member.person[0] : member.person
+    const massTimeIds = person?.mass_times_template_item_ids || []
+
+    massTimeIds.forEach((massTimeId: string) => {
+      availabilityMap.set(massTimeId, (availabilityMap.get(massTimeId) || 0) + 1)
+    })
+  })
+
+  // Convert to array and include mass time details
+  const result: MassTimeAvailability[] = []
+  availabilityMap.forEach((count, massTimeId) => {
+    const massTimeDetails = massTimeItemMap.get(massTimeId)
+    if (massTimeDetails) {
+      result.push({
+        mass_time_template_item_id: massTimeId,
+        mass_time_name: massTimeDetails.name,
+        mass_time: massTimeDetails.time,
+        day_of_week: massTimeDetails.day_of_week,
+        available_count: count
+      })
+    }
+  })
+
+  // Sort by day of week and time
+  const dayOrder: { [key: string]: number } = {
+    'SUNDAY': 0,
+    'MONDAY': 1,
+    'TUESDAY': 2,
+    'WEDNESDAY': 3,
+    'THURSDAY': 4,
+    'FRIDAY': 5,
+    'SATURDAY': 6,
+    'MOVABLE': 7
+  }
+
+  return result.sort((a, b) => {
+    const dayDiff = dayOrder[a.day_of_week] - dayOrder[b.day_of_week]
+    if (dayDiff !== 0) return dayDiff
+    return a.mass_time.localeCompare(b.mass_time)
+  })
+}

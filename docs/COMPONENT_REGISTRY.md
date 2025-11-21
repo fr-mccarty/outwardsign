@@ -554,6 +554,52 @@ const assignedMass = usePickerState<MassWithNames>()
 
 ---
 
+### RoleAvailabilityModal
+**Path:** `src/app/(main)/masses/schedule/steps/role-availability-modal.tsx`
+
+**Purpose:** Nested modal system for viewing minister availability by role and mass time during the mass scheduling wizard.
+
+**Key Features:**
+- First level: Shows mass times with available minister counts
+- Second level (nested): Shows list of people available for a specific mass time
+- Formatted times and day of week
+- Sorted by day/time
+- Leaders listed before members
+
+**Props:**
+- `role`: MassRoleWithCount | null - The selected mass role
+- `open`: boolean - Modal visibility state
+- `onOpenChange`: (open: boolean) => void - Modal state handler
+- `startDate`: string - Date range start (not currently used)
+- `endDate`: string - Date range end (not currently used)
+
+**User Flow:**
+1. User clicks role card in Step 1 → Opens first modal
+2. First modal shows mass times with counts (e.g., "Sunday 9:00 AM - 5")
+3. User clicks mass time card → Opens nested modal on top
+4. Nested modal shows list of people with names and membership type
+5. "Manage Role" button links to `/mass-roles/{roleId}`
+
+**Usage:**
+```tsx
+const [selectedRole, setSelectedRole] = useState<MassRoleWithCount | null>(null)
+const [roleModalOpen, setRoleModalOpen] = useState(false)
+
+<RoleAvailabilityModal
+  role={selectedRole}
+  open={roleModalOpen}
+  onOpenChange={setRoleModalOpen}
+  startDate={startDate}
+  endDate={endDate}
+/>
+```
+
+**Server Actions Used:**
+- `getMassRoleAvailabilityByMassTime(roleId)` - First modal data
+- `getPeopleAvailableForMassTime(roleId, massTimeTemplateItemId)` - Nested modal data
+
+---
+
 ### GlobalLiturgicalEventPicker
 **Path:** `src/components/global-liturgical-event-picker.tsx`
 

@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge"
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
 import Link from 'next/link'
 import { getDayCount } from '@/lib/utils/date-format'
+import { RoleAvailabilityModal } from './role-availability-modal'
 
 // Date shortcut helpers
 function getNextMonthRange(): { start: string; end: string } {
@@ -80,11 +81,21 @@ interface Step1DateRangeProps {
 
 export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCounts }: Step1DateRangeProps) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<MassRoleWithCount | null>(null)
+  const [roleModalOpen, setRoleModalOpen] = useState(false)
 
   const applyShortcut = (range: { start: string; end: string }) => {
     onChange('startDate', range.start)
     onChange('endDate', range.end)
     setShortcutsOpen(false)
+  }
+
+  const handleRoleClick = (role: MassRoleWithCount, e: React.MouseEvent) => {
+    e.preventDefault()
+    if (startDate && endDate && new Date(endDate) >= new Date(startDate)) {
+      setSelectedRole(role)
+      setRoleModalOpen(true)
+    }
   }
 
   const dayCount = getDayCount(startDate, endDate)
@@ -185,22 +196,26 @@ export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCoun
               <CardTitle className="text-base">Available Ministers by Role</CardTitle>
             </div>
             <CardDescription>
-              People in your parish who can serve in each liturgical role
+              {isValid
+                ? 'Click a role to see available ministers for the selected dates'
+                : 'Select dates above to see minister availability'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {massRolesWithCounts.map(role => (
-                <Link
+                <button
                   key={role.id}
-                  href={`/settings/mass-roles/${role.id}`}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors"
+                  onClick={(e) => handleRoleClick(role, e)}
+                  disabled={!isValid}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
                 >
                   <span className="text-sm font-medium truncate">{role.name}</span>
                   <Badge variant={role.member_count > 0 ? "secondary" : "outline"}>
                     {role.member_count}
                   </Badge>
-                </Link>
+                </button>
               ))}
             </div>
             {massRolesWithCounts.every(r => r.member_count === 0) && (
@@ -343,6 +358,15 @@ export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCoun
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Role Availability Modal */}
+      <RoleAvailabilityModal
+        role={selectedRole}
+        open={roleModalOpen}
+        onOpenChange={setRoleModalOpen}
+        startDate={startDate}
+        endDate={endDate}
+      />
     </div>
   )
 }

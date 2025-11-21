@@ -139,15 +139,19 @@ Redirect to Masses List
 ```
 src/app/(main)/masses/schedule/
 ├── page.tsx                           # Server page (auth + breadcrumbs)
-├── schedule-masses-client.tsx         # Main wizard container (5 steps)
+├── schedule-masses-client.tsx         # Main wizard container (8 steps)
 ├── loading.tsx                        # Loading state
 ├── error.tsx                          # Error boundary
 └── steps/
-    ├── step-1-date-range.tsx         # Date range selection
+    ├── step-1-date-range.tsx         # Date range selection + role availability modal
     ├── step-2-schedule-pattern.tsx   # Recurring schedule builder
     ├── step-3-template-selection.tsx # Mass Role Template picker
-    ├── step-4-review.tsx             # Summary and confirmation
-    └── step-5-results.tsx            # ✅ Results and assignment editor
+    ├── step-4-liturgical-events.tsx  # Liturgical events selection
+    ├── step-5-proposed-schedule.tsx  # Review proposed masses
+    ├── step-6-assignment-summary.tsx # Minister workload summary
+    ├── step-7-confirmation.tsx       # Final confirmation
+    ├── step-8-results.tsx            # Results and next steps
+    └── role-availability-modal.tsx   # Modal for viewing role availability by mass time
 
 src/components/
 └── mass-schedule-assignment-grid.tsx  # ✅ Interactive assignment grid
@@ -165,14 +169,32 @@ src/app/(main)/masses/
 
 ### Step 1: Date Range Selection
 
-**Purpose:** Define the scheduling period
+**Purpose:** Define the scheduling period and view minister availability
 
 **UI Elements:**
 - Start date picker (required)
 - End date picker (required)
+- Quick Fill button for preset date ranges (next month, next quarter, etc.)
 - Validation: End date must be ≥ start date
 - Preview: Shows number of days selected
 - Warning: If period > 365 days
+- **Role Availability Cards** - Grid of clickable role cards showing member counts
+- **Role Availability Modal** - Click any role card to see availability by mass time
+
+**Role Availability Feature:**
+When dates are selected, users can click on any mass role card to see a modal showing:
+- List of all mass times (grouped by day/time)
+- Count of available active members for each mass time
+- Clicking a mass time shows a nested modal with the list of people
+
+**Modal Flow:**
+1. Click role card (e.g., "Lector - 8 members") → Opens first modal
+2. First modal shows mass times with availability counts:
+   - Saturday 5:00 PM - 3 people
+   - Sunday 9:00 AM - 5 people
+   - Sunday 11:00 AM - 4 people
+3. Click mass time → Opens second modal with list of people
+4. Second modal shows names and membership type (MEMBER/LEADER)
 
 **Data Captured:**
 ```typescript
@@ -372,6 +394,73 @@ src/components/mass-schedule-assignment-grid.tsx
 ---
 
 ## Server Actions
+
+### Role Availability Actions
+
+**Location:** `src/lib/actions/mass-role-members.ts`
+
+#### `getMassRoleAvailabilityByMassTime()`
+
+**Purpose:** Get availability counts for a role grouped by mass time
+
+**Function Signature:**
+```typescript
+export async function getMassRoleAvailabilityByMassTime(
+  roleId: string
+): Promise<MassTimeAvailability[]>
+```
+
+**Return Value:**
+```typescript
+interface MassTimeAvailability {
+  mass_time_template_item_id: string
+  mass_time_name: string        // e.g., "Weekend Masses"
+  mass_time: string              // e.g., "09:00:00"
+  day_of_week: string            // e.g., "SUNDAY"
+  available_count: number        // Number of active members available
+}
+```
+
+**How It Works:**
+1. Fetches all active members for the role
+2. Gets their `mass_times_template_item_ids` from the `people` table
+3. Counts how many members have each mass time in their availability
+4. Returns sorted by day of week and time
+
+**Used By:** Step 1 role availability modal (first level)
+
+---
+
+#### `getPeopleAvailableForMassTime()`
+
+**Purpose:** Get list of people available for a specific mass time and role
+
+**Function Signature:**
+```typescript
+export async function getPeopleAvailableForMassTime(
+  roleId: string,
+  massTimeTemplateItemId: string
+): Promise<PersonAvailableForMassTime[]>
+```
+
+**Return Value:**
+```typescript
+interface PersonAvailableForMassTime {
+  id: string                      // mass_role_member.id
+  person_id: string
+  person_name: string             // "John Smith"
+  membership_type: 'MEMBER' | 'LEADER'
+}
+```
+
+**How It Works:**
+1. Fetches all active members for the role
+2. Filters to members who have the specific mass time in their availability
+3. Sorts by membership type (leaders first), then by name
+
+**Used By:** Step 1 role availability modal (nested modal)
+
+---
 
 ### Primary Action: `scheduleMasses()`
 
