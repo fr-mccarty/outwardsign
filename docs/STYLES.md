@@ -674,6 +674,15 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 <p className="line-clamp-1">Single line with ellipsis</p>
 <p className="line-clamp-2">Two lines with ellipsis</p>
 <p className="truncate">Truncate long text...</p>
+
+// 🔴 Truncating titles in flex containers (e.g., card headers)
+// Use flex-1 overflow-hidden on the container + line-clamp-1 on the title
+<div className="flex items-start justify-between gap-2">
+  <div className="flex-1 overflow-hidden">
+    <CardTitle className="text-lg line-clamp-1">{title}</CardTitle>
+  </div>
+  <Button>Action</Button>
+</div>
 ```
 
 ---

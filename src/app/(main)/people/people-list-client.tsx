@@ -2,7 +2,9 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { Person } from '@/lib/types'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { SearchCard } from "@/components/search-card"
+import { ContentCard } from "@/components/content-card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, User, Mail, Phone, MapPin, Search, Filter } from "lucide-react"
@@ -48,19 +50,17 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
   return (
     <div className="space-y-6">
       {/* Search */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search people by name, email, or phone..."
-              defaultValue={searchTerm}
-              onChange={(e) => updateFilters('search', e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <SearchCard modulePlural="People" moduleSingular="Person">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search people by name, email, or phone..."
+            defaultValue={searchTerm}
+            onChange={(e) => updateFilters('search', e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </SearchCard>
 
       {/* People List */}
       {initialData.length > 0 ? (
@@ -104,66 +104,59 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="text-center py-12">
-            <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              {hasActiveFilters
-                ? 'No people found'
-                : 'No people yet'
-              }
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {hasActiveFilters
-                ? 'Try adjusting your search to find more people.'
-                : 'Create your first person to start managing your parish directory.'
-              }
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button asChild>
-                <Link href="/people/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Person
-                </Link>
+        <ContentCard className="text-center py-12">
+          <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">
+            {hasActiveFilters
+              ? 'No people found'
+              : 'No people yet'
+            }
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            {hasActiveFilters
+              ? 'Try adjusting your search to find more people.'
+              : 'Create your first person to start managing your parish directory.'
+            }
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link href="/people/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Person
+              </Link>
+            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
               </Button>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </ContentCard>
       )}
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>People Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-sm text-muted-foreground">Total People</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.withEmail}</div>
-                <div className="text-sm text-muted-foreground">With Email</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.withPhone}</div>
-                <div className="text-sm text-muted-foreground">With Phone</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.filtered}</div>
-                <div className="text-sm text-muted-foreground">Filtered Results</div>
-              </div>
+        <FormSectionCard title="People Overview">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-sm text-muted-foreground">Total People</div>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <div className="text-2xl font-bold">{stats.withEmail}</div>
+              <div className="text-sm text-muted-foreground">With Email</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.withPhone}</div>
+              <div className="text-sm text-muted-foreground">With Phone</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.filtered}</div>
+              <div className="text-sm text-muted-foreground">Filtered Results</div>
+            </div>
+          </div>
+        </FormSectionCard>
       )}
     </div>
   )

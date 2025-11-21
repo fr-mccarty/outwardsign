@@ -1,8 +1,11 @@
+'use client'
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
 import { SquarePen, Eye, Calendar } from "lucide-react"
-import { ReactNode } from "react"
+import { ReactNode, useRef, useState, useEffect } from "react"
 import { ModuleStatusLabel } from "./module-status-label"
 import { LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
@@ -39,14 +42,33 @@ export function ListViewCard({
   datetime,
   children
 }: ListViewCardProps) {
+  const titleRef = useRef<HTMLDivElement>(null)
+  const [isClamped, setIsClamped] = useState(false)
+
+  useEffect(() => {
+    const el = titleRef.current
+    if (el) {
+      setIsClamped(el.scrollHeight > el.clientHeight)
+    }
+  }, [title])
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="pb-1">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg truncate">
-              {title}
-            </CardTitle>
+          <div className="flex-1 overflow-hidden">
+            <TooltipProvider>
+              <Tooltip open={isClamped ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <CardTitle ref={titleRef} className="text-lg line-clamp-1 cursor-default">
+                    {title}
+                  </CardTitle>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{title}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {language && (
               <p className="text-xs text-muted-foreground uppercase">
                 {LITURGICAL_LANGUAGE_LABELS[language]?.en || language}

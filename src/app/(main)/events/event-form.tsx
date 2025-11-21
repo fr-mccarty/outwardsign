@@ -2,27 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { FormField } from "@/components/ui/form-field"
-import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { createEvent, updateEvent, type CreateEventData, type EventWithRelations } from "@/lib/actions/events"
 import type { Person, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, type EventType, type LiturgicalLanguage } from "@/lib/constants"
+import { LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, type EventType, type LiturgicalLanguage } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
-import { PeoplePicker } from "@/components/people-picker"
+import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
 import { usePickerState } from "@/hooks/use-picker-state"
-import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
-import { useAppContext } from '@/contexts/AppContextProvider'
 
 interface EventFormProps {
   event?: EventWithRelations
@@ -32,8 +21,6 @@ interface EventFormProps {
 
 export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const router = useRouter()
-  const { userSettings } = useAppContext()
-  const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
   const isEditing = !!event
   const [isLoading, setIsLoading] = useState(false)
 
@@ -134,61 +121,14 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           rows={3}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="event_type">
-              Event Type <span className="text-destructive">*</span>
-            </Label>
-            <Select value={eventType} onValueChange={(value) => setEventType(value as EventType)}>
-              <SelectTrigger id="event_type">
-                <SelectValue placeholder="Select event type" />
-              </SelectTrigger>
-              <SelectContent>
-                {EVENT_TYPE_VALUES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {EVENT_TYPE_LABELS[type][userLanguage]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="responsible_party">Responsible Party</Label>
-            {responsibleParty.value ? (
-              <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                <span className="text-sm">
-                  {responsibleParty.value.first_name} {responsibleParty.value.last_name}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => responsibleParty.setValue(null)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => responsibleParty.setShowPicker(true)}
-                className="w-full"
-              >
-                Select Responsible Party
-              </Button>
-            )}
-            <p className="text-sm text-muted-foreground">
-              Person responsible for organizing this event
-            </p>
-          </div>
-        </div>
-
-        <PeoplePicker
-          open={responsibleParty.showPicker}
-          onOpenChange={responsibleParty.setShowPicker}
-          onSelect={(person) => responsibleParty.setValue(person)}
+        <PersonPickerField
+          label="Responsible Party"
+          value={responsibleParty.value}
+          onValueChange={responsibleParty.setValue}
+          showPicker={responsibleParty.showPicker}
+          onShowPickerChange={responsibleParty.setShowPicker}
+          description="Person responsible for organizing this event"
+          placeholder="Select Responsible Party"
         />
       </FormSectionCard>
 

@@ -22,7 +22,8 @@ import { MassRole } from "@/lib/types"
 import { PageContainer } from "@/components/page-container"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { SearchCard } from "@/components/search-card"
+import { ContentCard } from "@/components/content-card"
 import { Plus, Search } from "lucide-react"
 import { canAccessModule, type UserParishRole } from "@/lib/auth/permissions-client"
 import { DraggableListItem } from "@/components/draggable-list-item"
@@ -113,46 +114,38 @@ export function MassRolesListClient({ massRoles: initialData, userParish }: Mass
       }
     >
       {/* Search Card */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Search</CardTitle>
-          <CardDescription>Search for a Mass Role</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search mass roles..."
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <SearchCard modulePlural="Mass Roles" moduleSingular="Mass Role">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search mass roles..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </SearchCard>
 
       {/* Mass Roles List */}
       {filteredItems.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent className="flex flex-col items-center gap-4">
-            <div className="text-muted-foreground">
-              {searchQuery ? (
-                <>No mass roles found matching &quot;{searchQuery}&quot;</>
-              ) : (
-                <>No mass roles defined yet</>
-              )}
-            </div>
-            {!searchQuery && canManageRoles && (
-              <Link href="/mass-roles/create">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Mass Role
-                </Button>
-              </Link>
+        <ContentCard className="text-center py-12 flex flex-col items-center gap-4">
+          <div className="text-muted-foreground">
+            {searchQuery ? (
+              <>No mass roles found matching &quot;{searchQuery}&quot;</>
+            ) : (
+              <>No mass roles defined yet</>
             )}
-          </CardContent>
-        </Card>
+          </div>
+          {!searchQuery && canManageRoles && (
+            <Link href="/mass-roles/create">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Mass Role
+              </Button>
+            </Link>
+          )}
+        </ContentCard>
       ) : (
         <DndContext
           sensors={sensors}

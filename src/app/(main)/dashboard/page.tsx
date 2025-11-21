@@ -1,5 +1,6 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { PageContainer } from "@/components/page-container"
+import { MetricCard } from "@/components/metric-card"
+import { FormSectionCard } from "@/components/form-section-card"
 import Link from "next/link"
 import {
   VenusAndMars,
@@ -157,284 +158,229 @@ export default async function DashboardPage() {
       >
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Sacraments</CardTitle>
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeSacraments}</div>
-            <p className="text-xs text-muted-foreground">
-              In preparation now
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Active Sacraments"
+          value={activeSacraments}
+          description="In preparation now"
+          icon={Sparkles}
+        />
 
         <Link href={`/calendar?view=month&date=${format(now, 'yyyy-MM-dd')}`} className="block hover:opacity-80 transition-opacity">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Scheduled This Month</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{scheduledThisMonth}</div>
-              <p className="text-xs text-muted-foreground">
-                Ceremonies this month
-              </p>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Scheduled This Month"
+            value={scheduledThisMonth}
+            description="Ceremonies this month"
+            icon={TrendingUp}
+          />
         </Link>
 
         <Link href="/people" className="block hover:opacity-80 transition-opacity">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">People Directory</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{people.length}</div>
-              <p className="text-xs text-muted-foreground">
-                People in your parish
-              </p>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="People Directory"
+            value={people.length}
+            description="People in your parish"
+            icon={Users}
+          />
         </Link>
 
         <Link href="/locations" className="block hover:opacity-80 transition-opacity">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Locations</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{locations.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Venues registered
-              </p>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Locations"
+            value={locations.length}
+            description="Venues registered"
+            icon={MapPin}
+          />
         </Link>
 
         <Link href="/events" className="block hover:opacity-80 transition-opacity">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Week</CardTitle>
-              <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{upcomingEvents.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Events in next 7 days
-              </p>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="This Week"
+            value={upcomingEvents.length}
+            description="Events in next 7 days"
+            icon={CalendarDays}
+          />
         </Link>
       </div>
 
       {/* Main Content Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {/* Sacrament Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sacraments by Type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {sacramentBreakdown.map((sacrament) => {
+        <FormSectionCard title="Sacraments by Type">
+          <div className="space-y-4">
+            {sacramentBreakdown.map((sacrament) => {
+              const Icon = sacrament.icon
+              return (
+                <Link
+                  key={sacrament.name}
+                  href={sacrament.href}
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{sacrament.name}</span>
+                  </div>
+                  <span className="text-2xl font-bold text-muted-foreground">
+                    {sacrament.count}
+                  </span>
+                </Link>
+              )
+            })}
+            {totalSacraments === 0 && (
+              <div className="text-center py-6">
+                <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  No sacraments yet. Start by creating your first celebration.
+                </p>
+              </div>
+            )}
+          </div>
+        </FormSectionCard>
+
+        {/* Upcoming Events */}
+        <FormSectionCard title="Upcoming Events">
+          {upcomingEvents30Days.length > 0 ? (
+            <div className="space-y-3">
+              {upcomingEvents30Days.map((event) => (
+                <Link
+                  key={event.id}
+                  href={`/events/${event.id}`}
+                  className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm line-clamp-1">{event.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {event.start_date && new Date(event.start_date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                      {event.start_time && ` at ${event.start_time}`}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <CalendarDays className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground mb-3">
+                No upcoming events in the next 30 days
+              </p>
+              <Link
+                href="/events/create"
+                className="text-sm text-primary hover:underline"
+              >
+                Schedule an event
+              </Link>
+            </div>
+          )}
+        </FormSectionCard>
+
+        {/* Recent Activity */}
+        <FormSectionCard title="Recent Activity">
+          {recentSacraments.length > 0 ? (
+            <div className="space-y-3">
+              {recentSacraments.map((sacrament) => {
                 const Icon = sacrament.icon
                 return (
                   <Link
-                    key={sacrament.name}
+                    key={`${sacrament.type}-${sacrament.id}`}
                     href={sacrament.href}
-                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors"
+                    className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-5 w-5" />
-                      <span className="font-medium">{sacrament.name}</span>
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm">{sacrament.type}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDistance(new Date(sacrament.created_at), new Date(), { addSuffix: true })}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-2xl font-bold text-muted-foreground">
-                      {sacrament.count}
-                    </span>
                   </Link>
                 )
               })}
-              {totalSacraments === 0 && (
-                <div className="text-center py-6">
-                  <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    No sacraments yet. Start by creating your first celebration.
-                  </p>
-                </div>
-              )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Events */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {upcomingEvents30Days.length > 0 ? (
-              <div className="space-y-3">
-                {upcomingEvents30Days.map((event) => (
-                  <Link
-                    key={event.id}
-                    href={`/events/${event.id}`}
-                    className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm line-clamp-1">{event.name}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {event.start_date && new Date(event.start_date).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                        {event.start_time && ` at ${event.start_time}`}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <CalendarDays className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  No upcoming events in the next 30 days
-                </p>
-                <Link
-                  href="/events/create"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Schedule an event
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentSacraments.length > 0 ? (
-              <div className="space-y-3">
-                {recentSacraments.map((sacrament) => {
-                  const Icon = sacrament.icon
-                  return (
-                    <Link
-                      key={`${sacrament.type}-${sacrament.id}`}
-                      href={sacrament.href}
-                      className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                    >
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-medium text-sm">{sacrament.type}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {formatDistance(new Date(sacrament.created_at), new Date(), { addSuffix: true })}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  No recent activity
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Create your first sacrament to get started
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          ) : (
+            <div className="text-center py-8">
+              <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground mb-3">
+                No recent activity
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Create your first sacrament to get started
+              </p>
+            </div>
+          )}
+        </FormSectionCard>
 
         {/* Mini Calendar */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Calendar</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3">
-            <MiniCalendar events={events} />
-          </CardContent>
-        </Card>
+        <FormSectionCard title="Calendar" contentClassName="p-3 pt-0">
+          <MiniCalendar events={events} />
+        </FormSectionCard>
       </div>
 
       {/* Quick Access Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Access</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            <Link
-              href="/masses/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <CirclePlus className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Mass</span>
-            </Link>
-            <Link
-              href="/masses/schedule"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <CalendarCheck className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">Schedule Masses</span>
-            </Link>
-            <Link
-              href="/weddings/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <VenusAndMars className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Wedding</span>
-            </Link>
-            <Link
-              href="/funerals/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <Cross className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Funeral</span>
-            </Link>
-            <Link
-              href="/baptisms/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <Droplet className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Baptism</span>
-            </Link>
-            <Link
-              href="/presentations/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <HandHeartIcon className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Presentation</span>
-            </Link>
-            <Link
-              href="/quinceaneras/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <BookHeart className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Quinceañera</span>
-            </Link>
-            <Link
-              href="/mass-intentions/create"
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-            >
-              <Heart className="h-6 w-6" />
-              <span className="text-sm font-medium text-center">New Mass Intention</span>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      <FormSectionCard title="Quick Access">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+          <Link
+            href="/masses/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <CirclePlus className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Mass</span>
+          </Link>
+          <Link
+            href="/masses/schedule"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <CalendarCheck className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">Schedule Masses</span>
+          </Link>
+          <Link
+            href="/weddings/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <VenusAndMars className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Wedding</span>
+          </Link>
+          <Link
+            href="/funerals/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <Cross className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Funeral</span>
+          </Link>
+          <Link
+            href="/baptisms/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <Droplet className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Baptism</span>
+          </Link>
+          <Link
+            href="/presentations/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <HandHeartIcon className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Presentation</span>
+          </Link>
+          <Link
+            href="/quinceaneras/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <BookHeart className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Quinceañera</span>
+          </Link>
+          <Link
+            href="/mass-intentions/create"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <Heart className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Mass Intention</span>
+          </Link>
+        </div>
+      </FormSectionCard>
       </PageContainer>
     </>
   )

@@ -15,6 +15,7 @@ import {
 import { DayEventsModal } from './day-events-modal'
 import { Button } from '@/components/ui/button'
 import { getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
+import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 
 export function CalendarDay<T extends CalendarItem = CalendarItem>({
   day,
@@ -138,27 +139,28 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
           {view === 'month' && liturgicalEventColorGroups.length > 0 && (
             <div className="flex gap-1 items-center">
               {liturgicalEventColorGroups.map((group, groupIndex) => (
-                <div
-                  key={groupIndex}
-                  className={cn(
-                    "flex gap-0 cursor-pointer overflow-hidden rounded-[3px] transition-all hover:scale-110 hover:shadow-md",
-                    group.colors.length > 1 && "border border-border"
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onItemClick?.(group.event, e)
-                  }}
-                >
-                  {group.colors.map((color, colorIndex) => (
-                    <div
-                      key={colorIndex}
-                      className="w-2 h-4"
-                      style={{
-                        backgroundColor: getLiturgicalCssVarValue(color.toLowerCase()),
-                      }}
-                    />
-                  ))}
-                </div>
+                <CalendarTooltip key={groupIndex} title={group.event.title}>
+                  <div
+                    className={cn(
+                      "flex gap-0 cursor-pointer overflow-hidden rounded-[3px] transition-all hover:scale-110 hover:shadow-md",
+                      group.colors.length > 1 && "border border-border"
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onItemClick?.(group.event, e)
+                    }}
+                  >
+                    {group.colors.map((color, colorIndex) => (
+                      <div
+                        key={colorIndex}
+                        className="w-2 h-4"
+                        style={{
+                          backgroundColor: getLiturgicalCssVarValue(color.toLowerCase()),
+                        }}
+                      />
+                    ))}
+                  </div>
+                </CalendarTooltip>
               ))}
             </div>
           )}

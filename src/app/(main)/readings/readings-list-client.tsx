@@ -2,7 +2,9 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { Reading } from '@/lib/actions/readings'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { SearchCard } from "@/components/search-card"
+import { ContentCard } from "@/components/content-card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, BookOpen, Search, Filter } from "lucide-react"
@@ -61,49 +63,47 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search readings by pericope or text..."
-                defaultValue={searchTerm}
-                onChange={(e) => updateFilters('search', e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  {stats.languages.map(lang => (
-                    <SelectItem key={lang} value={lang}>
-                      {LITURGICAL_LANGUAGE_LABELS[lang]?.en || lang}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedCategory} onValueChange={(value) => updateFilters('category', value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {stats.categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>
-                      {READING_CATEGORY_LABELS[cat]?.en || cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <SearchCard modulePlural="Readings" moduleSingular="Reading">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search readings by pericope or text..."
+              defaultValue={searchTerm}
+              onChange={(e) => updateFilters('search', e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex gap-2">
+            <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Languages</SelectItem>
+                {stats.languages.map(lang => (
+                  <SelectItem key={lang} value={lang}>
+                    {LITURGICAL_LANGUAGE_LABELS[lang]?.en || lang}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedCategory} onValueChange={(value) => updateFilters('category', value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {stats.categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {READING_CATEGORY_LABELS[cat]?.en || cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </SearchCard>
 
       {/* Readings List */}
       {initialData.length > 0 ? (
@@ -139,66 +139,59 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="text-center py-12">
-            <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              {hasActiveFilters
-                ? 'No readings found'
-                : 'No readings yet'
-              }
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {hasActiveFilters
-                ? 'Try adjusting your search or filters to find more readings.'
-                : 'Create your first reading to start building your collection of liturgical texts.'
-              }
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button asChild>
-                <Link href="/readings/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Reading
-                </Link>
+        <ContentCard className="text-center py-12">
+          <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">
+            {hasActiveFilters
+              ? 'No readings found'
+              : 'No readings yet'
+            }
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            {hasActiveFilters
+              ? 'Try adjusting your search or filters to find more readings.'
+              : 'Create your first reading to start building your collection of liturgical texts.'
+            }
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link href="/readings/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Reading
+              </Link>
+            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
               </Button>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </ContentCard>
       )}
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Reading Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-sm text-muted-foreground">Total Readings</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.languageCount}</div>
-                <div className="text-sm text-muted-foreground">Languages</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.categoryCount}</div>
-                <div className="text-sm text-muted-foreground">Categories</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.filtered}</div>
-                <div className="text-sm text-muted-foreground">Filtered Results</div>
-              </div>
+        <FormSectionCard title="Reading Overview">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-sm text-muted-foreground">Total Readings</div>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <div className="text-2xl font-bold">{stats.languageCount}</div>
+              <div className="text-sm text-muted-foreground">Languages</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.categoryCount}</div>
+              <div className="text-sm text-muted-foreground">Categories</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.filtered}</div>
+              <div className="text-sm text-muted-foreground">Filtered Results</div>
+            </div>
+          </div>
+        </FormSectionCard>
       )}
     </div>
   )

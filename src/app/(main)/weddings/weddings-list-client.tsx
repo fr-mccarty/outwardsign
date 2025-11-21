@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { WeddingWithNames } from '@/lib/actions/weddings'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { SearchCard } from "@/components/search-card"
+import { ContentCard } from "@/components/content-card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, VenusAndMars, Calendar, Search, Filter, X } from "lucide-react"
@@ -65,52 +67,46 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search</CardTitle>
-          <CardDescription>Search for a Wedding</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by bride or groom name..."
-                value={searchValue}
-                onChange={(e) => {
-                  setSearchValue(e.target.value)
-                  updateFilters('search', e.target.value)
-                }}
-                className="pl-10 pr-10"
-              />
-              {searchValue && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  {MODULE_STATUS_VALUES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {getStatusLabel(status, 'en')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <SearchCard modulePlural="Weddings" moduleSingular="Wedding">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by bride or groom name..."
+              value={searchValue}
+              onChange={(e) => {
+                setSearchValue(e.target.value)
+                updateFilters('search', e.target.value)
+              }}
+              className="pl-10 pr-10"
+            />
+            {searchValue && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex gap-2">
+            <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                {MODULE_STATUS_VALUES.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {getStatusLabel(status, 'en')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </SearchCard>
 
       {/* Weddings List */}
       {initialData.length > 0 ? (
@@ -152,58 +148,51 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="text-center py-12">
-            <VenusAndMars className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              {hasActiveFilters
-                ? 'No weddings found'
-                : 'No weddings yet'
-              }
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {hasActiveFilters
-                ? 'Try adjusting your search or filters to find more weddings.'
-                : 'Create your first wedding to start managing wedding celebrations in your parish.'
-              }
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button asChild>
-                <Link href="/weddings/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Wedding
-                </Link>
+        <ContentCard className="text-center py-12">
+          <VenusAndMars className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">
+            {hasActiveFilters
+              ? 'No weddings found'
+              : 'No weddings yet'
+            }
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            {hasActiveFilters
+              ? 'Try adjusting your search or filters to find more weddings.'
+              : 'Create your first wedding to start managing wedding celebrations in your parish.'
+            }
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link href="/weddings/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Wedding
+              </Link>
+            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
               </Button>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </ContentCard>
       )}
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Wedding Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-sm text-muted-foreground">Total Weddings</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.filtered}</div>
-                <div className="text-sm text-muted-foreground">Filtered Results</div>
-              </div>
+        <FormSectionCard title="Wedding Overview">
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-sm text-muted-foreground">Total Weddings</div>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <div className="text-2xl font-bold">{stats.filtered}</div>
+              <div className="text-sm text-muted-foreground">Filtered Results</div>
+            </div>
+          </div>
+        </FormSectionCard>
       )}
     </div>
   )

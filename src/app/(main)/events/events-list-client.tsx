@@ -3,7 +3,9 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import type { EventWithModuleLink } from '@/lib/actions/events'
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { SearchCard } from "@/components/search-card"
+import { ContentCard } from "@/components/content-card"
+import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -91,77 +93,75 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search events by name, description, or location..."
-                  defaultValue={searchTerm}
-                  onChange={(e) => updateFilters('search', e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Select value={selectedEventType} onValueChange={(value) => updateFilters('event_type', value)}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Event Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    {stats.eventTypes.map(type => (
-                      <SelectItem key={type} value={type}>
-                        {EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Languages</SelectItem>
-                    {stats.languages.map(lang => (
-                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <SearchCard modulePlural="Events" moduleSingular="Event">
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search events by name, description, or location..."
+                defaultValue={searchTerm}
+                onChange={(e) => updateFilters('search', e.target.value)}
+                className="pl-10"
+              />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                id="start-date"
-                label="From Date"
-                inputType="date"
-                value={startDate}
-                onChange={(value) => updateFilters('start_date', value)}
-              />
-              <FormField
-                id="end-date"
-                label="To Date"
-                inputType="date"
-                value={endDate}
-                onChange={(value) => updateFilters('end_date', value)}
-              />
-              <FormField
-                id="sort"
-                label="Sort By Date"
-                inputType="select"
-                value={sortOrder}
-                onChange={(value) => updateFilters('sort', value)}
-                options={[
-                  { value: 'desc', label: 'Newest First' },
-                  { value: 'asc', label: 'Oldest First' }
-                ]}
-              />
+            <div className="flex gap-2">
+              <Select value={selectedEventType} onValueChange={(value) => updateFilters('event_type', value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Event Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {stats.eventTypes.map(type => (
+                    <SelectItem key={type} value={type}>
+                      {EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Languages</SelectItem>
+                  {stats.languages.map(lang => (
+                    <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              id="start-date"
+              label="From Date"
+              inputType="date"
+              value={startDate}
+              onChange={(value) => updateFilters('start_date', value)}
+            />
+            <FormField
+              id="end-date"
+              label="To Date"
+              inputType="date"
+              value={endDate}
+              onChange={(value) => updateFilters('end_date', value)}
+            />
+            <FormField
+              id="sort"
+              label="Sort By Date"
+              inputType="select"
+              value={sortOrder}
+              onChange={(value) => updateFilters('sort', value)}
+              options={[
+                { value: 'desc', label: 'Newest First' },
+                { value: 'asc', label: 'Oldest First' }
+              ]}
+            />
+          </div>
+        </div>
+      </SearchCard>
 
       {/* Events List */}
       {initialData.length > 0 ? (
@@ -203,7 +203,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
                 </div>
 
                 {event.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-muted-foreground line-clamp-2 mt-3">
                     {event.description}
                   </p>
                 )}
@@ -212,66 +212,59 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
           })}
         </div>
       ) : (
-        <Card>
-          <CardContent className="text-center py-12">
-            <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              {hasActiveFilters
-                ? 'No events found'
-                : 'No events yet'
-              }
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {hasActiveFilters
-                ? 'Try adjusting your search or filters to find more events.'
-                : 'Create your first event to start managing parish activities.'
-              }
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button asChild>
-                <Link href="/events/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Event
-                </Link>
+        <ContentCard className="text-center py-12">
+          <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">
+            {hasActiveFilters
+              ? 'No events found'
+              : 'No events yet'
+            }
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            {hasActiveFilters
+              ? 'Try adjusting your search or filters to find more events.'
+              : 'Create your first event to start managing parish activities.'
+            }
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link href="/events/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Event
+              </Link>
+            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
               </Button>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </ContentCard>
       )}
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Event Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-sm text-muted-foreground">Total Events</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.upcoming}</div>
-                <div className="text-sm text-muted-foreground">Upcoming</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.past}</div>
-                <div className="text-sm text-muted-foreground">Past</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.filtered}</div>
-                <div className="text-sm text-muted-foreground">Filtered Results</div>
-              </div>
+        <FormSectionCard title="Event Overview">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-sm text-muted-foreground">Total Events</div>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <div className="text-2xl font-bold">{stats.upcoming}</div>
+              <div className="text-sm text-muted-foreground">Upcoming</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.past}</div>
+              <div className="text-sm text-muted-foreground">Past</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.filtered}</div>
+              <div className="text-sm text-muted-foreground">Filtered Results</div>
+            </div>
+          </div>
+        </FormSectionCard>
       )}
     </div>
   )
