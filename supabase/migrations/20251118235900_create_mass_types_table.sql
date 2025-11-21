@@ -3,7 +3,6 @@
 -- =====================================================
 -- Purpose: Define customizable mass type categories for parishes
 -- Allows parishes to create their own mass types beyond default types
--- Supports multilingual labels (English/Spanish)
 
 -- Create mass_types table
 CREATE TABLE IF NOT EXISTS mass_types (
@@ -13,13 +12,11 @@ CREATE TABLE IF NOT EXISTS mass_types (
   -- Type identification
   key TEXT NOT NULL, -- 'WEEKEND', 'DAILY', 'HOLIDAY', 'SPECIAL', or custom key
 
-  -- Multilingual labels
-  label_en TEXT NOT NULL,
-  label_es TEXT NOT NULL,
+  -- Display name
+  name TEXT NOT NULL,
 
   -- Optional metadata
   description TEXT,
-  color TEXT, -- Hex color for UI display (e.g., '#3b82f6')
   display_order INTEGER DEFAULT 0, -- Sort order in dropdowns
 
   -- Status
@@ -94,51 +91,5 @@ CREATE TRIGGER update_mass_types_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- =====================================================
--- Seed Default Mass Types for All Parishes
--- =====================================================
--- Insert default mass types for all existing parishes
-
-INSERT INTO mass_types (parish_id, key, label_en, label_es, description, display_order, is_system)
-SELECT
-  p.id as parish_id,
-  'WEEKEND' as key,
-  'Weekend' as label_en,
-  'Fin de Semana' as label_es,
-  'Saturday vigil and Sunday masses' as description,
-  1 as display_order,
-  true as is_system
-FROM parishes p;
-
-INSERT INTO mass_types (parish_id, key, label_en, label_es, description, display_order, is_system)
-SELECT
-  p.id as parish_id,
-  'DAILY' as key,
-  'Daily' as label_en,
-  'Diaria' as label_es,
-  'Weekday masses' as description,
-  2 as display_order,
-  true as is_system
-FROM parishes p;
-
-INSERT INTO mass_types (parish_id, key, label_en, label_es, description, display_order, is_system)
-SELECT
-  p.id as parish_id,
-  'HOLIDAY' as key,
-  'Holiday' as label_en,
-  'Día Festivo' as label_es,
-  'Special liturgical days and holy days' as description,
-  3 as display_order,
-  true as is_system
-FROM parishes p;
-
-INSERT INTO mass_types (parish_id, key, label_en, label_es, description, display_order, is_system)
-SELECT
-  p.id as parish_id,
-  'SPECIAL' as key,
-  'Special' as label_en,
-  'Especial' as label_es,
-  'One-time or seasonal masses' as description,
-  4 as display_order,
-  true as is_system
-FROM parishes p;
+-- NOTE: Default mass types are seeded via populateInitialParishData() in src/lib/actions/setup.ts
+-- This ensures all parish seed data is centralized in one location.

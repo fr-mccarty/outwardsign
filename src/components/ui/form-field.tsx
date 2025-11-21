@@ -26,6 +26,7 @@ interface InputFieldProps extends BaseFormFieldProps {
   max?: string
   step?: string
   maxLength?: number
+  autoFocus?: boolean
 }
 
 interface TextareaFieldProps extends BaseFormFieldProps {
@@ -127,6 +128,7 @@ export function FormField(props: FormFieldProps) {
             max={inputProps.max}
             step={inputProps.step}
             maxLength={inputProps.maxLength}
+            autoFocus={inputProps.autoFocus}
             className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
             required={required}
             disabled={disabled}

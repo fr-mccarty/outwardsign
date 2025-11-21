@@ -113,16 +113,7 @@ Follow the wedding module pattern exactly for all 9 main files:
   - [ ] Implement `generateFilename()` function
   - [ ] Implement `getTemplateId()` function (read from `entity.[entity]_template_id`)
   - [ ] Pass `buildLiturgy` callback
-
-- [ ] **Form Actions** - `app/(main)/[entities]/[id]/[entity]-form-actions.tsx` (Client)
-  - [ ] Accept `entity: [Entity]WithRelations` prop
-  - [ ] Implement Copy Info button (copies entity details to clipboard)
-  - [ ] Implement Edit button (links to edit page)
-  - [ ] Implement Delete button with confirmation dialog
-  - [ ] Handle delete loading state (`isDeleting`)
-  - [ ] Call `delete[Entity](entity.id)` Server Action
-  - [ ] Redirect to list page after successful deletion (`router.push('/[entities]')`)
-  - [ ] Use toast notifications for user feedback
+  - [ ] Pass `onDelete={delete[Entity]}` to ModuleViewContainer for delete functionality
 
 ### Phase 4: Print & Export
 

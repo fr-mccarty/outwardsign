@@ -238,7 +238,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         end_time: data.end_time || null,
         timezone: data.timezone || 'UTC',
         location_id: data.location_id || null,
-        language: data.language || null,
+        language: data.language || 'en',
         event_template_id: data.event_template_id || null,
         note: data.note || null,
       }
@@ -247,8 +247,8 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
     .single()
 
   if (error) {
-    console.error('Error creating event:', error)
-    throw new Error('Failed to create event')
+    console.error('Error creating event:', error.message, error.details, error.code)
+    throw new Error(`Failed to create event: ${error.message}`)
   }
 
   revalidatePath('/events')

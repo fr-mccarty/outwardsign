@@ -688,6 +688,18 @@ person_blackout_dates.person_id → people.id
 - `updateMass(id, data)` - Update mass
 - `deleteMass(id)` - Delete mass
 
+**Mass Role Instance Functions:**
+- `getMassRoles(massId)` - Get all role assignments for a specific mass
+- `createMassRole(data)` - Create a single mass role assignment
+- `updateMassRole(id, data)` - Update a mass role assignment
+- `deleteMassRole(id)` - Delete a mass role assignment
+- `bulkCreateMassRoles(massId, assignments)` - Create multiple role assignments at once
+- `applyMassTemplate(data)` - Apply a role template to a mass (creates role instances from template)
+
+**Mass Intention Linking Functions:**
+- `linkMassIntention(massId, massIntentionId)` - Link a mass intention to a mass
+- `unlinkMassIntention(massIntentionId)` - Remove the link between a mass intention and its mass
+
 **TypeScript Interfaces:**
 - `Mass` - Base mass type
 - `MassWithNames` - Mass with presider/homilist/event names

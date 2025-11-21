@@ -3,18 +3,23 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { readingsData } from '@/lib/data/readings'
-import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
-import sundaySpanish from '@/lib/default-petition-templates/sunday-spanish'
-import daily from '@/lib/default-petition-templates/daily'
-import weddingEnglish from '@/lib/default-petition-templates/wedding-english'
-import weddingSpanish from '@/lib/default-petition-templates/wedding-spanish'
-import funeralEnglish from '@/lib/default-petition-templates/funeral-english'
-import funeralSpanish from '@/lib/default-petition-templates/funeral-spanish'
-import quinceaneraEnglish from '@/lib/default-petition-templates/quinceanera-english'
-import quinceaneraSpanish from '@/lib/default-petition-templates/quinceanera-spanish'
-import presentationEnglish from '@/lib/default-petition-templates/presentation-english'
-import presentationSpanish from '@/lib/default-petition-templates/presentation-spanish'
+import { seedParishData } from '@/lib/seeding/parish-seed-data'
+
+/**
+ * Populates initial data for a newly created parish.
+ * Called after parish creation during onboarding.
+ * See docs/ONBOARDING.md for documentation.
+ */
+export async function populateInitialParishData(parishId: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  return seedParishData(supabase, parishId)
+}
 
 export async function createTestParish() {
   const supabase = await createClient()
@@ -578,224 +583,6 @@ export async function updateMemberRole(
     return { success: true }
   } catch (error) {
     console.error('Error updating member role:', error)
-    throw error
-  }
-}
-
-export async function populateInitialParishData(parishId: string) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
-
-  try {
-    // Seed initial readings from the canonical library
-    const readingsToInsert = readingsData.map((reading) => ({
-      parish_id: parishId,
-      pericope: reading.pericope,
-      text: reading.text,
-      categories: reading.categories,
-      language: reading.language,
-      introduction: reading.introduction ?? null,
-      conclusion: reading.conclusion ?? null
-    }))
-
-    const { data: readings, error: readingsError } = await supabase
-      .from('readings')
-      .insert(readingsToInsert)
-      .select()
-
-    if (readingsError) {
-      console.error('Error creating readings:', readingsError)
-      throw new Error(`Failed to create readings: ${readingsError.message}`)
-    }
-
-    // Seed initial petition templates
-    const defaultPetitionTemplates = [
-      sundayEnglish,
-      sundaySpanish,
-      daily,
-      weddingEnglish,
-      weddingSpanish,
-      funeralEnglish,
-      funeralSpanish,
-      quinceaneraEnglish,
-      quinceaneraSpanish,
-      presentationEnglish,
-      presentationSpanish
-    ]
-
-    const petitionTemplatesToInsert = defaultPetitionTemplates.map((template) => ({
-      parish_id: parishId,
-      title: template.title,
-      description: template.description,
-      context: template.content,
-      module: template.module,
-      language: template.language,
-      is_default: template.is_default
-    }))
-
-    const { data: petitionTemplates, error: petitionTemplatesError } = await supabase
-      .from('petition_templates')
-      .insert(petitionTemplatesToInsert)
-      .select()
-
-    if (petitionTemplatesError) {
-      console.error('Error creating petition templates:', petitionTemplatesError)
-      throw new Error(`Failed to create petition templates: ${petitionTemplatesError.message}`)
-    }
-
-    // Seed default group roles
-    const defaultGroupRoles = [
-      {
-        parish_id: parishId,
-        name: 'Leader',
-        description: 'Leads and coordinates the group',
-        is_active: true,
-        display_order: 1
-      },
-      {
-        parish_id: parishId,
-        name: 'Member',
-        description: 'Active participant in the group',
-        is_active: true,
-        display_order: 2
-      },
-      {
-        parish_id: parishId,
-        name: 'Secretary',
-        description: 'Maintains records and communications',
-        is_active: true,
-        display_order: 3
-      },
-      {
-        parish_id: parishId,
-        name: 'Treasurer',
-        description: 'Manages group finances',
-        is_active: true,
-        display_order: 4
-      },
-      {
-        parish_id: parishId,
-        name: 'Coordinator',
-        description: 'Coordinates group activities and events',
-        is_active: true,
-        display_order: 5
-      }
-    ]
-
-    const { data: groupRoles, error: groupRolesError } = await supabase
-      .from('group_roles')
-      .insert(defaultGroupRoles)
-      .select()
-
-    if (groupRolesError) {
-      console.error('Error creating default group roles:', groupRolesError)
-      throw new Error(`Failed to create default group roles: ${groupRolesError.message}`)
-    }
-
-    // Seed default mass (liturgical) roles
-    const defaultMassRoles = [
-      {
-        parish_id: parishId,
-        name: 'Lector',
-        description: 'Proclaims the Word of God during Mass',
-        is_active: true,
-        display_order: 1
-      },
-      {
-        parish_id: parishId,
-        name: 'Eucharistic Minister',
-        description: 'Distributes Holy Communion during Mass',
-        is_active: true,
-        display_order: 2
-      },
-      {
-        parish_id: parishId,
-        name: 'Server',
-        description: 'Assists the priest at the altar during Mass',
-        is_active: true,
-        display_order: 3
-      },
-      {
-        parish_id: parishId,
-        name: 'Cantor',
-        description: 'Leads the congregation in singing',
-        is_active: true,
-        display_order: 4
-      },
-      {
-        parish_id: parishId,
-        name: 'Usher',
-        description: 'Welcomes parishioners and assists with seating and collection',
-        is_active: true,
-        display_order: 5
-      },
-      {
-        parish_id: parishId,
-        name: 'Sacristan',
-        description: 'Prepares the sacred vessels and sanctuary for Mass',
-        is_active: true,
-        display_order: 6
-      },
-      {
-        parish_id: parishId,
-        name: 'Music Minister',
-        description: 'Provides music during the liturgy',
-        is_active: true,
-        display_order: 7
-      },
-      {
-        parish_id: parishId,
-        name: 'Greeter',
-        description: 'Welcomes parishioners as they arrive',
-        is_active: true,
-        display_order: 8
-      },
-      {
-        parish_id: parishId,
-        name: 'Coordinator',
-        description: 'Coordinates and oversees liturgical ministries',
-        is_active: true,
-        display_order: 9
-      },
-      {
-        parish_id: parishId,
-        name: 'Gift Bearer',
-        description: 'Brings up the gifts during the offertory',
-        is_active: true,
-        display_order: 10
-      },
-      {
-        parish_id: parishId,
-        name: 'Pre-Mass Speaker',
-        description: 'Makes announcements before Mass begins',
-        is_active: true,
-        display_order: 11
-      }
-    ]
-
-    const { data: massRoles, error: massRolesError } = await supabase
-      .from('mass_roles')
-      .insert(defaultMassRoles)
-      .select()
-
-    if (massRolesError) {
-      console.error('Error creating default mass roles:', massRolesError)
-      throw new Error(`Failed to create default mass roles: ${massRolesError.message}`)
-    }
-
-    return {
-      success: true,
-      readings: readings || [],
-      petitionTemplates: petitionTemplates || [],
-      groupRoles: groupRoles || [],
-      massRoles: massRoles || []
-    }
-  } catch (error) {
-    console.error('Error populating initial parish data:', error)
     throw error
   }
 }

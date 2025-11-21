@@ -1,6 +1,6 @@
 # Module Component Patterns
 
-This document provides detailed implementation patterns for the 9 main component files that make up each module in Outward Sign. Each section explains the component's purpose, structure, props, and provides reference implementations.
+This document provides detailed implementation patterns for the 8 main component files that make up each module in Outward Sign. Each section explains the component's purpose, structure, props, and provides reference implementations.
 
 **Reference Module:** Always use the Wedding module (`src/app/(main)/weddings/`) as the canonical implementation example.
 
@@ -34,19 +34,18 @@ This two-layer pattern ensures:
 - [6. Form Wrapper (Client)](#6-form-wrapper-client)
 - [7. Unified Form (Client)](#7-unified-form-client)
 - [8. View Client](#8-view-client)
-- [9. Form Actions (Client)](#9-form-actions-client)
 
 ---
 
 ## Overview
 
-Every module follows a consistent 9-file structure. This consistency ensures:
+Every module follows a consistent 8-file structure. This consistency ensures:
 - Predictable code organization
 - Easier onboarding for new developers
 - Reusable patterns across all modules
 - Testable, maintainable components
 
-**The 9 Main Files:**
+**The 8 Main Files:**
 
 | # | File | Location | Type | Purpose |
 |---|------|----------|------|---------|
@@ -57,8 +56,9 @@ Every module follows a consistent 9-file structure. This consistency ensures:
 | 5 | `page.tsx` | `[entity-plural]/[id]/edit/` | Server | Edit page |
 | 6 | `[entity]-form-wrapper.tsx` | `[entity-plural]/` | Client | Form container with loading state |
 | 7 | `[entity]-form.tsx` | `[entity-plural]/` | Client | Unified create/edit form |
-| 8 | `[entity]-view-client.tsx` | `[entity-plural]/[id]/` | Client | View page display |
-| 9 | `[entity]-form-actions.tsx` | `[entity-plural]/[id]/` | Client | Copy/Edit/Delete buttons |
+| 8 | `[entity]-view-client.tsx` | `[entity-plural]/[id]/` | Client | View page display with actions |
+
+**Note:** Delete functionality is handled by `ModuleViewContainer`/`ModuleViewPanel` via the `onDelete` prop, not a separate form-actions file.
 
 ---
 
@@ -900,158 +900,6 @@ export function [Entity]ViewClient({ entity }: [Entity]ViewClientProps) {
 
 ---
 
-## 9. Form Actions (Client)
-
-**File:** `[entity]-form-actions.tsx` in `app/(main)/[entity-plural]/[id]/`
-
-**Purpose:** Provides Copy Info, Edit, and Delete action buttons for the view page.
-
-### Structure
-
-```tsx
-'use client'
-
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import Link from "next/link"
-import { Edit, Copy, Trash2 } from "lucide-react"
-import { delete[Entity] } from "@/lib/actions/[entities]"
-import type { [Entity]WithRelations } from "@/lib/types"
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-
-interface [Entity]FormActionsProps {
-  entity: [Entity]WithRelations
-}
-
-export function [Entity]FormActions({ entity }: [Entity]FormActionsProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const router = useRouter()
-
-  const handleDelete = async () => {
-    setIsDeleting(true)
-    try {
-      await delete[Entity](entity.id)
-      toast.success('[Entity] deleted successfully')
-      setDeleteDialogOpen(false)
-      router.push('/[entities]')
-    } catch (error) {
-      console.error('Failed to delete [entity]:', error)
-      toast.error('Failed to delete [entity]. Please try again.')
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  const handleCopyInfo = () => {
-    const info = `[Entity] Details
-Status: ${entity.status || 'N/A'}
-${entity.field1 ? `Field 1: ${entity.field1}` : ''}
-${entity.field2 ? `Field 2: ${entity.field2}` : ''}
-${entity.notes ? `\n\nNotes: ${entity.notes}` : ''}`
-
-    navigator.clipboard.writeText(info)
-    toast.success('[Entity] information copied to clipboard')
-  }
-
-  return (
-    <div className="flex flex-wrap gap-3 mb-6">
-      <Button variant="outline" onClick={handleCopyInfo}>
-        <Copy className="h-4 w-4 mr-2" />
-        Copy Info
-      </Button>
-
-      <Button variant="outline" asChild>
-        <Link href={`/[entities]/${entity.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit
-        </Link>
-      </Button>
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="destructive">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete [Entity]</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this [entity]? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
-```
-
-### Key Points
-
-- ✅ Three action buttons: Copy Info, Edit, Delete
-- ✅ Copy Info formats entity details for clipboard
-- ✅ Edit links to edit page
-- ✅ Delete shows confirmation dialog
-- ✅ Handles loading states during delete
-- ✅ Redirects to list page after successful deletion
-- ✅ Uses toast notifications for feedback
-
-### Copy Info Pattern
-
-Customize the `handleCopyInfo` function to include relevant entity details:
-
-```tsx
-const handleCopyInfo = () => {
-  // Wedding example
-  const brideName = entity.bride ? `${entity.bride.first_name} ${entity.bride.last_name}` : 'Not specified'
-  const groomName = entity.groom ? `${entity.groom.first_name} ${entity.groom.last_name}` : 'Not specified'
-
-  const info = `Wedding Details
-Bride: ${brideName}
-Groom: ${groomName}
-Status: ${entity.status}
-${entity.notes ? `\nNotes: ${entity.notes}` : ''}`
-
-  navigator.clipboard.writeText(info)
-  toast.success('Wedding information copied to clipboard')
-}
-```
-
-**Reference Implementations:**
-- `src/app/(main)/weddings/[id]/wedding-form-actions.tsx`
-- `src/app/(main)/presentations/[id]/presentation-form-actions.tsx`
-
----
-
 ## File Location Summary
 
 ```
@@ -1064,8 +912,7 @@ app/(main)/[entity-plural]/
 │   └── page.tsx                         # 3. Create Page (Server)
 └── [id]/
     ├── page.tsx                         # 4. View Page (Server)
-    ├── [entity]-view-client.tsx         # 8. View Client
-    ├── [entity]-form-actions.tsx        # 9. Form Actions (Client)
+    ├── [entity]-view-client.tsx         # 8. View Client (with actions via ModuleViewContainer)
     └── edit/
         └── page.tsx                     # 5. Edit Page (Server)
 ```

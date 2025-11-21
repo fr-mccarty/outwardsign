@@ -287,7 +287,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-              {/* {canAccess('groups') && (
+              {canAccess('groups') && (
                 <CollapsibleNavSection
                   name="Groups"
                   icon={Users}
@@ -305,7 +305,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                   ]}
                   defaultOpen={false}
                 />
-              )} */}
+              )}
 
               {canAccess('mass-intentions') && (
                 <CollapsibleNavSection

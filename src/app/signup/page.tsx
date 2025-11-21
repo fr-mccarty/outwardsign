@@ -178,6 +178,7 @@ function SignupForm() {
               onChange={setEmail}
               required
               disabled={!!searchParams.get('email')}
+              autoFocus
             />
             <FormField
               id="password"

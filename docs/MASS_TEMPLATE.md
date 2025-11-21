@@ -765,7 +765,7 @@ ORDER BY mrti.position, mri.created_at;
    - Renders `MassRoleTemplateFormWrapper` with template
 
 7. **Form Wrapper** - `mass-role-template-form-wrapper.tsx` (Client)
-   - PageContainer with action buttons (in edit mode)
+   - PageContainer for form
    - Renders `MassRoleTemplateForm`
 
 8. **Unified Form** - `mass-role-template-form.tsx` (Client)
@@ -773,9 +773,9 @@ ORDER BY mrti.position, mri.created_at;
    - In edit mode: Shows `MassRoleTemplateItemList` for managing role items
    - In create mode: Shows helper text "Save first, then add roles"
 
-9. **Form Actions** - `[id]/mass-role-template-form-actions.tsx` (Client)
-   - Edit button
-   - Delete button with confirmation
+9. **View Client** - `[id]/mass-role-template-view-client.tsx` (Client)
+   - Uses `ModuleViewPanel` with `onDelete` prop for delete functionality
+   - Edit button links to edit page
 
 ### Template Item Components
 

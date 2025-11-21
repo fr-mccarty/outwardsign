@@ -64,6 +64,7 @@ export default function LoginPage() {
               onChange={setEmail}
               required
               placeholder="you@example.com"
+              autoFocus
             />
             <FormField
               id="password"

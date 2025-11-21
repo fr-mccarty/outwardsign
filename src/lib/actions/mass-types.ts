@@ -11,10 +11,8 @@ export interface MassType {
   id: string
   parish_id: string
   key: string
-  label_en: string
-  label_es: string
+  name: string
   description: string | null
-  color: string | null
   display_order: number
   active: boolean
   is_system: boolean
@@ -25,10 +23,8 @@ export interface MassType {
 // Create data interface
 export interface CreateMassTypeData {
   key: string
-  label_en: string
-  label_es: string
+  name: string
   description?: string
-  color?: string
   display_order?: number
   active?: boolean
 }
@@ -36,10 +32,8 @@ export interface CreateMassTypeData {
 // Update data interface
 export interface UpdateMassTypeData {
   key?: string
-  label_en?: string
-  label_es?: string
+  name?: string
   description?: string | null
-  color?: string | null
   display_order?: number
   active?: boolean
 }
@@ -58,7 +52,7 @@ export async function getMassTypes(): Promise<MassType[]> {
     .eq('parish_id', selectedParishId)
     .eq('active', true)
     .order('display_order', { ascending: true })
-    .order('label_en', { ascending: true })
+    .order('name', { ascending: true })
 
   if (error) {
     console.error('Error fetching mass types:', error)
@@ -81,7 +75,7 @@ export async function getAllMassTypes(): Promise<MassType[]> {
     .select('*')
     .eq('parish_id', selectedParishId)
     .order('display_order', { ascending: true })
-    .order('label_en', { ascending: true })
+    .order('name', { ascending: true })
 
   if (error) {
     console.error('Error fetching all mass types:', error)
@@ -139,10 +133,8 @@ export async function createMassType(data: CreateMassTypeData): Promise<MassType
       {
         parish_id: selectedParishId,
         key: data.key.toUpperCase().replace(/\s+/g, '_'),
-        label_en: data.label_en,
-        label_es: data.label_es,
+        name: data.name,
         description: data.description || null,
-        color: data.color || null,
         display_order: data.display_order ?? 0,
         active: data.active !== undefined ? data.active : true,
         is_system: false,
@@ -182,10 +174,8 @@ export async function updateMassType(id: string, data: UpdateMassTypeData): Prom
 
   const updateData: Record<string, unknown> = {}
   if (data.key !== undefined) updateData.key = data.key.toUpperCase().replace(/\s+/g, '_')
-  if (data.label_en !== undefined) updateData.label_en = data.label_en
-  if (data.label_es !== undefined) updateData.label_es = data.label_es
+  if (data.name !== undefined) updateData.name = data.name
   if (data.description !== undefined) updateData.description = data.description
-  if (data.color !== undefined) updateData.color = data.color
   if (data.display_order !== undefined) updateData.display_order = data.display_order
   if (data.active !== undefined) updateData.active = data.active
 
@@ -263,4 +253,44 @@ export async function deleteMassType(id: string): Promise<void> {
 
   revalidatePath('/mass-types')
   revalidatePath('/mass-times')
+}
+
+/**
+ * Reorder mass types by updating display_order
+ */
+export async function reorderMassTypes(orderedIds: string[]): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check permissions
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+
+  const userParish = await getUserParishRole(user.id, selectedParishId)
+  requireModuleAccess(userParish, 'masses')
+
+  // Update each mass type's display_order
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from('mass_types')
+      .update({ display_order: index })
+      .eq('id', id)
+      .eq('parish_id', selectedParishId)
+  )
+
+  const results = await Promise.all(updates)
+
+  // Check for errors
+  const errors = results.filter((r) => r.error)
+  if (errors.length > 0) {
+    console.error('Error reordering mass types:', errors)
+    throw new Error('Failed to reorder mass types')
+  }
+
+  revalidatePath('/mass-types')
 }

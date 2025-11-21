@@ -71,7 +71,7 @@ ${template.description ? `Description: ${template.description}\n` : ''}${templat
       )}
       {template.note && (
         <div className={template.description ? "pt-2 border-t" : ""}>
-          <span className="font-medium">Internal Note:</span>
+          <span className="font-medium">Note:</span>
           <p className="text-sm text-muted-foreground mt-1">{template.note}</p>
         </div>
       )}

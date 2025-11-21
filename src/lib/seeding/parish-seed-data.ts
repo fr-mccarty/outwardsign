@@ -1,0 +1,308 @@
+/**
+ * Parish Seed Data - Shared seeding logic for onboarding and dev scripts
+ *
+ * This module contains the actual data seeding logic that can be used by:
+ * - Server actions (parish-onboarding.ts)
+ * - Dev seed scripts (scripts/dev-seed.ts)
+ *
+ * See docs/ONBOARDING.md for full documentation.
+ */
+
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { readingsData } from '@/lib/data/readings'
+
+// Import petition templates
+import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
+import sundaySpanish from '@/lib/default-petition-templates/sunday-spanish'
+import daily from '@/lib/default-petition-templates/daily'
+import weddingEnglish from '@/lib/default-petition-templates/wedding-english'
+import weddingSpanish from '@/lib/default-petition-templates/wedding-spanish'
+import funeralEnglish from '@/lib/default-petition-templates/funeral-english'
+import funeralSpanish from '@/lib/default-petition-templates/funeral-spanish'
+import quinceaneraEnglish from '@/lib/default-petition-templates/quinceanera-english'
+import quinceaneraSpanish from '@/lib/default-petition-templates/quinceanera-spanish'
+import presentationEnglish from '@/lib/default-petition-templates/presentation-english'
+import presentationSpanish from '@/lib/default-petition-templates/presentation-spanish'
+
+/**
+ * Seeds all initial data for a parish.
+ * This is the single source of truth for parish onboarding data.
+ *
+ * @param supabase - Any Supabase client (server, service role, etc.)
+ * @param parishId - The parish ID to seed data for
+ */
+export async function seedParishData(supabase: SupabaseClient, parishId: string) {
+  // =====================================================
+  // 1. Seed Readings
+  // =====================================================
+  const readingsToInsert = readingsData.map((reading) => ({
+    parish_id: parishId,
+    pericope: reading.pericope,
+    text: reading.text,
+    categories: reading.categories,
+    language: reading.language,
+    introduction: reading.introduction ?? null,
+    conclusion: reading.conclusion ?? null
+  }))
+
+  const { data: readings, error: readingsError } = await supabase
+    .from('readings')
+    .insert(readingsToInsert)
+    .select()
+
+  if (readingsError) {
+    console.error('Error creating readings:', readingsError)
+    throw new Error(`Failed to create readings: ${readingsError.message}`)
+  }
+
+  // =====================================================
+  // 2. Seed Petition Templates
+  // =====================================================
+  const defaultPetitionTemplates = [
+    sundayEnglish,
+    sundaySpanish,
+    daily,
+    weddingEnglish,
+    weddingSpanish,
+    funeralEnglish,
+    funeralSpanish,
+    quinceaneraEnglish,
+    quinceaneraSpanish,
+    presentationEnglish,
+    presentationSpanish
+  ]
+
+  const petitionTemplatesToInsert = defaultPetitionTemplates.map((template) => ({
+    parish_id: parishId,
+    title: template.title,
+    description: template.description,
+    context: template.content,
+    module: template.module,
+    language: template.language,
+    is_default: template.is_default
+  }))
+
+  const { data: petitionTemplates, error: petitionTemplatesError } = await supabase
+    .from('petition_templates')
+    .insert(petitionTemplatesToInsert)
+    .select()
+
+  if (petitionTemplatesError) {
+    console.error('Error creating petition templates:', petitionTemplatesError)
+    throw new Error(`Failed to create petition templates: ${petitionTemplatesError.message}`)
+  }
+
+  // =====================================================
+  // 3. Seed Group Roles
+  // =====================================================
+  const defaultGroupRoles = [
+    { parish_id: parishId, name: 'Leader', description: 'Leads and coordinates the group', is_active: true, display_order: 1 },
+    { parish_id: parishId, name: 'Member', description: 'Active participant in the group', is_active: true, display_order: 2 },
+    { parish_id: parishId, name: 'Secretary', description: 'Maintains records and communications', is_active: true, display_order: 3 },
+    { parish_id: parishId, name: 'Treasurer', description: 'Manages group finances', is_active: true, display_order: 4 },
+    { parish_id: parishId, name: 'Coordinator', description: 'Coordinates group activities and events', is_active: true, display_order: 5 },
+  ]
+
+  const { data: groupRoles, error: groupRolesError } = await supabase
+    .from('group_roles')
+    .insert(defaultGroupRoles)
+    .select()
+
+  if (groupRolesError) {
+    console.error('Error creating default group roles:', groupRolesError)
+    throw new Error(`Failed to create default group roles: ${groupRolesError.message}`)
+  }
+
+  // =====================================================
+  // 4. Seed Mass Roles
+  // =====================================================
+  const defaultMassRoles = [
+    { parish_id: parishId, name: 'Lector', description: 'Proclaims the Word of God during Mass', is_active: true, display_order: 1 },
+    { parish_id: parishId, name: 'Eucharistic Minister', description: 'Distributes Holy Communion during Mass', is_active: true, display_order: 2 },
+    { parish_id: parishId, name: 'Server', description: 'Assists the priest at the altar during Mass', is_active: true, display_order: 3 },
+    { parish_id: parishId, name: 'Cantor', description: 'Leads the congregation in singing', is_active: true, display_order: 4 },
+    { parish_id: parishId, name: 'Usher', description: 'Welcomes parishioners and assists with seating and collection', is_active: true, display_order: 5 },
+    { parish_id: parishId, name: 'Sacristan', description: 'Prepares the sacred vessels and sanctuary for Mass', is_active: true, display_order: 6 },
+    { parish_id: parishId, name: 'Music Minister', description: 'Provides music during the liturgy', is_active: true, display_order: 7 },
+    { parish_id: parishId, name: 'Greeter', description: 'Welcomes parishioners as they arrive', is_active: true, display_order: 8 },
+    { parish_id: parishId, name: 'Coordinator', description: 'Coordinates and oversees liturgical ministries', is_active: true, display_order: 9 },
+    { parish_id: parishId, name: 'Gift Bearer', description: 'Brings up the gifts during the offertory', is_active: true, display_order: 10 },
+    { parish_id: parishId, name: 'Pre-Mass Speaker', description: 'Makes announcements before Mass begins', is_active: true, display_order: 11 },
+    { parish_id: parishId, name: 'Security Team', description: 'Ensures safety and security during Mass', is_active: true, display_order: 12 },
+  ]
+
+  const { data: massRoles, error: massRolesError } = await supabase
+    .from('mass_roles')
+    .insert(defaultMassRoles)
+    .select('id, name')
+
+  if (massRolesError) {
+    console.error('Error creating default mass roles:', massRolesError)
+    throw new Error(`Failed to create default mass roles: ${massRolesError.message}`)
+  }
+
+  // =====================================================
+  // 5. Seed Mass Types
+  // =====================================================
+  const defaultMassTypes = [
+    { key: 'SUNDAY_DAY', name: 'Sunday Day', display_order: 1 },
+    { key: 'SUNDAY_VIGIL', name: 'Sunday Vigil', display_order: 2 },
+    { key: 'SUNDAY_VIGIL_SPANISH', name: 'Sunday Vigil - Spanish', display_order: 3 },
+  ]
+
+  const { error: massTypesError } = await supabase
+    .from('mass_types')
+    .insert(
+      defaultMassTypes.map((mt) => ({
+        parish_id: parishId,
+        key: mt.key,
+        name: mt.name,
+        display_order: mt.display_order,
+        is_system: false,
+        active: true,
+      }))
+    )
+
+  if (massTypesError) {
+    console.error('Error creating default mass types:', massTypesError)
+    throw new Error(`Failed to create default mass types: ${massTypesError.message}`)
+  }
+
+  // =====================================================
+  // 6. Seed Mass Role Template
+  // =====================================================
+  const roleMap = new Map((massRoles || []).map((r) => [r.name, r.id]))
+
+  const { data: roleTemplate, error: roleTemplateError } = await supabase
+    .from('mass_roles_templates')
+    .insert({
+      parish_id: parishId,
+      name: 'Sunday Mass',
+      description: 'Default role assignments for Sunday Mass',
+      is_active: true,
+    })
+    .select()
+    .single()
+
+  if (roleTemplateError) {
+    console.error('Error creating default role template:', roleTemplateError)
+    throw new Error(`Failed to create default role template: ${roleTemplateError.message}`)
+  }
+
+  // Role template items with counts (for Sunday Mass)
+  const roleTemplateItems = [
+    { roleName: 'Lector', count: 1, position: 0 },
+    { roleName: 'Server', count: 2, position: 1 },
+    { roleName: 'Usher', count: 4, position: 2 },
+    { roleName: 'Security Team', count: 2, position: 3 },
+    { roleName: 'Eucharistic Minister', count: 3, position: 4 },
+  ]
+
+  const validRoleTemplateItems = roleTemplateItems
+    .filter((item) => roleMap.has(item.roleName))
+    .map((item) => ({
+      mass_roles_template_id: roleTemplate.id,
+      mass_role_id: roleMap.get(item.roleName),
+      count: item.count,
+      position: item.position,
+    }))
+
+  if (validRoleTemplateItems.length > 0) {
+    const { error: roleTemplateItemsError } = await supabase
+      .from('mass_roles_template_items')
+      .insert(validRoleTemplateItems)
+
+    if (roleTemplateItemsError) {
+      console.error('Error creating role template items:', roleTemplateItemsError)
+      throw new Error(`Failed to create role template items: ${roleTemplateItemsError.message}`)
+    }
+  }
+
+  // =====================================================
+  // 7. Seed Mass Times Templates
+  // =====================================================
+  const massTimesTemplatesData = [
+    {
+      name: 'Sunday',
+      description: 'Regular Sunday Mass schedule',
+      is_active: true,
+      items: [
+        { time: '09:00:00', day_type: 'IS_DAY' as const },
+        { time: '11:00:00', day_type: 'IS_DAY' as const },
+        { time: '16:00:00', day_type: 'DAY_BEFORE' as const },
+        { time: '17:30:00', day_type: 'DAY_BEFORE' as const },
+      ],
+    },
+    {
+      name: 'Holiday',
+      description: 'Holiday Mass schedule',
+      is_active: false,
+      items: [{ time: '09:00:00', day_type: 'IS_DAY' as const }],
+    },
+    {
+      name: 'Monday',
+      description: 'Monday Mass schedule',
+      is_active: false,
+      items: [{ time: '12:05:00', day_type: 'IS_DAY' as const }],
+    },
+    {
+      name: 'Wednesday',
+      description: 'Wednesday Mass schedule',
+      is_active: false,
+      items: [{ time: '18:00:00', day_type: 'IS_DAY' as const }],
+    },
+    {
+      name: 'Thursday',
+      description: 'Thursday Mass schedule',
+      is_active: false,
+      items: [{ time: '06:00:00', day_type: 'IS_DAY' as const }],
+    },
+    {
+      name: 'Friday',
+      description: 'Friday Mass schedule',
+      is_active: false,
+      items: [{ time: '12:05:00', day_type: 'IS_DAY' as const }],
+    },
+  ]
+
+  for (const template of massTimesTemplatesData) {
+    const { data: createdTemplate, error: templateError } = await supabase
+      .from('mass_times_templates')
+      .insert({
+        parish_id: parishId,
+        name: template.name,
+        description: template.description,
+        is_active: template.is_active,
+      })
+      .select()
+      .single()
+
+    if (templateError) {
+      console.error(`Error creating mass times template ${template.name}:`, templateError)
+      throw new Error(`Failed to create mass times template ${template.name}: ${templateError.message}`)
+    }
+
+    const { error: itemsError } = await supabase
+      .from('mass_times_template_items')
+      .insert(
+        template.items.map((item) => ({
+          mass_times_template_id: createdTemplate.id,
+          time: item.time,
+          day_type: item.day_type,
+        }))
+      )
+
+    if (itemsError) {
+      console.error(`Error creating mass times template items for ${template.name}:`, itemsError)
+      throw new Error(`Failed to create mass times template items for ${template.name}: ${itemsError.message}`)
+    }
+  }
+
+  return {
+    success: true,
+    readings: readings || [],
+    petitionTemplates: petitionTemplates || [],
+    groupRoles: groupRoles || [],
+    massRoles: massRoles || []
+  }
+}

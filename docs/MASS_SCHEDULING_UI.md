@@ -1,8 +1,18 @@
 # Mass Scheduling UI Documentation
 
-## Overview
+> **⚠️ FUTURE VISION - NOT IMPLEMENTED**
+>
+> This document describes a **future calendar-based drag-and-drop interface** that has not been built. The current implementation uses a **wizard-based approach** documented in [MASS_SCHEDULING.md](./MASS_SCHEDULING.md).
+>
+> **Current Implementation:** 5-step wizard at `/masses/schedule` (date range → schedule pattern → template selection → review → results)
+>
+> **This Document:** Design specification for a potential future calendar UI enhancement.
 
-The Mass Scheduling module provides a calendar-based interface for scheduling Masses, linking them to liturgical events, and assigning ministers to serve in various roles. The primary interaction model is drag-and-drop on a calendar view.
+---
+
+## Overview (Future Design)
+
+The Mass Scheduling module would provide a calendar-based interface for scheduling Masses, linking them to liturgical events, and assigning ministers to serve in various roles. The primary interaction model would be drag-and-drop on a calendar view.
 
 **Route:** `/masses/schedule`
 

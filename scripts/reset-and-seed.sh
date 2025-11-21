@@ -2,8 +2,18 @@
 
 # Reset and Seed Development Database
 # This script resets the database and seeds it with development data
+# Usage: ./reset-and-seed.sh [-y]
+#   -y  Skip confirmation prompt
 
 set -e  # Exit on error
+
+# Parse flags
+SKIP_CONFIRM=false
+while getopts "y" opt; do
+  case $opt in
+    y) SKIP_CONFIRM=true ;;
+  esac
+done
 
 echo ""
 echo "================================================================"
@@ -15,13 +25,14 @@ echo "  1. Reset the database (drop all data)"
 echo "  2. Re-run all migrations"
 echo "  3. Seed with development data"
 echo ""
-read -p "Continue? (y/N) " -n 1 -r
-echo ""
 
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
+if [ "$SKIP_CONFIRM" = false ]; then
+  read -p "Continue? (y/N) " -n 1 -r
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Cancelled."
     exit 0
+  fi
 fi
 
 echo ""

@@ -129,8 +129,8 @@ async function seedDevData() {
   }
   console.log('')
 
-  // Check if readings already exist for this parish
-  console.log('📖 Checking for existing readings...')
+  // Seed standard onboarding data using shared function
+  console.log('📖 Seeding standard parish data (readings, roles, templates)...')
 
   const { data: existingReadings } = await supabase
     .from('readings')
@@ -139,214 +139,30 @@ async function seedDevData() {
     .limit(1)
 
   if (!existingReadings || existingReadings.length === 0) {
-    console.log('   No readings found, seeding...')
+    const { seedParishData } = await import('../src/lib/seeding/parish-seed-data')
 
-    // Import readingsData and seed manually (can't use server action from script)
-    const { readingsData } = await import('../src/lib/data/readings')
-
-    const readingsToInsert = readingsData.map((reading) => ({
-      parish_id: parishId,
-      pericope: reading.pericope,
-      text: reading.text,
-      categories: reading.categories,
-      language: reading.language,
-      introduction: reading.introduction ?? null,
-      conclusion: reading.conclusion ?? null
-    }))
-
-    const { data: readings, error: readingsError } = await supabase
-      .from('readings')
-      .insert(readingsToInsert)
-      .select()
-
-    if (readingsError) {
-      console.error('❌ Error seeding readings:', readingsError)
+    try {
+      const result = await seedParishData(supabase, parishId)
+      console.log(`   ✅ Readings: ${result.readings.length}`)
+      console.log(`   ✅ Petition templates: ${result.petitionTemplates.length}`)
+      console.log(`   ✅ Group roles: ${result.groupRoles.length}`)
+      console.log(`   ✅ Mass roles: ${result.massRoles.length}`)
+      console.log(`   ✅ Mass types, role templates, and time templates created`)
+    } catch (error) {
+      console.error('❌ Error seeding parish data:', error)
       process.exit(1)
     }
-
-    console.log(`   ✅ ${readings?.length || 0} readings created`)
   } else {
-    console.log(`   ✅ Readings already exist, skipping`)
+    console.log(`   ✅ Parish data already exists, skipping`)
   }
   console.log('')
 
-  // Everything below is EXTRA development data (not part of onboarding)
-  console.log('🔧 Adding extra development data...')
-  console.log('')
-
-  // Seed group roles (SAME AS ONBOARDING - keeping consistent)
-  console.log('🎭 Creating group roles...')
-  const { data: groupRoles, error: groupRolesError } = await supabase
+  // Fetch existing group roles for dev data below
+  const { data: groupRoles } = await supabase
     .from('group_roles')
-    .insert([
-      {
-        parish_id: parishId,
-        name: 'Leader',
-        description: 'Leads and coordinates the group',
-        is_active: true,
-        display_order: 1
-      },
-      {
-        parish_id: parishId,
-        name: 'Member',
-        description: 'Active participant in the group',
-        is_active: true,
-        display_order: 2
-      },
-      {
-        parish_id: parishId,
-        name: 'Secretary',
-        description: 'Maintains records and communications',
-        is_active: true,
-        display_order: 3
-      },
-      {
-        parish_id: parishId,
-        name: 'Treasurer',
-        description: 'Manages group finances',
-        is_active: true,
-        display_order: 4
-      },
-      {
-        parish_id: parishId,
-        name: 'Coordinator',
-        description: 'Coordinates group activities and events',
-        is_active: true,
-        display_order: 5
-      }
-    ])
-    .select()
+    .select('*')
+    .eq('parish_id', parishId)
 
-  if (groupRolesError) {
-    console.error('⚠️  Warning: Error creating group roles:', groupRolesError.message)
-  } else {
-    console.log(`   ✅ ${groupRoles?.length || 0} group roles created`)
-  }
-  console.log('')
-
-  // Seed mass roles (liturgical roles for Mass)
-  console.log('✝️  Creating mass roles...')
-  const { data: massRoles, error: massRolesError } = await supabase
-    .from('mass_roles')
-    .insert([
-      {
-        parish_id: parishId,
-        name: 'Lector',
-        description: 'Proclaims the Word of God during the Liturgy of the Word',
-        is_active: true,
-        display_order: 1
-      },
-      {
-        parish_id: parishId,
-        name: 'Extraordinary Minister of Holy Communion',
-        description: 'Assists in distributing Holy Communion to the faithful',
-        is_active: true,
-        display_order: 2
-      },
-      {
-        parish_id: parishId,
-        name: 'Altar Server',
-        description: 'Assists the priest during Mass',
-        is_active: true,
-        display_order: 3
-      },
-      {
-        parish_id: parishId,
-        name: 'Cantor',
-        description: 'Leads the congregation in singing the responsorial psalm and other sung parts',
-        is_active: true,
-        display_order: 4
-      },
-      {
-        parish_id: parishId,
-        name: 'Usher',
-        description: 'Welcomes parishioners, assists with seating, and takes up collection',
-        is_active: true,
-        display_order: 5
-      },
-      {
-        parish_id: parishId,
-        name: 'Sacristan',
-        description: 'Prepares the sacred vessels, vestments, and altar for Mass',
-        is_active: true,
-        display_order: 6
-      },
-      {
-        parish_id: parishId,
-        name: 'Greeter',
-        description: 'Welcomes people at the entrance and hands out worship aids',
-        is_active: true,
-        display_order: 7
-      },
-      {
-        parish_id: parishId,
-        name: 'Gift Bearer',
-        description: 'Brings forward the gifts of bread and wine during the Offertory',
-        is_active: true,
-        display_order: 8
-      }
-    ])
-    .select()
-
-  if (massRolesError) {
-    console.error('⚠️  Warning: Error creating mass roles:', massRolesError.message)
-  } else {
-    console.log(`   ✅ ${massRoles?.length || 0} mass roles created`)
-
-    // Create a sample mass role template
-    if (massRoles && massRoles.length > 0) {
-      console.log('')
-      console.log('📋 Creating mass role templates...')
-
-      const { data: massTemplate, error: templateError } = await supabase
-        .from('mass_roles_templates')
-        .insert({
-          parish_id: parishId,
-          name: 'Sunday Mass',
-          description: 'Standard Sunday Mass role assignments',
-          note: 'Typical roles needed for a Sunday morning Mass with full participation'
-        })
-        .select()
-        .single()
-
-      if (templateError) {
-        console.error('⚠️  Warning: Error creating mass role template:', templateError.message)
-      } else {
-        console.log(`   ✅ Mass role template created: ${massTemplate.name}`)
-
-        // Add template items (specific roles with counts)
-        const lectorRole = massRoles.find(r => r.name === 'Lector')
-        const emhcRole = massRoles.find(r => r.name === 'Extraordinary Minister of Holy Communion')
-        const serverRole = massRoles.find(r => r.name === 'Altar Server')
-        const cantorRole = massRoles.find(r => r.name === 'Cantor')
-        const usherRole = massRoles.find(r => r.name === 'Usher')
-        const sacristanRole = massRoles.find(r => r.name === 'Sacristan')
-        const greeterRole = massRoles.find(r => r.name === 'Greeter')
-        const giftBearerRole = massRoles.find(r => r.name === 'Gift Bearer')
-
-        const templateItems = [
-          { template_id: massTemplate.id, mass_role_id: lectorRole?.id, count: 2, position: 0 },
-          { template_id: massTemplate.id, mass_role_id: cantorRole?.id, count: 1, position: 1 },
-          { template_id: massTemplate.id, mass_role_id: serverRole?.id, count: 2, position: 2 },
-          { template_id: massTemplate.id, mass_role_id: emhcRole?.id, count: 4, position: 3 },
-          { template_id: massTemplate.id, mass_role_id: usherRole?.id, count: 4, position: 4 },
-          { template_id: massTemplate.id, mass_role_id: greeterRole?.id, count: 2, position: 5 },
-          { template_id: massTemplate.id, mass_role_id: sacristanRole?.id, count: 1, position: 6 },
-          { template_id: massTemplate.id, mass_role_id: giftBearerRole?.id, count: 2, position: 7 }
-        ].filter(item => item.mass_role_id) // Only include if role exists
-
-        const { data: createdItems, error: itemsError } = await supabase
-          .from('mass_roles_template_items')
-          .insert(templateItems)
-
-        if (itemsError) {
-          console.error('⚠️  Warning: Error creating template items:', itemsError.message)
-        } else {
-          console.log(`   ✅ ${templateItems.length} template items created`)
-        }
-      }
-    }
-  }
   console.log('')
 
   // Seed sample groups (DEVELOPMENT ONLY - not in onboarding)

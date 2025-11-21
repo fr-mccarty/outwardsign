@@ -192,17 +192,31 @@ export async function reorderTemplateItems(templateId: string, itemIds: string[]
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Update position for each item based on its index in the array
+  // First, set all positions to high values to avoid unique constraint conflicts
+  for (let i = 0; i < itemIds.length; i++) {
+    const { error } = await supabase
+      .from('mass_roles_template_items')
+      .update({ position: 10000 + i }) // Use high values to avoid conflicts
+      .eq('id', itemIds[i])
+      .eq('mass_roles_template_id', templateId)
+
+    if (error) {
+      console.error('Error setting temp positions:', error.message)
+      throw new Error(`Failed to reorder template items: ${error.message}`)
+    }
+  }
+
+  // Now set final positions
   for (let i = 0; i < itemIds.length; i++) {
     const { error } = await supabase
       .from('mass_roles_template_items')
       .update({ position: i })
       .eq('id', itemIds[i])
-      .eq('mass_roles_template_id', templateId) // Extra safety check
+      .eq('mass_roles_template_id', templateId)
 
     if (error) {
-      console.error('Error reordering template items:', error)
-      throw new Error('Failed to reorder template items')
+      console.error('Error reordering template items:', error.message, error.code, error.details)
+      throw new Error(`Failed to reorder template items: ${error.message}`)
     }
   }
 

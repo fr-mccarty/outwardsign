@@ -20,7 +20,7 @@
 ## File Naming Conventions
 
 - **Server pages:** `page.tsx` (async function, no 'use client')
-- **Client components:** `[entity]-[purpose].tsx` (e.g., `reading-form.tsx`, `reading-list-client.tsx`, `reading-form-actions.tsx`)
+- **Client components:** `[entity]-[purpose].tsx` (e.g., `reading-form.tsx`, `reading-list-client.tsx`, `reading-view-client.tsx`)
 - **Server Actions:** `lib/actions/[entity].ts` or `[entities].ts`
 - **Types:** Defined in Server Action files, exported for reuse
 
@@ -44,15 +44,14 @@
 │   └── page.tsx                  # 3. Create Page (Server)
 └── [id]/
     ├── page.tsx                  # 4. View Page (Server)
-    ├── [entity]-view-client.tsx  # 8. View Client
-    ├── [entity]-form-actions.tsx # 9. Form Actions (Client)
+    ├── [entity]-view-client.tsx  # 8. View Client (with actions via ModuleViewContainer)
     ├── loading.tsx               # Suspense fallback (imports reusable component)
     ├── error.tsx                 # Error boundary (imports reusable component)
     └── edit/
         └── page.tsx              # 5. Edit Page (Server)
 ```
 
-**IMPORTANT:** All 9 numbered files are REQUIRED and must follow the wedding module pattern exactly.
+**IMPORTANT:** All 8 numbered files are REQUIRED and must follow the wedding module pattern exactly.
 
 ---
 

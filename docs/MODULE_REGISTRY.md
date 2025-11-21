@@ -41,7 +41,6 @@ The main sidebar follows a specific ordering and grouping structure. All navigat
    - Our Masses (`/masses`)
    - New Mass (`/masses/create`)
    - Mass Roles (`/mass-roles`)
-   - Role Directory (`/mass-role-directory`)
 7. **Mass Scheduling** (Collapsible Section) - Permission check: `canAccess('masses')`
    - Schedule Masses (`/masses/schedule`)
    - Mass Times Templates (`/mass-times`)

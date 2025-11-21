@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Settings } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { getMassTypes, createMassType, type MassType } from '@/lib/actions/mass-types'
 
@@ -28,8 +27,7 @@ export function MassTypePicker({ value, onChange, disabled }: MassTypePickerProp
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   // Create form state
-  const [labelEn, setLabelEn] = useState('')
-  const [labelEs, setLabelEs] = useState('')
+  const [name, setName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
   // Fetch mass types on mount
@@ -53,29 +51,22 @@ export function MassTypePicker({ value, onChange, disabled }: MassTypePickerProp
     e.preventDefault()
     e.stopPropagation()
 
-    if (!labelEn.trim()) {
-      toast.error('English label is required')
-      return
-    }
-
-    if (!labelEs.trim()) {
-      toast.error('Spanish label is required')
+    if (!name.trim()) {
+      toast.error('Name is required')
       return
     }
 
     setIsCreating(true)
     try {
       const newMassType = await createMassType({
-        label_en: labelEn.trim(),
-        label_es: labelEs.trim(),
-        key: labelEn.toUpperCase().replace(/\s+/g, '_'),
+        name: name.trim(),
+        key: name.toUpperCase().replace(/\s+/g, '_'),
       })
 
       toast.success('Mass type created successfully')
 
       // Reset form
-      setLabelEn('')
-      setLabelEs('')
+      setName('')
       setShowCreateDialog(false)
 
       // Reload mass types and auto-select the new one
@@ -102,7 +93,7 @@ export function MassTypePicker({ value, onChange, disabled }: MassTypePickerProp
           <option value="">{isLoading ? 'Loading...' : 'Select mass type'}</option>
           {massTypes.map((type) => (
             <option key={type.id} value={type.id}>
-              {type.label_en}
+              {type.name}
             </option>
           ))}
         </select>
@@ -132,25 +123,14 @@ export function MassTypePicker({ value, onChange, disabled }: MassTypePickerProp
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="create_label_en">English Label *</Label>
+                <Label htmlFor="create_name">Name *</Label>
                 <Input
-                  id="create_label_en"
-                  value={labelEn}
-                  onChange={(e) => setLabelEn(e.target.value)}
+                  id="create_name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Weekend, Daily, Adoration"
                   required
                   autoFocus
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="create_label_es">Spanish Label *</Label>
-                <Input
-                  id="create_label_es"
-                  value={labelEs}
-                  onChange={(e) => setLabelEs(e.target.value)}
-                  placeholder="e.g., Fin de Semana, Diaria, Adoración"
-                  required
                 />
               </div>
             </div>

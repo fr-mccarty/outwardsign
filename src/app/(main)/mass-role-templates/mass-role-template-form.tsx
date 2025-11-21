@@ -133,12 +133,12 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
           <FormField
             id="note"
             inputType="textarea"
-            label="Internal Note"
+            label="Note"
             value={note}
             onChange={setNote}
             error={errors.note}
-            description="Internal notes for staff (not visible to ministers)"
-            placeholder="Enter internal notes"
+            description="Notes for staff (not visible to ministers)"
+            placeholder="Enter notes"
             rows={2}
             disabled={isLoading}
           />

@@ -34,10 +34,8 @@ export function MassTypeFormDialog({
 
   // Form state
   const [key, setKey] = useState('')
-  const [labelEn, setLabelEn] = useState('')
-  const [labelEs, setLabelEs] = useState('')
+  const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [color, setColor] = useState('')
   const [displayOrder, setDisplayOrder] = useState('0')
   const [active, setActive] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
@@ -47,19 +45,15 @@ export function MassTypeFormDialog({
     if (open) {
       if (massType) {
         setKey(massType.key)
-        setLabelEn(massType.label_en)
-        setLabelEs(massType.label_es)
+        setName(massType.name)
         setDescription(massType.description || '')
-        setColor(massType.color || '')
         setDisplayOrder(String(massType.display_order))
         setActive(massType.active)
       } else {
         // Reset to defaults for create
         setKey('')
-        setLabelEn('')
-        setLabelEs('')
+        setName('')
         setDescription('')
-        setColor('')
         setDisplayOrder('0')
         setActive(true)
       }
@@ -72,24 +66,16 @@ export function MassTypeFormDialog({
 
     try {
       // Basic validation
-      if (!labelEn.trim()) {
-        toast.error('English label is required')
-        setIsLoading(false)
-        return
-      }
-
-      if (!labelEs.trim()) {
-        toast.error('Spanish label is required')
+      if (!name.trim()) {
+        toast.error('Name is required')
         setIsLoading(false)
         return
       }
 
       const data = {
-        key: key.trim() || labelEn.toUpperCase().replace(/\s+/g, '_'),
-        label_en: labelEn.trim(),
-        label_es: labelEs.trim(),
+        key: key.trim() || name.toUpperCase().replace(/\s+/g, '_'),
+        name: name.trim(),
         description: description.trim() || undefined,
-        color: color.trim() || undefined,
         display_order: parseInt(displayOrder) || 0,
         active,
       }
@@ -126,31 +112,19 @@ export function MassTypeFormDialog({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            {/* English Label */}
+            {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="label_en">English Label *</Label>
+              <Label htmlFor="name">Name *</Label>
               <Input
-                id="label_en"
-                value={labelEn}
-                onChange={(e) => setLabelEn(e.target.value)}
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Weekend, Daily, Adoration"
                 required
               />
             </div>
 
-            {/* Spanish Label */}
-            <div className="space-y-2">
-              <Label htmlFor="label_es">Spanish Label *</Label>
-              <Input
-                id="label_es"
-                value={labelEs}
-                onChange={(e) => setLabelEs(e.target.value)}
-                placeholder="e.g., Fin de Semana, Diaria, Adoración"
-                required
-              />
-            </div>
-
-            {/* Key (optional, auto-generated from English label) */}
+            {/* Key (optional, auto-generated from name) */}
             <div className="space-y-2">
               <Label htmlFor="key">
                 Key <span className="text-xs text-muted-foreground">(optional)</span>
@@ -159,7 +133,7 @@ export function MassTypeFormDialog({
                 id="key"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                placeholder="Auto-generated from English label"
+                placeholder="Auto-generated from name"
                 className="font-mono text-sm"
                 disabled={isEditing && massType?.is_system}
               />
@@ -180,28 +154,6 @@ export function MassTypeFormDialog({
                 placeholder="Brief description of this mass type"
                 rows={2}
               />
-            </div>
-
-            {/* Color */}
-            <div className="space-y-2">
-              <Label htmlFor="color">
-                Color <span className="text-xs text-muted-foreground">(optional)</span>
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="color"
-                  type="color"
-                  value={color || '#3b82f6'}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-20 h-10"
-                />
-                <Input
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  placeholder="#3b82f6"
-                  className="flex-1 font-mono text-sm"
-                />
-              </div>
             </div>
 
             {/* Display Order */}

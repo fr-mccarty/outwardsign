@@ -853,7 +853,7 @@ test('schedule masses wizard flow', async ({ page }) => {
 ## Related Documentation
 
 - **[MASSES.md](./MASSES.md)** - Mass module overview and role system
-- **[MASS_ROLE_TEMPLATE_SYSTEM.md](./MASS_ROLE_TEMPLATE_SYSTEM.md)** - Mass Role Templates structure
+- **[MASS_TEMPLATE.md](./MASS_TEMPLATE.md)** - Mass Role Templates structure
 - **[MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md)** - Standard module patterns (not applicable to wizard)
 - **[Wizard Component](../src/components/wizard/Wizard.tsx)** - Reusable wizard component used
 

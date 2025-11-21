@@ -297,21 +297,20 @@ This includes:
 
 **For detailed implementation patterns, see [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md).**
 
-**Note on Groups Module:** The Groups module uses a different architecture pattern (dialog-based forms) rather than the standard 9-file structure. Groups is designed for managing collections of people (ministry groups, choirs, etc.) and uses inline editing with dialogs instead of separate create/edit pages. For new sacrament/sacramental modules, always follow the standard 9-file pattern.
+**Note on Groups Module:** The Groups module uses a different architecture pattern (dialog-based forms) rather than the standard 8-file structure. Groups is designed for managing collections of people (ministry groups, choirs, etc.) and uses inline editing with dialogs instead of separate create/edit pages. For new sacrament/sacramental modules, always follow the standard 8-file pattern.
 
-### The 9 Main Files
+### The 8 Main Files
 
-Every module consists of 9 component files following a consistent pattern:
+Every module consists of 8 component files following a consistent pattern:
 
 1. **List Page (Server)** - `page.tsx` - Fetches entities with filters, passes to client
 2. **List Client** - `[entities]-list-client.tsx` - Search/filter UI, entity grid
 3. **Create Page (Server)** - `create/page.tsx` - Auth + breadcrumbs for create
 4. **View Page (Server)** - `[id]/page.tsx` - Fetches entity with relations for view
 5. **Edit Page (Server)** - `[id]/edit/page.tsx` - Fetches entity with relations for edit
-6. **Form Wrapper (Client)** - `[entity]-form-wrapper.tsx` - PageContainer + action buttons
+6. **Form Wrapper (Client)** - `[entity]-form-wrapper.tsx` - PageContainer for form
 7. **Unified Form (Client)** - `[entity]-form.tsx` - Handles create and edit modes
-8. **View Client** - `[id]/[entity]-view-client.tsx` - Displays entity + liturgy content
-9. **Form Actions (Client)** - `[id]/[entity]-form-actions.tsx` - Copy/Edit/Delete buttons
+8. **View Client** - `[id]/[entity]-view-client.tsx` - Displays entity + actions via ModuleViewContainer
 
 ### Quick Reference
 

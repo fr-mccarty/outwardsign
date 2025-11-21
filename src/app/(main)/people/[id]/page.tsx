@@ -2,10 +2,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { Mail, Phone, MapPin, Calendar } from "lucide-react"
-import { getPerson } from "@/lib/actions/people"
+import { getPerson, deletePerson } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { PersonFormActions } from './person-form-actions'
+import { PersonViewActions } from './person-view-actions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -49,7 +49,7 @@ export default async function PersonDetailPage({ params }: PageProps) {
         </div>
 
         {/* Action buttons */}
-        <PersonFormActions person={person} />
+        <PersonViewActions person={person} onDelete={deletePerson} />
 
         <div className="space-y-6">
           {/* Contact Information */}
