@@ -1,4 +1,4 @@
-import { getMassRole } from "@/lib/actions/mass-roles"
+import { getMassRoleWithRelations } from "@/lib/actions/mass-roles"
 import { createClient } from "@/lib/supabase/server"
 import { redirect, notFound } from "next/navigation"
 import { MassRoleViewClient } from "./mass-role-view-client"
@@ -35,8 +35,8 @@ export default async function MassRoleViewPage({ params }: PageProps) {
   // Get params
   const { id } = await params
 
-  // Fetch mass role
-  const massRole = await getMassRole(id)
+  // Fetch mass role with members
+  const massRole = await getMassRoleWithRelations(id)
   if (!massRole) notFound()
 
   const breadcrumbs = [

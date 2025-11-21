@@ -2,12 +2,9 @@
 
 import { MassWithRelations, updateMass, deleteMass } from '@/lib/actions/masses'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buildMassLiturgy, MASS_TEMPLATES } from '@/lib/content-builders/mass'
-import { Heart, User, Edit, Printer, FileText, Download } from 'lucide-react'
-import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
+import { Edit, Printer, FileText, Download } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import Link from 'next/link'
@@ -122,56 +119,7 @@ export function MassViewClient({ mass }: MassViewClientProps) {
       details={details}
       onDelete={deleteMass}
     >
-      {/* Mass Intention Card - rendered before liturgy content */}
-      {mass.mass_intention && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5" />
-              Mass Intention
-            </CardTitle>
-            <CardDescription>
-              This Mass is offered for the following intention
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="font-medium text-lg mb-2">
-                {mass.mass_intention.mass_offered_for || 'No intention specified'}
-              </div>
-              {mass.mass_intention.requested_by && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>
-                    Requested by:{' '}
-                    <Link
-                      href={`/people/${mass.mass_intention.requested_by.id}`}
-                      className="hover:underline"
-                    >
-                      {mass.mass_intention.requested_by.first_name} {mass.mass_intention.requested_by.last_name}
-                    </Link>
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary">
-                {getStatusLabel(mass.mass_intention.status, 'en')}
-              </Badge>
-              {mass.mass_intention.stipend_in_cents && (
-                <div className="text-sm text-muted-foreground">
-                  Stipend: ${(mass.mass_intention.stipend_in_cents / 100).toFixed(2)}
-                </div>
-              )}
-            </div>
-            {mass.mass_intention.note && (
-              <div className="text-sm text-muted-foreground border-l-2 border-muted pl-3">
-                {mass.mass_intention.note}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Mass Intention and Role Assignments are now in the content builder */}
     </ModuleViewContainer>
   )
 }

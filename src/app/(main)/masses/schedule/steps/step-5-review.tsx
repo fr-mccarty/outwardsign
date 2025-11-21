@@ -14,76 +14,71 @@ import {
   CheckCircle,
   Info
 } from "lucide-react"
-import { MassScheduleEntry } from './step-2-schedule-pattern'
+import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { MassRoleTemplate } from "@/lib/actions/mass-role-templates"
-import { formatDate } from "@/lib/utils/formatters"
+import { MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
+import { LITURGICAL_DAYS_OF_WEEK_LABELS, LITURGICAL_DAYS_OF_WEEK_VALUES, type LiturgicalDayOfWeek } from "@/lib/constants"
+import { formatDate, formatTime } from "@/lib/utils/formatters"
+import { getDayCount } from "@/lib/utils/date-format"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-interface Step4ReviewProps {
+interface Step5ReviewProps {
   startDate: string
   endDate: string
-  schedule: MassScheduleEntry[]
-  templateId: string | null
+  massTimesTemplates: MassTimesTemplateWithItems[]
+  selectedMassTimesTemplateIds: string[]
+  templateIds: string[]
   templates: MassRoleTemplate[]
   algorithmOptions: {
     balanceWorkload: boolean
     respectBlackoutDates: boolean
     allowManualAdjustments: boolean
   }
-  onAlgorithmOptionChange: (option: keyof Step4ReviewProps['algorithmOptions'], value: boolean) => void
+  onAlgorithmOptionChange: (option: keyof Step5ReviewProps['algorithmOptions'], value: boolean) => void
   onEditStep: (step: number) => void
   totalMassCount: number
 }
 
-const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-const LANGUAGE_LABELS = {
-  ENGLISH: 'English',
-  SPANISH: 'Spanish',
-  BILINGUAL: 'Bilingual',
-}
-
-export function Step4Review({
+export function Step5Review({
   startDate,
   endDate,
-  schedule,
-  templateId,
+  massTimesTemplates,
+  selectedMassTimesTemplateIds,
+  templateIds,
   templates,
   algorithmOptions,
   onAlgorithmOptionChange,
   onEditStep,
   totalMassCount
-}: Step4ReviewProps) {
-  const selectedTemplate = templates.find((t) => t.id === templateId)
+}: Step5ReviewProps) {
+  const selectedTemplates = templates.filter((t) => templateIds.includes(t.id))
+  const selectedMassTimes = massTimesTemplates.filter((t) => selectedMassTimesTemplateIds.includes(t.id))
 
-  const getDayCount = () => {
-    if (!startDate || !endDate) return 0
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const diffTime = Math.abs(end.getTime() - start.getTime())
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+
+  // Get day label from constants
+  const getDayLabel = (day: string) => {
+    const labels = LITURGICAL_DAYS_OF_WEEK_LABELS[day as LiturgicalDayOfWeek]
+    return labels?.en ?? day
   }
 
-  // Group schedule entries by day of week
-  const groupedSchedule = schedule.reduce((acc, entry) => {
-    if (!acc[entry.dayOfWeek]) {
-      acc[entry.dayOfWeek] = []
+  // Group selected mass times by day of week
+  const groupedMassTimes = selectedMassTimes.reduce((acc, template) => {
+    const day = template.day_of_week
+    if (!acc[day]) {
+      acc[day] = []
     }
-    acc[entry.dayOfWeek].push(entry)
+    acc[day].push(template)
     return acc
-  }, {} as Record<number, MassScheduleEntry[]>)
+  }, {} as Record<string, MassTimesTemplateWithItems[]>)
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <ClipboardCheck className="h-6 w-6 text-primary mt-1" />
-        <div>
-          <h2 className="text-2xl font-semibold">Review & Confirm</h2>
-          <p className="text-muted-foreground mt-1">
-            Review your selections and configure the scheduling algorithm
-          </p>
-        </div>
-      </div>
+      <WizardStepHeader
+        icon={ClipboardCheck}
+        title="Review & Confirm"
+        description="Review your selections and configure the scheduling algorithm"
+      />
 
       {/* Date Range Summary */}
       <Card>
@@ -111,7 +106,7 @@ export function Step4Review({
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
               <span className="text-muted-foreground">Duration:</span>
-              <Badge variant="secondary">{getDayCount()} days</Badge>
+              <Badge variant="secondary">{getDayCount(startDate, endDate)} days</Badge>
             </div>
           </div>
         </CardContent>
@@ -121,10 +116,14 @@ export function Step4Review({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              onClick={() => onEditStep(2)}
+            >
               <CalendarClock className="h-5 w-5 text-primary" />
               <CardTitle>Mass Schedule</CardTitle>
-            </div>
+            </button>
             <Button variant="ghost" size="sm" onClick={() => onEditStep(2)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit
@@ -132,24 +131,40 @@ export function Step4Review({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {Object.entries(groupedSchedule).map(([dayOfWeek, entries]) => (
-              <div key={dayOfWeek} className="space-y-2">
-                <h4 className="font-medium text-sm">
-                  {DAYS_OF_WEEK[parseInt(dayOfWeek)]}
-                </h4>
-                <div className="ml-4 space-y-1">
-                  {entries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="text-muted-foreground">
-                        {entry.time}
-                      </span>
-                      <Badge variant="outline">
-                        {LANGUAGE_LABELS[entry.language]}
-                      </Badge>
+          <div className="space-y-4">
+            {Object.entries(groupedMassTimes)
+              .sort(([a], [b]) =>
+                LITURGICAL_DAYS_OF_WEEK_VALUES.indexOf(a as LiturgicalDayOfWeek) -
+                LITURGICAL_DAYS_OF_WEEK_VALUES.indexOf(b as LiturgicalDayOfWeek)
+              )
+              .map(([day, massTimes]) => (
+              <div key={day}>
+                <div className="mb-2 pb-1 border-b">
+                  <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+                    {getDayLabel(day)}
+                  </h4>
+                </div>
+                <div className="space-y-2">
+                  {massTimes.map((template) => (
+                    <div key={template.id} className="rounded-md border bg-muted/30 px-3 py-2">
+                      <div className="space-y-1.5">
+                        <div className="font-medium text-sm">{template.name}</div>
+                        {template.items && template.items.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {template.items.map((item) => (
+                              <Badge key={item.id} variant="secondary" className="text-xs">
+                                {formatTime(item.time)}
+                                {item.day_type === 'DAY_BEFORE' && ' (Vigil)'}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        {template.description && (
+                          <p className="text-muted-foreground text-xs">
+                            {template.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -163,10 +178,14 @@ export function Step4Review({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              onClick={() => onEditStep(3)}
+            >
               <BookTemplate className="h-5 w-5 text-primary" />
               <CardTitle>Role Template</CardTitle>
-            </div>
+            </button>
             <Button variant="ghost" size="sm" onClick={() => onEditStep(3)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit
@@ -174,19 +193,24 @@ export function Step4Review({
           </div>
         </CardHeader>
         <CardContent>
-          {selectedTemplate ? (
+          {selectedTemplates.length > 0 ? (
             <div className="space-y-2">
-              <div>
-                <span className="font-medium">{selectedTemplate.name}</span>
-              </div>
-              {selectedTemplate.description && (
-                <p className="text-sm text-muted-foreground">
-                  {selectedTemplate.description}
-                </p>
-              )}
+              {selectedTemplates.map((template) => (
+                <div key={template.id} className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary mt-0.5" />
+                  <div>
+                    <span className="font-medium">{template.name}</span>
+                    {template.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {template.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No template selected</p>
+            <p className="text-muted-foreground">No templates selected</p>
           )}
         </CardContent>
       </Card>

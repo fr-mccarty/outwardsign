@@ -70,7 +70,7 @@ export function formatPersonWithPhone(
 ): string {
   if (!person) return ''
   const name = `${person.first_name} ${person.last_name}`
-  return person.phone_number ? `${name} (${person.phone_number})` : name
+  return person.phone_number ? `${name} — ${person.phone_number}` : name
 }
 
 /**

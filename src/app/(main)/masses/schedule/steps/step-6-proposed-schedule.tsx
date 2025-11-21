@@ -1,0 +1,762 @@
+'use client'
+
+import { useState, useMemo } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  CalendarDays,
+  AlertTriangle,
+  CheckCircle2,
+  UserPlus,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Trash2,
+  UserMinus,
+  X,
+  Eye,
+  Info
+} from "lucide-react"
+import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
+import { Calendar } from '@/components/calendar/calendar'
+import { CalendarItem, CalendarView } from '@/components/calendar/types'
+import { MassTimesTemplate } from "@/lib/actions/mass-times-templates"
+import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from "@/lib/constants"
+import { formatDate, getDayOfWeekNumber } from "@/lib/utils/date-format"
+import { format } from 'date-fns'
+import { PeoplePicker } from '@/components/people-picker'
+import type { Person } from '@/lib/types'
+import { cn } from '@/lib/utils'
+import { getSuggestedMinister } from '@/lib/actions/mass-scheduling'
+import { toast } from 'sonner'
+
+export interface RoleAssignment {
+  roleId: string
+  roleName: string
+  personId?: string
+  personName?: string
+}
+
+export interface ProposedMass {
+  id: string
+  date: string // YYYY-MM-DD
+  templateId: string
+  templateName: string
+  dayOfWeek: string
+  isIncluded: boolean
+  hasConflict: boolean
+  conflictReason?: string
+  liturgicalEventId?: string
+  liturgicalEventName?: string
+  liturgicalEventColor?: string[] // Liturgical color (e.g., ["green"], ["white"], ["red"])
+  liturgicalEventGrade?: string // Grade abbreviation (e.g., "SOLEMNITY", "FEAST")
+  liturgicalEventType?: string // Event type
+  assignments?: RoleAssignment[]
+}
+
+interface ProposedMassCalendarItem extends CalendarItem {
+  mass: ProposedMass
+}
+
+interface Step6ProposedScheduleProps {
+  startDate: string
+  endDate: string
+  massTimesTemplates: MassTimesTemplate[]
+  selectedMassTimesTemplateIds: string[]
+  proposedMasses: ProposedMass[]
+  onProposedMassesChange: (masses: ProposedMass[]) => void
+}
+
+// Get day label from constants
+function getDayLabel(day: string): string {
+  const labels = LITURGICAL_DAYS_OF_WEEK_LABELS[day as LiturgicalDayOfWeek]
+  return labels?.en ?? day
+}
+
+export function Step6ProposedSchedule({
+  startDate,
+  endDate,
+  massTimesTemplates,
+  selectedMassTimesTemplateIds,
+  proposedMasses,
+  onProposedMassesChange,
+}: Step6ProposedScheduleProps) {
+  const [currentDate, setCurrentDate] = useState(() => {
+    return startDate ? new Date(startDate) : new Date()
+  })
+  const [view, setView] = useState<CalendarView>('month')
+  const [selectedMass, setSelectedMass] = useState<ProposedMass | null>(null)
+  const [massDetailOpen, setMassDetailOpen] = useState(false)
+  const [editingRole, setEditingRole] = useState<RoleAssignment | null>(null)
+  const [peoplePickerOpen, setPeoplePickerOpen] = useState(false)
+  const [isGeneratingAssignments, setIsGeneratingAssignments] = useState(false)
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
+  const [previewResults, setPreviewResults] = useState<Array<{
+    date: string
+    templateName: string
+    assignments: Array<{ roleName: string; personName: string | null }>
+  }>>([])
+  const [hasPreviewedAssignments, setHasPreviewedAssignments] = useState(false)
+  const [conflictsDialogOpen, setConflictsDialogOpen] = useState(false)
+
+  // Statistics
+  const stats = useMemo(() => {
+    const included = proposedMasses.filter(m => m.isIncluded)
+    const conflicts = proposedMasses.filter(m => m.hasConflict && m.isIncluded)
+    const excluded = proposedMasses.filter(m => !m.isIncluded)
+    const missingAssignments = included.filter(m =>
+      m.assignments?.some(a => !a.personId)
+    )
+    return {
+      total: proposedMasses.length,
+      included: included.length,
+      conflicts: conflicts.length,
+      excluded: excluded.length,
+      missingAssignments: missingAssignments.length
+    }
+  }, [proposedMasses])
+
+  // Convert proposed masses to calendar items
+  const calendarItems: ProposedMassCalendarItem[] = useMemo(() => {
+    return proposedMasses
+      .filter(m => m.isIncluded)
+      .map(mass => ({
+        id: mass.id,
+        date: mass.date,
+        title: mass.templateName,
+        mass
+      }))
+  }, [proposedMasses])
+
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentDate)
+    if (view === 'month') {
+      newDate.setMonth(currentDate.getMonth() + (direction === 'next' ? 1 : -1))
+    } else if (view === 'week') {
+      newDate.setDate(currentDate.getDate() + (direction === 'next' ? 7 : -7))
+    }
+    setCurrentDate(newDate)
+  }
+
+  const handleToday = () => {
+    setCurrentDate(new Date())
+  }
+
+  const handleViewChange = (newView: CalendarView) => {
+    setView(newView)
+  }
+
+  const handleMassClick = (item: CalendarItem, event: React.MouseEvent) => {
+    event.stopPropagation()
+    const massItem = item as ProposedMassCalendarItem
+    setSelectedMass(massItem.mass)
+    setMassDetailOpen(true)
+  }
+
+  const toggleMassInclusion = (massId: string) => {
+    const updated = proposedMasses.map(m =>
+      m.id === massId ? { ...m, isIncluded: !m.isIncluded } : m
+    )
+    onProposedMassesChange(updated)
+    if (selectedMass?.id === massId) {
+      setSelectedMass(null)
+      setMassDetailOpen(false)
+    }
+  }
+
+  const handleAssignPerson = (role: RoleAssignment) => {
+    setEditingRole(role)
+    setPeoplePickerOpen(true)
+  }
+
+  const handlePersonSelected = (person: Person) => {
+    if (!selectedMass || !editingRole) return
+
+    const updated = proposedMasses.map(m => {
+      if (m.id === selectedMass.id) {
+        const newAssignments = m.assignments?.map(a =>
+          a.roleId === editingRole.roleId
+            ? { ...a, personId: person.id, personName: `${person.first_name} ${person.last_name}` }
+            : a
+        )
+        return { ...m, assignments: newAssignments }
+      }
+      return m
+    })
+    onProposedMassesChange(updated)
+
+    // Update selected mass
+    const updatedMass = updated.find(m => m.id === selectedMass.id)
+    if (updatedMass) setSelectedMass(updatedMass)
+
+    setPeoplePickerOpen(false)
+    setEditingRole(null)
+  }
+
+  const handleRemoveAssignment = (role: RoleAssignment) => {
+    if (!selectedMass) return
+
+    const updated = proposedMasses.map(m => {
+      if (m.id === selectedMass.id) {
+        const newAssignments = m.assignments?.map(a =>
+          a.roleId === role.roleId
+            ? { ...a, personId: undefined, personName: undefined }
+            : a
+        )
+        return { ...m, assignments: newAssignments }
+      }
+      return m
+    })
+    onProposedMassesChange(updated)
+
+    const updatedMass = updated.find(m => m.id === selectedMass.id)
+    if (updatedMass) setSelectedMass(updatedMass)
+  }
+
+  const handlePreviewAssignments = async () => {
+    setIsGeneratingAssignments(true)
+    try {
+      // Sample 3 masses from different dates
+      const includedMasses = proposedMasses.filter(m => m.isIncluded)
+      const sampleSize = Math.min(3, includedMasses.length)
+      const step = Math.floor(includedMasses.length / sampleSize)
+      const sampledMasses = Array.from({ length: sampleSize }, (_, i) => includedMasses[i * step]).filter(Boolean)
+
+      const results = []
+      let totalAssignments = 0
+      let successfulAssignments = 0
+
+      for (const mass of sampledMasses) {
+        const assignments = []
+        const assignedPersonIds: string[] = []
+
+        if (mass.assignments) {
+          for (const assignment of mass.assignments) {
+            totalAssignments++
+            // Get suggested minister for this role
+            const suggestion = await getSuggestedMinister(
+              assignment.roleId,
+              mass.date,
+              '09:00', // Default time for preview
+              true, // Balance workload
+              assignedPersonIds
+            )
+
+            if (suggestion) {
+              assignedPersonIds.push(suggestion.id)
+              successfulAssignments++
+              assignments.push({
+                roleName: assignment.roleName,
+                personName: suggestion.name
+              })
+            } else {
+              assignments.push({
+                roleName: assignment.roleName,
+                personName: null
+              })
+            }
+          }
+        }
+
+        results.push({
+          date: mass.date,
+          templateName: mass.templateName,
+          assignments
+        })
+      }
+
+      setPreviewResults(results)
+      setPreviewDialogOpen(true)
+      setHasPreviewedAssignments(true)
+
+      // Show warning if no assignments were possible
+      if (totalAssignments > 0 && successfulAssignments === 0) {
+        toast.warning('No ministers found for these roles. Make sure you have added people to Mass Roles in Settings.')
+      }
+    } catch (error) {
+      console.error('Failed to generate preview:', error)
+      toast.error('Failed to generate assignment preview')
+    } finally {
+      setIsGeneratingAssignments(false)
+    }
+  }
+
+  // Custom color for calendar items
+  const getItemColor = (item: ProposedMassCalendarItem) => {
+    const mass = item.mass
+
+    // If there's a liturgical event with color, show it on the left
+    if (mass.liturgicalEventColor && mass.liturgicalEventColor.length > 0) {
+      const color = mass.liturgicalEventColor[0] // Use first color if multiple
+      return `bg-card border-l-4 border-background shadow-sm`
+    }
+
+    if (mass.hasConflict) return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-200 dark:border-amber-700'
+    const missingAssignment = mass.assignments?.some(a => !a.personId)
+    if (missingAssignment) return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-200 dark:border-orange-700'
+    return 'bg-primary/10 text-primary border-primary/30'
+  }
+
+  return (
+    <div className="space-y-6">
+      <WizardStepHeader
+        icon={CalendarDays}
+        title="Proposed Schedule"
+        description="Review the calendar and adjust assignments before creating"
+      />
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="p-3">
+          <div className="text-center">
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-xs text-muted-foreground">Total Masses</div>
+          </div>
+        </Card>
+        <Card className="p-3 bg-primary/5">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">{stats.included}</div>
+            <div className="text-xs text-muted-foreground">Will Be Created</div>
+          </div>
+        </Card>
+        <Card
+          className={cn(
+            "p-3 transition-colors",
+            stats.conflicts > 0 && "bg-amber-50 dark:bg-amber-950/20 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/30"
+          )}
+          onClick={() => stats.conflicts > 0 && setConflictsDialogOpen(true)}
+        >
+          <div className="text-center">
+            <div className={cn("text-2xl font-bold", stats.conflicts > 0 && "text-amber-600")}>{stats.conflicts}</div>
+            <div className="text-xs text-muted-foreground">
+              {stats.conflicts > 0 ? "Overlap with Events" : "No Conflicts"}
+            </div>
+          </div>
+        </Card>
+        <Card className="p-3">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-muted-foreground">{stats.excluded}</div>
+            <div className="text-xs text-muted-foreground">Manually Excluded</div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Preview Assignment Button */}
+      {!hasPreviewedAssignments && stats.included > 0 && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              Want to see how the automatic assignment algorithm will work? Preview a sample of assignments.
+            </span>
+            <Button
+              onClick={handlePreviewAssignments}
+              disabled={isGeneratingAssignments}
+              size="sm"
+              variant="outline"
+            >
+              {isGeneratingAssignments ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview Assignments
+                </>
+              )}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Calendar View */}
+      <Calendar
+        currentDate={currentDate}
+        view={view}
+        items={calendarItems}
+        title="Proposed Mass Schedule"
+        onNavigate={handleNavigate}
+        onToday={handleToday}
+        onViewChange={handleViewChange}
+        onItemClick={handleMassClick}
+        getItemColor={getItemColor}
+        maxItemsPerDay={5}
+        showViewSelector={true}
+      />
+
+      {/* Selected Mass Detail Modal */}
+      <Dialog open={massDetailOpen} onOpenChange={setMassDetailOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          {selectedMass && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {selectedMass.templateName}
+                </DialogTitle>
+                <DialogDescription>
+                  {formatDate(selectedMass.date)} • {getDayLabel(selectedMass.dayOfWeek)}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {/* Liturgical Event Information */}
+                {selectedMass.liturgicalEventName && (
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4" />
+                        Liturgical Event
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <span className="font-medium text-xl">{selectedMass.liturgicalEventName}</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        {selectedMass.liturgicalEventGrade && (
+                          <div>
+                            <span className="text-muted-foreground">Grade:</span>
+                            <div className="font-medium capitalize">{selectedMass.liturgicalEventGrade}</div>
+                          </div>
+                        )}
+
+                        {selectedMass.liturgicalEventType && (
+                          <div>
+                            <span className="text-muted-foreground">Type:</span>
+                            <div className="font-medium capitalize">{selectedMass.liturgicalEventType}</div>
+                          </div>
+                        )}
+
+                        {selectedMass.liturgicalEventColor && selectedMass.liturgicalEventColor.length > 0 && (
+                          <div>
+                            <span className="text-muted-foreground">Liturgical Color:</span>
+                            <div className="flex gap-1 mt-1">
+                              {selectedMass.liturgicalEventColor.map((color, idx) => (
+                                <div
+                                  key={idx}
+                                  className="w-8 h-8 rounded-full border-2 border-background shadow-sm"
+                                  style={{ backgroundColor: color }}
+                                  title={color}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setMassDetailOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Summary */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Masses to Create</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {stats.missingAssignments > 0
+                  ? `${stats.missingAssignments} masses need assignments`
+                  : 'All masses have complete assignments'
+                }
+              </p>
+            </div>
+            <div className="text-4xl font-bold text-primary">
+              {stats.included}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* People Picker Modal */}
+      <PeoplePicker
+        open={peoplePickerOpen}
+        onOpenChange={setPeoplePickerOpen}
+        onSelect={handlePersonSelected}
+        placeholder={editingRole ? `Search for ${editingRole.roleName}...` : "Search for a minister..."}
+        emptyMessage={editingRole ? `No people are qualified for the ${editingRole.roleName} role. Go to Settings > Mass Roles to add people to this role.` : "No ministers found."}
+        filterByMassRole={editingRole?.roleId}
+      />
+
+      {/* Liturgical Events Dialog */}
+      <Dialog open={conflictsDialogOpen} onOpenChange={setConflictsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-amber-600" />
+              Masses on Special Liturgical Days ({stats.conflicts})
+            </DialogTitle>
+            <DialogDescription>
+              These Masses fall on liturgical events that were selected in Step 4 (Holy Days, Solemnities, Feasts). Review them to ensure the times and assignments match your parish's schedule for these special celebrations.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              {proposedMasses
+                .filter(m => m.hasConflict && m.isIncluded)
+                .map((mass) => (
+                  <Card key={mass.id} className="bg-amber-50 dark:bg-amber-950/20 border-amber-300">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{mass.templateName}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {getDayLabel(mass.dayOfWeek)}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatDate(mass.date)}
+                          </div>
+                          {mass.liturgicalEventName && (
+                            <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-400 mt-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              <span className="font-medium">{mass.liturgicalEventName}</span>
+                            </div>
+                          )}
+                          {mass.conflictReason && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {mass.conflictReason}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setConflictsDialogOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Assignment Results Dialog */}
+      <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Assignment Preview</DialogTitle>
+            <DialogDescription>
+              Here's a sample of how the automatic assignment algorithm will work. The full assignment happens when you complete the wizard.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Warning if all assignments failed */}
+            {previewResults.length > 0 && previewResults.every(r => r.assignments.every(a => !a.personName)) && (
+              <Alert className="bg-orange-50 dark:bg-orange-950/20 border-orange-300">
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                <AlertDescription>
+                  <strong className="text-orange-900 dark:text-orange-200">No ministers available for assignment.</strong>
+                  <br />
+                  You need to add people to Mass Roles before automatic assignment can work. Go to <strong>Settings → Mass Roles</strong> to add members to each role.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {previewResults.map((result, idx) => (
+              <Card key={idx}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{result.templateName}</CardTitle>
+                  <CardDescription>{formatDate(result.date)}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {result.assignments.map((assignment, aIdx) => (
+                      <div key={aIdx} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{assignment.roleName}</Badge>
+                        </div>
+                        {assignment.personName ? (
+                          <div className="flex items-center gap-2 text-sm">
+                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                            <span className="font-medium">{assignment.personName}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-sm text-orange-600">
+                            <AlertTriangle className="h-4 w-4" />
+                            <span>No available members</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                This is a preview of {previewResults.length} sample Masses. The algorithm will automatically assign all {stats.included} Masses when you complete the wizard, balancing workload and respecting blackout dates.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setPreviewDialogOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+// Helper function to generate proposed masses from templates and date range
+export function generateProposedMasses(
+  startDate: string,
+  endDate: string,
+  templates: MassTimesTemplateWithItems[],
+  selectedTemplateIds: string[],
+  liturgicalEvents?: Array<{ id: string; date: string; name: string; color?: string[]; grade_abbr?: string; type?: string }>,
+  roleTemplateAssignments?: Array<{ roleId: string; roleName: string }>
+): ProposedMass[] {
+  const masses: ProposedMass[] = []
+  const selectedTemplates = templates.filter(t => selectedTemplateIds.includes(t.id))
+
+  if (!startDate || !endDate || selectedTemplates.length === 0) {
+    return masses
+  }
+
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+
+  // Create a map of liturgical events by date for quick lookup
+  const eventsByDate = new Map<string, { id: string; name: string; color?: string[]; grade_abbr?: string; type?: string }>()
+  liturgicalEvents?.forEach(event => {
+    eventsByDate.set(event.date, { id: event.id, name: event.name, color: event.color, grade_abbr: event.grade_abbr, type: event.type })
+  })
+
+  // Generate masses for each day in range
+  const currentDate = new Date(start)
+  let idCounter = 0
+
+  while (currentDate <= end) {
+    const dayNumber = currentDate.getDay()
+    const dateStr = currentDate.toISOString().split('T')[0]
+
+    // Check if there's a liturgical event on this date
+    const liturgicalEvent = eventsByDate.get(dateStr)
+
+    // Find templates that match this day
+    selectedTemplates.forEach(template => {
+      const templateDayNumber = getDayOfWeekNumber(template.day_of_week)
+
+      if (templateDayNumber === dayNumber) {
+        // Process each item in the template (handles vigil Masses and regular Masses)
+        const items = template.items || []
+
+        if (items.length === 0) {
+          // No items - create a single Mass on the template day (backward compatibility)
+          const hasConflict = !!liturgicalEvent
+
+          const assignments: RoleAssignment[] = roleTemplateAssignments?.map(r => ({
+            roleId: r.roleId,
+            roleName: r.roleName,
+            personId: undefined,
+            personName: undefined
+          })) || []
+
+          masses.push({
+            id: `proposed-${idCounter++}`,
+            date: dateStr,
+            templateId: template.id,
+            templateName: template.name,
+            dayOfWeek: template.day_of_week,
+            isIncluded: true,
+            hasConflict,
+            conflictReason: hasConflict ? `Overlaps with ${liturgicalEvent?.name}` : undefined,
+            liturgicalEventId: liturgicalEvent?.id,
+            liturgicalEventName: liturgicalEvent?.name,
+            liturgicalEventColor: liturgicalEvent?.color,
+            liturgicalEventGrade: liturgicalEvent?.grade_abbr,
+            liturgicalEventType: liturgicalEvent?.type,
+            assignments
+          })
+        } else {
+          // Process each item
+          items.forEach(item => {
+            let massDate: string
+            let massDateObj: Date
+
+            if (item.day_type === 'DAY_BEFORE') {
+              // Vigil Mass: occurs the day before
+              massDateObj = new Date(currentDate)
+              massDateObj.setDate(massDateObj.getDate() - 1)
+              massDate = massDateObj.toISOString().split('T')[0]
+            } else {
+              // IS_DAY or default: occurs on the actual day
+              massDate = dateStr
+              massDateObj = new Date(currentDate)
+            }
+
+            // Check if massDate is within range
+            if (massDateObj >= start && massDateObj <= end) {
+              // Vigil Masses inherit liturgical event from the target day (not the vigil day)
+              const hasConflict = !!liturgicalEvent
+
+              const assignments: RoleAssignment[] = roleTemplateAssignments?.map(r => ({
+                roleId: r.roleId,
+                roleName: r.roleName,
+                personId: undefined,
+                personName: undefined
+              })) || []
+
+              masses.push({
+                id: `proposed-${idCounter++}`,
+                date: massDate,
+                templateId: template.id,
+                templateName: `${template.name} - ${item.time}${item.day_type === 'DAY_BEFORE' ? ' (Vigil)' : ''}`,
+                dayOfWeek: template.day_of_week,
+                isIncluded: true,
+                hasConflict,
+                conflictReason: hasConflict ? `Overlaps with ${liturgicalEvent?.name}` : undefined,
+                liturgicalEventId: liturgicalEvent?.id,
+                liturgicalEventName: liturgicalEvent?.name,
+                liturgicalEventColor: liturgicalEvent?.color,
+                liturgicalEventGrade: liturgicalEvent?.grade_abbr,
+                liturgicalEventType: liturgicalEvent?.type,
+                assignments
+              })
+            }
+          })
+        }
+      }
+    })
+
+    currentDate.setDate(currentDate.getDate() + 1)
+  }
+
+  return masses
+}

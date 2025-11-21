@@ -28,16 +28,7 @@ import type { MassType } from '@/lib/actions/mass-types'
 import { deleteMassType, reorderMassTypes } from '@/lib/actions/mass-types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 interface MassTypesListClientProps {
   initialData: MassType[]
@@ -123,7 +114,6 @@ export function MassTypesListClient({ initialData }: MassTypesListClientProps) {
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [massTypeToDelete, setMassTypeToDelete] = useState<MassType | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -177,19 +167,16 @@ export function MassTypesListClient({ initialData }: MassTypesListClientProps) {
   const handleDelete = async () => {
     if (!massTypeToDelete) return
 
-    setIsDeleting(true)
     try {
       await deleteMassType(massTypeToDelete.id)
       toast.success('Mass type deleted successfully')
-      setDeleteDialogOpen(false)
       setMassTypeToDelete(null)
       router.refresh()
     } catch (error) {
       console.error('Failed to delete mass type:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete mass type'
       toast.error(errorMessage)
-    } finally {
-      setIsDeleting(false)
+      throw error
     }
   }
 
@@ -276,31 +263,13 @@ export function MassTypesListClient({ initialData }: MassTypesListClientProps) {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Mass Type</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{massTypeToDelete?.name}&quot;? This
-              action cannot be undone.
-              {massTypeToDelete?.is_system && (
-                <span className="block mt-2 text-destructive font-semibold">
-                  This is a system mass type and cannot be deleted.
-                </span>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting || massTypeToDelete?.is_system}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Mass Type"
+        itemName={massTypeToDelete?.name}
+        onConfirm={handleDelete}
+      />
     </PageContainer>
   )
 }

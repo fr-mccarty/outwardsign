@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS mass_times_templates (
   -- Template identification
   name TEXT NOT NULL, -- e.g., "Regular Schedule", "Summer Schedule", "Advent Schedule"
   description TEXT, -- Details about when this template applies
+  day_of_week TEXT NOT NULL DEFAULT 'SUNDAY', -- SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, MOVABLE
 
   -- Active status (only one should typically be active at a time)
   is_active BOOLEAN NOT NULL DEFAULT false,

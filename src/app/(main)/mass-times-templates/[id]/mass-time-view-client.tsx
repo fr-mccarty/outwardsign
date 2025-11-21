@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MassTimeWithRelations, deleteMassTime } from '@/lib/actions/mass-times'
+import { MassTimeWithRelations, deleteMassTime } from '@/lib/actions/mass-times-templates'
 import {
   MassTimesTemplateItem,
   DayType,
@@ -11,6 +11,7 @@ import {
 } from '@/lib/actions/mass-times-template-items'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,6 +34,7 @@ import { Edit, Plus, Trash2, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { toast } from 'sonner'
+import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from '@/lib/constants'
 
 interface MassTimeViewClientProps {
   massTime: MassTimeWithRelations
@@ -109,9 +111,7 @@ export function MassTimeViewClient({ massTime, items }: MassTimeViewClientProps)
     <>
       <div className="flex items-center gap-2">
         <span className="font-medium">Status:</span>
-        <Badge variant={massTime.is_active ? 'default' : 'secondary'}>
-          {massTime.is_active ? 'Active' : 'Inactive'}
-        </Badge>
+        <ActiveInactiveBadge isActive={massTime.is_active} />
       </div>
     </>
   )
@@ -139,10 +139,17 @@ export function MassTimeViewClient({ massTime, items }: MassTimeViewClientProps)
             )}
 
             <div>
+              <div className="text-sm text-muted-foreground">Day of Week</div>
+              <div className="font-medium mt-1">
+                {LITURGICAL_DAYS_OF_WEEK_LABELS[massTime.day_of_week as LiturgicalDayOfWeek]?.en || massTime.day_of_week}
+              </div>
+            </div>
+
+            <div>
               <div className="text-sm text-muted-foreground">Status</div>
-              <Badge variant={massTime.is_active ? 'default' : 'secondary'} className="mt-1">
-                {massTime.is_active ? 'Active' : 'Inactive'}
-              </Badge>
+              <div className="mt-1">
+                <ActiveInactiveBadge isActive={massTime.is_active} />
+              </div>
             </div>
           </CardContent>
         </Card>

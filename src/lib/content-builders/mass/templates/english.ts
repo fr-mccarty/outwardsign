@@ -52,6 +52,37 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
     }
   }
 
+  // Mass Intention
+  if (mass.mass_intention) {
+    elements.push({
+      type: 'section-title',
+      text: 'Mass Intention',
+    })
+
+    if (mass.mass_intention.mass_offered_for) {
+      elements.push({
+        type: 'info-row',
+        label: 'Offered For:',
+        value: mass.mass_intention.mass_offered_for,
+      })
+    }
+
+    if (mass.mass_intention.requested_by) {
+      elements.push({
+        type: 'info-row',
+        label: 'Requested By:',
+        value: formatPersonWithPhone(mass.mass_intention.requested_by),
+      })
+    }
+
+    if (mass.mass_intention.note) {
+      elements.push({
+        type: 'text',
+        text: mass.mass_intention.note,
+      })
+    }
+  }
+
   // Ministers (only show section if at least one minister exists)
   const hasHomilist = mass.homilist && (!mass.presider || mass.homilist.id !== mass.presider.id)
   if (mass.presider || hasHomilist) {
@@ -75,6 +106,40 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
         value: formatPersonWithPhone(mass.homilist),
       })
     }
+  }
+
+  // Role Assignments
+  if (mass.mass_roles && mass.mass_roles.length > 0) {
+    elements.push({
+      type: 'section-title',
+      text: 'Role Assignments',
+    })
+
+    // Group roles by mass role name
+    mass.mass_roles.forEach((roleInstance) => {
+      const roleName = roleInstance.mass_roles_template_item?.mass_role?.name || 'Unknown Role'
+      const personName = roleInstance.person
+        ? formatPersonWithPhone(roleInstance.person)
+        : 'Unassigned'
+
+      elements.push({
+        type: 'info-row',
+        label: `${roleName}:`,
+        value: personName,
+      })
+    })
+  }
+
+  // Notes (at the end of the cover page)
+  if (mass.note) {
+    elements.push({
+      type: 'section-title',
+      text: 'Notes',
+    })
+    elements.push({
+      type: 'text',
+      text: mass.note,
+    })
   }
 
   return {
@@ -107,40 +172,21 @@ export function buildMassEnglish(mass: MassWithRelations): LiturgyDocument {
   // Build announcements section using shared builder
   const announcementsSection = buildAnnouncementsSection(mass.announcements)
 
-  // Build notes section
-  const notesSection = mass.note
-    ? {
-        id: 'notes',
-        elements: [
-          {
-            type: 'section-title' as const,
-            text: 'Notes',
-          },
-          {
-            type: 'text' as const,
-            text: mass.note,
-          }
-        ],
-      }
-    : null
-
   // Check if there are any sections after summary
   const hasFollowingSections = !!(
     petitionsSection ||
-    announcementsSection ||
-    notesSection
+    announcementsSection
   )
 
   // Only add page break after summary if there are following sections
   summarySection.pageBreakAfter = hasFollowingSections
 
-  // Add summary section
+  // Add summary section (now includes notes at the end)
   sections.push(summarySection)
 
   // Add other sections (only non-null ones)
   if (petitionsSection) sections.push(petitionsSection)
   if (announcementsSection) sections.push(announcementsSection)
-  if (notesSection) sections.push(notesSection)
 
   return {
     id: mass.id,

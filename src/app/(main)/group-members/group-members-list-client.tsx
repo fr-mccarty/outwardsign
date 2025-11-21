@@ -40,19 +40,19 @@ interface PersonWithMemberships {
   }>
 }
 
-interface GroupMemberDirectoryListClientProps {
+interface GroupMembersListClientProps {
   peopleWithMemberships: PersonWithMemberships[]
   groups: Group[]
   groupRoles: GroupRole[]
   allPeople: Person[]
 }
 
-export function GroupMemberDirectoryListClient({
+export function GroupMembersListClient({
   peopleWithMemberships,
   groups,
   groupRoles,
   allPeople
-}: GroupMemberDirectoryListClientProps) {
+}: GroupMembersListClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -96,12 +96,12 @@ export function GroupMemberDirectoryListClient({
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Groups', href: '/groups' },
-    { label: 'Member Directory', href: '/group-member-directory' },
+    { label: 'Group Members', href: '/group-members' },
   ]
 
   return (
     <PageContainer
-      title="Group Member Directory"
+      title="Group Members"
       description="View and manage people serving in groups"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
@@ -217,8 +217,8 @@ export function GroupMemberDirectoryListClient({
               <ListViewCard
                 key={person.id}
                 title={formatPersonName(person)}
-                editHref={`/group-member-directory/${person.id}/memberships`}
-                viewHref={`/group-member-directory/${person.id}`}
+                editHref={`/group-members/${person.id}/memberships`}
+                viewHref={`/group-members/${person.id}`}
                 viewButtonText="View Details"
               >
                 <div className="space-y-2 text-sm text-muted-foreground">

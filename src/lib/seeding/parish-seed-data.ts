@@ -172,24 +172,44 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   // =====================================================
   const roleMap = new Map((massRoles || []).map((r) => [r.name, r.id]))
 
-  const { data: roleTemplate, error: roleTemplateError } = await supabase
+  // Sunday Mass template - for Sundays and Solemnities
+  const { data: sundayTemplate, error: sundayTemplateError } = await supabase
     .from('mass_roles_templates')
     .insert({
       parish_id: parishId,
       name: 'Sunday Mass',
-      description: 'Default role assignments for Sunday Mass',
+      description: 'Full minister assignments for Sunday Mass and Solemnities',
       is_active: true,
+      liturgical_contexts: ['SUNDAY', 'SOLEMNITY'],
     })
     .select()
     .single()
 
-  if (roleTemplateError) {
-    console.error('Error creating default role template:', roleTemplateError)
-    throw new Error(`Failed to create default role template: ${roleTemplateError.message}`)
+  if (sundayTemplateError) {
+    console.error('Error creating Sunday role template:', sundayTemplateError)
+    throw new Error(`Failed to create Sunday role template: ${sundayTemplateError.message}`)
+  }
+
+  // Daily Mass template - for weekdays, memorials, feasts
+  const { data: dailyTemplate, error: dailyTemplateError } = await supabase
+    .from('mass_roles_templates')
+    .insert({
+      parish_id: parishId,
+      name: 'Daily Mass',
+      description: 'Minimal minister assignments for weekday Mass',
+      is_active: true,
+      liturgical_contexts: ['FEAST', 'MEMORIAL', 'WEEKDAY'],
+    })
+    .select()
+    .single()
+
+  if (dailyTemplateError) {
+    console.error('Error creating Daily role template:', dailyTemplateError)
+    throw new Error(`Failed to create Daily role template: ${dailyTemplateError.message}`)
   }
 
   // Role template items with counts (for Sunday Mass)
-  const roleTemplateItems = [
+  const sundayRoleTemplateItems = [
     { roleName: 'Lector', count: 1, position: 0 },
     { roleName: 'Server', count: 2, position: 1 },
     { roleName: 'Usher', count: 4, position: 2 },
@@ -197,23 +217,50 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     { roleName: 'Eucharistic Minister', count: 3, position: 4 },
   ]
 
-  const validRoleTemplateItems = roleTemplateItems
+  const validSundayItems = sundayRoleTemplateItems
     .filter((item) => roleMap.has(item.roleName))
     .map((item) => ({
-      mass_roles_template_id: roleTemplate.id,
+      mass_roles_template_id: sundayTemplate.id,
       mass_role_id: roleMap.get(item.roleName),
       count: item.count,
       position: item.position,
     }))
 
-  if (validRoleTemplateItems.length > 0) {
-    const { error: roleTemplateItemsError } = await supabase
+  if (validSundayItems.length > 0) {
+    const { error: sundayItemsError } = await supabase
       .from('mass_roles_template_items')
-      .insert(validRoleTemplateItems)
+      .insert(validSundayItems)
 
-    if (roleTemplateItemsError) {
-      console.error('Error creating role template items:', roleTemplateItemsError)
-      throw new Error(`Failed to create role template items: ${roleTemplateItemsError.message}`)
+    if (sundayItemsError) {
+      console.error('Error creating Sunday template items:', sundayItemsError)
+      throw new Error(`Failed to create Sunday template items: ${sundayItemsError.message}`)
+    }
+  }
+
+  // Role template items for Daily Mass (minimal)
+  const dailyRoleTemplateItems = [
+    { roleName: 'Lector', count: 1, position: 0 },
+    { roleName: 'Server', count: 1, position: 1 },
+    { roleName: 'Eucharistic Minister', count: 1, position: 2 },
+  ]
+
+  const validDailyItems = dailyRoleTemplateItems
+    .filter((item) => roleMap.has(item.roleName))
+    .map((item) => ({
+      mass_roles_template_id: dailyTemplate.id,
+      mass_role_id: roleMap.get(item.roleName),
+      count: item.count,
+      position: item.position,
+    }))
+
+  if (validDailyItems.length > 0) {
+    const { error: dailyItemsError } = await supabase
+      .from('mass_roles_template_items')
+      .insert(validDailyItems)
+
+    if (dailyItemsError) {
+      console.error('Error creating Daily template items:', dailyItemsError)
+      throw new Error(`Failed to create Daily template items: ${dailyItemsError.message}`)
     }
   }
 
@@ -224,6 +271,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     {
       name: 'Sunday',
       description: 'Regular Sunday Mass schedule',
+      day_of_week: 'SUNDAY',
       is_active: true,
       items: [
         { time: '09:00:00', day_type: 'IS_DAY' as const },
@@ -235,30 +283,35 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     {
       name: 'Holiday',
       description: 'Holiday Mass schedule',
+      day_of_week: 'MOVABLE',
       is_active: true,
       items: [{ time: '09:00:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Monday',
       description: 'Monday Mass schedule',
+      day_of_week: 'MONDAY',
       is_active: true,
       items: [{ time: '12:05:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Wednesday',
       description: 'Wednesday Mass schedule',
+      day_of_week: 'WEDNESDAY',
       is_active: true,
       items: [{ time: '18:00:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Thursday',
       description: 'Thursday Mass schedule',
+      day_of_week: 'THURSDAY',
       is_active: true,
       items: [{ time: '06:00:00', day_type: 'IS_DAY' as const }],
     },
     {
       name: 'Friday',
       description: 'Friday Mass schedule',
+      day_of_week: 'FRIDAY',
       is_active: true,
       items: [{ time: '12:05:00', day_type: 'IS_DAY' as const }],
     },
@@ -271,6 +324,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
         parish_id: parishId,
         name: template.name,
         description: template.description,
+        day_of_week: template.day_of_week,
         is_active: template.is_active,
       })
       .select()

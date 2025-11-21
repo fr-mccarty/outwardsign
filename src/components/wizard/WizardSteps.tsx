@@ -1,6 +1,7 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Check } from 'lucide-react'
 
 export interface WizardStep {
@@ -31,43 +32,52 @@ export function WizardSteps({
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex items-center justify-center">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <button
-                  onClick={() => handleStepClick(step.id)}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
-                    step.id < currentStep
-                      ? 'bg-green-500 border-green-500 text-white'
-                      : step.id === currentStep
-                      ? 'bg-blue-500 border-blue-500 text-white'
-                      : 'border text-muted-foreground'
-                  } ${
-                    allowPreviousNavigation && step.id <= currentStep
-                      ? 'cursor-pointer hover:opacity-80'
-                      : 'cursor-default'
-                  }`}
-                  disabled={!allowPreviousNavigation || step.id > currentStep}
-                >
-                  {step.id < currentStep ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    step.id
-                  )}
-                </button>
-              </div>
+        <TooltipProvider>
+          <div className="flex items-center justify-center">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => handleStepClick(step.id)}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
+                          step.id < currentStep
+                            ? 'bg-green-500 border-green-500 text-white'
+                            : step.id === currentStep
+                            ? 'bg-blue-500 border-blue-500 text-white'
+                            : 'border text-muted-foreground'
+                        } ${
+                          allowPreviousNavigation && step.id <= currentStep
+                            ? 'cursor-pointer hover:opacity-80'
+                            : 'cursor-default'
+                        }`}
+                        disabled={!allowPreviousNavigation || step.id > currentStep}
+                      >
+                        {step.id < currentStep ? (
+                          <Check className="w-5 h-5" />
+                        ) : (
+                          step.id
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{step.title}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
 
-              {index < steps.length - 1 && (
-                <div
-                  className={`w-16 h-0.5 mx-4 ${
-                    step.id < currentStep ? 'bg-green-500' : 'bg-border'
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`w-16 h-0.5 mx-4 ${
+                      step.id < currentStep ? 'bg-green-500' : 'bg-border'
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </TooltipProvider>
         
         <div className="mt-4 text-center">
           <h3 className="font-medium">{steps[currentStep - 1]?.title}</h3>

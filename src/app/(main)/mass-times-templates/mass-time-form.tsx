@@ -28,22 +28,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { FormBottomActions } from '@/components/form-bottom-actions'
-import { Plus, Trash2, Clock } from 'lucide-react'
+import { Plus, Trash2, Clock, Edit } from 'lucide-react'
 import { toast } from 'sonner'
-import { createMassTime, updateMassTime } from '@/lib/actions/mass-times'
-import type { MassTimeWithRelations } from '@/lib/actions/mass-times'
+import { createMassTime, updateMassTime } from '@/lib/actions/mass-times-templates'
+import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 import {
   MassTimesTemplateItem,
   DayType,
   createTemplateItem,
+  updateTemplateItem,
   deleteTemplateItem,
 } from '@/lib/actions/mass-times-template-items'
+import { LITURGICAL_DAYS_OF_WEEK_VALUES, LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from '@/lib/constants'
 
 // Validation schema
 const massTimeTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
+  day_of_week: z.string().min(1, 'Day of week is required'),
   is_active: z.boolean(),
 })
 
@@ -86,12 +90,23 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
   const [newTime, setNewTime] = useState('09:00')
   const [newDayType, setNewDayType] = useState<DayType>('IS_DAY')
 
+  // State for edit dialog
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [itemBeingEdited, setItemBeingEdited] = useState<MassTimesTemplateItem | null>(null)
+  const [editTime, setEditTime] = useState('09:00')
+  const [editDayType, setEditDayType] = useState<DayType>('IS_DAY')
+
+  // State for delete confirmation
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<MassTimesTemplateItem | null>(null)
+
   // Initialize form with default values
   const form = useForm<MassTimeTemplateFormValues>({
     resolver: zodResolver(massTimeTemplateSchema),
     defaultValues: {
       name: massTime?.name || '',
       description: massTime?.description || '',
+      day_of_week: massTime?.day_of_week || 'SUNDAY',
       is_active: massTime?.is_active !== undefined ? massTime.is_active : false,
     },
   })
@@ -103,6 +118,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         await updateMassTime(massTime.id, {
           name: data.name,
           description: data.description || null,
+          day_of_week: data.day_of_week,
           is_active: data.is_active,
         })
         toast.success('Mass times template updated successfully')
@@ -111,6 +127,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         const newTemplate = await createMassTime({
           name: data.name,
           description: data.description,
+          day_of_week: data.day_of_week,
           is_active: data.is_active,
         })
         toast.success('Mass times template created successfully')
@@ -146,15 +163,48 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
     }
   }
 
-  const handleDeleteItem = async (itemId: string) => {
-    if (!massTime) return
+  const handleOpenDeleteDialog = (item: MassTimesTemplateItem) => {
+    setItemToDelete(item)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!massTime || !itemToDelete) return
     try {
-      await deleteTemplateItem(itemId, massTime.id)
+      await deleteTemplateItem(itemToDelete.id, massTime.id)
       toast.success('Mass time removed')
+      setItemToDelete(null)
       router.refresh()
     } catch (error) {
       console.error('Error deleting item:', error)
       toast.error('Failed to remove mass time')
+    }
+  }
+
+  const handleOpenEditDialog = (item: MassTimesTemplateItem) => {
+    setItemBeingEdited(item)
+    setEditTime(item.time.substring(0, 5))
+    setEditDayType(item.day_type)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditItem = async () => {
+    if (!massTime || !itemBeingEdited) return
+    setIsAddingItem(true)
+    try {
+      await updateTemplateItem(itemBeingEdited.id, massTime.id, {
+        time: editTime + ':00',
+        day_type: editDayType,
+      })
+      toast.success('Mass time updated')
+      setIsEditDialogOpen(false)
+      setItemBeingEdited(null)
+      router.refresh()
+    } catch (error) {
+      console.error('Error updating item:', error)
+      toast.error('Failed to update mass time')
+    } finally {
+      setIsAddingItem(false)
     }
   }
 
@@ -208,6 +258,34 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="day_of_week"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Day of Week</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select day of week" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {LITURGICAL_DAYS_OF_WEEK_VALUES.map((day) => (
+                        <SelectItem key={day} value={day}>
+                          {LITURGICAL_DAYS_OF_WEEK_LABELS[day as LiturgicalDayOfWeek].en}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    The day of the week this template applies to
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="is_active"
@@ -250,15 +328,26 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
                           {formatDayType(item.day_type)}
                         </Badge>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleDeleteItem(item.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleOpenEditDialog(item)}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleOpenDeleteDialog(item)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -321,6 +410,61 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Time Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Edit Mass Time</DialogTitle>
+            <DialogDescription>
+              Update this mass time.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editTime">Time</Label>
+              <Input
+                id="editTime"
+                type="time"
+                value={editTime}
+                onChange={(e) => setEditTime(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editDayType">Day Type</Label>
+              <Select value={editDayType} onValueChange={(v) => setEditDayType(v as DayType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="IS_DAY">Day Of</SelectItem>
+                  <SelectItem value="DAY_BEFORE">Vigil (Day Before)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Select &quot;Vigil&quot; for masses that occur the evening before (e.g., Saturday evening for Sunday).
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isAddingItem}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleEditItem} disabled={isAddingItem}>
+              {isAddingItem ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Delete Mass Time"
+        itemName={itemToDelete ? formatTime(itemToDelete.time) : undefined}
+        onConfirm={handleConfirmDelete}
+      />
     </Form>
   )
 }

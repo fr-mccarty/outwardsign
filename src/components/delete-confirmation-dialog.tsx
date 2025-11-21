@@ -11,34 +11,37 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-interface DeleteRowDialogProps {
+interface DeleteConfirmationDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onConfirm: () => Promise<void>
   title?: string
   itemName?: string
   description?: string
+  /** Button label, defaults to "Delete". Use "Remove" for membership removals. */
+  actionLabel?: string
 }
 
-export function DeleteRowDialog({
+export function DeleteConfirmationDialog({
   open,
   onOpenChange,
   onConfirm,
   title = "Delete Item",
   itemName,
   description,
-}: DeleteRowDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  actionLabel = "Delete",
+}: DeleteConfirmationDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleDelete = async () => {
-    setIsDeleting(true)
+  const handleConfirm = async () => {
+    setIsSubmitting(true)
     try {
       await onConfirm()
       onOpenChange(false)
     } catch {
       // Error handling is done in the parent component
     } finally {
-      setIsDeleting(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -67,16 +70,16 @@ export function DeleteRowDialog({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
             variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
+            onClick={handleConfirm}
+            disabled={isSubmitting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isSubmitting ? `${actionLabel.replace(/e$/, '')}ing...` : actionLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,20 +6,12 @@ import { PageContainer } from "@/components/page-container"
 import { Loading } from '@/components/loading'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { Plus, Edit, Trash2, Users } from "lucide-react"
 import { getGroups, deleteGroup, type Group } from '@/lib/actions/groups'
 import { GroupFormDialog } from '@/components/groups/group-form-dialog'
+import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
@@ -82,13 +74,12 @@ export default function GroupsPage() {
     try {
       await deleteGroup(groupToDelete.id)
       toast.success('Group deleted successfully')
+      setGroupToDelete(null)
       await loadGroups()
     } catch (error) {
       console.error('Failed to delete group:', error)
       toast.error('Failed to delete group')
-    } finally {
-      setDeleteDialogOpen(false)
-      setGroupToDelete(null)
+      throw error
     }
   }
 
@@ -144,12 +135,10 @@ export default function GroupsPage() {
                         <Users className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-medium">
+                        <h3 className="font-medium flex items-center gap-2">
                           {group.name}
                           {!group.is_active && (
-                            <span className="ml-2 px-2 py-1 text-xs bg-muted text-muted-foreground rounded">
-                              Inactive
-                            </span>
+                            <ActiveInactiveBadge isActive={group.is_active} showLabel size="sm" />
                           )}
                         </h3>
                         {group.description && (
@@ -193,24 +182,13 @@ export default function GroupsPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Group</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the group{' '}
-              <span className="font-semibold">&quot;{groupToDelete?.name}&quot;</span>?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete}>
-              Delete Group
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Group"
+        itemName={groupToDelete?.name}
+        onConfirm={handleConfirmDelete}
+      />
     </PageContainer>
   )
 }

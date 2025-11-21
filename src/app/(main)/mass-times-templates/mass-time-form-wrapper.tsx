@@ -5,7 +5,7 @@ import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
 import { ModuleViewButton } from '@/components/module-view-button'
 import { MassTimeForm } from './mass-time-form'
-import type { MassTimeWithRelations } from '@/lib/actions/mass-times'
+import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 import type { MassTimesTemplateItem } from '@/lib/actions/mass-times-template-items'
 
 interface MassTimeFormWrapperProps {

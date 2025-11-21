@@ -255,6 +255,126 @@ async function seedDevData() {
         phone_number: '(555) 482-1357',
         sex: 'Male'
       },
+      {
+        parish_id: parishId,
+        first_name: 'Sarah',
+        last_name: 'Williams',
+        email: 'sarah.williams@example.com',
+        phone_number: '(555) 159-2634',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'David',
+        last_name: 'Martinez',
+        email: 'david.martinez@example.com',
+        phone_number: '(555) 753-9514',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Emily',
+        last_name: 'Taylor',
+        email: 'emily.taylor@example.com',
+        phone_number: '(555) 951-7532',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'James',
+        last_name: 'Anderson',
+        email: 'james.anderson@example.com',
+        phone_number: '(555) 357-1593',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Lisa',
+        last_name: 'Brown',
+        email: 'lisa.brown@example.com',
+        phone_number: '(555) 753-8642',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Robert',
+        last_name: 'Wilson',
+        email: 'robert.wilson@example.com',
+        phone_number: '(555) 951-3578',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Patricia',
+        last_name: 'Moore',
+        email: 'patricia.moore@example.com',
+        phone_number: '(555) 159-7534',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Thomas',
+        last_name: 'Lee',
+        email: 'thomas.lee@example.com',
+        phone_number: '(555) 357-9512',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Jennifer',
+        last_name: 'White',
+        email: 'jennifer.white@example.com',
+        phone_number: '(555) 753-1596',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Christopher',
+        last_name: 'Harris',
+        email: 'christopher.harris@example.com',
+        phone_number: '(555) 951-7538',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Linda',
+        last_name: 'Clark',
+        email: 'linda.clark@example.com',
+        phone_number: '(555) 159-3574',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Daniel',
+        last_name: 'Rodriguez',
+        email: 'daniel.rodriguez@example.com',
+        phone_number: '(555) 357-7539',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Barbara',
+        last_name: 'Lewis',
+        email: 'barbara.lewis@example.com',
+        phone_number: '(555) 753-9516',
+        sex: 'Female'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Matthew',
+        last_name: 'Walker',
+        email: 'matthew.walker@example.com',
+        phone_number: '(555) 951-1597',
+        sex: 'Male'
+      },
+      {
+        parish_id: parishId,
+        first_name: 'Nancy',
+        last_name: 'Hall',
+        email: 'nancy.hall@example.com',
+        phone_number: '(555) 159-7535',
+        sex: 'Female'
+      },
     ])
     .select()
 
@@ -324,6 +444,73 @@ async function seedDevData() {
         console.error('⚠️  Warning: Error creating group memberships:', membershipsError.message)
       } else {
         console.log(`   ✅ ${memberships.length} group memberships created`)
+      }
+    }
+
+    // Add mass role memberships for all 20 people (DEVELOPMENT ONLY)
+    if (people && people.length > 0) {
+      console.log('')
+      console.log('🎭 Adding mass role memberships...')
+
+      // Fetch mass roles
+      const { data: massRoles } = await supabase
+        .from('mass_roles')
+        .select('id, name')
+        .eq('parish_id', parishId)
+        .order('display_order')
+
+      if (massRoles && massRoles.length > 0) {
+        // Randomly distribute roles to people
+        // Some people will have multiple roles, some may have none
+        const massRoleMemberships: Array<{
+          person_id: string
+          parish_id: string
+          mass_role_id: string
+          membership_type: string
+          active: boolean
+        }> = []
+
+        // Create a random distribution where each person has 0-3 roles
+        for (const person of people) {
+          const numRoles = Math.floor(Math.random() * 4) // 0-3 roles per person
+
+          if (numRoles > 0) {
+            // Shuffle roles and pick the first numRoles
+            const shuffledRoles = [...massRoles].sort(() => Math.random() - 0.5)
+            const selectedRoles = shuffledRoles.slice(0, numRoles)
+
+            for (const role of selectedRoles) {
+              massRoleMemberships.push({
+                person_id: person.id,
+                parish_id: parishId,
+                mass_role_id: role.id,
+                membership_type: 'MEMBER',
+                active: true
+              })
+            }
+          }
+        }
+
+        if (massRoleMemberships.length > 0) {
+          const { error: massRoleMembershipsError } = await supabase
+            .from('mass_role_members')
+            .insert(massRoleMemberships)
+
+          if (massRoleMembershipsError) {
+            console.error('⚠️  Warning: Error creating mass role memberships:', massRoleMembershipsError.message)
+          } else {
+            console.log(`   ✅ ${massRoleMemberships.length} mass role memberships created`)
+
+            // Show distribution summary
+            const roleCounts = massRoles.map(role => {
+              const count = massRoleMemberships.filter(m => m.mass_role_id === role.id).length
+              return `${role.name}: ${count}`
+            })
+            console.log(`   📊 Distribution: ${roleCounts.join(', ')}`)
+          }
+        } else {
+          console.log('   ⚠️  No mass role memberships to create (random distribution resulted in 0)')
+        }
       }
     }
   }

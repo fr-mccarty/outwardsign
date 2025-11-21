@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { GroupMemberDirectoryViewClient } from './group-member-directory-view-client'
+import { GroupMembersViewClient } from './group-members-view-client'
 import { getPersonGroupMemberships } from '@/lib/actions/groups'
 import { getPerson } from '@/lib/actions/people'
 
@@ -8,7 +8,7 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function GroupMemberDirectoryPersonPage({ params }: PageProps) {
+export default async function GroupMembersPersonPage({ params }: PageProps) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -28,7 +28,7 @@ export default async function GroupMemberDirectoryPersonPage({ params }: PagePro
   const memberships = await getPersonGroupMemberships(id)
 
   return (
-    <GroupMemberDirectoryViewClient
+    <GroupMembersViewClient
       person={person}
       memberships={memberships}
     />

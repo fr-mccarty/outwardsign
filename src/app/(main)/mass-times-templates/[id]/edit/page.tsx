@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { getMassTimeWithRelations } from '@/lib/actions/mass-times'
+import { getMassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 import { getTemplateItems } from '@/lib/actions/mass-times-template-items'
 import { MassTimeFormWrapper } from '../../mass-time-form-wrapper'
 

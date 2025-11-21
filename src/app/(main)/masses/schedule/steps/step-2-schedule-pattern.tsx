@@ -1,13 +1,20 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CalendarClock, Plus, X, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CalendarClock, AlertCircle, CheckSquare } from "lucide-react"
+import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { FormField } from "@/components/form-field"
+import { Label } from "@/components/ui/label"
+import { MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
+import { LITURGICAL_DAYS_OF_WEEK_LABELS, LITURGICAL_DAYS_OF_WEEK_VALUES, type LiturgicalDayOfWeek } from "@/lib/constants"
+import { getDayOfWeekNumber } from '@/lib/utils/date-format'
+import { formatTime } from '@/lib/utils/formatters'
+import { Badge } from "@/components/ui/badge"
+
+// TODO: Add ability to create a new template on the fly in this step
 
 export interface MassScheduleEntry {
   id: string
@@ -21,184 +28,206 @@ interface Step2SchedulePatternProps {
   onChange: (schedule: MassScheduleEntry[]) => void
   startDate: string
   endDate: string
+  massTimesTemplates: MassTimesTemplateWithItems[]
+  selectedTemplateIds: string[]
+  onTemplateSelectionChange: (templateIds: string[]) => void
 }
 
 const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
+  { value: 0, key: 'SUNDAY' },
+  { value: 1, key: 'MONDAY' },
+  { value: 2, key: 'TUESDAY' },
+  { value: 3, key: 'WEDNESDAY' },
+  { value: 4, key: 'THURSDAY' },
+  { value: 5, key: 'FRIDAY' },
+  { value: 6, key: 'SATURDAY' },
 ]
 
-const LANGUAGE_OPTIONS = [
-  { value: 'ENGLISH', label: 'English' },
-  { value: 'SPANISH', label: 'Spanish' },
-  { value: 'BILINGUAL', label: 'Bilingual' },
-]
 
 export function Step2SchedulePattern({
   schedule,
   onChange,
   startDate,
-  endDate
+  endDate,
+  massTimesTemplates,
+  selectedTemplateIds,
+  onTemplateSelectionChange
 }: Step2SchedulePatternProps) {
-  const addMassTime = () => {
-    onChange([
-      ...schedule,
-      {
-        id: crypto.randomUUID(),
-        dayOfWeek: 0,
-        time: '09:00',
-        language: 'ENGLISH',
-      },
-    ])
+  // Track if auto-selection has already happened
+  const hasAutoSelectedRef = useRef(false)
+
+  // Auto-select all templates on first load if none are selected
+  useEffect(() => {
+    if (
+      !hasAutoSelectedRef.current &&
+      massTimesTemplates.length > 0 &&
+      selectedTemplateIds.length === 0
+    ) {
+      const allTemplateIds = massTimesTemplates.map(t => t.id)
+      onTemplateSelectionChange(allTemplateIds)
+      hasAutoSelectedRef.current = true
+    }
+  }, [massTimesTemplates, selectedTemplateIds, onTemplateSelectionChange])
+
+  const handleTemplateToggle = (templateId: string, checked: boolean) => {
+    if (checked) {
+      onTemplateSelectionChange([...selectedTemplateIds, templateId])
+    } else {
+      onTemplateSelectionChange(selectedTemplateIds.filter(id => id !== templateId))
+    }
   }
 
-  const removeMassTime = (id: string) => {
-    onChange(schedule.filter((entry) => entry.id !== id))
+  const handleSelectAll = () => {
+    const allTemplateIds = massTimesTemplates.map(t => t.id)
+    onTemplateSelectionChange(allTemplateIds)
   }
 
-  const updateMassTime = (id: string, updates: Partial<MassScheduleEntry>) => {
-    onChange(
-      schedule.map((entry) =>
-        entry.id === id ? { ...entry, ...updates } : entry
-      )
-    )
-  }
+  const allSelected = massTimesTemplates.length > 0 && selectedTemplateIds.length === massTimesTemplates.length
 
-  // Calculate how many Masses will be created
+  // Group templates by day_of_week
+  const templatesByDay = massTimesTemplates.reduce((acc, template) => {
+    const day = template.day_of_week
+    if (!acc[day]) {
+      acc[day] = []
+    }
+    acc[day].push(template)
+    return acc
+  }, {} as Record<string, MassTimesTemplateWithItems[]>)
+
+  // Calculate how many Masses will be created based on selected templates
   const calculateMassCount = () => {
-    if (!startDate || !endDate || schedule.length === 0) return 0
+    if (!startDate || !endDate || selectedTemplateIds.length === 0) return 0
 
     const start = new Date(startDate)
     const end = new Date(endDate)
     let count = 0
 
-    // For each day in the range
-    const currentDate = new Date(start)
-    while (currentDate <= end) {
-      const dayOfWeek = currentDate.getDay()
-      // Count how many schedule entries match this day
-      const matchingEntries = schedule.filter((entry) => entry.dayOfWeek === dayOfWeek)
-      count += matchingEntries.length
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
+    // For each selected template
+    selectedTemplateIds.forEach(templateId => {
+      const template = massTimesTemplates.find(t => t.id === templateId)
+      if (!template) return
+
+      const dayNumber = getDayOfWeekNumber(template.day_of_week)
+      if (dayNumber === null) return // Skip MOVABLE for now
+
+      // Count occurrences of this day in date range
+      const currentDate = new Date(start)
+      while (currentDate <= end) {
+        if (currentDate.getDay() === dayNumber) {
+          count++
+        }
+        currentDate.setDate(currentDate.getDate() + 1)
+      }
+    })
 
     return count
   }
 
   const totalMasses = calculateMassCount()
 
+  // Get day label
+  const getDayLabel = (day: string) => {
+    const labels = LITURGICAL_DAYS_OF_WEEK_LABELS[day as LiturgicalDayOfWeek]
+    return labels?.en ?? day
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <CalendarClock className="h-6 w-6 text-primary mt-1" />
-        <div>
-          <h2 className="text-2xl font-semibold">Define Mass Schedule</h2>
-          <p className="text-muted-foreground mt-1">
-            Set the recurring pattern for your Masses
-          </p>
-        </div>
-      </div>
+      <WizardStepHeader
+        icon={CalendarClock}
+        title="Select Mass Times"
+        description="Choose which Mass times to schedule for this period"
+      />
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Mass Times</CardTitle>
-              <CardDescription>
-                Add each Mass that repeats during the scheduling period
-              </CardDescription>
-            </div>
-            <Button onClick={addMassTime} size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Mass Time
-            </Button>
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div>
+            <CardTitle>Mass Times Templates</CardTitle>
+            <CardDescription>
+              Select the Mass times you want to include in this schedule
+            </CardDescription>
           </div>
+          {massTimesTemplates.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              disabled={allSelected}
+            >
+              <CheckSquare className="h-4 w-4 mr-1" />
+              Select All
+            </Button>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          {schedule.length === 0 ? (
+        <CardContent className="space-y-6">
+          {massTimesTemplates.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <CalendarClock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No Mass times added yet</p>
-              <Button onClick={addMassTime} variant="outline" className="mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Mass Time
-              </Button>
+              <p>No Mass times templates available</p>
+              <p className="text-sm mt-2">
+                Create templates in Mass Times settings first
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {schedule.map((entry, index) => (
-                <Card key={entry.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          id={`day-${entry.id}`}
-                          label="Day of Week"
-                          inputType="select"
-                          value={entry.dayOfWeek.toString()}
-                          onChange={(value) =>
-                            updateMassTime(entry.id, { dayOfWeek: parseInt(value) })
-                          }
-                          options={DAYS_OF_WEEK.map((day) => ({
-                            value: day.value.toString(),
-                            label: day.label,
-                          }))}
-                          required
-                        />
-
-                        <div className="space-y-2">
-                          <Label htmlFor={`time-${entry.id}`}>
-                            Time <span className="text-destructive">*</span>
-                          </Label>
-                          <Input
-                            id={`time-${entry.id}`}
-                            type="time"
-                            value={entry.time}
-                            onChange={(e) =>
-                              updateMassTime(entry.id, { time: e.target.value })
-                            }
-                            required
-                          />
-                        </div>
-
-                        <FormField
-                          id={`language-${entry.id}`}
-                          label="Language"
-                          inputType="select"
-                          value={entry.language}
-                          onChange={(value) =>
-                            updateMassTime(entry.id, {
-                              language: value as 'ENGLISH' | 'SPANISH' | 'BILINGUAL'
-                            })
-                          }
-                          options={LANGUAGE_OPTIONS}
-                          required
-                        />
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeMassTime(entry.id)}
-                        className="flex-shrink-0"
+            <>
+              {/* Group by day of week, sorted by LITURGICAL_DAYS_OF_WEEK_VALUES order */}
+              {Object.entries(templatesByDay)
+                .sort(([a], [b]) =>
+                  LITURGICAL_DAYS_OF_WEEK_VALUES.indexOf(a as LiturgicalDayOfWeek) -
+                  LITURGICAL_DAYS_OF_WEEK_VALUES.indexOf(b as LiturgicalDayOfWeek)
+                )
+                .map(([day, templates]) => (
+                <div key={day} className="space-y-3">
+                  <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                    {getDayLabel(day)}
+                  </h3>
+                  <div className="space-y-2">
+                    {templates.map((template) => (
+                      <div
+                        key={template.id}
+                        className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                        <Checkbox
+                          id={`template-${template.id}`}
+                          checked={selectedTemplateIds.includes(template.id)}
+                          onCheckedChange={(checked) =>
+                            handleTemplateToggle(template.id, checked === true)
+                          }
+                        />
+                        <div className="flex-1">
+                          <Label
+                            htmlFor={`template-${template.id}`}
+                            className="font-medium cursor-pointer"
+                          >
+                            {template.name}
+                          </Label>
+                          {template.items && template.items.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {template.items.map((item) => (
+                                <Badge key={item.id} variant="outline" className="text-xs">
+                                  {formatTime(item.time)}
+                                  {item.day_type === 'DAY_BEFORE' && ' (Vigil)'}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          {template.description && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {template.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ))}
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
 
-      {schedule.length > 0 && totalMasses > 0 && (
+      {selectedTemplateIds.length > 0 && totalMasses > 0 && (
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <div className="space-y-3">
@@ -210,10 +239,11 @@ export function Step2SchedulePattern({
               <div className="pt-3 border-t">
                 <div className="text-sm space-y-1">
                   {DAYS_OF_WEEK.map((day) => {
-                    const dayEntries = schedule.filter(
-                      (entry) => entry.dayOfWeek === day.value
-                    )
-                    if (dayEntries.length === 0) return null
+                    const selectedForDay = selectedTemplateIds.filter(id => {
+                      const template = massTimesTemplates.find(t => t.id === id)
+                      return template?.day_of_week === day.key
+                    })
+                    if (selectedForDay.length === 0) return null
 
                     // Count occurrences of this day in date range
                     const start = new Date(startDate)
@@ -229,9 +259,9 @@ export function Step2SchedulePattern({
 
                     return (
                       <div key={day.value} className="flex items-center justify-between text-muted-foreground">
-                        <span>{day.label}:</span>
+                        <span>{getDayLabel(day.key)}:</span>
                         <span>
-                          {dayEntries.length} Mass{dayEntries.length !== 1 ? 'es' : ''} × {occurrences} weeks = {dayEntries.length * occurrences} Masses
+                          {selectedForDay.length} template{selectedForDay.length !== 1 ? 's' : ''} × {occurrences} weeks = {selectedForDay.length * occurrences} Masses
                         </span>
                       </div>
                     )
@@ -243,27 +273,14 @@ export function Step2SchedulePattern({
         </Card>
       )}
 
-      {schedule.length === 0 && (
+      {selectedTemplateIds.length === 0 && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            You must add at least one Mass time to continue
+            You must select at least one Mass time template to continue
           </AlertDescription>
         </Alert>
       )}
-
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="space-y-2 text-sm">
-            <h4 className="font-medium">Examples:</h4>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>Sunday 8:00 AM (English) + Sunday 10:30 AM (English) + Sunday 12:00 PM (Spanish)</li>
-              <li>Saturday 5:00 PM (English) vigil Mass</li>
-              <li>Weekday Masses: Monday-Friday 8:00 AM (English)</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

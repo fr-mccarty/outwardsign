@@ -9,12 +9,16 @@ import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { MassRoleTemplateItemList } from "@/components/mass-role-template-item-list"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { LITURGICAL_CONTEXT_VALUES, LITURGICAL_CONTEXT_LABELS, LITURGICAL_CONTEXT_DESCRIPTIONS, type LiturgicalContext } from "@/lib/constants"
 
 // Zod validation schema - parameters field removed (managed separately)
 const massRoleTemplateSchema = z.object({
   name: z.string().min(1, "Template name is required"),
   description: z.string().optional(),
   note: z.string().optional(),
+  liturgical_contexts: z.array(z.string()).optional(),
 })
 
 interface MassRoleTemplateFormProps {
@@ -37,9 +41,21 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
   const [name, setName] = useState(template?.name || "")
   const [description, setDescription] = useState(template?.description || "")
   const [note, setNote] = useState(template?.note || "")
+  const [liturgicalContexts, setLiturgicalContexts] = useState<LiturgicalContext[]>(
+    template?.liturgical_contexts || []
+  )
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Toggle liturgical context
+  const handleLiturgicalContextToggle = (context: LiturgicalContext, checked: boolean) => {
+    if (checked) {
+      setLiturgicalContexts([...liturgicalContexts, context])
+    } else {
+      setLiturgicalContexts(liturgicalContexts.filter(c => c !== context))
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +68,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
         name,
         description: description || undefined,
         note: note || undefined,
+        liturgical_contexts: liturgicalContexts,
       })
 
       if (!validationResult.success) {
@@ -72,6 +89,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
         name,
         description: description || undefined,
         note: note || undefined,
+        liturgical_contexts: liturgicalContexts,
       }
 
       if (isEditing) {
@@ -142,6 +160,38 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             rows={2}
             disabled={isLoading}
           />
+      </FormSectionCard>
+
+      {/* Liturgical Contexts */}
+      <FormSectionCard
+        title="Liturgical Contexts"
+        description="Select which types of liturgical celebrations this template applies to. This helps the scheduler automatically assign the right template based on the day's celebration."
+      >
+        <div className="space-y-4">
+          {LITURGICAL_CONTEXT_VALUES.map((context) => (
+            <div key={context} className="flex items-start space-x-3">
+              <Checkbox
+                id={`context-${context}`}
+                checked={liturgicalContexts.includes(context)}
+                onCheckedChange={(checked) =>
+                  handleLiturgicalContextToggle(context, checked === true)
+                }
+                disabled={isLoading}
+              />
+              <div className="grid gap-0.5 leading-none">
+                <Label
+                  htmlFor={`context-${context}`}
+                  className="font-medium cursor-pointer"
+                >
+                  {LITURGICAL_CONTEXT_LABELS[context].en}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {LITURGICAL_CONTEXT_DESCRIPTIONS[context].en}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </FormSectionCard>
 
       {/* Template Roles - Only show if editing existing template */}

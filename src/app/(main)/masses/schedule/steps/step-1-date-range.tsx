@@ -1,50 +1,120 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Calendar, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Calendar, AlertCircle, Zap, Users, ExternalLink } from "lucide-react"
+import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { MassRoleWithCount } from '@/lib/actions/mass-roles'
+import Link from 'next/link'
+import { getDayCount } from '@/lib/utils/date-format'
+
+// Date shortcut helpers
+function getNextMonthRange(): { start: string; end: string } {
+  const today = new Date()
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+  const lastDayOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0)
+  return {
+    start: nextMonth.toISOString().split('T')[0],
+    end: lastDayOfNextMonth.toISOString().split('T')[0],
+  }
+}
+
+function getRestOfThisMonthRange(): { start: string; end: string } {
+  const today = new Date()
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+  return {
+    start: today.toISOString().split('T')[0],
+    end: lastDayOfMonth.toISOString().split('T')[0],
+  }
+}
+
+function getNextWeeksRange(weeks: number): { start: string; end: string } {
+  const today = new Date()
+  const endDate = new Date(today)
+  endDate.setDate(today.getDate() + (weeks * 7) - 1)
+  return {
+    start: today.toISOString().split('T')[0],
+    end: endDate.toISOString().split('T')[0],
+  }
+}
+
+function getNextQuarterRange(): { start: string; end: string } {
+  const today = new Date()
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+  const threeMonthsLater = new Date(today.getFullYear(), today.getMonth() + 4, 0)
+  return {
+    start: nextMonth.toISOString().split('T')[0],
+    end: threeMonthsLater.toISOString().split('T')[0],
+  }
+}
+
+function getCalendarQuarterRange(quarter: 1 | 2 | 3 | 4, year?: number): { start: string; end: string } {
+  const targetYear = year ?? new Date().getFullYear()
+  const startMonth = (quarter - 1) * 3
+  const start = new Date(targetYear, startMonth, 1)
+  const end = new Date(targetYear, startMonth + 3, 0)
+  return {
+    start: start.toISOString().split('T')[0],
+    end: end.toISOString().split('T')[0],
+  }
+}
 
 interface Step1DateRangeProps {
   startDate: string
   endDate: string
   onChange: (field: 'startDate' | 'endDate', value: string) => void
+  massRolesWithCounts: MassRoleWithCount[]
 }
 
-export function Step1DateRange({ startDate, endDate, onChange }: Step1DateRangeProps) {
-  // Calculate days between dates
-  const getDayCount = () => {
-    if (!startDate || !endDate) return 0
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const diffTime = Math.abs(end.getTime() - start.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-    return diffDays
+export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCounts }: Step1DateRangeProps) {
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+
+  const applyShortcut = (range: { start: string; end: string }) => {
+    onChange('startDate', range.start)
+    onChange('endDate', range.end)
+    setShortcutsOpen(false)
   }
 
-  const dayCount = getDayCount()
+  const dayCount = getDayCount(startDate, endDate)
   const isValid = startDate && endDate && new Date(endDate) >= new Date(startDate)
   const showWarning = dayCount > 365
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <Calendar className="h-6 w-6 text-primary mt-1" />
-        <div>
-          <h2 className="text-2xl font-semibold">Select Date Range</h2>
-          <p className="text-muted-foreground mt-1">
-            Choose the period for which you want to schedule Masses
-          </p>
-        </div>
-      </div>
+      <WizardStepHeader
+        icon={Calendar}
+        title="Select Date Range"
+        description="Choose the period for which you want to schedule Masses"
+      />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Scheduling Period</CardTitle>
-          <CardDescription>
-            Define the start and end dates for your Mass schedule
-          </CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div>
+            <CardTitle>Scheduling Period</CardTitle>
+            <CardDescription>
+              Define the start and end dates for your Mass schedule
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShortcutsOpen(true)}
+          >
+            <Zap className="h-4 w-4 mr-1" />
+            Quick Fill
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -106,6 +176,51 @@ export function Step1DateRange({ startDate, endDate, onChange }: Step1DateRangeP
         </CardContent>
       </Card>
 
+      {/* Mass Roles Overview */}
+      {massRolesWithCounts.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">Available Ministers by Role</CardTitle>
+            </div>
+            <CardDescription>
+              People in your parish who can serve in each liturgical role
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {massRolesWithCounts.map(role => (
+                <Link
+                  key={role.id}
+                  href={`/settings/mass-roles/${role.id}`}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors"
+                >
+                  <span className="text-sm font-medium truncate">{role.name}</span>
+                  <Badge variant={role.member_count > 0 ? "secondary" : "outline"}>
+                    {role.member_count}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+            {massRolesWithCounts.every(r => r.member_count === 0) && (
+              <Alert className="mt-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span>No ministers have been assigned to roles yet.</span>
+                  <Link
+                    href="/settings/mass-roles"
+                    className="inline-flex items-center gap-1 text-primary hover:underline ml-2"
+                  >
+                    Manage Roles <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="bg-muted/50">
         <CardContent className="pt-6">
           <div className="space-y-2 text-sm">
@@ -118,6 +233,116 @@ export function Step1DateRange({ startDate, endDate, onChange }: Step1DateRangeP
           </div>
         </CardContent>
       </Card>
+
+      {/* Quick Fill Dialog */}
+      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Quick Fill Date Range</DialogTitle>
+            <DialogDescription>
+              Select a preset date range to quickly fill the start and end dates.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 py-4">
+            <Button
+              variant="outline"
+              className="justify-start h-auto py-3"
+              onClick={() => applyShortcut(getRestOfThisMonthRange())}
+            >
+              <div className="text-left">
+                <div className="font-medium">Rest of This Month</div>
+                <div className="text-xs text-muted-foreground">From today until end of month</div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto py-3"
+              onClick={() => applyShortcut(getNextMonthRange())}
+            >
+              <div className="text-left">
+                <div className="font-medium">Next Month</div>
+                <div className="text-xs text-muted-foreground">Full calendar month</div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto py-3"
+              onClick={() => applyShortcut(getNextWeeksRange(4))}
+            >
+              <div className="text-left">
+                <div className="font-medium">Next 4 Weeks</div>
+                <div className="text-xs text-muted-foreground">28 days starting today</div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto py-3"
+              onClick={() => applyShortcut(getNextWeeksRange(8))}
+            >
+              <div className="text-left">
+                <div className="font-medium">Next 8 Weeks</div>
+                <div className="text-xs text-muted-foreground">56 days starting today</div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start h-auto py-3"
+              onClick={() => applyShortcut(getNextQuarterRange())}
+            >
+              <div className="text-left">
+                <div className="font-medium">Next Quarter</div>
+                <div className="text-xs text-muted-foreground">Next 3 calendar months</div>
+              </div>
+            </Button>
+
+            <div className="border-t my-2" />
+            <div className="text-xs text-muted-foreground font-medium px-1">Calendar Quarters ({new Date().getFullYear()})</div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-2"
+                onClick={() => applyShortcut(getCalendarQuarterRange(1))}
+              >
+                <div className="text-left">
+                  <div className="font-medium text-sm">Q1</div>
+                  <div className="text-xs text-muted-foreground">Jan - Mar</div>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-2"
+                onClick={() => applyShortcut(getCalendarQuarterRange(2))}
+              >
+                <div className="text-left">
+                  <div className="font-medium text-sm">Q2</div>
+                  <div className="text-xs text-muted-foreground">Apr - Jun</div>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-2"
+                onClick={() => applyShortcut(getCalendarQuarterRange(3))}
+              >
+                <div className="text-left">
+                  <div className="font-medium text-sm">Q3</div>
+                  <div className="text-xs text-muted-foreground">Jul - Sep</div>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-2"
+                onClick={() => applyShortcut(getCalendarQuarterRange(4))}
+              >
+                <div className="text-left">
+                  <div className="font-medium text-sm">Q4</div>
+                  <div className="text-xs text-muted-foreground">Oct - Dec</div>
+                </div>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

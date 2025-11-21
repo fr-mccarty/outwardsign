@@ -13,16 +13,17 @@ import {
   ArrowRight,
   Filter
 } from "lucide-react"
+import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { useRouter } from 'next/navigation'
 import { MassScheduleAssignmentGrid } from '@/components/mass-schedule-assignment-grid'
 import type { ScheduleMassesResult } from '@/lib/actions/mass-scheduling'
 
-interface Step5ResultsProps {
+interface Step9ResultsProps {
   result: ScheduleMassesResult
   startDate: string
 }
 
-export function Step5Results({ result, startDate }: Step5ResultsProps) {
+export function Step9Results({ result, startDate }: Step9ResultsProps) {
   const router = useRouter()
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -57,15 +58,11 @@ export function Step5Results({ result, startDate }: Step5ResultsProps) {
   return (
     <div className="space-y-6">
       {/* Success Header */}
-      <div className="flex items-start gap-3">
-        <CheckCircle2 className="h-6 w-6 text-green-600 mt-1" />
-        <div>
-          <h2 className="text-2xl font-semibold">Masses Created Successfully!</h2>
-          <p className="text-muted-foreground mt-1">
-            Review role assignments and make manual adjustments as needed
-          </p>
-        </div>
-      </div>
+      <WizardStepHeader
+        icon={CheckCircle2}
+        title="Masses Created Successfully!"
+        description="Review role assignments and make manual adjustments as needed"
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

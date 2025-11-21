@@ -145,7 +145,7 @@ export async function createMassType(data: CreateMassTypeData): Promise<MassType
   }
 
   revalidatePath('/mass-types')
-  revalidatePath('/mass-times')
+  revalidatePath('/mass-times-templates')
   return massType
 }
 
@@ -188,7 +188,7 @@ export async function updateMassType(id: string, data: UpdateMassTypeData): Prom
   }
 
   revalidatePath('/mass-types')
-  revalidatePath('/mass-times')
+  revalidatePath('/mass-times-templates')
   return massType
 }
 
@@ -247,7 +247,7 @@ export async function deleteMassType(id: string): Promise<void> {
   }
 
   revalidatePath('/mass-types')
-  revalidatePath('/mass-times')
+  revalidatePath('/mass-times-templates')
 }
 
 /**

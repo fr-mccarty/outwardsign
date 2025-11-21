@@ -17,16 +17,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -48,7 +38,7 @@ import {
   DataTableHeader,
   DataTableRowActions,
 } from '@/components/data-table'
-import { DeleteRowDialog } from '@/components/delete-row-dialog'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ParishMember {
@@ -222,13 +212,12 @@ export function ParishSettingsClient({
     try {
       await removeParishMember(parish.id, memberToRemove.userId)
       toast.success('Member removed successfully')
+      setMemberToRemove(null)
       await loadMembers()
     } catch (error) {
       console.error('Error removing member:', error)
       toast.error('Failed to remove member')
-    } finally {
-      setRemoveDialogOpen(false)
-      setMemberToRemove(null)
+      throw error
     }
   }
 
@@ -606,7 +595,7 @@ export function ParishSettingsClient({
             }}
           />
 
-          <DeleteRowDialog
+          <DeleteConfirmationDialog
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
             onConfirm={handleDeleteTemplate}
@@ -909,24 +898,14 @@ export function ParishSettingsClient({
       </Dialog>
 
       {/* Remove Member Confirmation Dialog */}
-      <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Parish Member</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove{' '}
-              <span className="font-semibold">{memberToRemove?.email}</span>{' '}
-              from the parish? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmRemove}>
-              Remove Member
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={removeDialogOpen}
+        onOpenChange={setRemoveDialogOpen}
+        title="Remove Parish Member"
+        itemName={memberToRemove?.email}
+        actionLabel="Remove"
+        onConfirm={handleConfirmRemove}
+      />
     </>
   )
 }

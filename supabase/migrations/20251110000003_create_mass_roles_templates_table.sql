@@ -7,6 +7,7 @@ CREATE TABLE mass_roles_templates (
   is_active BOOLEAN NOT NULL DEFAULT false,
   note TEXT,
   parameters JSONB,
+  liturgical_contexts TEXT[] NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -14,6 +15,7 @@ CREATE TABLE mass_roles_templates (
 -- Add comments documenting the purpose
 COMMENT ON TABLE mass_roles_templates IS 'Templates defining ministerial role requirements for different types of Masses';
 COMMENT ON COLUMN mass_roles_templates.is_active IS 'Whether this template is currently in use';
+COMMENT ON COLUMN mass_roles_templates.liturgical_contexts IS 'Array of liturgical contexts this template applies to: SUNDAY, SOLEMNITY, FEAST, MEMORIAL, WEEKDAY';
 
 -- Enable RLS
 ALTER TABLE mass_roles_templates ENABLE ROW LEVEL SECURITY;

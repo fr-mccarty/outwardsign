@@ -1,8 +1,8 @@
-# Group Member Directory Module
+# Group Members Module
 
 ## Overview
 
-The Group Member Directory module provides a person-centric view for managing group memberships and roles within a parish. Unlike the mass-role-directory (which focuses on liturgical scheduling), this module simply tracks which people belong to which groups and what roles they have within those groups.
+The Group Members module provides a person-centric view for managing group memberships and roles within a parish. Unlike the mass-role-directory (which focuses on liturgical scheduling), this module simply tracks which people belong to which groups and what roles they have within those groups.
 
 **Key Characteristics:**
 - Person-centric (not role-centric)
@@ -12,17 +12,17 @@ The Group Member Directory module provides a person-centric view for managing gr
 
 ## Module Structure
 
-### Directory Pattern (Not Standard 9-File Pattern)
+### Module Pattern (Not Standard 9-File Pattern)
 
-This module follows a **directory-based pattern** similar to mass-role-directory:
+This module follows a **person-centric pattern** similar to mass-role-directory:
 
 ```
-group-member-directory/
-├── page.tsx                                    # Directory list (server)
-├── group-member-directory-list-client.tsx     # Directory list UI (client)
+group-members/
+├── page.tsx                                    # List (server)
+├── group-members-list-client.tsx               # List UI (client)
 ├── [id]/
 │   ├── page.tsx                                # Person view (server)
-│   ├── group-member-directory-view-client.tsx # Person view UI (client)
+│   ├── group-members-view-client.tsx           # Person view UI (client)
 │   └── memberships/
 │       ├── page.tsx                            # Memberships management (server)
 │       └── group-memberships-form.tsx          # Memberships form (client)
@@ -222,12 +222,12 @@ interface GroupWithMembers extends Group {
 
 ## Component Structure
 
-### 1. Directory List Page (Server)
+### 1. List Page (Server)
 
 **File:** `page.tsx`
 
 ```typescript
-export default async function GroupMemberDirectoryPage() {
+export default async function GroupMembersPage() {
   // Auth check
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -241,7 +241,7 @@ export default async function GroupMemberDirectoryPage() {
 
   // Pass to client
   return (
-    <GroupMemberDirectoryListClient
+    <GroupMembersListClient
       peopleWithMemberships={peopleWithMemberships}
       groups={groups}
       groupRoles={groupRoles}
@@ -251,9 +251,9 @@ export default async function GroupMemberDirectoryPage() {
 }
 ```
 
-### 2. Directory List Client
+### 2. List Client
 
-**File:** `group-member-directory-list-client.tsx`
+**File:** `group-members-list-client.tsx`
 
 **Features:**
 - Search people by name or email
@@ -281,7 +281,7 @@ const [isSubmitting, setIsSubmitting] = useState(false)
 **File:** `[id]/page.tsx`
 
 ```typescript
-export default async function GroupMemberDirectoryPersonPage({ params }: PageProps) {
+export default async function GroupMembersPersonPage({ params }: PageProps) {
   // Auth check
   const { id } = await params
 
@@ -293,7 +293,7 @@ export default async function GroupMemberDirectoryPersonPage({ params }: PagePro
 
   // Pass to client
   return (
-    <GroupMemberDirectoryViewClient
+    <GroupMembersViewClient
       person={person}
       memberships={memberships}
     />
@@ -303,7 +303,7 @@ export default async function GroupMemberDirectoryPersonPage({ params }: PagePro
 
 ### 4. Person View Client
 
-**File:** `[id]/group-member-directory-view-client.tsx`
+**File:** `[id]/group-members-view-client.tsx`
 
 **Features:**
 - Contact information card
@@ -380,7 +380,7 @@ const [isSubmitting, setIsSubmitting] = useState(false)
 
 ### Workflow 1: View People in Groups
 
-1. Navigate to `/group-member-directory`
+1. Navigate to `/group-members`
 2. See all people who are members of groups
 3. Search by name or email
 4. Click person card to view details
@@ -395,7 +395,7 @@ const [isSubmitting, setIsSubmitting] = useState(false)
 5. Click "Add Membership"
 
 **From Person's Profile:**
-1. Navigate to person's profile (`/group-member-directory/[id]`)
+1. Navigate to person's profile (`/group-members/[id]`)
 2. Click "Manage Memberships"
 3. Click "Add to Group"
 4. Select group and optional role
@@ -428,7 +428,7 @@ const [isSubmitting, setIsSubmitting] = useState(false)
 
 ### ✅ Implemented
 
-- **Person Directory** - All people who belong to groups
+- **Person List** - All people who belong to groups
 - **Search** - Filter by name or email
 - **Add Memberships** - Assign people to groups with optional roles
 - **Role Management** - Assign/change/remove roles within groups
@@ -457,19 +457,19 @@ const [isSubmitting, setIsSubmitting] = useState(false)
 
 ## Navigation & Breadcrumbs
 
-**Directory List:**
+**List:**
 ```
-Dashboard → Groups → Member Directory
+Dashboard → Groups → Group Members
 ```
 
 **Person View:**
 ```
-Dashboard → Groups → Member Directory → [Person Name]
+Dashboard → Groups → Group Members → [Person Name]
 ```
 
 **Manage Memberships:**
 ```
-Dashboard → Groups → Member Directory → [Person Name] → Manage Memberships
+Dashboard → Groups → Group Members → [Person Name] → Manage Memberships
 ```
 
 ## Styling & UI Patterns
@@ -499,7 +499,7 @@ Dashboard → Groups → Member Directory → [Person Name] → Manage Membershi
 - View group with all members
 - Focus on the group itself
 
-**Group Member Directory** (`/group-member-directory`):
+**Group Members** (`/group-members`):
 - Person-centric view
 - Page-based forms
 - View person with all groups

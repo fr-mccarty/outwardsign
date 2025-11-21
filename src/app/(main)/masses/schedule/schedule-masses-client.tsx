@@ -1,35 +1,74 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Wizard } from '@/components/wizard/Wizard'
 import { Step1DateRange } from './steps/step-1-date-range'
 import { Step2SchedulePattern, type MassScheduleEntry } from './steps/step-2-schedule-pattern'
 import { Step3TemplateSelection } from './steps/step-3-template-selection'
-import { Step4Review } from './steps/step-4-review'
-import { Step5Results } from './steps/step-5-results'
-import { MassRoleTemplate } from '@/lib/actions/mass-role-templates'
+import { Step4LiturgicalEvents } from './steps/step-4-liturgical-events'
+import { Step5Review } from './steps/step-5-review'
+import { Step6ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-6-proposed-schedule'
+import { Step7AssignmentSummary } from './steps/step-7-assignment-summary'
+import { Step8Confirmation } from './steps/step-8-confirmation'
+import { Step9Results } from './steps/step-9-results'
+import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
+import { MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
+import { MassRoleWithCount } from '@/lib/actions/mass-roles'
 import { toast } from 'sonner'
 import { scheduleMasses, type ScheduleMassesResult } from '@/lib/actions/mass-scheduling'
+import { getDayOfWeekNumber } from '@/lib/utils/date-format'
+import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
 
 interface ScheduleMassesClientProps {
-  templates: MassRoleTemplate[]
+  templates: MassRoleTemplateWithItems[]
+  massTimesTemplates: MassTimesTemplateWithItems[]
+  massRolesWithCounts: MassRoleWithCount[]
 }
 
-export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
+const STORAGE_KEY = 'mass-scheduler-wizard-state'
+
+interface WizardState {
+  startDate: string
+  endDate: string
+  schedule: MassScheduleEntry[]
+  selectedMassTimesTemplateIds: string[]
+  selectedRoleTemplateIds: string[]
+  selectedLiturgicalEventIds: string[]
+  liturgicalEvents: Array<{ id: string; date: string; name: string }>
+  proposedMasses: ProposedMass[]
+  algorithmOptions: {
+    balanceWorkload: boolean
+    respectBlackoutDates: boolean
+    allowManualAdjustments: boolean
+  }
+  currentWizardStep: number
+  timestamp: number
+}
+
+export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesWithCounts }: ScheduleMassesClientProps) {
   const router = useRouter()
+  const [isHydrated, setIsHydrated] = useState(false)
 
   // Step 1: Date Range
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
-  // Step 2: Schedule Pattern
+  // Step 2: Schedule Pattern (Mass Times Templates)
   const [schedule, setSchedule] = useState<MassScheduleEntry[]>([])
+  const [selectedMassTimesTemplateIds, setSelectedMassTimesTemplateIds] = useState<string[]>([])
 
-  // Step 3: Template Selection
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  // Step 3: Template Selection (Role Templates)
+  const [selectedRoleTemplateIds, setSelectedRoleTemplateIds] = useState<string[]>([])
 
-  // Step 4: Algorithm Options
+  // Step 4: Liturgical Events Selection
+  const [selectedLiturgicalEventIds, setSelectedLiturgicalEventIds] = useState<string[]>([])
+  const [liturgicalEvents, setLiturgicalEvents] = useState<Array<{ id: string; date: string; name: string }>>([])
+
+  // Step 5: Proposed Schedule
+  const [proposedMasses, setProposedMasses] = useState<ProposedMass[]>([])
+
+  // Step 6: Algorithm Options
   const [algorithmOptions, setAlgorithmOptions] = useState({
     balanceWorkload: true,
     respectBlackoutDates: true,
@@ -40,6 +79,136 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [schedulingResult, setSchedulingResult] = useState<ScheduleMassesResult | null>(null)
   const [currentWizardStep, setCurrentWizardStep] = useState(1)
+
+  // Restore state from localStorage on mount
+  useEffect(() => {
+    const restoreState = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          const state: WizardState = JSON.parse(saved)
+          // Only restore if saved within last 24 hours
+          const hoursSinceLastSave = (Date.now() - state.timestamp) / (1000 * 60 * 60)
+          if (hoursSinceLastSave < 24) {
+            setStartDate(state.startDate)
+            setEndDate(state.endDate)
+            setSchedule(state.schedule)
+            setSelectedMassTimesTemplateIds(state.selectedMassTimesTemplateIds)
+            setSelectedRoleTemplateIds(state.selectedRoleTemplateIds)
+            setSelectedLiturgicalEventIds(state.selectedLiturgicalEventIds)
+            setLiturgicalEvents(state.liturgicalEvents || [])
+            setProposedMasses(state.proposedMasses)
+            setAlgorithmOptions(state.algorithmOptions)
+            setCurrentWizardStep(state.currentWizardStep)
+
+            // Show toast with action to start fresh
+            toast.success('Previous wizard progress restored', {
+              duration: 5000,
+              action: {
+                label: 'Start Fresh',
+                onClick: () => {
+                  // Reset to initial state
+                  setStartDate('')
+                  setEndDate('')
+                  setSchedule([])
+                  setSelectedMassTimesTemplateIds([])
+                  setSelectedRoleTemplateIds([])
+                  setSelectedLiturgicalEventIds([])
+                  setLiturgicalEvents([])
+                  setProposedMasses([])
+                  setAlgorithmOptions({
+                    balanceWorkload: true,
+                    respectBlackoutDates: true,
+                    allowManualAdjustments: true,
+                  })
+                  setCurrentWizardStep(1)
+                  setSchedulingResult(null)
+                  localStorage.removeItem(STORAGE_KEY)
+                  toast.success('Started fresh wizard')
+                }
+              }
+            })
+          } else {
+            // Clear old data
+            localStorage.removeItem(STORAGE_KEY)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to restore wizard state:', error)
+        localStorage.removeItem(STORAGE_KEY)
+      }
+      setIsHydrated(true)
+    }
+
+    restoreState()
+  }, [])
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (!isHydrated) return // Don't save during initial hydration
+
+    const state: WizardState = {
+      startDate,
+      endDate,
+      schedule,
+      selectedMassTimesTemplateIds,
+      selectedRoleTemplateIds,
+      selectedLiturgicalEventIds,
+      liturgicalEvents,
+      proposedMasses,
+      algorithmOptions,
+      currentWizardStep,
+      timestamp: Date.now()
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    } catch (error) {
+      console.error('Failed to save wizard state:', error)
+    }
+  }, [
+    isHydrated,
+    startDate,
+    endDate,
+    schedule,
+    selectedMassTimesTemplateIds,
+    selectedRoleTemplateIds,
+    selectedLiturgicalEventIds,
+    liturgicalEvents,
+    proposedMasses,
+    algorithmOptions,
+    currentWizardStep
+  ])
+
+  // Clear localStorage when wizard is completed
+  const clearSavedState = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (error) {
+      console.error('Failed to clear wizard state:', error)
+    }
+  }, [])
+
+  // Reset wizard to initial state
+  const resetWizard = useCallback(() => {
+    setStartDate('')
+    setEndDate('')
+    setSchedule([])
+    setSelectedMassTimesTemplateIds([])
+    setSelectedRoleTemplateIds([])
+    setSelectedLiturgicalEventIds([])
+    setLiturgicalEvents([])
+    setProposedMasses([])
+    setAlgorithmOptions({
+      balanceWorkload: true,
+      respectBlackoutDates: true,
+      allowManualAdjustments: true,
+    })
+    setCurrentWizardStep(1)
+    setSchedulingResult(null)
+    clearSavedState()
+    toast.success('Wizard progress cleared')
+  }, [clearSavedState])
 
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
     if (field === 'startDate') {
@@ -56,30 +225,108 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
     setAlgorithmOptions((prev) => ({ ...prev, [option]: value }))
   }
 
-  // Calculate total mass count
+
+  // Calculate total mass count based on selected templates
   const calculateTotalMasses = () => {
-    if (!startDate || !endDate || schedule.length === 0) return 0
+    if (!startDate || !endDate || selectedMassTimesTemplateIds.length === 0) return 0
 
     const start = new Date(startDate)
     const end = new Date(endDate)
     let count = 0
 
-    const currentDate = new Date(start)
-    while (currentDate <= end) {
-      const dayOfWeek = currentDate.getDay()
-      const matchingEntries = schedule.filter((entry) => entry.dayOfWeek === dayOfWeek)
-      count += matchingEntries.length
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
+    selectedMassTimesTemplateIds.forEach(templateId => {
+      const template = massTimesTemplates.find(t => t.id === templateId)
+      if (!template) return
+
+      const dayNumber = getDayOfWeekNumber(template.day_of_week)
+      if (dayNumber === null) return
+
+      const currentDate = new Date(start)
+      while (currentDate <= end) {
+        if (currentDate.getDay() === dayNumber) {
+          count++
+        }
+        currentDate.setDate(currentDate.getDate() + 1)
+      }
+    })
 
     return count
   }
 
-  const totalMassCount = calculateTotalMasses()
+  // Use proposedMasses count if available, otherwise calculate from templates
+  const totalMassCount = proposedMasses.length > 0
+    ? proposedMasses.filter(m => m.isIncluded).length
+    : calculateTotalMasses()
+
+  // Generate proposed masses when dependencies change
+  const regenerateProposedMasses = useCallback(async () => {
+    // Get role assignments from selected role templates
+    const roleTemplateAssignments: Array<{ roleId: string; roleName: string }> = []
+
+    selectedRoleTemplateIds.forEach(templateId => {
+      const template = templates.find(t => t.id === templateId)
+      if (template?.items) {
+        template.items.forEach(item => {
+          if (item.mass_role) {
+            // Add each role based on its count
+            for (let i = 0; i < item.count; i++) {
+              roleTemplateAssignments.push({
+                roleId: item.mass_role.id,
+                roleName: item.mass_role.name
+              })
+            }
+          }
+        })
+      }
+    })
+
+    // Fetch liturgical events if we have selected event IDs
+    let liturgicalEventsData: Array<{ id: string; date: string; name: string; color?: string[]; grade_abbr?: string; type?: string }> = []
+    if (startDate && endDate && selectedLiturgicalEventIds.length > 0) {
+      try {
+        const events = await getGlobalLiturgicalEvents(startDate, endDate)
+        liturgicalEventsData = events
+          .filter(e => selectedLiturgicalEventIds.includes(e.id))
+          .map(e => ({
+            id: e.id,
+            date: e.date,
+            name: e.event_data.name,
+            color: e.event_data.color,
+            grade_abbr: e.event_data.grade_abbr,
+            type: e.event_data.type
+          }))
+        setLiturgicalEvents(liturgicalEventsData)
+      } catch (error) {
+        console.error('Failed to fetch liturgical events:', error)
+      }
+    }
+
+    const masses = generateProposedMasses(
+      startDate,
+      endDate,
+      massTimesTemplates,
+      selectedMassTimesTemplateIds,
+      liturgicalEventsData,
+      roleTemplateAssignments
+    )
+    setProposedMasses(masses)
+  }, [startDate, endDate, massTimesTemplates, selectedMassTimesTemplateIds, selectedRoleTemplateIds, selectedLiturgicalEventIds, templates])
+
+  // Regenerate when entering step 5 or when key inputs change
+  useEffect(() => {
+    if (startDate && endDate && selectedMassTimesTemplateIds.length > 0 && selectedRoleTemplateIds.length > 0) {
+      regenerateProposedMasses()
+    }
+  }, [startDate, endDate, selectedMassTimesTemplateIds, selectedRoleTemplateIds, regenerateProposedMasses])
 
   const handleComplete = async () => {
-    if (!selectedTemplateId) {
-      toast.error('Please select a template')
+    if (selectedRoleTemplateIds.length === 0) {
+      toast.error('Please select at least one role template')
+      return
+    }
+
+    if (selectedLiturgicalEventIds.length === 0) {
+      toast.error('Please select at least one liturgical event')
       return
     }
 
@@ -90,7 +337,8 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
         startDate,
         endDate,
         schedule,
-        templateId: selectedTemplateId,
+        templateIds: selectedRoleTemplateIds,
+        selectedLiturgicalEventIds,
         algorithmOptions,
       })
 
@@ -99,9 +347,12 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
       // Store result and navigate to Step 5 if manual adjustments enabled
       setSchedulingResult(result)
 
+      // Clear saved wizard state on successful completion
+      clearSavedState()
+
       if (algorithmOptions.allowManualAdjustments && result.rolesUnassigned > 0) {
-        // Navigate to Step 5 to show assignment editor
-        setCurrentWizardStep(5)
+        // Navigate to Step 9 to show results
+        setCurrentWizardStep(9)
       } else {
         // Go directly to masses list
         router.push(`/masses?start_date=${startDate}`)
@@ -120,15 +371,31 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
   }
 
   const isStep2Valid = () => {
-    return schedule.length > 0
+    return selectedMassTimesTemplateIds.length > 0
   }
 
   const isStep3Valid = () => {
-    return selectedTemplateId !== null
+    return selectedRoleTemplateIds.length > 0
   }
 
   const isStep4Valid = () => {
+    return selectedLiturgicalEventIds.length > 0
+  }
+
+  const isStep5Valid = () => {
     return true // Review step is always valid if we got here
+  }
+
+  const isStep6Valid = () => {
+    return proposedMasses.filter(m => m.isIncluded).length > 0
+  }
+
+  const isStep7Valid = () => {
+    return true // Summary step is always valid
+  }
+
+  const isStep8Valid = () => {
+    return true // Confirmation step is always valid
   }
 
   const getDisableNext = (currentStep: number): boolean => {
@@ -141,24 +408,40 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
         return !isStep3Valid()
       case 4:
         return !isStep4Valid()
+      case 5:
+        return !isStep5Valid()
+      case 6:
+        return !isStep6Valid()
+      case 7:
+        return !isStep7Valid()
+      case 8:
+        return !isStep8Valid()
       default:
         return false
     }
   }
 
-  const wizardSteps = currentWizardStep === 5
+  const wizardSteps = currentWizardStep === 9
     ? [
         { id: 1, title: 'Date Range', description: 'Select scheduling period' },
-        { id: 2, title: 'Schedule Pattern', description: 'Define Mass times' },
+        { id: 2, title: 'Mass Times', description: 'Select Mass times' },
         { id: 3, title: 'Role Template', description: 'Select assignments' },
-        { id: 4, title: 'Review & Confirm', description: 'Finalize settings' },
-        { id: 5, title: 'Assign Ministers', description: 'Manual adjustments' },
+        { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
+        { id: 5, title: 'Review & Confirm', description: 'Finalize settings' },
+        { id: 6, title: 'Proposed Schedule', description: 'Review and adjust' },
+        { id: 7, title: 'Assignment Summary', description: 'Review workload' },
+        { id: 8, title: 'Confirm', description: 'Final confirmation' },
+        { id: 9, title: 'Results', description: 'View created masses' },
       ]
     : [
         { id: 1, title: 'Date Range', description: 'Select scheduling period' },
-        { id: 2, title: 'Schedule Pattern', description: 'Define Mass times' },
+        { id: 2, title: 'Mass Times', description: 'Select Mass times' },
         { id: 3, title: 'Role Template', description: 'Select assignments' },
-        { id: 4, title: 'Review & Confirm', description: 'Finalize settings' },
+        { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
+        { id: 5, title: 'Review & Confirm', description: 'Finalize settings' },
+        { id: 6, title: 'Proposed Schedule', description: 'Review and adjust' },
+        { id: 7, title: 'Assignment Summary', description: 'Review workload' },
+        { id: 8, title: 'Confirm', description: 'Final confirmation' },
       ]
 
   const renderStepContent = (currentStep: number, goToStep: (step: number) => void) => {
@@ -169,6 +452,7 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
             startDate={startDate}
             endDate={endDate}
             onChange={handleDateChange}
+            massRolesWithCounts={massRolesWithCounts}
           />
         )
       case 2:
@@ -178,23 +462,36 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
             onChange={setSchedule}
             startDate={startDate}
             endDate={endDate}
+            massTimesTemplates={massTimesTemplates}
+            selectedTemplateIds={selectedMassTimesTemplateIds}
+            onTemplateSelectionChange={setSelectedMassTimesTemplateIds}
           />
         )
       case 3:
         return (
           <Step3TemplateSelection
             templates={templates}
-            selectedTemplateId={selectedTemplateId}
-            onChange={setSelectedTemplateId}
+            selectedTemplateIds={selectedRoleTemplateIds}
+            onChange={setSelectedRoleTemplateIds}
           />
         )
       case 4:
         return (
-          <Step4Review
+          <Step4LiturgicalEvents
             startDate={startDate}
             endDate={endDate}
-            schedule={schedule}
-            templateId={selectedTemplateId}
+            selectedEventIds={selectedLiturgicalEventIds}
+            onSelectionChange={setSelectedLiturgicalEventIds}
+          />
+        )
+      case 5:
+        return (
+          <Step5Review
+            startDate={startDate}
+            endDate={endDate}
+            massTimesTemplates={massTimesTemplates}
+            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
+            templateIds={selectedRoleTemplateIds}
             templates={templates}
             algorithmOptions={algorithmOptions}
             onAlgorithmOptionChange={handleAlgorithmOptionChange}
@@ -202,9 +499,38 @@ export function ScheduleMassesClient({ templates }: ScheduleMassesClientProps) {
             totalMassCount={totalMassCount}
           />
         )
-      case 5:
+      case 6:
+        return (
+          <Step6ProposedSchedule
+            startDate={startDate}
+            endDate={endDate}
+            massTimesTemplates={massTimesTemplates}
+            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
+            proposedMasses={proposedMasses}
+            onProposedMassesChange={setProposedMasses}
+          />
+        )
+      case 7:
+        return (
+          <Step7AssignmentSummary
+            proposedMasses={proposedMasses}
+          />
+        )
+      case 8:
+        return (
+          <Step8Confirmation
+            startDate={startDate}
+            endDate={endDate}
+            proposedMasses={proposedMasses}
+            massTimesTemplates={massTimesTemplates}
+            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
+            roleTemplates={templates}
+            selectedRoleTemplateIds={selectedRoleTemplateIds}
+          />
+        )
+      case 9:
         return schedulingResult ? (
-          <Step5Results
+          <Step9Results
             result={schedulingResult}
             startDate={startDate}
           />

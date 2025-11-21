@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
 import { Plus, X, Calendar, Save } from 'lucide-react'
 import { formatPersonName } from '@/lib/utils/formatters'
 import { formatDatePretty } from '@/lib/utils/date-format'
@@ -50,9 +51,9 @@ export function GroupMembershipsForm({
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Groups', href: '/groups' },
-    { label: 'Member Directory', href: '/group-member-directory' },
-    { label: formatPersonName(person), href: `/group-member-directory/${person.id}` },
-    { label: 'Manage Memberships', href: `/group-member-directory/${person.id}/memberships` },
+    { label: 'Group Members', href: '/group-members' },
+    { label: formatPersonName(person), href: `/group-members/${person.id}` },
+    { label: 'Manage Memberships', href: `/group-members/${person.id}/memberships` },
   ]
 
   // Get groups that person is not already a member of
@@ -145,9 +146,7 @@ export function GroupMembershipsForm({
                       <div className="flex items-center gap-3">
                         <div className="font-medium">{membership.group.name}</div>
                         {!membership.group.is_active && (
-                          <Badge variant="outline" className="opacity-60">
-                            Inactive
-                          </Badge>
+                          <ActiveInactiveBadge isActive={membership.group.is_active} showLabel size="sm" />
                         )}
                       </div>
                       {membership.group.description && (
@@ -315,7 +314,7 @@ export function GroupMembershipsForm({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => router.push(`/group-member-directory/${person.id}`)}
+            onClick={() => router.push(`/group-members/${person.id}`)}
           >
             Back to Profile
           </Button>

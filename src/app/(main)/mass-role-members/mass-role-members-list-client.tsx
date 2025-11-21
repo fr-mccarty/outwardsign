@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DialogButton } from '@/components/dialog-button'
+import { SearchCard } from '@/components/search-card'
 import { Search, User, Mail, Phone, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -144,8 +145,8 @@ export function MassRoleMembersListClient({
       </Dialog>
 
       {/* Search */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
+      <SearchCard modulePlural="Mass Role Members" moduleSingular="Mass Role Member" className="mb-6">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or email..."
@@ -154,7 +155,7 @@ export function MassRoleMembersListClient({
             className="pl-10"
           />
         </div>
-      </div>
+      </SearchCard>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -403,6 +403,52 @@ mass_role_instances (Actual Assignments)
 - Special ministers for sacramental elements
 - Photographer/videographer coordination
 
+### Liturgical Contexts
+
+**Purpose:** Automatically match role templates to liturgical celebrations based on the celebration's grade and type.
+
+**Database Column:** `mass_roles_templates.liturgical_contexts` (TEXT array)
+
+**Available Contexts:**
+
+| Context | Matches | Grade Range |
+|---------|---------|-------------|
+| `SUNDAY` | Any Sunday (regardless of liturgical grade) | type='sunday' |
+| `SOLEMNITY` | Easter Triduum + Solemnities | Grade 1-2 |
+| `FEAST` | Feasts of the Lord, Apostles, Evangelists | Grade 3-4 |
+| `MEMORIAL` | Obligatory and optional memorials | Grade 5-6 |
+| `WEEKDAY` | Ordinary ferial days | Grade 7 |
+
+**How Matching Works:**
+
+1. When scheduling Masses, the scheduler gets the liturgical event for each date
+2. It determines the liturgical context using `getLiturgicalContextFromGrade(grade, isSunday)`
+3. It finds the role template whose `liturgical_contexts` array includes that context
+4. If multiple templates match, the first is used; if none match, falls back to first template
+
+**Example Configuration:**
+
+```
+"Sunday Mass" template → liturgical_contexts: ['SUNDAY', 'SOLEMNITY']
+  - Used for: All Sundays, Christmas, Easter, Assumption, etc.
+
+"Daily Mass" template → liturgical_contexts: ['FEAST', 'MEMORIAL', 'WEEKDAY']
+  - Used for: Weekday feasts, saint memorials, ordinary weekdays
+```
+
+**Constants Reference:** `src/lib/constants.ts`
+- `LITURGICAL_CONTEXT_VALUES` - Array of valid context values
+- `LITURGICAL_CONTEXT_LABELS` - Bilingual display labels
+- `LITURGICAL_CONTEXT_DESCRIPTIONS` - Descriptions for UI
+- `getLiturgicalContextFromGrade()` - Helper function for mapping
+
+**Seeded Templates:**
+The parish seeder creates two default templates:
+- **Sunday Mass** - `['SUNDAY', 'SOLEMNITY']` - Full minister complement
+- **Daily Mass** - `['FEAST', 'MEMORIAL', 'WEEKDAY']` - Minimal ministers
+
+---
+
 ### Template Data Structure
 
 **Current implementation:** `mass_roles_templates.parameters` is JSONB (flexible but undefined)
@@ -938,7 +984,7 @@ person_blackout_dates.person_id → people.id
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Data architecture and server actions patterns
 
 **Related Modules:**
-- [GROUP_MEMBER_DIRECTORY.md](./GROUP_MEMBER_DIRECTORY.md) - Similar person-role membership pattern (different use case)
+- [GROUP_MEMBERS.md](./GROUP_MEMBERS.md) - Similar person-role membership pattern (different use case)
 
 ---
 

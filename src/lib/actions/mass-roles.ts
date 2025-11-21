@@ -115,6 +115,113 @@ export async function getMassRole(id: string): Promise<MassRole | null> {
   return data
 }
 
+// MassRole with relations interface
+export interface MassRoleWithRelations extends MassRole {
+  mass_role_members: Array<{
+    id: string
+    person_id: string
+    membership_type: 'MEMBER' | 'LEADER'
+    active: boolean
+    notes: string | null
+    person: {
+      id: string
+      first_name: string
+      last_name: string
+      preferred_name: null  // People table doesn't have preferred_name yet
+      email: string | null
+      phone_number: string | null
+    }
+  }>
+}
+
+/**
+ * Get mass role with members for view/edit pages
+ */
+export async function getMassRoleWithRelations(id: string): Promise<MassRoleWithRelations | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // First, get the mass role
+  const { data: massRoleData, error: massRoleError } = await supabase
+    .from('mass_roles')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (massRoleError) {
+    if (massRoleError.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching mass role:', {
+      error: massRoleError,
+      code: massRoleError.code,
+      message: massRoleError.message
+    })
+    throw new Error(`Failed to fetch mass role: ${massRoleError.message}`)
+  }
+
+  // Verify this is the correct parish
+  if (massRoleData.parish_id !== selectedParishId) {
+    return null // Not found in this parish
+  }
+
+  // Then get the members
+  const { data: membersData, error: membersError } = await supabase
+    .from('mass_role_members')
+    .select('id, person_id, membership_type, active, notes')
+    .eq('mass_role_id', id)
+
+  if (membersError) {
+    console.error('Error fetching mass role members:', membersError)
+    // Don't throw, just return with empty members
+    return {
+      ...massRoleData,
+      mass_role_members: []
+    } as MassRoleWithRelations
+  }
+
+  // Get all person IDs
+  const personIds = (membersData || []).map(m => m.person_id)
+
+  // Fetch person details if there are any members
+  let peopleMap: Record<string, any> = {}
+  if (personIds.length > 0) {
+    const { data: peopleData, error: peopleError } = await supabase
+      .from('people')
+      .select('id, first_name, last_name, email, phone_number')
+      .eq('parish_id', selectedParishId)
+      .in('id', personIds)
+
+    if (peopleError) {
+      console.error('Error fetching people for mass role members:', peopleError)
+    } else if (peopleData) {
+      // Add preferred_name: null to match the expected interface
+      peopleMap = Object.fromEntries(peopleData.map(p => [p.id, { ...p, preferred_name: null }]))
+    }
+  }
+
+  // Combine members with their person details
+  const membersWithPeople = (membersData || []).map(member => ({
+    ...member,
+    person: peopleMap[member.person_id] || {
+      id: member.person_id,
+      first_name: '',
+      last_name: '',
+      preferred_name: null,
+      email: null,
+      phone_number: null
+    }
+  }))
+
+  const data = {
+    ...massRoleData,
+    mass_role_members: membersWithPeople
+  } as MassRoleWithRelations
+
+  return data
+}
+
 export async function createMassRole(data: CreateMassRoleData): Promise<MassRole> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -406,4 +513,42 @@ export async function deleteMassRoleInstance(id: string): Promise<void> {
     revalidatePath(`/masses/${massRoleInstanceData.mass_id}`)
     revalidatePath(`/masses/${massRoleInstanceData.mass_id}/edit`)
   }
+}
+
+// ========== MASS ROLE WITH MEMBER COUNTS ==========
+
+export interface MassRoleWithCount extends MassRole {
+  member_count: number
+}
+
+/**
+ * Get all active mass roles for the selected parish with member counts
+ */
+export async function getMassRolesWithCounts(): Promise<MassRoleWithCount[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get mass roles with member counts
+  const { data, error } = await supabase
+    .from('mass_roles')
+    .select(`
+      *,
+      mass_role_members(count)
+    `)
+    .eq('parish_id', selectedParishId)
+    .eq('is_active', true)
+    .order('display_order', { ascending: true, nullsFirst: false })
+    .order('name', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching mass roles with counts:', error)
+    throw new Error('Failed to fetch mass roles')
+  }
+
+  // Transform the data to include member_count
+  return (data || []).map(role => ({
+    ...role,
+    member_count: role.mass_role_members?.[0]?.count || 0
+  }))
 }

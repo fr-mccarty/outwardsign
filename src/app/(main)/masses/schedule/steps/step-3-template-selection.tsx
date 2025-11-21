@@ -1,42 +1,94 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, Circle, BookTemplate, AlertCircle } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { BookTemplate, AlertCircle, Eye, CheckSquare } from "lucide-react"
+import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { MassRoleTemplate } from "@/lib/actions/mass-role-templates"
+import { LITURGICAL_CONTEXT_LABELS, type LiturgicalContext } from "@/lib/constants"
 
 interface Step3TemplateSelectionProps {
   templates: MassRoleTemplate[]
-  selectedTemplateId: string | null
-  onChange: (templateId: string) => void
+  selectedTemplateIds: string[]
+  onChange: (templateIds: string[]) => void
 }
 
 export function Step3TemplateSelection({
   templates,
-  selectedTemplateId,
+  selectedTemplateIds,
   onChange
 }: Step3TemplateSelectionProps) {
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId)
+  const [viewingTemplate, setViewingTemplate] = useState<MassRoleTemplate | null>(null)
+  // Track if auto-selection has already happened
+  const hasAutoSelectedRef = useRef(false)
+
+  // Auto-select all templates on first load if none are selected
+  useEffect(() => {
+    if (
+      !hasAutoSelectedRef.current &&
+      templates.length > 0 &&
+      selectedTemplateIds.length === 0
+    ) {
+      const allTemplateIds = templates.map(t => t.id)
+      onChange(allTemplateIds)
+      hasAutoSelectedRef.current = true
+    }
+  }, [templates, selectedTemplateIds, onChange])
+
+  const handleSelectAll = () => {
+    const allTemplateIds = templates.map(t => t.id)
+    onChange(allTemplateIds)
+  }
+
+  const allSelected = templates.length > 0 && selectedTemplateIds.length === templates.length
+
+  const handleTemplateToggle = (templateId: string, checked: boolean) => {
+    if (checked) {
+      onChange([...selectedTemplateIds, templateId])
+    } else {
+      onChange(selectedTemplateIds.filter(id => id !== templateId))
+    }
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <BookTemplate className="h-6 w-6 text-primary mt-1" />
-        <div>
-          <h2 className="text-2xl font-semibold">Select Role Template</h2>
-          <p className="text-muted-foreground mt-1">
-            Choose which roles need to be assigned for these Masses
-          </p>
-        </div>
-      </div>
+      <WizardStepHeader
+        icon={BookTemplate}
+        title="Select Role Templates"
+        description="Choose which role templates to apply for these Masses"
+      />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Mass Role Template</CardTitle>
-          <CardDescription>
-            The same template will be used for all scheduled Masses
-          </CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div>
+            <CardTitle>Mass Role Templates</CardTitle>
+            <CardDescription>
+              Select one or more templates to define which roles need assignments
+            </CardDescription>
+          </div>
+          {templates.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              disabled={allSelected}
+            >
+              <CheckSquare className="h-4 w-4 mr-1" />
+              Select All
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {templates.length === 0 ? (
@@ -51,53 +103,56 @@ export function Step3TemplateSelection({
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
+            <div className="space-y-2">
               {templates.map((template) => {
-                const isSelected = template.id === selectedTemplateId
+                const isSelected = selectedTemplateIds.includes(template.id)
 
                 return (
-                  <Card
+                  <div
                     key={template.id}
-                    className={`cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => onChange(template.id)}
+                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                   >
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {isSelected ? (
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                          ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground" />
-                          )}
+                    <Checkbox
+                      id={`role-template-${template.id}`}
+                      checked={isSelected}
+                      onCheckedChange={(checked) =>
+                        handleTemplateToggle(template.id, checked === true)
+                      }
+                    />
+                    <div className="flex-1">
+                      <Label
+                        htmlFor={`role-template-${template.id}`}
+                        className="font-medium cursor-pointer"
+                      >
+                        {template.name}
+                      </Label>
+                      {template.liturgical_contexts && template.liturgical_contexts.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {template.liturgical_contexts.map((context) => (
+                            <Badge key={context} variant="secondary" className="text-xs">
+                              {LITURGICAL_CONTEXT_LABELS[context as LiturgicalContext]?.en || context}
+                            </Badge>
+                          ))}
                         </div>
-
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold">{template.name}</h4>
-                            {isSelected && (
-                              <Badge variant="default">Selected</Badge>
-                            )}
-                          </div>
-
-                          {template.description && (
-                            <p className="text-sm text-muted-foreground">
-                              {template.description}
-                            </p>
-                          )}
-
-                          {template.note && (
-                            <p className="text-xs text-muted-foreground italic">
-                              Note: {template.note}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      )}
+                      {template.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {template.description}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setViewingTemplate(template)
+                      }}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  </div>
                 )
               })}
             </div>
@@ -105,40 +160,22 @@ export function Step3TemplateSelection({
         </CardContent>
       </Card>
 
-      {selectedTemplate && (
-        <Card className="bg-muted/50">
-          <CardHeader>
-            <CardTitle>Selected Template Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <span className="font-medium">Template Name:</span>
-              <p className="text-muted-foreground">{selectedTemplate.name}</p>
+      {selectedTemplateIds.length > 0 && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Templates Selected:</span>
+              <span className="text-xl font-bold text-primary">{selectedTemplateIds.length}</span>
             </div>
-
-            {selectedTemplate.description && (
-              <div>
-                <span className="font-medium">Description:</span>
-                <p className="text-muted-foreground">{selectedTemplate.description}</p>
-              </div>
-            )}
-
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                This template will be used to create role assignments for all scheduled Masses.
-                The automatic scheduling algorithm will attempt to assign ministers to each role.
-              </AlertDescription>
-            </Alert>
           </CardContent>
         </Card>
       )}
 
-      {!selectedTemplateId && templates.length > 0 && (
+      {selectedTemplateIds.length === 0 && templates.length > 0 && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Please select a template to continue
+            Please select at least one template to continue
           </AlertDescription>
         </Alert>
       )}
@@ -150,12 +187,59 @@ export function Step3TemplateSelection({
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
               <li>Templates define which roles are needed (Lectors, EMHCs, Servers, etc.)</li>
               <li>Each role can have multiple positions (e.g., 2 Lectors, 4 EMHCs)</li>
-              <li>The same template will be applied to all Masses in this schedule</li>
+              <li>Selected templates will be applied to all Masses in this schedule</li>
               <li>You can manually adjust assignments after scheduling</li>
             </ul>
           </div>
         </CardContent>
       </Card>
+
+      {/* View Template Dialog */}
+      <Dialog open={!!viewingTemplate} onOpenChange={() => setViewingTemplate(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{viewingTemplate?.name}</DialogTitle>
+            <DialogDescription>
+              Template details and role assignments
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {viewingTemplate?.liturgical_contexts && viewingTemplate.liturgical_contexts.length > 0 && (
+              <div>
+                <span className="font-medium">Applies to:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {viewingTemplate.liturgical_contexts.map((context) => (
+                    <Badge key={context} variant="secondary">
+                      {LITURGICAL_CONTEXT_LABELS[context as LiturgicalContext]?.en || context}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {viewingTemplate?.description && (
+              <div>
+                <span className="font-medium">Description:</span>
+                <p className="text-muted-foreground">{viewingTemplate.description}</p>
+              </div>
+            )}
+            {viewingTemplate?.note && (
+              <div>
+                <span className="font-medium">Note:</span>
+                <p className="text-muted-foreground italic">{viewingTemplate.note}</p>
+              </div>
+            )}
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                To see the full list of roles in this template, visit the{' '}
+                <a href={`/mass-role-templates/${viewingTemplate?.id}`} className="underline" target="_blank">
+                  template detail page
+                </a>.
+              </AlertDescription>
+            </Alert>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

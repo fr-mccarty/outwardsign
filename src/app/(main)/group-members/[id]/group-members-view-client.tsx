@@ -12,22 +12,22 @@ import { formatDatePretty } from '@/lib/utils/date-format'
 import type { Person } from '@/lib/types'
 import type { PersonGroupMembership } from '@/lib/actions/groups'
 
-interface GroupMemberDirectoryViewClientProps {
+interface GroupMembersViewClientProps {
   person: Person
   memberships: PersonGroupMembership[]
 }
 
-export function GroupMemberDirectoryViewClient({
+export function GroupMembersViewClient({
   person,
   memberships
-}: GroupMemberDirectoryViewClientProps) {
+}: GroupMembersViewClientProps) {
   const router = useRouter()
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Groups', href: '/groups' },
-    { label: 'Member Directory', href: '/group-member-directory' },
-    { label: formatPersonName(person), href: `/group-member-directory/${person.id}` },
+    { label: 'Group Members', href: '/group-members' },
+    { label: formatPersonName(person), href: `/group-members/${person.id}` },
   ]
 
   const activeMemberships = memberships.filter(m => m.group.is_active)
@@ -97,7 +97,7 @@ export function GroupMemberDirectoryViewClient({
                 </CardDescription>
               </div>
               <Button
-                onClick={() => router.push(`/group-member-directory/${person.id}/memberships`)}
+                onClick={() => router.push(`/group-members/${person.id}/memberships`)}
               >
                 Manage Memberships
               </Button>
@@ -192,7 +192,7 @@ export function GroupMemberDirectoryViewClient({
             </Button>
             <Button
               variant="outline"
-              onClick={() => router.push(`/group-member-directory/${person.id}/memberships`)}
+              onClick={() => router.push(`/group-members/${person.id}/memberships`)}
             >
               Manage Memberships
             </Button>

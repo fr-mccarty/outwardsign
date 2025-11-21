@@ -17,7 +17,7 @@ import { Plus, Clock, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { ListViewCard } from '@/components/list-view-card'
 import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
-import type { MassTimeWithRelations } from '@/lib/actions/mass-times'
+import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 
 // Helper to convert boolean to status and get label
 const getActiveStatusLabel = (isActive: boolean): string => {
@@ -51,7 +51,7 @@ export function MassTimesListClient({ initialData, stats }: MassTimesListClientP
     } else {
       params.delete(key)
     }
-    const newUrl = `/mass-times${params.toString() ? `?${params.toString()}` : ''}`
+    const newUrl = `/mass-times-templates${params.toString() ? `?${params.toString()}` : ''}`
     router.push(newUrl)
   }
 

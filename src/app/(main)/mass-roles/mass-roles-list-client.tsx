@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -39,8 +39,14 @@ export function MassRolesListClient({ massRoles: initialData, userParish }: Mass
   const router = useRouter()
   const [items, setItems] = useState<MassRole[]>(initialData)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isMounted, setIsMounted] = useState(false)
 
   const canManageRoles = canAccessModule(userParish, "masses")
+
+  // Fix hydration mismatch with @dnd-kit
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -114,7 +120,7 @@ export function MassRolesListClient({ massRoles: initialData, userParish }: Mass
       }
     >
       {/* Search Card */}
-      <SearchCard modulePlural="Mass Roles" moduleSingular="Mass Role">
+      <SearchCard modulePlural="Mass Roles" moduleSingular="Mass Role" className="mb-6">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -146,6 +152,21 @@ export function MassRolesListClient({ massRoles: initialData, userParish }: Mass
             </Link>
           )}
         </ContentCard>
+      ) : !isMounted ? (
+        // Render static list during SSR to avoid hydration mismatch
+        <div className="flex flex-col gap-2 overflow-hidden">
+          {filteredItems.map((role) => (
+            <DraggableListItem
+              key={role.id}
+              id={role.id}
+              title={role.name}
+              description={role.description}
+              editHref={`/mass-roles/${role.id}/edit`}
+              viewHref={`/mass-roles/${role.id}`}
+              status={role.is_active ? "ACTIVE" : "INACTIVE"}
+            />
+          ))}
+        </div>
       ) : (
         <DndContext
           sensors={sensors}

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { getMassTimeWithRelations } from '@/lib/actions/mass-times'
+import { getMassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 import { getTemplateItems } from '@/lib/actions/mass-times-template-items'
 import { MassTimeViewClient } from './mass-time-view-client'
 

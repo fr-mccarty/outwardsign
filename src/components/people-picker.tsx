@@ -29,6 +29,7 @@ interface PeoplePickerProps {
   editMode?: boolean // Open directly to edit form
   personToEdit?: Person | null // Person being edited
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
+  filterByMassRole?: string // Filter people by mass role membership
 }
 
 // Default visible fields - defined outside component to prevent re-creation
@@ -44,7 +45,6 @@ export function PeoplePicker({
   placeholder = 'Search for a person...',
   emptyMessage = 'No people found.',
   selectedPersonId,
-
   visibleFields,
   requiredFields,
   openToNewPerson = false,
@@ -53,6 +53,7 @@ export function PeoplePicker({
   editMode = false,
   personToEdit = null,
   autoSetSex,
+  filterByMassRole,
 }: PeoplePickerProps) {
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(false)
@@ -101,6 +102,7 @@ export function PeoplePicker({
         page,
         limit: PAGE_SIZE,
         search,
+        massRoleId: filterByMassRole,
       })
       setPeople(result.items)
       setTotalCount(result.totalCount)

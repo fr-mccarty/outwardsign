@@ -13,9 +13,19 @@ export interface MassTimesTemplate {
   parish_id: string
   name: string
   description: string | null
+  day_of_week: string // SUNDAY, MONDAY, etc., or MOVABLE
   is_active: boolean
   created_at: string
   updated_at: string
+}
+
+// MassTimesTemplate with items
+export interface MassTimesTemplateWithItems extends MassTimesTemplate {
+  items?: Array<{
+    id: string
+    time: string
+    day_type: string
+  }>
 }
 
 // For backward compatibility
@@ -26,6 +36,7 @@ export type MassTimeWithRelations = MassTimesTemplate
 export interface CreateMassTimeData {
   name: string
   description?: string
+  day_of_week?: string
   is_active?: boolean
 }
 
@@ -33,6 +44,7 @@ export interface CreateMassTimeData {
 export interface UpdateMassTimeData {
   name?: string
   description?: string | null
+  day_of_week?: string
   is_active?: boolean
 }
 
@@ -78,6 +90,42 @@ export async function getMassTimes(filters?: MassTimeFilterParams): Promise<Mass
   if (error) {
     console.error('Error fetching mass times templates:', error)
     throw new Error('Failed to fetch mass times templates')
+  }
+
+  return data || []
+}
+
+/**
+ * Get all mass times templates with their items
+ */
+export async function getMassTimesWithItems(filters?: MassTimeFilterParams): Promise<MassTimesTemplateWithItems[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  let query = supabase
+    .from('mass_times_templates')
+    .select(`
+      *,
+      items:mass_times_template_items(id, time, day_type)
+    `)
+    .eq('parish_id', selectedParishId)
+    .order('created_at', { ascending: false })
+
+  // Apply filters
+  if (filters?.is_active !== undefined) {
+    query = query.eq('is_active', filters.is_active)
+  }
+
+  if (filters?.search) {
+    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching mass times templates with items:', error)
+    throw new Error('Failed to fetch mass times templates with items')
   }
 
   return data || []
@@ -203,6 +251,7 @@ export async function createMassTime(data: CreateMassTimeData): Promise<MassTime
         parish_id: selectedParishId,
         name: data.name,
         description: data.description || null,
+        day_of_week: data.day_of_week || 'SUNDAY',
         is_active: data.is_active !== undefined ? data.is_active : false,
       },
     ])
@@ -240,6 +289,7 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
   if (data.description !== undefined) updateData.description = data.description
+  if (data.day_of_week !== undefined) updateData.day_of_week = data.day_of_week
   if (data.is_active !== undefined) updateData.is_active = data.is_active
 
   const { data: massTimesTemplate, error } = await supabase

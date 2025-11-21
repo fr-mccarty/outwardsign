@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { GroupMemberDirectoryListClient } from './group-member-directory-list-client'
+import { GroupMembersListClient } from './group-members-list-client'
 import { getPeopleWithGroupMemberships, getGroups } from '@/lib/actions/groups'
 import { getGroupRoles } from '@/lib/actions/group-roles'
 import { getPeople } from '@/lib/actions/people'
 
-export default async function GroupMemberDirectoryPage() {
+export default async function GroupMembersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -26,7 +26,7 @@ export default async function GroupMemberDirectoryPage() {
   const allPeople = await getPeople()
 
   return (
-    <GroupMemberDirectoryListClient
+    <GroupMembersListClient
       peopleWithMemberships={peopleWithMemberships}
       groups={groups}
       groupRoles={groupRoles}

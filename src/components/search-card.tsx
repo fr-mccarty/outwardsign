@@ -8,17 +8,21 @@ interface SearchCardProps {
   moduleSingular: string
   /** Content to render inside the card */
   children: ReactNode
+  /** Optional className to apply to the card */
+  className?: string
 }
 
 export function SearchCard({
   modulePlural,
   moduleSingular,
-  children
+  children,
+  className
 }: SearchCardProps) {
   return (
     <FormSectionCard
       title={`Search ${modulePlural}`}
       description={`Search for a ${moduleSingular}`}
+      className={className}
     >
       {children}
     </FormSectionCard>

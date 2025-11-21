@@ -190,7 +190,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       icon: List,
                     },
                     {
-                      title: "Role Templates",
+                      title: "Mass Role Templates",
                       url: "/mass-role-templates",
                       icon: LayoutTemplate,
                     },

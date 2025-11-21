@@ -197,3 +197,35 @@ export function formatTime(time: string): string {
     return time
   }
 }
+
+/**
+ * Maps day of week string to numeric value
+ * @param dayOfWeek - Day of week string (e.g., "SUNDAY", "MONDAY")
+ * @returns Day of week number (0=Sunday, 6=Saturday) or null if invalid
+ */
+export function getDayOfWeekNumber(dayOfWeek: string): number | null {
+  const mapping: Record<string, number> = {
+    SUNDAY: 0,
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6,
+  }
+  return mapping[dayOfWeek] ?? null
+}
+
+/**
+ * Calculates number of days between two dates (inclusive)
+ * @param startDate - Start date string (YYYY-MM-DD)
+ * @param endDate - End date string (YYYY-MM-DD)
+ * @returns Number of days between dates (inclusive)
+ */
+export function getDayCount(startDate: string, endDate: string): number {
+  if (!startDate || !endDate) return 0
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const diffTime = Math.abs(end.getTime() - start.getTime())
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+}

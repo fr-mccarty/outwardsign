@@ -309,6 +309,76 @@ export const DAYS_OF_WEEK_LABELS: Record<DayOfWeek, { en: string; es: string }> 
   SATURDAY: { en: 'Saturday', es: 'Sábado' }
 }
 
+// Liturgical Days of Week Constants (includes MOVABLE for feasts/holy days)
+export const LITURGICAL_DAYS_OF_WEEK_VALUES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'MOVABLE'] as const
+export type LiturgicalDayOfWeek = typeof LITURGICAL_DAYS_OF_WEEK_VALUES[number]
+
+export const LITURGICAL_DAYS_OF_WEEK_LABELS: Record<LiturgicalDayOfWeek, { en: string; es: string }> = {
+  SUNDAY: { en: 'Sunday', es: 'Domingo' },
+  MONDAY: { en: 'Monday', es: 'Lunes' },
+  TUESDAY: { en: 'Tuesday', es: 'Martes' },
+  WEDNESDAY: { en: 'Wednesday', es: 'Miércoles' },
+  THURSDAY: { en: 'Thursday', es: 'Jueves' },
+  FRIDAY: { en: 'Friday', es: 'Viernes' },
+  SATURDAY: { en: 'Saturday', es: 'Sábado' },
+  MOVABLE: { en: 'Movable', es: 'Movible' }
+}
+
+// Liturgical Context Constants (for role template mapping)
+// Used to match role templates to liturgical events based on grade/type
+export const LITURGICAL_CONTEXT_VALUES = ['SUNDAY', 'SOLEMNITY', 'FEAST', 'MEMORIAL', 'WEEKDAY'] as const
+export type LiturgicalContext = typeof LITURGICAL_CONTEXT_VALUES[number]
+
+export const LITURGICAL_CONTEXT_LABELS: Record<LiturgicalContext, { en: string; es: string }> = {
+  SUNDAY: { en: 'Sunday', es: 'Domingo' },
+  SOLEMNITY: { en: 'Solemnity', es: 'Solemnidad' },
+  FEAST: { en: 'Feast', es: 'Fiesta' },
+  MEMORIAL: { en: 'Memorial', es: 'Memoria' },
+  WEEKDAY: { en: 'Weekday', es: 'Día de Semana' }
+}
+
+export const LITURGICAL_CONTEXT_DESCRIPTIONS: Record<LiturgicalContext, { en: string; es: string }> = {
+  SUNDAY: { en: 'All Sundays throughout the year', es: 'Todos los domingos del año' },
+  SOLEMNITY: { en: 'Highest rank celebrations (Easter, Christmas, etc.)', es: 'Celebraciones de rango más alto (Pascua, Navidad, etc.)' },
+  FEAST: { en: 'Feasts of the Lord, Apostles, Evangelists', es: 'Fiestas del Señor, Apóstoles, Evangelistas' },
+  MEMORIAL: { en: 'Obligatory and optional memorials of saints', es: 'Memorias obligatorias y opcionales de santos' },
+  WEEKDAY: { en: 'Ordinary weekdays (ferial days)', es: 'Días de semana ordinarios (días feriales)' }
+}
+
+// Liturgical Grade Labels (from external calendar API)
+// These map the raw grade_lcl values to properly formatted labels
+export const LITURGICAL_GRADE_LABELS: Record<string, { en: string; es: string }> = {
+  'celebration with precedence over solemnities': { en: 'Celebration with Precedence over Solemnities', es: 'Celebración con Precedencia sobre Solemnidades' },
+  'commemoration': { en: 'Commemoration', es: 'Conmemoración' },
+  'FEAST OF THE LORD': { en: 'Feast of the Lord', es: 'Fiesta del Señor' },
+  'FEAST': { en: 'Feast', es: 'Fiesta' },
+  'Memorial': { en: 'Memorial', es: 'Memoria' },
+  'optional memorial': { en: 'Optional Memorial', es: 'Memoria Opcional' },
+  'SOLEMNITY': { en: 'Solemnity', es: 'Solemnidad' },
+  'weekday': { en: 'Weekday', es: 'Día de Semana' },
+}
+
+// Helper to get formatted liturgical grade label
+export function getLiturgicalGradeLabel(gradeLcl: string, lang: 'en' | 'es' = 'en'): string {
+  const label = LITURGICAL_GRADE_LABELS[gradeLcl]
+  if (label) return label[lang]
+  // Fallback: capitalize first letter of each word
+  return gradeLcl.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
+}
+
+// Maps liturgical grade (1-7) to LiturgicalContext
+// Grade 1-2: Triduum + Solemnities → SOLEMNITY
+// Grade 3-4: Feasts → FEAST
+// Grade 5-6: Memorials → MEMORIAL
+// Grade 7: Weekdays → WEEKDAY
+export function getLiturgicalContextFromGrade(grade: number, isSunday: boolean): LiturgicalContext {
+  if (isSunday) return 'SUNDAY'
+  if (grade <= 2) return 'SOLEMNITY'
+  if (grade <= 4) return 'FEAST'
+  if (grade <= 6) return 'MEMORIAL'
+  return 'WEEKDAY'
+}
+
 // Months of Year Constants (shared across modules)
 export const MONTHS_OF_YEAR_VALUES = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'] as const
 export type MonthOfYear = typeof MONTHS_OF_YEAR_VALUES[number]
@@ -482,6 +552,17 @@ export const PETITION_LANGUAGE_LABELS: Record<PetitionLanguage, { en: string; es
   'en': { en: 'English', es: 'Inglés' },
   'es': { en: 'Spanish', es: 'Español' },
   'bilingual': { en: 'Bilingual', es: 'Bilingüe' }
+}
+
+// Active/Inactive Status Labels
+export const ACTIVE_STATUS_LABELS = {
+  en: 'Active',
+  es: 'Activo'
+}
+
+export const INACTIVE_STATUS_LABELS = {
+  en: 'Inactive',
+  es: 'Inactivo'
 }
 
 // Liturgical Calendar API Color Mapping

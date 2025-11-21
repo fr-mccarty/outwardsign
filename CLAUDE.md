@@ -75,7 +75,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[PAGINATION.md](./docs/PAGINATION.md)** - ⚠️ Pagination patterns, implementation guide, and current inconsistencies across modules
 - **[DRAG_AND_DROP.md](./docs/DRAG_AND_DROP.md)** - Drag-and-drop implementation with @dnd-kit, unique constraint handling, and reorder patterns
 - **[USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md)** - User documentation system structure, adding pages, sidebar navigation, breadcrumbs, and multi-language support
-- **[GROUP_MEMBER_DIRECTORY.md](./docs/GROUP_MEMBER_DIRECTORY.md)** - Group member directory module for managing people in groups with roles (person-centric view, no scheduling)
+- **[GROUP_MEMBERS.md](./docs/GROUP_MEMBERS.md)** - Group members module for managing people in groups with roles (person-centric view, no scheduling)
 - **[PERMISSION_ENFORCEMENT_SUMMARY.md](./docs/PERMISSION_ENFORCEMENT_SUMMARY.md)** - Complete permission enforcement implementation (server actions, role permissions, UI enforcement patterns)
 - **[CLAUDE_CODE_SETTINGS.md](./docs/CLAUDE_CODE_SETTINGS.md)** - Claude Code permission configuration (settings.json and settings.local.json)
 

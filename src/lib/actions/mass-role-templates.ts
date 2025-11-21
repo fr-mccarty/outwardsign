@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import type { LiturgicalContext } from '@/lib/constants'
 
 // Types
 export interface MassRoleTemplate {
@@ -12,20 +13,37 @@ export interface MassRoleTemplate {
   name: string
   description: string | null
   note: string | null
+  liturgical_contexts: LiturgicalContext[]
   created_at: string
   updated_at: string
+}
+
+export interface MassRoleTemplateWithItems extends MassRoleTemplate {
+  items: Array<{
+    id: string
+    mass_role_id: string
+    count: number
+    position: number
+    mass_role: {
+      id: string
+      name: string
+      description: string | null
+    }
+  }>
 }
 
 export interface CreateMassRoleTemplateData {
   name: string
   description?: string
   note?: string
+  liturgical_contexts?: LiturgicalContext[]
 }
 
 export interface UpdateMassRoleTemplateData {
   name?: string
   description?: string
   note?: string
+  liturgical_contexts?: LiturgicalContext[]
 }
 
 // Get all mass role templates for the current parish
@@ -43,6 +61,35 @@ export async function getMassRoleTemplates(): Promise<MassRoleTemplate[]> {
   if (error) {
     console.error('Error fetching mass role templates:', error)
     throw new Error('Failed to fetch mass role templates')
+  }
+
+  return data || []
+}
+
+// Get all mass role templates with their items for the current parish
+export async function getMassRoleTemplatesWithItems(): Promise<MassRoleTemplateWithItems[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('mass_roles_templates')
+    .select(`
+      *,
+      items:mass_roles_template_items(
+        id,
+        mass_role_id,
+        count,
+        position,
+        mass_role:mass_roles(id, name, description)
+      )
+    `)
+    .eq('parish_id', selectedParishId)
+    .order('name', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching mass role templates with items:', error)
+    throw new Error('Failed to fetch mass role templates with items')
   }
 
   return data || []
@@ -85,6 +132,7 @@ export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): 
       name: data.name,
       description: data.description || null,
       note: data.note || null,
+      liturgical_contexts: data.liturgical_contexts || [],
     })
     .select()
     .single()

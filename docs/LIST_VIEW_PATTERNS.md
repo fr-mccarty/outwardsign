@@ -80,7 +80,7 @@ This document catalogs the three main list view patterns used throughout the app
 | Readings | `/readings` | - |
 | People | `/people` | - |
 | Locations | `/locations` | - |
-| Group Member Directory | `/group-member-directory` | - |
+| Group Members | `/group-members` | - |
 
 ---
 
@@ -159,7 +159,7 @@ These modules use raw `Card` components due to specialized requirements:
 
 ### Completed
 
-1. ~~**Migrate Group Member Directory to ListViewCard**~~ ✅
+1. ~~**Migrate Group Members to ListViewCard**~~ ✅
 2. ~~**Add Drag & Drop to Mass Roles**~~ ✅
 3. ~~**Create DraggableListCard Component**~~ ✅
 

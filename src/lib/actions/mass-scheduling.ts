@@ -6,12 +6,15 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { MassScheduleEntry } from '@/app/(main)/masses/schedule/steps/step-2-schedule-pattern'
+import { getLiturgicalContextFromGrade, type LiturgicalContext } from '@/lib/constants'
+import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
 export interface ScheduleMassesParams {
   startDate: string
   endDate: string
   schedule: MassScheduleEntry[]
-  templateId: string
+  templateIds: string[]  // Multiple role templates
+  selectedLiturgicalEventIds: string[]  // Selected liturgical events
   algorithmOptions: {
     balanceWorkload: boolean
     respectBlackoutDates: boolean
@@ -58,31 +61,56 @@ export async function scheduleMasses(
   requireModuleAccess(userParish, 'masses')
 
   try {
-    // Phase 1: Get template items (roles and counts)
-    const { data: templateItems, error: templateError } = await supabase
-      .from('mass_roles_template_items')
-      .select(`
-        *,
-        mass_role:mass_roles(*)
-      `)
-      .eq('mass_roles_template_id', params.templateId)
-      .order('position')
+    // Phase 1: Fetch selected liturgical events
+    const { data: liturgicalEvents, error: liturgicalError } = await supabase
+      .from('global_liturgical_events')
+      .select('*')
+      .in('id', params.selectedLiturgicalEventIds)
 
-    if (templateError) {
-      console.error('Error fetching template items:', templateError)
-      throw new Error('Failed to fetch template items')
+    if (liturgicalError) {
+      console.error('Error fetching liturgical events:', liturgicalError)
+      throw new Error('Failed to fetch liturgical events')
     }
 
-    if (!templateItems || templateItems.length === 0) {
-      throw new Error('Template has no role items defined')
+    // Create a map of date -> liturgical event for quick lookup
+    const liturgicalEventsByDate = new Map<string, GlobalLiturgicalEvent>()
+    for (const event of liturgicalEvents || []) {
+      liturgicalEventsByDate.set(event.date, event as GlobalLiturgicalEvent)
     }
 
-    // Phase 2: Generate dates and create Masses with Events
+    // Phase 2: Fetch templates with their liturgical_contexts
+    const { data: templates, error: templatesError } = await supabase
+      .from('mass_roles_templates')
+      .select('*')
+      .in('id', params.templateIds)
+
+    if (templatesError) {
+      console.error('Error fetching templates:', templatesError)
+      throw new Error('Failed to fetch templates')
+    }
+
+    if (!templates || templates.length === 0) {
+      throw new Error('No templates selected')
+    }
+
+    // Helper: Find matching template for a liturgical context
+    const findTemplateForContext = (context: LiturgicalContext): typeof templates[0] | null => {
+      // Find template that includes this context
+      const match = templates.find(t =>
+        t.liturgical_contexts && t.liturgical_contexts.includes(context)
+      )
+      // Fallback to first template if no match
+      return match || templates[0]
+    }
+
+    // Phase 3: Generate dates and create Masses with Events
     const massesToCreate: Array<{
       date: string
       time: string
       language: string
       scheduleEntry: MassScheduleEntry
+      liturgicalEvent: GlobalLiturgicalEvent | null
+      templateId: string
     }> = []
 
     const start = new Date(params.startDate)
@@ -91,30 +119,64 @@ export async function scheduleMasses(
 
     while (currentDate <= end) {
       const dayOfWeek = currentDate.getDay()
+      const dateStr = currentDate.toISOString().split('T')[0]
 
       // Find all schedule entries matching this day
       const matchingEntries = params.schedule.filter(
         (entry) => entry.dayOfWeek === dayOfWeek
       )
 
+      // Get liturgical event for this date
+      const liturgicalEvent = liturgicalEventsByDate.get(dateStr) || null
+
+      // Determine liturgical context and matching template
+      let templateId = templates[0].id
+      if (liturgicalEvent) {
+        const isSunday = dayOfWeek === 0
+        const grade = liturgicalEvent.event_data?.grade || 7
+        const context = getLiturgicalContextFromGrade(grade, isSunday)
+        const matchingTemplate = findTemplateForContext(context)
+        if (matchingTemplate) {
+          templateId = matchingTemplate.id
+        }
+      }
+
       for (const entry of matchingEntries) {
         massesToCreate.push({
-          date: currentDate.toISOString().split('T')[0],
+          date: dateStr,
           time: entry.time,
           language: entry.language,
           scheduleEntry: entry,
+          liturgicalEvent,
+          templateId,
         })
       }
 
       currentDate.setDate(currentDate.getDate() + 1)
     }
 
-    // Phase 3: Create Events and Masses in batch
+    // Phase 4: Create Events and Masses in batch
     const createdMasses: ScheduleMassesResult['masses'] = []
 
+    // Pre-fetch template items for all templates
+    const templateItemsMap = new Map<string, any[]>()
+    for (const template of templates) {
+      const { data: items } = await supabase
+        .from('mass_roles_template_items')
+        .select(`*, mass_role:mass_roles(*)`)
+        .eq('mass_roles_template_id', template.id)
+        .order('position')
+      templateItemsMap.set(template.id, items || [])
+    }
+
     for (const massData of massesToCreate) {
-      // Create Event first
-      const eventName = `Mass - ${massData.date} ${massData.time}`
+      // Get template items for this mass's template
+      const templateItems = templateItemsMap.get(massData.templateId) || []
+
+      // Create Event first - use liturgical event name if available
+      const eventName = massData.liturgicalEvent
+        ? `${massData.liturgicalEvent.event_data.name} - ${massData.time}`
+        : `Mass - ${massData.date} ${massData.time}`
 
       const { data: event, error: eventError } = await supabase
         .from('events')
@@ -126,7 +188,8 @@ export async function scheduleMasses(
           start_time: massData.time,
           end_date: massData.date,
           language: massData.language,
-          is_public: false, // Default to not public, user can change later
+          is_public: false,
+          global_liturgical_event_id: massData.liturgicalEvent?.id || null,
         })
         .select()
         .single()
@@ -142,7 +205,7 @@ export async function scheduleMasses(
         .insert({
           parish_id: selectedParishId,
           event_id: event.id,
-          mass_roles_template_id: params.templateId,
+          mass_roles_template_id: massData.templateId,
           status: 'SCHEDULED',
         })
         .select()
@@ -153,7 +216,7 @@ export async function scheduleMasses(
         throw new Error(`Failed to create mass for ${massData.date} ${massData.time}`)
       }
 
-      // Phase 4: Create role instances for this Mass
+      // Phase 5: Create role instances for this Mass
       const roleInstances: Array<{
         mass_id: string
         person_id: string | null
@@ -165,7 +228,7 @@ export async function scheduleMasses(
         for (let i = 0; i < templateItem.count; i++) {
           roleInstances.push({
             mass_id: mass.id,
-            person_id: null, // Will be assigned in Phase 5
+            person_id: null,
             mass_roles_template_item_id: templateItem.id,
           })
         }
@@ -301,6 +364,36 @@ export async function scheduleMasses(
     console.error('Error in scheduleMasses:', error)
     throw error
   }
+}
+
+/**
+ * Get suggested minister assignment for a role at a specific date/time
+ * Used for preview in Step 6 before actually creating Masses
+ */
+export async function getSuggestedMinister(
+  roleId: string,
+  date: string,
+  time: string,
+  balanceWorkload: boolean,
+  alreadyAssignedPersonIds: string[] = []
+): Promise<{ id: string; name: string } | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const ministers = await getAvailableMinisters(roleId, date, time, selectedParishId)
+
+  // Filter out people already assigned to this Mass
+  const available = ministers.filter(m => !alreadyAssignedPersonIds.includes(m.id))
+
+  if (available.length === 0) return null
+
+  // Balance workload if enabled (sort by assignment count ascending)
+  if (balanceWorkload) {
+    available.sort((a, b) => a.assignmentCount - b.assignmentCount)
+  }
+
+  // Return first eligible minister
+  return { id: available[0].id, name: available[0].name }
 }
 
 /**

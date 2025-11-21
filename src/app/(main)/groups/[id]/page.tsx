@@ -7,16 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ActiveInactiveBadge } from "@/components/active-inactive-badge"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { UserPlus, User, Trash2, Users, Edit } from "lucide-react"
 import { getGroup, removeGroupMember, type GroupWithMembers, type GroupMember } from '@/lib/actions/groups'
@@ -114,6 +105,7 @@ export default function GroupDetailPage({ params }: PageProps) {
     try {
       await removeGroupMember(groupId, memberToRemove.person_id)
       toast.success('Member removed successfully')
+      setMemberToRemove(null)
 
       // Reload group data
       const updatedGroup = await getGroup(groupId)
@@ -123,9 +115,7 @@ export default function GroupDetailPage({ params }: PageProps) {
     } catch (error) {
       console.error('Failed to remove member:', error)
       toast.error('Failed to remove member')
-    } finally {
-      setRemoveDialogOpen(false)
-      setMemberToRemove(null)
+      throw error
     }
   }
 
@@ -328,28 +318,15 @@ export default function GroupDetailPage({ params }: PageProps) {
       />
 
       {/* Remove Member Confirmation Dialog */}
-      <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Member</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove{' '}
-              <span className="font-semibold">
-                {memberToRemove?.person
-                  ? `${memberToRemove.person.first_name} ${memberToRemove.person.last_name}`
-                  : 'this person'}
-              </span>{' '}
-              from this group? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmRemove}>
-              Remove Member
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={removeDialogOpen}
+        onOpenChange={setRemoveDialogOpen}
+        title="Remove Member"
+        itemName={memberToRemove?.person ? `${memberToRemove.person.first_name} ${memberToRemove.person.last_name}` : undefined}
+        description={`Are you sure you want to remove ${memberToRemove?.person ? `${memberToRemove.person.first_name} ${memberToRemove.person.last_name}` : 'this person'} from this group? This action cannot be undone.`}
+        actionLabel="Remove"
+        onConfirm={handleConfirmRemove}
+      />
     </PageContainer>
   )
 }
