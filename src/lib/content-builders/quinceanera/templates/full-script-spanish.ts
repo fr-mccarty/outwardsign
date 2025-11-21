@@ -497,10 +497,6 @@ Te lo pedimos por Cristo nuestro Señor.`,
         text: 'Acto de Acción de Gracias y Compromiso Personal',
       },
       {
-        type: 'spacer',
-        size: 'medium',
-      },
-      {
         type: 'rubric',
         text: 'Antes de la bendición final, el sacerdote invita a la quinceañera a hacer un acto de acción de gracias y de compromiso personal para llevar una vida cristiana. La quinceañera puede hacerlo con estas o similares palabras:',
       },
@@ -510,29 +506,15 @@ Te lo pedimos por Cristo nuestro Señor.`,
       },
       {
         type: 'prayer-text',
-        text: `Padre celestial,
-te doy gracias por el don de la vida,
-por crearme a tu imagen y semejanza
-y por llamarme a ser tu hija por medio del bautismo.
+        text: `Padre celestial, te doy gracias por el don de la vida, por crearme a tu imagen y semejanza y por llamarme a ser tu hija por medio del bautismo.
 
-Gracias por enviar a tu Hijo Jesús para salvarme
-y a tu Espíritu Santo para santificarme.
+Gracias por enviar a tu Hijo Jesús para salvarme y a tu Espíritu Santo para santificarme.
 
-A lo que en tu bondad y amor
-quieras para mí, digo "sí".
-Con tu gracia me comprometo
-a servir a mis hermanos y hermanas toda mi vida.
+A lo que en tu bondad y amor quieras para mí, digo "sí". Con tu gracia me comprometo a servir a mis hermanos y hermanas toda mi vida.
 
-María, Madre de Jesús y Madre nuestra,
-me dedico a ti.
-Ya que tú eres mi modelo de fe,
-ayúdame a seguir aprendiendo de ti lo que necesito
-para ser una mujer cristiana.
+María, Madre de Jesús y Madre nuestra, me dedico a ti. Ya que tú eres mi modelo de fe, ayúdame a seguir aprendiendo de ti lo que necesito para ser una mujer cristiana.
 
-Ayúdame a escuchar la Palabra de Dios como tú lo hiciste,
-guardándola en mi corazón y amando a los demás,
-para que, mientras camino con Jesús en esta vida,
-pueda adorarlo contigo en la eternidad.
+Ayúdame a escuchar la Palabra de Dios como tú lo hiciste, guardándola en mi corazón y amando a los demás, para que, mientras camino con Jesús en esta vida, pueda adorarlo contigo en la eternidad.
 
 Amén.`,
       },

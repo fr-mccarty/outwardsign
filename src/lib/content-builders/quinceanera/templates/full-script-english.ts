@@ -497,10 +497,6 @@ We ask this through Christ our Lord.`,
         text: 'Act of Thanksgiving and Personal Commitment',
       },
       {
-        type: 'spacer',
-        size: 'medium',
-      },
-      {
         type: 'rubric',
         text: 'Before the final blessing, the priest invites the quinceañera to make an act of thanksgiving and of a personal commitment to lead a Christian life. The quinceañera may do so in these or similar words:',
       },
@@ -510,29 +506,15 @@ We ask this through Christ our Lord.`,
       },
       {
         type: 'prayer-text',
-        text: `Heavenly Father,
-I thank you for the gift of life
-for creating me in your image and likeness
-and for calling me to be your daughter through baptism.
+        text: `Heavenly Father, I thank you for the gift of life, for creating me in your image and likeness, and for calling me to be your daughter through baptism.
 
-Thank you for sending your Son Jesus to save me
-and your Holy Spirit to sanctify me.
+Thank you for sending your Son Jesus to save me and your Holy Spirit to sanctify me.
 
-To that which in your goodness and love
-you will for me, I say "yes,"
-With your grace I commit myself
-to serve my brothers and sisters all my life.
+To that which in your goodness and love you will for me, I say "yes." With your grace I commit myself to serve my brothers and sisters all my life.
 
-Mary, Mother of Jesus and our Mother,
-I dedicate myself to you.
-Since you are my model of faith,
-help me to continue learning from you what I need
-to be a Christian woman.
+Mary, Mother of Jesus and our Mother, I dedicate myself to you. Since you are my model of faith, help me to continue learning from you what I need to be a Christian woman.
 
-Help me to hear the Word of God as you did,
-holding it in my heart and loving others,
-so that, as I walk with Jesus in this life,
-I may worship Him with you in all eternity.
+Help me to hear the Word of God as you did, holding it in my heart and loving others, so that, as I walk with Jesus in this life, I may worship Him with you in all eternity.
 
 Amen.`,
       },
