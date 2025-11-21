@@ -2,12 +2,11 @@
 
 import { ErrorDisplay } from '@/components/error-display'
 
-export default function ScheduleError({
-  error,
-  reset,
-}: {
+interface ErrorProps {
   error: Error & { digest?: string }
   reset: () => void
-}) {
+}
+
+export default function Error({ error, reset }: ErrorProps) {
   return <ErrorDisplay error={error} reset={reset} />
 }

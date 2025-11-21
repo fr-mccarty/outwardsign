@@ -12,7 +12,7 @@ interface ErrorDisplayProps {
 
 export function ErrorDisplay({ error, reset }: ErrorDisplayProps) {
   return (
-    <div className={`p-6 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
+    <div className={`${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
       <Card className="border-destructive">
         <CardContent className="p-6">
           <div className="flex flex-col items-center text-center space-y-4">

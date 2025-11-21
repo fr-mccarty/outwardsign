@@ -133,6 +133,12 @@ This document contains a checklist of items to verify during code review. Use th
 
   See MODULE_DEVELOPMENT.md for server action patterns and ARCHITECTURE.md § Data Flow for server action guidelines.
 
+## Module Structure
+
+- [ ] **All error.tsx files use ErrorDisplay component** - Verify that all module error boundary files (`error.tsx`) use the shared `ErrorDisplay` component from `@/components/error-display` with consistent props and structure across all modules.
+
+- [ ] **All loading.tsx files use LoadingSkeleton component** - Verify that all module loading state files (`loading.tsx`) use the shared `LoadingSkeleton` component from `@/components/loading-skeleton` with consistent structure across all modules.
+
 ## Code Quality
 
 - [ ] **Check for unused imports** - Verify that all imports are being used and delete any unused imports. Run the linter to identify unused imports automatically.
