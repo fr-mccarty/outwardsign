@@ -4,7 +4,7 @@ import { PAGE_MAX_WIDTH_CLASS } from "@/lib/constants"
 
 export function LoadingSkeleton() {
   return (
-    <div className={`space-y-6 p-6 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
+    <div className={`space-y-6 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
