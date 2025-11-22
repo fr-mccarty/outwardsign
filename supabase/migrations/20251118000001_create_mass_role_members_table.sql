@@ -3,7 +3,7 @@ CREATE TABLE mass_role_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  mass_role_id UUID REFERENCES mass_roles(id) ON DELETE CASCADE,
+  mass_role_id UUID NOT NULL REFERENCES mass_roles(id) ON DELETE CASCADE,
 
   -- Membership type (MEMBER or LEADER)
   membership_type TEXT NOT NULL DEFAULT 'MEMBER',

@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/dialog'
 import { Edit, Plus, Trash2, Clock } from 'lucide-react'
 import Link from 'next/link'
-import { ModuleViewPanel } from '@/components/module-view-panel'
+import { ModuleViewContainer } from '@/components/module-view-container'
 import { toast } from 'sonner'
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from '@/lib/constants'
 
@@ -109,50 +109,37 @@ export function MassTimeViewClient({ massTime, items }: MassTimeViewClientProps)
   // Generate details section content
   const details = (
     <>
-      <div className="flex items-center gap-2">
-        <span className="font-medium">Status:</span>
+      <div>
+        <span className="font-medium">Day of Week:</span>{' '}
+        {LITURGICAL_DAYS_OF_WEEK_LABELS[massTime.day_of_week as LiturgicalDayOfWeek]?.en || massTime.day_of_week}
+      </div>
+      <div className="pt-2 border-t">
+        <span className="font-medium">Status:</span>{' '}
         <ActiveInactiveBadge isActive={massTime.is_active} />
       </div>
     </>
   )
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Main Content Area */}
-      <div className="flex-1 space-y-6">
-        {/* Template Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Template Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="text-sm text-muted-foreground">Template Name</div>
-              <div className="font-medium text-lg">{massTime.name}</div>
-            </div>
-
-            {massTime.description && (
-              <div>
-                <div className="text-sm text-muted-foreground">Description</div>
-                <p className="whitespace-pre-wrap mt-1">{massTime.description}</p>
-              </div>
-            )}
-
-            <div>
-              <div className="text-sm text-muted-foreground">Day of Week</div>
-              <div className="font-medium mt-1">
-                {LITURGICAL_DAYS_OF_WEEK_LABELS[massTime.day_of_week as LiturgicalDayOfWeek]?.en || massTime.day_of_week}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-sm text-muted-foreground">Status</div>
-              <div className="mt-1">
-                <ActiveInactiveBadge isActive={massTime.is_active} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <ModuleViewContainer
+      entity={massTime}
+      entityType="Mass Times Template"
+      modulePath="mass-times-templates"
+      actionButtons={actionButtons}
+      details={details}
+      onDelete={deleteMassTime}
+    >
+      <div className="space-y-6">
+        {massTime.description && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap">{massTime.description}</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Template Items */}
         <Card>
@@ -197,16 +184,6 @@ export function MassTimeViewClient({ massTime, items }: MassTimeViewClientProps)
           </CardContent>
         </Card>
       </div>
-
-      {/* Side Panel */}
-      <ModuleViewPanel
-        entity={massTime}
-        entityType="Mass Times Template"
-        modulePath="mass-times"
-        actionButtons={actionButtons}
-        details={details}
-        onDelete={deleteMassTime}
-      />
 
       {/* Add Time Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -253,6 +230,6 @@ export function MassTimeViewClient({ massTime, items }: MassTimeViewClientProps)
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ModuleViewContainer>
   )
 }

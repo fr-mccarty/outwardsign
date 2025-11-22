@@ -3,40 +3,26 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DialogButton } from '@/components/dialog-button'
 import { SearchCard } from '@/components/search-card'
-import { Search, User, Mail, Phone, UserPlus } from 'lucide-react'
+import { FormSectionCard } from '@/components/form-section-card'
+import { Search, User, Mail, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Person, MassRole } from '@/lib/types'
+import { MassRole } from '@/lib/types'
 import { Badge } from '@/components/ui/badge'
-import { PersonPickerField } from '@/components/person-picker-field'
-import { MassRolePickerField } from '@/components/mass-role-picker-field'
-import { createMassRolePreference } from '@/lib/actions/mass-role-members-compat'
-import { toast } from 'sonner'
 import type { PersonWithMassRoles } from '@/lib/actions/mass-role-members-compat'
 
 interface MassRoleMembersListClientProps {
   initialData: PersonWithMassRoles[]
   massRoles: MassRole[]
-  allPeople: Person[]
 }
 
 export function MassRoleMembersListClient({
   initialData,
-  massRoles,
-  allPeople
+  massRoles
 }: MassRoleMembersListClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<MassRole | null>(null)
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null)
-  const [showRolePicker, setShowRolePicker] = useState(false)
-  const [showPersonPicker, setShowPersonPicker] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
   const handleSearchChange = (value: string) => {
     setSearch(value)
@@ -54,96 +40,8 @@ export function MassRoleMembersListClient({
       )
     : initialData
 
-  const handleAddRoleAssignment = async () => {
-    if (!selectedRole) {
-      toast.error('Please select a mass role')
-      return
-    }
-
-    if (!selectedPerson) {
-      toast.error('Please select a person')
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      // Create a mass role preference for this person
-      await createMassRolePreference({
-        person_id: selectedPerson.id,
-        mass_role_id: selectedRole.id,
-        active: true
-      })
-
-      toast.success(`${selectedPerson.first_name} ${selectedPerson.last_name} assigned to ${selectedRole.name}`)
-      setIsDialogOpen(false)
-      setSelectedRole(null)
-      setSelectedPerson(null)
-      router.refresh()
-    } catch (error) {
-      console.error('Error creating role assignment:', error)
-      toast.error('Failed to create role assignment')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   return (
     <div className="space-y-6">
-      {/* New Mass Role Member Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogButton>
-          <UserPlus className="h-4 w-4 mr-2" />
-          New Mass Role Member
-        </DialogButton>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>New Mass Role Member</DialogTitle>
-            <DialogDescription>
-              Select a mass role and assign a person to serve in that role.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <MassRolePickerField
-              label="Mass Role"
-              value={selectedRole}
-              onValueChange={setSelectedRole}
-              showPicker={showRolePicker}
-              onShowPickerChange={setShowRolePicker}
-              placeholder="Select a mass role..."
-              required
-            />
-            <PersonPickerField
-              label="Person"
-              value={selectedPerson}
-              onValueChange={setSelectedPerson}
-              showPicker={showPersonPicker}
-              onShowPickerChange={setShowPersonPicker}
-              placeholder="Select a person..."
-              required
-            />
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsDialogOpen(false)
-                  setSelectedRole(null)
-                  setSelectedPerson(null)
-                }}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddRoleAssignment}
-                disabled={!selectedRole || !selectedPerson || isSaving}
-              >
-                {isSaving ? 'Creating...' : 'Create Assignment'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Search */}
       <SearchCard modulePlural="Mass Role Members" moduleSingular="Mass Role Member" className="mb-6">
         <div className="relative max-w-md">
@@ -156,27 +54,6 @@ export function MassRoleMembersListClient({
           />
         </div>
       </SearchCard>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Total People</div>
-          <div className="text-2xl font-bold">{initialData.length}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Mass Roles</div>
-          <div className="text-2xl font-bold">{massRoles.length}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Active Servers</div>
-          <div className="text-2xl font-bold">{filteredPeople.length}</div>
-        </Card>
-      </div>
-
-      {/* Results count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {filteredPeople.length} of {initialData.length} people
-      </div>
 
       {/* Empty state */}
       {filteredPeople.length === 0 && (
@@ -251,6 +128,26 @@ export function MassRoleMembersListClient({
             </Link>
           ))}
         </div>
+      )}
+
+      {/* Quick Stats */}
+      {initialData.length > 0 && (
+        <FormSectionCard title="Mass Role Members Overview">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold">{initialData.length}</div>
+              <div className="text-sm text-muted-foreground">Total People</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{massRoles.length}</div>
+              <div className="text-sm text-muted-foreground">Mass Roles</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{filteredPeople.length}</div>
+              <div className="text-sm text-muted-foreground">Filtered Results</div>
+            </div>
+          </div>
+        </FormSectionCard>
       )}
     </div>
   )

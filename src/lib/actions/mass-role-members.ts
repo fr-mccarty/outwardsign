@@ -78,22 +78,65 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  // Get all mass_role_members
+  const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
-    .select(`
-      *,
-      person:people(id, first_name, last_name, preferred_name, email),
-      mass_role:mass_roles(id, name, description)
-    `)
+    .select('*')
     .eq('parish_id', selectedParishId)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching mass role members with details:', error)
+  if (membersError) {
+    console.error('Error fetching mass role members:', membersError)
     throw new Error('Failed to fetch mass role members with details')
   }
 
-  return data as MassRoleMemberWithDetails[] || []
+  if (!members || members.length === 0) {
+    return []
+  }
+
+  // Get all people
+  const personIds = [...new Set(members.map(m => m.person_id))]
+  const { data: people, error: peopleError } = await supabase
+    .from('people')
+    .select('id, first_name, last_name, preferred_name, email')
+    .in('id', personIds)
+    .eq('parish_id', selectedParishId)
+
+  if (peopleError) {
+    console.error('Error fetching people:', peopleError)
+  }
+
+  // Get all roles
+  const roleIds = [...new Set(members.map(m => m.mass_role_id))]
+  const { data: roles, error: rolesError } = await supabase
+    .from('mass_roles')
+    .select('id, name, description')
+    .in('id', roleIds)
+    .eq('parish_id', selectedParishId)
+
+  if (rolesError) {
+    console.error('Error fetching mass roles:', rolesError)
+  }
+
+  // Create lookup maps
+  const peopleMap = new Map((people || []).map(p => [p.id, p]))
+  const rolesMap = new Map((roles || []).map(r => [r.id, r]))
+
+  return members.map(member => ({
+    ...member,
+    person: peopleMap.get(member.person_id) || {
+      id: member.person_id,
+      first_name: '',
+      last_name: '',
+      preferred_name: null,
+      email: null
+    },
+    mass_role: rolesMap.get(member.mass_role_id) || {
+      id: member.mass_role_id,
+      name: 'Unknown Role',
+      description: null
+    }
+  })) as MassRoleMemberWithDetails[]
 }
 
 /**
@@ -104,23 +147,65 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  // Get all mass_role_members for this role
+  const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
-    .select(`
-      *,
-      person:people(id, first_name, last_name, preferred_name, email),
-      mass_role:mass_roles(id, name, description)
-    `)
+    .select('*')
     .eq('parish_id', selectedParishId)
     .eq('mass_role_id', roleId)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching mass role members by role:', error)
+  if (membersError) {
+    console.error('Error fetching mass role members by role:', membersError)
     throw new Error('Failed to fetch mass role members by role')
   }
 
-  return data as MassRoleMemberWithDetails[] || []
+  if (!members || members.length === 0) {
+    return []
+  }
+
+  // Get all people
+  const personIds = [...new Set(members.map(m => m.person_id))]
+  const { data: people, error: peopleError } = await supabase
+    .from('people')
+    .select('id, first_name, last_name, preferred_name, email')
+    .in('id', personIds)
+    .eq('parish_id', selectedParishId)
+
+  if (peopleError) {
+    console.error('Error fetching people:', peopleError)
+  }
+
+  // Get the role details
+  const { data: role, error: roleError } = await supabase
+    .from('mass_roles')
+    .select('id, name, description')
+    .eq('id', roleId)
+    .eq('parish_id', selectedParishId)
+    .single()
+
+  if (roleError) {
+    console.error('Error fetching mass role:', roleError)
+  }
+
+  // Create lookup map for people
+  const peopleMap = new Map((people || []).map(p => [p.id, p]))
+
+  return members.map(member => ({
+    ...member,
+    person: peopleMap.get(member.person_id) || {
+      id: member.person_id,
+      first_name: '',
+      last_name: '',
+      preferred_name: null,
+      email: null
+    },
+    mass_role: role || {
+      id: roleId,
+      name: 'Unknown Role',
+      description: null
+    }
+  })) as MassRoleMemberWithDetails[]
 }
 
 /**
@@ -131,23 +216,64 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  // First, get the mass_role_members records
+  const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
-    .select(`
-      *,
-      person:people(id, first_name, last_name, preferred_name, email),
-      mass_role:mass_roles(id, name, description)
-    `)
+    .select('*')
     .eq('parish_id', selectedParishId)
     .eq('person_id', personId)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching mass role members by person:', error)
+  if (membersError) {
+    console.error('Error fetching mass role members:', membersError)
+    console.error('Error details:', JSON.stringify(membersError, null, 2))
+    console.error('Person ID:', personId)
+    console.error('Parish ID:', selectedParishId)
     throw new Error('Failed to fetch mass role members by person')
   }
 
-  return data as MassRoleMemberWithDetails[] || []
+  if (!members || members.length === 0) {
+    return []
+  }
+
+  // Get mass role details for all member records
+  const roleIds = members.map(m => m.mass_role_id)
+
+  let roles: { id: string; name: string; description: string | null }[] = []
+  if (roleIds.length > 0) {
+    const { data: rolesData, error: rolesError } = await supabase
+      .from('mass_roles')
+      .select('id, name, description')
+      .in('id', roleIds)
+      .eq('parish_id', selectedParishId)
+
+    if (rolesError) {
+      console.error('Error fetching mass roles:', rolesError)
+    } else {
+      roles = rolesData || []
+    }
+  }
+
+  // Combine the data
+  const rolesMap = new Map(roles.map(r => [r.id, r]))
+
+  // Note: We don't fetch person details here since they're typically fetched separately by the caller
+  // This avoids potential RLS issues and redundant queries
+  return members.map(member => ({
+    ...member,
+    person: {
+      id: personId,
+      first_name: '',
+      last_name: '',
+      preferred_name: null,
+      email: null
+    },
+    mass_role: rolesMap.get(member.mass_role_id) || {
+      id: member.mass_role_id,
+      name: 'Unknown Role',
+      description: null
+    }
+  })) as MassRoleMemberWithDetails[]
 }
 
 /**

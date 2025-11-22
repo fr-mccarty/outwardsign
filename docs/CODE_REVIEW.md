@@ -139,6 +139,10 @@ This document contains a checklist of items to verify during code review. Use th
 
 - [ ] **All loading.tsx files use LoadingSkeleton component** - Verify that all module loading state files (`loading.tsx`) use the shared `LoadingSkeleton` component from `@/components/loading-skeleton` with consistent structure across all modules.
 
+- [ ] **All edit pages use PageContainer component** - Verify that all module edit pages (form wrapper files like `[entity]-form-wrapper.tsx`) use the `PageContainer` component from `@/components/page-container` to wrap the form and provide consistent layout, breadcrumbs, and action buttons.
+
+- [ ] **All view pages use ModuleViewContainer component** - Verify that all module view pages (view client files like `[id]/[entity]-view-client.tsx`) use the `ModuleViewContainer` component from `@/components/module-view-container` to provide consistent layout with the module view panel and content display.
+
 ## Code Quality
 
 - [ ] **Check for unused imports** - Verify that all imports are being used and delete any unused imports. Run the linter to identify unused imports automatically.

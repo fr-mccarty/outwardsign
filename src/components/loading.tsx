@@ -1,3 +1,19 @@
+/**
+ * Loading Component
+ *
+ * ⚠️ **NOTE:** This component is for client-side loading states only.
+ *
+ * **Use Cases:**
+ * - Client component loading states (dialogs, modals, data fetching)
+ * - Inline loading indicators within client components
+ *
+ * **DO NOT use for:**
+ * - Route-level loading states → Use `LoadingSkeleton` instead
+ * - Next.js `loading.tsx` files → Use `LoadingSkeleton` instead
+ *
+ * @see LoadingSkeleton - For route-level loading states with page layout
+ */
+
 import { Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
