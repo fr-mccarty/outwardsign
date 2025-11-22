@@ -23,9 +23,7 @@ import {
   MoreHorizontal,
   Trash2,
   UserMinus,
-  X,
-  Eye,
-  Info
+  X
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Calendar } from '@/components/calendar/calendar'
@@ -37,8 +35,7 @@ import { format } from 'date-fns'
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { getSuggestedMinister } from '@/lib/actions/mass-scheduling'
-import { toast } from 'sonner'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 export interface RoleAssignment {
   roleId: string
@@ -99,15 +96,8 @@ export function Step5ProposedSchedule({
   const [massDetailOpen, setMassDetailOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<RoleAssignment | null>(null)
   const [peoplePickerOpen, setPeoplePickerOpen] = useState(false)
-  const [isGeneratingAssignments, setIsGeneratingAssignments] = useState(false)
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
-  const [previewResults, setPreviewResults] = useState<Array<{
-    date: string
-    templateName: string
-    assignments: Array<{ roleName: string; personName: string | null }>
-  }>>([])
-  const [hasPreviewedAssignments, setHasPreviewedAssignments] = useState(false)
   const [conflictsDialogOpen, setConflictsDialogOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   // Statistics
   const stats = useMemo(() => {
@@ -227,74 +217,6 @@ export function Step5ProposedSchedule({
     if (updatedMass) setSelectedMass(updatedMass)
   }
 
-  const handlePreviewAssignments = async () => {
-    setIsGeneratingAssignments(true)
-    try {
-      // Sample 3 masses from different dates
-      const includedMasses = proposedMasses.filter(m => m.isIncluded)
-      const sampleSize = Math.min(3, includedMasses.length)
-      const step = Math.floor(includedMasses.length / sampleSize)
-      const sampledMasses = Array.from({ length: sampleSize }, (_, i) => includedMasses[i * step]).filter(Boolean)
-
-      const results = []
-      let totalAssignments = 0
-      let successfulAssignments = 0
-
-      for (const mass of sampledMasses) {
-        const assignments = []
-        const assignedPersonIds: string[] = []
-
-        if (mass.assignments) {
-          for (const assignment of mass.assignments) {
-            totalAssignments++
-            // Get suggested minister for this role
-            const suggestion = await getSuggestedMinister(
-              assignment.roleId,
-              mass.date,
-              '09:00', // Default time for preview
-              true, // Balance workload
-              assignedPersonIds
-            )
-
-            if (suggestion) {
-              assignedPersonIds.push(suggestion.id)
-              successfulAssignments++
-              assignments.push({
-                roleName: assignment.roleName,
-                personName: suggestion.name
-              })
-            } else {
-              assignments.push({
-                roleName: assignment.roleName,
-                personName: null
-              })
-            }
-          }
-        }
-
-        results.push({
-          date: mass.date,
-          templateName: mass.templateName,
-          assignments
-        })
-      }
-
-      setPreviewResults(results)
-      setPreviewDialogOpen(true)
-      setHasPreviewedAssignments(true)
-
-      // Show warning if no assignments were possible
-      if (totalAssignments > 0 && successfulAssignments === 0) {
-        toast.warning('No ministers found for these roles. Make sure you have added people to Mass Roles in Settings.')
-      }
-    } catch (error) {
-      console.error('Failed to generate preview:', error)
-      toast.error('Failed to generate assignment preview')
-    } finally {
-      setIsGeneratingAssignments(false)
-    }
-  }
-
   // Custom color for calendar items
   const getItemColor = (item: ProposedMassCalendarItem) => {
     const mass = item.mass
@@ -313,72 +235,6 @@ export function Step5ProposedSchedule({
         title="Proposed Schedule"
         description="Review the calendar and adjust assignments before creating"
       />
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-3">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-xs text-muted-foreground">Total Masses</div>
-          </div>
-        </Card>
-        <Card className="p-3 bg-primary/5">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{stats.included}</div>
-            <div className="text-xs text-muted-foreground">Will Be Created</div>
-          </div>
-        </Card>
-        <Card
-          className={cn(
-            "p-3 transition-colors",
-            stats.conflicts > 0 && "bg-amber-50 dark:bg-amber-950/20 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/30"
-          )}
-          onClick={() => stats.conflicts > 0 && setConflictsDialogOpen(true)}
-        >
-          <div className="text-center">
-            <div className={cn("text-2xl font-bold", stats.conflicts > 0 && "text-amber-600")}>{stats.conflicts}</div>
-            <div className="text-xs text-muted-foreground">
-              {stats.conflicts > 0 ? "Overlap with Events" : "No Conflicts"}
-            </div>
-          </div>
-        </Card>
-        <Card className="p-3">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-muted-foreground">{stats.excluded}</div>
-            <div className="text-xs text-muted-foreground">Manually Excluded</div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Preview Assignment Button */}
-      {!hasPreviewedAssignments && stats.included > 0 && (
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>
-              Want to see how the automatic assignment algorithm will work? Preview a sample of assignments.
-            </span>
-            <Button
-              onClick={handlePreviewAssignments}
-              disabled={isGeneratingAssignments}
-              size="sm"
-              variant="outline"
-            >
-              {isGeneratingAssignments ? (
-                <>
-                  <span className="animate-spin mr-2">⏳</span>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview Assignments
-                </>
-              )}
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Calendar View */}
       <Calendar
@@ -459,7 +315,14 @@ export function Step5ProposedSchedule({
                   </Card>
                 )}
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex justify-between gap-2 pt-4 border-t">
+                  <Button
+                    variant="destructive"
+                    onClick={() => setDeleteConfirmOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Remove Mass
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={() => setMassDetailOpen(false)}
@@ -559,75 +422,20 @@ export function Step5ProposedSchedule({
         </DialogContent>
       </Dialog>
 
-      {/* Preview Assignment Results Dialog */}
-      <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Assignment Preview</DialogTitle>
-            <DialogDescription>
-              Here's a sample of how the automatic assignment algorithm will work. The full assignment happens when you complete the wizard.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            {/* Warning if all assignments failed */}
-            {previewResults.length > 0 && previewResults.every(r => r.assignments.every(a => !a.personName)) && (
-              <Alert className="bg-orange-50 dark:bg-orange-950/20 border-orange-300">
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                <AlertDescription>
-                  <strong className="text-orange-900 dark:text-orange-200">No ministers available for assignment.</strong>
-                  <br />
-                  You need to add people to Mass Roles before automatic assignment can work. Go to <strong>Settings → Mass Roles</strong> to add members to each role.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {previewResults.map((result, idx) => (
-              <Card key={idx}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">{result.templateName}</CardTitle>
-                  <CardDescription>{formatDate(result.date)}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {result.assignments.map((assignment, aIdx) => (
-                      <div key={aIdx} className="flex items-center justify-between py-2 border-b last:border-0">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{assignment.roleName}</Badge>
-                        </div>
-                        {assignment.personName ? (
-                          <div className="flex items-center gap-2 text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
-                            <span className="font-medium">{assignment.personName}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-sm text-orange-600">
-                            <AlertTriangle className="h-4 w-4" />
-                            <span>No available members</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                This is a preview of {previewResults.length} sample Masses. The algorithm will automatically assign all {stats.included} Masses when you complete the wizard, balancing workload and respecting blackout dates.
-              </AlertDescription>
-            </Alert>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setPreviewDialogOpen(false)}>
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={async () => {
+          if (selectedMass) {
+            toggleMassInclusion(selectedMass.id)
+          }
+        }}
+        title="Remove Mass from Schedule?"
+        itemName={selectedMass ? `${selectedMass.templateName} on ${formatDate(selectedMass.date)}` : undefined}
+        description="Are you sure you want to remove this Mass from the proposed schedule? This will exclude it from being created."
+        actionLabel="Remove Mass"
+      />
     </div>
   )
 }

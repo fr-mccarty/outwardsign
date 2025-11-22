@@ -528,6 +528,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       loadingMessage="Creating Masses and assigning ministers..."
       renderStepContent={renderStepContent}
       onComplete={handleComplete}
+      onStepChange={setCurrentWizardStep}
       disableNext={getDisableNext}
       completeButtonText="Schedule Masses"
       initialStep={currentWizardStep}
