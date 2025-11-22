@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { getMassIntentionsByDateRange } from '@/lib/actions/mass-intentions'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 
 export async function GET(request: Request) {

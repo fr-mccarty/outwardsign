@@ -1,14 +1,25 @@
 # Database Management
 
+> **🔴 Context Requirement:** When performing database operations (resets, seeding, creating liturgical calendar migrations), you MUST include this file in your context. This file contains critical procedures that ensure data integrity and proper migration handling.
+
+> **Overview:** This file provides detailed database management procedures. For migration creation guidelines and file structure, see the Database section in [CLAUDE.md](../CLAUDE.md#-database).
+
 ## Database Resets
 
-**IMPORTANT:** Database resets are performed via the Supabase UI Dashboard, NOT via CLI commands.
+**For local development**, reset the database and apply all migrations using:
 
-**Workflow:**
-1. Go to your Supabase project dashboard
-2. Navigate to Database → Reset Database
-3. Confirm the reset (this will drop all tables and re-run migrations)
-4. After reset completes, run the seed command (see below)
+```bash
+npm run db:fresh
+```
+
+This command will:
+1. Drop all tables in your local database
+2. Re-run all migrations from `supabase/migrations/` in order
+3. Apply the latest schema changes
+
+**After the reset completes**, seed the database with initial data (see [Seeding the Database](#seeding-the-database) below).
+
+**For pushing to remote** (maintainer only): Use `supabase db push` - **DO NOT use this for local development**.
 
 ## Seeding the Database
 
@@ -100,12 +111,20 @@ Edit `scripts/seed.ts` and add to the `seeders` array:
 }
 ```
 
+## Migration Guidelines
+
+**See [CLAUDE.md - Database section](../CLAUDE.md#-database) for:**
+- Migration creation workflow
+- Migration file structure (one table per file)
+- Migration naming conventions (timestamp format)
+- Migration strategy during early development
+
 ## Notes
 
 - **Current approach:** Liturgical data is seeded via SQL migrations for faster database resets during development
 - **Future approach:** TypeScript scripts (above) fetch from API - useful for production or when migrations become too large
 - Data is stored in `global_liturgical_events` table with JSONB for full event data
-- Migrations run automatically when database is reset via Supabase UI
+- Migrations run automatically when you run `npm run db:fresh`
 - Indexed for efficient date range queries
 
 ## Troubleshooting
@@ -113,9 +132,9 @@ Edit `scripts/seed.ts` and add to the `seeders` array:
 ### Database migration fails
 - Ensure you're linked to the correct Supabase project (`supabase link`)
 - Check that your environment variables are correctly set in `.env.local`
-- Try resetting the database via the Supabase dashboard and re-running migrations
+- Try running `npm run db:fresh` to reset and re-apply all migrations
 
 ### Seeding fails
-- Make sure migrations have been run first (`supabase db push`)
+- Make sure migrations have been run first (via `npm run db:fresh`)
 - Check your internet connection (seeders fetch from external API)
 - Verify your Supabase service role key has proper permissions

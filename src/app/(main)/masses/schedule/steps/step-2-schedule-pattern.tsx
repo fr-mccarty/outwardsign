@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Label } from "@/components/ui/label"
 import { MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, LITURGICAL_DAYS_OF_WEEK_VALUES, type LiturgicalDayOfWeek } from "@/lib/constants"
-import { getDayOfWeekNumber } from '@/lib/utils/date-format'
+import { getDayOfWeekNumber } from '@/lib/utils/formatters'
 import { formatTime } from '@/lib/utils/formatters'
 import { Badge } from "@/components/ui/badge"
 

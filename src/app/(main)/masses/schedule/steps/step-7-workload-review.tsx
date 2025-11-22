@@ -40,7 +40,7 @@ import { ProposedMass } from './step-5-proposed-schedule'
 import { MassTimesTemplate } from "@/lib/actions/mass-times-templates"
 import { MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { formatDate } from "@/lib/utils/formatters"
-import { getDayCount } from "@/lib/utils/date-format"
+import { getDayCount } from "@/lib/utils/formatters"
 import { cn } from '@/lib/utils'
 import { MassAssignmentPeoplePicker } from '@/components/mass-assignment-people-picker'
 import type { Person } from '@/lib/types'

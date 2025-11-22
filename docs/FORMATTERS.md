@@ -29,9 +29,16 @@ This document describes all helper and formatting functions used throughout the 
 
 ## Overview
 
-**Files:**
-- `src/lib/utils/formatters.ts` - Person, location, event, page title, and filename formatters
-- `src/lib/utils/date-format.ts` - Comprehensive date and time formatting functions
+**File:** `src/lib/utils/formatters.ts` - Single source of truth for all formatters
+
+**Contains:**
+- Date and time formatting functions
+- Person formatting functions
+- Location formatting functions
+- Event formatting functions
+- Reading formatting functions
+- Page title generator functions
+- Filename generator functions
 
 **Purpose:**
 - Centralize all formatting logic in one location
@@ -69,7 +76,7 @@ const date = formatDatePretty(event.start_date)
 <p>{event.start_date}</p>  // Shows: "2025-07-15"
 
 // ✅ CORRECT - formatted date
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 <p>{formatDatePretty(event.start_date)}</p>  // Shows: "July 15, 2025"
 ```
 
@@ -87,7 +94,7 @@ import { formatDatePretty } from '@/lib/utils/date-format'
 
 ```typescript
 // In content builders (src/lib/content-builders/[module]/build-[entity]-liturgy.ts)
-import { formatDateLong } from '@/lib/utils/date-format'
+import { formatDateLong } from '@/lib/utils/formatters'
 
 const liturgyContent = {
   sections: [
@@ -231,7 +238,7 @@ When you need a formatter that doesn't exist:
 
 ## Date Formatting Functions
 
-**Location:** `src/lib/utils/date-format.ts` and `src/lib/utils/formatters.ts`
+**Location:** `src/lib/utils/formatters.ts` and `src/lib/utils/formatters.ts`
 
 All date formatting functions accept either a string or Date object and handle errors gracefully.
 
@@ -292,7 +299,7 @@ formatTime('14:30:00', 'es')  // "2:30 PM" (AM/PM is international)
 Returns numeric format: **"7/15/2025"**
 
 ```typescript
-import { formatDateNumeric } from '@/lib/utils/date-format'
+import { formatDateNumeric } from '@/lib/utils/formatters'
 
 formatDateNumeric('2025-07-15')  // "7/15/2025"
 formatDateNumeric(new Date())     // "7/15/2025"
@@ -305,7 +312,7 @@ formatDateNumeric(new Date())     // "7/15/2025"
 Returns short format: **"Jul 15, 2025"**
 
 ```typescript
-import { formatDateShort } from '@/lib/utils/date-format'
+import { formatDateShort } from '@/lib/utils/formatters'
 
 formatDateShort('2025-07-15')  // "Jul 15, 2025"
 ```
@@ -317,7 +324,7 @@ formatDateShort('2025-07-15')  // "Jul 15, 2025"
 Returns pretty format: **"July 15, 2025"**
 
 ```typescript
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 
 formatDatePretty('2025-07-15')  // "July 15, 2025"
 ```
@@ -329,7 +336,7 @@ formatDatePretty('2025-07-15')  // "July 15, 2025"
 Returns long format with weekday: **"Tuesday, July 15, 2025"**
 
 ```typescript
-import { formatDateLong } from '@/lib/utils/date-format'
+import { formatDateLong } from '@/lib/utils/formatters'
 
 formatDateLong('2025-07-15')  // "Tuesday, July 15, 2025"
 ```
@@ -341,7 +348,7 @@ formatDateLong('2025-07-15')  // "Tuesday, July 15, 2025"
 Returns relative time: **"in 2 months"**, **"3 days ago"**, **"today"**
 
 ```typescript
-import { formatDateRelative } from '@/lib/utils/date-format'
+import { formatDateRelative } from '@/lib/utils/formatters'
 
 formatDateRelative('2025-07-15')  // "in 2 months"
 formatDateRelative('2025-05-13')  // "yesterday"
@@ -364,8 +371,8 @@ formatEventDateTime(event)
 formatEventDateTime({ start_date: '2025-07-15' })
 // "Tuesday, July 15, 2025" (no time)
 
-// In date-format.ts (accepts date and time strings)
-import { formatEventDateTime } from '@/lib/utils/date-format'
+// REMOVED - Use formatEventDateTime(event) instead
+import { formatEventDateTime } from '@/lib/utils/formatters'
 
 formatEventDateTime('2025-07-15', '11:00')
 // "Tuesday, July 15, 2025 at 11:00 AM"
@@ -890,7 +897,7 @@ getEventFilename(event, 'pdf')  // "Event-Christmas-Mass-20251225.pdf"
 
 ### Before Creating a New Helper
 
-1. **Check if it already exists** - Search both `formatters.ts` and `date-format.ts`
+1. **Check if it already exists** - Search both `formatters.ts`
 2. **Check if existing helper can be adapted** - Can current helpers meet your needs?
 3. **Request permission from user** - Ask: "Should I add a new helper function to [file] for [specific need]?"
 4. **Wait for approval** - Do not create new helpers without permission
@@ -900,7 +907,7 @@ getEventFilename(event, 'pdf')  // "Event-Christmas-Mass-20251225.pdf"
 If approved to create a new helper function:
 
 **1. Choose the correct file:**
-- Date/time formatting → `date-format.ts`
+- All formatters → `formatters.ts`
 - Person, location, event, titles, filenames → `formatters.ts`
 
 **2. Follow naming conventions:**

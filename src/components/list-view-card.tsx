@@ -8,7 +8,7 @@ import { SquarePen, Eye, Calendar } from "lucide-react"
 import { ReactNode, useRef, useState, useEffect } from "react"
 import { ModuleStatusLabel } from "./module-status-label"
 import { LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
-import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
+import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 
 interface ListViewCardProps {
   title: string

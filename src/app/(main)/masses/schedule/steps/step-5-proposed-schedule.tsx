@@ -30,7 +30,7 @@ import { Calendar } from '@/components/calendar/calendar'
 import { CalendarItem, CalendarView } from '@/components/calendar/types'
 import { MassTimesTemplate, MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek, DEFAULT_TIMEZONE } from "@/lib/constants"
-import { formatDate, formatTime, getDayOfWeekNumber } from "@/lib/utils/date-format"
+import { formatDate, formatTime, getDayOfWeekNumber } from "@/lib/utils/formatters"
 import { format } from 'date-fns'
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'

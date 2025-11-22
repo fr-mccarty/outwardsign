@@ -19,7 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
 import Link from 'next/link'
-import { getDayCount } from '@/lib/utils/date-format'
+import { getDayCount } from '@/lib/utils/formatters'
 import { RoleAvailabilityModal } from './role-availability-modal'
 
 // Date shortcut helpers

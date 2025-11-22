@@ -230,6 +230,213 @@ export function formatEventDateTimeCompact(
   return `${date} ${connector} ${time}`
 }
 
+/**
+ * Format date as numeric (e.g., "7/15/2025")
+ *
+ * @param date - Date string or Date object
+ * @returns Formatted date string
+ *
+ * @example
+ * formatDateNumeric('2025-07-15') // "7/15/2025"
+ * formatDateNumeric(new Date()) // "7/15/2025"
+ */
+export function formatDateNumeric(date: string | Date): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      timeZone: DEFAULT_TIMEZONE
+    })
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return String(date)
+  }
+}
+
+/**
+ * Format date as short (e.g., "Jul 15, 2025")
+ *
+ * @param date - Date string or Date object
+ * @returns Formatted date string
+ *
+ * @example
+ * formatDateShort('2025-07-15') // "Jul 15, 2025"
+ */
+export function formatDateShort(date: string | Date): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: DEFAULT_TIMEZONE
+    })
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return String(date)
+  }
+}
+
+/**
+ * Format date as pretty (e.g., "July 15, 2025")
+ *
+ * @param date - Date string or Date object
+ * @returns Formatted date string
+ *
+ * @example
+ * formatDatePretty('2025-07-15') // "July 15, 2025"
+ */
+export function formatDatePretty(date: string | Date): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: DEFAULT_TIMEZONE
+    })
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return String(date)
+  }
+}
+
+/**
+ * Format date as long (e.g., "Tuesday, July 15, 2025")
+ *
+ * @param date - Date string or Date object
+ * @returns Formatted date string
+ *
+ * @example
+ * formatDateLong('2025-07-15') // "Tuesday, July 15, 2025"
+ */
+export function formatDateLong(date: string | Date): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return dateObj.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: DEFAULT_TIMEZONE
+    })
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return String(date)
+  }
+}
+
+/**
+ * Format date as relative time (e.g., "in 2 months", "3 days ago", "today")
+ *
+ * @param date - Date string or Date object
+ * @returns Formatted relative date string
+ *
+ * @example
+ * formatDateRelative('2025-07-15') // "in 2 months"
+ * formatDateRelative('2025-05-13') // "yesterday"
+ * formatDateRelative('2025-05-14') // "today"
+ */
+export function formatDateRelative(date: string | Date): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    const now = new Date()
+
+    // Reset hours to compare dates only
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const compareDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
+
+    const diffTime = compareDate.getTime() - today.getTime()
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+    // Today
+    if (diffDays === 0) return 'today'
+
+    // Tomorrow/Yesterday
+    if (diffDays === 1) return 'tomorrow'
+    if (diffDays === -1) return 'yesterday'
+
+    // Within a week
+    if (diffDays > 0 && diffDays < 7) {
+      return `in ${diffDays} day${diffDays !== 1 ? 's' : ''}`
+    }
+    if (diffDays < 0 && diffDays > -7) {
+      return `${Math.abs(diffDays)} day${diffDays !== -1 ? 's' : ''} ago`
+    }
+
+    // Within a month (use weeks)
+    const diffWeeks = Math.round(diffDays / 7)
+    if (diffDays > 0 && diffDays < 30) {
+      return `in ${diffWeeks} week${diffWeeks !== 1 ? 's' : ''}`
+    }
+    if (diffDays < 0 && diffDays > -30) {
+      return `${Math.abs(diffWeeks)} week${diffWeeks !== -1 ? 's' : ''} ago`
+    }
+
+    // Within a year (use months)
+    const diffMonths = Math.round(diffDays / 30)
+    if (diffDays > 0 && diffDays < 365) {
+      return `in ${diffMonths} month${diffMonths !== 1 ? 's' : ''}`
+    }
+    if (diffDays < 0 && diffDays > -365) {
+      return `${Math.abs(diffMonths)} month${diffMonths !== -1 ? 's' : ''} ago`
+    }
+
+    // Use years
+    const diffYears = Math.round(diffDays / 365)
+    if (diffDays > 0) {
+      return `in ${diffYears} year${diffYears !== 1 ? 's' : ''}`
+    }
+    return `${Math.abs(diffYears)} year${diffYears !== -1 ? 's' : ''} ago`
+  } catch (error) {
+    console.error('Error formatting relative date:', error)
+    return String(date)
+  }
+}
+
+/**
+ * Map day of week string to numeric value
+ *
+ * @param dayOfWeek - Day of week string (e.g., "SUNDAY", "MONDAY")
+ * @returns Day of week number (0=Sunday, 6=Saturday) or null if invalid
+ *
+ * @example
+ * getDayOfWeekNumber('SUNDAY') // 0
+ * getDayOfWeekNumber('MONDAY') // 1
+ */
+export function getDayOfWeekNumber(dayOfWeek: string): number | null {
+  const mapping: Record<string, number> = {
+    SUNDAY: 0,
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6,
+  }
+  return mapping[dayOfWeek] ?? null
+}
+
+/**
+ * Calculate number of days between two dates (inclusive)
+ *
+ * @param startDate - Start date string (YYYY-MM-DD)
+ * @param endDate - End date string (YYYY-MM-DD)
+ * @returns Number of days between dates (inclusive)
+ *
+ * @example
+ * getDayCount('2025-01-01', '2025-01-05') // 5
+ */
+export function getDayCount(startDate: string, endDate: string): number {
+  if (!startDate || !endDate) return 0
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const diffTime = Math.abs(end.getTime() - start.getTime())
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+}
+
 // ============================================================================
 // LOCATION FORMATTING FUNCTIONS
 // ============================================================================

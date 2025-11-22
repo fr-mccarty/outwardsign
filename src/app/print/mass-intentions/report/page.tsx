@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getMassIntentionsReport } from '@/lib/actions/mass-intentions'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
 import { buildMassIntentionReport, REPORT_STYLES } from '@/lib/report-builders'
 

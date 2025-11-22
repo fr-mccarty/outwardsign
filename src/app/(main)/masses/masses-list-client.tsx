@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select"
 import { MASS_STATUS_VALUES } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
-import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
+import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 
 interface Stats {
   total: number

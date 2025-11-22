@@ -184,7 +184,7 @@ Create report builder function:
  */
 
 import { [Module]ReportData } from '@/lib/actions/[module]'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 import { ReportBuilder } from './types'
 
 export interface [Module]ReportParams {
@@ -290,7 +290,7 @@ See "Report UI Components" section below for detailed implementation.
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { get[Module]Report } from '@/lib/actions/[module]'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
 import { build[Module]Report } from '@/lib/report-builders'
 
@@ -353,7 +353,7 @@ export default async function Print[Module]ReportPage({ searchParams }: PageProp
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { get[Module]ByDateRange } from '@/lib/actions/[module]'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 
 export async function GET(request: Request) {
   const supabase = await createClient()

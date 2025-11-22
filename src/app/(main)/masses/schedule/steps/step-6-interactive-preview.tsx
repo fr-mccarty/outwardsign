@@ -40,7 +40,7 @@ import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { previewMassAssignments } from '@/lib/actions/mass-scheduling'
-import { formatTime } from '@/lib/utils/date-format'
+import { formatTime } from '@/lib/utils/formatters'
 
 interface Step6InteractivePreviewProps {
   proposedMasses: ProposedMass[]

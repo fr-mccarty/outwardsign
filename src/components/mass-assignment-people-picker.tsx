@@ -35,7 +35,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { formatTime } from '@/lib/utils/date-format'
+import { formatTime } from '@/lib/utils/formatters'
 
 interface PersonWithPreference extends Person {
   isPreferredTime: boolean

@@ -9,10 +9,10 @@ import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { getGlobalLiturgicalEvents, type GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
-import { formatDatePretty, formatDateLong } from "@/lib/utils/date-format"
+import { formatDatePretty, formatDateLong } from "@/lib/utils/formatters"
 import { getLiturgicalGradeLabel, DEFAULT_TIMEZONE } from "@/lib/constants"
 import { MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
-import { getDayOfWeekNumber } from '@/lib/utils/date-format'
+import { getDayOfWeekNumber } from '@/lib/utils/formatters'
 
 interface Step4LiturgicalEventsProps {
   startDate: string

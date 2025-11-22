@@ -5,7 +5,7 @@
  */
 
 import { MassIntentionReportData } from '@/lib/actions/mass-intentions'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import { ReportBuilder } from './types'
 

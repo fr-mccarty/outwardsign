@@ -16,6 +16,7 @@
 
 ## Table of Contents
 
+- [🔴 Documentation Context Rules (CRITICAL)](#-documentation-context-rules-critical)
 - [📚 Detailed Documentation](#-detailed-documentation)
 - [Project Description](#project-description)
 - [📖 User Personas](#-user-personas)
@@ -38,6 +39,41 @@
 
 ---
 
+## 🔴 Documentation Context Rules (CRITICAL)
+
+**AI Agent: Before performing ANY of these tasks, you MUST read the specified documentation. Failure to read required documentation will result in code that violates established patterns and will need to be rewritten.**
+
+### Required Reading by Task
+
+| When you are asked to... | You MUST read these files FIRST |
+|---------------------------|----------------------------------|
+| **Create or edit ANY form component** | 🔴 [FORMS.md](./docs/FORMS.md) - Form patterns, validation, styling, FormField usage |
+| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - All 8 file patterns |
+| **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Picker architecture and patterns |
+| **Create or modify database schema** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration procedures<br>🔴 Database section in this file - Migration workflow |
+| **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging |
+| **Implement module component structure** | 🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Detailed patterns for all 8 files |
+| **Add validation to forms** | 🔴 [VALIDATION.md](./docs/VALIDATION.md) - React Hook Form + Zod patterns<br>🔴 [FORMS.md](./docs/FORMS.md) - FormField integration |
+| **Style components or pages** | 🔴 [STYLES.md](./docs/STYLES.md) - Dark mode, semantic tokens, print exceptions |
+| **Use helper/formatter functions** | 🔴 [FORMATTERS.md](./docs/FORMATTERS.md) - Date, name, location, page title formatters |
+| **Create content builders/renderers** | 🔴 [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)<br>🔴 [CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)<br>🔴 [RENDERER.md](./docs/RENDERER.md) |
+
+### How to Use This Table
+
+1. **Before starting ANY task**, check this table
+2. **Read ALL required files** for that task type
+3. **Only then** begin implementation
+4. **If unsure**, read the documentation anyway - it's faster than rewriting code
+
+### Why This Matters
+
+- **Saves time**: Following patterns from the start prevents rewrites
+- **Maintains consistency**: Ensures all code follows established patterns
+- **Prevents bugs**: Documentation contains critical rules that prevent common mistakes
+- **Improves quality**: Patterns in docs have been refined through real implementation
+
+---
+
 ## 📚 Detailed Documentation
 
 > **📋 Documentation Types:**
@@ -56,6 +92,8 @@ When you need detailed information on forms, styling, components, modules, testi
 **Key Documentation Files:**
 - **[DEFINITIONS.md](./docs/DEFINITIONS.md)** - Liturgical and application terminology (reader, presider, sacraments vs sacramentals, event types)
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, role permissions, component communication, performance
+- **[DATABASE.md](./docs/DATABASE.md)** - Database management procedures (resets, seeding, liturgical calendar imports, troubleshooting)
+- **[PERMISSIONS.md](./docs/PERMISSIONS.md)** - Permission rules for git, database, file operations, and automation guidelines
 - **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Coding standards including bilingual implementation, page title formatting, UI patterns, helper utilities
 - **[LANGUAGE.md](./docs/LANGUAGE.md)** - Language system documentation (liturgical language vs UI language, database schema, constants)
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
@@ -115,6 +153,8 @@ When implementing features or evaluating the application, refer to the personas 
 
 ## 🔴 Database
 
+> **🔴 When performing database operations, you MUST read [DATABASE.md](./docs/DATABASE.md)** - Database resets, seeding, liturgical calendar imports, and troubleshooting.
+
 **🔴 CRITICAL - Database Changes:**
 - For making database changes, a migration file should first be created
 - **NEVER use the Supabase MCP server to make database changes** during development
@@ -142,6 +182,8 @@ During initial development, modify existing migrations instead of creating new m
 - **Migration file naming timestamp** - When creating new migration files, use a timestamp within the range of the current date to current date plus 30 days. This ensures migrations are properly ordered and prevents timestamp conflicts.
 
 ## 🔴 Git Operations
+
+> **🔴 For complete automation permission rules, you MUST read [PERMISSIONS.md](./docs/PERMISSIONS.md)** - Comprehensive rules for git, database, file operations, and what requires user approval.
 
 **🔴 CRITICAL - Git Permissions:**
 - **NEVER use `git add` or `git commit` commands directly**
@@ -177,7 +219,7 @@ During initial development, modify existing migrations instead of creating new m
 - Use `npm run lint -- --fix` to auto-fix simple issues
 - Configuration is in `eslint.config.mjs` (not `.eslintignore`)
 
-**For complete linting documentation, see [LINTING.md](./docs/LINTING.md).**
+**For complete linting documentation, you MUST read [LINTING.md](./docs/LINTING.md).**
 
 ## 🔴 Build Process
 
@@ -202,6 +244,9 @@ During development, **DO NOT use the Supabase MCP server** for any database oper
 Permission configuration for what operations Claude can perform automatically. See [CLAUDE_CODE_SETTINGS.md](./docs/CLAUDE_CODE_SETTINGS.md) for complete documentation on settings.json and settings.local.json.
 
 ## 🔴 Accessing Records
+
+> **🔴 For authentication and role permission details, you MUST read [ARCHITECTURE.md](./docs/ARCHITECTURE.md#role-permissions)** and [PERMISSION_ENFORCEMENT_SUMMARY.md](./docs/PERMISSION_ENFORCEMENT_SUMMARY.md).
+
 The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
 
 ## Tech Stack
@@ -217,6 +262,8 @@ The ideal way that we want to access the records is by using the RLS feature on 
 
 ## 🔴 Component Directory Rules
 
+> **🔴 Before using or creating components, you MUST read [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Full registry of all components including pickers, forms, layout components, and hooks.
+
 **CRITICAL - Do NOT Edit shadcn/ui Components:**
 - **NEVER edit files in `src/components/ui/`** - These are shadcn/ui components and should remain unchanged
 - Only edit components in:
@@ -227,7 +274,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 
 ## 📖 Architecture
 
-**For comprehensive architecture documentation, see [ARCHITECTURE.md](./docs/ARCHITECTURE.md).**
+**🔴 For comprehensive architecture documentation, you MUST read [ARCHITECTURE.md](./docs/ARCHITECTURE.md).**
 
 ### Quick Reference
 
@@ -255,7 +302,7 @@ The ideal way that we want to access the records is by using the RLS feature on 
 
 ## 📖 Styling
 
-**For detailed styling guidelines, patterns, and examples, see [STYLES.md](./docs/STYLES.md).**
+**🔴 When styling components or pages, you MUST read [STYLES.md](./docs/STYLES.md)** - Dark mode support, semantic tokens, and critical styling rules.
 
 ### General Principles
 
@@ -281,7 +328,7 @@ For views within a print folder (`app/print/`), custom styling is allowed to opt
 
 ## 🔴 Forms
 
-**For comprehensive form implementation guidelines, see [FORMS.md](./docs/FORMS.md).**
+**🔴 When creating or editing forms, you MUST read [FORMS.md](./docs/FORMS.md)** - Critical form patterns, validation, styling, and FormField usage requirements.
 
 This includes:
 - 🔴 **Form Input Styling** - Critical rules for styling form inputs (NEVER modify font-family, borders, or backgrounds)
@@ -296,7 +343,7 @@ This includes:
 ## 🔴 Module Structure (Main Files)
 **CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
 
-**For detailed implementation patterns, see [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md).**
+**🔴 When implementing module components, you MUST read [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Authoritative patterns for all 8 module files with code examples.
 
 **Note on Groups Module:** The Groups module uses a different architecture pattern (dialog-based forms) rather than the standard 8-file structure. Groups is designed for managing collections of people (ministry groups, choirs, etc.) and uses inline editing with dialogs instead of separate create/edit pages. For new sacrament/sacramental modules, always follow the standard 8-file pattern.
 
@@ -340,7 +387,7 @@ export default async function Page({ searchParams }: PageProps) {
 
 ## 📖 Module Development
 
-**For complete module development documentation, see [MODULE_DEVELOPMENT.md](./docs/MODULE_DEVELOPMENT.md).**
+**🔴 For module development patterns (constants, components, content builders), you MUST read [MODULE_DEVELOPMENT.md](./docs/MODULE_DEVELOPMENT.md).**
 
 Module development includes file naming conventions, directory structure, reusable components, content builders, and type patterns. The MODULE_DEVELOPMENT.md file provides:
 - Complete directory structures for main modules, print views, and API routes
@@ -352,7 +399,7 @@ Module development includes file naming conventions, directory structure, reusab
 
 ## 📖 Code Conventions
 
-**For comprehensive coding standards, see [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md).**
+**🔴 For coding standards and conventions, you MUST read [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Bilingual implementation, page title formatting, UI patterns, and helper utilities.
 
 ### Quick Reference
 
@@ -394,7 +441,7 @@ Module development includes file naming conventions, directory structure, reusab
 
 ## 🔴 Design Principles
 
-**For comprehensive design principles, see [DESIGN_PRINCIPLES.md](./docs/DESIGN_PRINCIPLES.md).**
+**🔴 When implementing features, you MUST read [DESIGN_PRINCIPLES.md](./docs/DESIGN_PRINCIPLES.md)** - Core principles that guide all development decisions (simplicity, clarity, feedback, affordances).
 
 These core principles guide all development decisions in Outward Sign:
 

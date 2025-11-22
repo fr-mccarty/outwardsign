@@ -1,5 +1,7 @@
 # Module Creation Checklist
 
+> **🔴 Context Requirement:** When creating a new module (Funerals, Baptisms, Presentations, etc.), you MUST include this file in your context BEFORE starting. This checklist ensures you don't miss critical steps and follow the correct order of implementation.
+
 This checklist provides a comprehensive guide for creating new modules (Funerals, Baptisms, Presentations, etc.) in Outward Sign.
 
 **Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)

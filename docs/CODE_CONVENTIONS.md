@@ -893,7 +893,7 @@ const formattedDate = new Date(funeral.date).toLocaleDateString('en-US', {
 })
 
 // Third use: Abstract to utility!
-// lib/utils/date-format.ts
+
 export function formatDateLong(date: string | Date): string {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -954,7 +954,7 @@ This is a guideline, not a hard rule. Use judgment:
 
 **Location:**
 - `src/lib/utils/formatters.ts` - Person, location, page title, filename formatters
-- `src/lib/utils/date-format.ts` - Date and time formatting functions
+ 
 
 **STRONGLY PREFER using helper functions** for all formatting needs. These centralized utilities ensure consistency across the application.
 
@@ -963,18 +963,18 @@ This is a guideline, not a hard rule. Use judgment:
 1. **ALWAYS use helper functions** - Never write inline formatting code
 
 2. **🔴 ALWAYS format dates** - Never display raw date strings (e.g., "2025-07-15")
-   - Use `formatDatePretty()`, `formatDateLong()`, etc. from `date-format.ts`
+   - Use `formatDatePretty()`, `formatDateLong()`, etc. from `formatters.ts`
    - This applies to UI, view pages, forms, **content builders**, **templates**, print views, and exports
 
 3. **Request permission before creating new helpers** - Ask user before adding new functions
 
-4. **Check existing helpers first** - Search both `formatters.ts` and `date-format.ts`
+4. **Check existing helpers first** - Search both `formatters.ts` and `formatters.ts`
 
 ### Available Helper Categories
 
 **Date/Time Formatting:**
 ```typescript
-import { formatDatePretty, formatDateLong, formatEventDateTime } from '@/lib/utils/date-format'
+import { formatDatePretty, formatDateLong, formatEventDateTime } from '@/lib/utils/formatters'
 
 formatDatePretty('2025-07-15')        // "Jul 15, 2025"
 formatDateLong('2025-07-15')          // "July 15, 2025"
@@ -1020,7 +1020,7 @@ getFuneralFilename(funeral)           // "john-doe-funeral"
 
 ```typescript
 import { getWeddingPageTitle } from '@/lib/utils/formatters'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 
 export function WeddingViewClient({ wedding }: Props) {
   const brideName = wedding.bride?.full_name || ''
@@ -1058,7 +1058,7 @@ export function WeddingViewClient({ wedding }: Props) {
 
 **Before creating a new helper function:**
 
-1. **Check existing helpers** - Search `formatters.ts` and `date-format.ts`
+1. **Check existing helpers** - Search `formatters.ts` and `formatters.ts`
 2. **Ask permission** - Request user approval before adding
 3. **Follow Rule of Three** - Wait for 3 uses before abstracting
 4. **Document it** - Add to [FORMATTERS.md](./FORMATTERS.md)

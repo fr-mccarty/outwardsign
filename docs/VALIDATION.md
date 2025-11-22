@@ -1,5 +1,7 @@
 # Validation Guide
 
+> **🔴 Context Requirement:** When adding validation to ANY form, you MUST include this file in your context. This file contains the authoritative validation patterns using React Hook Form + Zod that ensure consistent error handling across the application.
+
 > **See Also:** [FORMS.md](./FORMS.md) for general form patterns, styling, event handling, and FormField usage
 
 This document explains **validation-specific patterns** in Outward Sign using React Hook Form + Zod, including:

@@ -14,7 +14,7 @@ import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
 import { PeoplePicker } from '@/components/people-picker'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { formatDatePretty } from '@/lib/utils/date-format'
+import { formatDatePretty } from '@/lib/utils/formatters'
 
 interface MassIntentionPickerProps {
   open: boolean

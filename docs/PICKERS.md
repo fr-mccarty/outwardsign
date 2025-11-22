@@ -1,5 +1,7 @@
 # Picker System Documentation
 
+> **🔴 Context Requirement:** When working with ANY picker component (EventPicker, PeoplePicker, etc.) or creating a new picker, you MUST include this file in your context. This file contains critical architecture patterns, behavioral rules, and implementation guidelines that prevent common mistakes.
+
 > **Purpose:** Comprehensive documentation on the CorePicker architecture, creating new pickers, and advanced patterns.
 >
 > **See Also:**

@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EVENT_TYPE_LABELS } from "@/lib/constants"
-import { formatDatePretty, formatTime } from "@/lib/utils/date-format"
+import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { FormField } from "@/components/form-field"
 

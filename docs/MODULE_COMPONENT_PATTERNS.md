@@ -1,5 +1,7 @@
 # Module Component Patterns
 
+> **🔴 Context Requirement:** When implementing module component structure (list pages, view pages, forms, etc.), you MUST include this file in your context. This file contains the authoritative patterns for all 8 module component files that ensure consistency across the application.
+
 This document provides detailed implementation patterns for the 8 main component files that make up each module in Outward Sign. Each section explains the component's purpose, structure, props, and provides reference implementations.
 
 **Reference Module:** Always use the Wedding module (`src/app/(main)/weddings/`) as the canonical implementation example.
