@@ -23,6 +23,8 @@ import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-event
 import { CheckCircle2, AlertTriangle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 interface ScheduleMassesClientProps {
   templates: MassRoleTemplateWithItems[]
@@ -387,16 +389,14 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       // Clear saved wizard state on successful completion
       clearSavedState()
 
-      // Navigate to Step 8 (Confirmation) to show assignment results
+      // Stay on Step 8 (already navigated by handleStepChange)
       setSchedulingError(null)
-      setCurrentWizardStep(8)
     } catch (error) {
       console.error('Failed to schedule masses:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to schedule masses. Please try again.'
       setSchedulingError(errorMessage)
       toast.error(errorMessage)
-      // Still navigate to step 8 to show the error
-      setCurrentWizardStep(8)
+      // Stay on step 8 to show the error
     } finally {
       setIsSubmitting(false)
     }
@@ -555,12 +555,19 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
                 title="Creating Masses..."
                 description="Please wait while we create your masses and assignments"
               />
-              <Card>
-                <CardContent className="py-12">
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                    <p className="text-lg font-medium">Creating masses and assigning ministers...</p>
-                    <p className="text-sm text-muted-foreground">This may take a few moments</p>
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="py-16">
+                  <div className="flex flex-col items-center justify-center space-y-6">
+                    <div className="relative">
+                      <div className="h-20 w-20 animate-spin rounded-full border-4 border-primary/30 border-t-primary"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <CheckCircle2 className="h-8 w-8 text-primary animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <p className="text-xl font-semibold text-foreground">Creating masses and assigning ministers...</p>
+                      <p className="text-sm text-muted-foreground">This may take a few moments. Please do not close this window.</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -629,7 +636,9 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   const handleStepChange = useCallback(async (newStep: number) => {
     // If transitioning from step 7 to 8, create the masses
     if (currentWizardStep === 7 && newStep === 8) {
-      // Don't navigate yet - handleComplete will navigate to step 8 after creation
+      // Navigate to step 8 first to show loading state
+      setCurrentWizardStep(8)
+      // Then create the masses (handleComplete will keep us on step 8)
       await handleComplete()
     } else {
       setCurrentWizardStep(newStep)
@@ -638,24 +647,75 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
 
   // Override initial step if showing results
   return (
-    <Wizard
-      title="Schedule Masses"
-      description="Create multiple Masses with automatic minister assignments"
-      steps={wizardSteps}
-      loading={isSubmitting}
-      loadingMessage="Creating Masses and assigning ministers..."
-      renderStepContent={renderStepContent}
-      onComplete={() => {
-        // On step 8, redirect to masses list
-        if (currentWizardStep === 8) {
-          router.push('/masses')
-        }
-      }}
-      onStepChange={handleStepChange}
-      disableNext={getDisableNext}
-      nextButtonText={(step) => step === 7 ? "Create" : undefined}
-      completeButtonText={currentWizardStep === 8 ? "Go to Masses" : "Schedule Masses"}
-      initialStep={currentWizardStep}
-    />
+    <>
+      <Wizard
+        title="Schedule Masses"
+        description="Create multiple Masses with automatic minister assignments"
+        steps={wizardSteps}
+        loading={isSubmitting}
+        loadingMessage="Creating Masses and assigning ministers..."
+        renderStepContent={renderStepContent}
+        onComplete={() => {
+          // On step 8, redirect to masses list
+          if (currentWizardStep === 8) {
+            router.push('/masses')
+          }
+        }}
+        onStepChange={handleStepChange}
+        disableNext={getDisableNext}
+        nextButtonText={(step) => step === 7 ? "Create" : undefined}
+        completeButtonText={currentWizardStep === 8 ? "Go to Masses" : "Schedule Masses"}
+        initialStep={currentWizardStep}
+      />
+
+      {/* Loading Modal Overlay */}
+      <Dialog open={isSubmitting} modal>
+        <DialogContent
+          className="max-w-md border-none bg-background/95 backdrop-blur-sm shadow-2xl"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          <VisuallyHidden>
+            <DialogTitle>Creating Masses</DialogTitle>
+          </VisuallyHidden>
+          <div className="flex flex-col items-center justify-center py-8 space-y-6">
+            {/* Animated Spinner with Icon */}
+            <div className="relative">
+              {/* Outer rotating ring */}
+              <div className="h-24 w-24 animate-spin rounded-full border-4 border-primary/20 border-t-primary border-r-primary"></div>
+              {/* Middle rotating ring (opposite direction) */}
+              <div className="absolute inset-2 animate-spin rounded-full border-4 border-primary/10 border-b-primary" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+              {/* Inner icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <CheckCircle2 className="h-10 w-10 text-primary animate-pulse" />
+              </div>
+            </div>
+
+            {/* Loading Text */}
+            <div className="text-center space-y-3">
+              <h3 className="text-2xl font-bold text-foreground">Creating Masses</h3>
+              <div className="space-y-1">
+                <p className="text-base text-muted-foreground">Scheduling masses and assigning ministers...</p>
+                <p className="text-sm text-muted-foreground/80">This may take a few moments</p>
+              </div>
+            </div>
+
+            {/* Animated Progress Dots */}
+            <div className="flex gap-2">
+              <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+
+            {/* Warning Message */}
+            <div className="px-6 py-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p className="text-sm text-amber-700 dark:text-amber-400 text-center font-medium">
+                Please do not close this window
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

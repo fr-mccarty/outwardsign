@@ -242,15 +242,31 @@ export async function scheduleMasses(
           start_time: normalizedTime,
           end_date: massData.date,
           language: massData.language,
-          is_public: false,
-          global_liturgical_event_id: massData.liturgicalEvent?.id || null,
         })
         .select()
         .single()
 
       if (eventError) {
-        console.error('Error creating event:', eventError)
-        throw new Error(`Failed to create event for ${massData.date} ${massData.time}`)
+        console.error('Error creating event:', {
+          error: eventError,
+          massData: {
+            date: massData.date,
+            time: massData.time,
+            normalizedTime,
+            templateId: massData.templateId,
+            liturgicalEventId: massData.liturgicalEvent?.id
+          },
+          insertData: {
+            parish_id: selectedParishId,
+            name: eventName,
+            event_type: 'MASS',
+            start_date: massData.date,
+            start_time: normalizedTime,
+            end_date: massData.date,
+            language: massData.language,
+          }
+        })
+        throw new Error(`Failed to create event for ${massData.date} ${normalizedTime}: ${eventError.message || JSON.stringify(eventError)}`)
       }
 
       // Create Mass linked to Event
@@ -260,6 +276,7 @@ export async function scheduleMasses(
           parish_id: selectedParishId,
           event_id: event.id,
           mass_roles_template_id: massData.templateId,
+          liturgical_event_id: massData.liturgicalEvent?.id || null,
           status: 'SCHEDULED',
         })
         .select()
