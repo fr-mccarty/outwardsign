@@ -47,8 +47,9 @@ export function CalendarGrid<T extends CalendarItem = CalendarItem>({
     for (let i = 0; i < numDays; i++) {
       const dayItems = items.filter(item => {
         if (!item.date) return false
-        const itemDate = new Date(item.date)
-        return itemDate.toDateString() === currentDateForLoop.toDateString()
+        // Compare date strings directly to avoid timezone issues
+        const currentDateStr = currentDateForLoop.toISOString().split('T')[0]
+        return item.date === currentDateStr
       })
 
       days.push({

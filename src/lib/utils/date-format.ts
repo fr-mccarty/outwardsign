@@ -1,3 +1,5 @@
+import { DEFAULT_TIMEZONE } from '@/lib/constants'
+
 /**
  * Formats a date as numeric (e.g., "7/15/2025")
  * @param date - Date string or Date object
@@ -47,7 +49,8 @@ export function formatDatePretty(date: string | Date): string {
     return dateObj.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: DEFAULT_TIMEZONE
     })
   } catch (error) {
     console.error('Error formatting date:', error)
@@ -67,7 +70,8 @@ export function formatDateLong(date: string | Date): string {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: DEFAULT_TIMEZONE
     })
   } catch (error) {
     console.error('Error formatting date:', error)

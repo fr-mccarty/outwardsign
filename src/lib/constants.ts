@@ -470,6 +470,9 @@ export const PRESENTATION_TEMPLATE_LABELS: Record<PresentationTemplate, { en: st
   'presentation-bilingual': { en: 'Bilingual Presentation (English & Spanish)', es: 'Presentación Bilingüe (Inglés y Español)' }
 }
 
+// Timezone Constants
+export const DEFAULT_TIMEZONE = 'UTC' as const
+
 // Mass Intention Template Constants
 export const MASS_INTENTION_TEMPLATE_VALUES = ['mass-intention-summary-english', 'mass-intention-summary-spanish'] as const
 export type MassIntentionTemplate = typeof MASS_INTENTION_TEMPLATE_VALUES[number]

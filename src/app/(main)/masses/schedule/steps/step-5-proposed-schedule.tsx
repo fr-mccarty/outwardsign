@@ -31,7 +31,7 @@ import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Calendar } from '@/components/calendar/calendar'
 import { CalendarItem, CalendarView } from '@/components/calendar/types'
 import { MassTimesTemplate, MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
-import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from "@/lib/constants"
+import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek, DEFAULT_TIMEZONE } from "@/lib/constants"
 import { formatDate, formatTime, getDayOfWeekNumber } from "@/lib/utils/date-format"
 import { format } from 'date-fns'
 import { PeoplePicker } from '@/components/people-picker'
@@ -648,8 +648,8 @@ export function generateProposedMasses(
     return masses
   }
 
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+  const start = new Date(startDate + `T00:00:00${DEFAULT_TIMEZONE === 'UTC' ? 'Z' : ''}`)
+  const end = new Date(endDate + `T00:00:00${DEFAULT_TIMEZONE === 'UTC' ? 'Z' : ''}`)
 
   // Create a map of liturgical events by date for quick lookup
   const eventsByDate = new Map<string, { id: string; name: string; color?: string[]; grade_abbr?: string; type?: string }>()
@@ -662,7 +662,7 @@ export function generateProposedMasses(
   let idCounter = 0
 
   while (currentDate <= end) {
-    const dayNumber = currentDate.getDay()
+    const dayNumber = currentDate.getUTCDay()
     const dateStr = currentDate.toISOString().split('T')[0]
 
     // Check if there's a liturgical event on this date
@@ -712,7 +712,7 @@ export function generateProposedMasses(
             if (item.day_type === 'DAY_BEFORE') {
               // Vigil Mass: occurs the day before
               massDateObj = new Date(currentDate)
-              massDateObj.setDate(massDateObj.getDate() - 1)
+              massDateObj.setUTCDate(massDateObj.getUTCDate() - 1)
               massDate = massDateObj.toISOString().split('T')[0]
             } else {
               // IS_DAY or default: occurs on the actual day
@@ -754,7 +754,7 @@ export function generateProposedMasses(
       }
     })
 
-    currentDate.setDate(currentDate.getDate() + 1)
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1)
   }
 
   return masses

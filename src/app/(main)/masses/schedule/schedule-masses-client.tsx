@@ -473,6 +473,8 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
             endDate={endDate}
             selectedEventIds={selectedLiturgicalEventIds}
             onSelectionChange={setSelectedLiturgicalEventIds}
+            massTimesTemplates={massTimesTemplates}
+            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
           />
         )
       case 5:

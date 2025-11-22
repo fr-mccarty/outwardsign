@@ -10,13 +10,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { getGlobalLiturgicalEvents, type GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import { formatDatePretty, formatDateLong } from "@/lib/utils/date-format"
-import { getLiturgicalGradeLabel } from "@/lib/constants"
+import { getLiturgicalGradeLabel, DEFAULT_TIMEZONE } from "@/lib/constants"
+import { MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
+import { getDayOfWeekNumber } from '@/lib/utils/date-format'
 
 interface Step4LiturgicalEventsProps {
   startDate: string
   endDate: string
   selectedEventIds: string[]
   onSelectionChange: (eventIds: string[]) => void
+  massTimesTemplates?: MassTimesTemplateWithItems[]
+  selectedMassTimesTemplateIds?: string[]
 }
 
 // Color mapping for liturgical colors
@@ -35,7 +39,9 @@ export function Step4LiturgicalEvents({
   startDate,
   endDate,
   selectedEventIds,
-  onSelectionChange
+  onSelectionChange,
+  massTimesTemplates = [],
+  selectedMassTimesTemplateIds = []
 }: Step4LiturgicalEventsProps) {
   const [loading, setLoading] = useState(true)
   const [events, setEvents] = useState<GlobalLiturgicalEvent[]>([])
@@ -103,6 +109,25 @@ export function Step4LiturgicalEvents({
     .filter(([, events]) => events.length > 1)
     .map(([date]) => date)
 
+  // Check if a date has any Mass times scheduled
+  const dateHasMassTime = (dateStr: string): boolean => {
+    const date = new Date(dateStr + `T00:00:00${DEFAULT_TIMEZONE === 'UTC' ? 'Z' : ''}`)
+    const dayOfWeek = date.getUTCDay()
+
+    // Never show "No Mass Time" badge for Saturday (6) or Sunday (0)
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      return true
+    }
+
+    return selectedMassTimesTemplateIds.some(templateId => {
+      const template = massTimesTemplates.find(t => t.id === templateId)
+      if (!template) return false
+
+      const templateDayNumber = getDayOfWeekNumber(template.day_of_week)
+      return templateDayNumber === dayOfWeek
+    })
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -147,13 +172,20 @@ export function Step4LiturgicalEvents({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {Object.entries(eventsByDate).map(([date, dayEvents]) => (
+          {Object.entries(eventsByDate).map(([date, dayEvents]) => {
+            const hasMassTime = dateHasMassTime(date)
+            return (
             <div key={date} className="space-y-2">
               <h3 className="font-medium text-sm border-b pb-1">
                 {formatDateLong(date)}
                 {dayEvents.length > 1 && (
                   <Badge variant="outline" className="ml-2 text-xs">
                     {dayEvents.length} options
+                  </Badge>
+                )}
+                {!hasMassTime && (
+                  <Badge variant="outline" className="ml-2 text-xs bg-yellow-100 text-yellow-800 border-yellow-300">
+                    No Mass Time
                   </Badge>
                 )}
               </h3>
@@ -202,7 +234,8 @@ export function Step4LiturgicalEvents({
                 })}
               </div>
             </div>
-          ))}
+            )
+          })}
         </CardContent>
       </Card>
 
