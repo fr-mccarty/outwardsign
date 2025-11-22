@@ -1588,10 +1588,31 @@ Liturgical events:
 
 ---
 
-### LiturgicalEventModal
-**Path:** `src/components/liturgical-event-modal.tsx`
+### LiturgicalEventPreview
+**Path:** `src/components/liturgical-event-preview.tsx`
 
-**Purpose:** Modal for displaying liturgical event details.
+**Purpose:** Reusable modal component for displaying comprehensive liturgical event details including colors, readings, grades, seasons, and vigil information. Used across calendar views, mass scheduling, and liturgical event picker fields.
+
+**Features:**
+- Visual liturgical color bars and badges
+- Complete readings display (first reading, psalm, gospel, etc.)
+- Event metadata (grade, season, liturgical year, psalter week)
+- Vigil mass information
+- Scrollable content with fixed header
+
+**Usage:**
+```tsx
+import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
+
+const [previewOpen, setPreviewOpen] = useState(false)
+const [selectedEvent, setSelectedEvent] = useState<GlobalLiturgicalEvent | null>(null)
+
+<LiturgicalEventPreview
+  open={previewOpen}
+  onOpenChange={setPreviewOpen}
+  event={selectedEvent}
+/>
+```
 
 ---
 

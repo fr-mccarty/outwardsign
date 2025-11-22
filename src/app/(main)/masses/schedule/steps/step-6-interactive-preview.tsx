@@ -37,6 +37,9 @@ import {
 } from "@/components/ui/select"
 import { Settings, RefreshCw } from 'lucide-react'
 import { getLiturgicalContextFromGrade } from '@/lib/constants'
+import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
+import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
 interface Step6InteractivePreviewProps {
   proposedMasses: ProposedMass[]
@@ -58,6 +61,8 @@ export function Step6InteractivePreview({
   const [editingMassId, setEditingMassId] = useState<string | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('NOT_SELECTED')
   const [recommendedTemplateId, setRecommendedTemplateId] = useState<string | null>(null)
+  const [liturgicalEventPreviewOpen, setLiturgicalEventPreviewOpen] = useState(false)
+  const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<GlobalLiturgicalEvent | null>(null)
 
   const includedMasses = useMemo(() =>
     proposedMasses.filter(m => m.isIncluded).sort((a, b) => a.date.localeCompare(b.date))
@@ -183,6 +188,14 @@ export function Step6InteractivePreview({
     }
 
     return null
+  }
+
+  const handleLiturgicalEventClick = async (eventId: string) => {
+    const event = await getGlobalLiturgicalEvent(eventId)
+    if (event) {
+      setSelectedLiturgicalEvent(event)
+      setLiturgicalEventPreviewOpen(true)
+    }
   }
 
   const handleOpenTemplateChange = (massId: string) => {
@@ -390,8 +403,12 @@ export function Step6InteractivePreview({
                             <CardTitle className="text-base">{mass.templateName}</CardTitle>
                             {getLiturgicalColorDot(mass.liturgicalEventColor)}
                           </div>
-                          {mass.liturgicalEventName && (
-                            <Badge variant="outline" className="text-xs">
+                          {mass.liturgicalEventName && mass.liturgicalEventId && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs cursor-pointer hover:bg-accent"
+                              onClick={() => handleLiturgicalEventClick(mass.liturgicalEventId!)}
+                            >
                               {mass.liturgicalEventName}
                             </Badge>
                           )}
@@ -550,6 +567,13 @@ export function Step6InteractivePreview({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Liturgical Event Preview Modal */}
+      <LiturgicalEventPreview
+        open={liturgicalEventPreviewOpen}
+        onOpenChange={setLiturgicalEventPreviewOpen}
+        event={selectedLiturgicalEvent}
+      />
     </div>
   )
 }

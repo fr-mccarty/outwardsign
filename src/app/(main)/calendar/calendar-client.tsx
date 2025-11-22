@@ -9,7 +9,7 @@ import { PageContainer } from '@/components/page-container'
 import { EventWithModuleLink, getEventModuleLink } from '@/lib/actions/events'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getGlobalLiturgicalEventsByMonth, GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
-import { LiturgicalEventModal } from '@/components/liturgical-event-modal'
+import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -255,7 +255,7 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
         />
       </PageContainer>
 
-      <LiturgicalEventModal
+      <LiturgicalEventPreview
         event={selectedLiturgicalEvent}
         open={modalOpen}
         onOpenChange={setModalOpen}

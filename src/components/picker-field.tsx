@@ -21,6 +21,7 @@ interface BasePickerFieldProps<T> {
   descriptionPosition?: 'before' | 'after'
   displayLayout?: 'single-line' | 'multi-line'
   testId?: string // Optional override for data-testid
+  onValueClick?: () => void // Optional custom click handler for the value display
 }
 
 export function PickerField<T>({
@@ -38,8 +39,17 @@ export function PickerField<T>({
   descriptionPosition = 'after',
   displayLayout = 'single-line',
   testId,
+  onValueClick,
 }: BasePickerFieldProps<T>) {
   const labelId = testId || label.toLowerCase().replace(/\s+/g, '-')
+
+  const handleValueClick = () => {
+    if (onValueClick) {
+      onValueClick()
+    } else {
+      onShowPickerChange(true)
+    }
+  }
 
   return (
     <div className="space-y-2">
@@ -57,7 +67,7 @@ export function PickerField<T>({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onShowPickerChange(true)}
+              onClick={handleValueClick}
               className="flex-1 flex items-center justify-between p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left"
               data-testid={`${labelId}-selected-value`}
             >
@@ -78,7 +88,7 @@ export function PickerField<T>({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onShowPickerChange(true)}
+              onClick={handleValueClick}
               className="flex-1 p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left"
               data-testid={`${labelId}-selected-value`}
             >
