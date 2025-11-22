@@ -277,7 +277,6 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
   // Renewal of Baptismal Promises
   sections.push({
     id: 'renewal-of-promises',
-    pageBreakBefore: true,
     elements: [
       {
         type: 'section-title',
@@ -420,6 +419,7 @@ Te lo pedimos por Cristo nuestro Señor.`,
   // Presentation of Symbols
   sections.push({
     id: 'presentation-of-symbols',
+    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
@@ -491,6 +491,7 @@ Te lo pedimos por Cristo nuestro Señor.`,
   // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
+    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',

@@ -253,7 +253,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     reading: quinceanera.second_reading,
     reader: quinceanera.second_reader,
     responseText: 'Thanks be to God.',
-    pageBreakBefore: !!quinceanera.second_reading,
   })
   if (secondReadingSection) {
     sections.push(secondReadingSection)
@@ -265,7 +264,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     reading: quinceanera.gospel_reading,
     reader: quinceanera.presider,
     includeGospelAcclamations: true,
-    pageBreakBefore: !!quinceanera.gospel_reading,
   })
   if (gospelSection) {
     sections.push(gospelSection)
@@ -277,7 +275,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
   // Renewal of Baptismal Promises
   sections.push({
     id: 'renewal-of-promises',
-    pageBreakBefore: true,
     elements: [
       {
         type: 'section-title',
@@ -420,6 +417,7 @@ We ask this through Christ our Lord.`,
   // Presentation of Symbols
   sections.push({
     id: 'presentation-of-symbols',
+    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
@@ -491,6 +489,7 @@ We ask this through Christ our Lord.`,
   // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
+    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
