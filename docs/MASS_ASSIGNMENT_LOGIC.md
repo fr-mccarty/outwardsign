@@ -134,30 +134,38 @@ Ministers are color-coded by relative workload:
 
 ## Future Enhancements
 
-### Auto-Assignment Algorithm (Planned)
+### Auto-Assignment Algorithm
 
-A future auto-assignment feature would:
+**Status**: ✅ Implemented in `src/lib/actions/mass-scheduling.ts`
+
+The auto-assignment algorithm:
 
 1. **Balance workload**: Distribute assignments evenly across qualified ministers
-2. **Respect preferences**: Honor minister availability and preferences
-3. **Consider history**: Factor in recent assignment history
-4. **Handle constraints**:
-   - Blackout dates
-   - Maximum assignments per period
-   - Role qualifications
+2. **Respect preferred mass times**: Only assign people to Masses they have indicated they prefer
+3. **Respect blackout dates**: Honor minister unavailability
+4. **Prevent double-booking**: Same person cannot have multiple roles at the same Mass
+5. **Active members only**: Only assign people with active mass role memberships
 
-### Suggested Algorithm Approach
+### Algorithm Implementation
 
 ```
-For each unassigned role in chronological order:
-  1. Get list of qualified people for this role
-  2. Filter out people already assigned to this mass
-  3. Filter out people with blackout dates
-  4. Sort by:
-     a. Fewest assignments in this schedule (primary)
-     b. Longest time since last assignment (secondary)
-  5. Assign top candidate
+For each Mass in chronological order:
+  assigned_this_mass = []  // Track who's already assigned to this specific Mass
+
+  For each role in this Mass:
+    1. Get list of qualified people for this role (active mass_role_members)
+    2. ⚠️ CRITICAL: Filter out people already assigned to this Mass (prevents double-booking)
+    3. ⚠️ CRITICAL: Filter by preferred mass times (only assign people to Masses they prefer)
+    4. Filter out people with blackout dates on this date
+    5. If balance_workload enabled:
+       - Sort by fewest total assignments (ascending)
+    6. Assign first eligible person
+    7. Add person to assigned_this_mass array
 ```
+
+**Key Constraints**:
+1. The `assigned_this_mass` array ensures no person is assigned to multiple roles at the same Mass. For example, someone cannot be both a Lector and Usher at the 9:00 AM Sunday Mass.
+2. Each person has a `mass_times_template_item_ids` array that stores which specific Mass times they prefer (e.g., Saturday 5:00 PM, Sunday 10:00 AM). People are only assigned to their preferred Masses. If the array is empty, they can be assigned to any Mass time.
 
 ## Database Schema Dependencies
 

@@ -15,7 +15,7 @@ import {
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { ProposedMass, RoleAssignment } from './step-5-proposed-schedule'
 import { formatDate } from '@/lib/utils/formatters'
-import { PeoplePicker } from '@/components/people-picker'
+import { MassAssignmentPeoplePicker } from '@/components/mass-assignment-people-picker'
 import type { Person } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
@@ -331,6 +331,7 @@ export function Step6InteractivePreview({
           id: m.id,
           date: m.date,
           time: m.time,
+          massTimesTemplateItemId: m.massTimesTemplateItemId,
           assignments: m.assignments || []
         }))
 
@@ -492,7 +493,12 @@ export function Step6InteractivePreview({
                           mass.assignments.map((assignment, idx) => (
                             <div
                               key={`${assignment.roleId}-${idx}`}
-                              className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
+                              className={cn(
+                                "flex items-center gap-3 p-3 rounded-lg border transition-colors group",
+                                assignment.personId && assignment.personName
+                                  ? "bg-card hover:bg-accent/50"
+                                  : "bg-red-50/30 dark:bg-red-950/10 border-red-100 dark:border-red-900/30 hover:bg-red-50/50 dark:hover:bg-red-950/15"
+                              )}
                             >
                               <div className="cursor-grab opacity-0 group-hover:opacity-100 transition-opacity">
                                 <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -550,14 +556,37 @@ export function Step6InteractivePreview({
         </div>
       </ScrollArea>
 
-      {/* People Picker */}
-      <PeoplePicker
+      {/* Mass Assignment People Picker */}
+      <MassAssignmentPeoplePicker
         open={peoplePickerOpen}
         onOpenChange={setPeoplePickerOpen}
         onSelect={handlePersonSelected}
         placeholder="Search for a minister..."
         emptyMessage="No people found. Add people in Settings > People."
-        filterByMassRole={editingAssignment?.roleId}
+        massRoleId={editingAssignment?.roleId || ''}
+        massRoleName={
+          editingAssignment
+            ? proposedMasses
+                .find(m => m.id === editingAssignment.massId)
+                ?.assignments?.find(a => a.roleId === editingAssignment.roleId)?.roleName || 'Role'
+            : 'Role'
+        }
+        massTimesTemplateItemId={
+          editingAssignment
+            ? proposedMasses.find(m => m.id === editingAssignment.massId)?.massTimesTemplateItemId
+            : undefined
+        }
+        allMassRoles={
+          Array.from(
+            new Map(
+              roleTemplates
+                .flatMap(template =>
+                  template.items?.map(item => item.mass_role).filter(Boolean) || []
+                )
+                .map(role => [role.id, { id: role.id, name: role.name }])
+            ).values()
+          )
+        }
       />
 
       {/* Template Change Dialog */}

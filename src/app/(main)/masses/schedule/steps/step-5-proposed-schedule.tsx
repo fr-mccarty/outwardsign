@@ -51,6 +51,7 @@ export interface ProposedMass {
   templateId: string
   templateName: string
   dayOfWeek: string
+  massTimesTemplateItemId?: string // Reference to the specific mass time template item
   isIncluded: boolean
   hasConflict: boolean
   conflictReason?: string
@@ -551,6 +552,7 @@ export function generateProposedMasses(
                 templateId: template.id,
                 templateName: `${template.name} - ${formatTime(item.time)}${item.day_type === 'DAY_BEFORE' ? ' (Vigil)' : ''}`,
                 dayOfWeek: template.day_of_week,
+                massTimesTemplateItemId: item.id,
                 isIncluded: true,
                 hasConflict,
                 conflictReason: hasConflict ? `Overlaps with ${liturgicalEvent?.name}` : undefined,

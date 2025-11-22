@@ -231,6 +231,13 @@ All three have liturgical event metadata: "Christ the King"
 **Output**:
 - Mass records with role assignments populated (person_id assigned to each role)
 
+**Core Rules**:
+1. **No Double-Booking at Same Mass**: A person cannot be assigned to multiple roles at the same Mass
+2. **Preferred Mass Times**: Only recommend people for Masses they have indicated they prefer to serve at
+3. **Respect Blackout Dates**: People with blackout dates are excluded from assignments on those dates
+4. **Balance Workload**: When enabled, prioritize people with fewer total assignments
+5. **Active Members Only**: Only active mass role members are considered for assignment
+
 ### Step-by-Step Process
 
 #### Step 1: Get Required Roles from Template
@@ -293,13 +300,23 @@ END FOR
 
 #### Step 3: Find Best Minister (Sub-Algorithm)
 ```
-FUNCTION findBestMinister(role_id, mass_date, mass_time, already_assigned, options):
+FUNCTION findBestMinister(role_id, mass_date, mass_time, mass_times_template_item_id, already_assigned, options):
 
   // Get all people assigned to this role
   ministers = getMassRoleMembers(role_id, active=true)
 
-  // Filter out people already assigned to this specific Mass
+  // ⚠️ CRITICAL RULE: Filter out people already assigned to this specific Mass
+  // This prevents the same person from being assigned to multiple roles at the same Mass
   available = ministers.filter(m => !already_assigned.includes(m.person_id))
+
+  // ⚠️ CRITICAL RULE: Filter by preferred mass times
+  // Only assign people to Masses they have indicated they prefer to serve at
+  IF mass_times_template_item_id IS PROVIDED THEN
+    available = available.filter(m =>
+      m.person.mass_times_template_item_ids IS EMPTY OR
+      m.person.mass_times_template_item_ids.includes(mass_times_template_item_id)
+    )
+  END IF
 
   IF options.respectBlackoutDates THEN
     // Remove people who are unavailable on this date
@@ -318,6 +335,10 @@ FUNCTION findBestMinister(role_id, mass_date, mass_time, already_assigned, optio
   RETURN available[0] // Return first eligible minister
 END FUNCTION
 ```
+
+**Key Constraints**:
+1. The `already_assigned` array ensures that once a person is assigned to any role at a specific Mass, they are excluded from consideration for all subsequent role assignments at that same Mass. This prevents double-booking the same person for multiple roles at a single Mass (e.g., someone cannot be both a Lector and an Usher at the 9:00 AM Mass).
+2. The `mass_times_template_item_ids` array on each person stores which specific Mass times they prefer to serve at (e.g., Saturday 5:00 PM, Sunday 10:00 AM). If a person has preferences specified, they will only be assigned to those preferred Masses. If the array is empty, they can be assigned to any Mass time.
 
 ### Example: Assigning Sunday Nov 23
 

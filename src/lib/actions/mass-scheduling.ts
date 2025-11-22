@@ -388,12 +388,13 @@ export async function getSuggestedMinister(
   date: string,
   time: string,
   balanceWorkload: boolean,
-  alreadyAssignedPersonIds: string[] = []
+  alreadyAssignedPersonIds: string[] = [],
+  massTimesTemplateItemId?: string
 ): Promise<{ id: string; name: string } | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  const ministers = await getAvailableMinisters(roleId, date, time, selectedParishId)
+  const ministers = await getAvailableMinisters(roleId, date, time, selectedParishId, massTimesTemplateItemId)
 
   // Filter out people already assigned to this Mass
   const available = ministers.filter(m => !alreadyAssignedPersonIds.includes(m.id))
@@ -418,6 +419,7 @@ export async function previewMassAssignments(
     id: string
     date: string
     time: string
+    massTimesTemplateItemId?: string
     assignments: Array<{
       roleId: string
       roleName: string
@@ -474,7 +476,8 @@ export async function previewMassAssignments(
           mass.date,
           mass.time,
           balanceWorkload,
-          alreadyAssignedThisMass
+          alreadyAssignedThisMass,
+          mass.massTimesTemplateItemId
         )
 
         console.log('[previewMassAssignments] Suggested minister:', suggested)
@@ -528,7 +531,8 @@ export async function getAvailableMinisters(
   roleId: string,
   date: string,
   time: string,
-  parishId: string
+  parishId: string,
+  massTimesTemplateItemId?: string
 ): Promise<Array<{ id: string; name: string; assignmentCount: number }>> {
   const supabase = await createClient()
 
@@ -537,13 +541,13 @@ export async function getAvailableMinisters(
     .from('mass_role_members')
     .select(`
       person_id,
-      person:people(id, first_name, last_name)
+      person:people(id, first_name, last_name, mass_times_template_item_ids)
     `)
     .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
 
-  console.log('[getAvailableMinisters] Query params:', { roleId, date, time, parishId })
+  console.log('[getAvailableMinisters] Query params:', { roleId, date, time, parishId, massTimesTemplateItemId })
   console.log('[getAvailableMinisters] Members query result:', { members, membersError })
 
   if (!members || members.length === 0) {
@@ -562,7 +566,7 @@ export async function getAvailableMinisters(
     }
 
     // Handle both array and object formats from Supabase
-    const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string }
+    const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string; mass_times_template_item_ids?: string[] }
 
     if (!person || !person.id || !person.first_name || !person.last_name) {
       console.log('[getAvailableMinisters] Skipping member - incomplete person data:', person)
@@ -571,7 +575,20 @@ export async function getAvailableMinisters(
 
     console.log('[getAvailableMinisters] Person extracted:', person)
 
-    // 2. Check for blackout dates (person-centric, not role-specific)
+    // 2. Filter by preferred mass times (if specified)
+    if (massTimesTemplateItemId && person.mass_times_template_item_ids && person.mass_times_template_item_ids.length > 0) {
+      if (!person.mass_times_template_item_ids.includes(massTimesTemplateItemId)) {
+        console.log('[getAvailableMinisters] Skipping person - not in preferred mass times:', {
+          personId: person.id,
+          personName: `${person.first_name} ${person.last_name}`,
+          preferredMassTimes: person.mass_times_template_item_ids,
+          requestedMassTime: massTimesTemplateItemId
+        })
+        continue
+      }
+    }
+
+    // 3. Check for blackout dates (person-centric, not role-specific)
     const { data: blackouts } = await supabase
       .from('person_blackout_dates')
       .select('*')
@@ -584,7 +601,7 @@ export async function getAvailableMinisters(
       continue
     }
 
-    // 3. Get assignment count for this person (for workload balancing)
+    // 4. Get assignment count for this person (for workload balancing)
     const { count } = await supabase
       .from('mass_assignment')
       .select('*', { count: 'exact', head: true })
