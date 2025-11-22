@@ -26,14 +26,14 @@ const coverPage = buildCoverPage([
   {
     title: 'Wedding Information',
     rows: [
-      { label: 'Bride:', value: formatPersonName(wedding.bride) },
-      { label: 'Groom:', value: formatPersonName(wedding.groom) }
+      { label: 'Bride:', value: wedding.bride.full_name },
+      { label: 'Groom:', value: wedding.groom.full_name }
     ]
   },
   {
     title: 'Ministers',
     rows: [
-      { label: 'Presider:', value: formatPersonName(wedding.presider) }
+      { label: 'Presider:', value: wedding.presider.full_name }
     ]
   }
 ])
@@ -147,8 +147,8 @@ export function buildWeddingScript(wedding: WeddingWithRelations): LiturgyDocume
     {
       title: 'Wedding Information',
       rows: [
-        { label: 'Bride:', value: formatPersonName(wedding.bride) },
-        { label: 'Groom:', value: formatPersonName(wedding.groom) }
+        { label: 'Bride:', value: wedding.bride.full_name },
+        { label: 'Groom:', value: wedding.groom.full_name }
       ]
     }
   ]))

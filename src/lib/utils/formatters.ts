@@ -28,17 +28,6 @@ export function capitalizeFirstLetter(str: string): string {
 // ============================================================================
 
 /**
- * Format person name (full name)
- *
- * @example
- * formatPersonName(person) // "John Smith"
- * formatPersonName(null) // ""
- */
-export function formatPersonName(person?: { first_name: string; last_name: string } | null): string {
-  return person ? `${person.first_name} ${person.last_name}` : ''
-}
-
-/**
  * Format person last name only
  *
  * @example
@@ -62,21 +51,22 @@ export function formatPersonFirstName(person?: { first_name: string } | null): s
 
 /**
  * Format person with phone number
+ * Uses database-generated full_name field
  *
  * @example
  * formatPersonWithPhone(person) // "John Smith (555-1234)"
  * formatPersonWithPhone(person) // "John Smith" (no phone)
  */
 export function formatPersonWithPhone(
-  person?: { first_name: string; last_name: string; phone_number?: string | null } | null
+  person?: { full_name: string; phone_number?: string | null } | null
 ): string {
   if (!person) return ''
-  const name = `${person.first_name} ${person.last_name}`
-  return person.phone_number ? `${name} — ${person.phone_number}` : name
+  return person.phone_number ? `${person.full_name} — ${person.phone_number}` : person.full_name
 }
 
 /**
  * Format person with role
+ * Uses database-generated full_name field
  *
  * @param person - Person object with name
  * @param role - Role label to display
@@ -87,27 +77,26 @@ export function formatPersonWithPhone(
  * formatPersonWithRole(person, 'Best Man') // "John Smith (Best Man)"
  */
 export function formatPersonWithRole(
-  person?: { first_name: string; last_name: string } | null,
+  person?: { full_name: string } | null,
   role?: string | null
 ): string {
   if (!person) return ''
-  const name = `${person.first_name} ${person.last_name}`
-  return role ? `${name} (${role})` : name
+  return role ? `${person.full_name} (${role})` : person.full_name
 }
 
 /**
  * Format person with email
+ * Uses database-generated full_name field
  *
  * @example
  * formatPersonWithEmail(person) // "John Smith - john@example.com"
  * formatPersonWithEmail(person) // "John Smith" (no email)
  */
 export function formatPersonWithEmail(
-  person?: { first_name: string; last_name: string; email?: string | null } | null
+  person?: { full_name: string; email?: string | null } | null
 ): string {
   if (!person) return ''
-  const name = `${person.first_name} ${person.last_name}`
-  return person.email ? `${name} - ${person.email}` : name
+  return person.email ? `${person.full_name} - ${person.email}` : person.full_name
 }
 
 /**
@@ -419,6 +408,7 @@ export function getReadingTitle(reading?: { title?: string | null } | null): str
 
 /**
  * Format reading with lector name
+ * Uses database-generated full_name field
  *
  * @param reading - Reading object with pericope
  * @param lector - Person object for lector
@@ -430,14 +420,13 @@ export function getReadingTitle(reading?: { title?: string | null } | null): str
  */
 export function formatReadingWithLector(
   reading?: { pericope?: string | null } | null,
-  lector?: { first_name: string; last_name: string } | null
+  lector?: { full_name: string } | null
 ): string {
   const pericope = getReadingPericope(reading)
   if (!pericope) return ''
 
   if (lector) {
-    const lectorName = formatPersonName(lector)
-    return `${pericope} (${lectorName})`
+    return `${pericope} (${lector.full_name})`
   }
 
   return pericope

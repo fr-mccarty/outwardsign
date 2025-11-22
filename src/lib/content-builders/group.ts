@@ -6,7 +6,6 @@
 
 import type { GroupWithMembers } from '@/lib/actions/groups'
 import type { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName } from '@/lib/utils/formatters'
 import { buildCoverPage, type CoverPageSection } from '@/lib/content-builders/shared/builders'
 
 /**
@@ -35,7 +34,7 @@ export function buildGroupMembersReport(group: GroupWithMembers): LiturgyDocumen
   // Members List subsection
   if (group.members.length > 0) {
     const memberRows = group.members.map(member => {
-      const personName = member.person ? formatPersonName(member.person) : 'Unknown Person'
+      const personName = member.person?.full_name || 'Unknown Person'
       const role = member.group_role ? member.group_role.name : 'No role assigned'
       return { label: personName, value: role }
     })

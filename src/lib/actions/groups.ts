@@ -27,6 +27,7 @@ export interface GroupMember {
     id: string
     first_name: string
     last_name: string
+    full_name: string  // Auto-generated: first_name || ' ' || last_name
     email?: string
   }
   group_role?: {
@@ -104,6 +105,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
         id,
         first_name,
         last_name,
+        full_name,
         email
       ),
       group_role:group_role_id (
@@ -385,6 +387,7 @@ export interface GroupMemberWithDetails extends GroupMember {
     id: string
     first_name: string
     last_name: string
+    full_name: string  // Auto-generated: first_name || ' ' || last_name
     email?: string
     phone_number?: string
   }
@@ -431,6 +434,7 @@ export async function getPeopleWithGroupMemberships() {
         id,
         first_name,
         last_name,
+        full_name,
         email,
         phone_number
       ),

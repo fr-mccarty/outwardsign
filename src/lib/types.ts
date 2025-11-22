@@ -339,6 +339,7 @@ export interface Person {
   parish_id: string
   first_name: string
   last_name: string
+  full_name: string  // Auto-generated: first_name || ' ' || last_name
   phone_number?: string
   email?: string
   street?: string

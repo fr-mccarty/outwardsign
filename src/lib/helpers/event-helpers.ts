@@ -151,14 +151,12 @@ function buildModuleSummary(
 function buildWeddingSummary(wedding: any): { title: string; details: string[]; status?: string } {
   const details: string[] = []
 
-  // Add bride and groom names
+  // Add bride and groom names (using database-generated full_name)
   if (wedding.bride) {
-    const brideName = `${wedding.bride.first_name} ${wedding.bride.last_name}`.trim()
-    details.push(`Bride: ${brideName}`)
+    details.push(`Bride: ${wedding.bride.full_name}`)
   }
   if (wedding.groom) {
-    const groomName = `${wedding.groom.first_name} ${wedding.groom.last_name}`.trim()
-    details.push(`Groom: ${groomName}`)
+    details.push(`Groom: ${wedding.groom.full_name}`)
   }
 
   return {
@@ -175,12 +173,10 @@ function buildFuneralSummary(funeral: any): { title: string; details: string[]; 
   const details: string[] = []
 
   if (funeral.deceased) {
-    const deceasedName = `${funeral.deceased.first_name} ${funeral.deceased.last_name}`.trim()
-    details.push(`Deceased: ${deceasedName}`)
+    details.push(`Deceased: ${funeral.deceased.full_name}`)
   }
   if (funeral.family_contact) {
-    const contactName = `${funeral.family_contact.first_name} ${funeral.family_contact.last_name}`.trim()
-    details.push(`Family Contact: ${contactName}`)
+    details.push(`Family Contact: ${funeral.family_contact.full_name}`)
   }
 
   return {
@@ -197,16 +193,13 @@ function buildPresentationSummary(presentation: any): { title: string; details: 
   const details: string[] = []
 
   if (presentation.child) {
-    const childName = `${presentation.child.first_name} ${presentation.child.last_name}`.trim()
-    details.push(`Child: ${childName}`)
+    details.push(`Child: ${presentation.child.full_name}`)
   }
   if (presentation.mother) {
-    const motherName = `${presentation.mother.first_name} ${presentation.mother.last_name}`.trim()
-    details.push(`Mother: ${motherName}`)
+    details.push(`Mother: ${presentation.mother.full_name}`)
   }
   if (presentation.father) {
-    const fatherName = `${presentation.father.first_name} ${presentation.father.last_name}`.trim()
-    details.push(`Father: ${fatherName}`)
+    details.push(`Father: ${presentation.father.full_name}`)
   }
   if (presentation.is_baptized) {
     details.push('Child is baptized')
@@ -226,12 +219,10 @@ function buildQuinceaneraSummary(quinceanera: any): { title: string; details: st
   const details: string[] = []
 
   if (quinceanera.quinceanera) {
-    const quinceaneraName = `${quinceanera.quinceanera.first_name} ${quinceanera.quinceanera.last_name}`.trim()
-    details.push(`Quinceañera: ${quinceaneraName}`)
+    details.push(`Quinceañera: ${quinceanera.quinceanera.full_name}`)
   }
   if (quinceanera.family_contact) {
-    const contactName = `${quinceanera.family_contact.first_name} ${quinceanera.family_contact.last_name}`.trim()
-    details.push(`Family Contact: ${contactName}`)
+    details.push(`Family Contact: ${quinceanera.family_contact.full_name}`)
   }
 
   return {

@@ -9,7 +9,6 @@ import { Edit, Printer, FileText, Download, Users } from 'lucide-react'
 import Link from 'next/link'
 import { getGroupFilename } from '@/lib/utils/formatters'
 import { Badge } from '@/components/ui/badge'
-import { formatPersonName } from '@/lib/utils/formatters'
 
 interface GroupViewClientProps {
   group: GroupWithMembers

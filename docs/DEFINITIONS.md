@@ -292,9 +292,9 @@ interface WeddingWithRelations extends Wedding {
   petitions_reader?: Person | null
 }
 
-// ✅ CORRECT - Display in UI
-<p>First Reading: {formatPersonName(wedding.first_reading_reader)}</p>
-<p>Petitions: {formatPersonName(wedding.petitions_reader)}</p>
+// ✅ CORRECT - Display in UI (using database-generated full_name)
+<p>First Reading: {wedding.first_reading_reader.full_name}</p>
+<p>Petitions: {wedding.petitions_reader.full_name}</p>
 ```
 
 ### Referring to Presiders
@@ -309,8 +309,8 @@ interface MassWithRelations extends Mass {
   presider?: Person | null
 }
 
-// Display
-<p>Presider: {formatPersonName(mass.presider)}</p>
+// Display (using database-generated full_name)
+<p>Presider: {mass.presider.full_name}</p>
 ```
 
 ### Event Type Labels

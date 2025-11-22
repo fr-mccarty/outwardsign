@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMassRoleWithRelations } from '@/lib/actions/mass-roles'
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, TextRun, BorderStyle, ShadingType } from 'docx'
-import { formatPersonName } from '@/lib/utils/formatters'
 import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 
 export async function GET(
@@ -131,7 +130,7 @@ export async function GET(
           new TableRow({
             children: [
               new TableCell({
-                children: [new Paragraph({ text: formatPersonName(member.person) })]
+                children: [new Paragraph({ text: member.person.full_name })]
               }),
               new TableCell({
                 children: [
@@ -218,7 +217,7 @@ export async function GET(
           new TableRow({
             children: [
               new TableCell({
-                children: [new Paragraph({ text: formatPersonName(member.person) })]
+                children: [new Paragraph({ text: member.person.full_name })]
               }),
               new TableCell({
                 children: [new Paragraph({ text: member.membership_type })]

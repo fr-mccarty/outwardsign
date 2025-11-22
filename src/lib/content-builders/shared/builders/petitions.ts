@@ -6,7 +6,6 @@
  */
 
 import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName } from '@/lib/utils/formatters'
 
 /**
  * Build a petitions section
@@ -74,7 +73,7 @@ export function buildPetitionsSection(
   if (actualReader) {
     elements.push({
       type: 'reader-name',
-      text: formatPersonName(actualReader),
+      text: actualReader.full_name,
     })
   }
 

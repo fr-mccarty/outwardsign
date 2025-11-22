@@ -105,7 +105,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
   elements.push({
     type: 'info-row',
     label: 'Bride:',
-    value: formatPersonName(entity.bride)
+    value: entity.bride.full_name
   })
 
   // More info rows...
@@ -992,7 +992,7 @@ For Cover Sheet (Summary) and custom Announcements sections, follow these patter
 
 ```typescript
 import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import { buildTitleEnglish, getEventSubtitleEnglish } from '../helpers'
 
 function buildSummarySection(entity: EntityWithRelations): ContentSection {
@@ -1008,7 +1008,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Person:',
-      value: formatPersonName(entity.person)
+      value: entity.person.full_name
     })
   }
 
@@ -1039,7 +1039,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Presider:',
-        value: formatPersonName(entity.presider)
+        value: entity.presider.full_name
       })
     }
 
@@ -1047,7 +1047,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
       elements.push({
         type: 'info-row',
         label: 'Homilist:',
-        value: formatPersonName(entity.homilist)
+        value: entity.homilist.full_name
       })
     }
   }
@@ -1131,7 +1131,7 @@ Here's a complete template implementation using all section types:
 ```typescript
 import { EntityWithRelations } from '@/lib/actions/entities'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatEventDateTime } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -1155,7 +1155,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Person:',
-      value: formatPersonName(entity.person)
+      value: entity.person.full_name
     })
   }
 
@@ -1163,7 +1163,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Presider:',
-      value: formatPersonName(entity.presider)
+      value: entity.presider.full_name
     })
   }
 
@@ -1325,15 +1325,14 @@ const section = buildReadingSection({ ... })
 if (section) sections.push(section)
 ```
 
-### 3. Use Helper Functions for All Formatting
+### 3. Use Database-Generated Fields for Person Names
 
 ```typescript
-// ❌ WRONG
+// ❌ WRONG - Manual concatenation
 value: `${entity.person.first_name} ${entity.person.last_name}`
 
-// ✅ CORRECT
-import { formatPersonName } from '@/lib/utils/formatters'
-value: formatPersonName(entity.person)
+// ✅ CORRECT - Use database-generated full_name
+value: entity.person.full_name
 ```
 
 ### 4. Set Title/Subtitle at Document Level Only

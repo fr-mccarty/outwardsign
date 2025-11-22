@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
 import { Plus, X, Calendar, Save } from 'lucide-react'
-import { formatPersonName } from '@/lib/utils/formatters'
 import { formatDatePretty } from '@/lib/utils/date-format'
 import { addGroupMember, removeGroupMember, updateGroupMemberRole } from '@/lib/actions/groups'
 import { toast } from 'sonner'
@@ -52,7 +51,7 @@ export function GroupMembershipsForm({
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Groups', href: '/groups' },
     { label: 'Group Members', href: '/group-members' },
-    { label: formatPersonName(person), href: `/group-members/${person.id}` },
+    { label: person.full_name, href: `/group-members/${person.id}` },
     { label: 'Manage Memberships', href: `/group-members/${person.id}/memberships` },
   ]
 
@@ -115,7 +114,7 @@ export function GroupMembershipsForm({
 
   return (
     <PageContainer
-      title={`Manage Memberships - ${formatPersonName(person)}`}
+      title={`Manage Memberships - ${person.full_name}`}
       description="Add, edit, or remove group memberships"
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

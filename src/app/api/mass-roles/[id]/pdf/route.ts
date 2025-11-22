@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getMassRoleWithRelations } from '@/lib/actions/mass-roles'
 import PdfPrinter from 'pdfmake'
 import { TDocumentDefinitions, Content } from 'pdfmake/interfaces'
-import { formatPersonName } from '@/lib/utils/formatters'
 
 // Define fonts for pdfmake
 const fonts = {
@@ -101,7 +100,7 @@ export async function GET(
           { text: 'Phone', bold: true }
         ],
         ...activeMembers.map(member => [
-          formatPersonName(member.person),
+          member.person.full_name,
           {
             text: member.membership_type,
             fillColor: member.membership_type === 'LEADER' ? '#000000' : '#e0e0e0',
@@ -144,7 +143,7 @@ export async function GET(
           { text: 'Phone', bold: true }
         ],
         ...inactiveMembers.map(member => [
-          formatPersonName(member.person),
+          member.person.full_name,
           member.membership_type,
           member.person.email || '—',
           member.person.phone_number || '—'

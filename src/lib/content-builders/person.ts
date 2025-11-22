@@ -6,7 +6,7 @@
 
 import type { Person } from '@/lib/types'
 import type { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatDate } from '@/lib/utils/formatters'
+import { formatDate } from '@/lib/utils/formatters'
 import { buildCoverPage, type CoverPageSection } from '@/lib/content-builders/shared/builders'
 
 /**
@@ -62,7 +62,7 @@ export function buildPersonContactCard(person: Person): LiturgyDocument {
 
   sections.push(buildCoverPage(coverSections))
 
-  const personName = formatPersonName(person) || 'Contact Card'
+  const personName = person.full_name || 'Contact Card'
 
   return {
     id: person.id,

@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DialogButton } from '@/components/dialog-button'
 import { Label } from '@/components/ui/label'
 import { UserPlus, Mail, Phone, Users } from 'lucide-react'
-import { formatPersonName } from '@/lib/utils/formatters'
 import { addGroupMember } from '@/lib/actions/groups'
 import { toast } from 'sonner'
 import { ListViewCard } from '@/components/list-view-card'
@@ -24,6 +23,7 @@ interface PersonWithMemberships {
     id: string
     first_name: string
     last_name: string
+    full_name: string  // Auto-generated: first_name || ' ' || last_name
     email?: string
     phone_number?: string
   }
@@ -65,7 +65,7 @@ export function GroupMembersListClient({
   const filteredPeople = peopleWithMemberships.filter(({ person }) => {
     if (!search) return true
     const searchLower = search.toLowerCase()
-    const fullName = formatPersonName(person).toLowerCase()
+    const fullName = person.full_name.toLowerCase()
     const email = person.email?.toLowerCase() || ''
     return fullName.includes(searchLower) || email.includes(searchLower)
   })
@@ -143,7 +143,7 @@ export function GroupMembersListClient({
                     <option value="">Select a person...</option>
                     {allPeople.map((person) => (
                       <option key={person.id} value={person.id}>
-                        {formatPersonName(person)}
+                        {person.full_name}
                       </option>
                     ))}
                   </select>
@@ -216,7 +216,7 @@ export function GroupMembersListClient({
             {filteredPeople.map(({ person, memberships }) => (
               <ListViewCard
                 key={person.id}
-                title={formatPersonName(person)}
+                title={person.full_name}
                 editHref={`/group-members/${person.id}/memberships`}
                 viewHref={`/group-members/${person.id}`}
                 viewButtonText="View Details"

@@ -983,9 +983,12 @@ formatEventDateTime(event)            // "July 15, 2025 at 2:00 PM"
 
 **Person Formatting:**
 ```typescript
-import { formatPersonName, formatPersonWithPhone } from '@/lib/utils/formatters'
+// Use database-generated full_name directly
+person.full_name                      // "John Doe"
+person?.full_name || ''               // "John Doe" (null-safe)
 
-formatPersonName(person)              // "John Doe"
+// Use helpers for complex formatting
+import { formatPersonWithPhone } from '@/lib/utils/formatters'
 formatPersonWithPhone(person)         // "John Doe (555-1234)"
 ```
 
@@ -1016,11 +1019,11 @@ getFuneralFilename(funeral)           // "john-doe-funeral"
 ### Usage Pattern
 
 ```typescript
-import { formatPersonName, getWeddingPageTitle } from '@/lib/utils/formatters'
+import { getWeddingPageTitle } from '@/lib/utils/formatters'
 import { formatDatePretty } from '@/lib/utils/date-format'
 
 export function WeddingViewClient({ wedding }: Props) {
-  const brideName = formatPersonName(wedding.bride)
+  const brideName = wedding.bride?.full_name || ''
   const eventDate = formatDatePretty(wedding.wedding_event.start_date)
   const pageTitle = getWeddingPageTitle(wedding)
 
@@ -1046,9 +1049,9 @@ export function WeddingViewClient({ wedding }: Props) {
 // ❌ BAD - Manual name construction
 <p>{person.first_name} {person.last_name}</p>
 
-// ✅ GOOD - Use helpers
+// ✅ GOOD - Use database-generated full_name and helpers
 <p>{formatDatePretty(wedding.wedding_event.start_date)}</p>
-<p>{formatPersonName(person)}</p>
+<p>{person.full_name}</p>
 ```
 
 ### Creating New Helpers

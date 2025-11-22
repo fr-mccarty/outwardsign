@@ -375,7 +375,8 @@ Module development includes file naming conventions, directory structure, reusab
 **🔴 Helper Utilities (CRITICAL):**
 - **ALWAYS use helper functions** for formatting (never inline)
 - **ALWAYS format dates** - never display raw date strings like "2025-07-15"
-- Use `formatDatePretty()`, `formatPersonName()`, `getWeddingPageTitle()`, etc.
+- **Person names:** Use `person.full_name` directly (database-generated field, no helper needed)
+- Use `formatDatePretty()`, `getWeddingPageTitle()`, etc.
 - See [FORMATTERS.md](./docs/FORMATTERS.md) for complete reference
 
 **UI Patterns:**

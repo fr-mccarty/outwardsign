@@ -3,13 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { X } from "lucide-react"
-import { formatPersonName } from '@/lib/utils/formatters'
 
 interface PersonInfo {
   id: string
   first_name: string
   last_name: string
   preferred_name?: string | null
+  full_name: string
   email?: string | null
   phone_number?: string | null
 }
@@ -42,7 +42,7 @@ export function MemberListItem({
   isActive = true,
   testIdPrefix = 'member'
 }: MemberListItemProps) {
-  const personName = formatPersonName(person)
+  const personName = person.full_name
 
   return (
     <div

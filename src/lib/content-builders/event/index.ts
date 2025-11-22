@@ -38,7 +38,7 @@ export const EVENT_TEMPLATES: Record<string, LiturgyTemplate<EventWithRelations>
  */
 export function buildEventLiturgy(
   event: EventWithRelations,
-  templateId: string
+  templateId: string = 'event-full-script-english'
 ): LiturgyDocument {
   const template = EVENT_TEMPLATES[templateId]
 

@@ -456,7 +456,7 @@ function buildSummarySection(entity: EntityWithRelations): ContentSection {
 ```typescript
 import { [Module]WithRelations } from '@/lib/actions/[modules]'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonName, formatEventDateTime } from '@/lib/utils/formatters'
+import { formatEventDateTime } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -477,7 +477,7 @@ function buildSummarySection(entity: [Module]WithRelations): ContentSection {
     elements.push({
       type: 'info-row',
       label: 'Person:',
-      value: formatPersonName(entity.person_field)
+      value: entity.person_field.full_name
     })
   }
 
@@ -552,14 +552,13 @@ Create reusable helper functions for calculations and logic that will be used ac
 
 ```typescript
 import { [Module]WithRelations } from '@/lib/actions/[modules]'
-import { formatPersonName } from '@/lib/utils/formatters'
 
 /**
- * Get child's full name
+ * Get child's full name (uses database-generated full_name field)
  */
 export function getChildName(entity: [Module]WithRelations): string {
   if (!entity.child) return 'the child'
-  return formatPersonName(entity.child)
+  return entity.child.full_name
 }
 
 /**

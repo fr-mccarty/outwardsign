@@ -9,7 +9,6 @@ import { CheckCircle2, XCircle, Edit, Users, Printer, FileText, Download } from 
 import { ActiveInactiveBadge } from "@/components/active-inactive-badge"
 import { canAccessModule, type UserParishRole } from "@/lib/auth/permissions-client"
 import { deleteMassRole } from "@/lib/actions/mass-roles"
-import { formatPersonName } from "@/lib/utils/formatters"
 import Link from "next/link"
 
 interface MassRoleViewClientProps {
@@ -154,7 +153,7 @@ export function MassRoleViewClient({ massRole, userParish }: MassRoleViewClientP
                         >
                           <div className="flex-1">
                             <div className="font-medium">
-                              {formatPersonName(member.person)}
+                              {member.person.full_name}
                             </div>
                             {member.person.email && (
                               <div className="text-sm text-muted-foreground">
@@ -190,7 +189,7 @@ export function MassRoleViewClient({ massRole, userParish }: MassRoleViewClientP
                         >
                           <div className="flex-1">
                             <div className="font-medium">
-                              {formatPersonName(member.person)}
+                              {member.person.full_name}
                             </div>
                             {member.person.email && (
                               <div className="text-sm text-muted-foreground">

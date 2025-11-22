@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getMassRoleWithRelations } from '@/lib/actions/mass-roles'
-import { formatPersonName } from '@/lib/utils/formatters'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +26,7 @@ export async function GET(
     // Build CSV content
     const headers = ['Name', 'Type', 'Status', 'Email', 'Phone', 'Notes']
     const rows = massRole.mass_role_members?.map(member => [
-      formatPersonName(member.person),
+      member.person.full_name,
       member.membership_type,
       member.active ? 'Active' : 'Inactive',
       member.person.email || '',

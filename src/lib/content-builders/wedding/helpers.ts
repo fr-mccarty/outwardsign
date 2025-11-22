@@ -8,7 +8,6 @@
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { IndividualReading } from '@/lib/types'
 import {
-  formatPersonName,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'
@@ -46,10 +45,10 @@ export function getReadingPericope(reading: IndividualReading | null | undefined
  */
 export function getPetitionsReaderName(wedding: WeddingWithRelations): string {
   if (wedding.petitions_read_by_second_reader && wedding.second_reader) {
-    return formatPersonName(wedding.second_reader)
+    return wedding.second_reader.full_name
   }
   if (wedding.petition_reader) {
-    return formatPersonName(wedding.petition_reader)
+    return wedding.petition_reader.full_name
   }
   return ''
 }

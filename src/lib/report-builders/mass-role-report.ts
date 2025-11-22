@@ -5,7 +5,6 @@
  */
 
 import { MassRoleWithRelations } from '@/lib/actions/mass-roles'
-import { formatPersonName } from '@/lib/utils/formatters'
 import { MASS_ROLE_MEMBERSHIP_TYPE_LABELS } from '@/lib/constants'
 import { ReportBuilder } from './types'
 
@@ -19,7 +18,7 @@ export const buildMassRoleReport: ReportBuilder<MassRoleReportParams> = ({ massR
 
   const activeRows = activeMembers.map(member => `
     <tr>
-      <td>${formatPersonName(member.person)}</td>
+      <td>${member.person.full_name}</td>
       <td>${MASS_ROLE_MEMBERSHIP_TYPE_LABELS[member.membership_type].en}</td>
       <td>${member.person.email || '—'}</td>
       <td>${member.person.phone_number || '—'}</td>
@@ -28,7 +27,7 @@ export const buildMassRoleReport: ReportBuilder<MassRoleReportParams> = ({ massR
 
   const inactiveRows = inactiveMembers.map(member => `
     <tr>
-      <td>${formatPersonName(member.person)}</td>
+      <td>${member.person.full_name}</td>
       <td>${MASS_ROLE_MEMBERSHIP_TYPE_LABELS[member.membership_type].en}</td>
       <td>${member.person.email || '—'}</td>
       <td>${member.person.phone_number || '—'}</td>

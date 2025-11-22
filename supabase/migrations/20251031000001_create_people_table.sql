@@ -13,6 +13,9 @@ CREATE TABLE people (
   sex TEXT CHECK (sex IN ('Male', 'Female')),
   note TEXT,
 
+  -- Auto-generated full name
+  full_name TEXT GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED,
+
   -- Mass scheduling availability
   mass_times_template_item_ids UUID[] DEFAULT '{}',
 
@@ -35,6 +38,7 @@ GRANT ALL ON people TO service_role;
 CREATE INDEX idx_people_parish_id ON people(parish_id);
 CREATE INDEX idx_people_last_name ON people(last_name);
 CREATE INDEX idx_people_first_name ON people(first_name);
+CREATE INDEX idx_people_full_name ON people(full_name);
 CREATE INDEX idx_people_email ON people(email);
 CREATE INDEX idx_people_mass_times_template_item_ids ON people USING GIN (mass_times_template_item_ids);
 

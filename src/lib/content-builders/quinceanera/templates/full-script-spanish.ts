@@ -6,7 +6,7 @@
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress, formatPersonName } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -272,7 +272,7 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
   }
 
   // Add ceremony sections (between Gospel and Petitions)
-  const quinceaneraName = quinceanera.quinceanera ? formatPersonName(quinceanera.quinceanera) : 'N.'
+  const quinceaneraName = quinceanera.quinceanera?.full_name || 'N.'
 
   // Renewal of Baptismal Promises
   sections.push({
@@ -533,7 +533,7 @@ Amén.`,
       },
       {
         type: 'priest-text',
-        text: `${quinceanera.quinceanera ? formatPersonName(quinceanera.quinceanera) : 'N.'}, que Dios, que ha comenzado esta buena obra en ti, la lleve a su cumplimiento.`,
+        text: `${quinceanera.quinceanera?.full_name || 'N.'}, que Dios, que ha comenzado esta buena obra en ti, la lleve a su cumplimiento.`,
       },
     ],
   })

@@ -125,18 +125,16 @@ Follow the wedding module pattern exactly for all 9 main files:
   - [ ] Use print-specific styling
 
 - [ ] **PDF Export Route** - `app/api/[entities]/[id]/pdf/route.ts`
-  - [ ] Fetch entity with relations
-  - [ ] Get template ID from entity
-  - [ ] Build liturgy using `build[Entity]Liturgy(entity, templateId)`
-  - [ ] Convert to PDF
-  - [ ] Return response with appropriate headers
+  - [ ] Use `createPdfRoute()` factory from `@/lib/api/document-routes`
+  - [ ] Provide entity name, fetch function, build function, filename function
+  - [ ] Specify default template and template ID field name
+  - [ ] See wedding module for reference implementation
 
 - [ ] **Word Export Route** - `app/api/[entities]/[id]/word/route.ts`
-  - [ ] Fetch entity with relations
-  - [ ] Get template ID from entity
-  - [ ] Build liturgy using `build[Entity]Liturgy(entity, templateId)`
-  - [ ] Generate .docx file
-  - [ ] Return response with appropriate headers
+  - [ ] Use `createWordRoute()` factory from `@/lib/api/document-routes`
+  - [ ] Provide entity name, fetch function, build function, filename function
+  - [ ] Specify default template and template ID field name
+  - [ ] See wedding module for reference implementation
 
 ### Phase 5: Content Builder
 

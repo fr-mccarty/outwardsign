@@ -7,7 +7,6 @@
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import {
-  formatPersonName,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'
@@ -21,7 +20,7 @@ import {
  */
 export function buildTitleEnglish(funeral: FuneralWithRelations): string {
   if (funeral.deceased) {
-    return `Funeral Liturgy for ${formatPersonName(funeral.deceased)}`
+    return `Funeral Liturgy for ${funeral.deceased.full_name}`
   }
   return 'Funeral Liturgy'
 }
@@ -31,7 +30,7 @@ export function buildTitleEnglish(funeral: FuneralWithRelations): string {
  */
 export function buildTitleSpanish(funeral: FuneralWithRelations): string {
   if (funeral.deceased) {
-    return `Liturgia Fúnebre para ${formatPersonName(funeral.deceased)}`
+    return `Liturgia Fúnebre para ${funeral.deceased.full_name}`
   }
   return 'Liturgia Fúnebre'
 }

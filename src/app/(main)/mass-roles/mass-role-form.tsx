@@ -17,7 +17,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, X, Users } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
-import { formatPersonName } from "@/lib/utils/formatters"
 
 // Zod validation schema
 const massRoleSchema = z.object({
@@ -125,6 +124,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           id: selectedPerson.id,
           first_name: selectedPerson.first_name,
           last_name: selectedPerson.last_name,
+          full_name: selectedPerson.full_name,
           preferred_name: null,
           email: selectedPerson.email || null,
           phone_number: selectedPerson.phone_number || null
@@ -281,10 +281,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium">
-                              {member.person ?
-                                formatPersonName(member.person) :
-                                'Unknown Person'
-                              }
+                              {member.person?.full_name || 'Unknown Person'}
                             </h3>
                             <Badge variant={member.membership_type === 'LEADER' ? 'default' : 'secondary'}>
                               {member.membership_type}
@@ -342,10 +339,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium">
-                              {member.person ?
-                                formatPersonName(member.person) :
-                                'Unknown Person'
-                              }
+                              {member.person?.full_name || 'Unknown Person'}
                             </h3>
                             <Badge variant="outline">
                               {member.membership_type}
@@ -471,9 +465,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
         onOpenChange={setDeleteDialogOpen}
         title="Remove Member"
         itemName={
-          members.find(m => m.id === deletingMemberId)
-            ? formatPersonName(members.find(m => m.id === deletingMemberId)!.person)
-            : undefined
+          members.find(m => m.id === deletingMemberId)?.person?.full_name
         }
         description="Are you sure you want to remove this person from this role?"
         onConfirm={handleDeleteMember}

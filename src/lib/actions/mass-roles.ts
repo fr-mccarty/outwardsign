@@ -127,6 +127,7 @@ export interface MassRoleWithRelations extends MassRole {
       id: string
       first_name: string
       last_name: string
+      full_name: string  // Database-generated field
       preferred_name: null  // People table doesn't have preferred_name yet
       email: string | null
       phone_number: string | null

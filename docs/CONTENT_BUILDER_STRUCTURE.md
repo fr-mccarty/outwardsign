@@ -414,7 +414,7 @@ export function buildWeddingLiturgy(wedding: WeddingWithRelations): LiturgyDocum
     sections.push(buildReadingSection({
       readingType: 'First Reading',
       reading: wedding.first_reading,
-      readerName: formatPersonName(wedding.first_reading_reader)
+      readerName: wedding.first_reading_reader.full_name
     }))
   }
 
@@ -422,7 +422,7 @@ export function buildWeddingLiturgy(wedding: WeddingWithRelations): LiturgyDocum
   if (wedding.psalm && !wedding.psalm_sung) {
     sections.push(buildPsalmSection({
       psalm: wedding.psalm,
-      readerName: formatPersonName(wedding.psalm_reader)
+      readerName: wedding.psalm_reader.full_name
     }))
   }
 
@@ -431,7 +431,7 @@ export function buildWeddingLiturgy(wedding: WeddingWithRelations): LiturgyDocum
     sections.push(buildReadingSection({
       readingType: 'Second Reading',
       reading: wedding.second_reading,
-      readerName: formatPersonName(wedding.second_reading_reader)
+      readerName: wedding.second_reading_reader.full_name
     }))
   }
 
@@ -448,7 +448,7 @@ export function buildWeddingLiturgy(wedding: WeddingWithRelations): LiturgyDocum
   if (wedding.petitions) {
     sections.push(buildPetitionsFromArray({
       petitions: wedding.petitions,
-      readerName: formatPersonName(wedding.petitions_reader)
+      readerName: wedding.petitions_reader.full_name
     }))
   }
 

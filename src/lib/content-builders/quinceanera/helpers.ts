@@ -8,7 +8,6 @@
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { IndividualReading } from '@/lib/types'
 import {
-  formatPersonName,
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'
@@ -33,7 +32,7 @@ export function getReadingPericope(reading: IndividualReading | null | undefined
  */
 export function buildTitleEnglish(quinceanera: QuinceaneraWithRelations): string {
   if (quinceanera.quinceanera) {
-    return `Quinceañera Celebration for ${formatPersonName(quinceanera.quinceanera)}`
+    return `Quinceañera Celebration for ${quinceanera.quinceanera.full_name}`
   }
   return 'Quinceañera Celebration'
 }
@@ -43,7 +42,7 @@ export function buildTitleEnglish(quinceanera: QuinceaneraWithRelations): string
  */
 export function buildTitleSpanish(quinceanera: QuinceaneraWithRelations): string {
   if (quinceanera.quinceanera) {
-    return `Celebración de Quinceañera para ${formatPersonName(quinceanera.quinceanera)}`
+    return `Celebración de Quinceañera para ${quinceanera.quinceanera.full_name}`
   }
   return 'Celebración de Quinceañera'
 }

@@ -17,7 +17,6 @@ import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { formatPersonName } from '@/lib/utils/formatters'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { MemberListItem } from "@/components/member-list-item"
 import {
@@ -146,6 +145,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
           id: selectedPerson.id,
           first_name: selectedPerson.first_name,
           last_name: selectedPerson.last_name,
+          full_name: selectedPerson.full_name,
           email: selectedPerson.email || undefined
         },
         group_role: groupRole ? {
@@ -367,9 +367,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
           onOpenChange={setDeleteDialogOpen}
           title="Remove Member"
           itemName={
-            members.find(m => m.id === deletingMemberId)
-              ? formatPersonName(members.find(m => m.id === deletingMemberId)!.person)
-              : undefined
+            members.find(m => m.id === deletingMemberId)?.person?.full_name
           }
           description="Are you sure you want to remove this person from this group?"
           onConfirm={handleDeleteMember}
