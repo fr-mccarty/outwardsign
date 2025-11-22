@@ -24,7 +24,6 @@ export interface MassRoleMemberWithDetails extends MassRoleMember {
     id: string
     first_name: string
     last_name: string
-    preferred_name: string | null
     email: string | null
   }
   mass_role: {
@@ -98,7 +97,7 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
   const personIds = [...new Set(members.map(m => m.person_id))]
   const { data: people, error: peopleError } = await supabase
     .from('people')
-    .select('id, first_name, last_name, preferred_name, email')
+    .select('id, first_name, last_name, email')
     .in('id', personIds)
     .eq('parish_id', selectedParishId)
 
@@ -128,7 +127,6 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
       id: member.person_id,
       first_name: '',
       last_name: '',
-      preferred_name: null,
       email: null
     },
     mass_role: rolesMap.get(member.mass_role_id) || {
@@ -168,7 +166,7 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
   const personIds = [...new Set(members.map(m => m.person_id))]
   const { data: people, error: peopleError } = await supabase
     .from('people')
-    .select('id, first_name, last_name, preferred_name, email')
+    .select('id, first_name, last_name, email')
     .in('id', personIds)
     .eq('parish_id', selectedParishId)
 
@@ -197,7 +195,6 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
       id: member.person_id,
       first_name: '',
       last_name: '',
-      preferred_name: null,
       email: null
     },
     mass_role: role || {
@@ -265,7 +262,6 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
       id: personId,
       first_name: '',
       last_name: '',
-      preferred_name: null,
       email: null
     },
     mass_role: rolesMap.get(member.mass_role_id) || {
@@ -477,7 +473,7 @@ export async function getActiveMembersForRole(roleId: string): Promise<Array<{
       id,
       membership_type,
       notes,
-      person:people(id, first_name, last_name, preferred_name, email)
+      person:people(id, first_name, last_name, email)
     `)
     .eq('parish_id', selectedParishId)
     .eq('mass_role_id', roleId)
@@ -492,7 +488,7 @@ export async function getActiveMembersForRole(roleId: string): Promise<Array<{
     const person = Array.isArray(item.person) ? item.person[0] : item.person
     return {
       id: person.id,
-      name: person.preferred_name || `${person.first_name} ${person.last_name}`,
+      name: `${person.first_name} ${person.last_name}`,
       email: person.email,
       membership_type: item.membership_type,
       notes: item.notes,

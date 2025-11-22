@@ -1,15 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sparkles,
   Calendar,
-  Clock,
-  Users,
   UserPlus,
   X,
   GripVertical
@@ -40,6 +38,9 @@ import { getLiturgicalContextFromGrade } from '@/lib/constants'
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
 import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { previewMassAssignments } from '@/lib/actions/mass-scheduling'
+import { formatTime } from '@/lib/utils/date-format'
 
 interface Step6InteractivePreviewProps {
   proposedMasses: ProposedMass[]
@@ -63,6 +64,8 @@ export function Step6InteractivePreview({
   const [recommendedTemplateId, setRecommendedTemplateId] = useState<string | null>(null)
   const [liturgicalEventPreviewOpen, setLiturgicalEventPreviewOpen] = useState(false)
   const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<GlobalLiturgicalEvent | null>(null)
+  const [refreshConfirmOpen, setRefreshConfirmOpen] = useState(false)
+  const hasInitializedRef = useRef(false)
 
   const includedMasses = useMemo(() =>
     proposedMasses.filter(m => m.isIncluded).sort((a, b) => a.date.localeCompare(b.date))
@@ -206,8 +209,9 @@ export function Step6InteractivePreview({
     // Get recommended template based on this mass's date
     const recommended = getRecommendedTemplate(mass.date)
     setRecommendedTemplateId(recommended)
-    // Start with NOT_SELECTED - user must explicitly choose
-    setSelectedTemplateId('NOT_SELECTED')
+    // Default to recommended template if available, otherwise first template
+    const defaultSelection = recommended || (roleTemplates.length > 0 ? roleTemplates[0].id : 'NOT_SELECTED')
+    setSelectedTemplateId(defaultSelection)
     setTemplateChangeDialogOpen(true)
   }
 
@@ -239,8 +243,10 @@ export function Step6InteractivePreview({
           }
         }
       })
+    } else {
+      // If selectedTemplateId === 'REMOVE', newAssignments stays as empty array
+      newAssignments = []
     }
-    // If selectedTemplateId === 'REMOVE', newAssignments stays as empty array
 
     // Update ONLY this specific mass
     const updated = proposedMasses.map(mass => {
@@ -270,7 +276,7 @@ export function Step6InteractivePreview({
     )
   }
 
-  const handleRefreshRecommendations = () => {
+  const handleRefreshRecommendations = async () => {
     // For each unique day of week, apply the recommended template
     const uniqueDaysOfWeek = [...new Set(includedMasses.map(m => m.dayOfWeek))]
 
@@ -282,9 +288,12 @@ export function Step6InteractivePreview({
       if (!sampleMass) return
 
       const recommendedId = getRecommendedTemplate(sampleMass.date)
-      if (!recommendedId) return
 
-      const template = roleTemplates.find(t => t.id === recommendedId)
+      // If no recommended template, use the first available template as fallback
+      const templateIdToUse = recommendedId || (roleTemplates.length > 0 ? roleTemplates[0].id : null)
+      if (!templateIdToUse) return
+
+      const template = roleTemplates.find(t => t.id === templateIdToUse)
       if (!template) return
 
       // Build assignments from the template
@@ -314,8 +323,60 @@ export function Step6InteractivePreview({
       })
     })
 
+    // Now auto-assign people to the roles using the preview assignment algorithm
+    try {
+      const massesForPreview = updated
+        .filter(m => m.isIncluded)
+        .map(m => ({
+          id: m.id,
+          date: m.date,
+          time: m.time,
+          assignments: m.assignments || []
+        }))
+
+      const previewedAssignments = await previewMassAssignments(massesForPreview, true)
+
+      // Merge the previewed assignments back into the updated masses
+      updated = updated.map(mass => {
+        const preview = previewedAssignments.find(p => p.massId === mass.id)
+        if (preview) {
+          return {
+            ...mass,
+            assignments: preview.assignments.map(a => ({
+              roleId: a.roleId,
+              roleName: a.roleName,
+              personId: a.personId ?? undefined,
+              personName: a.personName ?? undefined
+            }))
+          }
+        }
+        return mass
+      })
+    } catch (error) {
+      console.error('Failed to preview mass assignments:', error)
+      // Continue with role templates even if auto-assignment fails
+    }
+
     onProposedMassesChange(updated)
   }
+
+  // Auto-apply recommendations on mount if masses don't have assignments
+  useEffect(() => {
+    if (hasInitializedRef.current) return
+
+    const needsInitialization = includedMasses.length > 0 &&
+      includedMasses.every(m => !m.assignments || m.assignments.length === 0)
+
+    if (needsInitialization && roleTemplates.length > 0) {
+      const initialize = async () => {
+        await handleRefreshRecommendations()
+        hasInitializedRef.current = true
+      }
+      initialize()
+    }
+    // Only run once on mount when dependencies are first available
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [includedMasses.length, roleTemplates.length])
 
   return (
     <div className="space-y-6">
@@ -328,7 +389,7 @@ export function Step6InteractivePreview({
         <Button
           variant="outline"
           size="sm"
-          onClick={handleRefreshRecommendations}
+          onClick={() => setRefreshConfirmOpen(true)}
           className="shrink-0"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
@@ -573,6 +634,18 @@ export function Step6InteractivePreview({
         open={liturgicalEventPreviewOpen}
         onOpenChange={setLiturgicalEventPreviewOpen}
         event={selectedLiturgicalEvent}
+      />
+
+      {/* Refresh Recommendations Confirmation Dialog */}
+      <ConfirmationDialog
+        open={refreshConfirmOpen}
+        onOpenChange={setRefreshConfirmOpen}
+        onConfirm={handleRefreshRecommendations}
+        title="Refresh Role Assignments?"
+        description="This will replace all current role assignments with recommended templates based on liturgical context. Any manual assignments or person selections will be lost. Do you want to continue?"
+        confirmLabel="Refresh"
+        cancelLabel="Cancel"
+        variant="destructive"
       />
     </div>
   )

@@ -20,7 +20,6 @@ export interface PersonBlackoutDateWithPerson extends PersonBlackoutDate {
     id: string
     first_name: string
     last_name: string
-    preferred_name: string | null
     email: string | null
   }
 }
@@ -74,7 +73,7 @@ export async function getPersonBlackoutDatesWithPerson(
     .from('person_blackout_dates')
     .select(`
       *,
-      person:people(id, first_name, last_name, preferred_name, email)
+      person:people(id, first_name, last_name, email)
     `)
     .eq('person_id', personId)
     .order('start_date', { ascending: true })

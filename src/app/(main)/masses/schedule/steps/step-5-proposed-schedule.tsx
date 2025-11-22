@@ -47,6 +47,7 @@ export interface RoleAssignment {
 export interface ProposedMass {
   id: string
   date: string // YYYY-MM-DD
+  time: string // HH:MM:SS format
   templateId: string
   templateName: string
   dayOfWeek: string
@@ -499,6 +500,7 @@ export function generateProposedMasses(
           masses.push({
             id: `proposed-${idCounter++}`,
             date: dateStr,
+            time: '09:00:00', // Default time for backward compatibility
             templateId: template.id,
             templateName: template.name,
             dayOfWeek: template.day_of_week,
@@ -545,6 +547,7 @@ export function generateProposedMasses(
               masses.push({
                 id: `proposed-${idCounter++}`,
                 date: massDate,
+                time: item.time,
                 templateId: template.id,
                 templateName: `${template.name} - ${formatTime(item.time)}${item.day_type === 'DAY_BEFORE' ? ' (Vigil)' : ''}`,
                 dayOfWeek: template.day_of_week,

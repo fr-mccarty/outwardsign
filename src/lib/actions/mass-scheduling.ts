@@ -435,8 +435,14 @@ export async function previewMassAssignments(
     personName: string | null
   }>
 }>> {
-  await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
+
+  console.log('[previewMassAssignments] Starting with:', {
+    massCount: proposedMasses.length,
+    balanceWorkload,
+    parishId
+  })
 
   const result: Array<{
     massId: string
@@ -461,6 +467,7 @@ export async function previewMassAssignments(
     }> = []
 
     for (const role of mass.assignments || []) {
+      console.log('[previewMassAssignments] Processing role:', { massId: mass.id, role })
       try {
         const suggested = await getSuggestedMinister(
           role.roleId,
@@ -469,6 +476,8 @@ export async function previewMassAssignments(
           balanceWorkload,
           alreadyAssignedThisMass
         )
+
+        console.log('[previewMassAssignments] Suggested minister:', suggested)
 
         if (suggested) {
           massAssignments.push({
@@ -483,6 +492,7 @@ export async function previewMassAssignments(
           const currentCount = assignmentCounts.get(suggested.id) || 0
           assignmentCounts.set(suggested.id, currentCount + 1)
         } else {
+          console.log('[previewMassAssignments] No suggested minister found for role:', role.roleId)
           massAssignments.push({
             roleId: role.roleId,
             roleName: role.roleName,
@@ -491,7 +501,7 @@ export async function previewMassAssignments(
           })
         }
       } catch (error) {
-        console.error(`Error getting suggested minister for role ${role.roleId}:`, error)
+        console.error(`[previewMassAssignments] Error getting suggested minister for role ${role.roleId}:`, error)
         massAssignments.push({
           roleId: role.roleId,
           roleName: role.roleName,
@@ -523,26 +533,43 @@ export async function getAvailableMinisters(
   const supabase = await createClient()
 
   // 1. Get all active members for this role
-  const { data: members } = await supabase
+  const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
     .select(`
       person_id,
-      person:people(id, first_name, last_name, preferred_name)
+      person:people(id, first_name, last_name)
     `)
     .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
 
+  console.log('[getAvailableMinisters] Query params:', { roleId, date, time, parishId })
+  console.log('[getAvailableMinisters] Members query result:', { members, membersError })
+
   if (!members || members.length === 0) {
+    console.log('[getAvailableMinisters] No members found for role:', roleId)
     return []
   }
 
   const ministers: Array<{ id: string; name: string; assignmentCount: number }> = []
 
   for (const member of members) {
-    if (!member.person || !Array.isArray(member.person) || member.person.length === 0) continue
+    console.log('[getAvailableMinisters] Processing member:', member)
 
-    const person = member.person[0] as { id: string; first_name: string; last_name: string; preferred_name: string | null }
+    if (!member.person) {
+      console.log('[getAvailableMinisters] Skipping member - no person data:', member)
+      continue
+    }
+
+    // Handle both array and object formats from Supabase
+    const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string }
+
+    if (!person || !person.id || !person.first_name || !person.last_name) {
+      console.log('[getAvailableMinisters] Skipping member - incomplete person data:', person)
+      continue
+    }
+
+    console.log('[getAvailableMinisters] Person extracted:', person)
 
     // 2. Check for blackout dates (person-centric, not role-specific)
     const { data: blackouts } = await supabase
@@ -563,7 +590,7 @@ export async function getAvailableMinisters(
       .select('*', { count: 'exact', head: true })
       .eq('person_id', person.id)
 
-    const displayName = person.preferred_name || `${person.first_name} ${person.last_name}`
+    const displayName = `${person.first_name} ${person.last_name}`
 
     ministers.push({
       id: person.id,
@@ -572,6 +599,7 @@ export async function getAvailableMinisters(
     })
   }
 
+  console.log('[getAvailableMinisters] Final ministers list:', ministers)
   return ministers
 }
 
