@@ -31,8 +31,9 @@ interface WizardProps {
   
   // Button text customization
   previousButtonText?: string
+  nextButtonText?: string | ((currentStep: number) => string | undefined)
   completeButtonText?: string
-  
+
   // Navigation control
   disableNext?: boolean | ((currentStep: number) => boolean)
   disablePrevious?: boolean
@@ -64,6 +65,7 @@ export function Wizard({
 
   // Button text customization
   previousButtonText = 'Previous',
+  nextButtonText,
   completeButtonText = 'Complete',
 
   // Navigation control
@@ -93,9 +95,14 @@ export function Wizard({
   }
 
   // Calculate dynamic disableNext
-  const shouldDisableNext = typeof disableNext === 'function' 
-    ? disableNext(currentStep) 
+  const shouldDisableNext = typeof disableNext === 'function'
+    ? disableNext(currentStep)
     : disableNext
+
+  // Calculate dynamic nextButtonText
+  const currentNextButtonText = typeof nextButtonText === 'function'
+    ? nextButtonText(currentStep)
+    : nextButtonText
 
   return (
     <PageContainer
@@ -128,6 +135,7 @@ export function Wizard({
               onPrevious={previousStep}
               onComplete={handleComplete}
               previousButtonText={previousButtonText}
+              nextButtonText={currentNextButtonText}
               completeButtonText={completeButtonText}
               showStepPreview={showStepPreview}
               disableNext={shouldDisableNext}

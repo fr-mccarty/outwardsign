@@ -124,48 +124,77 @@ export async function scheduleMasses(
       scheduleEntry: MassScheduleEntry
       liturgicalEvent: GlobalLiturgicalEvent | null
       templateId: string
+      assignments?: Array<{
+        roleId: string
+        roleName: string
+        personId?: string
+        personName?: string
+      }>
     }> = []
 
-    const start = new Date(params.startDate)
-    const end = new Date(params.endDate)
-    const currentDate = new Date(start)
+    // If proposedMasses are provided, use them directly instead of generating from schedule
+    if (params.proposedMasses && params.proposedMasses.length > 0) {
+      for (const proposedMass of params.proposedMasses) {
+        const liturgicalEvent = liturgicalEventsByDate.get(proposedMass.date) || null
 
-    while (currentDate <= end) {
-      const dayOfWeek = currentDate.getDay()
-      const dateStr = currentDate.toISOString().split('T')[0]
-
-      // Find all schedule entries matching this day
-      const matchingEntries = params.schedule.filter(
-        (entry) => entry.dayOfWeek === dayOfWeek
-      )
-
-      // Get liturgical event for this date
-      const liturgicalEvent = liturgicalEventsByDate.get(dateStr) || null
-
-      // Determine liturgical context and matching template
-      let templateId = templates[0].id
-      if (liturgicalEvent) {
-        const isSunday = dayOfWeek === 0
-        const grade = liturgicalEvent.event_data?.grade || 7
-        const context = getLiturgicalContextFromGrade(grade, isSunday)
-        const matchingTemplate = findTemplateForContext(context)
-        if (matchingTemplate) {
-          templateId = matchingTemplate.id
-        }
-      }
-
-      for (const entry of matchingEntries) {
         massesToCreate.push({
-          date: dateStr,
-          time: entry.time,
-          language: entry.language,
-          scheduleEntry: entry,
+          date: proposedMass.date,
+          time: proposedMass.time,
+          language: 'ENGLISH', // Default language, TODO: get from mass times template
+          scheduleEntry: {
+            id: proposedMass.id,
+            dayOfWeek: new Date(proposedMass.date).getDay(),
+            time: proposedMass.time,
+            language: 'ENGLISH'
+          },
           liturgicalEvent,
-          templateId,
+          templateId: proposedMass.templateId,
+          assignments: proposedMass.assignments
         })
       }
+    } else {
+      // Fallback to old logic if no proposed masses
+      const start = new Date(params.startDate)
+      const end = new Date(params.endDate)
+      const currentDate = new Date(start)
 
-      currentDate.setDate(currentDate.getDate() + 1)
+      while (currentDate <= end) {
+        const dayOfWeek = currentDate.getDay()
+        const dateStr = currentDate.toISOString().split('T')[0]
+
+        // Find all schedule entries matching this day
+        const matchingEntries = params.schedule.filter(
+          (entry) => entry.dayOfWeek === dayOfWeek
+        )
+
+        // Get liturgical event for this date
+        const liturgicalEvent = liturgicalEventsByDate.get(dateStr) || null
+
+        // Determine liturgical context and matching template
+        let templateId = templates[0].id
+        if (liturgicalEvent) {
+          const isSunday = dayOfWeek === 0
+          const grade = liturgicalEvent.event_data?.grade || 7
+          const context = getLiturgicalContextFromGrade(grade, isSunday)
+          const matchingTemplate = findTemplateForContext(context)
+          if (matchingTemplate) {
+            templateId = matchingTemplate.id
+          }
+        }
+
+        for (const entry of matchingEntries) {
+          massesToCreate.push({
+            date: dateStr,
+            time: entry.time,
+            language: entry.language,
+            scheduleEntry: entry,
+            liturgicalEvent,
+            templateId,
+          })
+        }
+
+        currentDate.setDate(currentDate.getDate() + 1)
+      }
     }
 
     // Phase 4: Create Events and Masses in batch
@@ -236,14 +265,31 @@ export async function scheduleMasses(
         mass_roles_template_item_id: string
       }> = []
 
-      for (const templateItem of templateItems) {
-        // Create N instances based on count
-        for (let i = 0; i < templateItem.count; i++) {
-          roleInstances.push({
-            mass_id: mass.id,
-            person_id: null,
-            mass_roles_template_item_id: templateItem.id,
-          })
+      // If we have assignments from proposedMasses, use those
+      if (massData.assignments && massData.assignments.length > 0) {
+        // Create role instances with assignments from proposed masses
+        for (const assignment of massData.assignments) {
+          // Find the matching template item for this role
+          const templateItem = templateItems.find(item => item.mass_role?.id === assignment.roleId)
+          if (templateItem) {
+            roleInstances.push({
+              mass_id: mass.id,
+              person_id: assignment.personId || null,
+              mass_roles_template_item_id: templateItem.id,
+            })
+          }
+        }
+      } else {
+        // Fallback to creating empty instances from template
+        for (const templateItem of templateItems) {
+          // Create N instances based on count
+          for (let i = 0; i < templateItem.count; i++) {
+            roleInstances.push({
+              mass_id: mass.id,
+              person_id: null,
+              mass_roles_template_item_id: templateItem.id,
+            })
+          }
         }
       }
 
@@ -257,7 +303,7 @@ export async function scheduleMasses(
         throw new Error(`Failed to create role instances for mass ${mass.id}`)
       }
 
-      // Add to result set with placeholder assignments
+      // Add to result set
       createdMasses.push({
         id: mass.id,
         date: massData.date,
@@ -268,20 +314,23 @@ export async function scheduleMasses(
           const templateItem = templateItems.find(
             (item) => item.id === instance.mass_roles_template_item_id
           )
+          // Find matching assignment from proposed masses if available
+          const proposedAssignment = massData.assignments?.find(a => a.roleId === templateItem?.mass_role.id)
+
           return {
             roleInstanceId: instance.id,
             roleId: templateItem?.mass_role.id || '',
             roleName: templateItem?.mass_role.name || 'Unknown Role',
-            personId: null,
-            personName: null,
-            status: 'UNASSIGNED' as const,
-            reason: 'Not yet assigned',
+            personId: instance.person_id,
+            personName: proposedAssignment?.personName || null,
+            status: instance.person_id ? 'ASSIGNED' as const : 'UNASSIGNED' as const,
+            reason: instance.person_id ? undefined : 'Not yet assigned',
           }
         }),
       })
     }
 
-    // Phase 5: Auto-assignment (if enabled)
+    // Phase 5: Calculate assignment statistics
     let totalAssigned = 0
     let totalUnassigned = 0
     const totalRoles = createdMasses.reduce(
@@ -289,10 +338,23 @@ export async function scheduleMasses(
       0
     )
 
-    if (params.algorithmOptions.respectBlackoutDates ||
+    // If proposedMasses were provided with assignments, we already have the assignments
+    // Skip auto-assignment algorithm
+    if (params.proposedMasses && params.proposedMasses.length > 0) {
+      // Just count assigned/unassigned from what was created
+      for (const mass of createdMasses) {
+        for (const assignment of mass.assignments) {
+          if (assignment.personId) {
+            totalAssigned++
+          } else {
+            totalUnassigned++
+          }
+        }
+      }
+    } else if (params.algorithmOptions.respectBlackoutDates ||
         params.algorithmOptions.balanceWorkload) {
 
-      // Run simplified auto-assignment algorithm
+      // Run simplified auto-assignment algorithm for old flow
       for (const mass of createdMasses) {
         for (const assignment of mass.assignments) {
           const roleId = assignment.roleId

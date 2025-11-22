@@ -52,6 +52,7 @@ export interface ProposedMass {
   templateName: string
   dayOfWeek: string
   massTimesTemplateItemId?: string // Reference to the specific mass time template item
+  massRoleTemplateId?: string // Reference to the mass role template (for roles/assignments)
   isIncluded: boolean
   hasConflict: boolean
   conflictReason?: string

@@ -122,6 +122,8 @@ export function Step6InteractivePreview({
       return mass
     })
 
+    console.log('[Step6] Assigning person:', person.first_name, person.last_name, 'to role:', editingAssignment.roleId)
+    console.log('[Step6] Total assigned after this:', updated.reduce((sum, m) => sum + (m.assignments?.filter(a => a.personId).length || 0), 0))
     onProposedMassesChange(updated)
     setPeoplePickerOpen(false)
     setEditingAssignment(null)
@@ -253,6 +255,7 @@ export function Step6InteractivePreview({
       if (mass.id === editingMassId) {
         return {
           ...mass,
+          massRoleTemplateId: selectedTemplateId === 'REMOVE' ? undefined : selectedTemplateId,
           assignments: newAssignments
         }
       }
@@ -316,6 +319,7 @@ export function Step6InteractivePreview({
         if (mass.dayOfWeek === dayOfWeek && mass.isIncluded) {
           return {
             ...mass,
+            massRoleTemplateId: templateIdToUse,
             assignments: newAssignments
           }
         }

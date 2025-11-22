@@ -147,10 +147,9 @@ src/app/(main)/masses/schedule/
     ├── step-2-schedule-pattern.tsx   # Recurring schedule builder
     ├── step-3-template-selection.tsx # Mass Role Template picker
     ├── step-4-liturgical-events.tsx  # Liturgical events selection
-    ├── step-5-proposed-schedule.tsx  # Review proposed masses
-    ├── step-6-assignment-summary.tsx # Minister workload summary
-    ├── step-7-confirmation.tsx       # Final confirmation
-    ├── step-8-results.tsx            # Results and next steps
+    ├── step-5-proposed-schedule.tsx  # Review and exclude proposed masses
+    ├── step-6-interactive-preview.tsx # Assign ministers to roles
+    ├── step-6-assignment-summary.tsx # Minister workload summary (reused for steps 7 & 8)
     └── role-availability-modal.tsx   # Modal for viewing role availability by mass time
 
 src/components/
@@ -285,98 +284,183 @@ A template defines:
 
 ---
 
-### Step 4: Review & Confirm
+### Step 4: Liturgical Events Selection
 
-**Purpose:** Review all selections and configure algorithm options
+**Purpose:** Select which liturgical events should be associated with Masses in this period
 
-**UI Sections:**
+**UI Elements:**
+- Shows all liturgical events from the global calendar that fall within the selected date range
+- Displays event name, date, liturgical color, grade (Solemnity, Feast, Memorial, etc.)
+- Multi-select interface to choose which events to include
+- Clicking an event badge opens a liturgical event preview modal
+- Preview modal shows full event details including readings, color, type, etc.
 
-#### Summary Cards
-1. **Date Range**
-   - Start date, end date, total days
-   - Edit button → go back to Step 1
-
-2. **Mass Schedule**
-   - Grouped by day of week
-   - Shows all times and languages
-   - Edit button → go back to Step 2
-
-3. **Role Template**
-   - Template name and description
-   - Edit button → go back to Step 3
-
-4. **Total Masses**
-   - Large prominent number
-   - Based on date range × schedule pattern
-
-#### Algorithm Options (Checkboxes)
-
-**Balance Workload** (Default: ON)
-- Distribute assignments evenly across eligible ministers
-- Track assignment counts per minister
-- Prefer ministers with fewer assignments
-
-**Respect Blackout Dates** (Default: ON)
-- Never assign during unavailable periods
-- Check person_blackout_dates table
-- Hard constraint (cannot be overridden by algorithm)
-
-**Allow Manual Adjustments** (Default: ON)
-- Show assignment editor after creation
-- User can manually adjust before finalizing
-- Currently redirects to Masses list (editor not yet implemented)
+**Data Captured:**
+```typescript
+{
+  selectedLiturgicalEventIds: string[]  // Array of global_liturgical_events IDs
+}
+```
 
 **Validation:**
-- Always valid (review step cannot be invalid)
+- ✅ At least one liturgical event must be selected
+- System will match Masses to liturgical events by date
 
 ---
 
-### Step 5: Results & Assignment Editor
+### Step 5: Proposed Schedule
 
-**Purpose:** Show scheduling results and allow manual assignment adjustments
+**Purpose:** Review proposed Masses and exclude any that shouldn't be created
 
-**Status:** ✅ Implemented
-
-**UI Sections:**
-
-#### Summary Cards
-1. **Masses Created** - Total number of Masses successfully created
-2. **Total Roles** - Total role instances across all Masses
-3. **Assigned** - Number of roles with ministers assigned
-4. **Unassigned** - Number of roles needing assignment
-
-#### Assignment Rate Alert
-- ⚠️ **< 50%** - Red alert: "Low assignment rate, most roles need manual assignment"
-- ⚠️ **50-79%** - Yellow alert: "Moderate assignment rate, some roles need assignment"
-- ✅ **≥ 80%** - Green success: "Good assignment rate"
-
-#### Interactive Assignment Grid
-
-**Layout:**
-- **Rows**: Individual Masses (date, time, language)
-- **Columns**: Unique roles from template
-- **Cells**: Role assignments (can have multiple per role based on count)
-
-**Cell Colors:**
-- 🟢 **Green** - Role assigned
-- 🔴 **Red** - Role unassigned
-- 🟡 **Yellow** - Warning (soft constraint violated)
+**UI Elements:**
+- Calendar view showing all proposed Masses for the selected period
+- Each Mass shows: date, time, liturgical event (if applicable), liturgical color
+- Checkbox or toggle to include/exclude individual Masses
+- Mass detail modal to view/edit individual Mass details
+- Preview shows total count of Masses that will be created
 
 **Interaction:**
-- Click any cell → Opens PeoplePicker
-- Select person → Immediately saves to database
-- Grid updates in real-time
-- Changes tracked for unsaved warning
+- Click a Mass card to see details
+- Uncheck Masses to exclude them from creation (e.g., skip a particular date)
+- Delete Mass button to remove from schedule
+- Role assignment preview (empty at this step)
 
-**Filters** (UI ready, not yet functional):
-- Show unassigned only
-- Filter by role
-- Filter by date range
+**Validation:**
+- ✅ At least one Mass must remain included (not all excluded)
 
-#### Action Buttons
-- **Save All Changes** - Visible when unsaved changes exist (currently informational, changes save immediately)
-- **Go to Masses List** - Navigate to `/masses?start_date=X`
-- **Warning** - Prompts user if leaving with unsaved changes
+---
+
+### Step 6: Assign Ministers
+
+**Purpose:** Interactively assign people to roles for each Mass
+
+**UI Elements:**
+- Grouped list of all included Masses by date
+- Each Mass shows:
+  - Date, time, liturgical event, liturgical color
+  - List of all role assignments from the selected role template
+  - For each role: role name, assigned person (or "Assign" button)
+- Click "Assign" button → Opens people picker filtered for that role
+- Click assigned person → Option to remove assignment
+- "Change Template" button to switch role template for a specific Mass
+- "Refresh Recommendations" button to re-run auto-assignment algorithm
+
+**Auto-Assignment:**
+- On entering step 6, system automatically runs assignment algorithm
+- Applies role templates based on liturgical context (Solemnity uses different template than weekday)
+- Assigns people based on:
+  - Role membership (mass_role_members)
+  - Preferred mass times (people.mass_times_template_item_ids)
+  - Blackout dates (person_blackout_dates)
+  - Workload balancing (fewer assignments get priority)
+  - Conflict avoidance (not double-booked)
+
+**Interaction:**
+- Manual assignment: Click "Assign" → People picker → Select person
+- Remove assignment: Click X on assigned person
+- Change template: Opens dialog to select different role template
+- Refresh: Re-runs auto-assignment (confirms before overwriting manual changes)
+
+**Data State:**
+- All assignments stored in proposedMasses array in client state
+- NOT saved to database until step 8
+
+**Validation:**
+- Always valid (unassigned roles are allowed)
+
+---
+
+### Step 7: Workload Review
+
+**Purpose:** Review minister workload distribution before creating Masses
+
+**UI Elements:**
+- **Summary Stats:**
+  - Total ministers assigned
+  - Total assignments across all Masses
+  - Average assignments per minister
+  - Number of unassigned roles (if any)
+
+- **Workload Distribution List:**
+  - Each minister shown as a card with:
+    - Name and initials avatar
+    - Total number of assignments
+    - Breakdown by role (e.g., "Lector ×3", "EMHC ×2")
+    - Visual workload bar (relative to other ministers)
+  - Color-coded by workload level:
+    - Green: Light workload (below average)
+    - Blue: Moderate workload (near average)
+    - Amber: Heavy workload (above average)
+    - Red: Very heavy workload (highest)
+  - Sort options: Most assignments, Least assignments, Name A-Z, Name Z-A
+  - Click minister card → Modal showing full schedule with dates
+
+- **Unassigned Roles Warning:**
+  - If any roles remain unassigned, shows orange alert
+  - Lists first 10 unassigned roles
+  - Suggests going back to step 6 to assign
+
+**Data Display:**
+- Shows assignments from proposedMasses (client state)
+- NOT from database (Masses haven't been created yet)
+
+**Next Button:**
+- Text changes to "Create" instead of "Next"
+- Clicking "Create" advances to step 8 and triggers Mass creation
+
+**Validation:**
+- Always valid (unassigned roles are warnings, not errors)
+
+---
+
+### Step 8: Confirmation
+
+**Purpose:** Display results of Mass creation (success or error)
+
+**Trigger:**
+- Automatically runs when entering this step
+- Creates all Masses, Events, and Mass Assignments in database
+- Shows loading spinner during creation
+
+**On Success:**
+- **Summary Stats:**
+  - Number of Masses created
+  - Total roles created
+  - Number of roles assigned
+  - Number of roles unassigned
+
+- **Workload Distribution:**
+  - Same view as step 7, but now showing ACTUAL created data
+  - Minister cards show their final assignments
+  - Click minister → See full schedule with Mass IDs and links
+
+- **Success Message:**
+  - Green checkmark icon
+  - "Masses Created Successfully"
+  - "Your masses have been created and ministers have been assigned"
+
+- **Complete Button:**
+  - Text: "Go to Masses"
+  - Redirects to `/masses` (Masses list page)
+
+**On Error:**
+- **Error Alert:**
+  - Red error icon
+  - Error message from server
+  - "Failed to create Masses. Please try again."
+
+- **Actions:**
+  - "Try Again" button → Re-runs creation
+  - "Go Back" button → Returns to step 7 to review
+
+**Data Display:**
+- Shows actual created data from scheduleMassesResult
+- Displays real Mass IDs and database records
+
+**Wizard Behavior:**
+- Step 8 only appears in wizard steps AFTER creation succeeds
+- Cannot navigate back from step 8 (Masses already created)
+- Clears saved wizard state from localStorage
 
 **Implementation Details:**
 ```typescript

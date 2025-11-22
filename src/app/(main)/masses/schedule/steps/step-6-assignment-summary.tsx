@@ -27,7 +27,8 @@ import {
   BarChart3,
   Calendar,
   ChevronRight,
-  ArrowUpDown
+  ArrowUpDown,
+  CheckCircle2
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { ProposedMass } from './step-5-proposed-schedule'
@@ -61,6 +62,12 @@ export function Step6AssignmentSummary({
   const [selectedMinister, setSelectedMinister] = useState<MinisterSummary | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [sortOrder, setSortOrder] = useState<SortOrder>('most-assignments')
+
+  // Debug logging
+  console.log('[Step7] proposedMasses count:', proposedMasses.length)
+  console.log('[Step7] proposedMasses with assignments:', proposedMasses.filter(m => m.assignments && m.assignments.length > 0).length)
+  console.log('[Step7] total assignments:', proposedMasses.reduce((sum, m) => sum + (m.assignments?.length || 0), 0))
+  console.log('[Step7] assigned assignments:', proposedMasses.reduce((sum, m) => sum + (m.assignments?.filter(a => a.personId).length || 0), 0))
 
   // Calculate minister summaries
   const { ministerSummaries, unassignedRoles, stats } = useMemo(() => {
@@ -226,9 +233,9 @@ export function Step6AssignmentSummary({
             <div className="text-xs text-muted-foreground">Avg per Minister</div>
           </div>
         </Card>
-        <Card className={cn("p-3", stats.unassignedCount > 0 && "bg-orange-50 dark:bg-orange-950/20")}>
+        <Card className={cn("p-3", stats.unassignedCount > 0 && "bg-orange-50/30 dark:bg-orange-950/10")}>
           <div className="text-center">
-            <div className={cn("text-2xl font-bold", stats.unassignedCount > 0 && "text-orange-600")}>
+            <div className={cn("text-2xl font-bold", stats.unassignedCount > 0 && "text-orange-500")}>
               {stats.unassignedCount}
             </div>
             <div className="text-xs text-muted-foreground">Unassigned Roles</div>
@@ -236,38 +243,51 @@ export function Step6AssignmentSummary({
         </Card>
       </div>
 
-      {/* Unassigned Warning */}
-      {unassignedRoles.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/20">
+      {/* Success Message if fully assigned */}
+      {stats.totalAssignments > 0 && stats.unassignedCount === 0 && (
+        <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div>
+                <h3 className="font-semibold text-green-900 dark:text-green-100">
+                  All Roles Assigned!
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  {stats.totalMinisters} ministers are ready to serve in {stats.totalAssignments} assignments
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Unassigned Info (if any) */}
+      {unassignedRoles.length > 0 && stats.totalAssignments > 0 && (
+        <Card className="border-orange-100 bg-orange-50/30 dark:border-orange-900/50 dark:bg-orange-950/10">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2 text-orange-700 dark:text-orange-300">
-              <AlertTriangle className="h-5 w-5" />
-              {unassignedRoles.length} Unassigned Role{unassignedRoles.length !== 1 ? 's' : ''}
+            <CardTitle className="text-base flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <span className="text-foreground">{unassignedRoles.length} Roles Still Need Assignment</span>
             </CardTitle>
-            <CardDescription className="text-orange-600 dark:text-orange-400">
-              Go back to the Proposed Schedule to assign ministers to these roles
+            <CardDescription>
+              {stats.totalAssignments - stats.unassignedCount} roles are assigned. You can go back to step 6 to assign the remaining roles, or continue and assign them later.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[120px]">
-              <div className="space-y-1">
-                {unassignedRoles.slice(0, 10).map((item, idx) => (
-                  <div key={idx} className="text-sm flex items-center gap-2">
-                    <Badge variant="outline" className="text-orange-600 border-orange-300">
-                      {item.roleName}
-                    </Badge>
-                    <span className="text-muted-foreground">
-                      {item.massName} • {item.date}
-                    </span>
-                  </div>
-                ))}
-                {unassignedRoles.length > 10 && (
-                  <p className="text-sm text-muted-foreground">
-                    ...and {unassignedRoles.length - 10} more
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
+        </Card>
+      )}
+
+      {/* Empty state - no assignments at all */}
+      {stats.totalAssignments === 0 && (
+        <Card className="border-orange-100 bg-orange-50/30 dark:border-orange-900/50 dark:bg-orange-950/10">
+          <CardContent className="pt-6">
+            <div className="text-center py-4">
+              <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-orange-500" />
+              <h3 className="font-semibold text-foreground mb-2">No Ministers Assigned Yet</h3>
+              <p className="text-sm text-muted-foreground">
+                Go back to step 6 to assign ministers to roles
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
