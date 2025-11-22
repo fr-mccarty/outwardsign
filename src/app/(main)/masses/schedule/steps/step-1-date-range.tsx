@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Calendar, AlertCircle, Zap, Users, ExternalLink } from "lucide-react"
+import { toast } from 'sonner'
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -92,10 +93,12 @@ export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCoun
 
   const handleRoleClick = (role: MassRoleWithCount, e: React.MouseEvent) => {
     e.preventDefault()
-    if (startDate && endDate && new Date(endDate) >= new Date(startDate)) {
-      setSelectedRole(role)
-      setRoleModalOpen(true)
+    if (!startDate || !endDate || new Date(endDate) < new Date(startDate)) {
+      toast.info('Please select a valid date range first to see minister availability for that period')
+      return
     }
+    setSelectedRole(role)
+    setRoleModalOpen(true)
   }
 
   const dayCount = getDayCount(startDate, endDate)
@@ -196,10 +199,7 @@ export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCoun
               <CardTitle className="text-base">Available Ministers by Role</CardTitle>
             </div>
             <CardDescription>
-              {isValid
-                ? 'Click a role to see available ministers for the selected dates'
-                : 'Select dates above to see minister availability'
-              }
+              Click a role to see available ministers for the selected dates
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -208,8 +208,7 @@ export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCoun
                 <button
                   key={role.id}
                   onClick={(e) => handleRoleClick(role, e)}
-                  disabled={!isValid}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left"
                 >
                   <span className="text-sm font-medium truncate">{role.name}</span>
                   <Badge variant={role.member_count > 0 ? "secondary" : "outline"}>

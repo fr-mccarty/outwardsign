@@ -145,8 +145,8 @@ export function Step2SchedulePattern({
     <div className="space-y-6">
       <WizardStepHeader
         icon={CalendarClock}
-        title="Select Mass Times"
-        description="Choose which Mass times to schedule for this period"
+        title="Select Relevant Mass Times to This Timeframe"
+        description="These are the mass times that will be used to calculate your schedule for the time period"
       />
 
       <Card>
@@ -192,7 +192,19 @@ export function Step2SchedulePattern({
                     {getDayLabel(day)}
                   </h3>
                   <div className="space-y-2">
-                    {templates.map((template) => (
+                    {templates
+                      .sort((a, b) => {
+                        // Sort by items with DAY_BEFORE (vigil) first
+                        const aHasVigil = a.items?.some(item => item.day_type === 'DAY_BEFORE') ?? false
+                        const bHasVigil = b.items?.some(item => item.day_type === 'DAY_BEFORE') ?? false
+
+                        if (aHasVigil && !bHasVigil) return -1
+                        if (!aHasVigil && bHasVigil) return 1
+
+                        // If both or neither have vigil, maintain original order
+                        return 0
+                      })
+                      .map((template) => (
                       <div
                         key={template.id}
                         className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent transition-colors cursor-pointer"
@@ -217,12 +229,20 @@ export function Step2SchedulePattern({
                           </Label>
                           {template.items && template.items.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {template.items.map((item) => (
-                                <Badge key={item.id} variant="outline" className="text-xs">
-                                  {formatTime(item.time)}
-                                  {item.day_type === 'DAY_BEFORE' && ' (Vigil)'}
-                                </Badge>
-                              ))}
+                              {template.items
+                                .sort((a, b) => {
+                                  // Sort vigil (DAY_BEFORE) items first
+                                  if (a.day_type === 'DAY_BEFORE' && b.day_type !== 'DAY_BEFORE') return -1
+                                  if (a.day_type !== 'DAY_BEFORE' && b.day_type === 'DAY_BEFORE') return 1
+                                  // Then sort by time
+                                  return a.time.localeCompare(b.time)
+                                })
+                                .map((item) => (
+                                  <Badge key={item.id} variant="outline" className="text-xs">
+                                    {formatTime(item.time)}
+                                    {item.day_type === 'DAY_BEFORE' && ' (Vigil)'}
+                                  </Badge>
+                                ))}
                             </div>
                           )}
                           {template.description && (
@@ -240,52 +260,6 @@ export function Step2SchedulePattern({
           )}
         </CardContent>
       </Card>
-
-      {selectedTemplateIds.length > 0 && totalMasses > 0 && (
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Total Masses to be Created:</span>
-                <span className="text-2xl font-bold text-primary">{totalMasses}</span>
-              </div>
-
-              <div className="pt-3 border-t">
-                <div className="text-sm space-y-1">
-                  {DAYS_OF_WEEK.map((day) => {
-                    const selectedForDay = selectedTemplateIds.filter(id => {
-                      const template = massTimesTemplates.find(t => t.id === id)
-                      return template?.day_of_week === day.key
-                    })
-                    if (selectedForDay.length === 0) return null
-
-                    // Count occurrences of this day in date range
-                    const start = new Date(startDate)
-                    const end = new Date(endDate)
-                    let occurrences = 0
-                    const currentDate = new Date(start)
-                    while (currentDate <= end) {
-                      if (currentDate.getDay() === day.value) {
-                        occurrences++
-                      }
-                      currentDate.setDate(currentDate.getDate() + 1)
-                    }
-
-                    return (
-                      <div key={day.value} className="flex items-center justify-between text-muted-foreground">
-                        <span>{getDayLabel(day.key)}:</span>
-                        <span>
-                          {selectedForDay.length} template{selectedForDay.length !== 1 ? 's' : ''} × {occurrences} weeks = {selectedForDay.length * occurrences} Masses
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {selectedTemplateIds.length === 0 && (
         <Alert>
