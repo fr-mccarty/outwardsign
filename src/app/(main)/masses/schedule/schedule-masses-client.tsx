@@ -9,13 +9,12 @@ import { Step3TemplateSelection } from './steps/step-3-template-selection'
 import { Step4LiturgicalEvents } from './steps/step-4-liturgical-events'
 import { Step5ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-5-proposed-schedule'
 import { Step6AssignmentSummary } from './steps/step-6-assignment-summary'
-import { Step7Confirmation } from './steps/step-7-confirmation'
-import { Step8Results } from './steps/step-8-results'
+import { Step6InteractivePreview } from './steps/step-6-interactive-preview'
 import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
 import { MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
 import { toast } from 'sonner'
-import { scheduleMasses, type ScheduleMassesResult } from '@/lib/actions/mass-scheduling'
+import { scheduleMasses, type ScheduleMassesResult, previewMassAssignments } from '@/lib/actions/mass-scheduling'
 import { getDayOfWeekNumber } from '@/lib/utils/date-format'
 import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
 
@@ -280,7 +279,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     })
 
     // Fetch liturgical events if we have selected event IDs
-    let liturgicalEventsData: Array<{ id: string; date: string; name: string; color?: string[]; grade_abbr?: string; type?: string }> = []
+    let liturgicalEventsData: Array<{ id: string; date: string; name: string; color?: string[]; grade?: number; grade_abbr?: string; type?: string }> = []
     if (startDate && endDate && selectedLiturgicalEventIds.length > 0) {
       try {
         const events = await getGlobalLiturgicalEvents(startDate, endDate)
@@ -291,6 +290,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
             date: e.date,
             name: e.event_data.name,
             color: e.event_data.color,
+            grade: e.event_data.grade,
             grade_abbr: e.event_data.grade_abbr,
             type: e.event_data.type
           }))
@@ -349,13 +349,8 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       // Clear saved wizard state on successful completion
       clearSavedState()
 
-      if (algorithmOptions.allowManualAdjustments && result.rolesUnassigned > 0) {
-        // Navigate to Step 8 to show results
-        setCurrentWizardStep(8)
-      } else {
-        // Go directly to masses list
-        router.push(`/masses?start_date=${startDate}`)
-      }
+      // Navigate to Step 7 (Workload Distribution) to show assignment results
+      setCurrentWizardStep(7)
     } catch (error) {
       console.error('Failed to schedule masses:', error)
       toast.error('Failed to schedule masses. Please try again.')
@@ -386,11 +381,11 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   }
 
   const isStep6Valid = () => {
-    return true // Summary step is always valid
+    return true // Preview step is always valid
   }
 
   const isStep7Valid = () => {
-    return true // Confirmation step is always valid
+    return true // Workload distribution step is always valid
   }
 
   const getDisableNext = (currentStep: number): boolean => {
@@ -414,16 +409,15 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }
 
-  const wizardSteps = currentWizardStep === 8
+  const wizardSteps = currentWizardStep === 7
     ? [
         { id: 1, title: 'Date Range', description: 'Select scheduling period' },
         { id: 2, title: 'Mass Times', description: 'Select Mass times' },
         { id: 3, title: 'Role Template', description: 'Select assignments' },
         { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
         { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
-        { id: 6, title: 'Assignment Summary', description: 'Review workload' },
-        { id: 7, title: 'Confirm', description: 'Final confirmation' },
-        { id: 8, title: 'Results', description: 'View created masses' },
+        { id: 6, title: 'Preview', description: 'Review before creating' },
+        { id: 7, title: 'Workload Distribution', description: 'Review assignments' },
       ]
     : [
         { id: 1, title: 'Date Range', description: 'Select scheduling period' },
@@ -431,8 +425,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         { id: 3, title: 'Role Template', description: 'Select assignments' },
         { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
         { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
-        { id: 6, title: 'Assignment Summary', description: 'Review workload' },
-        { id: 7, title: 'Confirm', description: 'Final confirmation' },
+        { id: 6, title: 'Preview', description: 'Review before creating' },
       ]
 
   const renderStepContent = (currentStep: number, goToStep: (step: number) => void) => {
@@ -490,29 +483,18 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         )
       case 6:
         return (
-          <Step6AssignmentSummary
+          <Step6InteractivePreview
             proposedMasses={proposedMasses}
+            onProposedMassesChange={setProposedMasses}
+            roleTemplates={templates}
           />
         )
       case 7:
         return (
-          <Step7Confirmation
-            startDate={startDate}
-            endDate={endDate}
+          <Step6AssignmentSummary
             proposedMasses={proposedMasses}
-            massTimesTemplates={massTimesTemplates}
-            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
-            roleTemplates={templates}
-            selectedRoleTemplateIds={selectedRoleTemplateIds}
           />
         )
-      case 8:
-        return schedulingResult ? (
-          <Step8Results
-            result={schedulingResult}
-            startDate={startDate}
-          />
-        ) : null
       default:
         return null
     }

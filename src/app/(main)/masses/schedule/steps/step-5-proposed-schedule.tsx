@@ -56,6 +56,7 @@ export interface ProposedMass {
   liturgicalEventId?: string
   liturgicalEventName?: string
   liturgicalEventColor?: string[] // Liturgical color (e.g., ["green"], ["white"], ["red"])
+  liturgicalEventGradeNumber?: number // Numeric grade (1-9, lower is more important)
   liturgicalEventGrade?: string // Grade abbreviation (e.g., "SOLEMNITY", "FEAST")
   liturgicalEventType?: string // Event type
   assignments?: RoleAssignment[]
@@ -446,7 +447,7 @@ export function generateProposedMasses(
   endDate: string,
   templates: MassTimesTemplateWithItems[],
   selectedTemplateIds: string[],
-  liturgicalEvents?: Array<{ id: string; date: string; name: string; color?: string[]; grade_abbr?: string; type?: string }>,
+  liturgicalEvents?: Array<{ id: string; date: string; name: string; color?: string[]; grade?: number; grade_abbr?: string; type?: string }>,
   roleTemplateAssignments?: Array<{ roleId: string; roleName: string }>
 ): ProposedMass[] {
   const masses: ProposedMass[] = []
@@ -460,9 +461,9 @@ export function generateProposedMasses(
   const end = new Date(endDate + `T00:00:00${DEFAULT_TIMEZONE === 'UTC' ? 'Z' : ''}`)
 
   // Create a map of liturgical events by date for quick lookup
-  const eventsByDate = new Map<string, { id: string; name: string; color?: string[]; grade_abbr?: string; type?: string }>()
+  const eventsByDate = new Map<string, { id: string; name: string; color?: string[]; grade?: number; grade_abbr?: string; type?: string }>()
   liturgicalEvents?.forEach(event => {
-    eventsByDate.set(event.date, { id: event.id, name: event.name, color: event.color, grade_abbr: event.grade_abbr, type: event.type })
+    eventsByDate.set(event.date, { id: event.id, name: event.name, color: event.color, grade: event.grade, grade_abbr: event.grade_abbr, type: event.type })
   })
 
   // Generate masses for each day in range
@@ -507,6 +508,7 @@ export function generateProposedMasses(
             liturgicalEventId: liturgicalEvent?.id,
             liturgicalEventName: liturgicalEvent?.name,
             liturgicalEventColor: liturgicalEvent?.color,
+            liturgicalEventGradeNumber: liturgicalEvent?.grade,
             liturgicalEventGrade: liturgicalEvent?.grade_abbr,
             liturgicalEventType: liturgicalEvent?.type,
             assignments
@@ -552,6 +554,7 @@ export function generateProposedMasses(
                 liturgicalEventId: liturgicalEvent?.id,
                 liturgicalEventName: liturgicalEvent?.name,
                 liturgicalEventColor: liturgicalEvent?.color,
+                liturgicalEventGradeNumber: liturgicalEvent?.grade,
                 liturgicalEventGrade: liturgicalEvent?.grade_abbr,
                 liturgicalEventType: liturgicalEvent?.type,
                 assignments

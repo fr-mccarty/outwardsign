@@ -79,24 +79,13 @@ export function Step7Confirmation({
   return (
     <div className="space-y-6">
       <WizardStepHeader
-        icon={CheckCircle2}
-        title="Confirm & Create"
-        description="Review your selections before creating the masses"
+        icon={Sparkles}
+        title="Preview"
+        description="Review what will be created before scheduling the masses"
       />
 
-      {/* Warning if unassigned */}
-      {hasUnassigned && (
-        <Alert className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-700 dark:text-amber-300">
-            {stats.unassignedCount} role{stats.unassignedCount !== 1 ? 's are' : ' is'} still unassigned.
-            You can continue and assign them later, or go back to make assignments now.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-4">
             <div className="text-center">
@@ -109,28 +98,15 @@ export function Step7Confirmation({
           <CardContent className="pt-4">
             <div className="text-center">
               <div className="text-3xl font-bold">{getDayCount(startDate, endDate)}</div>
-              <div className="text-sm text-muted-foreground mt-1">Days</div>
+              <div className="text-sm text-muted-foreground mt-1">Days in Range</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-center">
-              <div className="text-3xl font-bold">{stats.uniqueMinisters}</div>
-              <div className="text-sm text-muted-foreground mt-1">Ministers</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className={cn(hasUnassigned && "border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20")}>
-          <CardContent className="pt-4">
-            <div className="text-center">
-              <div className={cn("text-3xl font-bold", hasUnassigned && "text-amber-600")}>
-                {stats.assignedCount}
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">
-                Assignments
-                {hasUnassigned && <span className="text-amber-600"> ({stats.unassignedCount} empty)</span>}
-              </div>
+              <div className="text-3xl font-bold">{stats.assignedCount + stats.unassignedCount}</div>
+              <div className="text-sm text-muted-foreground mt-1">Total Roles</div>
             </div>
           </CardContent>
         </Card>

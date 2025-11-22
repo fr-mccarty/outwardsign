@@ -202,8 +202,8 @@ export function Step6AssignmentSummary({
     <div className="space-y-6">
       <WizardStepHeader
         icon={Users}
-        title="Assignment Summary"
-        description="Click on a minister to see all their assignments"
+        title="Workload Distribution"
+        description="Review minister assignments and workload balance"
       />
 
       {/* Statistics Cards */}

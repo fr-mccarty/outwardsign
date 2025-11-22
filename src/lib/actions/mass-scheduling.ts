@@ -20,6 +20,19 @@ export interface ScheduleMassesParams {
     respectBlackoutDates: boolean
     allowManualAdjustments: boolean
   }
+  proposedMasses?: Array<{
+    id: string
+    date: string
+    time: string
+    templateId: string
+    liturgicalEventId?: string
+    assignments?: Array<{
+      roleId: string
+      roleName: string
+      personId?: string
+      personName?: string
+    }>
+  }>
 }
 
 export interface ScheduleMassesResult {
@@ -394,6 +407,107 @@ export async function getSuggestedMinister(
 
   // Return first eligible minister
   return { id: available[0].id, name: available[0].name }
+}
+
+/**
+ * Preview minister assignments for proposed masses
+ * Used in Step 6 to show assignment summary before actually creating Masses
+ */
+export async function previewMassAssignments(
+  proposedMasses: Array<{
+    id: string
+    date: string
+    time: string
+    assignments: Array<{
+      roleId: string
+      roleName: string
+      personId?: string
+      personName?: string
+    }>
+  }>,
+  balanceWorkload: boolean
+): Promise<Array<{
+  massId: string
+  assignments: Array<{
+    roleId: string
+    roleName: string
+    personId: string | null
+    personName: string | null
+  }>
+}>> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const result: Array<{
+    massId: string
+    assignments: Array<{
+      roleId: string
+      roleName: string
+      personId: string | null
+      personName: string | null
+    }>
+  }> = []
+
+  // Track assignments across all masses for workload balancing
+  const assignmentCounts = new Map<string, number>()
+
+  for (const mass of proposedMasses) {
+    const alreadyAssignedThisMass: string[] = []
+    const massAssignments: Array<{
+      roleId: string
+      roleName: string
+      personId: string | null
+      personName: string | null
+    }> = []
+
+    for (const role of mass.assignments || []) {
+      try {
+        const suggested = await getSuggestedMinister(
+          role.roleId,
+          mass.date,
+          mass.time,
+          balanceWorkload,
+          alreadyAssignedThisMass
+        )
+
+        if (suggested) {
+          massAssignments.push({
+            roleId: role.roleId,
+            roleName: role.roleName,
+            personId: suggested.id,
+            personName: suggested.name
+          })
+          alreadyAssignedThisMass.push(suggested.id)
+
+          // Track assignment count for workload balancing
+          const currentCount = assignmentCounts.get(suggested.id) || 0
+          assignmentCounts.set(suggested.id, currentCount + 1)
+        } else {
+          massAssignments.push({
+            roleId: role.roleId,
+            roleName: role.roleName,
+            personId: null,
+            personName: null
+          })
+        }
+      } catch (error) {
+        console.error(`Error getting suggested minister for role ${role.roleId}:`, error)
+        massAssignments.push({
+          roleId: role.roleId,
+          roleName: role.roleName,
+          personId: null,
+          personName: null
+        })
+      }
+    }
+
+    result.push({
+      massId: mass.id,
+      assignments: massAssignments
+    })
+  }
+
+  return result
 }
 
 /**

@@ -90,15 +90,25 @@ ${template.description ? `Description: ${template.description}\n` : ''}${templat
       {/* Template Mass Roles */}
       <Card>
         <CardHeader>
-          <CardTitle>Template Mass Roles</CardTitle>
-          <CardDescription>Mass roles required for this Mass type</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Template Mass Roles</CardTitle>
+              <CardDescription>Mass roles required for this Mass type</CardDescription>
+            </div>
+            <Button asChild>
+              <Link href={`/mass-role-templates/${template.id}/edit`}>
+                <Edit className="h-4 w-4 mr-2" />
+                Add Roles
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading mass roles...</p>
           ) : items.length === 0 ? (
             <p className="text-sm text-muted-foreground italic">
-              No mass roles defined yet. Edit this template to add mass role requirements.
+              No mass roles defined yet. Click "Add Roles" to add mass role requirements.
             </p>
           ) : (
             <div className="space-y-3">

@@ -4,6 +4,8 @@
  * Pure utility functions for formatting data across all sacraments
  */
 
+import { DEFAULT_TIMEZONE } from '@/lib/constants'
+
 // ============================================================================
 // STRING FORMATTING FUNCTIONS
 // ============================================================================
@@ -138,13 +140,16 @@ export function formatDate(
   const includeWeekday = options?.includeWeekday || false
 
   if (format === 'numeric') {
-    return dateObj.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US')
+    return dateObj.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
+      timeZone: DEFAULT_TIMEZONE
+    })
   }
 
   const dateOptions: Intl.DateTimeFormatOptions = {
     month: format === 'short' ? 'short' : 'long',
     day: 'numeric',
     year: 'numeric',
+    timeZone: DEFAULT_TIMEZONE,
   }
 
   if (includeWeekday) {
