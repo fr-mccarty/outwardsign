@@ -29,6 +29,7 @@ export default async function GroupsPage() {
     <PageContainer
       title="Groups"
       description="Manage groups of people who serve together in liturgical ministries"
+      actions={<ModuleCreateButton moduleName="Group" href="/groups/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <GroupsListClient initialData={groups} />

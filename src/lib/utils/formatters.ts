@@ -866,3 +866,37 @@ export function getPersonFilename(
 
   return `Person.${extension}`
 }
+
+/**
+ * Get group page title
+ *
+ * Format: "GroupName"
+ *
+ * @example
+ * getGroupPageTitle(group) // "Lectors"
+ * getGroupPageTitle({ name: '' }) // "Group"
+ */
+export function getGroupPageTitle(group: {
+  name?: string
+}): string {
+  return group.name || 'Group'
+}
+
+/**
+ * Get group filename for downloads
+ *
+ * Format: "GroupName.ext"
+ *
+ * @example
+ * getGroupFilename(group, 'pdf') // "Lectors.pdf"
+ * getGroupFilename({ name: '' }, 'docx') // "Group.docx"
+ */
+export function getGroupFilename(
+  group: {
+    name?: string
+  },
+  extension: string
+): string {
+  const groupName = group.name?.replace(/[^a-z0-9]/gi, '-') || 'Group'
+  return `${groupName}.${extension}`
+}

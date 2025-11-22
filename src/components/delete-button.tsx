@@ -2,15 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { DialogButton } from '@/components/dialog-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -42,6 +34,17 @@ interface DeleteButtonProps {
   confirmMessage?: string
 }
 
+/**
+ * DeleteButton Component
+ *
+ * A convenience wrapper around DeleteConfirmationDialog that:
+ * - Provides a trigger button with icon
+ * - Handles the delete operation
+ * - Shows success/error toasts
+ * - Automatically redirects after successful deletion
+ *
+ * Used primarily in ModuleViewPanel for entity deletion.
+ */
 export function DeleteButton({
   entityId,
   entityType,
@@ -49,47 +52,40 @@ export function DeleteButton({
   onDelete,
   confirmMessage,
 }: DeleteButtonProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const router = useRouter()
 
   const handleDelete = async () => {
-    setIsDeleting(true)
     try {
       await onDelete(entityId)
       toast.success(`${entityType} deleted successfully`)
-      setDeleteDialogOpen(false)
       router.push(`/${modulePath}`)
     } catch (error) {
       console.error(`Failed to delete ${entityType.toLowerCase()}:`, error)
       toast.error(`Failed to delete ${entityType.toLowerCase()}. Please try again.`)
-    } finally {
-      setIsDeleting(false)
+      throw error // Re-throw so DeleteConfirmationDialog knows it failed
     }
   }
 
   return (
-    <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-      <DialogButton variant="destructive" className="w-full">
+    <>
+      <Button
+        variant="destructive"
+        className="w-full"
+        onClick={() => setDeleteDialogOpen(true)}
+      >
         <Trash2 className="h-4 w-4 mr-2" />
         Delete {entityType}
-      </DialogButton>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete {entityType}</DialogTitle>
-          <DialogDescription>
-            {confirmMessage || `Are you sure you want to delete this ${entityType.toLowerCase()}? This action cannot be undone.`}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </Button>
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title={`Delete ${entityType}`}
+        description={confirmMessage || `Are you sure you want to delete this ${entityType.toLowerCase()}? This action cannot be undone.`}
+        actionLabel="Delete"
+      />
+    </>
   )
 }

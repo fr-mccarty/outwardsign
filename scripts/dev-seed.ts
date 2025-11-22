@@ -201,32 +201,32 @@ async function seedDevData() {
     .insert([
       {
         parish_id: parishId,
-        name: 'Lectors',
-        description: 'Readers for Sunday Mass and special liturgies',
+        name: 'Parish Council',
+        description: 'Advisory body for parish leadership and planning',
         is_active: true
       },
       {
         parish_id: parishId,
-        name: 'Extraordinary Ministers of Holy Communion',
-        description: 'Ministers who distribute communion at Mass',
+        name: 'Finance Council',
+        description: 'Oversight of parish finances and budgeting',
         is_active: true
       },
       {
         parish_id: parishId,
-        name: 'Altar Servers',
-        description: 'Youth and adults who assist the priest at Mass',
+        name: 'Zumba',
+        description: 'Exercise and community group',
         is_active: true
       },
       {
         parish_id: parishId,
-        name: 'Choir',
-        description: 'Music ministry for Sunday 10am Mass',
+        name: 'Maintenance Committee',
+        description: 'Care and upkeep of parish facilities',
         is_active: true
       },
       {
         parish_id: parishId,
-        name: 'Ushers',
-        description: 'Welcome ministry and collection assistants',
+        name: 'PLT',
+        description: 'Parish Leadership Team',
         is_active: true
       },
     ])
@@ -444,43 +444,43 @@ async function seedDevData() {
       const memberRole = groupRoles.find(r => r.name === 'Member')
 
       const memberships = [
-        // Lectors group
+        // Parish Council
         {
-          group_id: groups[0].id, // Lectors
+          group_id: groups[0].id, // Parish Council
           person_id: people[0].id, // John Doe - Leader
           group_role_id: leaderRole?.id
         },
         {
-          group_id: groups[0].id, // Lectors
+          group_id: groups[0].id, // Parish Council
           person_id: people[1].id, // Jane Smith - Member
           group_role_id: memberRole?.id
         },
-        // EMHC group
+        // Finance Council
         {
-          group_id: groups[1].id, // EMHC
+          group_id: groups[1].id, // Finance Council
           person_id: people[2].id, // Bob Johnson - Coordinator
           group_role_id: coordinatorRole?.id
         },
         {
-          group_id: groups[1].id, // EMHC
+          group_id: groups[1].id, // Finance Council
           person_id: people[3].id, // Maria Garcia - Secretary
           group_role_id: secretaryRole?.id
         },
-        // Altar Servers
+        // Zumba
         {
-          group_id: groups[2].id, // Altar Servers
+          group_id: groups[2].id, // Zumba
           person_id: people[4].id, // Michael Chen - Member
           group_role_id: memberRole?.id
         },
-        // Choir
+        // Maintenance Committee
         {
-          group_id: groups[3].id, // Choir
-          person_id: people[0].id, // John Doe (also in choir) - Member
+          group_id: groups[3].id, // Maintenance Committee
+          person_id: people[0].id, // John Doe (also in Maintenance) - Member
           group_role_id: memberRole?.id
         },
         {
-          group_id: groups[3].id, // Choir
-          person_id: people[3].id, // Maria Garcia (also in choir) - Member
+          group_id: groups[3].id, // Maintenance Committee
+          person_id: people[3].id, // Maria Garcia (also in Maintenance) - Member
           group_role_id: memberRole?.id
         },
       ]

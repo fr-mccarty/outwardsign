@@ -1,16 +1,14 @@
-import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getGroup } from '@/lib/actions/groups'
-import { GroupViewClient } from './group-view-client'
-import { getGroupPageTitle } from '@/lib/utils/formatters'
+import { GroupFormWrapper } from '../../group-form-wrapper'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function ViewGroupPage({ params }: PageProps) {
+export default async function EditGroupPage({ params }: PageProps) {
   const supabase = await createClient()
 
   // Check authentication server-side
@@ -27,21 +25,23 @@ export default async function ViewGroupPage({ params }: PageProps) {
   }
 
   // Build dynamic title from group name
-  const title = getGroupPageTitle(group)
+  const title = group.name
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Groups", href: "/groups" },
-    { label: "View" }
+    { label: "Edit" }
   ]
 
   return (
-    <PageContainer
-      title={title}
-      description="View group details and export member reports."
-    >
+    <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <GroupViewClient group={group} />
-    </PageContainer>
+      <GroupFormWrapper
+        group={group}
+        title={title}
+        description="Update group information and manage members."
+        saveButtonLabel="Save Group"
+      />
+    </>
   )
 }
