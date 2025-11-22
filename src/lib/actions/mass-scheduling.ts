@@ -215,10 +215,22 @@ export async function scheduleMasses(
       // Get template items for this mass's template
       const templateItems = templateItemsMap.get(massData.templateId) || []
 
+      // Normalize time format to ensure HH:MM:SS
+      // PostgreSQL TIME fields can sometimes return shortened formats like "9:0:0"
+      // We need to ensure proper zero-padding: "09:00:00"
+      const normalizeTime = (time: string): string => {
+        const parts = time.split(':')
+        if (parts.length === 3) {
+          return parts.map(p => p.padStart(2, '0')).join(':')
+        }
+        return time
+      }
+      const normalizedTime = normalizeTime(massData.time)
+
       // Create Event first - use liturgical event name if available
       const eventName = massData.liturgicalEvent
-        ? `${massData.liturgicalEvent.event_data.name} - ${massData.time}`
-        : `Mass - ${massData.date} ${massData.time}`
+        ? `${massData.liturgicalEvent.event_data.name} - ${normalizedTime}`
+        : `Mass - ${massData.date} ${normalizedTime}`
 
       const { data: event, error: eventError } = await supabase
         .from('events')
@@ -227,7 +239,7 @@ export async function scheduleMasses(
           name: eventName,
           event_type: 'MASS',
           start_date: massData.date,
-          start_time: massData.time,
+          start_time: normalizedTime,
           end_date: massData.date,
           language: massData.language,
           is_public: false,
@@ -307,7 +319,7 @@ export async function scheduleMasses(
       createdMasses.push({
         id: mass.id,
         date: massData.date,
-        time: massData.time,
+        time: normalizedTime,
         language: massData.language,
         eventId: event.id,
         assignments: createdInstances.map((instance) => {

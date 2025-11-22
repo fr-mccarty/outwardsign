@@ -11,6 +11,8 @@ import { Step4LiturgicalEvents } from './steps/step-4-liturgical-events'
 import { Step5ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-5-proposed-schedule'
 import { Step6AssignmentSummary } from './steps/step-6-assignment-summary'
 import { Step6InteractivePreview } from './steps/step-6-interactive-preview'
+import { Step7WorkloadReview } from './steps/step-7-workload-review'
+import { Step8Confirmation } from './steps/step-8-confirmation'
 import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
 import { MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
@@ -456,26 +458,16 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }
 
-  const wizardSteps = currentWizardStep >= 8
-    ? [
-        { id: 1, title: 'Date Range', description: 'Select scheduling period' },
-        { id: 2, title: 'Mass Times', description: 'Select Mass times' },
-        { id: 3, title: 'Role Template', description: 'Select assignments' },
-        { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
-        { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
-        { id: 6, title: 'Assign Ministers', description: 'Assign people to roles' },
-        { id: 7, title: 'Workload Review', description: 'Review assignments' },
-        { id: 8, title: 'Confirmation', description: 'Masses created' },
-      ]
-    : [
-        { id: 1, title: 'Date Range', description: 'Select scheduling period' },
-        { id: 2, title: 'Mass Times', description: 'Select Mass times' },
-        { id: 3, title: 'Role Template', description: 'Select assignments' },
-        { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
-        { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
-        { id: 6, title: 'Assign Ministers', description: 'Assign people to roles' },
-        { id: 7, title: 'Workload Review', description: 'Review assignments' },
-      ]
+  const wizardSteps = [
+    { id: 1, title: 'Date Range', description: 'Select scheduling period' },
+    { id: 2, title: 'Mass Times', description: 'Select Mass times' },
+    { id: 3, title: 'Role Template', description: 'Select assignments' },
+    { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
+    { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
+    { id: 6, title: 'Assign Ministers', description: 'Assign people to roles' },
+    { id: 7, title: 'Workload Review', description: 'Review assignments' },
+    { id: 8, title: 'Confirmation', description: 'Masses created' },
+  ]
 
   const renderStepContent = (currentStep: number, goToStep: (step: number) => void) => {
     switch (currentStep) {
@@ -541,12 +533,41 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       case 7:
         // Step 7: Show workload review BEFORE creating masses (uses proposedMasses)
         return (
-          <Step6AssignmentSummary
+          <Step7WorkloadReview
+            startDate={startDate}
+            endDate={endDate}
             proposedMasses={proposedMasses}
+            massTimesTemplates={massTimesTemplates}
+            selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
+            roleTemplates={templates}
+            selectedRoleTemplateIds={selectedRoleTemplateIds}
+            onProposedMassesChange={setProposedMasses}
           />
         )
       case 8:
-        // Step 8: Show confirmation AFTER creating masses (uses schedulingResult or error)
+        // Step 8: Show loading, then confirmation AFTER creating masses
+        if (isSubmitting) {
+          // Show loading state while creating masses
+          return (
+            <div className="space-y-6">
+              <WizardStepHeader
+                icon={CheckCircle2}
+                title="Creating Masses..."
+                description="Please wait while we create your masses and assignments"
+              />
+              <Card>
+                <CardContent className="py-12">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                    <p className="text-lg font-medium">Creating masses and assigning ministers...</p>
+                    <p className="text-sm text-muted-foreground">This may take a few moments</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )
+        }
+
         if (schedulingError) {
           // Show error state
           return (
@@ -592,36 +613,13 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
           )
         }
 
-        // Show success state
-        const createdMassesAsProposed: ProposedMass[] = schedulingResult?.masses.map(mass => ({
-          id: mass.id,
-          date: mass.date,
-          time: mass.time,
-          templateId: '', // Not needed for confirmation
-          templateName: `Mass at ${mass.time}`,
-          dayOfWeek: '', // Not needed for confirmation
-          isIncluded: true,
-          hasConflict: false,
-          assignments: mass.assignments.map(a => ({
-            roleId: a.roleId,
-            roleName: a.roleName,
-            personId: a.personId || undefined,
-            personName: a.personName || undefined
-          }))
-        })) || []
+        // Show success state with confirmation component
+        if (schedulingResult) {
+          return <Step8Confirmation result={schedulingResult} />
+        }
 
-        return (
-          <div className="space-y-6">
-            <WizardStepHeader
-              icon={CheckCircle2}
-              title="Masses Created Successfully"
-              description="Your masses have been created and ministers have been assigned"
-            />
-            <Step6AssignmentSummary
-              proposedMasses={createdMassesAsProposed}
-            />
-          </div>
-        )
+        // Fallback (should not happen)
+        return null
       default:
         return null
     }
