@@ -432,7 +432,7 @@ export const WEDDING_TEMPLATE_LABELS: Record<WeddingTemplate, { en: string; es: 
 // Quinceañera Template Constants
 export const QUINCEANERA_TEMPLATE_VALUES = ['quinceanera-full-script-english', 'quinceanera-full-script-spanish'] as const
 export type QuinceaneraTemplate = typeof QUINCEANERA_TEMPLATE_VALUES[number]
-export const QUINCEANERA_DEFAULT_TEMPLATE: QuinceaneraTemplate = 'quinceanera-full-script-english'
+export const QUINCEANERA_DEFAULT_TEMPLATE: QuinceaneraTemplate = 'quinceanera-full-script-spanish'
 
 export const QUINCEANERA_TEMPLATE_LABELS: Record<QuinceaneraTemplate, { en: string; es: string }> = {
   'quinceanera-full-script-english': { en: 'Full Ceremony Script (English)', es: 'Guión Completo de la Ceremonia (Inglés)' },
@@ -462,7 +462,7 @@ export const BAPTISM_TEMPLATE_LABELS: Record<BaptismTemplate, { en: string; es: 
 // Presentation Template Constants
 export const PRESENTATION_TEMPLATE_VALUES = ['presentation-english', 'presentation-spanish', 'presentation-bilingual'] as const
 export type PresentationTemplate = typeof PRESENTATION_TEMPLATE_VALUES[number]
-export const PRESENTATION_DEFAULT_TEMPLATE: PresentationTemplate = 'presentation-english'
+export const PRESENTATION_DEFAULT_TEMPLATE: PresentationTemplate = 'presentation-spanish'
 
 export const PRESENTATION_TEMPLATE_LABELS: Record<PresentationTemplate, { en: string; es: string }> = {
   'presentation-english': { en: 'Presentation in the Temple (English)', es: 'Presentación en el Templo (Inglés)' },
