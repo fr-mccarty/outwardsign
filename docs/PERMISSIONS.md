@@ -8,18 +8,6 @@ This document defines what Claude Code is allowed to do autonomously and what re
 
 ## 🔴 Strictly Prohibited (Never Allowed)
 
-### Git Operations
-- **Creating commits** - Never allowed
-- **Adding files to git staging** - Never allowed
-- **Pushing to remote** - Never allowed
-- **Force pushing** - Never allowed
-- **Creating/deleting branches** - Never allowed
-- **Merging branches** - Never allowed
-- **Creating pull requests** - Never allowed
-- **Modifying git history** - Never allowed (no rebase, reset --hard, etc.)
-
-**Rationale:** All git operations that modify repository state must be user-controlled to prevent accidental commits or data loss.
-
 ### Database Operations
 - **Direct database changes via Supabase MCP** - Never allowed (must use migrations)
 - **Running `supabase db push`** - Never allowed (maintainer only)
