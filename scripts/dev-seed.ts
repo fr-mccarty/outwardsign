@@ -7,18 +7,30 @@
  *
  * Usage:
  *   npm run seed:dev
+ *
+ * Note: Environment variables are loaded by dotenv-cli in package.json
  */
 
 import { createClient } from '@supabase/supabase-js'
-import 'dotenv/config'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const devUserEmail = process.env.DEV_USER_EMAIL
+const devUserPassword = process.env.DEV_USER_PASSWORD
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Missing required environment variables:')
   console.error('   - NEXT_PUBLIC_SUPABASE_URL')
   console.error('   - SUPABASE_SERVICE_ROLE_KEY')
+  process.exit(1)
+}
+
+if (!devUserEmail || !devUserPassword) {
+  console.error('❌ Missing dev user credentials in environment:')
+  console.error('   - DEV_USER_EMAIL')
+  console.error('   - DEV_USER_PASSWORD')
+  console.error('')
+  console.error('Please add these to your .env.local file')
   process.exit(1)
 }
 
@@ -36,17 +48,43 @@ async function seedDevData() {
   console.log('=' .repeat(60))
   console.log('')
 
-  // Get the first user (you) from auth
+  // Check if dev user exists, create if not
+  console.log('👤 Checking for dev user...')
+  let userId: string
+  let userEmail: string
+
   const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
 
-  if (usersError || !users || users.length === 0) {
-    console.error('❌ No users found in auth.users')
-    console.error('   Please sign up first at /login')
+  if (usersError) {
+    console.error('❌ Error listing users:', usersError)
     process.exit(1)
   }
 
-  const userId = users[0].id
-  console.log(`👤 Found user: ${users[0].email}`)
+  // Look for existing user with dev email
+  const existingUser = users?.find(u => u.email === devUserEmail)
+
+  if (existingUser) {
+    userId = existingUser.id
+    userEmail = existingUser.email!
+    console.log(`   ✅ Found existing user: ${userEmail}`)
+  } else {
+    // Create new dev user
+    console.log(`   Creating new dev user: ${devUserEmail}`)
+    const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
+      email: devUserEmail,
+      password: devUserPassword,
+      email_confirm: true
+    })
+
+    if (createUserError || !newUser.user) {
+      console.error('❌ Error creating dev user:', createUserError)
+      process.exit(1)
+    }
+
+    userId = newUser.user.id
+    userEmail = newUser.user.email!
+    console.log(`   ✅ Created new user: ${userEmail}`)
+  }
 
   // Check if a parish already exists (from seed files)
   console.log('🏛️  Checking for existing parish...')
@@ -571,12 +609,14 @@ async function seedDevData() {
   console.log('')
   console.log(`Parish ID:   ${parishId}`)
   console.log(`Parish Name: Development Parish`)
-  console.log(`User Email:  ${users[0].email}`)
+  console.log(`User Email:  ${userEmail}`)
   console.log(`Role:        admin`)
   console.log('')
   console.log('You can now:')
   console.log('  - Start the dev server: npm run dev')
   console.log('  - Navigate to: http://localhost:3000/dashboard')
+  console.log(`  - Login with: ${devUserEmail}`)
+  console.log('  - Password: (see DEV_USER_PASSWORD in .env.local)')
   console.log('')
   console.log('=' .repeat(60))
   console.log('')

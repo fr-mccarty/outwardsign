@@ -25,6 +25,9 @@ echo "  1. Reset the database (drop all data)"
 echo "  2. Re-run all migrations"
 echo "  3. Seed with development data"
 echo ""
+echo "NOTE: Seeding requires DEV_USER_EMAIL and DEV_USER_PASSWORD"
+echo "      to be set in your .env.local file"
+echo ""
 
 if [ "$SKIP_CONFIRM" = false ]; then
   read -p "Continue? (y/N) " -n 1 -r
