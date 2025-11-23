@@ -137,7 +137,7 @@ This document contains a checklist of items to verify during code review. Use th
 
 - [ ] **All error.tsx files use ErrorDisplay component** - Verify that all module error boundary files (`error.tsx`) use the shared `ErrorDisplay` component from `@/components/error-display` with consistent props and structure across all modules.
 
-- [ ] **All loading.tsx files use LoadingSkeleton component** - Verify that all module loading state files (`loading.tsx`) use the shared `LoadingSkeleton` component from `@/components/loading-skeleton` with consistent structure across all modules.
+- [ ] **All loading.tsx files use Loading component** - Verify that all module loading state files (`loading.tsx`) use the shared `Loading` component from `@/components/loading` with `variant="route"` for consistent structure across all modules.
 
 - [ ] **All edit pages use PageContainer component** - Verify that all module edit pages (form wrapper files like `[entity]-form-wrapper.tsx`) use the `PageContainer` component from `@/components/page-container` to wrap the form and provide consistent layout, breadcrumbs, and action buttons.
 

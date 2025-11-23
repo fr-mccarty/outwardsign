@@ -1,5 +1,5 @@
-import { LoadingSkeleton } from '@/components/loading-skeleton'
+import { Loading } from '@/components/loading'
 
-export default function Loading() {
-  return <LoadingSkeleton />
+export default function BaptismLoading() {
+  return <Loading variant="route" />
 }

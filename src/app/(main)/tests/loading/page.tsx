@@ -20,6 +20,17 @@ export default function LoadingTestPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Route Variant (Full Page Layout)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-lg p-4 bg-background">
+            <Loading variant="route" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Spinner Variant (Default) - Small</CardTitle>
         </CardHeader>
         <CardContent>

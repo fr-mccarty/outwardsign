@@ -1,5 +1,5 @@
-import { LoadingSkeleton } from '@/components/loading-skeleton'
+import { Loading } from '@/components/loading'
 
 export default function ScheduleLoading() {
-  return <LoadingSkeleton />
+  return <Loading variant="route" />
 }

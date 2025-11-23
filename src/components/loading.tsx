@@ -1,21 +1,24 @@
 /**
  * Loading Component
  *
- * ⚠️ **NOTE:** This component is for client-side loading states only.
- *
  * **Use Cases:**
- * - Client component loading states (dialogs, modals, data fetching)
- * - Inline loading indicators within client components
+ * - Route-level loading states → Use `variant="route"`
+ * - Client component loading states (dialogs, modals) → Use `variant="spinner"`
+ * - Inline loading indicators → Use `variant="spinner"` with `centered={false}`
+ * - Skeleton states → Use `variant="skeleton-cards"`, `"skeleton-list"`, or `"skeleton-table"`
  *
- * **DO NOT use for:**
- * - Route-level loading states → Use `LoadingSkeleton` instead
- * - Next.js `loading.tsx` files → Use `LoadingSkeleton` instead
- *
- * @see LoadingSkeleton - For route-level loading states with page layout
+ * **Variants:**
+ * - `spinner` - Default spinning loader with optional message
+ * - `route` - Full page layout skeleton (search bar + card grid) for route-level loading
+ * - `skeleton-cards` - Card grid skeleton
+ * - `skeleton-list` - List items skeleton
+ * - `skeleton-table` - Table with search bar skeleton
  */
 
 import { Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { PAGE_MAX_WIDTH_CLASS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
 interface LoadingProps {
@@ -23,7 +26,7 @@ interface LoadingProps {
   className?: string
   size?: 'sm' | 'md' | 'lg'
   centered?: boolean
-  variant?: 'spinner' | 'skeleton-cards' | 'skeleton-list' | 'skeleton-table'
+  variant?: 'spinner' | 'route' | 'skeleton-cards' | 'skeleton-list' | 'skeleton-table'
 }
 
 export function Loading({ 
@@ -44,6 +47,41 @@ export function Loading({
     centered && "justify-center py-8",
     className
   )
+
+  if (variant === 'route') {
+    return (
+      <div className={`space-y-6 py-10 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="h-10 w-40" />
+              <Skeleton className="h-10 w-40" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   if (variant === 'skeleton-cards') {
     return (

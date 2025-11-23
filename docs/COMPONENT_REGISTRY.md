@@ -1313,17 +1313,29 @@ To maintain readability on mobile devices while showing full details on desktop,
 
 ---
 
-### LoadingSkeleton
-**Path:** `src/components/loading-skeleton.tsx`
-
-**Purpose:** Skeleton loader for async content loading states.
-
----
-
 ### Loading
 **Path:** `src/components/loading.tsx`
 
-**Purpose:** Loading indicator component.
+**Purpose:** Unified loading component with multiple variants for all loading states across the application.
+
+**Variants:**
+- `spinner` (default) - Spinning loader with optional message (for client-side loading, dialogs, inline indicators)
+- `route` - Full page layout skeleton with search bar + card grid (for Next.js `loading.tsx` files)
+- `skeleton-cards` - Card grid skeleton
+- `skeleton-list` - List items skeleton
+- `skeleton-table` - Table with search bar skeleton
+
+**Usage:**
+```tsx
+// Route-level loading (in loading.tsx files)
+<Loading variant="route" />
+
+// Client-side spinner
+<Loading size="md" message="Loading..." />
+
+// Skeleton states
+<Loading variant="skeleton-cards" />
+```
 
 ---
 
