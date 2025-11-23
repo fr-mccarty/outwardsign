@@ -48,28 +48,109 @@ Before performing ANY testing tasks, you MUST read these documentation files in 
    - Account for the module structure when organizing tests
    - Consider RLS policies and authentication requirements
 
-**Test Execution Commands You Should Know:**
-- `npm test` - Run all tests headless
-- `npm run test:headed` - Run tests with browser visible
-- `npm run test:ui` - Open Playwright UI mode
-- `npx playwright test tests/specific-test.spec.ts` - Run specific test file
-- `npx playwright test --grep "test name"` - Run tests matching pattern
-- `npx playwright test --debug` - Run in debug mode with pause
+**Test Execution Strategy:**
+- **ALWAYS run tests one at a time** - This ensures better isolation, clearer output, and easier debugging
+- When multiple tests need to be run, execute them sequentially in separate commands
+- Only run the full suite when explicitly requested by the user
+
+**🔴 CRITICAL - Authentication Handling:**
+The test system automatically handles authentication setup and cleanup. You MUST use these commands:
+
+**Test Execution Commands (With Automatic Authentication):**
+- `npm test` - Run all tests headless with automatic temp user creation/cleanup (use sparingly, prefer targeted testing)
+- `npm run test:headed` - Run tests with browser visible, automatic temp user creation/cleanup
+- `npm run test:headed tests/specific-test.spec.ts` - Run specific test file (PREFERRED for focused testing)
+- `npm run test:headed -- --grep "test name"` - Run tests matching pattern (useful for isolating single tests)
+- `npm run test:ui` - Open Playwright UI mode (requires one-time setup: `npm run test:ui:setup`)
+
+**🚨 NEVER use these commands directly (they bypass authentication setup):**
+- ❌ `npx playwright test` - Missing authentication setup
+- ❌ `npx playwright test tests/file.spec.ts` - Missing authentication setup
+- ❌ `npx playwright test --debug` - Missing authentication setup
+
+**How Authentication Works:**
+1. `npm test` or `npm run test:headed` runs `scripts/run-tests-with-temp-user.js`
+2. Script generates unique credentials (e.g., `test-staff-1732894756321-45678@outwardsign.test`)
+3. Creates temporary test user and parish via `scripts/setup-test-user.js`
+4. Runs `auth.setup.ts` to authenticate and save session to `playwright/.auth/staff.json`
+5. Your tests automatically use that authenticated session
+6. After tests complete, all test data is automatically cleaned up
+
+**Debugging with Authentication:**
+For debugging, use headed mode with specific test file:
+```bash
+npm run test:headed tests/specific-test.spec.ts
+```
+This ensures proper authentication while allowing you to see what's happening.
 
 **Debugging Workflow:**
 1. **Identify** - Read error messages carefully, check screenshots in test-results/
 2. **Reproduce** - Run failing test in headed mode to see what's happening
-3. **Isolate** - Use `test.only()` to focus on single failing test
+3. **Isolate** - Run ONLY the failing test using `--grep` or `test.only()`
 4. **Investigate** - Add `page.pause()` or use --debug to step through
 5. **Diagnose** - Determine if issue is in test code or application code
 6. **Fix** - Apply appropriate solution following documentation patterns
-7. **Verify** - Re-run test to confirm fix, then run full suite to check for regressions
+7. **Verify** - Re-run the single test to confirm fix, then run other affected tests one at a time
+
+**One-at-a-Time Testing Approach:**
+When the user asks you to run tests, follow this pattern:
+1. List all relevant test files
+2. Run each test file individually using `npm run test:headed tests/[specific-file].spec.ts`
+3. Report results after each test before moving to the next
+4. If a test fails, pause the sequence to debug and fix before continuing
+5. Track which tests passed/failed and provide summary at the end
+
+**Example Workflow:**
+```bash
+# Run first test
+npm run test:headed tests/events.spec.ts
+
+# Wait for results, report to user
+
+# Run second test
+npm run test:headed tests/readings.spec.ts
+
+# Wait for results, report to user
+
+# Continue one at a time...
+```
+
+**Documentation Compliance Verification:**
+After running tests or fixing test failures, ALWAYS verify that:
+1. **Test code follows TESTING_GUIDE.md patterns:**
+   - Tests use pre-authenticated patterns (no manual login code)
+   - Selectors follow the hierarchy: `getByRole` > `getByLabel` > `getByTestId`
+   - Page Object Model is used for modules with multiple tests
+   - Toast message assertions are avoided (test navigation instead)
+   - Tests don't include `test.skip()` or `test.fixme()` without good reason
+
+2. **Application code follows TESTING_ARCHITECTURE.md patterns:**
+   - Form inputs have proper `<Label>` with `htmlFor` attributes
+   - Complex components have appropriate `data-testid` attributes
+   - No nested clickable elements (button in card, link in button)
+   - Components use semantic HTML and proper ARIA roles
+
+3. **Tests are properly registered in TESTING_REGISTRY.md:**
+   - New tests are added to the registry with one-sentence descriptions
+   - Test file locations match the documented structure
+
+4. **Form tests follow FORMS.md patterns:**
+   - Form validation is tested using the Zod schema pattern
+   - FormField components are used correctly
+   - Form submission and redirection are tested properly
+
+When you identify violations of documentation patterns:
+- Point out the specific violation with reference to the documentation section
+- Explain why it matters (testability, maintainability, consistency)
+- Provide the correct pattern from the documentation
+- Fix the violation following documented best practices
 
 **Common Test Failure Patterns & Solutions:**
 - **"Element not found" errors** → Check selector hierarchy, add test IDs if needed, verify element exists
-- **"Navigation timeout" errors** → Check authentication, verify redirects are working, add waitForURL
+- **"Navigation timeout" errors** → Verify redirects are working, add waitForURL, check for loading states
 - **"Assertion failed" errors** → Verify expected vs. actual values, check if data seeding is correct
-- **"Authentication required" errors** → Ensure test uses pre-authenticated pattern from TESTING_GUIDE.md
+- **"Authentication required" errors** → Rare since auth is automatic. If it occurs, verify you used `npm test` or `npm run test:headed` (not `npx playwright test`)
+- **"User not found" or "Parish not found" errors** → Indicates authentication setup failed. Delete `playwright/.auth` and retry
 - **Flaky tests** → Add proper waits, check for race conditions, ensure test isolation
 
 **Quality Checkpoints:**
