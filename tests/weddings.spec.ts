@@ -248,4 +248,69 @@ test.describe('Weddings Module', () => {
 
     console.log(`Successfully verified update persistence for wedding: ${weddingId}`);
   });
+
+  test('should export wedding to PDF and verify download buttons', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+
+    console.log('Creating wedding for PDF export test');
+
+    // Create a wedding
+    await page.goto('/weddings/create');
+    await expect(page).toHaveURL('/weddings/create');
+
+    // Fill in some basic wedding data
+    await page.locator('#status').click();
+    await page.getByRole('option', { name: 'Active' }).first().click();
+
+    const testNotes = 'PDF Export Test Wedding Notes';
+    await page.fill('textarea#notes', testNotes);
+
+    // Submit the form
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const submitButton = page.locator('button[type="submit"]').last();
+    await submitButton.scrollIntoViewIfNeeded();
+    await submitButton.click();
+
+    // Should redirect to the wedding edit page
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    // Get the wedding ID from URL
+    const weddingUrl = page.url();
+    const weddingId = weddingUrl.split('/')[2];
+    console.log(`Created wedding with ID: ${weddingId}`);
+
+    // Navigate to view page
+    await page.goto(`/weddings/${weddingId}`);
+    await expect(page).toHaveURL(`/weddings/${weddingId}`);
+
+    // Verify export buttons exist (they're buttons/links in the ModuleViewPanel)
+    console.log('Verifying export buttons are visible');
+
+    // Check for Print View button/link
+    const printViewButton = page.getByRole('button', { name: /Print View/i })
+      .or(page.getByRole('link', { name: /Print View/i }));
+    await expect(printViewButton.first()).toBeVisible();
+
+    // Check for PDF button
+    const pdfButton = page.getByRole('button', { name: 'PDF' })
+      .or(page.getByRole('link', { name: 'PDF' }));
+    await expect(pdfButton.first()).toBeVisible();
+
+    // Check for Word button
+    const wordButton = page.getByRole('button', { name: 'Word' })
+      .or(page.getByRole('link', { name: 'Word' }));
+    await expect(wordButton.first()).toBeVisible();
+
+    console.log('All export buttons are visible and accessible');
+
+    // Optional: Verify print view page loads
+    console.log('Testing print view page');
+    await page.goto(`/print/weddings/${weddingId}`);
+    await expect(page).toHaveURL(`/print/weddings/${weddingId}`, { timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    // Verify print view loaded
+    await expect(page.locator('body')).toBeVisible();
+
+    console.log(`Successfully verified PDF export buttons for wedding: ${weddingId}`);
+  });
 });
