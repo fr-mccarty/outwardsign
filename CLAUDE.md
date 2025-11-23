@@ -264,12 +264,16 @@ The ideal way that we want to access the records is by using the RLS feature on 
 
 > **🔴 Before using or creating components, you MUST read [COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Full registry of all components including pickers, forms, layout components, and hooks.
 
-**CRITICAL - Do NOT Edit shadcn/ui Components:**
-- **NEVER edit files in `src/components/ui/`** - These are shadcn/ui components and should remain unchanged
-- Only edit components in:
+**CRITICAL - Custom Components Location:**
+- **Custom components** are located anywhere in the `src/components/` directory and its subdirectories
+- **EXCEPT:** `src/components/ui/` contains shadcn/ui components and should NEVER be edited
+- Examples of custom component locations:
   - `src/components/` (root level custom components)
-  - Custom subdirectories within `src/components/` (e.g., `calendar/`, `data-table/`, `wizard/`)
-- If a shadcn component needs customization, create a wrapper component in the root `src/components/` directory
+  - `src/components/calendar/` (custom calendar components)
+  - `src/components/data-table/` (custom data table components)
+  - `src/components/wizard/` (custom wizard components)
+  - Any other subdirectory in `src/components/` except `ui/`
+- If a shadcn component needs customization, create a wrapper component outside of `src/components/ui/`
 - Exception: Initial setup/installation of shadcn components is allowed, but not subsequent modifications
 
 ## 📖 Architecture

@@ -2,8 +2,12 @@
 
 import { EventPicker } from '@/components/event-picker'
 import { PickerField } from '@/components/picker-field'
-import { Calendar } from 'lucide-react'
+import { Calendar, ExternalLink } from 'lucide-react'
 import type { Event } from '@/lib/types'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 interface EventPickerFieldProps {
   label: string
@@ -69,37 +73,76 @@ export function EventPickerField({
   requiredFields,
   defaultCreateFormData,
 }: EventPickerFieldProps) {
+  const router = useRouter()
+  const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
+
+  const handleNavigateToEvent = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowNavigateConfirm(true)
+  }
+
+  const confirmNavigate = () => {
+    if (value?.id) {
+      router.push(`/events/${value.id}`)
+    }
+    setShowNavigateConfirm(false)
+  }
+
   return (
-    <PickerField
-      label={label}
-      value={value}
-      onValueChange={onValueChange}
-      showPicker={showPicker}
-      onShowPickerChange={onShowPickerChange}
-      description={description}
-      placeholder={placeholder}
-      required={required}
-      icon={Calendar}
-      renderValue={(event) => (
-        <span className="leading-tight">{formatEventDateTime(event)}</span>
-      )}
-    >
-      <EventPicker
-        open={showPicker}
-        onOpenChange={onShowPickerChange}
-        onSelect={onValueChange}
-        selectedEventId={value?.id}
-        selectedEvent={value}
-        openToNewEvent={openToNewEvent}
-        defaultEventType={defaultEventType}
-        defaultName={defaultName}
-        disableSearch={disableSearch}
-        visibleFields={visibleFields}
-        requiredFields={requiredFields}
-        defaultCreateFormData={defaultCreateFormData}
-        editMode={value !== null}
-        eventToEdit={value}
+    <>
+      <PickerField
+        label={label}
+        value={value}
+        onValueChange={onValueChange}
+        showPicker={showPicker}
+        onShowPickerChange={onShowPickerChange}
+        description={description}
+        placeholder={placeholder}
+        required={required}
+        icon={Calendar}
+        renderValue={(event) => (
+          <span className="leading-tight">{formatEventDateTime(event)}</span>
+        )}
+        navigationButton={
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleNavigateToEvent}
+            title="View event details"
+            data-testid="event-view-details"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        }
+      >
+        <EventPicker
+          open={showPicker}
+          onOpenChange={onShowPickerChange}
+          onSelect={onValueChange}
+          selectedEventId={value?.id}
+          selectedEvent={value}
+          openToNewEvent={openToNewEvent}
+          defaultEventType={defaultEventType}
+          defaultName={defaultName}
+          disableSearch={disableSearch}
+          visibleFields={visibleFields}
+          requiredFields={requiredFields}
+          defaultCreateFormData={defaultCreateFormData}
+          editMode={value !== null}
+          eventToEdit={value}
+        />
+      </PickerField>
+
+      <ConfirmationDialog
+        open={showNavigateConfirm}
+        onOpenChange={setShowNavigateConfirm}
+        onConfirm={confirmNavigate}
+        title="Navigate to Event Details?"
+        description="You will be taken to the event's detail page. Any unsaved changes on this form will be lost."
+        confirmLabel="Go to Event"
+        cancelLabel="Cancel"
       />
-    </PickerField>
+    </>
   )
 }

@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { X, Pencil } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 interface BasePickerFieldProps<T> {
   label: string
@@ -22,6 +23,7 @@ interface BasePickerFieldProps<T> {
   displayLayout?: 'single-line' | 'multi-line'
   testId?: string // Optional override for data-testid
   onValueClick?: () => void // Optional custom click handler for the value display
+  navigationButton?: ReactNode // Optional navigation button to show between value and clear button
 }
 
 export function PickerField<T>({
@@ -40,8 +42,10 @@ export function PickerField<T>({
   displayLayout = 'single-line',
   testId,
   onValueClick,
+  navigationButton,
 }: BasePickerFieldProps<T>) {
   const labelId = testId || label.toLowerCase().replace(/\s+/g, '-')
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
 
   const handleValueClick = () => {
     if (onValueClick) {
@@ -49,6 +53,15 @@ export function PickerField<T>({
     } else {
       onShowPickerChange(true)
     }
+  }
+
+  const handleRemoveClick = () => {
+    setShowRemoveConfirm(true)
+  }
+
+  const confirmRemove = () => {
+    onValueChange(null)
+    setShowRemoveConfirm(false)
   }
 
   return (
@@ -74,11 +87,12 @@ export function PickerField<T>({
               <span className="text-sm">{renderValue(value)}</span>
               <Pencil className="h-4 w-4 text-muted-foreground ml-2" />
             </button>
+            {navigationButton}
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => onValueChange(null)}
+              onClick={handleRemoveClick}
               data-testid={`${labelId}-clear`}
             >
               <X className="h-4 w-4" />
@@ -97,11 +111,12 @@ export function PickerField<T>({
                 <Pencil className="h-4 w-4 text-muted-foreground ml-2" />
               </div>
             </button>
+            {navigationButton}
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => onValueChange(null)}
+              onClick={handleRemoveClick}
               data-testid={`${labelId}-clear`}
             >
               <X className="h-4 w-4" />
@@ -127,6 +142,17 @@ export function PickerField<T>({
 
       {/* Picker Modal - passed as children */}
       {children}
+
+      {/* Remove confirmation dialog */}
+      <ConfirmationDialog
+        open={showRemoveConfirm}
+        onOpenChange={setShowRemoveConfirm}
+        onConfirm={confirmRemove}
+        title="Remove Selection?"
+        description={`Are you sure you want to remove the selected ${label.toLowerCase()}? This will not delete the ${label.toLowerCase()} itself, only remove it from this field.`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+      />
     </div>
   )
 }

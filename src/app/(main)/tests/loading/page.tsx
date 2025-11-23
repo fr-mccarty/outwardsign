@@ -2,8 +2,16 @@ import { Loading } from "@/components/loading"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
 
-export default function LoadingTestPage() {
+export default async function LoadingTestPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Tests", href: "/tests" },

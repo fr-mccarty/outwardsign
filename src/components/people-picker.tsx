@@ -21,8 +21,8 @@ interface PeoplePickerProps {
   emptyMessage?: string
   selectedPersonId?: string
   className?: string
-  visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note'
-  requiredFields?: string[] // Fields that should be marked as required: 'email', 'phone_number', 'sex', 'note'
+  visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation'
+  requiredFields?: string[] // Fields that should be marked as required: 'email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation'
   openToNewPerson?: boolean
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
@@ -33,7 +33,7 @@ interface PeoplePickerProps {
 }
 
 // Default visible fields - defined outside component to prevent re-creation
-const DEFAULT_VISIBLE_FIELDS = ['email', 'phone_number', 'sex', 'note']
+const DEFAULT_VISIBLE_FIELDS = ['email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation']
 
 // Empty object constant to prevent re-creation on every render
 const EMPTY_FORM_DATA = {}
@@ -160,6 +160,26 @@ export function PeoplePicker({
       },
     ]
 
+    if (isFieldVisible('first_name_pronunciation')) {
+      fields.push({
+        key: 'first_name_pronunciation',
+        label: 'First Name Pronunciation',
+        type: 'text',
+        required: isFieldRequired('first_name_pronunciation'),
+        placeholder: 'JAHN',
+      })
+    }
+
+    if (isFieldVisible('last_name_pronunciation')) {
+      fields.push({
+        key: 'last_name_pronunciation',
+        label: 'Last Name Pronunciation',
+        type: 'text',
+        required: isFieldRequired('last_name_pronunciation'),
+        placeholder: 'DOH',
+      })
+    }
+
     if (isFieldVisible('email')) {
       fields.push({
         key: 'email',
@@ -210,7 +230,9 @@ export function PeoplePicker({
   const handleCreatePerson = async (data: any): Promise<Person> => {
     const newPerson = await createPerson({
       first_name: data.first_name,
+      first_name_pronunciation: data.first_name_pronunciation || undefined,
       last_name: data.last_name,
+      last_name_pronunciation: data.last_name_pronunciation || undefined,
       email: data.email || undefined,
       phone_number: data.phone_number || undefined,
       sex: autoSetSex || data.sex || undefined,
@@ -227,7 +249,9 @@ export function PeoplePicker({
   const handleUpdatePerson = async (id: string, data: any): Promise<Person> => {
     const updatedPerson = await updatePerson(id, {
       first_name: data.first_name,
+      first_name_pronunciation: data.first_name_pronunciation || undefined,
       last_name: data.last_name,
+      last_name_pronunciation: data.last_name_pronunciation || undefined,
       email: data.email || undefined,
       phone_number: data.phone_number || undefined,
       sex: data.sex || undefined,

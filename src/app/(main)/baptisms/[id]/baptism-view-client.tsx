@@ -100,6 +100,15 @@ export function BaptismViewClient({ baptism }: BaptismViewClientProps) {
           )}
         </div>
       )}
+
+      {baptism.note && (
+        <div className={(baptism.status || baptism.baptism_event?.location) ? "pt-2 border-t" : ""}>
+          <span className="font-medium">Notes:</span>
+          <div className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+            {baptism.note}
+          </div>
+        </div>
+      )}
     </>
   )
 
