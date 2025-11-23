@@ -39,18 +39,6 @@ test.describe('Mass Intention Card - Debug Test', () => {
     console.log(`\nCurrent URL: ${url}`);
     console.log(`URL ends with /edit: ${url.endsWith('/edit')}`);
 
-    // Scroll through page and take screenshots
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ path: `test-results/debug-mass-top.png`, fullPage: false });
-
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
-    await page.screenshot({ path: `test-results/debug-mass-middle.png`, fullPage: false });
-
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.screenshot({ path: `test-results/debug-mass-bottom.png`, fullPage: false });
-
-    console.log(`\nScreenshots saved to test-results/`);
-
     // Try to find the Mass Intention heading with various selectors
     const massIntentionHeading1 = await page.locator('text=Mass Intention').count();
     const massIntentionHeading2 = await page.getByRole('heading', { name: 'Mass Intention' }).count();
