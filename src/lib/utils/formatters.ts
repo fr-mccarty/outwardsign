@@ -54,7 +54,7 @@ export function formatPersonFirstName(person?: { first_name: string } | null): s
  * Uses database-generated full_name field
  *
  * @example
- * formatPersonWithPhone(person) // "John Smith (555-1234)"
+ * formatPersonWithPhone(person) // "John Smith — 555-1234"
  * formatPersonWithPhone(person) // "John Smith" (no phone)
  */
 export function formatPersonWithPhone(
@@ -62,6 +62,72 @@ export function formatPersonWithPhone(
 ): string {
   if (!person) return ''
   return person.phone_number ? `${person.full_name} — ${person.phone_number}` : person.full_name
+}
+
+/**
+ * Format person with pronunciation (no phone)
+ * Uses database-generated full_name and full_name_pronunciation fields
+ *
+ * Used for primary participants in liturgical ceremonies (bride, groom, deceased, child, quinceanera)
+ * to help presiders correctly pronounce names during the ceremony.
+ *
+ * @example
+ * formatPersonWithPronunciation(person) // "John Smith (jawn smith)"
+ * formatPersonWithPronunciation(person) // "John Smith" (no pronunciation or pronunciation same as name)
+ */
+export function formatPersonWithPronunciation(
+  person?: {
+    full_name: string
+    full_name_pronunciation?: string | null
+  } | null
+): string {
+  if (!person) return ''
+
+  let result = person.full_name
+
+  // Add pronunciation if different from full_name
+  if (person.full_name_pronunciation && person.full_name_pronunciation !== person.full_name) {
+    result += ` (${person.full_name_pronunciation})`
+  }
+
+  return result
+}
+
+/**
+ * Format person with pronunciation and phone number
+ * Uses database-generated full_name and full_name_pronunciation fields
+ *
+ * Used for primary participants in liturgical ceremonies (bride, groom, deceased, child, quinceanera)
+ * to help presiders correctly pronounce names during the ceremony.
+ *
+ * @example
+ * formatPersonWithPronunciationWithPhone(person) // "John Smith (jawn smith) — 555-1234"
+ * formatPersonWithPronunciationWithPhone(person) // "John Smith (jawn smith)" (pronunciation only, no phone)
+ * formatPersonWithPronunciationWithPhone(person) // "John Smith — 555-1234" (phone only, no pronunciation)
+ * formatPersonWithPronunciationWithPhone(person) // "John Smith" (neither)
+ */
+export function formatPersonWithPronunciationWithPhone(
+  person?: {
+    full_name: string
+    full_name_pronunciation?: string | null
+    phone_number?: string | null
+  } | null
+): string {
+  if (!person) return ''
+
+  let result = person.full_name
+
+  // Add pronunciation if different from full_name
+  if (person.full_name_pronunciation && person.full_name_pronunciation !== person.full_name) {
+    result += ` (${person.full_name_pronunciation})`
+  }
+
+  // Add phone if available
+  if (person.phone_number) {
+    result += ` — ${person.phone_number}`
+  }
+
+  return result
 }
 
 /**

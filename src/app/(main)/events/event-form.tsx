@@ -7,7 +7,7 @@ import { createEvent, updateEvent, type CreateEventData, type EventWithRelations
 import type { Person, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, type EventType, type LiturgicalLanguage } from "@/lib/constants"
+import { LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, type EventType, type LiturgicalLanguage } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
@@ -119,6 +119,19 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           onChange={setDescription}
           placeholder="Enter event description..."
           rows={3}
+        />
+
+        <FormField
+          id="event_type"
+          label="Event Type"
+          inputType="select"
+          value={eventType}
+          onChange={(value) => setEventType(value as EventType)}
+          required
+          options={EVENT_TYPE_VALUES.map((type) => ({
+            value: type,
+            label: EVENT_TYPE_LABELS[type].en
+          }))}
         />
 
         <PersonPickerField

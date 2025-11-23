@@ -14,7 +14,9 @@ import { toast } from 'sonner'
 // Zod validation schema
 const personSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
+  first_name_pronunciation: z.string().optional(),
   last_name: z.string().min(1, 'Last name is required'),
+  last_name_pronunciation: z.string().optional(),
   phone_number: z.string().optional(),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   street: z.string().optional(),
@@ -36,7 +38,9 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
   const isEditing = !!person
   const [isLoading, setIsLoading] = useState(false)
   const [firstName, setFirstName] = useState(person?.first_name || "")
+  const [firstNamePronunciation, setFirstNamePronunciation] = useState(person?.first_name_pronunciation || "")
   const [lastName, setLastName] = useState(person?.last_name || "")
+  const [lastNamePronunciation, setLastNamePronunciation] = useState(person?.last_name_pronunciation || "")
   const [phoneNumber, setPhoneNumber] = useState(person?.phone_number || "")
   const [email, setEmail] = useState(person?.email || "")
   const [street, setStreet] = useState(person?.street || "")
@@ -61,7 +65,9 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       // Validate with Zod
       const personData = personSchema.parse({
         first_name: firstName,
+        first_name_pronunciation: firstNamePronunciation || undefined,
         last_name: lastName,
+        last_name_pronunciation: lastNamePronunciation || undefined,
         phone_number: phoneNumber || undefined,
         email: email || undefined,
         street: street || undefined,
@@ -116,6 +122,24 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             onChange={setLastName}
             required
             placeholder="Enter last name"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            id="first_name_pronunciation"
+            label="First Name Pronunciation (Optional)"
+            value={firstNamePronunciation}
+            onChange={setFirstNamePronunciation}
+            placeholder="How to pronounce first name"
+          />
+
+          <FormField
+            id="last_name_pronunciation"
+            label="Last Name Pronunciation (Optional)"
+            value={lastNamePronunciation}
+            onChange={setLastNamePronunciation}
+            placeholder="How to pronounce last name"
           />
         </div>
 

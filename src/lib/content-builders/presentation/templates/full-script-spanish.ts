@@ -9,7 +9,7 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   type CoverPageSection,
@@ -200,7 +200,7 @@ export function buildFullScriptSpanish(presentation: PresentationWithRelations):
   const presentationRows = []
   if (presentation.child) {
     const childLabel = gendered(presentation.child, 'Niño:', 'Niña:')
-    presentationRows.push({ label: childLabel, value: formatPersonWithPhone(presentation.child) })
+    presentationRows.push({ label: childLabel, value: formatPersonWithPronunciationWithPhone(presentation.child) })
   }
   if (presentation.mother) {
     presentationRows.push({ label: 'Madre:', value: formatPersonWithPhone(presentation.mother) })

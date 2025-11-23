@@ -96,6 +96,7 @@ export function FormField(props: FormFieldProps) {
         return (
           <Select value={props.value} onValueChange={props.onChange} disabled={disabled}>
             <SelectTrigger
+              id={id}
               className={cn(hasError && 'border-destructive focus:ring-destructive')}
               aria-describedby={errorId}
               aria-invalid={hasError}

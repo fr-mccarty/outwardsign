@@ -6,7 +6,7 @@
 
 import { QuinceaneraWithRelations } from '@/lib/actions/quinceaneras'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildReadingSection,
   buildPsalmSection,
@@ -35,7 +35,7 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
     elements.push({
       type: 'info-row',
       label: 'Quinceañera:',
-      value: formatPersonWithPhone(quinceanera.quinceanera),
+      value: formatPersonWithPronunciationWithPhone(quinceanera.quinceanera),
     })
   }
 

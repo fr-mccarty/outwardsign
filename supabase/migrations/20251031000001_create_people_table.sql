@@ -3,7 +3,9 @@ CREATE TABLE people (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   first_name TEXT NOT NULL,
+  first_name_pronunciation TEXT,
   last_name TEXT NOT NULL,
+  last_name_pronunciation TEXT,
   phone_number TEXT,
   email TEXT,
   street TEXT,
@@ -15,6 +17,11 @@ CREATE TABLE people (
 
   -- Auto-generated full name
   full_name TEXT GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED,
+
+  -- Auto-generated full name pronunciation (falls back to full_name if pronunciation fields are null)
+  full_name_pronunciation TEXT GENERATED ALWAYS AS (
+    COALESCE(first_name_pronunciation, first_name) || ' ' || COALESCE(last_name_pronunciation, last_name)
+  ) STORED,
 
   -- Mass scheduling availability
   mass_times_template_item_ids UUID[] DEFAULT '{}',

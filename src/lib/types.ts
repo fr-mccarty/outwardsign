@@ -13,7 +13,7 @@ export interface Petition {
   updated_at: string
   // Deprecated fields for backward compatibility
   generated_content?: string // Alias for text
-  petition_text?: string // Alias for text  
+  petition_text?: string // Alias for text
   context?: string // Deprecated - data now in details
 }
 
@@ -223,7 +223,7 @@ export interface Translation {
 }
 
 // Liturgical category definitions
-export type LiturgicalCategory = 
+export type LiturgicalCategory =
   | 'marriage-1'      // Marriage First Reading
   | 'marriage-2'      // Marriage Second Reading
   | 'marriage-psalm'  // Marriage Psalm
@@ -338,8 +338,11 @@ export interface Person {
   id: string
   parish_id: string
   first_name: string
+  first_name_pronunciation?: string
   last_name: string
+  last_name_pronunciation?: string
   full_name: string  // Auto-generated: first_name || ' ' || last_name
+  full_name_pronunciation: string  // Auto-generated: COALESCE(first_name_pronunciation, first_name) || ' ' || COALESCE(last_name_pronunciation, last_name)
   phone_number?: string
   email?: string
   street?: string

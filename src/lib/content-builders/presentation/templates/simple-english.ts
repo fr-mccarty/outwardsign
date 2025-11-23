@@ -9,7 +9,7 @@
 
 import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import { gendered } from '@/lib/content-builders/shared/builders'
 import {
   getChildName,
@@ -36,7 +36,7 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
     elements.push({
       type: 'info-row',
       label: 'Child:',
-      value: formatPersonWithPhone(presentation.child),
+      value: formatPersonWithPronunciationWithPhone(presentation.child),
     })
   }
 

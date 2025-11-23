@@ -6,7 +6,7 @@
 
 import { FuneralWithRelations } from '@/lib/actions/funerals'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   buildReadingSection,
@@ -35,7 +35,7 @@ export function buildFullScriptSpanish(funeral: FuneralWithRelations): LiturgyDo
   // Funeral Service subsection
   const funeralRows = []
   if (funeral.deceased) {
-    funeralRows.push({ label: 'Difunto(a):', value: formatPersonWithPhone(funeral.deceased) })
+    funeralRows.push({ label: 'Difunto(a):', value: formatPersonWithPronunciationWithPhone(funeral.deceased) })
   }
   if (funeral.family_contact) {
     funeralRows.push({ label: 'Contacto Familiar:', value: formatPersonWithPhone(funeral.family_contact) })

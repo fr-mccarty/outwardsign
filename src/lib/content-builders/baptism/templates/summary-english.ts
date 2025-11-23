@@ -6,7 +6,7 @@
 
 import { BaptismWithRelations } from '@/lib/actions/baptisms'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   type CoverPageSection,
@@ -41,7 +41,7 @@ export function buildSummaryEnglish(baptism: BaptismWithRelations): LiturgyDocum
   // Child subsection (only show section if child exists)
   if (baptism.child) {
     const childRows = []
-    childRows.push({ label: 'Name:', value: formatPersonWithPhone(baptism.child) })
+    childRows.push({ label: 'Name:', value: formatPersonWithPronunciationWithPhone(baptism.child) })
     coverSections.push({ title: 'Child to be Baptized', rows: childRows })
   }
 

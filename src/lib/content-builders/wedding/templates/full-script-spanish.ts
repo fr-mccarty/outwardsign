@@ -6,7 +6,7 @@
 
 import { WeddingWithRelations } from '@/lib/actions/weddings'
 import { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
-import { formatPersonWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
+import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import {
   buildCoverPage,
   buildReadingSection,
@@ -62,10 +62,10 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
   // Wedding subsection
   const weddingRows = []
   if (wedding.bride) {
-    weddingRows.push({ label: 'Novia:', value: formatPersonWithPhone(wedding.bride) })
+    weddingRows.push({ label: 'Novia:', value: formatPersonWithPronunciationWithPhone(wedding.bride) })
   }
   if (wedding.groom) {
-    weddingRows.push({ label: 'Novio:', value: formatPersonWithPhone(wedding.groom) })
+    weddingRows.push({ label: 'Novio:', value: formatPersonWithPronunciationWithPhone(wedding.groom) })
   }
   if (wedding.coordinator) {
     weddingRows.push({ label: 'Coordinador(a):', value: formatPersonWithPhone(wedding.coordinator) })

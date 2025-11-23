@@ -58,20 +58,34 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
   // Generate details section content
   const details = (
     <>
-      {person.email && (
+      {(person.first_name_pronunciation || person.last_name_pronunciation) && (
         <div>
+          <span className="font-medium">Pronunciation:</span>
+          <div className="text-sm text-muted-foreground mt-1">
+            {person.first_name_pronunciation && person.last_name_pronunciation
+              ? `${person.first_name_pronunciation} ${person.last_name_pronunciation}`
+              : person.first_name_pronunciation
+              ? `${person.first_name_pronunciation} (first name)`
+              : `${person.last_name_pronunciation} (last name)`
+            }
+          </div>
+        </div>
+      )}
+
+      {person.email && (
+        <div className={person.first_name_pronunciation || person.last_name_pronunciation ? "pt-2 border-t" : ""}>
           <span className="font-medium">Email:</span> {person.email}
         </div>
       )}
 
       {person.phone_number && (
-        <div className={person.email ? "pt-2 border-t" : ""}>
+        <div className={(person.first_name_pronunciation || person.last_name_pronunciation || person.email) ? "pt-2 border-t" : ""}>
           <span className="font-medium">Phone:</span> {person.phone_number}
         </div>
       )}
 
       {(person.street || person.city || person.state || person.zipcode) && (
-        <div className={(person.email || person.phone_number) ? "pt-2 border-t" : ""}>
+        <div className={(person.first_name_pronunciation || person.last_name_pronunciation || person.email || person.phone_number) ? "pt-2 border-t" : ""}>
           <span className="font-medium">Address:</span>
           <div className="text-sm text-muted-foreground mt-1">
             {person.street && <div>{person.street}</div>}

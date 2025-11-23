@@ -72,7 +72,9 @@ function buildPeopleSearchConditions(search: string): string[] {
 
 export interface CreatePersonData {
   first_name: string
+  first_name_pronunciation?: string
   last_name: string
+  last_name_pronunciation?: string
   phone_number?: string
   email?: string
   street?: string
@@ -86,7 +88,9 @@ export interface CreatePersonData {
 
 export interface UpdatePersonData {
   first_name?: string
+  first_name_pronunciation?: string
   last_name?: string
+  last_name_pronunciation?: string
   phone_number?: string
   email?: string
   street?: string
@@ -250,7 +254,9 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
       {
         parish_id: selectedParishId,
         first_name: data.first_name,
+        first_name_pronunciation: data.first_name_pronunciation || null,
         last_name: data.last_name,
+        last_name_pronunciation: data.last_name_pronunciation || null,
         phone_number: data.phone_number || null,
         email: data.email || null,
         street: data.street || null,
@@ -290,7 +296,9 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
 
   const updateData: Record<string, unknown> = {}
   if (data.first_name !== undefined) updateData.first_name = data.first_name
+  if (data.first_name_pronunciation !== undefined) updateData.first_name_pronunciation = data.first_name_pronunciation || null
   if (data.last_name !== undefined) updateData.last_name = data.last_name
+  if (data.last_name_pronunciation !== undefined) updateData.last_name_pronunciation = data.last_name_pronunciation || null
   if (data.phone_number !== undefined) updateData.phone_number = data.phone_number || null
   if (data.email !== undefined) updateData.email = data.email || null
   if (data.street !== undefined) updateData.street = data.street || null
