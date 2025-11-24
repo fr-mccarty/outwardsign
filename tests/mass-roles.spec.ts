@@ -323,16 +323,16 @@ test.describe('Mass Roles Module', () => {
     });
   });
 
-  test.describe('Mass Role Directory', () => {
-    test('should display mass role directory page', async ({ page }) => {
+  test.describe('Mass Role Members', () => {
+    test('should display mass role members page', async ({ page }) => {
       // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
-      // Navigate to mass role directory
-      await page.goto('/mass-role-directory');
-      await expect(page).toHaveURL('/mass-role-directory');
+      // Navigate to mass role members
+      await page.goto('/mass-role-members');
+      await expect(page).toHaveURL('/mass-role-members');
 
       // Should show the page title
-      await expect(page.getByRole('heading', { name: 'Mass Role Directory' }).first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Mass Role Members' }).first()).toBeVisible();
     });
 
     test('should add person to directory and view their profile', async ({ page }) => {
@@ -354,15 +354,15 @@ test.describe('Mass Roles Module', () => {
       const personId = urlParts[urlParts.length - 2]; // Get ID from second-to-last segment
       console.log(`Created person with ID: ${personId}`);
 
-      // Navigate to mass role directory
-      await page.goto('/mass-role-directory');
+      // Navigate to mass role members
+      await page.goto('/mass-role-members');
 
       // Initially, the directory might be empty or the person might not be in it yet
       // (They need preferences to show up in the directory)
 
       // Navigate to the person's preferences page directly
-      await page.goto(`/mass-role-directory/${personId}/preferences`);
-      await expect(page).toHaveURL(`/mass-role-directory/${personId}/preferences`);
+      await page.goto(`/mass-role-members/${personId}/preferences`);
+      await expect(page).toHaveURL(`/mass-role-members/${personId}/preferences`);
 
       // Should show the preferences page
       await expect(page.getByRole('heading', { name: /Preferences:/i }).first()).toBeVisible();
@@ -394,11 +394,11 @@ test.describe('Mass Roles Module', () => {
       const personId = urlParts[urlParts.length - 2];
 
       // Navigate to their preferences page and add a mass role preference
-      await page.goto(`/mass-role-directory/${personId}/preferences`);
+      await page.goto(`/mass-role-members/${personId}/preferences`);
 
-      // Now navigate to mass role directory
-      await page.goto('/mass-role-directory');
-      await expect(page).toHaveURL('/mass-role-directory');
+      // Now navigate to mass role members
+      await page.goto('/mass-role-members');
+      await expect(page).toHaveURL('/mass-role-members');
     });
   });
 
@@ -421,8 +421,8 @@ test.describe('Mass Roles Module', () => {
       console.log(`Created person with ID: ${personId}`);
 
       // Navigate to preferences page
-      await page.goto(`/mass-role-directory/${personId}/preferences`);
-      await expect(page).toHaveURL(`/mass-role-directory/${personId}/preferences`);
+      await page.goto(`/mass-role-members/${personId}/preferences`);
+      await expect(page).toHaveURL(`/mass-role-members/${personId}/preferences`);
 
       // Should show the preferences page
       await expect(page.getByRole('heading', { name: /Preferences:/i }).first()).toBeVisible();
@@ -450,8 +450,8 @@ test.describe('Mass Roles Module', () => {
       const personId = urlParts[urlParts.length - 2];
 
       // Navigate to preferences page
-      await page.goto(`/mass-role-directory/${personId}/preferences`);
-      await expect(page).toHaveURL(`/mass-role-directory/${personId}/preferences`);
+      await page.goto(`/mass-role-members/${personId}/preferences`);
+      await expect(page).toHaveURL(`/mass-role-members/${personId}/preferences`);
 
       // Check that the page loaded successfully
       await expect(page.getByRole('heading', { name: /Preferences:/i }).first()).toBeVisible();

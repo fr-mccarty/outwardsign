@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Group Members module provides a person-centric view for managing group memberships and roles within a parish. Unlike the mass-role-directory (which focuses on liturgical scheduling), this module simply tracks which people belong to which groups and what roles they have within those groups.
+The Group Members module provides a person-centric view for managing group memberships and roles within a parish. Unlike the mass-role-members (which focuses on liturgical scheduling), this module simply tracks which people belong to which groups and what roles they have within those groups.
 
 **Key Characteristics:**
 - Person-centric (not role-centric)
@@ -14,7 +14,7 @@ The Group Members module provides a person-centric view for managing group membe
 
 ### Module Pattern (Not Standard 9-File Pattern)
 
-This module follows a **person-centric pattern** similar to mass-role-directory:
+This module follows a **person-centric pattern** similar to mass-role-members:
 
 ```
 group-members/

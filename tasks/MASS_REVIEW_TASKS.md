@@ -20,7 +20,7 @@ Comprehensive review of all mass-related functionality including masses, mass in
 - [x] **1.6** Check documentation consistency across all mass-related docs
   - **RESOLVED:** Migrated all modules to 8-file pattern, removed form-actions files, updated documentation
 - [x] **1.7** Verify MODULE_REGISTRY.md has correct entries for all mass modules
-  - **Issue:** Lists `/mass-role-directory` route that doesn't exist
+  - **RESOLVED:** Updated `/mass-role-directory` to `/mass-role-members`
 - [x] **1.8** Verify COMPONENT_REGISTRY.md has correct entries for mass components
   - ✅ MassPicker, MassPickerField documented correctly
 
@@ -95,7 +95,7 @@ All modules have correct 8-file structure:
 
 | Phase | Status | Key Findings |
 |-------|--------|--------------|
-| 1. Documentation | ✅ Done | MASS_SCHEDULING_UI.md outdated; `/mass-role-directory` doesn't exist |
+| 1. Documentation | ✅ Done | MASS_SCHEDULING_UI.md outdated; Terminology updated |
 | 2. Server Actions | ✅ Done | 62+ functions across 8 files |
 | 3. Routes/Frontend | ✅ Done | All 6 modules follow correct patterns |
 | 4. Labeling | ✅ Done | Labels consistent with MODULE_REGISTRY.md |
@@ -111,7 +111,7 @@ All modules have correct 8-file structure:
 
 ## Additional Fixes Applied
 
-1. ✅ Removed `/mass-role-directory` from MODULE_REGISTRY.md (deprecated)
+1. ✅ Updated `/mass-role-directory` to `/mass-role-members` in all files
 2. ✅ Added 8 missing server action docs to MASSES.md (role instances + intention linking)
 3. ✅ Marked MASS_SCHEDULING_UI.md as "Future Vision - Not Implemented"
 4. ✅ Fixed broken link in MASS_SCHEDULING.md (MASS_ROLE_TEMPLATE_SYSTEM.md → MASS_TEMPLATE.md)
