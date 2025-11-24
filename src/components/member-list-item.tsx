@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
+import { ListItemDeleteButton } from "@/components/list-item-delete-button"
 
 interface PersonInfo {
   id: string
@@ -82,15 +82,10 @@ export function MemberListItem({
               {isActive ? 'Deactivate' : 'Activate'}
             </Button>
           )}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+          <ListItemDeleteButton
             onClick={onDelete}
-            data-testid={`${testIdPrefix}-delete-${person.id}`}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+            testId={`${testIdPrefix}-delete-${person.id}`}
+          />
         </div>
       </div>
     </div>

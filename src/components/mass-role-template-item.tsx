@@ -3,21 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { GripVertical, Trash2 } from "lucide-react"
+import { GripVertical } from "lucide-react"
 import { updateTemplateItem, type MassRoleTemplateItemWithRole } from '@/lib/actions/mass-role-template-items'
 import { toast } from 'sonner'
 import { useDebounce } from '@/hooks/use-debounce'
+import { CardListItem } from '@/components/list-card'
 
 interface MassRoleTemplateItemProps {
   item: MassRoleTemplateItemWithRole
@@ -28,8 +19,6 @@ interface MassRoleTemplateItemProps {
 export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTemplateItemProps) {
   const [count, setCount] = useState(item.count)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // Debounce count updates
   const debouncedCount = useDebounce(count, 500)
@@ -71,32 +60,17 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
     }
   }
 
-  const handleDelete = async () => {
-    setIsDeleting(true)
-    try {
-      await onDelete(item.id)
-      setDeleteDialogOpen(false)
-    } catch (error) {
-      console.error('Failed to delete item:', error)
-      toast.error('Failed to delete mass role')
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
   return (
-    <>
-      <Card ref={setNodeRef} style={style} className="p-3">
-        <div className="flex items-center gap-3">
-          {/* Drag Handle */}
-          <button
-            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
-            {...attributes}
-            {...listeners}
-            aria-label="Drag to reorder"
-          >
-            <GripVertical className="h-5 w-5" />
-          </button>
+    <div ref={setNodeRef} style={style}>
+      <CardListItem
+        id={item.id}
+        onDelete={() => onDelete(item.id)}
+        deleteConfirmTitle="Remove Mass Role from Template"
+        deleteConfirmDescription={`Are you sure you want to remove ${item.mass_role.name} from this template? This action cannot be undone.`}
+        enableDragAndDrop={true}
+      >
+        <div className="flex items-center gap-3 flex-1">
+          {/* Drag Handle - rendered by CardListItem */}
 
           {/* Mass Role Name */}
           <div className="flex-1 min-w-0">
@@ -129,48 +103,8 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
               disabled={isUpdating}
             />
           </div>
-
-          {/* Delete Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDeleteDialogOpen(true)}
-            className="text-muted-foreground hover:text-destructive"
-            aria-label="Delete mass role"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
         </div>
-      </Card>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Remove Mass Role from Template</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to remove <strong>{item.mass_role.name}</strong> from this template?
-              This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Removing...' : 'Remove Mass Role'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      </CardListItem>
+    </div>
   )
 }

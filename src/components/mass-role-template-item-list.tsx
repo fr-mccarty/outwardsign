@@ -1,24 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { arrayMove } from '@dnd-kit/sortable'
+import { Card, CardContent } from "@/components/ui/card"
+import { ListCard } from '@/components/list-card'
 import {
   getTemplateItems,
   reorderTemplateItems,
@@ -40,14 +25,6 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
   const [isLoading, setIsLoading] = useState(true)
   const [showMassRolePicker, setShowMassRolePicker] = useState(false)
 
-  // Set up drag and drop sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
   // Load items on mount
   useEffect(() => {
     loadItems()
@@ -66,23 +43,8 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
     }
   }
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-
-    if (!over || active.id === over.id) {
-      return
-    }
-
-    // Find the indices
-    const oldIndex = items.findIndex((item) => item.id === active.id)
-    const newIndex = items.findIndex((item) => item.id === over.id)
-
-    if (oldIndex === -1 || newIndex === -1) {
-      return
-    }
-
+  const handleReorder = async (reorderedItems: MassRoleTemplateItemWithRole[]) => {
     // Optimistically update UI
-    const reorderedItems = arrayMove(items, oldIndex, newIndex)
     setItems(reorderedItems)
 
     try {
@@ -145,60 +107,33 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Template Mass Roles</CardTitle>
-        <CardDescription>
-          Define which mass roles are needed and how many of each. Drag to reorder.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {items.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="mb-4">No mass roles added yet.</p>
-            <p className="text-sm">Click "Add Mass Role" to get started.</p>
-          </div>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={items.map(item => item.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2">
-                {items.map((item) => (
-                  <MassRoleTemplateItem
-                    key={item.id}
-                    item={item}
-                    onDelete={handleDelete}
-                    onUpdate={loadItems}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+    <>
+      <ListCard
+        title="Template Mass Roles"
+        description="Define which mass roles are needed and how many of each. Drag to reorder."
+        items={items}
+        getItemId={(item) => item.id}
+        onAdd={() => setShowMassRolePicker(true)}
+        addButtonLabel="Add Role"
+        emptyMessage="No mass roles added yet."
+        enableDragAndDrop={true}
+        onDragEnd={handleReorder}
+        renderItem={(item) => (
+          <MassRoleTemplateItem
+            item={item}
+            onDelete={handleDelete}
+            onUpdate={loadItems}
+          />
         )}
+      />
 
-        <Button
-          onClick={() => setShowMassRolePicker(true)}
-          variant="outline"
-          className="w-full"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Mass Role
-        </Button>
-
-        <MassRolePicker
-          open={showMassRolePicker}
-          onOpenChange={setShowMassRolePicker}
-          onSelect={handleMassRoleSelected}
-          placeholder="Search for a mass role..."
-          emptyMessage="No mass roles found."
-        />
-      </CardContent>
-    </Card>
+      <MassRolePicker
+        open={showMassRolePicker}
+        onOpenChange={setShowMassRolePicker}
+        onSelect={handleMassRoleSelected}
+        placeholder="Search for a mass role..."
+        emptyMessage="No mass roles found."
+      />
+    </>
   )
 }

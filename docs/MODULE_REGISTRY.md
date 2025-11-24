@@ -40,12 +40,13 @@ The main sidebar follows a specific ordering and grouping structure. All navigat
 6. **Masses** (Collapsible Section) - Permission check: `canAccess('masses')`
    - Our Masses (`/masses`)
    - New Mass (`/masses/create`)
-   - Mass Roles (`/mass-roles`)
 7. **Mass Scheduling** (Collapsible Section) - Permission check: `canAccess('masses')`
    - Schedule Masses (`/masses/schedule`)
-   - Mass Times Templates (`/mass-times`)
+   - Mass Times Templates (`/mass-times-templates`)
    - Mass Types (`/mass-types`)
-   - Role Templates (`/mass-role-templates`)
+   - Mass Role Templates (`/mass-role-templates`)
+   - Mass Roles (`/mass-roles`)
+   - Role Members (`/mass-role-members`)
 8. **Weddings** (Collapsible Section) - Permission check: `canAccess('weddings')`
    - Our Weddings (`/weddings`)
    - New Wedding (`/weddings/create`)
@@ -77,6 +78,7 @@ The main sidebar follows a specific ordering and grouping structure. All navigat
 Separate from the main "Application" group, settings appear in their own group at the bottom:
 
 - **Parish Settings** (`/settings/parish`) - Permission check: `canManageParishSettings(userParish)` - Admin only
+  - Event Types (`/settings/event-types`) - User-configurable event type management
 - **User Settings** (`/settings`) - Always visible
 
 ### Ordering Principles
@@ -125,11 +127,21 @@ Separate from the main "Application" group, settings appear in their own group a
 
 1. **People** - Parish directory and person management
 2. **Events** - Event scheduling and calendar
-3. **Locations** - Parish locations and venues
-4. **Groups** - Ministry groups and teams (uses dialog-based architecture)
-5. **Readings** - Scripture readings for liturgies
-6. **Petitions** - Prayer intentions and petitions
-7. **Mass Times** - Recurring mass schedule management
+3. **Event Types** - User-configurable event types for the Events module (settings-based, dialog architecture)
+4. **Locations** - Parish locations and venues
+5. **Groups** - Ministry groups and teams (uses dialog-based architecture)
+6. **Readings** - Scripture readings for liturgies
+7. **Petitions** - Prayer intentions and petitions
+
+### Mass Scheduling Supporting Modules
+
+These modules support the Mass Scheduling functionality and appear under the "Mass Scheduling" collapsible section in the sidebar:
+
+1. **Mass Times Templates** - Recurring mass schedule templates (weekly schedules)
+2. **Mass Types** - Mass type categorization (Sunday, Weekday, Holy Day, etc.)
+3. **Mass Role Templates** - Reusable role templates for different liturgical contexts
+4. **Mass Roles** - Parish-specific mass role definitions (Lector, EMHC, Altar Server, etc.)
+5. **Mass Role Members** - Member directory for people serving in mass roles with preferences and availability
 
 ---
 
@@ -212,10 +224,21 @@ All module labels are provided in **English** and **Spanish** for internationali
 |--------|---------|---------|
 | **People** | People | Personas |
 | **Events** | Events | Eventos |
+| **Event Types** | Event Types | Tipos de Eventos |
 | **Locations** | Locations | Ubicaciones |
 | **Groups** | Groups | Grupos |
 | **Readings** | Readings | Lecturas |
 | **Petitions** | Petitions | Peticiones |
+
+### Mass Scheduling Supporting Module Labels
+
+| Module | English | Spanish |
+|--------|---------|---------|
+| **Mass Times Templates** | Mass Times Templates | Plantillas de Horarios de Misa |
+| **Mass Types** | Mass Types | Tipos de Misa |
+| **Mass Role Templates** | Mass Role Templates | Plantillas de Roles de Misa |
+| **Mass Roles** | Mass Roles | Roles de Misa |
+| **Mass Role Members** | Mass Role Members | Miembros de Roles de Misa |
 
 ### Planned Module Labels
 
@@ -237,11 +260,18 @@ Each module uses a consistent icon throughout the application. All icons are fro
 | **Presentations** | `HandHeartIcon` | 🤲 |
 | **Quinceañeras** | `BookHeart` | 📖 |
 | **Masses** | `CirclePlus` | ⊕ |
-| **Mass Intentions** | `Heart` | ❤️ |
-| **People** | `Users` | 👥 |
-| **Events** | `Calendar` | 📅 |
-| **Locations** | `MapPin` | 📍 |
+| **Mass Intentions** | `List` | 📋 |
+| **People** | `User` | 👤 |
+| **Events** | `CalendarDays` | 📅 |
+| **Event Types** | _(settings-based)_ | - |
+| **Locations** | `Building` | 🏢 |
 | **Groups** | `Users` | 👥 |
+| **Readings** | `BookOpen` | 📖 |
+| **Mass Times Templates** | `Clock` | ⏰ |
+| **Mass Types** | `List` | 📋 |
+| **Mass Role Templates** | `LayoutTemplate` | 📄 |
+| **Mass Roles** | `UserCog` | ⚙️ |
+| **Mass Role Members** | `UsersIcon` | 👥 |
 
 **Source of Truth:** The main sidebar (`src/components/main-sidebar.tsx`) defines the official icon for each module.
 
@@ -267,10 +297,21 @@ Each module uses a consistent icon throughout the application. All icons are fro
 |--------|-------|---------|
 | **People** | `/people` | `/people`, `/people/create`, `/people/[id]`, `/people/[id]/edit` |
 | **Events** | `/events` | `/events`, `/events/create`, `/events/[id]`, `/events/[id]/edit` |
+| **Event Types** | `/settings/event-types` | `/settings/event-types` (settings-based, dialog architecture) |
 | **Locations** | `/locations` | `/locations`, `/locations/create`, `/locations/[id]`, `/locations/[id]/edit` |
 | **Groups** | `/groups` | `/groups`, `/groups/[id]` (no separate edit page, uses dialogs) |
 | **Readings** | `/readings` | `/readings`, `/readings/create`, `/readings/[id]/edit` |
 | **Petitions** | `/petitions` | `/petitions` |
+
+### Mass Scheduling Supporting Module Routes
+
+| Module | Route | Pattern |
+|--------|-------|---------|
+| **Mass Times Templates** | `/mass-times-templates` | `/mass-times-templates`, `/mass-times-templates/create`, `/mass-times-templates/[id]/edit` |
+| **Mass Types** | `/mass-types` | `/mass-types` (dialog-based architecture) |
+| **Mass Role Templates** | `/mass-role-templates` | `/mass-role-templates`, `/mass-role-templates/create`, `/mass-role-templates/[id]/edit` |
+| **Mass Roles** | `/mass-roles` | `/mass-roles` (dialog-based architecture) |
+| **Mass Role Members** | `/mass-role-members` | `/mass-role-members` (read-only directory view) |
 
 ### Special Routes
 
@@ -301,6 +342,8 @@ All primary modules follow the **standard 9-file architecture** with these route
 
 ## Module Database Tables
 
+### Primary Module Database Tables
+
 | Module | Database Table | Singular Form |
 |--------|---------------|---------------|
 | **Weddings** | `weddings` | `wedding` |
@@ -310,12 +353,28 @@ All primary modules follow the **standard 9-file architecture** with these route
 | **Quinceañeras** | `quinceaneras` | `quinceanera` |
 | **Masses** | `masses` | `mass` |
 | **Mass Intentions** | `mass_intentions` | `mass_intention` |
+
+### Supporting Module Database Tables
+
+| Module | Database Table | Singular Form |
+|--------|---------------|---------------|
 | **People** | `people` | `person` |
 | **Events** | `events` | `event` |
+| **Event Types** | `event_types` | `event_type` |
 | **Locations** | `locations` | `location` |
 | **Groups** | `groups` | `group` |
 | **Readings** | `individual_readings` | `individual_reading` |
 | **Petitions** | `petitions` | `petition` |
+
+### Mass Scheduling Supporting Module Database Tables
+
+| Module | Database Table | Singular Form |
+|--------|---------------|---------------|
+| **Mass Times Templates** | `mass_times_templates` | `mass_times_template` |
+| **Mass Types** | `mass_types` | `mass_type` |
+| **Mass Role Templates** | `mass_role_templates` | `mass_role_template` |
+| **Mass Roles** | `mass_roles` | `mass_role` |
+| **Mass Role Members** | `mass_role_members` | `mass_role_member` |
 
 **Naming Convention:**
 - Database tables: plural form (e.g., `weddings`, `baptisms`)

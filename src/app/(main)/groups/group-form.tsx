@@ -7,18 +7,17 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Plus, Users } from "lucide-react"
+import { Users } from "lucide-react"
 import { createGroup, updateGroup, type GroupWithMembers, type GroupMember, addGroupMember, removeGroupMember } from "@/lib/actions/groups"
 import { getGroupRoles, type GroupRole } from "@/lib/actions/group-roles"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { PersonPickerField } from "@/components/person-picker-field"
-import { MemberListItem } from "@/components/member-list-item"
+import { ListCard, CardListItem } from "@/components/list-card"
+import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -61,8 +60,6 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null)
   const [selectedGroupRoleId, setSelectedGroupRoleId] = useState<string>('none')
   const [isAddingMember, setIsAddingMember] = useState(false)
-  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Local state for members (optimistic updates)
   const [members, setMembers] = useState<GroupMember[]>(group?.members || [])
@@ -175,30 +172,24 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
     setAddMemberDialogOpen(false)
   }
 
-  const handleDeleteMember = async () => {
-    if (!deletingMemberId || !group) return
+  const handleDeleteMember = async (memberId: string) => {
+    if (!group) return
 
     try {
-      const memberToDelete = members.find(m => m.id === deletingMemberId)
+      const memberToDelete = members.find(m => m.id === memberId)
       if (!memberToDelete) return
 
       await removeGroupMember(group.id, memberToDelete.person_id)
 
       // Optimistically remove from local state
-      setMembers(prev => prev.filter(m => m.id !== deletingMemberId))
+      setMembers(prev => prev.filter(m => m.id !== memberId))
 
       toast.success('Member removed successfully')
-      setDeletingMemberId(null)
     } catch (error) {
       toast.error('Failed to remove member')
       console.error(error)
       throw error
     }
-  }
-
-  const openDeleteDialog = (memberId: string) => {
-    setDeletingMemberId(memberId)
-    setDeleteDialogOpen(true)
   }
 
   return (
@@ -240,51 +231,39 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
 
         {/* Member Management (Edit Mode Only) */}
         {isEditing && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Manage Members
-              </CardTitle>
-              <Button
-                type="button"
-                onClick={() => setAddMemberDialogOpen(true)}
-                size="sm"
+          <ListCard
+            title="Manage Members"
+            description={`${members.length} ${members.length === 1 ? 'member' : 'members'} in this group`}
+            items={members}
+            getItemId={(member) => member.id}
+            onAdd={() => setAddMemberDialogOpen(true)}
+            addButtonLabel="Add Member"
+            emptyMessage="No members in this group yet. Use the button above to add people to this group."
+            renderItem={(member) => (
+              <CardListItem
+                id={member.id}
+                onDelete={() => handleDeleteMember(member.id)}
+                deleteConfirmTitle="Remove Member"
+                deleteConfirmDescription={`Are you sure you want to remove ${member.person?.full_name} from this group?`}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Member
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {members.length > 0 ? (
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-muted-foreground">
-                    Members ({members.length})
-                  </h4>
-                  <div className="space-y-3">
-                    {members.map((member) => (
-                      <MemberListItem
-                        key={member.id}
-                        person={member.person!}
-                        badge={member.group_role ? {
-                          label: member.group_role.name,
-                          variant: 'secondary'
-                        } : undefined}
-                        onDelete={() => openDeleteDialog(member.id)}
-                        testIdPrefix="group-member"
-                      />
-                    ))}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium">{member.person?.full_name}</span>
+                      {member.group_role && (
+                        <Badge variant="secondary">{member.group_role.name}</Badge>
+                      )}
+                    </div>
+                    {member.person?.email && (
+                      <p className="text-sm text-muted-foreground truncate">
+                        {member.person.email}
+                      </p>
+                    )}
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No members in this group yet</p>
-                  <p className="text-sm mt-2">Use the button above to add people to this group</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardListItem>
+            )}
+          />
         )}
 
         {/* Form Actions */}
@@ -360,19 +339,6 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
         </Dialog>
       )}
 
-      {/* Delete Member Confirmation Dialog */}
-      {isEditing && (
-        <DeleteConfirmationDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          title="Remove Member"
-          itemName={
-            members.find(m => m.id === deletingMemberId)?.person?.full_name
-          }
-          description="Are you sure you want to remove this person from this group?"
-          onConfirm={handleDeleteMember}
-        />
-      )}
     </>
   )
 }
