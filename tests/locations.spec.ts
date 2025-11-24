@@ -40,9 +40,9 @@ test.describe('Locations Module', () => {
     // Should redirect to the location detail page (navigation proves success)
     await page.waitForURL(/\/locations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Get the location ID from URL for later use
+    // Get the location ID from URL for later use (URL format: /locations/{id}/edit)
     const locationUrl = page.url();
-    const locationId = locationUrl.split('/').pop();
+    const locationId = locationUrl.split('/').slice(-2, -1)[0];
 
     console.log(`Created location with ID: ${locationId}`);
 

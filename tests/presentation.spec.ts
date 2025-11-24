@@ -39,9 +39,9 @@ test.describe('Presentations Module', () => {
     // Should redirect to the presentation detail page (navigation proves success)
     await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Get the presentation ID from URL for later use
+    // Get the presentation ID from URL for later use (URL format: /presentations/{id}/edit)
     const presentationUrl = page.url();
-    const presentationId = presentationUrl.split('/').pop();
+    const presentationId = presentationUrl.split('/').slice(-2, -1)[0];
 
     console.log(`Created presentation with ID: ${presentationId}`);
 
@@ -179,7 +179,7 @@ test.describe('Presentations Module', () => {
     await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/presentations\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const presentationId = page.url().split('/').pop();
+    const presentationId = page.url().split('/').slice(-2, -1)[0];
 
     // Verify initial data is displayed on view page
     await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();

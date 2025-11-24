@@ -199,21 +199,40 @@ test.describe('Location Picker Component', () => {
 
     // Open the LocationPicker
     await page.getByTestId('location-trigger').first().click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    const locationDialog = page.getByTestId('location-picker-dialog');
+    await locationDialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Try to find the location by clicking on its card
-    // Locations might be displayed with a test ID pattern
-    const locationCard = page.locator('[role="dialog"]').getByText(locationName).first();
+    // Wait for the loading spinner to appear (locations start loading)
+    const loadingSpinner = locationDialog.locator('.animate-spin').first();
+    try {
+      await loadingSpinner.waitFor({ state: 'visible', timeout: 2000 });
+      // Then wait for it to disappear (loading complete)
+      await loadingSpinner.waitFor({ state: 'detached', timeout: 5000 });
+    } catch {
+      // If spinner never appears, locations may already be loaded or cached
+      console.log('Loading spinner not detected, proceeding...');
+    }
+    await page.waitForTimeout(500); // Let dialog fully render after loading
+
+    // Try to find the location by its data-testid
+    const locationCard = locationDialog.locator(`[data-testid="location-picker-dialog-${locationId}"]`).first();
 
     if (await locationCard.count() > 0) {
-      console.log(`Found location card for ${locationName}, clicking...`);
-      await locationCard.click();
+      console.log(`✓ Found location card for ${locationId}, clicking...`);
+      await locationCard.click({ force: true });
     } else {
-      // Fallback: Click the first available location
-      console.log('Specific location not found, clicking first available location...');
-      const firstLocationButton = page.locator('[role="dialog"]').getByRole('button').filter({ hasText: /\w+/ }).first();
-      if (await firstLocationButton.count() > 0) {
-        await firstLocationButton.click();
+      // Fallback: search for location by name, then click
+      console.log(`✗ Location card not found by ID, trying to search by name...`);
+      const locationButton = locationDialog.getByRole('button', { name: new RegExp(locationName, 'i') }).first();
+      if (await locationButton.count() > 0) {
+        console.log(`✓ Found location by name, clicking...`);
+        await locationButton.click({ force: true });
+      } else {
+        console.log(`✗ Location not found, clicking first available location...`);
+        const firstLocationButton = locationDialog.getByRole('button').filter({ hasText: /\w+/ }).first();
+        if (await firstLocationButton.count() > 0) {
+          await firstLocationButton.click({ force: true });
+        }
       }
     }
 

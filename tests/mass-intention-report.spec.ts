@@ -81,29 +81,50 @@ test.describe('Mass Intention Report', () => {
 
     // Wait for Mass Picker dialog
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(500); // Let dialog fully load
 
-    // Try to find and select the specific mass by its card using the new data-testid
-    const massCard = page.locator(`[data-testid="mass-card-${massId}"]`).first();
+    // Wait for the loading spinner to appear (masses start loading)
+    const loadingSpinner = page.locator('[role="dialog"]').locator('.animate-spin').first();
+    try {
+      await loadingSpinner.waitFor({ state: 'visible', timeout: 2000 });
+      // Then wait for it to disappear (loading complete)
+      await loadingSpinner.waitFor({ state: 'detached', timeout: 5000 });
+    } catch {
+      // If spinner never appears, masses may already be loaded or cached
+      console.log('Loading spinner not detected, proceeding...');
+    }
+    await page.waitForTimeout(500); // Let dialog fully render after loading
+
+    // Try to find and select the specific mass by its card using the data-testid
+    const massCard = page.locator(`[data-testid="mass-picker-dialog-${massId}"]`).first();
     const massCardExists = await massCard.count() > 0;
 
     if (massCardExists) {
-      console.log(`Found mass card for ${massId}, clicking...`);
+      console.log(`✓ Found mass card for ${massId}, clicking...`);
       // Force click to bypass pointer interception from child elements
       await massCard.click({ force: true });
       await page.waitForTimeout(1000);
     } else {
-      console.log(`Mass card not found for ${massId}, trying first available mass...`);
+      // Debug: Log how many mass cards are visible and which page we're on
+      const allMassCards = page.locator('[role="dialog"]').locator('[data-testid^="mass-picker-dialog-"]');
+      const massCardCount = await allMassCards.count();
+      const pageInfo = page.locator('[role="dialog"]').getByText(/Page \d+ of \d+/);
+      const pageInfoText = await pageInfo.count() > 0 ? await pageInfo.textContent() : 'No pagination info';
+      console.log(`✗ Mass card ${massId} not found. Visible mass cards: ${massCardCount}. ${pageInfoText}`);
+      console.log(`⚠️  This will cause duplicate key constraint error if multiple intentions select the same fallback mass.`);
+
       // Fallback: Click the first mass card
-      const firstMassCard = page.locator('[role="dialog"]').locator('[data-testid^="mass-card-"]').first();
+      const firstMassCard = allMassCards.first();
       const firstCardExists = await firstMassCard.count() > 0;
 
       if (firstCardExists) {
+        // Log which mass we're falling back to
+        const firstCardId = await firstMassCard.getAttribute('data-testid');
+        console.log(`↪️  Falling back to first available mass: ${firstCardId}`);
         // Force click to bypass pointer interception from child elements
         await firstMassCard.click({ force: true });
         await page.waitForTimeout(1000);
       } else {
-        console.log('No mass cards found, closing dialog without selecting');
+        console.log('✗ No mass cards found at all, closing dialog without selecting');
         await page.keyboard.press('Escape');
         await page.waitForTimeout(500);
       }
@@ -161,14 +182,15 @@ test.describe('Mass Intention Report', () => {
 
     console.log('Creating masses and mass intentions for date range test...');
 
-    // Create masses with specific dates
-    const mass1Id = await createMassWithDate(page, '2025-01-15'); // Jan 15
-    const mass2Id = await createMassWithDate(page, '2025-01-28'); // Jan 28
-    const mass3Id = await createMassWithDate(page, '2025-02-05'); // Feb 5
-    const mass4Id = await createMassWithDate(page, '2025-02-14'); // Feb 14
-    const mass5Id = await createMassWithDate(page, '2025-02-28'); // Feb 28
-    const mass6Id = await createMassWithDate(page, '2025-04-10'); // Apr 10 (outside range)
+    // Create masses in REVERSE chronological order to ensure they appear first in picker
+    // (picker orders by created_at DESC, so most recently created = first in list)
     const mass7Id = await createMassWithDate(page, '2025-04-25'); // Apr 25 (outside range)
+    const mass6Id = await createMassWithDate(page, '2025-04-10'); // Apr 10 (outside range)
+    const mass5Id = await createMassWithDate(page, '2025-02-28'); // Feb 28
+    const mass4Id = await createMassWithDate(page, '2025-02-14'); // Feb 14
+    const mass3Id = await createMassWithDate(page, '2025-02-05'); // Feb 5
+    const mass2Id = await createMassWithDate(page, '2025-01-28'); // Jan 28
+    const mass1Id = await createMassWithDate(page, '2025-01-15'); // Jan 15
 
     // Create mass intentions for each mass
     const intention1Text = 'In memory of John Smith - Jan 15';
@@ -338,9 +360,9 @@ test.describe('Mass Intention Report', () => {
 
     console.log('Creating mass intentions for "show all" test...');
 
-    // Create a couple of mass intentions with different dates
-    const mass1Id = await createMassWithDate(page, '2025-05-15');
+    // Create masses in reverse order to ensure they appear first in picker
     const mass2Id = await createMassWithDate(page, '2025-06-20');
+    const mass1Id = await createMassWithDate(page, '2025-05-15');
 
     const intention1Text = 'For all souls - May';
     const intention2Text = 'For peace - June';
@@ -413,10 +435,10 @@ test.describe('Mass Intention Report', () => {
 
     console.log('Creating mass intentions with stipends for totals test...');
 
-    // Create masses
-    await createMassWithDate(page, '2025-07-10');
-    await createMassWithDate(page, '2025-07-15');
+    // Create masses in reverse order to ensure they appear first in picker
     await createMassWithDate(page, '2025-07-20');
+    await createMassWithDate(page, '2025-07-15');
+    await createMassWithDate(page, '2025-07-10');
 
     // Create mass intentions with specific stipends
     // Intention 1: $10.00

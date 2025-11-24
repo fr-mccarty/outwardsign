@@ -149,20 +149,27 @@ import { MODULE_STATUS_LABELS } from '@/lib/constants'
 <p>{MODULE_STATUS_LABELS[entity.status]?.en || entity.status}</p>
 ```
 
-### 🔴 CRITICAL - Event Type Display Rule
+### 🔴 CRITICAL - Event Type vs Related Event Type
 
-**NEVER display event type values directly from the database.** Always use `EVENT_TYPE_LABELS` to show localized, user-friendly labels instead of raw database values like `WEDDING_RECEPTION`.
+The `events` table has two fields for categorization:
+- **`event_type_id`** - References user-configured event types from `event_types` table
+- **`related_event_type`** - System-defined constants linking events to modules
 
 ```tsx
-// ✅ CORRECT
-import { EVENT_TYPE_LABELS } from '@/lib/constants'
-<p>{EVENT_TYPE_LABELS[event.event_type].en}</p>
+// ✅ CORRECT - Display user-configured event type
+const eventType = await getEventType(event.event_type_id)
+<p>Type: {eventType?.name}</p>  // Shows "Staff Meeting", "Parish Festival", etc.
 
-// ❌ WRONG - never display raw event_type
-<p>{event.event_type}</p>
+// ✅ CORRECT - Check system-defined related event type
+if (event.related_event_type === 'WEDDING') {
+  // This event is linked to a wedding module record
+}
+
+// ❌ WRONG - Never display raw related_event_type
+<p>{event.related_event_type}</p>  // Shows "WEDDING" instead of user-friendly label
 ```
 
-**See [CONSTANTS_PATTERN.md](./CONSTANTS_PATTERN.md) for full usage examples, standard constant types, and adding new constants.**
+**See [DEFINITIONS.md](./DEFINITIONS.md#event-types) for complete explanation of event types vs related event types.**
 
 ---
 

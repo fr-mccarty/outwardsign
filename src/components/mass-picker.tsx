@@ -392,7 +392,7 @@ export function MassPicker({
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
         onSearch={handleSearchChange}
-        testId="mass-card"
+        testId="mass-picker-dialog"
       />
 
       {/* Nested Event Picker Modal */}

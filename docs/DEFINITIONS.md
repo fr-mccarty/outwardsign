@@ -150,28 +150,72 @@ The priest or deacon's reflection on the Scripture readings, applying them to th
 
 ## Event Types
 
-### Liturgical Events
-Events that are part of the liturgical calendar:
-- **MASS** - Celebration of the Eucharist
-- **WEDDING_CEREMONY** - Marriage liturgy
-- **FUNERAL_MASS** - Funeral with Mass
-- **FUNERAL_SERVICE** - Funeral without Mass (Liturgy of the Word)
-- **BAPTISM** - Sacrament of Baptism
-- **QUINCEANERA_MASS** - Quinceañera with Mass
-- **PRESENTATION** - Presentation ceremony
+Outward Sign has two types of event categorization: **user-configurable event types** (`event_types` table) and **system-defined related event types** (constants for module linkage).
 
-### Social Events
-Non-liturgical celebrations connected to sacraments/sacramentals:
-- **WEDDING_RECEPTION** - Meal and celebration after wedding
-- **REHEARSAL** - Practice before wedding or funeral
-- **GATHERING** - Social gathering (e.g., after funeral, "repast")
+### User-Configurable Event Types (`event_types` table)
 
-### Planning Events
-Administrative meetings and preparation:
-- **MEETING** - Planning or preparation meeting
-- **PREPARATION** - Preparation session (e.g., marriage prep, baptism class)
+Parish staff can create and manage their own custom event types in **Settings > Event Types**. These are stored in the `event_types` table and provide flexible categorization for parish events.
 
-**See:** `EVENT_TYPE_VALUES` and `EVENT_TYPE_LABELS` in `src/lib/constants.ts`
+**Database table:** `event_types`
+**Fields:**
+- `id` - UUID primary key
+- `parish_id` - References the parish
+- `name` - User-entered name (e.g., "Parish Festival", "Staff Meeting", "Youth Group")
+- `description` - Optional description
+- `is_active` - Whether the event type is currently in use
+- `display_order` - For custom sorting in UI
+
+**Examples of custom event types:**
+- "Parish Festival"
+- "Staff Meeting"
+- "Youth Group Gathering"
+- "Bible Study"
+- "Choir Practice"
+
+**Usage in events table:** The `event_type_id` field on the `events` table references a user-created event type.
+
+### System-Defined Related Event Types (Constants)
+
+When an event is linked to a sacrament or sacramental module record (wedding, funeral, baptism, etc.), the `related_event_type` field stores a **system-defined constant** that indicates which module the event belongs to.
+
+**Database field:** `related_event_type` (TEXT, nullable) on `events` table
+
+**System constants for liturgical events:**
+- **WEDDING** - Wedding ceremony linked to wedding module
+- **FUNERAL** - Funeral service linked to funeral module
+- **BAPTISM** - Baptism ceremony linked to baptism module
+- **QUINCEANERA** - Quinceañera linked to quinceanera module
+- **PRESENTATION** - Presentation linked to presentation module
+- **MASS** - Mass linked to mass module
+- **MASS_INTENTION** - Mass with specific intention linked to mass intention module
+
+**System constants for related events:**
+- **WEDDING_RECEPTION** - Reception linked to wedding module
+- **WEDDING_REHEARSAL** - Rehearsal linked to wedding module
+- **FUNERAL_VISITATION** - Visitation/viewing linked to funeral module
+- **FUNERAL_COMMITTAL** - Graveside service linked to funeral module
+
+**Purpose:** The `related_event_type` field allows the system to:
+1. Link calendar events back to their source module records
+2. Filter events by module (e.g., show all wedding-related events)
+3. Display module-specific icons and styling
+4. Navigate from calendar to the related module record
+
+### Key Differences
+
+| Feature | User Event Types (`event_type_id`) | System Related Types (`related_event_type`) |
+|---------|-----------------------------------|-------------------------------------------|
+| **Who creates** | Parish staff via Settings | System/application code |
+| **Storage** | Database table (`event_types`) | Constants in code |
+| **Purpose** | Flexible categorization | Module linkage |
+| **Required** | Optional | Set when event linked to module |
+| **Editable** | Yes (by parish staff) | No (system-defined) |
+| **Example** | "Staff Meeting", "Parish Festival" | "WEDDING", "FUNERAL", "BAPTISM" |
+
+**See:**
+- `src/app/(main)/settings/event-types/` - User event type management UI
+- `src/lib/actions/event-types.ts` - Server actions for event types
+- Constants for related event types (implementation in progress)
 
 ---
 
@@ -313,15 +357,31 @@ interface MassWithRelations extends Mass {
 <p>Presider: {mass.presider.full_name}</p>
 ```
 
-### Event Type Labels
+### Working with Event Types
 
 ```typescript
-// ❌ WRONG - Never display raw event type
-<p>{event.event_type}</p>  // Shows "WEDDING_CEREMONY"
+// Event interface
+interface Event {
+  id: string
+  parish_id: string
+  name: string
+  event_type_id?: string | null        // User-configured event type
+  related_event_type?: string | null   // System-defined module link
+  // ... other fields
+}
 
-// ✅ CORRECT - Use labels
-import { EVENT_TYPE_LABELS } from '@/lib/constants'
-<p>{EVENT_TYPE_LABELS[event.event_type].en}</p>  // Shows "Wedding Ceremony"
+// ✅ CORRECT - Display user-configured event type
+// Fetch the EventType record and display its name
+const eventType = await getEventType(event.event_type_id)
+<p>Type: {eventType?.name}</p>  // Shows "Staff Meeting", "Parish Festival", etc.
+
+// ✅ CORRECT - Check system-defined related event type
+if (event.related_event_type === 'WEDDING') {
+  // This event is linked to a wedding module record
+}
+
+// ✅ CORRECT - Filter events by related type
+const weddingEvents = events.filter(e => e.related_event_type === 'WEDDING')
 ```
 
 ---
