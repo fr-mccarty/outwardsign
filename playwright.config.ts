@@ -16,8 +16,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Run tests in parallel - use 1 worker on CI for stability, 50% of CPU cores locally for speed */
+  workers: process.env.CI ? 1 : '50%',
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list'], // Terminal output
@@ -68,12 +68,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    command: 'NEXT_DISABLE_OVERLAY=1 npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    env: {
-      // Disable Next.js dev overlay during tests (it blocks clicks)
-      __NEXT_DISABLE_OVERLAY: '1',
-    },
   },
 });

@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS, QUINCEANERA_DEFAULT_TEMPLATE, type ModuleStatus, type QuinceaneraTemplate } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, RELATED_EVENT_TYPE_LABELS, QUINCEANERA_TEMPLATE_VALUES, QUINCEANERA_TEMPLATE_LABELS, QUINCEANERA_DEFAULT_TEMPLATE, type ModuleStatus, type QuinceaneraTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -189,7 +189,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     } else if (girlLastName) {
       return `${girlLastName} Quinceañera`
     }
-    return EVENT_TYPE_LABELS.QUINCEANERA.en
+    return RELATED_EVENT_TYPE_LABELS.QUINCEANERA.en
   }, [quinceaneraGirl.value])
 
   const suggestedReceptionName = useMemo(() => {
@@ -287,7 +287,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             placeholder="Add Quinceañera Ceremony"
             openToNewEvent={!quinceaneraEvent.value}
             defaultEventType="QUINCEANERA"
-            defaultName={EVENT_TYPE_LABELS.QUINCEANERA.en}
+            defaultName={RELATED_EVENT_TYPE_LABELS.QUINCEANERA.en}
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedQuinceaneraName }}
           />

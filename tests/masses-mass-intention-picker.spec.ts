@@ -54,11 +54,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     // The client-side router.push() can cause hydration issues, so reload to force server render
     await page.reload();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
-
-    // Scroll to bottom of page to bring Mass Intention card into viewport
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1000);
 
     // Verify Mass Intention card is visible on edit page using test ID
     // The card should be visible now that we're editing an existing mass
@@ -72,23 +67,17 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const linkButton = page.getByTestId('link-mass-intention-button');
     await expect(linkButton).toBeVisible();
     await expect(linkButton).toBeEnabled();
-    // Scroll button into view and wait for React hydration
+    // Scroll button into view
     await linkButton.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(2000); // Wait for React hydration
 
     // Click and verify the picker opens
     console.log('Clicking link mass intention button...');
     await linkButton.click();
-    await page.waitForTimeout(1000);
 
     // Wait for Mass Intention Picker dialog to open using test ID
     console.log('Waiting for mass intention picker dialog...');
     await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('mass-intention-picker').getByRole('heading', { name: /Select Mass Intention/i })).toBeVisible();
-
-    // STEP 6: Wait for mass intentions to load
-    // The picker should show a list of available mass intentions
-    await page.waitForTimeout(1000); // Give time for API to load
 
     // STEP 7: Select the mass intention we created earlier
     // Mass intentions are displayed with the intention text and requested by info
@@ -96,9 +85,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const intentionOption = page.getByTestId('mass-intention-picker').getByText(intentionText).first();
     await expect(intentionOption).toBeVisible();
     await intentionOption.click();
-
-    // Wait for the dialog to close and the linking to complete
-    await page.waitForTimeout(2000);
 
     // Picker dialog should be closed
     await expect(page.getByTestId('mass-intention-picker')).toHaveCount(0);
@@ -155,18 +141,12 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     // Reload the page to ensure proper server render
     await page.reload();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
-
-    // Scroll to Mass Intention card
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1000);
 
     // STEP 2: Open the mass intention picker using test ID
     const linkButton = page.getByTestId('link-mass-intention-button');
     await expect(linkButton).toBeVisible({ timeout: 10000 });
     // Scroll button into view and click
     await linkButton.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
     await linkButton.click();
 
     // Wait for picker dialog using test ID
@@ -176,9 +156,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const addNewButton = page.getByTestId('mass-intention-picker').getByRole('button', { name: /Add New Mass Intention/i });
     await expect(addNewButton).toBeVisible();
     await addNewButton.click();
-
-    // Wait for the create form to appear
-    await page.waitForTimeout(500);
 
     // STEP 4: Fill in the mass intention creation form
     const newIntentionText = `For the intentions of the parish family - Created via picker ${Date.now()}`;
@@ -199,8 +176,7 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const statusSelect = page.getByTestId('mass-intention-picker').locator('#status');
     if (await statusSelect.isVisible()) {
       await statusSelect.click();
-      // Wait for options to appear and select "Requested"
-      await page.waitForTimeout(300);
+      // Select "Requested"
       const requestedOption = page.getByRole('option', { name: 'Requested' });
       if (await requestedOption.isVisible()) {
         await requestedOption.click();
@@ -211,9 +187,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const saveButton = page.getByTestId('mass-intention-picker').getByRole('button', { name: /Save Mass Intention/i });
     await expect(saveButton).toBeVisible();
     await saveButton.click();
-
-    // Wait for the picker to close and the mass intention to be linked
-    await page.waitForTimeout(2000);
 
     // Picker dialog should be closed
     await expect(page.getByTestId('mass-intention-picker')).toHaveCount(0);
@@ -269,25 +242,17 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     // Reload the page to ensure proper server render
     await page.reload();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
-
-    // Scroll to Mass Intention card
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1000);
 
     // STEP 3: Link the mass intention using test ID
     const linkBtn = page.getByTestId('link-mass-intention-button');
     await expect(linkBtn).toBeVisible({ timeout: 10000 });
     // Scroll button into view and click
     await linkBtn.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
     await linkBtn.click();
     await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(1000);
 
     const intentionOption = page.getByTestId('mass-intention-picker').getByText(intentionText).first();
     await intentionOption.click();
-    await page.waitForTimeout(2000);
 
     // Verify it's linked
     await expect(page.getByText(intentionText)).toBeVisible();
@@ -297,9 +262,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     const unlinkButton = page.getByTestId('unlink-mass-intention-button');
     await expect(unlinkButton).toBeVisible();
     await unlinkButton.click();
-
-    // Wait for unlinking to complete
-    await page.waitForTimeout(1000);
 
     // STEP 5: Verify empty state is shown again
     await expect(page.getByText('No mass intention linked yet')).toBeVisible();
@@ -341,11 +303,6 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     // Reload the page to ensure proper server render
     await page.reload();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
-
-    // Scroll to Mass Intention card
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1000);
 
     // STEP 3: Verify card IS visible on edit page (using test ID)
     await expect(page.getByTestId('mass-intention-card')).toBeVisible({ timeout: 10000 });
@@ -385,25 +342,17 @@ test.describe('Masses Module - Mass Intention Picker', () => {
     // Reload the page to ensure proper server render
     await page.reload();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(1000);
-
-    // Scroll to Mass Intention card
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1000);
 
     // STEP 3: Link the mass intention using test ID
     const linkBtn2 = page.getByTestId('link-mass-intention-button');
     await expect(linkBtn2).toBeVisible({ timeout: 10000 });
     // Scroll button into view and click
     await linkBtn2.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
     await linkBtn2.click();
     await expect(page.getByTestId('mass-intention-picker')).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(1000);
 
     const intentionOption = page.getByTestId('mass-intention-picker').getByText(intentionText).first();
     await intentionOption.click();
-    await page.waitForTimeout(2000);
 
     // STEP 4: Verify the status badge is displayed
     // The badge should show "Requested" status (the default)

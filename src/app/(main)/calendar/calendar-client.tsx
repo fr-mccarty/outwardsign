@@ -29,11 +29,15 @@ interface LiturgicalCalendarItem extends CalendarItem {
 
 // Transform Event to CalendarItem
 function eventToCalendarItem(event: EventWithModuleLink): LiturgicalCalendarItem {
+  // Determine display name for event type
+  // Priority: related_event_type (system-defined) > event_type entity (user-defined)
+  const eventTypeName = event.related_event_type || event.event_type?.name || 'Event'
+
   return {
     id: event.id,
     date: event.start_date || '',
     title: event.name,
-    event_type: event.event_type,
+    event_type: eventTypeName, // Store the display name for calendar rendering
     isLiturgical: false,
     moduleType: event.moduleLink?.moduleType || null,
   }

@@ -73,9 +73,6 @@ test.describe('Mass Scheduling Module', () => {
     await expect(addMassTimeButton).toBeVisible();
     await addMassTimeButton.click();
 
-    // Wait for the mass time form to appear
-    await page.waitForTimeout(500);
-
     // Fill in the schedule entry (first entry is automatically Sunday at 9:00 AM English by default)
     // We need to change the time to 10:00 AM
     const timeInput = page.locator('input[type="time"]').first();
@@ -138,9 +135,6 @@ test.describe('Mass Scheduling Module', () => {
 
     // Should be on the masses page with December 2025 filter
     await expect(page).toHaveURL(/\/masses/);
-
-    // Wait for the list to load
-    await page.waitForTimeout(2000);
 
     // Verify that masses appear in the list
     // December 2025 has 5 Sundays (7th, 14th, 21st, 28th, plus there might be one on Dec 1st if it's Sunday)
@@ -262,9 +256,6 @@ test.describe('Mass Scheduling Module', () => {
     const addMassTimeButton = page.getByRole('button', { name: /Add Mass Time/i });
     await addMassTimeButton.click();
 
-    // Wait for the form to appear
-    await page.waitForTimeout(500);
-
     // Next button should now be enabled (at least one mass time exists)
     await expect(nextButton).toBeEnabled();
 
@@ -284,7 +275,6 @@ test.describe('Mass Scheduling Module', () => {
 
     // Complete Step 2
     await page.getByRole('button', { name: /Add Mass Time/i }).click();
-    await page.waitForTimeout(500);
     await page.getByRole('button', { name: /Next/i }).click();
 
     // Verify Step 3 is active
@@ -314,7 +304,6 @@ test.describe('Mass Scheduling Module', () => {
 
     // Add Sunday mass
     await page.getByRole('button', { name: /Add Mass Time/i }).click();
-    await page.waitForTimeout(500);
 
     // Verify mass count calculation appears
     // Dec 1-7, 2025 contains 1 Sunday (Dec 7)
@@ -322,7 +311,6 @@ test.describe('Mass Scheduling Module', () => {
 
     // Add another Sunday mass (different time)
     await page.getByRole('button', { name: /Add Mass Time/i }).click();
-    await page.waitForTimeout(500);
 
     // Now should show 2 masses (2 Sunday masses on Dec 7)
     await expect(page.getByText(/2.*Masses.*will be created/i)).toBeVisible();

@@ -4,13 +4,14 @@ import { useState, useEffect } from "react"
 import { FormField } from "@/components/ui/form-field"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createEvent, updateEvent, type CreateEventData, type EventWithRelations } from "@/lib/actions/events"
-import type { Person, Location } from "@/lib/types"
+import type { Person, Location, EventType } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, EVENT_TYPE_VALUES, EVENT_TYPE_LABELS, type EventType, type LiturgicalLanguage } from "@/lib/constants"
+import { LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS, RELATED_EVENT_TYPE_LABELS, type LiturgicalLanguage } from "@/lib/constants"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
+import { EventTypePickerField } from "@/components/event-type-picker-field"
 import { usePickerState } from "@/hooks/use-picker-state"
 
 interface EventFormProps {
@@ -28,9 +29,9 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   useEffect(() => {
     onLoadingChange?.(isLoading)
   }, [isLoading, onLoadingChange])
+
   const [name, setName] = useState(event?.name || "")
   const [description, setDescription] = useState(event?.description || "")
-  const [eventType, setEventType] = useState<EventType>(event?.event_type || "EVENT")
   const [startDate, setStartDate] = useState(event?.start_date || "")
   const [startTime, setStartTime] = useState(event?.start_time || "")
   const [endDate, setEndDate] = useState(event?.end_date || "")
@@ -38,13 +39,12 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const [language, setLanguage] = useState<LiturgicalLanguage>(event?.language || "en")
   const [notes, setNotes] = useState(event?.note || "")
 
-  // Responsible party picker state
+  // Picker states
   const responsibleParty = usePickerState<Person>()
-
-  // Location picker state - initialize with existing location if editing
   const location = usePickerState<Location>()
+  const eventType = usePickerState<EventType>()
 
-  // Initialize location picker with existing location data
+  // Initialize picker values with existing data
   useEffect(() => {
     if (event?.location && !location.value) {
       location.setValue(event.location)
@@ -52,12 +52,19 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.location])
 
+  useEffect(() => {
+    if (event?.event_type && !eventType.value) {
+      eventType.setValue(event.event_type)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.event_type])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Validate required fields (Radix Select doesn't support HTML5 validation)
-    if (!eventType) {
+    // Validate required fields
+    if (!eventType.value && !event?.related_event_type) {
       toast.error('Please select an event type')
       setIsLoading(false)
       return
@@ -68,7 +75,8 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         name,
         description: description || undefined,
         responsible_party_id: responsibleParty.value?.id || undefined,
-        event_type: eventType,
+        event_type_id: eventType.value?.id || undefined,
+        // related_event_type is read-only and set by the system when creating events from modules
         start_date: startDate || undefined,
         start_time: startTime || undefined,
         end_date: endDate || undefined,
@@ -121,18 +129,27 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           rows={3}
         />
 
-        <FormField
-          id="event_type"
-          label="Event Type"
-          inputType="select"
-          value={eventType}
-          onChange={(value) => setEventType(value as EventType)}
-          required
-          options={EVENT_TYPE_VALUES.map((type) => ({
-            value: type,
-            label: EVENT_TYPE_LABELS[type].en
-          }))}
-        />
+        {/* Show related event type as read-only if it exists (module-linked event) */}
+        {event?.related_event_type ? (
+          <FormField
+            id="related_event_type"
+            label="Event Type"
+            value={RELATED_EVENT_TYPE_LABELS[event.related_event_type]?.en || event.related_event_type}
+            onChange={() => {}}
+            disabled
+            description="This event is linked to a module record and cannot be changed"
+          />
+        ) : (
+          <EventTypePickerField
+            label="Event Type"
+            value={eventType.value}
+            onValueChange={eventType.setValue}
+            showPicker={eventType.showPicker}
+            onShowPickerChange={eventType.setShowPicker}
+            required
+            description="Select or create an event type"
+          />
+        )}
 
         <PersonPickerField
           label="Responsible Party"

@@ -77,7 +77,6 @@ test.describe.serial('Parish Isolation', () => {
     await page.click('button[type="submit"]');
 
     // Handle potential redirect to select-parish page
-    await page.waitForTimeout(2000);
     if (page.url().includes('/select-parish')) {
       console.log(`   Selecting parish for ${email}...`);
       // Click the first "Select Parish" button
@@ -292,7 +291,6 @@ test.describe.serial('Parish Isolation', () => {
 
     // Try to navigate to Parish A's wedding directly
     await pageB.goto(`/weddings/${weddingIdA}`);
-    await pageB.waitForTimeout(2000);
 
     // The page may stay at the wedding URL, but the wedding data should NOT be visible
     // because RLS prevents Parish B from reading Parish A's data
@@ -306,7 +304,6 @@ test.describe.serial('Parish Isolation', () => {
 
     // Verify Parish B's wedding list shows no weddings from Parish A
     await pageB.goto('/weddings');
-    await pageB.waitForTimeout(1000);
 
     // Should either show "no weddings found" or just not show Parish A's wedding
     const parishAWeddingInList = await pageB.locator(`[data-testid="wedding-${weddingIdA}"]`).isVisible().catch(() => false);
@@ -338,7 +335,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto(`/funerals/${funeralIdA}`);
-    await pageB.waitForTimeout(2000);
 
     // Check that Parish A's funeral data is NOT visible to Parish B
     const noteVisible = await pageB.getByText('Funeral for Parish A').isVisible().catch(() => false);
@@ -346,7 +342,6 @@ test.describe.serial('Parish Isolation', () => {
 
     // Verify Parish B's funeral list doesn't show Parish A's funeral
     await pageB.goto('/funerals');
-    await pageB.waitForTimeout(1000);
     const parishAFuneralInList = await pageB.locator(`[data-testid="funeral-${funeralIdA}"]`).isVisible().catch(() => false);
     expect(parishAFuneralInList).toBe(false);
 
@@ -376,7 +371,6 @@ test.describe.serial('Parish Isolation', () => {
 
     // Verify Parish B cannot see Parish A's baptism in the list
     await pageB.goto('/baptisms');
-    await pageB.waitForTimeout(1000);
     const parishABaptismInList = await pageB.locator(`[data-testid="baptism-${baptismIdA}"]`).isVisible().catch(() => false);
     expect(parishABaptismInList).toBe(false);
 
@@ -406,7 +400,6 @@ test.describe.serial('Parish Isolation', () => {
 
     // Verify Parish B cannot see Parish A's presentation in the list
     await pageB.goto('/presentations');
-    await pageB.waitForTimeout(1000);
     const parishAPresentationInList = await pageB.locator(`[data-testid="presentation-${presentationIdA}"]`).isVisible().catch(() => false);
     expect(parishAPresentationInList).toBe(false);
 
@@ -436,7 +429,6 @@ test.describe.serial('Parish Isolation', () => {
 
     // Verify Parish B cannot see Parish A's quinceanera in the list
     await pageB.goto('/quinceaneras');
-    await pageB.waitForTimeout(1000);
     const parishAQuinceaneraInList = await pageB.locator(`[data-testid="quinceanera-${quinceaneraIdA}"]`).isVisible().catch(() => false);
     expect(parishAQuinceaneraInList).toBe(false);
 
@@ -460,7 +452,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto('/masses');
-    await pageB.waitForTimeout(1000);
     const parishAMassInList = await pageB.locator(`[data-testid="mass-${massIdA}"]`).isVisible().catch(() => false);
     expect(parishAMassInList).toBe(false);
 
@@ -484,7 +475,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto('/mass-intentions');
-    await pageB.waitForTimeout(1000);
     const parishAMassIntentionInList = await pageB.locator(`[data-testid="mass-intention-${massIntentionIdA}"]`).isVisible().catch(() => false);
     expect(parishAMassIntentionInList).toBe(false);
 
@@ -508,7 +498,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto('/people');
-    await pageB.waitForTimeout(1000);
     const parishAPersonInList = await pageB.locator(`[data-testid="person-${personIdA}"]`).isVisible().catch(() => false);
     expect(parishAPersonInList).toBe(false);
 
@@ -532,7 +521,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto('/events');
-    await pageB.waitForTimeout(1000);
     const parishAEventInList = await pageB.locator(`[data-testid="event-${eventIdA}"]`).isVisible().catch(() => false);
     expect(parishAEventInList).toBe(false);
 
@@ -556,7 +544,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto('/locations');
-    await pageB.waitForTimeout(1000);
     const parishALocationInList = await pageB.locator(`[data-testid="location-${locationIdA}"]`).isVisible().catch(() => false);
     expect(parishALocationInList).toBe(false);
 
@@ -585,7 +572,6 @@ test.describe.serial('Parish Isolation', () => {
     await loginAsParish(pageB, parishB.email, parishB.password);
 
     await pageB.goto('/readings');
-    await pageB.waitForTimeout(1000);
     const john316Visible = await pageB.getByText('John 3:16').isVisible().catch(() => false);
     expect(john316Visible).toBe(false);
 

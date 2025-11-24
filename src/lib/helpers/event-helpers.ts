@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { MODULE_EVENT_TYPE_MAP } from '@/lib/constants'
+import { MODULE_RELATED_EVENT_TYPE_MAP } from '@/lib/constants'
 import type { Event } from '@/lib/types'
 
 export interface ModuleReference {
@@ -19,10 +19,15 @@ export interface ModuleReference {
  * Returns module information if this event is linked to a module record
  */
 export async function getEventModuleReference(event: Event): Promise<ModuleReference | null> {
-  // Check if this event type is linked to a module
-  const moduleMapping = MODULE_EVENT_TYPE_MAP[event.event_type]
+  // Check if this event has a related_event_type (system-defined module link)
+  if (!event.related_event_type) {
+    return null // This event is not linked to any module
+  }
+
+  // Check if this related event type is linked to a module
+  const moduleMapping = MODULE_RELATED_EVENT_TYPE_MAP[event.related_event_type]
   if (!moduleMapping) {
-    return null // This event type doesn't link to any module
+    return null // This related event type doesn't link to any module
   }
 
   const supabase = await createClient()

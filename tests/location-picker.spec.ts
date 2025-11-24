@@ -24,7 +24,6 @@ test.describe('Location Picker Component', () => {
 
     // Wait for Location Picker dialog to appear
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000); // Wait for dialog to fully load
 
     // Verify the dialog is open
     const dialog = page.locator('[role="dialog"]').first();
@@ -32,7 +31,6 @@ test.describe('Location Picker Component', () => {
 
     // Close the picker by pressing Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
 
     // Verify dialog is closed
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -61,13 +59,11 @@ test.describe('Location Picker Component', () => {
     // Open the LocationPicker
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Click "Add New Location" button
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Location/i }).first();
     await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
 
     // Fill in minimal location data (just name, which is required)
     const locationName = `Minimal Test Location ${Date.now()}`;
@@ -79,9 +75,6 @@ test.describe('Location Picker Component', () => {
     const saveButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Location/i });
     await expect(saveButton).toBeVisible();
     await saveButton.click();
-
-    // Wait for the picker to close and the location to be selected
-    await page.waitForTimeout(2000);
 
     // Picker dialog should be closed
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -114,13 +107,11 @@ test.describe('Location Picker Component', () => {
     // Open the LocationPicker
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Click "Add New Location"
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Location/i }).first();
     await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
 
     // Fill in complete location data
     const locationData = {
@@ -163,7 +154,6 @@ test.describe('Location Picker Component', () => {
 
     // Submit
     await dialog.getByRole('button', { name: /Save Location/i }).click();
-    await page.waitForTimeout(2000);
 
     // Verify picker closed and location selected
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -210,7 +200,6 @@ test.describe('Location Picker Component', () => {
     // Open the LocationPicker
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Try to find the location by clicking on its card
     // Locations might be displayed with a test ID pattern
@@ -227,8 +216,6 @@ test.describe('Location Picker Component', () => {
         await firstLocationButton.click();
       }
     }
-
-    await page.waitForTimeout(1000);
 
     // Picker should close after selection
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -281,7 +268,6 @@ test.describe('Location Picker Component', () => {
     // Open the LocationPicker
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Verify the dialog is showing locations
     const dialog = page.locator('[role="dialog"]').first();
@@ -291,7 +277,6 @@ test.describe('Location Picker Component', () => {
     const searchInput = dialog.getByPlaceholder(/Search/i);
     if (await searchInput.isVisible()) {
       await searchInput.fill('Cathedral');
-      await page.waitForTimeout(1000);
 
       // Should find the Cathedral location
       await expect(dialog.getByText(location1Name)).toBeVisible();
@@ -299,7 +284,6 @@ test.describe('Location Picker Component', () => {
 
     // Close the picker
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
 
     console.log('Successfully verified location picker search and display');
   });
@@ -329,14 +313,12 @@ test.describe('Location Picker Component', () => {
     // Open picker and select the location
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Click the first location
     const firstLocation = page.locator('[role="dialog"]').getByRole('button').filter({ hasText: /\w+/ }).first();
     if (await firstLocation.count() > 0) {
       await firstLocation.click();
     }
-    await page.waitForTimeout(1000);
 
     // Verify location is selected
     await expect(page.getByTestId('location-selected-value')).toBeVisible();
@@ -346,7 +328,6 @@ test.describe('Location Picker Component', () => {
 
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await page.waitForTimeout(500);
 
       // Verify location is no longer selected
       await expect(page.getByTestId('location-selected-value')).not.toBeVisible();
@@ -388,14 +369,12 @@ test.describe('Location Picker Component', () => {
     // Now open location picker and select the location
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Select the first location
     const firstLocation = page.locator('[role="dialog"]').getByRole('button').filter({ hasText: /\w+/ }).first();
     if (await firstLocation.count() > 0) {
       await firstLocation.click();
     }
-    await page.waitForTimeout(1000);
 
     // Verify we're still on the create page
     await expect(page).toHaveURL('/events/create');
@@ -427,18 +406,15 @@ test.describe('Location Picker Component', () => {
     // Open the LocationPicker
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
 
     // Click "Add New Location"
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Location/i }).first();
     await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
 
     // Try to submit without filling the required name field
     const saveButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Location/i });
     await saveButton.click();
-    await page.waitForTimeout(500);
 
     // Dialog should stay open (validation failed)
     await expect(page.locator('[role="dialog"]').first()).toBeVisible();
@@ -446,7 +422,6 @@ test.describe('Location Picker Component', () => {
     // Now fill the name and try again
     await page.locator('[role="dialog"]').getByLabel('Name').fill('Valid Location Name');
     await saveButton.click();
-    await page.waitForTimeout(2000);
 
     // Dialog should close and location should be selected
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);

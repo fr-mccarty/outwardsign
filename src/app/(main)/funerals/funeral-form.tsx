@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, FUNERAL_TEMPLATE_VALUES, FUNERAL_TEMPLATE_LABELS, FUNERAL_DEFAULT_TEMPLATE, type ModuleStatus, type FuneralTemplate } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, RELATED_EVENT_TYPE_LABELS, FUNERAL_TEMPLATE_VALUES, FUNERAL_TEMPLATE_LABELS, FUNERAL_DEFAULT_TEMPLATE, type ModuleStatus, type FuneralTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -189,7 +189,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
     } else if (deceasedFirstName) {
       return `${deceasedFirstName} Funeral`
     }
-    return EVENT_TYPE_LABELS.FUNERAL.en
+    return RELATED_EVENT_TYPE_LABELS.FUNERAL.en
   }, [deceased.value])
 
   const suggestedFuneralMealName = useMemo(() => {
@@ -286,7 +286,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             placeholder="Add Funeral Service"
             openToNewEvent={!funeralEvent.value}
             defaultEventType="FUNERAL"
-            defaultName={EVENT_TYPE_LABELS.FUNERAL.en}
+            defaultName={RELATED_EVENT_TYPE_LABELS.FUNERAL.en}
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedFuneralName }}
           />

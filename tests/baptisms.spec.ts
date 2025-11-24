@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Baptisms Module', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test('should create, view, edit, and verify print view for a baptism', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
@@ -58,10 +61,7 @@ test.describe('Baptisms Module', () => {
     await editSubmitButton.scrollIntoViewIfNeeded();
     await editSubmitButton.click();
 
-    // Wait briefly for the update to complete
-    await page.waitForTimeout(2000);
-
-    // Navigate back to view page
+    // Navigate back to view page (navigation waits for page load)
     await page.goto(`/baptisms/${baptismId}`);
     await expect(page).toHaveURL(`/baptisms/${baptismId}`);
 

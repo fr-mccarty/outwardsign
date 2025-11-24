@@ -32,14 +32,12 @@ test.describe('Calendar Module', () => {
     const weekButton = page.getByRole('button', { name: /Week/i });
     if (await weekButton.isVisible({ timeout: 2000 })) {
       await weekButton.click();
-      await page.waitForTimeout(500);
       await expect(page).toHaveURL(/view=week/);
 
       // Switch to day view
       const dayButton = page.getByRole('button', { name: /Day/i });
       if (await dayButton.isVisible({ timeout: 2000 })) {
         await dayButton.click();
-        await page.waitForTimeout(500);
         await expect(page).toHaveURL(/view=day/);
       }
 
@@ -47,7 +45,6 @@ test.describe('Calendar Module', () => {
       const monthButton = page.getByRole('button', { name: /Month/i });
       if (await monthButton.isVisible({ timeout: 2000 })) {
         await monthButton.click();
-        await page.waitForTimeout(500);
         await expect(page).toHaveURL(/view=month/);
       }
     } else {
@@ -71,7 +68,6 @@ test.describe('Calendar Module', () => {
 
     // Click on different dates by clicking the "Today" button which should work
     await todayButton.click();
-    await page.waitForTimeout(500);
 
     // Verify still on calendar page
     await expect(page).toHaveURL(/\/calendar/);
@@ -101,16 +97,12 @@ test.describe('Calendar Module', () => {
       // Toggle it
       await toggle.click();
 
-      // Wait for state to change
-      await page.waitForTimeout(500);
-
       // Verify state changed
       const newChecked = await toggle.isChecked();
       expect(newChecked).toBe(!isChecked);
 
       // Toggle back
       await toggle.click();
-      await page.waitForTimeout(500);
     }
   });
 
@@ -151,9 +143,6 @@ test.describe('Calendar Module', () => {
     await page.goto('/calendar');
     await page.waitForURL(/\/calendar\?view=/, { timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Wait for calendar to load
-    await page.waitForTimeout(1000);
-
     // Look for the event on the calendar (should be visible somewhere)
     // Note: The exact location depends on the calendar view and current date
     // We'll just verify the calendar loaded successfully
@@ -188,7 +177,6 @@ test.describe('Calendar Module', () => {
     // Go to calendar
     await page.goto('/calendar');
     await page.waitForURL(/\/calendar\?view=/, { timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(1000);
 
     // Try to find and click the event on the calendar
     // Events may appear as links or buttons depending on the view
@@ -214,9 +202,6 @@ test.describe('Calendar Module', () => {
     // Navigate to calendar in month view
     await page.goto('/calendar?view=month');
     await expect(page).toHaveURL(/view=month/);
-
-    // Wait for calendar to render
-    await page.waitForTimeout(500);
 
     // Verify calendar structure exists (days of week header)
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

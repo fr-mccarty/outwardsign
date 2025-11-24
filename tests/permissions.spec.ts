@@ -373,7 +373,6 @@ test.describe.serial('Permissions System', () => {
 
       // Should be redirected when accessing funerals
       await page.goto('/funerals');
-      await page.waitForTimeout(1000);
       // Should redirect to dashboard with error
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
@@ -392,7 +391,6 @@ test.describe.serial('Permissions System', () => {
 
       // Cannot access funeral detail page (should redirect)
       await page.goto(`/funerals/${testData.testFuneralId}`);
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();
@@ -406,12 +404,10 @@ test.describe.serial('Permissions System', () => {
 
       // Should be redirected when accessing weddings
       await page.goto('/weddings');
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       // Should be redirected when accessing funerals
       await page.goto('/funerals');
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();
@@ -435,7 +431,6 @@ test.describe.serial('Permissions System', () => {
 
       // Cannot access baptisms (not enabled)
       await page.goto('/baptisms');
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();
@@ -464,7 +459,6 @@ test.describe.serial('Permissions System', () => {
 
       // Cannot access funerals create page
       await page.goto('/funerals/create');
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();
@@ -478,7 +472,6 @@ test.describe.serial('Permissions System', () => {
 
       // Cannot access weddings create page
       await page.goto('/weddings/create');
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();
@@ -507,7 +500,6 @@ test.describe.serial('Permissions System', () => {
 
       // Cannot access funeral edit page
       await page.goto(`/funerals/${testData.testFuneralId}/edit`);
-      await page.waitForTimeout(1000);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();
@@ -544,7 +536,6 @@ test.describe.serial('Permissions System', () => {
 
       // Staff cannot access settings page directly
       await page.goto('/settings/parish');
-      await page.waitForTimeout(1000);
       // Should redirect or show error
       expect(page.url()).not.toContain('/settings/parish');
 
@@ -574,7 +565,6 @@ test.describe.serial('Permissions System', () => {
 
       // Try to access disabled module
       await page.goto('/funerals');
-      await page.waitForTimeout(1000);
 
       // Should redirect to dashboard with error parameter
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);

@@ -5,20 +5,22 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
-import { Event, Location, Person } from '@/lib/types'
-import type { EventType, LiturgicalLanguage } from '@/lib/constants'
+import { Event, Location, Person, EventType } from '@/lib/types'
+import type { LiturgicalLanguage, RelatedEventType } from '@/lib/constants'
 import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface EventWithRelations extends Event {
   location?: Location | null
   responsible_party?: Person | null
+  event_type?: EventType | null
 }
 
 export interface CreateEventData {
   name: string
   description?: string
   responsible_party_id?: string
-  event_type: EventType
+  event_type_id?: string
+  related_event_type?: RelatedEventType
   start_date?: string
   start_time?: string
   end_date?: string
@@ -34,7 +36,8 @@ export interface UpdateEventData {
   name?: string
   description?: string
   responsible_party_id?: string
-  event_type?: EventType
+  event_type_id?: string
+  related_event_type?: RelatedEventType
   start_date?: string
   start_time?: string
   end_date?: string
@@ -48,7 +51,8 @@ export interface UpdateEventData {
 
 export interface EventFilterParams {
   search?: string
-  event_type?: EventType | 'all'
+  event_type_id?: string | 'all'
+  related_event_type?: RelatedEventType | 'all'
   language?: LiturgicalLanguage | 'all'
   start_date?: string
   end_date?: string
@@ -65,8 +69,12 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
     .select('*')
 
   // Apply filters
-  if (filters?.event_type && filters.event_type !== 'all') {
-    query = query.eq('event_type', filters.event_type)
+  if (filters?.event_type_id && filters.event_type_id !== 'all') {
+    query = query.eq('event_type_id', filters.event_type_id)
+  }
+
+  if (filters?.related_event_type && filters.related_event_type !== 'all') {
+    query = query.eq('related_event_type', filters.related_event_type)
   }
 
   if (filters?.language && filters.language !== 'all') {
@@ -231,7 +239,8 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
         name: data.name,
         description: data.description || null,
         responsible_party_id: data.responsible_party_id || null,
-        event_type: data.event_type,
+        event_type_id: data.event_type_id || null,
+        related_event_type: data.related_event_type || null,
         start_date: data.start_date || null,
         start_time: data.start_time || null,
         end_date: data.end_date || null,
@@ -271,7 +280,8 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
   if (data.name !== undefined) updateData.name = data.name
   if (data.description !== undefined) updateData.description = data.description || null
   if (data.responsible_party_id !== undefined) updateData.responsible_party_id = data.responsible_party_id
-  if (data.event_type !== undefined) updateData.event_type = data.event_type
+  if (data.event_type_id !== undefined) updateData.event_type_id = data.event_type_id || null
+  if (data.related_event_type !== undefined) updateData.related_event_type = data.related_event_type || null
   if (data.start_date !== undefined) updateData.start_date = data.start_date || null
   if (data.start_time !== undefined) updateData.start_time = data.start_time || null
   if (data.end_date !== undefined) updateData.end_date = data.end_date || null
@@ -403,16 +413,60 @@ export async function getEventModuleLink(eventId: string): Promise<EventModuleLi
   return { moduleType: null, moduleId: null }
 }
 
-export interface EventWithModuleLink extends Event {
+export interface EventWithModuleLink extends EventWithRelations {
   moduleLink?: EventModuleLink
 }
 
 export async function getEventsWithModuleLinks(filters?: EventFilterParams): Promise<EventWithModuleLink[]> {
-  const events = await getEvents(filters)
+  await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  let query = supabase
+    .from('events')
+    .select(`
+      *,
+      location:locations(*),
+      responsible_party:people!events_responsible_party_id_fkey(*),
+      event_type:event_types(*)
+    `)
+    .order('start_date', { ascending: true })
+
+  // Apply filters
+  if (filters?.search) {
+    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,location_name.ilike.%${filters.search}%`)
+  }
+
+  if (filters?.event_type_id && filters.event_type_id !== 'all') {
+    query = query.eq('event_type_id', filters.event_type_id)
+  }
+
+  if (filters?.related_event_type && filters.related_event_type !== 'all') {
+    query = query.eq('related_event_type', filters.related_event_type)
+  }
+
+  if (filters?.language && filters.language !== 'all') {
+    query = query.eq('language', filters.language)
+  }
+
+  if (filters?.start_date) {
+    query = query.gte('start_date', filters.start_date)
+  }
+
+  if (filters?.end_date) {
+    query = query.lte('start_date', filters.end_date)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching events with relations:', error)
+    throw new Error('Failed to fetch events')
+  }
 
   // Fetch module links for all events in parallel
   const eventsWithLinks = await Promise.all(
-    events.map(async (event) => {
+    (data || []).map(async (event) => {
       const moduleLink = await getEventModuleLink(event.id)
       return {
         ...event,

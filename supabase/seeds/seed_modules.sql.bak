@@ -648,7 +648,7 @@ BEGIN
 
   -- Staff Meeting
   INSERT INTO events (
-    parish_id, name, description, responsible_party_id, event_type_id,
+    parish_id, name, description, responsible_party_id, event_type,
     start_date, start_time, end_date, end_time, timezone, is_all_day,
     location_id, language, note
   ) VALUES (
@@ -656,7 +656,7 @@ BEGIN
     'Parish Staff Meeting',
     'Monthly meeting for all parish staff members',
     v_coordinator_id,
-    v_other_event_type_id,
+    'MEETING',
     CURRENT_DATE + 5,
     '10:00:00',
     CURRENT_DATE + 5,
@@ -670,7 +670,7 @@ BEGIN
 
   -- Staff Birthday Celebration
   INSERT INTO events (
-    parish_id, name, description, responsible_party_id, event_type_id,
+    parish_id, name, description, responsible_party_id, event_type,
     start_date, start_time, end_date, end_time, timezone, is_all_day,
     location_id, language, note
   ) VALUES (
@@ -678,7 +678,7 @@ BEGIN
     'Father John''s Birthday Celebration',
     'Birthday party for our beloved pastor',
     v_coordinator_id,
-    v_other_event_type_id,
+    'OTHER',
     CURRENT_DATE + 8,
     '13:00:00',
     CURRENT_DATE + 8,
@@ -692,7 +692,7 @@ BEGIN
 
   -- Volunteer Appreciation Dinner
   INSERT INTO events (
-    parish_id, name, description, responsible_party_id, event_type_id,
+    parish_id, name, description, responsible_party_id, event_type,
     start_date, start_time, end_date, end_time, timezone, is_all_day,
     location_id, language, note
   ) VALUES (
@@ -700,7 +700,7 @@ BEGIN
     'Volunteer Appreciation Dinner',
     'Annual dinner to thank all parish volunteers',
     v_coordinator_id,
-    v_other_event_type_id,
+    'DINNER',
     CURRENT_DATE + 10,
     '18:30:00',
     CURRENT_DATE + 10,
@@ -714,7 +714,7 @@ BEGIN
 
   -- Youth Group Meeting
   INSERT INTO events (
-    parish_id, name, description, responsible_party_id, event_type_id,
+    parish_id, name, description, responsible_party_id, event_type,
     start_date, start_time, end_date, end_time, timezone, is_all_day,
     location_id, language, note
   ) VALUES (
@@ -722,7 +722,7 @@ BEGIN
     'Youth Group Meeting',
     'Weekly youth group gathering for high school students',
     v_coordinator_id,
-    v_other_event_type_id,
+    'MEETING',
     CURRENT_DATE + 3,
     '19:00:00',
     CURRENT_DATE + 3,
@@ -736,7 +736,7 @@ BEGIN
 
   -- Bible Study Group
   INSERT INTO events (
-    parish_id, name, description, responsible_party_id, event_type_id,
+    parish_id, name, description, responsible_party_id, event_type,
     start_date, start_time, end_date, end_time, timezone, is_all_day,
     location_id, language, note
   ) VALUES (
@@ -744,7 +744,7 @@ BEGIN
     'Wednesday Evening Bible Study',
     'Weekly Scripture study and discussion',
     v_coordinator_id,
-    v_other_event_type_id,
+    'MEETING',
     CURRENT_DATE + 6,
     '19:30:00',
     CURRENT_DATE + 6,
@@ -869,22 +869,22 @@ BEGIN
   -- ============================================================
 
   -- Wedding 1 Events
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Rodriguez-Smith Wedding Ceremony', 'Wedding of Maria Rodriguez and James Smith', v_coordinator_id, 'WEDDING', CURRENT_DATE + 7, '14:00:00', CURRENT_DATE + 7, '15:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Saturday afternoon wedding')
   RETURNING id INTO v_wedding_1_event_id;
 
   -- Wedding 2 Events
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Anderson-Chen Wedding Ceremony', 'Wedding of Emily Anderson and Michael Chen', v_coordinator_id, 'WEDDING', CURRENT_DATE + 14, '15:00:00', CURRENT_DATE + 14, '16:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Sunday afternoon wedding')
   RETURNING id INTO v_wedding_2_event_id;
 
   -- Wedding 3 Events
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Thompson-Garcia Wedding Ceremony', 'Wedding of Sarah Thompson and Carlos Garcia', v_coordinator_id, 'WEDDING', CURRENT_DATE + 21, '16:00:00', CURRENT_DATE + 21, '17:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Late afternoon wedding')
   RETURNING id INTO v_wedding_3_event_id;
 
   -- Wedding 4 Events
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Wilson-Martinez Wedding Ceremony', 'Wedding of Jennifer Wilson and Diego Martinez', v_coordinator_id, 'WEDDING', CURRENT_DATE + 28, '13:00:00', CURRENT_DATE + 28, '14:30:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Early afternoon bilingual wedding')
   RETURNING id INTO v_wedding_4_event_id;
 
@@ -893,22 +893,22 @@ BEGIN
   -- ============================================================
 
   -- Funeral 1 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Funeral Mass for Margaret Johnson', 'Mass of Christian Burial', v_coordinator_id, 'FUNERAL', CURRENT_DATE + 3, '10:00:00', CURRENT_DATE + 3, '11:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Morning funeral mass')
   RETURNING id INTO v_funeral_1_event_id;
 
   -- Funeral 2 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Funeral Mass for Robert Williams', 'Mass of Christian Burial', v_coordinator_id, 'FUNERAL', CURRENT_DATE + 10, '11:00:00', CURRENT_DATE + 10, '12:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Late morning funeral mass')
   RETURNING id INTO v_funeral_2_event_id;
 
   -- Funeral 3 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Funeral Mass for Patricia Davis', 'Mass of Christian Burial', v_coordinator_id, 'FUNERAL', CURRENT_DATE + 17, '09:00:00', CURRENT_DATE + 17, '10:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Early morning funeral mass')
   RETURNING id INTO v_funeral_3_event_id;
 
   -- Funeral 4 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Misa de Funeral para José Ramirez', 'Misa de Cuerpo Presente', v_coordinator_id, 'FUNERAL', CURRENT_DATE + 24, '10:30:00', CURRENT_DATE + 24, '12:00:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Misa funeral en español')
   RETURNING id INTO v_funeral_4_event_id;
 
@@ -917,22 +917,22 @@ BEGIN
   -- ============================================================
 
   -- Quinceanera 1 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Quinceañera para Isabella Garcia', 'Misa de Quinceañera', v_coordinator_id, 'QUINCEANERA', CURRENT_DATE + 9, '11:00:00', CURRENT_DATE + 9, '12:30:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Quinceañera mass celebration')
   RETURNING id INTO v_quinceanera_1_event_id;
 
   -- Quinceanera 2 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Quinceañera para Maria Sanchez', 'Misa de Quinceañera', v_coordinator_id, 'QUINCEANERA', CURRENT_DATE + 16, '10:00:00', CURRENT_DATE + 16, '11:30:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Misa de quinceañera')
   RETURNING id INTO v_quinceanera_2_event_id;
 
   -- Quinceanera 3 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Quinceañera para Sofia Lopez', 'Misa de Quinceañera', v_coordinator_id, 'QUINCEANERA', CURRENT_DATE + 23, '12:00:00', CURRENT_DATE + 23, '13:30:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Quinceañera celebration mass')
   RETURNING id INTO v_quinceanera_3_event_id;
 
   -- Quinceanera 4 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Quinceañera para Ana Ramirez', 'Misa de Quinceañera', v_coordinator_id, 'QUINCEANERA', CURRENT_DATE + 30, '13:00:00', CURRENT_DATE + 30, '14:30:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Afternoon quinceañera mass')
   RETURNING id INTO v_quinceanera_4_event_id;
 
@@ -941,22 +941,22 @@ BEGIN
   -- ============================================================
 
   -- Baptism 1 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Baptism of Sofia Martinez', 'Sacrament of Baptism', v_coordinator_id, 'BAPTISM', CURRENT_DATE + 4, '13:00:00', CURRENT_DATE + 4, '14:00:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Sunday afternoon baptism')
   RETURNING id INTO v_baptism_1_event_id;
 
   -- Baptism 2 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Baptism of Lucas Thompson', 'Sacrament of Baptism', v_coordinator_id, 'BAPTISM', CURRENT_DATE + 11, '14:00:00', CURRENT_DATE + 11, '15:00:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Sunday afternoon baptism')
   RETURNING id INTO v_baptism_2_event_id;
 
   -- Baptism 3 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Bautismo de Miguel Angel Lopez', 'Sacramento del Bautismo', v_coordinator_id, 'BAPTISM', CURRENT_DATE + 18, '12:00:00', CURRENT_DATE + 18, '13:00:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Bautismo dominical')
   RETURNING id INTO v_baptism_3_event_id;
 
   -- Baptism 4 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Baptism of Emma Johnson', 'Sacrament of Baptism', v_coordinator_id, 'BAPTISM', CURRENT_DATE + 25, '13:30:00', CURRENT_DATE + 25, '14:30:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Sunday baptism ceremony')
   RETURNING id INTO v_baptism_4_event_id;
 
@@ -965,22 +965,22 @@ BEGIN
   -- ============================================================
 
   -- Presentation 1 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Presentación de Miguel Lopez', 'Presentation of the Child at the Temple', v_coordinator_id, 'PRESENTATION', CURRENT_DATE + 5, '12:00:00', CURRENT_DATE + 5, '13:00:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Presentación del niño')
   RETURNING id INTO v_presentation_1_event_id;
 
   -- Presentation 2 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Presentación de Ana Ramirez', 'Presentation of the Child', v_coordinator_id, 'PRESENTATION', CURRENT_DATE + 12, '11:00:00', CURRENT_DATE + 12, '12:00:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Presentación de la niña')
   RETURNING id INTO v_presentation_2_event_id;
 
   -- Presentation 3 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Presentación de Carlos Sanchez', 'Presentation of the Child', v_coordinator_id, 'PRESENTATION', CURRENT_DATE + 19, '13:00:00', CURRENT_DATE + 19, '14:00:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Presentación del niño en el templo')
   RETURNING id INTO v_presentation_3_event_id;
 
   -- Presentation 4 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Presentación de Elena Rodriguez', 'Presentation of the Child', v_coordinator_id, 'PRESENTATION', CURRENT_DATE + 26, '12:30:00', CURRENT_DATE + 26, '13:30:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Presentación de la niña')
   RETURNING id INTO v_presentation_4_event_id;
 
@@ -989,22 +989,22 @@ BEGIN
   -- ============================================================
 
   -- Mass 1 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Sunday Mass - 10:00 AM', 'Sunday morning Mass', v_coordinator_id, 'MASS', CURRENT_DATE + 6, '10:00:00', CURRENT_DATE + 6, '11:15:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Sunday morning liturgy')
   RETURNING id INTO v_mass_1_event_id;
 
   -- Mass 2 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Sunday Mass - 8:00 AM', 'Early morning Sunday Mass', v_coordinator_id, 'MASS', CURRENT_DATE + 13, '08:00:00', CURRENT_DATE + 13, '09:15:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Early morning liturgy')
   RETURNING id INTO v_mass_2_event_id;
 
   -- Mass 3 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Misa Dominical - 12:00 PM', 'Misa de Domingo en Español', v_coordinator_id, 'MASS', CURRENT_DATE + 20, '12:00:00', CURRENT_DATE + 20, '13:15:00', 'America/Chicago', false, v_church_location_id, 'SPANISH', 'Misa dominical en español')
   RETURNING id INTO v_mass_3_event_id;
 
   -- Mass 4 Event
-  INSERT INTO events (parish_id, name, description, responsible_party_id, related_event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
+  INSERT INTO events (parish_id, name, description, responsible_party_id, event_type, start_date, start_time, end_date, end_time, timezone, is_all_day, location_id, language, note)
   VALUES (v_parish_id, 'Weekday Mass - Wednesday', 'Weekday morning Mass', v_coordinator_id, 'MASS', CURRENT_DATE + 8, '07:00:00', CURRENT_DATE + 8, '07:45:00', 'America/Chicago', false, v_church_location_id, 'ENGLISH', 'Weekday morning liturgy')
   RETURNING id INTO v_mass_4_event_id;
 

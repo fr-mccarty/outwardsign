@@ -3,7 +3,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getEventWithRelations } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { EVENT_TYPE_LABELS } from "@/lib/constants"
+import { RELATED_EVENT_TYPE_LABELS } from "@/lib/constants"
 import { EventViewClient } from './event-view-client'
 import { getEventModuleReference } from '@/lib/helpers/event-helpers'
 
@@ -32,6 +32,11 @@ export default async function EventDetailPage({ params }: PageProps) {
   // Fetch module reference if this event is linked to a module
   const moduleReference = await getEventModuleReference(event)
 
+  // Determine event type label: use related_event_type (system-defined) or event_type entity (user-defined)
+  const eventTypeDescription = event.related_event_type
+    ? (RELATED_EVENT_TYPE_LABELS[event.related_event_type]?.en || event.related_event_type)
+    : (event.event_type?.name || 'Event')
+
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Our Events", href: "/events" },
@@ -41,7 +46,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   return (
     <PageContainer
       title={event.name}
-      description={EVENT_TYPE_LABELS[event.event_type]?.en || event.event_type}
+      description={eventTypeDescription}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventViewClient event={event} moduleReference={moduleReference} />

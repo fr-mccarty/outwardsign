@@ -199,7 +199,7 @@ export function EventPicker({
   const handleCreateEvent = async (data: any): Promise<Event> => {
     const newEvent = await createEvent({
       name: data.name,
-      event_type: defaultEventType as any,
+      related_event_type: defaultEventType as any,
       start_date: data.start_date,
       start_time: data.start_time,
       timezone: data.timezone || getDefaultTimezone(),
@@ -217,7 +217,7 @@ export function EventPicker({
   const handleUpdateEvent = async (id: string, data: any): Promise<Event> => {
     const updatedEvent = await updateEvent(id, {
       name: data.name,
-      event_type: data.event_type || defaultEventType,
+      related_event_type: data.related_event_type || defaultEventType,
       start_date: data.start_date,
       start_time: data.start_time,
       timezone: data.timezone || getDefaultTimezone(),
@@ -282,7 +282,7 @@ export function EventPicker({
       entityName="event"
       testId="event-picker-dialog"
       searchPlaceholder={placeholder}
-      searchFields={['name', 'event_type', 'start_date']}
+      searchFields={['name', 'related_event_type', 'start_date']}
       getItemLabel={(event) => event.name}
       getItemId={(event) => event.id}
       renderItem={renderEventItem}

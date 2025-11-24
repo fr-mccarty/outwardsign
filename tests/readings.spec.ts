@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Readings Module', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test('should create, view, edit, and delete a reading', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 

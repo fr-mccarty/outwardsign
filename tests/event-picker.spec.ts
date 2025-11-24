@@ -26,9 +26,6 @@ test.describe('Event Picker Component', () => {
     await expect(eventDialog.getByRole('heading', { name: /Select Event/i })).toBeVisible();
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
-    // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
-
     // Fill in event details
     await eventDialog.getByLabel('Name').fill('Wedding Ceremony');
     await eventDialog.getByLabel('Date').fill('2025-12-25');
@@ -46,17 +43,12 @@ test.describe('Event Picker Component', () => {
     // We need to cancel this and use the search instead
     await locationDialog.getByRole('button', { name: /Cancel/i }).waitFor({ state: 'visible', timeout: 5000 });
     await locationDialog.getByRole('button', { name: /Cancel/i }).click();
-    await page.waitForTimeout(300);
 
     // Now we should see the search interface
     await locationDialog.getByPlaceholder(/Search/i).fill('St. Mary');
-    await page.waitForTimeout(500);
 
     // Click on the location
     await locationDialog.getByRole('button', { name: /St. Mary Cathedral/i }).click();
-
-    // Wait for location picker to close
-    await page.waitForTimeout(500);
 
     // Verify location is selected in the event form
     await expect(eventDialog.getByTestId('event-location-selected')).toBeVisible();
@@ -64,9 +56,6 @@ test.describe('Event Picker Component', () => {
 
     // Submit the event creation (button text is "Save Event")
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
-
-    // Wait for event picker to close and event to be selected
-    await page.waitForTimeout(1500);
 
     // Event picker dialog should close
     await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
@@ -89,9 +78,6 @@ test.describe('Event Picker Component', () => {
     await eventDialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
-    // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
-
     // Fill in event details
     const eventName = `TestEvent${Date.now()}`;
     await eventDialog.getByLabel('Name').fill(eventName);
@@ -120,7 +106,6 @@ test.describe('Event Picker Component', () => {
 
     // Wait for location dialog to close (indicates successful creation and selection)
     await expect(locationDialog).not.toBeVisible({ timeout: 5000 });
-    await page.waitForTimeout(500);
 
     // Location should be auto-selected in event form
     await expect(eventDialog.getByTestId('event-location-selected')).toBeVisible();
@@ -128,7 +113,6 @@ test.describe('Event Picker Component', () => {
 
     // Now submit the event creation (button text is "Save Event")
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
-    await page.waitForTimeout(1500);
 
     // Event picker should close and event should be selected
     await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
@@ -155,9 +139,6 @@ test.describe('Event Picker Component', () => {
     await eventDialog.waitFor({ state: 'visible' });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
-    // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
-
     // Fill event
     await eventDialog.getByLabel('Name').fill('PreserveContextEvent');
     await eventDialog.getByLabel('Date').fill('2025-08-20');
@@ -181,11 +162,9 @@ test.describe('Event Picker Component', () => {
     await locationNameInput.fill('ContextTestLocation');
     // Submit location creation (button text is "Save Location")
     await locationDialog.getByRole('button', { name: /Save Location/i }).click();
-    await page.waitForTimeout(1000);
 
     // Submit event (button text is "Save Event")
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
-    await page.waitForTimeout(1500);
 
     // Verify we're still on wedding create page (no navigation)
     await expect(page).toHaveURL('/weddings/create');
@@ -216,9 +195,6 @@ test.describe('Event Picker Component', () => {
     await eventDialog.waitFor({ state: 'visible' });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
-    // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
-
     // Fill event
     await eventDialog.getByLabel('Name').fill('Saturday Evening Mass');
     await eventDialog.getByLabel('Date').fill('2025-11-01');
@@ -227,7 +203,6 @@ test.describe('Event Picker Component', () => {
 
     // Open location picker
     await eventDialog.getByRole('button', { name: /Select Location/i }).click();
-    await page.waitForTimeout(500);
 
     const locationDialog = page.getByTestId('location-picker-dialog');
     await locationDialog.waitFor({ state: 'visible', timeout: 5000 });
@@ -237,13 +212,10 @@ test.describe('Event Picker Component', () => {
     // Wait for the Cancel button to be visible
     await locationDialog.getByRole('button', { name: /Cancel/i }).waitFor({ state: 'visible', timeout: 5000 });
     await locationDialog.getByRole('button', { name: /Cancel/i }).click();
-    await page.waitForTimeout(300);
 
     // Search and select existing location
     await locationDialog.getByPlaceholder(/Search/i).fill('Blessed');
-    await page.waitForTimeout(500);
     await locationDialog.getByRole('button', { name: /Blessed Sacrament/i }).click();
-    await page.waitForTimeout(500);
 
     // Verify location is selected in event form
     await expect(eventDialog.getByTestId('event-location-selected')).toBeVisible();
@@ -251,7 +223,6 @@ test.describe('Event Picker Component', () => {
 
     // Submit event (button text is "Save Event")
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
-    await page.waitForTimeout(1500);
 
     // Verify event is selected - check that the wedding ceremony field shows a selected value
     await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
@@ -269,14 +240,10 @@ test.describe('Event Picker Component', () => {
     await eventDialog.waitFor({ state: 'visible' });
 
     // Form should auto-open when no event is selected (openToNewEvent=true)
-    // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
-
     // Try to submit without filling required fields (button text is "Save Event")
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
 
     // Dialog should stay open (validation failed)
-    await page.waitForTimeout(500);
     await expect(eventDialog).toBeVisible();
 
     // Now fill required fields

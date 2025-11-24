@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Events Module - Standalone Events', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test('should create a standalone event (MEETING type) with no module references', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 

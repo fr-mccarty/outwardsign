@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('People Module', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test('should create, view, edit, and delete a person', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 

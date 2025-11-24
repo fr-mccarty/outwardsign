@@ -192,7 +192,6 @@ test.describe('Mass Role Templates Module', () => {
     await submitButton.click();
 
     // Should NOT redirect (stays on create page due to validation error)
-    await page.waitForTimeout(1000);
     await expect(page).toHaveURL('/mass-role-templates/create');
 
     // Should show validation error (toast or inline error)

@@ -237,7 +237,7 @@ export async function scheduleMasses(
         .insert({
           parish_id: selectedParishId,
           name: eventName,
-          event_type: 'MASS',
+          related_event_type: 'MASS',
           start_date: massData.date,
           start_time: normalizedTime,
           end_date: massData.date,
@@ -259,7 +259,7 @@ export async function scheduleMasses(
           insertData: {
             parish_id: selectedParishId,
             name: eventName,
-            event_type: 'MASS',
+            related_event_type: 'MASS',
             start_date: massData.date,
             start_time: normalizedTime,
             end_date: massData.date,

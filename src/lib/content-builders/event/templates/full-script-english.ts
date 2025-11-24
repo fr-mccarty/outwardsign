@@ -28,7 +28,10 @@ function buildEventDetailsSection(event: EventWithRelations): ContentSection {
     text: event.name,
   })
 
-  const eventTypeLabel = getEventTypeLabel(event.event_type, 'en')
+  // Display event type: prefer related_event_type (system-defined) over event_type entity (user-defined)
+  const eventTypeLabel = event.related_event_type
+    ? getEventTypeLabel(event.related_event_type, 'en')
+    : event.event_type?.name || 'Event'
   elements.push({
     type: 'event-datetime',
     text: eventTypeLabel,

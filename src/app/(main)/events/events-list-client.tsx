@@ -19,17 +19,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { EVENT_TYPE_LABELS } from "@/lib/constants"
+import { RELATED_EVENT_TYPE_LABELS, RelatedEventType } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { FormField } from "@/components/form-field"
+import type { EventType } from "@/lib/types"
 
 interface Stats {
   total: number
   upcoming: number
   past: number
   filtered: number
-  eventTypes: string[]
+  eventTypes: EventType[] // User-defined event types
+  relatedEventTypes: readonly RelatedEventType[] // System-defined types
   languages: string[]
 }
 
@@ -46,7 +48,8 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
 
   // Get current filter values from URL
   const searchTerm = searchParams.get('search') || ''
-  const selectedEventType = searchParams.get('event_type') || 'all'
+  const selectedEventTypeId = searchParams.get('event_type_id') || 'all'
+  const selectedRelatedEventType = searchParams.get('related_event_type') || 'all'
   const selectedLanguage = searchParams.get('language') || 'all'
   const startDate = searchParams.get('start_date') || ''
   const endDate = searchParams.get('end_date') || ''
@@ -88,7 +91,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
     router.push('/events')
   }
 
-  const hasActiveFilters = searchTerm || selectedEventType !== 'all' || selectedLanguage !== 'all' || startDate || endDate || sortOrder !== 'asc'
+  const hasActiveFilters = searchTerm || selectedEventTypeId !== 'all' || selectedRelatedEventType !== 'all' || selectedLanguage !== 'all' || startDate || endDate || sortOrder !== 'asc'
 
   return (
     <div className="space-y-6">
@@ -106,17 +109,44 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
               />
             </div>
             <div className="flex gap-2">
-              <Select value={selectedEventType} onValueChange={(value) => updateFilters('event_type', value)}>
+              <Select
+                value={selectedEventTypeId !== 'all' ? `user-${selectedEventTypeId}` : selectedRelatedEventType !== 'all' ? `system-${selectedRelatedEventType}` : 'all'}
+                onValueChange={(value) => {
+                  if (value === 'all') {
+                    updateFilters('event_type_id', '')
+                    updateFilters('related_event_type', '')
+                  } else if (value.startsWith('user-')) {
+                    updateFilters('event_type_id', value.substring(5))
+                    updateFilters('related_event_type', '')
+                  } else if (value.startsWith('system-')) {
+                    updateFilters('event_type_id', '')
+                    updateFilters('related_event_type', value.substring(7))
+                  }
+                }}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Event Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  {stats.eventTypes.map(type => (
-                    <SelectItem key={type} value={type}>
-                      {EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
-                    </SelectItem>
-                  ))}
+                  {stats.eventTypes.length > 0 && (
+                    <>
+                      {stats.eventTypes.map(type => (
+                        <SelectItem key={type.id} value={`user-${type.id}`}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+                  {stats.relatedEventTypes.length > 0 && (
+                    <>
+                      {stats.relatedEventTypes.map(type => (
+                        <SelectItem key={type} value={`system-${type}`}>
+                          {RELATED_EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
               <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
@@ -193,7 +223,10 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-xs font-medium">
-                    {EVENT_TYPE_LABELS[event.event_type]?.[userLanguage] || event.event_type}
+                    {event.related_event_type
+                      ? (RELATED_EVENT_TYPE_LABELS[event.related_event_type]?.[userLanguage] || event.related_event_type)
+                      : (event.event_type?.name || 'Event')
+                    }
                   </Badge>
                   {isUpcoming && (
                     <Badge variant="default" className="text-xs font-medium bg-green-700 hover:bg-green-700 text-white">

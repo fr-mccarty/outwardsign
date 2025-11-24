@@ -5,7 +5,8 @@ CREATE TABLE events (
   name TEXT NOT NULL,
   description TEXT,
   responsible_party_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  event_type TEXT NOT NULL DEFAULT 'EVENT',
+  event_type_id UUID REFERENCES event_types(id) ON DELETE SET NULL,
+  related_event_type TEXT, -- System-defined from constants (WEDDING, FUNERAL, etc.) when event is linked to a module
   start_date DATE,
   start_time TIME,
   end_date DATE,
@@ -35,7 +36,8 @@ GRANT ALL ON events TO service_role;
 -- Add indexes
 CREATE INDEX idx_events_parish_id ON events(parish_id);
 CREATE INDEX idx_events_responsible_party_id ON events(responsible_party_id);
-CREATE INDEX idx_events_event_type ON events(event_type);
+CREATE INDEX idx_events_event_type_id ON events(event_type_id);
+CREATE INDEX idx_events_related_event_type ON events(related_event_type);
 CREATE INDEX idx_events_start_date ON events(start_date);
 CREATE INDEX idx_events_location_id ON events(location_id);
 CREATE INDEX idx_events_language ON events(language);

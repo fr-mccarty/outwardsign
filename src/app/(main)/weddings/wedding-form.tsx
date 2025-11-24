@@ -23,7 +23,7 @@ import {
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { ReadingPickerModal } from "@/components/reading-picker-modal"
-import { MODULE_STATUS_VALUES, EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE, type ModuleStatus, type WeddingTemplate } from "@/lib/constants"
+import { MODULE_STATUS_VALUES, RELATED_EVENT_TYPE_LABELS, WEDDING_TEMPLATE_VALUES, WEDDING_TEMPLATE_LABELS, WEDDING_DEFAULT_TEMPLATE, type ModuleStatus, type WeddingTemplate } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -202,7 +202,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     } else if (groomLastName) {
       return `${groomLastName} Wedding`
     }
-    return EVENT_TYPE_LABELS.WEDDING.en
+    return RELATED_EVENT_TYPE_LABELS.WEDDING.en
   }, [bride.value, groom.value])
 
   const suggestedReceptionName = useMemo(() => {
@@ -314,7 +314,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
           placeholder="Add Wedding Ceremony"
           openToNewEvent={!weddingEvent.value}
           defaultEventType="WEDDING"
-          defaultName={EVENT_TYPE_LABELS.WEDDING.en}
+          defaultName={RELATED_EVENT_TYPE_LABELS.WEDDING.en}
           disableSearch={true}
           defaultCreateFormData={{ name: suggestedWeddingName }}
         />

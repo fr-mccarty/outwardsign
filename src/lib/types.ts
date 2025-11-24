@@ -1,4 +1,4 @@
-import type { LiturgicalLanguage, ModuleStatus, EventType, ReadingCategory, MassStatus, MassIntentionStatus } from './constants'
+import type { LiturgicalLanguage, ModuleStatus, ReadingCategory, MassStatus, MassIntentionStatus } from './constants'
 
 export interface Petition {
   id: string
@@ -423,13 +423,25 @@ export interface Presentation {
   updated_at: string
 }
 
+export interface EventType {
+  id: string
+  parish_id: string
+  name: string
+  description?: string
+  is_active: boolean
+  display_order?: number
+  created_at: string
+  updated_at: string
+}
+
 export interface Event {
   id: string
   parish_id: string
   name: string
   description?: string
   responsible_party_id: string | null
-  event_type: EventType
+  event_type_id?: string | null
+  related_event_type?: string | null // System-defined from constants (WEDDING, FUNERAL, etc.)
   start_date?: string
   start_time?: string
   end_date?: string

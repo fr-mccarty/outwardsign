@@ -51,8 +51,10 @@ export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = 
   FULFILLED: { en: 'Fulfilled', es: 'Cumplido' }
 }
 
-// Event type values (stored as uppercase in database)
-export const EVENT_TYPE_VALUES = [
+// Related Event Type values (stored as uppercase in database)
+// These are SYSTEM-DEFINED and READ-ONLY - used when events are linked to modules
+// Users cannot modify these; they are auto-populated when creating events from sacrament modules
+export const RELATED_EVENT_TYPE_VALUES = [
   // Wedding-related events
   'WEDDING',
   'WEDDING_RECEPTION',
@@ -71,18 +73,11 @@ export const EVENT_TYPE_VALUES = [
   'PRESENTATION',
   'BAPTISM',
   'MASS',
-
-  // General parish events
-  'RECEPTION',
-  'MEETING',
-  'MEAL',
-  'EVENT',
-  'OTHER'
 ] as const
-export type EventType = typeof EVENT_TYPE_VALUES[number]
+export type RelatedEventType = typeof RELATED_EVENT_TYPE_VALUES[number]
 
-// Event type labels for display
-export const EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
+// Related Event Type labels for display (system-defined, read-only)
+export const RELATED_EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
   // Wedding-related events
   WEDDING: {
     en: 'Wedding',
@@ -133,35 +128,14 @@ export const EVENT_TYPE_LABELS: Record<string, { en: string; es: string }> = {
   MASS: {
     en: 'Mass',
     es: 'Misa'
-  },
-
-  // General parish events
-  RECEPTION: {
-    en: 'Reception',
-    es: 'Recepción'
-  },
-  MEETING: {
-    en: 'Meeting',
-    es: 'Reunión'
-  },
-  MEAL: {
-    en: 'Meal',
-    es: 'Comida'
-  },
-  EVENT: {
-    en: 'Event',
-    es: 'Evento'
-  },
-  OTHER: {
-    en: 'Other',
-    es: 'Otro'
   }
 }
 
-// Module Event Type Mapping
-// Maps event types to their parent module for reverse lookup (event → module)
+// Module Related Event Type Mapping
+// Maps RELATED event types (system-defined) to their parent module for reverse lookup (event → module)
 // Used to display module references on event detail pages
-export const MODULE_EVENT_TYPE_MAP: Record<string, {
+// These are read-only and correspond to RELATED_EVENT_TYPE_VALUES above
+export const MODULE_RELATED_EVENT_TYPE_MAP: Record<string, {
   module: 'weddings' | 'funerals' | 'presentations' | 'quinceaneras' | 'mass-intentions'
   column: string
   display: { en: string; es: string }

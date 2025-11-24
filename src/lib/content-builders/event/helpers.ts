@@ -7,7 +7,7 @@
 
 import { EventWithRelations } from '@/lib/actions/events'
 import { Location } from '@/lib/types'
-import { EVENT_TYPE_LABELS } from '@/lib/constants'
+import { RELATED_EVENT_TYPE_LABELS } from '@/lib/constants'
 
 // ============================================================================
 // EVENT TYPE HELPERS
@@ -17,7 +17,7 @@ import { EVENT_TYPE_LABELS } from '@/lib/constants'
  * Get localized event type label
  */
 export function getEventTypeLabel(eventType: string, language: 'en' | 'es'): string {
-  return EVENT_TYPE_LABELS[eventType]?.[language] || eventType
+  return RELATED_EVENT_TYPE_LABELS[eventType]?.[language] || eventType
 }
 
 // ============================================================================

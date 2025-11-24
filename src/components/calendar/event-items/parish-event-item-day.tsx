@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { EVENT_TYPE_LABELS } from '@/lib/constants'
+import { RELATED_EVENT_TYPE_LABELS } from '@/lib/constants'
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { getModuleIcon } from '@/components/calendar/module-icons'
 
@@ -23,9 +23,9 @@ export function ParishEventItemDay({ event, onClick }: ParishEventItemDayProps) 
   const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
 
   // Get translated event type label
-  // 🔴 CRITICAL: Never display raw event_type values - only show if in EVENT_TYPE_LABELS
+  // 🔴 CRITICAL: Never display raw event_type values - only show if in RELATED_EVENT_TYPE_LABELS
   const eventTypeLabel = event.event_type
-    ? EVENT_TYPE_LABELS[event.event_type]?.[userLanguage]
+    ? RELATED_EVENT_TYPE_LABELS[event.event_type]?.[userLanguage]
     : undefined
 
   const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null

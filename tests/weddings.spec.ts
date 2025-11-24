@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Weddings Module', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test('should create, view, edit, and verify print view for a wedding', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
@@ -65,10 +68,7 @@ test.describe('Weddings Module', () => {
     await editSubmitButton.scrollIntoViewIfNeeded();
     await editSubmitButton.click();
 
-    // Wait briefly for the update to complete (edit stays on same page with router.refresh())
-    await page.waitForTimeout(2000);
-
-    // Navigate back to view page
+    // Navigate back to view page (the navigation itself waits for the page to load)
     await page.goto(`/weddings/${weddingId}`);
     await expect(page).toHaveURL(`/weddings/${weddingId}`);
 
@@ -215,11 +215,7 @@ test.describe('Weddings Module', () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
 
-    // Wedding form uses router.refresh() on edit, so it stays on edit page
-    // Wait for the update to complete
-    await page.waitForTimeout(2000);
-
-    // Navigate to view page to verify the update
+    // Navigate to view page to verify the update (navigation waits for page load)
     await page.goto(`/weddings/${weddingId}`);
     await expect(page).toHaveURL(`/weddings/${weddingId}`);
 

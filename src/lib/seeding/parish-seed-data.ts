@@ -351,11 +351,49 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     }
   }
 
+  // =====================================================
+  // 8. Seed Event Types
+  // =====================================================
+  const defaultEventTypes = [
+    { name: 'Parish Meeting', description: 'Regular parish meetings and gatherings', display_order: 1 },
+    { name: 'Parish Event', description: 'General parish events and activities', display_order: 2 },
+    { name: 'Reception', description: 'Receptions and social gatherings', display_order: 3 },
+    { name: 'Meal', description: 'Parish meals and potlucks', display_order: 4 },
+    { name: 'Fundraiser', description: 'Fundraising events and activities', display_order: 5 },
+    { name: 'Ministry Meeting', description: 'Ministry-specific meetings and planning sessions', display_order: 6 },
+    { name: 'Community Service', description: 'Service projects and outreach activities', display_order: 7 },
+    { name: 'Youth Event', description: 'Youth group activities and events', display_order: 8 },
+    { name: 'Adult Formation', description: 'Adult faith formation and education', display_order: 9 },
+    { name: 'Retreat', description: 'Parish retreats and days of reflection', display_order: 10 },
+    { name: 'Concert', description: 'Musical performances and concerts', display_order: 11 },
+    { name: 'Festival', description: 'Parish festivals and celebrations', display_order: 12 },
+    { name: 'Other', description: 'Other parish events', display_order: 99 },
+  ]
+
+  const { data: eventTypes, error: eventTypesError } = await supabase
+    .from('event_types')
+    .insert(
+      defaultEventTypes.map((et) => ({
+        parish_id: parishId,
+        name: et.name,
+        description: et.description,
+        display_order: et.display_order,
+        is_active: true,
+      }))
+    )
+    .select()
+
+  if (eventTypesError) {
+    console.error('Error creating default event types:', eventTypesError)
+    throw new Error(`Failed to create default event types: ${eventTypesError.message}`)
+  }
+
   return {
     success: true,
     readings: readings || [],
     petitionTemplates: petitionTemplates || [],
     groupRoles: groupRoles || [],
-    massRoles: massRoles || []
+    massRoles: massRoles || [],
+    eventTypes: eventTypes || []
   }
 }

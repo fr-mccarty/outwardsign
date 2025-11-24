@@ -380,6 +380,9 @@ class GroupMembershipPage {
 }
 
 test.describe('Group Membership - Add Member Tests', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   let groupPage: GroupMembershipPage;
   let testGroupId: string;
 
@@ -575,6 +578,9 @@ test.describe('Group Membership - Add Member Tests', () => {
 });
 
 test.describe('Group Membership - Edit Roles Tests', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   let groupPage: GroupMembershipPage;
   let testGroupId: string;
   let testPersonName: string;
@@ -667,6 +673,9 @@ test.describe('Group Membership - Edit Roles Tests', () => {
 });
 
 test.describe('Group Membership - Remove Member Tests', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   let groupPage: GroupMembershipPage;
   let testGroupId: string;
 
@@ -725,6 +734,9 @@ test.describe('Group Membership - Remove Member Tests', () => {
 });
 
 test.describe('Group Membership - Role Constants Tests', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test.skip('TC-012: All liturgical roles are available', async ({ page }) => {
     const groupPage = new GroupMembershipPage(page);
 
@@ -765,6 +777,9 @@ test.describe('Group Membership - Role Constants Tests', () => {
 });
 
 test.describe('Group Membership - Accessibility Tests', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test.skip('TC-016: Keyboard navigation', async ({ page }) => {
     const groupPage = new GroupMembershipPage(page);
 
@@ -828,6 +843,9 @@ test.describe('Group Membership - Accessibility Tests', () => {
 });
 
 test.describe('Group Membership - Performance Tests', () => {
+  // Enable parallel execution - tests in this file don't interfere with each other
+  test.describe.configure({ mode: 'parallel' });
+
   test.skip('TC-018: Large group performance', async ({ page }) => {
     // This test is skipped by default as it takes time to create 50+ members
     // Run manually when needed: npm test -- --grep "TC-018"

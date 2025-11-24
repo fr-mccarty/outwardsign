@@ -56,12 +56,7 @@ test.describe('Masses Module', () => {
 
     // Scroll to bottom and submit
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    // Wait for form to stabilize then click submit
-    await page.waitForTimeout(500);
     await page.locator('button[type="submit"]').last().click();
-
-    // Wait briefly for the update to complete
-    await page.waitForTimeout(2000);
 
     // Navigate back to view page
     await page.goto(`/masses/${massId}`);
@@ -184,9 +179,6 @@ test.describe('Masses Module', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
     await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Event/i })).toBeVisible();
 
-    // Wait for form to be ready
-    await page.waitForTimeout(500);
-
     // Fill in event details using input IDs
     const eventName = `Holy Mass ${Date.now()}`;
     await page.locator('[role="dialog"] input#name').fill(eventName);
@@ -208,7 +200,6 @@ test.describe('Masses Module', () => {
 
     // Submit the mass form
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(500);
     await page.locator('button[type="submit"]').last().click();
 
     // Should redirect to the mass edit page
@@ -266,10 +257,6 @@ test.describe('Masses Module', () => {
     // Submit the update
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.locator('button[type="submit"]').last().click();
-
-    // Mass form uses router.refresh() on edit, so it stays on edit page
-    // Wait for the update to complete
-    await page.waitForTimeout(2000);
 
     // Navigate to view page to verify the update
     await page.goto(`/masses/${massId}`);
