@@ -13,10 +13,12 @@ import { Separator } from "@/components/ui/separator"
 import { LanguageSelector } from "@/components/language-selector"
 import { HomeFeatureCard } from "@/components/home-feature-card"
 import Link from "next/link"
+import Image from "next/image"
 import {
   Church,
   Flower,
   Heart,
+  User,
   Users,
   FileText,
   Printer,
@@ -38,7 +40,10 @@ import {
   BarChart3,
   UserCog,
   AlertCircle,
-  CalendarCheck
+  CalendarCheck,
+  CalendarDays,
+  List,
+  Download
 } from "lucide-react"
 import { APP_NAME, APP_TAGLINE, GITHUB_URL, HomeLanguage, DEFAULT_HOME_LANGUAGE } from "@/lib/constants"
 import { useState, useEffect, Suspense } from "react"
@@ -53,6 +58,7 @@ const translations = {
       features: "Features",
       sacraments: "Sacraments",
       howItWorks: "How it Works",
+      about: "About",
       documentation: "Documentation",
       login: "Login",
       getStarted: "Get Started"
@@ -142,6 +148,33 @@ const translations = {
           "Group member directory for ministry participants",
           "Mass role directory for liturgical ministers",
           "Role preferences and blackout date management"
+        ]
+      },
+      weekendSummary: {
+        title: "Weekend Summary Reports",
+        description: "Generate comprehensive at-a-glance weekend reports (Saturday-Sunday) showing all sacraments, Masses, and liturgical ministers.",
+        features: [
+          "Complete weekend liturgical schedule overview",
+          "Sacrament and Mass details in one document",
+          "Ready-to-print sacristy reference sheets"
+        ]
+      },
+      massIntentions: {
+        title: "Mass Intentions Management",
+        description: "Track and manage Mass intention requests with a dedicated workflow from initial request through fulfillment.",
+        features: [
+          "Request, confirm, and fulfill intentions workflow",
+          "Comprehensive reporting and tracking",
+          "Integration with Mass scheduling"
+        ]
+      },
+      dataExport: {
+        title: "Data Export & Management",
+        description: "Export parish data for backup, reporting, and integration with other systems.",
+        features: [
+          "CSV export from People directory",
+          "Mass intention reports with filtering",
+          "Flexible data access for parish management"
         ]
       },
       freeOpenSource: {
@@ -252,9 +285,9 @@ const translations = {
         title: "Additional Sacraments",
         description: "Confirmations, First Communion, and Anointing of the Sick modules"
       },
-      ministryScheduling: {
-        title: "Ministry Scheduling",
-        description: "Assign lectors, altar servers, music ministers, and other liturgical roles to masses and sacramental celebrations with automatic conflict detection"
+      enhancedScheduling: {
+        title: "Enhanced Scheduling Features",
+        description: "Advanced ministry assignment algorithms with AI-powered conflict resolution and preference optimization across all liturgical celebrations"
       },
       calendarEnhancements: {
         title: "Advanced Calendar",
@@ -264,9 +297,9 @@ const translations = {
         title: "Communication Tools",
         description: "Email and SMS notifications for families, staff, and participants"
       },
-      reporting: {
-        title: "Reports & Analytics",
-        description: "Sacrament statistics dashboard and annual reports for parish planning"
+      advancedAnalytics: {
+        title: "Advanced Analytics Dashboard",
+        description: "Comprehensive sacrament statistics, trends analysis, and annual summary reports for strategic parish planning"
       },
       parishionerPortal: {
         title: "Parishioner Portal",
@@ -306,6 +339,20 @@ const translations = {
       signInToYourParish: "Sign In to Your Parish",
       disclaimer: "100% Free Forever • No Credit Card • No Hidden Fees • Open Source"
     },
+    aboutUs: {
+      sectionTitle: "About Us",
+      sectionSubtitle: "Built by people who understand the importance of beautiful liturgy in parish life.",
+      joshMcCarty: {
+        name: "Fr. Josh McCarty",
+        role: "Founder & Developer",
+        description: "Josh is a Catholic priest and software developer passionate about creating tools that serve the Church. With experience in parish ministry and technology, he understands firsthand the challenges parishes face in preparing sacraments with excellence."
+      },
+      joeSterett: {
+        name: "Joe Sterett",
+        role: "Executive Director",
+        description: "Joe brings decades of experience in Catholic media and technology. As co-founder of Lolek Productions, he has dedicated his career to creating high-quality tools that serve the Church's mission of evangelization."
+      }
+    },
     footer: {
       madeWith: "Made with care for Catholic parishes",
       collaboration: "A collaborative effort between CatholicOS and Lolek Productions",
@@ -320,6 +367,7 @@ const translations = {
       features: "Características",
       sacraments: "Sacramentos",
       howItWorks: "Cómo Funciona",
+      about: "Sobre Nosotros",
       documentation: "Documentación",
       login: "Iniciar Sesión",
       getStarted: "Comenzar"
@@ -409,6 +457,33 @@ const translations = {
           "Directorio de miembros de grupos para participantes ministeriales",
           "Directorio de roles de misa para ministros litúrgicos",
           "Gestión de preferencias de roles y fechas no disponibles"
+        ]
+      },
+      weekendSummary: {
+        title: "Informes de Resumen de Fin de Semana",
+        description: "Genera informes completos de un vistazo del fin de semana (sábado-domingo) mostrando todos los sacramentos, misas y ministros litúrgicos.",
+        features: [
+          "Vista completa del horario litúrgico del fin de semana",
+          "Detalles de sacramentos y misas en un solo documento",
+          "Hojas de referencia listas para imprimir para la sacristía"
+        ]
+      },
+      massIntentions: {
+        title: "Gestión de Intenciones de Misa",
+        description: "Rastrea y gestiona solicitudes de intenciones de misa con un flujo de trabajo dedicado desde la solicitud inicial hasta el cumplimiento.",
+        features: [
+          "Flujo de trabajo de solicitar, confirmar y cumplir intenciones",
+          "Informes y seguimiento completos",
+          "Integración con la programación de misas"
+        ]
+      },
+      dataExport: {
+        title: "Exportación y Gestión de Datos",
+        description: "Exporta datos parroquiales para respaldo, informes e integración con otros sistemas.",
+        features: [
+          "Exportación CSV del directorio de personas",
+          "Informes de intenciones de misa con filtrado",
+          "Acceso flexible a datos para gestión parroquial"
         ]
       },
       freeOpenSource: {
@@ -519,9 +594,9 @@ const translations = {
         title: "Sacramentos Adicionales",
         description: "Módulos de Confirmaciones, Primera Comunión y Unción de los Enfermos"
       },
-      ministryScheduling: {
-        title: "Programación de Ministerios",
-        description: "Asigna lectores, monaguillos, ministros de música y otros roles litúrgicos a misas y celebraciones sacramentales con detección automática de conflictos"
+      enhancedScheduling: {
+        title: "Funciones de Programación Mejoradas",
+        description: "Algoritmos avanzados de asignación de ministerios con resolución de conflictos impulsada por IA y optimización de preferencias en todas las celebraciones litúrgicas"
       },
       calendarEnhancements: {
         title: "Calendario Avanzado",
@@ -531,9 +606,9 @@ const translations = {
         title: "Herramientas de Comunicación",
         description: "Notificaciones por correo electrónico y SMS para familias, personal y participantes"
       },
-      reporting: {
-        title: "Informes y Análisis",
-        description: "Panel de estadísticas de sacramentos e informes anuales para la planificación parroquial"
+      advancedAnalytics: {
+        title: "Panel de Análisis Avanzado",
+        description: "Estadísticas completas de sacramentos, análisis de tendencias e informes anuales resumidos para planificación estratégica parroquial"
       },
       parishionerPortal: {
         title: "Portal de Feligreses",
@@ -572,6 +647,20 @@ const translations = {
       getStartedFree: "Comenzar Gratis",
       signInToYourParish: "Inicia Sesión en tu Parroquia",
       disclaimer: "100% Gratis Para Siempre • Sin Tarjeta de Crédito • Sin Tarifas Ocultas • Código Abierto"
+    },
+    aboutUs: {
+      sectionTitle: "Sobre Nosotros",
+      sectionSubtitle: "Construido por personas que comprenden la importancia de la liturgia hermosa en la vida parroquial.",
+      joshMcCarty: {
+        name: "P. Josh McCarty",
+        role: "Fundador y Desarrollador",
+        description: "Josh es un sacerdote católico y desarrollador de software apasionado por crear herramientas que sirvan a la Iglesia. Con experiencia en ministerio parroquial y tecnología, comprende de primera mano los desafíos que enfrentan las parroquias al preparar sacramentos con excelencia."
+      },
+      joeSterett: {
+        name: "Joe Sterett",
+        role: "Director Ejecutivo",
+        description: "Joe aporta décadas de experiencia en medios católicos y tecnología. Como cofundador de Lolek Productions, ha dedicado su carrera a crear herramientas de alta calidad que sirven a la misión evangelizadora de la Iglesia."
+      }
     },
     footer: {
       madeWith: "Hecho con cuidado para parroquias católicas",
@@ -671,6 +760,13 @@ function HomeContent() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {t.nav.howItWorks}
+              </Link>
+              <Link
+                href="#about"
+                className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t.nav.about}
               </Link>
               <Link
                 href="/documentation"
@@ -863,6 +959,27 @@ function HomeContent() {
               title={t.features.ministryGroups.title}
               description={t.features.ministryGroups.description}
               features={t.features.ministryGroups.features}
+            />
+
+            <HomeFeatureCard
+              icon={CalendarDays}
+              title={t.features.weekendSummary.title}
+              description={t.features.weekendSummary.description}
+              features={t.features.weekendSummary.features}
+            />
+
+            <HomeFeatureCard
+              icon={List}
+              title={t.features.massIntentions.title}
+              description={t.features.massIntentions.description}
+              features={t.features.massIntentions.features}
+            />
+
+            <HomeFeatureCard
+              icon={Download}
+              title={t.features.dataExport.title}
+              description={t.features.dataExport.description}
+              features={t.features.dataExport.features}
             />
           </div>
 
@@ -1214,7 +1331,7 @@ function HomeContent() {
                 </CardContent>
               </Card>
 
-              {/* Ministry Scheduling */}
+              {/* Enhanced Scheduling Features */}
               <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
                 <CardContent className="pt-8 pb-8 text-center">
                   <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
@@ -1224,9 +1341,9 @@ function HomeContent() {
                     <Sparkles className="h-3 w-3" />
                     Coming Soon
                   </Badge>
-                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.ministryScheduling.title}</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.enhancedScheduling.title}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {t.comingSoon.ministryScheduling.description}
+                    {t.comingSoon.enhancedScheduling.description}
                   </p>
                 </CardContent>
               </Card>
@@ -1265,7 +1382,7 @@ function HomeContent() {
                 </CardContent>
               </Card>
 
-              {/* Reports & Analytics */}
+              {/* Advanced Analytics Dashboard */}
               <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
                 <CardContent className="pt-8 pb-8 text-center">
                   <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
@@ -1275,9 +1392,9 @@ function HomeContent() {
                     <Sparkles className="h-3 w-3" />
                     Coming Soon
                   </Badge>
-                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.reporting.title}</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.advancedAnalytics.title}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {t.comingSoon.reporting.description}
+                    {t.comingSoon.advancedAnalytics.description}
                   </p>
                 </CardContent>
               </Card>
@@ -1454,6 +1571,70 @@ function HomeContent() {
             {t.finalCTA.disclaimer}
           </p>
         </Card>
+        </div>
+
+        {/* About Us Section */}
+        <div id="about" className="bg-secondary text-secondary-foreground py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-12">
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl md:text-4xl font-bold">{t.aboutUs.sectionTitle}</h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  {t.aboutUs.sectionSubtitle}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                {/* Josh McCarty */}
+                <Card className="bg-card text-card-foreground border">
+                  <CardContent className="pt-8 pb-8">
+                    <div className="text-center space-y-4">
+                      <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-primary/20">
+                        <Image
+                          src="/team/fr-josh.webp"
+                          alt="Josh McCarty"
+                          width={128}
+                          height={128}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{t.aboutUs.joshMcCarty.name}</h3>
+                        <p className="text-sm text-primary font-medium mb-3">{t.aboutUs.joshMcCarty.role}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {t.aboutUs.joshMcCarty.description}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Joe Sterett */}
+                <Card className="bg-card text-card-foreground border">
+                  <CardContent className="pt-8 pb-8">
+                    <div className="text-center space-y-4">
+                      <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-primary/20">
+                        <Image
+                          src="/team/joe.webp"
+                          alt="Joe Sterett"
+                          width={128}
+                          height={128}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{t.aboutUs.joeSterett.name}</h3>
+                        <p className="text-sm text-primary font-medium mb-3">{t.aboutUs.joeSterett.role}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {t.aboutUs.joeSterett.description}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

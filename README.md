@@ -41,6 +41,7 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 ## ✨ Features
 
 - **Sacrament & Sacramental Planning:** Manage Masses, weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type
+- **Weekend Summary:** Generate comprehensive at-a-glance weekend reports (Saturday-Sunday) showing all sacraments, Masses, and liturgical ministers for sacristy reference
 - **Mass Scheduling System:** Bulk scheduling wizard for creating multiple Masses over date ranges with automatic minister assignment based on preferences and availability
 - **Mass Role Management:** Dedicated system for managing liturgical roles (Lectors, EMHCs, Altar Servers, Cantors, Ushers) with templates, preferences, and blackout dates
 - **Mass Intentions:** Track and manage Mass intention requests with dedicated workflow for requesting, confirming, and fulfilling intentions
@@ -48,6 +49,7 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 - **Ministry Groups:** Organize parish ministries and committees with role-based membership tracking through the group member directory
 - **Complete Preparation Tools:** Organize all aspects of sacramental preparation from initial planning to printed scripts
 - **Parish Calendar:** Unified calendar view showing all sacramental events and parish activities with liturgical calendar integration
+- **Event Types:** User-configurable event type management in parish settings for custom event categorization
 - **Print & Export:** Generate professional liturgical scripts and readings documentation (PDF/Word export for all sacraments)
 - **Data Export:** Download parish directory as CSV from the People page for easy data management and backup
 - **Multilingual Support:** Full English and Spanish language support throughout the application, including the public homepage with language selector, liturgical content (English, Spanish, Latin), and all user interfaces for diverse parish communities
@@ -66,6 +68,7 @@ Each sacrament and sacramental type uses a consistent icon throughout the applic
 | **Presentations** | `HandHeartIcon` |
 | **Quinceañeras** | `BookHeart` |
 | **Groups** | `Users` |
+| **Weekend Summary** | `CalendarDays` |
 | **Confirmations** | `Flame` *(future)* |
 
 **Source of Truth:** The main sidebar (`src/components/main-sidebar.tsx`) defines the official icon for each module. Always reference this file when creating new features or documentation to ensure consistency across the application.
@@ -517,6 +520,7 @@ The `docs/` directory contains in-depth developer/AI documentation on specialize
 - **[FORMS.md](./docs/FORMS.md)** - Form implementation guidelines and patterns
 - **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
 - **[STYLES.md](./docs/STYLES.md)** - Styling guidelines and theme tokens
+- **[WEEKEND_SUMMARY.md](./docs/WEEKEND_SUMMARY.md)** - Weekend summary module documentation
 - **[PERSONA.md](./docs/PERSONA.md)** - User personas and use cases
 
 ### Testing Documentation

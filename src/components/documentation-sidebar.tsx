@@ -107,11 +107,11 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
       href: `/documentation/${lang}/for-developers`,
       icon: Code,
     },
-    {
-      title: lang === 'en' ? 'Sponsor' : 'Patrocinar',
-      href: `/documentation/${lang}/sponsor`,
-      icon: Heart,
-    },
+    // {
+    //   title: lang === 'en' ? 'Sponsor' : 'Patrocinar',
+    //   href: `/documentation/${lang}/sponsor`,
+    //   icon: Heart,
+    // },
   ]
 
   const SidebarContent = () => (

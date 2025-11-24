@@ -86,6 +86,26 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
+              {canAccess('baptisms') && (
+                <CollapsibleNavSection
+                  name="Baptisms"
+                  icon={Droplet}
+                  items={[
+                    {
+                      title: "Our Baptisms",
+                      url: "/baptisms",
+                      icon: Droplet,
+                    },
+                    {
+                      title: "New Baptisms",
+                      url: "/baptisms/create",
+                      icon: Plus,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
               <SidebarMenuItem key="Calendar">
                 <SidebarMenuButton asChild>
                   <Link href="/calendar?view=month" onClick={handleLinkClick}>
@@ -113,6 +133,46 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
+              {canAccess('funerals') && (
+                <CollapsibleNavSection
+                  name="Funerals"
+                  icon={Cross}
+                  items={[
+                    {
+                      title: "Our Funerals",
+                      url: "/funerals",
+                      icon: Cross,
+                    },
+                    {
+                      title: "New Funeral",
+                      url: "/funerals/create",
+                      icon: Plus,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
+              {canAccess('groups') && (
+                <CollapsibleNavSection
+                  name="Groups"
+                  icon={Users}
+                  items={[
+                    {
+                      title: "Our Groups",
+                      url: "/groups",
+                      icon: Users,
+                    },
+                    {
+                      title: "New Group",
+                      url: "/groups",
+                      icon: Plus,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
               <CollapsibleNavSection
                 name="Locations"
                 icon={Building}
@@ -131,38 +191,25 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-              <CollapsibleNavSection
-                name="Readings"
-                icon={BookOpen}
-                items={[
-                  {
-                    title: "Our Readings",
-                    url: "/readings",
-                    icon: BookOpen,
-                  },
-                  {
-                    title: "Create Reading",
-                    url: "/readings/create",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              {canAccess('masses') && (
+              {canAccess('mass-intentions') && (
                 <CollapsibleNavSection
-                  name="Masses"
-                  icon={CirclePlus}
+                  name="Mass Intentions"
+                  icon={List}
                   items={[
                     {
-                      title: "Our Masses",
-                      url: "/masses",
-                      icon: CirclePlus,
+                      title: "Our Mass Intentions",
+                      url: "/mass-intentions",
+                      icon: List,
                     },
                     {
-                      title: "New Mass",
-                      url: "/masses/create",
+                      title: "Create Mass Intention",
+                      url: "/mass-intentions/create",
                       icon: Plus,
+                    },
+                    {
+                      title: "Report",
+                      url: "/mass-intentions/report",
+                      icon: FileText,
                     },
                   ]}
                   defaultOpen={false}
@@ -209,59 +256,19 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 />
               )}
 
-              {canAccess('weddings') && (
+              {canAccess('masses') && (
                 <CollapsibleNavSection
-                  name="Weddings"
-                  icon={VenusAndMars}
+                  name="Masses"
+                  icon={CirclePlus}
                   items={[
                     {
-                      title: "Our Weddings",
-                      url: "/weddings",
-                      icon: VenusAndMars,
+                      title: "Our Masses",
+                      url: "/masses",
+                      icon: CirclePlus,
                     },
                     {
-                      title: "New Wedding",
-                      url: "/weddings/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
-              {canAccess('funerals') && (
-                <CollapsibleNavSection
-                  name="Funerals"
-                  icon={Cross}
-                  items={[
-                    {
-                      title: "Our Funerals",
-                      url: "/funerals",
-                      icon: Cross,
-                    },
-                    {
-                      title: "New Funeral",
-                      url: "/funerals/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
-              {canAccess('presentations') && (
-                <CollapsibleNavSection
-                  name="Presentations"
-                  icon={HandHeartIcon}
-                  items={[
-                    {
-                      title: "Our Presentations",
-                      url: "/presentations",
-                      icon: HandHeartIcon,
-                    },
-                    {
-                      title: "New Presentation",
-                      url: "/presentations/create",
+                      title: "New Mass",
+                      url: "/masses/create",
                       icon: Plus,
                     },
                   ]}
@@ -287,88 +294,25 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-              {canAccess('groups') && (
+              {canAccess('presentations') && (
                 <CollapsibleNavSection
-                  name="Groups"
-                  icon={Users}
+                  name="Presentations"
+                  icon={HandHeartIcon}
                   items={[
                     {
-                      title: "Our Groups",
-                      url: "/groups",
-                      icon: Users,
+                      title: "Our Presentations",
+                      url: "/presentations",
+                      icon: HandHeartIcon,
                     },
                     {
-                      title: "New Group",
-                      url: "/groups",
+                      title: "New Presentation",
+                      url: "/presentations/create",
                       icon: Plus,
                     },
                   ]}
                   defaultOpen={false}
                 />
               )}
-
-              {canAccess('mass-intentions') && (
-                <CollapsibleNavSection
-                  name="Mass Intentions"
-                  icon={List}
-                  items={[
-                    {
-                      title: "Our Mass Intentions",
-                      url: "/mass-intentions",
-                      icon: List,
-                    },
-                    {
-                      title: "Create Mass Intention",
-                      url: "/mass-intentions/create",
-                      icon: Plus,
-                    },
-                    {
-                      title: "Report",
-                      url: "/mass-intentions/report",
-                      icon: FileText,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
-              {canAccess('baptisms') && (
-                <CollapsibleNavSection
-                  name="Baptisms"
-                  icon={Droplet}
-                  items={[
-                    {
-                      title: "Our Baptisms",
-                      url: "/baptisms",
-                      icon: Droplet,
-                    },
-                    {
-                      title: "New Baptisms",
-                      url: "/baptisms/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
-              {/*<CollapsibleNavSection*/}
-              {/*  name="Confirmations"*/}
-              {/*  icon={Flame}*/}
-              {/*  items={[*/}
-              {/*    {*/}
-              {/*      title: "Our Confirmations",*/}
-              {/*      url: "/confirmations",*/}
-              {/*      icon: Flame,*/}
-              {/*    },*/}
-              {/*    {*/}
-              {/*      title: "New Confirmation",*/}
-              {/*      url: "/confirmations",*/}
-              {/*      icon: Plus,*/}
-              {/*    },*/}
-              {/*  ]}*/}
-              {/*  defaultOpen={false}*/}
-              {/*/>*/}
 
               {canAccess('quinceaneras') && (
                 <CollapsibleNavSection
@@ -383,6 +327,44 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                     {
                       title: "New Quinceañera",
                       url: "/quinceaneras/create",
+                      icon: Plus,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
+              <CollapsibleNavSection
+                name="Readings"
+                icon={BookOpen}
+                items={[
+                  {
+                    title: "Our Readings",
+                    url: "/readings",
+                    icon: BookOpen,
+                  },
+                  {
+                    title: "Create Reading",
+                    url: "/readings/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              {canAccess('weddings') && (
+                <CollapsibleNavSection
+                  name="Weddings"
+                  icon={VenusAndMars}
+                  items={[
+                    {
+                      title: "Our Weddings",
+                      url: "/weddings",
+                      icon: VenusAndMars,
+                    },
+                    {
+                      title: "New Wedding",
+                      url: "/weddings/create",
                       icon: Plus,
                     },
                   ]}
