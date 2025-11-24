@@ -34,15 +34,17 @@ Outward Sign integrates global Catholic liturgical calendar data to provide pari
 
 All liturgical calendar data comes from **[John Romano D'Orazio's Liturgical Calendar API](https://litcal.johnromanodorazio.com)**.
 
-**API Endpoint:**
+**API Endpoint (US Calendar):**
 ```
-https://litcal.johnromanodorazio.com/api/dev/calendar?locale={locale}&year={year}
+https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/{year}?locale={locale}
 ```
 
 **Example:**
 ```
-https://litcal.johnromanodorazio.com/api/dev/calendar?locale=en&year=2025
+https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2026?locale=en_US
 ```
+
+**Note:** We use the US-specific calendar (`/nation/US/`) which includes US-specific holy days of obligation and observances that differ from the general Roman Catholic calendar. The default locale is `en_US` for English.
 
 **Response Format:**
 ```json
@@ -117,13 +119,18 @@ There are two ways to import liturgical calendar data: migration files (recommen
 - `20251109000002_seed_global_liturgical_events_2025_en_US.sql` - 538 events for 2025
 - `20251109000003_seed_global_liturgical_events_2026_en_US.sql` - 547 events for 2026
 
+**Note:** The existing 2025 and 2026 migrations were generated before the US-specific endpoint was implemented. While they contain valid data, they may be missing some US-specific observances. Consider regenerating them using the updated script to ensure all US-specific holy days and observances are included.
+
 #### Generating Migration Files
 
 Use the migration generator script to create new migration files:
 
 ```bash
-# Generate migration for 2027 (English)
-tsx scripts/generate-global-liturgical-migration.ts 2027 en
+# Generate migration for 2027 (English - default locale en_US)
+tsx scripts/generate-global-liturgical-migration.ts 2027
+
+# Generate migration for 2027 with explicit locale
+tsx scripts/generate-global-liturgical-migration.ts 2027 en_US
 
 # Generate migration for 2027 (Spanish)
 tsx scripts/generate-global-liturgical-migration.ts 2027 es
@@ -139,17 +146,17 @@ tsx scripts/generate-global-liturgical-migration.ts 2027 es
 
 **Migration File Format:**
 ```sql
--- Seed global_liturgical_events table for year 2027 (locale: en)
--- Generated from https://litcal.johnromanodorazio.com/api/dev/calendar
+-- Seed global_liturgical_events table for year 2027 (locale: en_US)
+-- Generated from https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2027
 -- Total events: 547
 -- Generated on: 2025-11-14T12:00:00.000Z
 
 INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
-VALUES ('Advent1', '2027-11-28', 2027, 'en', '{"event_key":"Advent1",...}'::jsonb)
+VALUES ('Advent1', '2027-11-28', 2027, 'en_US', '{"event_key":"Advent1",...}'::jsonb)
 ON CONFLICT (event_key, date, locale) DO NOTHING;
 
 INSERT INTO global_liturgical_events (event_key, date, year, locale, event_data)
-VALUES ('StAndrewAp', '2027-11-30', 2027, 'en', '{"event_key":"StAndrewAp",...}'::jsonb)
+VALUES ('StAndrewAp', '2027-11-30', 2027, 'en_US', '{"event_key":"StAndrewAp",...}'::jsonb)
 ON CONFLICT (event_key, date, locale) DO NOTHING;
 
 -- ... (continues for all events)
@@ -200,8 +207,8 @@ npm run seed
 Year: 2027
 Locale: es
 ==================================================
-📅 Fetching liturgical calendar for year 2027 (locale: es)...
-   URL: https://litcal.johnromanodorazio.com/api/dev/calendar?locale=es&year=2027
+📅 Fetching US liturgical calendar for year 2027 (locale: es)...
+   URL: https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2027?locale=es
 ✅ Fetched 547 events
 
 📥 Importing 547 events into database...
@@ -304,11 +311,11 @@ const event = await getGlobalLiturgicalEvent('event-uuid-here')
 **Best for:** Local development, database resets
 
 ```bash
-# Generate migration file
-tsx scripts/generate-global-liturgical-migration.ts 2028 en
+# Generate migration file (uses en_US by default)
+tsx scripts/generate-global-liturgical-migration.ts 2028
 
 # Review the file
-cat supabase/migrations/YYYYMMDD000004_seed_global_liturgical_events_2028_en.sql
+cat supabase/migrations/YYYYMMDD000004_seed_global_liturgical_events_2028_en_US.sql
 
 # Apply migration
 supabase db push
@@ -319,8 +326,11 @@ supabase db push
 **Best for:** Production updates, large datasets
 
 ```bash
-# Import directly to database
-npm run seed:liturgical -- --year=2028 --locale=en
+# Import directly to database (uses en_US by default)
+npm run seed:liturgical -- --year=2028
+
+# Or with explicit locale
+npm run seed:liturgical -- --year=2028 --locale=en_US
 ```
 
 ### Migration File Naming Convention
@@ -336,9 +346,9 @@ YYYYMMDD000XXX_seed_global_liturgical_events_YYYY_LOCALE.sql
 - `LOCALE` - Locale code (e.g., `en`, `es`, `en_US`)
 
 **Examples:**
-- `20251114000004_seed_global_liturgical_events_2027_en.sql`
+- `20251114000004_seed_global_liturgical_events_2027_en_US.sql`
 - `20251114000005_seed_global_liturgical_events_2027_es.sql`
-- `20251114000006_seed_global_liturgical_events_2028_en.sql`
+- `20251114000006_seed_global_liturgical_events_2028_en_US.sql`
 
 ---
 
@@ -358,7 +368,11 @@ The Liturgical Calendar API supports multiple locales. Common locales include:
 
 1. Generate migration or import data:
    ```bash
+   # For Spanish
    tsx scripts/generate-global-liturgical-migration.ts 2025 es
+
+   # For English (US is default)
+   tsx scripts/generate-global-liturgical-migration.ts 2025 en_US
    ```
 
 2. Apply migration:
@@ -368,7 +382,11 @@ The Liturgical Calendar API supports multiple locales. Common locales include:
 
 3. Query with locale parameter:
    ```typescript
+   // Query Spanish events
    const events = await getGlobalLiturgicalEvents('2025-01-01', '2025-12-31', 'es')
+
+   // Query English (US) events
+   const events = await getGlobalLiturgicalEvents('2025-01-01', '2025-12-31', 'en_US')
    ```
 
 ---
@@ -511,7 +529,7 @@ export default async function MassFormPage({ params }: { params: { date: string 
 
 **Solutions:**
 - Check internet connection
-- Verify API is accessible: `curl https://litcal.johnromanodorazio.com/api/dev/calendar?locale=en&year=2025`
+- Verify API is accessible: `curl https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/2025?locale=en_US`
 - Check if locale code is valid
 
 ### Import Script Fails

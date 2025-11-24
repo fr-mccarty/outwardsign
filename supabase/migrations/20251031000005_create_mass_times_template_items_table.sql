@@ -23,6 +23,14 @@ CREATE TABLE IF NOT EXISTS mass_times_template_items (
   time TIME NOT NULL, -- e.g., "10:00:00", "17:00:00"
   day_type day_type NOT NULL DEFAULT 'IS_DAY',
 
+  -- Default assignments for masses created from this template
+  presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
+  length_of_time INTEGER, -- Duration in minutes
+  homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  lead_musician_id UUID REFERENCES people(id) ON DELETE SET NULL,
+  cantor_id UUID REFERENCES people(id) ON DELETE SET NULL,
+
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -32,11 +40,22 @@ CREATE TABLE IF NOT EXISTS mass_times_template_items (
 COMMENT ON TABLE mass_times_template_items IS 'Individual time slots within a Mass Time Template (e.g., Saturday 5:00pm vigil, Sunday 10:00am)';
 COMMENT ON COLUMN mass_times_template_items.time IS 'The time of day for this Mass (e.g., 10:00:00, 17:00:00)';
 COMMENT ON COLUMN mass_times_template_items.day_type IS 'IS_DAY = Mass occurs on the actual day (e.g., Sunday 10am), DAY_BEFORE = Mass occurs the day before (e.g., Saturday 5pm vigil for Sunday)';
+COMMENT ON COLUMN mass_times_template_items.presider_id IS 'Default presider for masses created from this template item';
+COMMENT ON COLUMN mass_times_template_items.location_id IS 'Default location for masses created from this template item';
+COMMENT ON COLUMN mass_times_template_items.length_of_time IS 'Expected duration of the mass in minutes';
+COMMENT ON COLUMN mass_times_template_items.homilist_id IS 'Default homilist for masses created from this template item';
+COMMENT ON COLUMN mass_times_template_items.lead_musician_id IS 'Default lead musician for masses created from this template item';
+COMMENT ON COLUMN mass_times_template_items.cantor_id IS 'Default cantor for masses created from this template item';
 
 -- Create indexes
 CREATE INDEX idx_mass_times_template_items_template_id ON mass_times_template_items(mass_times_template_id);
 CREATE INDEX idx_mass_times_template_items_time ON mass_times_template_items(time);
 CREATE INDEX idx_mass_times_template_items_day_type ON mass_times_template_items(day_type);
+CREATE INDEX idx_mass_times_template_items_presider_id ON mass_times_template_items(presider_id);
+CREATE INDEX idx_mass_times_template_items_location_id ON mass_times_template_items(location_id);
+CREATE INDEX idx_mass_times_template_items_homilist_id ON mass_times_template_items(homilist_id);
+CREATE INDEX idx_mass_times_template_items_lead_musician_id ON mass_times_template_items(lead_musician_id);
+CREATE INDEX idx_mass_times_template_items_cantor_id ON mass_times_template_items(cantor_id);
 
 -- Enable RLS
 ALTER TABLE mass_times_template_items ENABLE ROW LEVEL SECURITY;

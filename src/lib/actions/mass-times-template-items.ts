@@ -15,6 +15,12 @@ export interface MassTimesTemplateItem {
   mass_times_template_id: string
   time: string
   day_type: DayType
+  presider_id?: string
+  location_id?: string
+  length_of_time?: number // Duration in minutes
+  homilist_id?: string
+  lead_musician_id?: string
+  cantor_id?: string
   created_at: string
   updated_at: string
 }
@@ -24,12 +30,24 @@ export interface CreateTemplateItemData {
   mass_times_template_id: string
   time: string
   day_type: DayType
+  presider_id?: string
+  location_id?: string
+  length_of_time?: number
+  homilist_id?: string
+  lead_musician_id?: string
+  cantor_id?: string
 }
 
 // Update data interface
 export interface UpdateTemplateItemData {
   time?: string
   day_type?: DayType
+  presider_id?: string
+  location_id?: string
+  length_of_time?: number
+  homilist_id?: string
+  lead_musician_id?: string
+  cantor_id?: string
 }
 
 /**
@@ -80,6 +98,12 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
       mass_times_template_id: data.mass_times_template_id,
       time: data.time,
       day_type: data.day_type,
+      presider_id: data.presider_id,
+      location_id: data.location_id,
+      length_of_time: data.length_of_time,
+      homilist_id: data.homilist_id,
+      lead_musician_id: data.lead_musician_id,
+      cantor_id: data.cantor_id,
     }])
     .select()
     .single()
@@ -119,6 +143,12 @@ export async function updateTemplateItem(
   const updateData: Record<string, unknown> = {}
   if (data.time !== undefined) updateData.time = data.time
   if (data.day_type !== undefined) updateData.day_type = data.day_type
+  if (data.presider_id !== undefined) updateData.presider_id = data.presider_id
+  if (data.location_id !== undefined) updateData.location_id = data.location_id
+  if (data.length_of_time !== undefined) updateData.length_of_time = data.length_of_time
+  if (data.homilist_id !== undefined) updateData.homilist_id = data.homilist_id
+  if (data.lead_musician_id !== undefined) updateData.lead_musician_id = data.lead_musician_id
+  if (data.cantor_id !== undefined) updateData.cantor_id = data.cantor_id
 
   const { data: item, error } = await supabase
     .from('mass_times_template_items')

@@ -615,6 +615,7 @@ export interface Mass {
   announcements?: string
   note?: string
   petitions?: string
+  liturgical_color?: string
   created_at: string
   updated_at: string
 }

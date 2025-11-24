@@ -23,8 +23,8 @@ test.describe('Quinceañeras Module - Add People', () => {
     const firstName = `Quince${Date.now()}`;
     const lastName = 'Ramirez';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -91,8 +91,8 @@ test.describe('Quinceañeras Module - Add People', () => {
     const firstName = `Contact${Date.now()}`;
     const lastName = 'Torres';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');

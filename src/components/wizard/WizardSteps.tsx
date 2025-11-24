@@ -31,17 +31,17 @@ export function WizardSteps({
 
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <TooltipProvider>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center overflow-x-auto pb-2">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+              <div key={step.id} className="flex items-center flex-shrink-0">
                 <div className="flex flex-col items-center">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => handleStepClick(step.id)}
-                        className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
+                        className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-colors text-sm sm:text-base ${
                           step.id < currentStep
                             ? 'bg-green-500 border-green-500 text-white'
                             : step.id === currentStep
@@ -55,7 +55,7 @@ export function WizardSteps({
                         disabled={!allowPreviousNavigation || step.id > currentStep}
                       >
                         {step.id < currentStep ? (
-                          <Check className="w-5 h-5" />
+                          <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
                           step.id
                         )}
@@ -69,7 +69,7 @@ export function WizardSteps({
 
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-16 h-0.5 mx-4 ${
+                    className={`w-8 sm:w-16 h-0.5 mx-2 sm:mx-4 ${
                       step.id < currentStep ? 'bg-green-500' : 'bg-border'
                     }`}
                   />

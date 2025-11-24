@@ -23,8 +23,8 @@ test.describe('Funerals Module - Add People', () => {
     const firstName = `Deceased${Date.now()}`;
     const lastName = 'Williams';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -91,8 +91,8 @@ test.describe('Funerals Module - Add People', () => {
     const firstName = `Contact${Date.now()}`;
     const lastName = 'Brown';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');

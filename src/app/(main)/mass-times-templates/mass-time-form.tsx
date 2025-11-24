@@ -30,6 +30,10 @@ import {
 } from '@/components/ui/dialog'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { FormBottomActions } from '@/components/form-bottom-actions'
+import { PersonPickerField } from '@/components/person-picker-field'
+import { LocationPickerField } from '@/components/location-picker-field'
+import { usePickerState } from '@/hooks/use-picker-state'
+import type { Person, Location } from '@/lib/types'
 import { Plus, Trash2, Clock, Edit } from 'lucide-react'
 import { toast } from 'sonner'
 import { createMassTime, updateMassTime } from '@/lib/actions/mass-times-templates'
@@ -89,12 +93,24 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [newTime, setNewTime] = useState('09:00')
   const [newDayType, setNewDayType] = useState<DayType>('IS_DAY')
+  const newPresider = usePickerState<Person>()
+  const newLocation = usePickerState<Location>()
+  const [newLengthOfTime, setNewLengthOfTime] = useState<number | undefined>()
+  const newHomilist = usePickerState<Person>()
+  const newLeadMusician = usePickerState<Person>()
+  const newCantor = usePickerState<Person>()
 
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [itemBeingEdited, setItemBeingEdited] = useState<MassTimesTemplateItem | null>(null)
   const [editTime, setEditTime] = useState('09:00')
   const [editDayType, setEditDayType] = useState<DayType>('IS_DAY')
+  const editPresider = usePickerState<Person>()
+  const editLocation = usePickerState<Location>()
+  const [editLengthOfTime, setEditLengthOfTime] = useState<number | undefined>()
+  const editHomilist = usePickerState<Person>()
+  const editLeadMusician = usePickerState<Person>()
+  const editCantor = usePickerState<Person>()
 
   // State for delete confirmation
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -149,11 +165,23 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         mass_times_template_id: massTime.id,
         time: newTime + ':00',
         day_type: newDayType,
+        presider_id: newPresider.value?.id,
+        location_id: newLocation.value?.id,
+        length_of_time: newLengthOfTime,
+        homilist_id: newHomilist.value?.id,
+        lead_musician_id: newLeadMusician.value?.id,
+        cantor_id: newCantor.value?.id,
       })
       toast.success('Mass time added')
       setIsAddDialogOpen(false)
       setNewTime('09:00')
       setNewDayType('IS_DAY')
+      newPresider.setValue(null)
+      newLocation.setValue(null)
+      setNewLengthOfTime(undefined)
+      newHomilist.setValue(null)
+      newLeadMusician.setValue(null)
+      newCantor.setValue(null)
       router.refresh()
     } catch (error) {
       console.error('Error adding item:', error)
@@ -185,6 +213,14 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
     setItemBeingEdited(item)
     setEditTime(item.time.substring(0, 5))
     setEditDayType(item.day_type)
+    // Note: We only have IDs here, not full objects. The picker will need to fetch if needed
+    // For now, we'll clear the pickers and let users re-select
+    editPresider.setValue(null)
+    editLocation.setValue(null)
+    setEditLengthOfTime(item.length_of_time)
+    editHomilist.setValue(null)
+    editLeadMusician.setValue(null)
+    editCantor.setValue(null)
     setIsEditDialogOpen(true)
   }
 
@@ -195,6 +231,12 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
       await updateTemplateItem(itemBeingEdited.id, massTime.id, {
         time: editTime + ':00',
         day_type: editDayType,
+        presider_id: editPresider.value?.id,
+        location_id: editLocation.value?.id,
+        length_of_time: editLengthOfTime,
+        homilist_id: editHomilist.value?.id,
+        lead_musician_id: editLeadMusician.value?.id,
+        cantor_id: editCantor.value?.id,
       })
       toast.success('Mass time updated')
       setIsEditDialogOpen(false)
@@ -367,7 +409,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
 
       {/* Add Time Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Mass Time</DialogTitle>
             <DialogDescription>
@@ -399,6 +441,62 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
                 Select &quot;Vigil&quot; for masses that occur the evening before (e.g., Saturday evening for Sunday).
               </p>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="lengthOfTime">Duration (minutes)</Label>
+              <Input
+                id="lengthOfTime"
+                type="number"
+                min="0"
+                placeholder="e.g., 60"
+                value={newLengthOfTime ?? ''}
+                onChange={(e) => setNewLengthOfTime(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Expected duration of the mass in minutes.
+              </p>
+            </div>
+            <LocationPickerField
+              label="Location"
+              value={newLocation.value}
+              onValueChange={newLocation.setValue}
+              showPicker={newLocation.showPicker}
+              onShowPickerChange={newLocation.setShowPicker}
+              placeholder="Select location (optional)"
+            />
+            <PersonPickerField
+              label="Presider"
+              value={newPresider.value}
+              onValueChange={newPresider.setValue}
+              showPicker={newPresider.showPicker}
+              onShowPickerChange={newPresider.setShowPicker}
+              placeholder="Select presider (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Homilist"
+              value={newHomilist.value}
+              onValueChange={newHomilist.setValue}
+              showPicker={newHomilist.showPicker}
+              onShowPickerChange={newHomilist.setShowPicker}
+              placeholder="Select homilist (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Lead Musician"
+              value={newLeadMusician.value}
+              onValueChange={newLeadMusician.setValue}
+              showPicker={newLeadMusician.showPicker}
+              onShowPickerChange={newLeadMusician.setShowPicker}
+              placeholder="Select lead musician (optional)"
+            />
+            <PersonPickerField
+              label="Cantor"
+              value={newCantor.value}
+              onValueChange={newCantor.setValue}
+              showPicker={newCantor.showPicker}
+              onShowPickerChange={newCantor.setShowPicker}
+              placeholder="Select cantor (optional)"
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isAddingItem}>
@@ -413,7 +511,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
 
       {/* Edit Time Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Mass Time</DialogTitle>
             <DialogDescription>
@@ -445,6 +543,62 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
                 Select &quot;Vigil&quot; for masses that occur the evening before (e.g., Saturday evening for Sunday).
               </p>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="editLengthOfTime">Duration (minutes)</Label>
+              <Input
+                id="editLengthOfTime"
+                type="number"
+                min="0"
+                placeholder="e.g., 60"
+                value={editLengthOfTime ?? ''}
+                onChange={(e) => setEditLengthOfTime(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Expected duration of the mass in minutes.
+              </p>
+            </div>
+            <LocationPickerField
+              label="Location"
+              value={editLocation.value}
+              onValueChange={editLocation.setValue}
+              showPicker={editLocation.showPicker}
+              onShowPickerChange={editLocation.setShowPicker}
+              placeholder="Select location (optional)"
+            />
+            <PersonPickerField
+              label="Presider"
+              value={editPresider.value}
+              onValueChange={editPresider.setValue}
+              showPicker={editPresider.showPicker}
+              onShowPickerChange={editPresider.setShowPicker}
+              placeholder="Select presider (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Homilist"
+              value={editHomilist.value}
+              onValueChange={editHomilist.setValue}
+              showPicker={editHomilist.showPicker}
+              onShowPickerChange={editHomilist.setShowPicker}
+              placeholder="Select homilist (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Lead Musician"
+              value={editLeadMusician.value}
+              onValueChange={editLeadMusician.setValue}
+              showPicker={editLeadMusician.showPicker}
+              onShowPickerChange={editLeadMusician.setShowPicker}
+              placeholder="Select lead musician (optional)"
+            />
+            <PersonPickerField
+              label="Cantor"
+              value={editCantor.value}
+              onValueChange={editCantor.setValue}
+              showPicker={editCantor.showPicker}
+              onShowPickerChange={editCantor.setShowPicker}
+              placeholder="Select cantor (optional)"
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isAddingItem}>

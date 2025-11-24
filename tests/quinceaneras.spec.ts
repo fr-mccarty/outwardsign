@@ -39,7 +39,7 @@ test.describe('Quinceaneras Module', () => {
 
     // Get the quinceanera ID from URL for later use
     const quinceaneraUrl = page.url();
-    const quinceaneraId = quinceaneraUrl.split('/').pop();
+    const quinceaneraId = quinceaneraUrl.split('/')[quinceaneraUrl.split('/').length - 2]; // Extract ID from /quinceaneras/{id}/edit
 
     console.log(`Created quinceanera with ID: ${quinceaneraId}`);
 
@@ -49,7 +49,8 @@ test.describe('Quinceaneras Module', () => {
     // Navigate to edit page
     await page.goto(`/quinceaneras/${quinceaneraId}/edit`);
     await expect(page).toHaveURL(`/quinceaneras/${quinceaneraId}/edit`, { timeout: TEST_TIMEOUTS.NAVIGATION });
-    await expect(page.getByRole('heading', { name: /Edit Quincea.*era/i })).toBeVisible();
+    // Verify we're on the edit page (heading will be "Quinceañera" since no celebrant selected yet)
+    await expect(page.getByRole('heading', { name: /Quincea.*era/i }).first()).toBeVisible();
 
     // Edit the quinceanera - add more information
     const updatedNotes = 'Updated notes: Celebration scheduled for Saturday evening. Reception to follow.';
@@ -150,11 +151,16 @@ test.describe('Quinceaneras Module', () => {
     await submitBtn.click();
     await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify action buttons exist
+    // Get the quinceanera ID from URL and navigate to view page
+    const urlParts = page.url().split('/');
+    const quinceaneraId = urlParts[urlParts.length - 2];
+    await page.goto(`/quinceaneras/${quinceaneraId}`);
+
+    // Verify action buttons exist (buttons are rendered as Links with Button styling)
     await expect(page.getByRole('link', { name: /Edit Quincea.*era/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Print View/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Print View/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download PDF/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download Word/i })).toBeVisible();
   });
 
   test('should update quinceanera and verify persistence after page refresh', async ({ page }) => {
@@ -171,7 +177,7 @@ test.describe('Quinceaneras Module', () => {
     await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/quinceaneras\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const quinceaneraId = page.url().split('/').pop();
+    const quinceaneraId = page.url().split('/')[page.url().split('/').length - 2]; // Extract ID from /quinceaneras/{id}/edit
 
     // Verify initial data is displayed on view page
     await expect(page.locator(`text=${initialNote}`).first()).toBeVisible();

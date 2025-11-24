@@ -15,6 +15,7 @@ CREATE TABLE masses (
   announcements TEXT,
   note TEXT,
   petitions TEXT,
+  liturgical_color TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -23,6 +24,7 @@ CREATE TABLE masses (
 COMMENT ON COLUMN masses.mass_time_template_item_id IS 'Which time template item this Mass corresponds to (e.g., Sunday 10:00am from Regular Schedule)';
 COMMENT ON COLUMN masses.name IS 'Name of the Mass (e.g., "Sunday Mass - 3rd Sunday of Advent")';
 COMMENT ON COLUMN masses.description IS 'Additional details about this Mass';
+COMMENT ON COLUMN masses.liturgical_color IS 'The liturgical color for this Mass (e.g., Green, White, Red, Purple, Rose)';
 
 -- Enable RLS
 ALTER TABLE masses ENABLE ROW LEVEL SECURITY;
@@ -40,6 +42,7 @@ CREATE INDEX idx_masses_liturgical_event_id ON masses(liturgical_event_id);
 CREATE INDEX idx_masses_mass_roles_template_id ON masses(mass_roles_template_id);
 CREATE INDEX idx_masses_mass_time_template_item_id ON masses(mass_time_template_item_id);
 CREATE INDEX idx_masses_status ON masses(status);
+CREATE INDEX idx_masses_liturgical_color ON masses(liturgical_color);
 
 -- RLS Policies for masses
 CREATE POLICY "Parish members can read their parish masses"

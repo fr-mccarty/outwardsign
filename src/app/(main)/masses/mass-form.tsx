@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
-import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, type MassStatus, type MassTemplate } from "@/lib/constants"
+import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, LITURGICAL_COLOR_VALUES, LITURGICAL_COLOR_LABELS, type MassStatus, type MassTemplate, type LiturgicalColor } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -38,7 +38,8 @@ const massSchema = z.object({
   petitions: z.string().optional(),
   announcements: z.string().optional(),
   note: z.string().optional(),
-  mass_template_id: z.string().optional()
+  mass_template_id: z.string().optional(),
+  liturgical_color: z.enum(LITURGICAL_COLOR_VALUES).optional()
 })
 
 interface MassFormProps {
@@ -63,6 +64,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [announcements, setAnnouncements] = useState(mass?.announcements || "")
   const [petitions, setPetitions] = useState(mass?.petitions || "")
   const [massTemplateId, setMassTemplateId] = useState<MassTemplate>((mass?.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE)
+  const [liturgicalColor, setLiturgicalColor] = useState<LiturgicalColor | undefined>(mass?.liturgical_color as LiturgicalColor | undefined)
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
@@ -322,6 +324,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         announcements: announcements || undefined,
         note: note || undefined,
         mass_template_id: massTemplateId || undefined,
+        liturgical_color: liturgicalColor || undefined,
       })
 
       if (isEditing) {
@@ -377,6 +380,20 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             }))}
           />
 
+          <FormField
+            id="liturgical_color"
+            inputType="select"
+            label="Liturgical Color"
+            description="The liturgical color for this Mass celebration"
+            value={liturgicalColor || ''}
+            onChange={(value) => setLiturgicalColor(value ? (value as LiturgicalColor) : undefined)}
+            placeholder="Select liturgical color (optional)"
+            options={LITURGICAL_COLOR_VALUES.map((value) => ({
+              value,
+              label: LITURGICAL_COLOR_LABELS[value].en
+            }))}
+          />
+
           <LiturgicalEventPickerField
             label="Liturgical Event"
             description="Link this Mass to a liturgical event (feast day, solemnity, etc.)"
@@ -413,6 +430,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
             autoSetSex="MALE"
+            visibleFields={['email', 'phone_number', 'note']}
           />
 
           <PersonPickerField
@@ -423,6 +441,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={homilist.showPicker}
             onShowPickerChange={homilist.setShowPicker}
             autoSetSex="MALE"
+            visibleFields={['email', 'phone_number', 'note']}
           />
       </FormSectionCard>
 
@@ -504,8 +523,9 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                 inputType="select"
                 label="Mass Role Template"
                 description="Choose a template to define which mass roles are needed for this Mass"
-                value={massRolesTemplateId}
+                value={massRolesTemplateId || ''}
                 onChange={handleTemplateChange}
+                placeholder="Select a mass role template (optional)"
                 options={allTemplates.map((template) => ({
                   value: template.id,
                   label: template.name
