@@ -40,7 +40,6 @@ export function WeekendSummarySetup() {
     <PageContainer
       title="Weekend Summary"
       description="Generate a summary document of all activities happening on a parish weekend."
-      maxWidth="2xl"
     >
       <Card>
         <CardHeader>

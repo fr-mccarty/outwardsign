@@ -1,11 +1,23 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import PdfPrinter from 'pdfmake'
+import { TDocumentDefinitions } from 'pdfmake/interfaces'
 import { createClient } from '@/lib/supabase/server'
 import { getWeekendSummaryData } from '@/lib/actions/weekend-summary'
 import { buildWeekendSummary } from '@/lib/content-builders/weekend-summary'
-import { renderHTML } from '@/lib/renderers/html-renderer'
-import { convertHTMLToPDF } from '@/lib/pdf-converter'
+import { renderPDF } from '@/lib/renderers/pdf-renderer'
+import { pdfStyles } from '@/lib/styles/liturgy-styles'
 
-export const dynamic = 'force-dynamic'
+// Define fonts for pdfmake
+const fonts = {
+  Roboto: {
+    normal: 'Helvetica',
+    bold: 'Helvetica-Bold',
+    italics: 'Helvetica-Oblique',
+    bolditalics: 'Helvetica-BoldOblique'
+  }
+}
+
+const printer = new PdfPrinter(fonts)
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +26,7 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return new Response('Unauthorized', { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get search params
@@ -23,7 +35,7 @@ export async function GET(request: NextRequest) {
     const filename = searchParams.get('filename') || 'Weekend-Summary.pdf'
 
     if (!date) {
-      return new Response('Missing date parameter', { status: 400 })
+      return NextResponse.json({ error: 'Missing date parameter' }, { status: 400 })
     }
 
     // Build params for data fetch
@@ -37,25 +49,50 @@ export async function GET(request: NextRequest) {
     // Fetch weekend data
     const weekendData = await getWeekendSummaryData(weekendParams)
 
-    // Build content
-    const liturgyDoc = buildWeekendSummary(weekendData, weekendParams)
+    // Build liturgy content
+    const liturgyDocument = buildWeekendSummary(weekendData, weekendParams)
 
-    // Render to HTML
-    const htmlContent = renderHTML(liturgyDoc)
+    // Render to PDF format
+    const content = renderPDF(liturgyDocument)
 
-    // Convert to PDF
-    const pdfBuffer = await convertHTMLToPDF(htmlContent)
+    // PDF Document definition
+    const docDefinition: TDocumentDefinitions = {
+      content,
+      pageMargins: [
+        pdfStyles.margins.page,
+        pdfStyles.margins.page,
+        pdfStyles.margins.page,
+        pdfStyles.margins.page
+      ]
+    }
+
+    // Generate PDF
+    const pdfDoc = printer.createPdfKitDocument(docDefinition)
+
+    // Collect PDF buffer
+    const chunks: Buffer[] = []
+    pdfDoc.on('data', (chunk) => chunks.push(chunk))
+
+    await new Promise<void>((resolve, reject) => {
+      pdfDoc.on('end', () => resolve())
+      pdfDoc.on('error', reject)
+      pdfDoc.end()
+    })
+
+    const pdfBuffer = Buffer.concat(chunks)
 
     // Return PDF
-    return new Response(pdfBuffer, {
-      status: 200,
+    return new NextResponse(pdfBuffer as any, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
+        'Content-Disposition': `attachment; filename="${filename}"`
+      }
     })
   } catch (error) {
     console.error('Error generating weekend summary PDF:', error)
-    return new Response('Internal Server Error', { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to generate PDF' },
+      { status: 500 }
+    )
   }
 }

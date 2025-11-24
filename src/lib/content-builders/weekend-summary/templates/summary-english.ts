@@ -105,14 +105,14 @@ export function buildSummaryEnglish(
       const date = presentation.presentation_event?.start_date || ''
       const time = presentation.presentation_event?.start_time || ''
       const name = presentation.child?.full_name || 'Unknown'
-      const presider = presentation.presider?.full_name || 'TBD'
+      const coordinator = presentation.coordinator?.full_name || 'TBD'
 
       allEvents.push({
         date,
         time,
         sortKey: `${date} ${time}`,
         type: 'Presentations',
-        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${presider}`,
+        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${coordinator}`,
       })
     })
   }

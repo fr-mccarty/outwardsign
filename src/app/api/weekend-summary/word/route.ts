@@ -1,8 +1,10 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { Document, Packer } from 'docx'
 import { createClient } from '@/lib/supabase/server'
 import { getWeekendSummaryData } from '@/lib/actions/weekend-summary'
 import { buildWeekendSummary } from '@/lib/content-builders/weekend-summary'
 import { renderWord } from '@/lib/renderers/word-renderer'
+import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +15,7 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return new Response('Unauthorized', { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get search params
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
     const filename = searchParams.get('filename') || 'Weekend-Summary.docx'
 
     if (!date) {
-      return new Response('Missing date parameter', { status: 400 })
+      return NextResponse.json({ error: 'Missing date parameter' }, { status: 400 })
     }
 
     // Build params for data fetch
@@ -36,22 +38,46 @@ export async function GET(request: NextRequest) {
     // Fetch weekend data
     const weekendData = await getWeekendSummaryData(weekendParams)
 
-    // Build content
-    const liturgyDoc = buildWeekendSummary(weekendData, weekendParams)
+    // Build liturgy content
+    const liturgyDocument = buildWeekendSummary(weekendData, weekendParams)
 
-    // Render to Word
-    const wordBuffer = await renderWord(liturgyDoc)
+    // Render to Word format
+    const paragraphs = renderWord(liturgyDocument)
+
+    // Create Word document
+    const doc = new Document({
+      sections: [
+        {
+          properties: {
+            page: {
+              margin: {
+                top: WORD_PAGE_MARGIN,
+                right: WORD_PAGE_MARGIN,
+                bottom: WORD_PAGE_MARGIN,
+                left: WORD_PAGE_MARGIN
+              }
+            }
+          },
+          children: paragraphs
+        }
+      ]
+    })
+
+    // Generate Word document buffer
+    const buffer = await Packer.toBuffer(doc)
 
     // Return Word document
-    return new Response(wordBuffer, {
-      status: 200,
+    return new NextResponse(buffer as any, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
+        'Content-Disposition': `attachment; filename="${filename}"`
+      }
     })
   } catch (error) {
     console.error('Error generating weekend summary Word document:', error)
-    return new Response('Internal Server Error', { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to generate Word document' },
+      { status: 500 }
+    )
   }
 }
