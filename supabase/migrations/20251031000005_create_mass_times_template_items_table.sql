@@ -28,8 +28,6 @@ CREATE TABLE IF NOT EXISTS mass_times_template_items (
   location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
   length_of_time INTEGER, -- Duration in minutes
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  lead_musician_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  cantor_id UUID REFERENCES people(id) ON DELETE SET NULL,
 
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -44,8 +42,6 @@ COMMENT ON COLUMN mass_times_template_items.presider_id IS 'Default presider for
 COMMENT ON COLUMN mass_times_template_items.location_id IS 'Default location for masses created from this template item';
 COMMENT ON COLUMN mass_times_template_items.length_of_time IS 'Expected duration of the mass in minutes';
 COMMENT ON COLUMN mass_times_template_items.homilist_id IS 'Default homilist for masses created from this template item';
-COMMENT ON COLUMN mass_times_template_items.lead_musician_id IS 'Default lead musician for masses created from this template item';
-COMMENT ON COLUMN mass_times_template_items.cantor_id IS 'Default cantor for masses created from this template item';
 
 -- Create indexes
 CREATE INDEX idx_mass_times_template_items_template_id ON mass_times_template_items(mass_times_template_id);
@@ -54,8 +50,6 @@ CREATE INDEX idx_mass_times_template_items_day_type ON mass_times_template_items
 CREATE INDEX idx_mass_times_template_items_presider_id ON mass_times_template_items(presider_id);
 CREATE INDEX idx_mass_times_template_items_location_id ON mass_times_template_items(location_id);
 CREATE INDEX idx_mass_times_template_items_homilist_id ON mass_times_template_items(homilist_id);
-CREATE INDEX idx_mass_times_template_items_lead_musician_id ON mass_times_template_items(lead_musician_id);
-CREATE INDEX idx_mass_times_template_items_cantor_id ON mass_times_template_items(cantor_id);
 
 -- Enable RLS
 ALTER TABLE mass_times_template_items ENABLE ROW LEVEL SECURITY;

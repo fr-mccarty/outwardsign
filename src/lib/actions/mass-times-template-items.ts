@@ -19,8 +19,6 @@ export interface MassTimesTemplateItem {
   location_id?: string
   length_of_time?: number // Duration in minutes
   homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
   created_at: string
   updated_at: string
 }
@@ -34,8 +32,6 @@ export interface CreateTemplateItemData {
   location_id?: string
   length_of_time?: number
   homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
 }
 
 // Update data interface
@@ -46,8 +42,6 @@ export interface UpdateTemplateItemData {
   location_id?: string
   length_of_time?: number
   homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
 }
 
 /**
@@ -102,8 +96,6 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
       location_id: data.location_id,
       length_of_time: data.length_of_time,
       homilist_id: data.homilist_id,
-      lead_musician_id: data.lead_musician_id,
-      cantor_id: data.cantor_id,
     }])
     .select()
     .single()
@@ -147,8 +139,6 @@ export async function updateTemplateItem(
   if (data.location_id !== undefined) updateData.location_id = data.location_id
   if (data.length_of_time !== undefined) updateData.length_of_time = data.length_of_time
   if (data.homilist_id !== undefined) updateData.homilist_id = data.homilist_id
-  if (data.lead_musician_id !== undefined) updateData.lead_musician_id = data.lead_musician_id
-  if (data.cantor_id !== undefined) updateData.cantor_id = data.cantor_id
 
   const { data: item, error } = await supabase
     .from('mass_times_template_items')

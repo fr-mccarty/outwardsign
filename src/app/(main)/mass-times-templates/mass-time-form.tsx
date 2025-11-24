@@ -97,8 +97,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
   const newLocation = usePickerState<Location>()
   const [newLengthOfTime, setNewLengthOfTime] = useState<number | undefined>()
   const newHomilist = usePickerState<Person>()
-  const newLeadMusician = usePickerState<Person>()
-  const newCantor = usePickerState<Person>()
 
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -109,8 +107,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
   const editLocation = usePickerState<Location>()
   const [editLengthOfTime, setEditLengthOfTime] = useState<number | undefined>()
   const editHomilist = usePickerState<Person>()
-  const editLeadMusician = usePickerState<Person>()
-  const editCantor = usePickerState<Person>()
 
   // State for delete confirmation
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -169,8 +165,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         location_id: newLocation.value?.id,
         length_of_time: newLengthOfTime,
         homilist_id: newHomilist.value?.id,
-        lead_musician_id: newLeadMusician.value?.id,
-        cantor_id: newCantor.value?.id,
       })
       toast.success('Mass time added')
       setIsAddDialogOpen(false)
@@ -180,8 +174,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
       newLocation.setValue(null)
       setNewLengthOfTime(undefined)
       newHomilist.setValue(null)
-      newLeadMusician.setValue(null)
-      newCantor.setValue(null)
       router.refresh()
     } catch (error) {
       console.error('Error adding item:', error)
@@ -219,8 +211,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
     editLocation.setValue(null)
     setEditLengthOfTime(item.length_of_time)
     editHomilist.setValue(null)
-    editLeadMusician.setValue(null)
-    editCantor.setValue(null)
     setIsEditDialogOpen(true)
   }
 
@@ -235,8 +225,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         location_id: editLocation.value?.id,
         length_of_time: editLengthOfTime,
         homilist_id: editHomilist.value?.id,
-        lead_musician_id: editLeadMusician.value?.id,
-        cantor_id: editCantor.value?.id,
       })
       toast.success('Mass time updated')
       setIsEditDialogOpen(false)
@@ -481,22 +469,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               placeholder="Select homilist (optional)"
               autoSetSex="MALE"
             />
-            <PersonPickerField
-              label="Lead Musician"
-              value={newLeadMusician.value}
-              onValueChange={newLeadMusician.setValue}
-              showPicker={newLeadMusician.showPicker}
-              onShowPickerChange={newLeadMusician.setShowPicker}
-              placeholder="Select lead musician (optional)"
-            />
-            <PersonPickerField
-              label="Cantor"
-              value={newCantor.value}
-              onValueChange={newCantor.setValue}
-              showPicker={newCantor.showPicker}
-              onShowPickerChange={newCantor.setShowPicker}
-              placeholder="Select cantor (optional)"
-            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isAddingItem}>
@@ -582,22 +554,6 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               onShowPickerChange={editHomilist.setShowPicker}
               placeholder="Select homilist (optional)"
               autoSetSex="MALE"
-            />
-            <PersonPickerField
-              label="Lead Musician"
-              value={editLeadMusician.value}
-              onValueChange={editLeadMusician.setValue}
-              showPicker={editLeadMusician.showPicker}
-              onShowPickerChange={editLeadMusician.setShowPicker}
-              placeholder="Select lead musician (optional)"
-            />
-            <PersonPickerField
-              label="Cantor"
-              value={editCantor.value}
-              onValueChange={editCantor.setValue}
-              showPicker={editCantor.showPicker}
-              onShowPickerChange={editCantor.setShowPicker}
-              placeholder="Select cantor (optional)"
             />
           </div>
           <DialogFooter>
