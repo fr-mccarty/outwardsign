@@ -32,6 +32,8 @@ import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialo
 import { FormBottomActions } from '@/components/form-bottom-actions'
 import { PersonPickerField } from '@/components/person-picker-field'
 import { LocationPickerField } from '@/components/location-picker-field'
+import { usePickerState } from '@/hooks/use-picker-state'
+import type { Person, Location } from '@/lib/types'
 import { Plus, Trash2, Clock, Edit } from 'lucide-react'
 import { toast } from 'sonner'
 import { createMassTime, updateMassTime } from '@/lib/actions/mass-times-templates'
@@ -91,24 +93,24 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [newTime, setNewTime] = useState('09:00')
   const [newDayType, setNewDayType] = useState<DayType>('IS_DAY')
-  const [newPresiderId, setNewPresiderId] = useState<string | undefined>()
-  const [newLocationId, setNewLocationId] = useState<string | undefined>()
+  const newPresider = usePickerState<Person>()
+  const newLocation = usePickerState<Location>()
   const [newLengthOfTime, setNewLengthOfTime] = useState<number | undefined>()
-  const [newHomilistId, setNewHomilistId] = useState<string | undefined>()
-  const [newLeadMusicianId, setNewLeadMusicianId] = useState<string | undefined>()
-  const [newCantorId, setNewCantorId] = useState<string | undefined>()
+  const newHomilist = usePickerState<Person>()
+  const newLeadMusician = usePickerState<Person>()
+  const newCantor = usePickerState<Person>()
 
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [itemBeingEdited, setItemBeingEdited] = useState<MassTimesTemplateItem | null>(null)
   const [editTime, setEditTime] = useState('09:00')
   const [editDayType, setEditDayType] = useState<DayType>('IS_DAY')
-  const [editPresiderId, setEditPresiderId] = useState<string | undefined>()
-  const [editLocationId, setEditLocationId] = useState<string | undefined>()
+  const editPresider = usePickerState<Person>()
+  const editLocation = usePickerState<Location>()
   const [editLengthOfTime, setEditLengthOfTime] = useState<number | undefined>()
-  const [editHomilistId, setEditHomilistId] = useState<string | undefined>()
-  const [editLeadMusicianId, setEditLeadMusicianId] = useState<string | undefined>()
-  const [editCantorId, setEditCantorId] = useState<string | undefined>()
+  const editHomilist = usePickerState<Person>()
+  const editLeadMusician = usePickerState<Person>()
+  const editCantor = usePickerState<Person>()
 
   // State for delete confirmation
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -163,23 +165,23 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         mass_times_template_id: massTime.id,
         time: newTime + ':00',
         day_type: newDayType,
-        presider_id: newPresiderId,
-        location_id: newLocationId,
+        presider_id: newPresider.value?.id,
+        location_id: newLocation.value?.id,
         length_of_time: newLengthOfTime,
-        homilist_id: newHomilistId,
-        lead_musician_id: newLeadMusicianId,
-        cantor_id: newCantorId,
+        homilist_id: newHomilist.value?.id,
+        lead_musician_id: newLeadMusician.value?.id,
+        cantor_id: newCantor.value?.id,
       })
       toast.success('Mass time added')
       setIsAddDialogOpen(false)
       setNewTime('09:00')
       setNewDayType('IS_DAY')
-      setNewPresiderId(undefined)
-      setNewLocationId(undefined)
+      newPresider.setValue(null)
+      newLocation.setValue(null)
       setNewLengthOfTime(undefined)
-      setNewHomilistId(undefined)
-      setNewLeadMusicianId(undefined)
-      setNewCantorId(undefined)
+      newHomilist.setValue(null)
+      newLeadMusician.setValue(null)
+      newCantor.setValue(null)
       router.refresh()
     } catch (error) {
       console.error('Error adding item:', error)
@@ -211,12 +213,14 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
     setItemBeingEdited(item)
     setEditTime(item.time.substring(0, 5))
     setEditDayType(item.day_type)
-    setEditPresiderId(item.presider_id)
-    setEditLocationId(item.location_id)
+    // Note: We only have IDs here, not full objects. The picker will need to fetch if needed
+    // For now, we'll clear the pickers and let users re-select
+    editPresider.setValue(null)
+    editLocation.setValue(null)
     setEditLengthOfTime(item.length_of_time)
-    setEditHomilistId(item.homilist_id)
-    setEditLeadMusicianId(item.lead_musician_id)
-    setEditCantorId(item.cantor_id)
+    editHomilist.setValue(null)
+    editLeadMusician.setValue(null)
+    editCantor.setValue(null)
     setIsEditDialogOpen(true)
   }
 
@@ -227,12 +231,12 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
       await updateTemplateItem(itemBeingEdited.id, massTime.id, {
         time: editTime + ':00',
         day_type: editDayType,
-        presider_id: editPresiderId,
-        location_id: editLocationId,
+        presider_id: editPresider.value?.id,
+        location_id: editLocation.value?.id,
         length_of_time: editLengthOfTime,
-        homilist_id: editHomilistId,
-        lead_musician_id: editLeadMusicianId,
-        cantor_id: editCantorId,
+        homilist_id: editHomilist.value?.id,
+        lead_musician_id: editLeadMusician.value?.id,
+        cantor_id: editCantor.value?.id,
       })
       toast.success('Mass time updated')
       setIsEditDialogOpen(false)
@@ -451,46 +455,48 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
                 Expected duration of the mass in minutes.
               </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <LocationPickerField
-                value={newLocationId}
-                onChange={setNewLocationId}
-                placeholder="Select location (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="presider">Presider</Label>
-              <PersonPickerField
-                value={newPresiderId}
-                onChange={setNewPresiderId}
-                placeholder="Select presider (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="homilist">Homilist</Label>
-              <PersonPickerField
-                value={newHomilistId}
-                onChange={setNewHomilistId}
-                placeholder="Select homilist (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="leadMusician">Lead Musician</Label>
-              <PersonPickerField
-                value={newLeadMusicianId}
-                onChange={setNewLeadMusicianId}
-                placeholder="Select lead musician (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cantor">Cantor</Label>
-              <PersonPickerField
-                value={newCantorId}
-                onChange={setNewCantorId}
-                placeholder="Select cantor (optional)"
-              />
-            </div>
+            <LocationPickerField
+              label="Location"
+              value={newLocation.value}
+              onValueChange={newLocation.setValue}
+              showPicker={newLocation.showPicker}
+              onShowPickerChange={newLocation.setShowPicker}
+              placeholder="Select location (optional)"
+            />
+            <PersonPickerField
+              label="Presider"
+              value={newPresider.value}
+              onValueChange={newPresider.setValue}
+              showPicker={newPresider.showPicker}
+              onShowPickerChange={newPresider.setShowPicker}
+              placeholder="Select presider (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Homilist"
+              value={newHomilist.value}
+              onValueChange={newHomilist.setValue}
+              showPicker={newHomilist.showPicker}
+              onShowPickerChange={newHomilist.setShowPicker}
+              placeholder="Select homilist (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Lead Musician"
+              value={newLeadMusician.value}
+              onValueChange={newLeadMusician.setValue}
+              showPicker={newLeadMusician.showPicker}
+              onShowPickerChange={newLeadMusician.setShowPicker}
+              placeholder="Select lead musician (optional)"
+            />
+            <PersonPickerField
+              label="Cantor"
+              value={newCantor.value}
+              onValueChange={newCantor.setValue}
+              showPicker={newCantor.showPicker}
+              onShowPickerChange={newCantor.setShowPicker}
+              placeholder="Select cantor (optional)"
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isAddingItem}>
@@ -551,46 +557,48 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
                 Expected duration of the mass in minutes.
               </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="editLocation">Location</Label>
-              <LocationPickerField
-                value={editLocationId}
-                onChange={setEditLocationId}
-                placeholder="Select location (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editPresider">Presider</Label>
-              <PersonPickerField
-                value={editPresiderId}
-                onChange={setEditPresiderId}
-                placeholder="Select presider (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editHomilist">Homilist</Label>
-              <PersonPickerField
-                value={editHomilistId}
-                onChange={setEditHomilistId}
-                placeholder="Select homilist (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editLeadMusician">Lead Musician</Label>
-              <PersonPickerField
-                value={editLeadMusicianId}
-                onChange={setEditLeadMusicianId}
-                placeholder="Select lead musician (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editCantor">Cantor</Label>
-              <PersonPickerField
-                value={editCantorId}
-                onChange={setEditCantorId}
-                placeholder="Select cantor (optional)"
-              />
-            </div>
+            <LocationPickerField
+              label="Location"
+              value={editLocation.value}
+              onValueChange={editLocation.setValue}
+              showPicker={editLocation.showPicker}
+              onShowPickerChange={editLocation.setShowPicker}
+              placeholder="Select location (optional)"
+            />
+            <PersonPickerField
+              label="Presider"
+              value={editPresider.value}
+              onValueChange={editPresider.setValue}
+              showPicker={editPresider.showPicker}
+              onShowPickerChange={editPresider.setShowPicker}
+              placeholder="Select presider (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Homilist"
+              value={editHomilist.value}
+              onValueChange={editHomilist.setValue}
+              showPicker={editHomilist.showPicker}
+              onShowPickerChange={editHomilist.setShowPicker}
+              placeholder="Select homilist (optional)"
+              autoSetSex="MALE"
+            />
+            <PersonPickerField
+              label="Lead Musician"
+              value={editLeadMusician.value}
+              onValueChange={editLeadMusician.setValue}
+              showPicker={editLeadMusician.showPicker}
+              onShowPickerChange={editLeadMusician.setShowPicker}
+              placeholder="Select lead musician (optional)"
+            />
+            <PersonPickerField
+              label="Cantor"
+              value={editCantor.value}
+              onValueChange={editCantor.setValue}
+              showPicker={editCantor.showPicker}
+              onShowPickerChange={editCantor.setShowPicker}
+              placeholder="Select cantor (optional)"
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isAddingItem}>

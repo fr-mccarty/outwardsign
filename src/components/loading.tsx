@@ -29,8 +29,8 @@ interface LoadingProps {
   variant?: 'spinner' | 'route' | 'skeleton-cards' | 'skeleton-list' | 'skeleton-table'
 }
 
-export function Loading({ 
-  message = "Loading...", 
+export function Loading({
+  message = "Loading...",
   className,
   size = 'md',
   centered = true,
@@ -38,7 +38,7 @@ export function Loading({
 }: LoadingProps) {
   const sizeClasses = {
     'sm': 'h-4 w-4',
-    'md': 'h-6 w-6', 
+    'md': 'h-6 w-6',
     'lg': 'h-8 w-8'
   }
 
@@ -50,7 +50,7 @@ export function Loading({
 
   if (variant === 'route') {
     return (
-      <div className={`space-y-6 py-10 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
+      <div className={`space-y-6 ${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
@@ -125,7 +125,7 @@ export function Loading({
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-10 w-32" />
         </div>
-        
+
         {/* Table skeleton */}
         <div className="border rounded-lg">
           {/* Table header */}
@@ -138,7 +138,7 @@ export function Loading({
               <Skeleton className="h-4 w-16" />
             </div>
           </div>
-          
+
           {/* Table rows */}
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="border-b last:border-b-0 px-4 py-3">

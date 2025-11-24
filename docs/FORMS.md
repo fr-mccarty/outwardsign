@@ -219,9 +219,25 @@ The following components should be used in all forms for consistency:
     { value: 'INACTIVE', label: 'Inactive' }
   ]}
 />
+
+// ✅ CORRECT - FormField for optional select with placeholder
+<FormField
+  id="liturgical_color"
+  label="Liturgical Color"
+  inputType="select"
+  value={liturgicalColor || ''}  // Convert undefined to empty string
+  onChange={(value) => setLiturgicalColor(value ? value : undefined)}  // Convert empty to undefined
+  placeholder="Select liturgical color (optional)"
+  options={LITURGICAL_COLOR_VALUES.map((value) => ({
+    value,
+    label: LITURGICAL_COLOR_LABELS[value].en
+  }))}
+/>
 ```
 
-### ❌ PROHIBITED - Never manually compose Label + Input:
+### ❌ PROHIBITED Patterns:
+
+**Never manually compose Label + Input:**
 
 ```tsx
 // ❌ WRONG - Never use Input directly with manual Label
@@ -237,6 +253,43 @@ The following components should be used in all forms for consistency:
 // ❌ WRONG - Never use Textarea directly with manual Label
 <Label htmlFor="notes">Notes</Label>
 <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+```
+
+**Never use empty string as a select option value:**
+
+```tsx
+// ❌ WRONG - Empty string as an option value causes Radix UI errors
+<FormField
+  id="liturgical_color"
+  inputType="select"
+  value={liturgicalColor || ''}
+  onChange={setLiturgicalColor}
+  options={[
+    { value: '', label: 'Not specified' },  // ❌ NEVER DO THIS
+    { value: 'WHITE', label: 'White' },
+    { value: 'RED', label: 'Red' }
+  ]}
+/>
+
+// ✅ CORRECT - Use placeholder prop instead
+<FormField
+  id="liturgical_color"
+  inputType="select"
+  value={liturgicalColor || ''}
+  onChange={(value) => setLiturgicalColor(value ? value : undefined)}
+  placeholder="Select liturgical color (optional)"  // ✅ Use placeholder
+  options={[
+    { value: 'WHITE', label: 'White' },
+    { value: 'RED', label: 'Red' }
+  ]}
+/>
+```
+
+**Error you'll see if you use empty string option:**
+```
+A <Select.Item /> must have a value prop that is not an empty string.
+This is because the Select value can be set to an empty string to clear
+the selection and show the placeholder.
 ```
 
 **Why use FormField?**

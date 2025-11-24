@@ -7,11 +7,11 @@ test.describe('Person Picker Component', () => {
 
     // First, create a test person that we can search for
     await page.goto('/people/create');
-    await page.getByLabel('First Name').fill('Sarah');
-    await page.getByLabel('Last Name').fill('Johnson');
-    await page.getByLabel('Email').fill('sarah.johnson@test.com');
+    await page.locator('#first_name').fill('Sarah');
+    await page.locator('#last_name').fill('Johnson');
+    await page.locator('#email').fill('sarah.johnson@test.com');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
-    await page.getByRole('button', { name: /Create Person/i }).last().click();
+    await page.getByRole('button', { name: /Save Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Now go to a wedding form to test the picker
@@ -76,8 +76,8 @@ test.describe('Person Picker Component', () => {
     const firstName = `TestGroom${Date.now()}`;
     const lastName = 'Smith';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional: Fill email if visible
     const emailInput = dialog.getByLabel('Email');
@@ -134,17 +134,17 @@ test.describe('Person Picker Component', () => {
 
     // Create two test people
     await page.goto('/people/create');
-    await page.getByLabel('First Name').fill('Alice');
-    await page.getByLabel('Last Name').fill('Cooper');
+    await page.locator('#first_name').fill('Alice');
+    await page.locator('#last_name').fill('Cooper');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
-    await page.getByRole('button', { name: /Create Person/i }).last().click();
+    await page.getByRole('button', { name: /Save Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     await page.goto('/people/create');
-    await page.getByLabel('First Name').fill('Bob');
-    await page.getByLabel('Last Name').fill('Dylan');
+    await page.locator('#first_name').fill('Bob');
+    await page.locator('#last_name').fill('Dylan');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
-    await page.getByRole('button', { name: /Create Person/i }).last().click();
+    await page.getByRole('button', { name: /Save Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
@@ -165,11 +165,20 @@ test.describe('Person Picker Component', () => {
     await page.waitForTimeout(500);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Alice Cooper/i }).click();
 
-    await expect(page.locator('button:has-text("Alice Cooper")')).toBeVisible();
+    // Verify Alice is selected (use testid to avoid strict mode violation)
+    await expect(page.getByTestId('homilist-selected-value')).toContainText('Alice Cooper');
 
     // Reopen picker and select different person (Bob) using testId
     await page.getByTestId('homilist-selected-value').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
+
+    // If form auto-opened, close it to see the search
+    await page.waitForTimeout(300);
+    const cancelBtn = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
+    if (await cancelBtn.isVisible()) {
+      await cancelBtn.click();
+      await page.waitForTimeout(300);
+    }
 
     // Clear search and search for Bob
     const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
@@ -179,8 +188,8 @@ test.describe('Person Picker Component', () => {
     await page.locator('[role="dialog"]').getByRole('button', { name: /Bob Dylan/i }).click();
 
     // Verify Bob is now selected instead of Alice
-    await expect(page.locator('button:has-text("Bob Dylan")')).toBeVisible();
-    await expect(page.locator('button:has-text("Alice Cooper")')).not.toBeVisible();
+    await expect(page.getByTestId('homilist-selected-value')).toContainText('Bob Dylan');
+    await expect(page.getByTestId('homilist-selected-value')).not.toContainText('Alice Cooper');
   });
 
   test('should validate required fields when creating person inline', async ({ page }) => {
@@ -209,8 +218,8 @@ test.describe('Person Picker Component', () => {
     // The form should NOT submit and the dialog should stay open
 
     // Now fill in required fields
-    await page.locator('[role="dialog"]').getByLabel('First Name').fill('Valid');
-    await page.locator('[role="dialog"]').getByLabel('Last Name').fill('Person');
+    await page.locator('[role="dialog"]').locator('#first_name').fill('Valid');
+    await page.locator('[role="dialog"]').locator('#last_name').fill('Person');
 
     // Submit should now work (button text is "Save Person")
     await createButton.click();
@@ -241,8 +250,8 @@ test.describe('Person Picker Component', () => {
     await page.waitForTimeout(300);
 
     const firstName = `ContextTest${Date.now()}`;
-    await page.locator('[role="dialog"]').getByLabel('First Name').fill(firstName);
-    await page.locator('[role="dialog"]').getByLabel('Last Name').fill('TestLast');
+    await page.locator('[role="dialog"]').locator('#first_name').fill(firstName);
+    await page.locator('[role="dialog"]').locator('#last_name').fill('TestLast');
     // Submit the create form (button text is "Save Person")
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Person/i }).click();
 
@@ -254,8 +263,8 @@ test.describe('Person Picker Component', () => {
     // Verify our original form data is still there
     await expect(page.locator('textarea#notes')).toHaveValue('Important wedding notes that should not be lost');
 
-    // And the new person is selected
-    await expect(page.locator(`button:has-text("${firstName} TestLast")`)).toBeVisible();
+    // And the new person is selected (use testid to avoid strict mode violation)
+    await expect(page.getByTestId('bride-selected-value')).toContainText(`${firstName} TestLast`);
   });
 
   test('should reopen picker in edit mode when clicking on selected person field', async ({ page }) => {
@@ -263,19 +272,19 @@ test.describe('Person Picker Component', () => {
 
     // Create two test people that we can select between
     await page.goto('/people/create');
-    await page.getByLabel('First Name').fill('Emily');
-    await page.getByLabel('Last Name').fill('Watson');
-    await page.getByLabel('Email').fill('emily.watson@test.com');
+    await page.locator('#first_name').fill('Emily');
+    await page.locator('#last_name').fill('Watson');
+    await page.locator('#email').fill('emily.watson@test.com');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
-    await page.getByRole('button', { name: /Create Person/i }).last().click();
+    await page.getByRole('button', { name: /Save Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     await page.goto('/people/create');
-    await page.getByLabel('First Name').fill('Michael');
-    await page.getByLabel('Last Name').fill('Chen');
-    await page.getByLabel('Email').fill('michael.chen@test.com');
+    await page.locator('#first_name').fill('Michael');
+    await page.locator('#last_name').fill('Chen');
+    await page.locator('#email').fill('michael.chen@test.com');
     // Use .last() to get the actual submit button (there are duplicate buttons on the page)
-    await page.getByRole('button', { name: /Create Person/i }).last().click();
+    await page.getByRole('button', { name: /Save Person/i }).last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Go to wedding form
@@ -308,10 +317,16 @@ test.describe('Person Picker Component', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
     await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Person/i })).toBeVisible();
 
-    // The picker should show Emily as currently selected (highlighted/marked)
+    // If form auto-opened when clicking selected value, close it to see the search
+    await page.waitForTimeout(300);
+    const cancelBtn = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
+    if (await cancelBtn.isVisible()) {
+      await cancelBtn.click();
+      await page.waitForTimeout(300);
+    }
+
     // Search for and select Michael instead
     const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
-    await searchInput.clear();
     await searchInput.fill('Michael');
     await page.waitForTimeout(500);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Michael Chen/i }).click();

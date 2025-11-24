@@ -386,14 +386,12 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             label="Liturgical Color"
             description="The liturgical color for this Mass celebration"
             value={liturgicalColor || ''}
-            onChange={(value) => setLiturgicalColor(value as LiturgicalColor)}
-            options={[
-              { value: '', label: 'Not specified' },
-              ...LITURGICAL_COLOR_VALUES.map((value) => ({
-                value,
-                label: LITURGICAL_COLOR_LABELS[value].en
-              }))
-            ]}
+            onChange={(value) => setLiturgicalColor(value ? (value as LiturgicalColor) : undefined)}
+            placeholder="Select liturgical color (optional)"
+            options={LITURGICAL_COLOR_VALUES.map((value) => ({
+              value,
+              label: LITURGICAL_COLOR_LABELS[value].en
+            }))}
           />
 
           <LiturgicalEventPickerField
@@ -432,6 +430,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
             autoSetSex="MALE"
+            visibleFields={['email', 'phone_number', 'note']}
           />
 
           <PersonPickerField
@@ -442,6 +441,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={homilist.showPicker}
             onShowPickerChange={homilist.setShowPicker}
             autoSetSex="MALE"
+            visibleFields={['email', 'phone_number', 'note']}
           />
       </FormSectionCard>
 
@@ -523,8 +523,9 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
                 inputType="select"
                 label="Mass Role Template"
                 description="Choose a template to define which mass roles are needed for this Mass"
-                value={massRolesTemplateId}
+                value={massRolesTemplateId || ''}
                 onChange={handleTemplateChange}
+                placeholder="Select a mass role template (optional)"
                 options={allTemplates.map((template) => ({
                   value: template.id,
                   label: template.name

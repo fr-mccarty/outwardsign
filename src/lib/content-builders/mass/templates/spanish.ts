@@ -11,6 +11,7 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 
 /**
  * Build summary section (Mass info, liturgical event, ministers) - Spanish
@@ -50,6 +51,15 @@ function buildSummarySection(mass: MassWithRelations): ContentSection {
         value: `${eventData.name}${eventData.liturgical_season ? ` (${eventData.liturgical_season})` : ''}`,
       })
     }
+  }
+
+  // Liturgical Color
+  if (mass.liturgical_color) {
+    elements.push({
+      type: 'info-row',
+      label: 'Color Litúrgico:',
+      value: LITURGICAL_COLOR_LABELS[mass.liturgical_color as keyof typeof LITURGICAL_COLOR_LABELS]?.es || mass.liturgical_color,
+    })
   }
 
   // Mass Intention

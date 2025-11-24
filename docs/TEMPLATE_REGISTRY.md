@@ -163,12 +163,23 @@ src/lib/content-builders/[module]/
 
 | Template ID | Name | Description | Language | Type | File |
 |------------|------|-------------|----------|------|------|
-| `mass-english` | Mass (English) | Mass information, ministers, petitions, and announcements | English | Summary | `templates/english.ts` |
-| `mass-spanish` | Misa (Español) | Información de la misa, ministros, peticiones y anuncios | Spanish | Summary | `templates/spanish.ts` |
+| `mass-english` | Mass (English) | Mass information, liturgical event, liturgical color, ministers, role assignments, mass intention, petitions, and announcements | English | Summary | `templates/english.ts` |
+| `mass-spanish` | Misa (Español) | Información de la misa, evento litúrgico, color litúrgico, ministros, asignaciones de roles, intención de la misa, peticiones y anuncios | Spanish | Summary | `templates/spanish.ts` |
 
 **Default Template:** `mass-english`
 
 **Note:** Mass templates focus on ministers, petitions, and announcements rather than full liturgical scripts.
+
+**Fields Displayed:**
+- Mass Information (date, time, location)
+- Liturgical Event (linked feast day/solemnity)
+- Liturgical Color (e.g., White, Red, Purple, Green, Gold, Rose, Black)
+- Mass Intention (if linked)
+- Ministers (Presider, Homilist)
+- Role Assignments (from mass role templates)
+- Notes
+- Petitions
+- Announcements
 
 ---
 

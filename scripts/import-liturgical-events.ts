@@ -8,9 +8,9 @@
  *   npm run seed:liturgical:2026
  *   npm run seed:liturgical -- --year=2027 --locale=es
  *
- * Default: current year, locale 'en'
+ * Default: current year, locale 'en_US'
  *
- * API: https://litcal.johnromanodorazio.com/api/dev/calendar
+ * API: https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/{year}
  */
 
 import { config } from 'dotenv'
@@ -42,7 +42,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 function parseArgs() {
   const args = process.argv.slice(2)
   const year = args.find(arg => arg.startsWith('--year='))?.split('=')[1] || new Date().getFullYear().toString()
-  const locale = args.find(arg => arg.startsWith('--locale='))?.split('=')[1] || 'en'
+  const locale = args.find(arg => arg.startsWith('--locale='))?.split('=')[1] || 'en_US'
 
   return {
     year: parseInt(year, 10),
@@ -96,9 +96,9 @@ interface ApiResponse {
 }
 
 async function fetchLiturgicalCalendar(year: number, locale: string): Promise<LiturgicalEvent[]> {
-  const url = `https://litcal.johnromanodorazio.com/api/dev/calendar?locale=${locale}&year=${year}`
+  const url = `https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/${year}?locale=${locale}`
 
-  console.log(`📅 Fetching liturgical calendar for year ${year} (locale: ${locale})...`)
+  console.log(`📅 Fetching US liturgical calendar for year ${year} (locale: ${locale})...`)
   console.log(`   URL: ${url}`)
 
   const response = await fetch(url)

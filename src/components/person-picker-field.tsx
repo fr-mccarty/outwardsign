@@ -24,7 +24,6 @@ interface PersonPickerFieldProps {
   requiredFields?: string[] // Fields that should be marked as required in the picker form
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
   testId?: string // Optional override for data-testid
-  showPronunciation?: boolean // Show pronunciation in the selected value display (only if it exists)
 }
 
 export function PersonPickerField({
@@ -41,7 +40,6 @@ export function PersonPickerField({
   requiredFields,
   autoSetSex,
   testId,
-  showPronunciation = false,
 }: PersonPickerFieldProps) {
   const router = useRouter()
   const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
@@ -52,15 +50,19 @@ export function PersonPickerField({
     const lastName = person.last_name
     const lastNamePronunciation = person.last_name_pronunciation
 
-    if (!showPronunciation) {
+    // Show pronunciation only if pronunciation fields are in visibleFields
+    const showFirstPronunciation = visibleFields?.includes('first_name_pronunciation') && firstNamePronunciation
+    const showLastPronunciation = visibleFields?.includes('last_name_pronunciation') && lastNamePronunciation
+
+    if (!showFirstPronunciation && !showLastPronunciation) {
       return `${firstName} ${lastName}`
     }
 
-    // Build name with pronunciation only where it exists
-    const firstPart = firstNamePronunciation
+    // Build name with pronunciation only where it exists and is visible
+    const firstPart = showFirstPronunciation
       ? `${firstName} (${firstNamePronunciation})`
       : firstName
-    const lastPart = lastNamePronunciation
+    const lastPart = showLastPronunciation
       ? `${lastName} (${lastNamePronunciation})`
       : lastName
 

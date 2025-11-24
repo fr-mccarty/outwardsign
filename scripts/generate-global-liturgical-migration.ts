@@ -21,9 +21,9 @@ interface ApiResponse {
 }
 
 async function fetchLiturgicalCalendar(year: number, locale: string): Promise<LiturgicalEvent[]> {
-  const url = `https://litcal.johnromanodorazio.com/api/dev/calendar?locale=${locale}&year=${year}`
+  const url = `https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/${year}?locale=${locale}`
 
-  console.log(`📅 Fetching liturgical calendar for year ${year} (locale: ${locale})...`)
+  console.log(`📅 Fetching US liturgical calendar for year ${year} (locale: ${locale})...`)
   console.log(`   URL: ${url}`)
 
   const response = await fetch(url)
@@ -57,7 +57,7 @@ ON CONFLICT (event_key, date, locale) DO NOTHING;`
 
 async function main() {
   const year = parseInt(process.argv[2] || '2025', 10)
-  const locale = process.argv[3] || 'en'
+  const locale = process.argv[3] || 'en_US'
 
   console.log('🚀 Generating Global Liturgical Events Migration')
   console.log('=' .repeat(60))
@@ -72,7 +72,7 @@ async function main() {
     const migrationFile = `supabase/migrations/${timestamp}000002_seed_global_liturgical_events_${year}_${locale}.sql`
 
     let sql = `-- Seed global_liturgical_events table for year ${year} (locale: ${locale})
--- Generated from https://litcal.johnromanodorazio.com/api/dev/calendar
+-- Generated from https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/${year}
 -- Total events: ${events.length}
 -- Generated on: ${new Date().toISOString()}
 

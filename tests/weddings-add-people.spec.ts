@@ -23,8 +23,8 @@ test.describe('Weddings Module - Add People', () => {
     const firstName = `Bride${Date.now()}`;
     const lastName = 'Smith';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -91,8 +91,8 @@ test.describe('Weddings Module - Add People', () => {
     const firstName = `Groom${Date.now()}`;
     const lastName = 'Johnson';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -153,8 +153,8 @@ test.describe('Weddings Module - Add People', () => {
     const brideLastName = 'Anderson';
 
     let dialog = page.locator('[role="dialog"]');
-    await dialog.getByLabel('First Name').fill(brideFirstName);
-    await dialog.getByLabel('Last Name').fill(brideLastName);
+    await dialog.locator('#first_name').fill(brideFirstName);
+    await dialog.locator('#last_name').fill(brideLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
     await page.waitForTimeout(1500);
     await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
@@ -171,8 +171,8 @@ test.describe('Weddings Module - Add People', () => {
     const groomLastName = 'Martinez';
 
     dialog = page.locator('[role="dialog"]');
-    await dialog.getByLabel('First Name').fill(groomFirstName);
-    await dialog.getByLabel('Last Name').fill(groomLastName);
+    await dialog.locator('#first_name').fill(groomFirstName);
+    await dialog.locator('#last_name').fill(groomLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
     await page.waitForTimeout(1500);
     await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });

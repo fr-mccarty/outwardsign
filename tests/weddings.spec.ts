@@ -41,12 +41,12 @@ test.describe('Weddings Module', () => {
 
     // Get the wedding ID from URL for later use
     const weddingUrl = page.url();
-    const weddingId = weddingUrl.split('/')[2]; // Extract ID from /weddings/{id}/edit
+    const weddingId = weddingUrl.split('/')[weddingUrl.split('/').length - 2]; // Extract ID from /weddings/{id}/edit
 
     console.log(`Created wedding with ID: ${weddingId}`);
 
-    // Verify we're on the edit page
-    await expect(page.getByRole('heading', { name: 'Edit Wedding' })).toBeVisible();
+    // Verify we're on the edit page (heading will be "Wedding" since no bride/groom selected yet)
+    await expect(page.getByRole('heading', { name: 'Wedding' }).first()).toBeVisible();
 
     // Verify the notes are in the form
     await expect(page.locator('textarea#notes').first()).toHaveValue(initialNotes);
@@ -118,8 +118,8 @@ test.describe('Weddings Module', () => {
     // Should successfully create and redirect to edit page (even with minimal data)
     await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Verify we're on the wedding edit page
-    await expect(page.getByRole('heading', { name: 'Edit Wedding' })).toBeVisible();
+    // Verify we're on the wedding edit page (heading will be "Wedding" since no bride/groom selected yet)
+    await expect(page.getByRole('heading', { name: 'Wedding' }).first()).toBeVisible();
   });
 
   test('should navigate through breadcrumbs', async ({ page }) => {
@@ -157,15 +157,15 @@ test.describe('Weddings Module', () => {
     await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Extract wedding ID and navigate to view page to check action buttons
-    const weddingId = page.url().split('/')[2];
+    const weddingId = page.url().split('/')[page.url().split('/').length - 2];
     await page.goto(`/weddings/${weddingId}`);
     await expect(page).toHaveURL(`/weddings/${weddingId}`);
 
-    // Verify action buttons exist (ModuleViewPanel buttons)
+    // Verify action buttons exist (buttons are rendered as Links with Button styling)
     await expect(page.getByRole('link', { name: /Edit Wedding/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Print View/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Print View/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download PDF/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Download Word/i })).toBeVisible();
   });
 
   test('should update wedding and verify persistence after page refresh', async ({ page }) => {
@@ -184,7 +184,7 @@ test.describe('Weddings Module', () => {
     await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const weddingId = page.url().split('/')[2];
+    const weddingId = page.url().split('/')[page.url().split('/').length - 2];
 
     // Verify initial data is in the edit form
     await expect(page.locator('textarea#notes').first()).toHaveValue(initialNotes);
@@ -276,7 +276,7 @@ test.describe('Weddings Module', () => {
 
     // Get the wedding ID from URL
     const weddingUrl = page.url();
-    const weddingId = weddingUrl.split('/')[2];
+    const weddingId = weddingUrl.split('/')[weddingUrl.split('/').length - 2];
     console.log(`Created wedding with ID: ${weddingId}`);
 
     // Navigate to view page

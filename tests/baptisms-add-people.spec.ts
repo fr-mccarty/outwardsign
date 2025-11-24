@@ -23,8 +23,8 @@ test.describe('Baptisms Module - Add People', () => {
     const firstName = `Child${Date.now()}`;
     const lastName = 'Rodriguez';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -91,8 +91,8 @@ test.describe('Baptisms Module - Add People', () => {
     const firstName = `Mother${Date.now()}`;
     const lastName = 'Garcia';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -159,8 +159,8 @@ test.describe('Baptisms Module - Add People', () => {
     const firstName = `Father${Date.now()}`;
     const lastName = 'Lopez';
 
-    await dialog.getByLabel('First Name').fill(firstName);
-    await dialog.getByLabel('Last Name').fill(lastName);
+    await dialog.locator('#first_name').fill(firstName);
+    await dialog.locator('#last_name').fill(lastName);
 
     // Optional email
     const emailInput = dialog.getByLabel('Email');
@@ -221,8 +221,8 @@ test.describe('Baptisms Module - Add People', () => {
     const childLastName = 'TestFamily';
 
     let dialog = page.locator('[role="dialog"]');
-    await dialog.getByLabel('First Name').fill(childFirstName);
-    await dialog.getByLabel('Last Name').fill(childLastName);
+    await dialog.locator('#first_name').fill(childFirstName);
+    await dialog.locator('#last_name').fill(childLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
     await page.waitForTimeout(1500);
     await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
@@ -239,8 +239,8 @@ test.describe('Baptisms Module - Add People', () => {
     const motherLastName = 'TestFamily';
 
     dialog = page.locator('[role="dialog"]');
-    await dialog.getByLabel('First Name').fill(motherFirstName);
-    await dialog.getByLabel('Last Name').fill(motherLastName);
+    await dialog.locator('#first_name').fill(motherFirstName);
+    await dialog.locator('#last_name').fill(motherLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
     await page.waitForTimeout(1500);
     await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
@@ -257,8 +257,8 @@ test.describe('Baptisms Module - Add People', () => {
     const fatherLastName = 'TestFamily';
 
     dialog = page.locator('[role="dialog"]');
-    await dialog.getByLabel('First Name').fill(fatherFirstName);
-    await dialog.getByLabel('Last Name').fill(fatherLastName);
+    await dialog.locator('#first_name').fill(fatherFirstName);
+    await dialog.locator('#last_name').fill(fatherLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
     await page.waitForTimeout(1500);
     await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
