@@ -22,6 +22,7 @@ export interface CreateMassData {
   announcements?: string
   note?: string
   petitions?: string
+  liturgical_color?: string
 }
 
 export interface UpdateMassData {
@@ -35,6 +36,7 @@ export interface UpdateMassData {
   announcements?: string | null
   note?: string | null
   petitions?: string | null
+  liturgical_color?: string | null
 }
 
 export interface MassFilterParams {
@@ -343,6 +345,7 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
         announcements: data.announcements || null,
         note: data.note || null,
         petitions: data.petitions || null,
+        liturgical_color: data.liturgical_color || null,
       }
     ])
     .select()

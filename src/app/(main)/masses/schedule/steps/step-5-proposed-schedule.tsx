@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -102,6 +102,13 @@ export function Step5ProposedSchedule({
   const [peoplePickerOpen, setPeoplePickerOpen] = useState(false)
   const [conflictsDialogOpen, setConflictsDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  // Update calendar to show the month of the first scheduled day when startDate changes
+  useEffect(() => {
+    if (startDate) {
+      setCurrentDate(new Date(startDate))
+    }
+  }, [startDate])
 
   // Statistics
   const stats = useMemo(() => {

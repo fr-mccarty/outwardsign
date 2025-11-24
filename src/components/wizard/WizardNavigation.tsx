@@ -50,16 +50,22 @@ export function WizardNavigation({
     return 'Next'
   }
 
+  const getNextButtonShortText = () => {
+    if (nextButtonText) return nextButtonText
+    if (isLastStep) return completeButtonText
+    return 'Next'
+  }
+
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between gap-2">
       <Button
         variant="outline"
         onClick={onPrevious}
         disabled={isFirstStep || disablePrevious}
         className="cursor-pointer"
       >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        {previousButtonText}
+        <ArrowLeft className="h-4 w-4 sm:mr-2" />
+        <span className="hidden sm:inline">{previousButtonText}</span>
       </Button>
 
       <Button
@@ -67,8 +73,9 @@ export function WizardNavigation({
         disabled={disableNext}
         className="cursor-pointer"
       >
-        {getNextButtonText()}
-        {!isLastStep && <ArrowRight className="h-4 w-4 ml-2" />}
+        <span className="hidden sm:inline">{getNextButtonText()}</span>
+        <span className="sm:hidden">{getNextButtonShortText()}</span>
+        {!isLastStep && <ArrowRight className="h-4 w-4 sm:ml-2" />}
       </Button>
     </div>
   )

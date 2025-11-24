@@ -295,6 +295,20 @@ export const LITURGICAL_LANGUAGE_LABELS: Record<string, { en: string; es: string
 export const MASS_STATUS_VALUES = ['ACTIVE', 'PLANNING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'] as const
 export type MassStatus = typeof MASS_STATUS_VALUES[number]
 
+// Liturgical Color Constants
+export const LITURGICAL_COLOR_VALUES = ['WHITE', 'RED', 'PURPLE', 'GREEN', 'GOLD', 'ROSE', 'BLACK'] as const
+export type LiturgicalColor = typeof LITURGICAL_COLOR_VALUES[number]
+
+export const LITURGICAL_COLOR_LABELS: Record<string, { en: string; es: string }> = {
+  WHITE: { en: 'White', es: 'Blanco' },
+  RED: { en: 'Red', es: 'Rojo' },
+  PURPLE: { en: 'Purple', es: 'Morado' },
+  GREEN: { en: 'Green', es: 'Verde' },
+  GOLD: { en: 'Gold', es: 'Oro' },
+  ROSE: { en: 'Rose', es: 'Rosa' },
+  BLACK: { en: 'Black', es: 'Negro' }
+}
+
 // Days of Week Constants (shared across modules)
 export const DAYS_OF_WEEK_VALUES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const
 export type DayOfWeek = typeof DAYS_OF_WEEK_VALUES[number]

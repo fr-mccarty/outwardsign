@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/dialog'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { FormBottomActions } from '@/components/form-bottom-actions'
+import { PersonPickerField } from '@/components/person-picker-field'
+import { LocationPickerField } from '@/components/location-picker-field'
 import { Plus, Trash2, Clock, Edit } from 'lucide-react'
 import { toast } from 'sonner'
 import { createMassTime, updateMassTime } from '@/lib/actions/mass-times-templates'
@@ -89,12 +91,24 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [newTime, setNewTime] = useState('09:00')
   const [newDayType, setNewDayType] = useState<DayType>('IS_DAY')
+  const [newPresiderId, setNewPresiderId] = useState<string | undefined>()
+  const [newLocationId, setNewLocationId] = useState<string | undefined>()
+  const [newLengthOfTime, setNewLengthOfTime] = useState<number | undefined>()
+  const [newHomilistId, setNewHomilistId] = useState<string | undefined>()
+  const [newLeadMusicianId, setNewLeadMusicianId] = useState<string | undefined>()
+  const [newCantorId, setNewCantorId] = useState<string | undefined>()
 
   // State for edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [itemBeingEdited, setItemBeingEdited] = useState<MassTimesTemplateItem | null>(null)
   const [editTime, setEditTime] = useState('09:00')
   const [editDayType, setEditDayType] = useState<DayType>('IS_DAY')
+  const [editPresiderId, setEditPresiderId] = useState<string | undefined>()
+  const [editLocationId, setEditLocationId] = useState<string | undefined>()
+  const [editLengthOfTime, setEditLengthOfTime] = useState<number | undefined>()
+  const [editHomilistId, setEditHomilistId] = useState<string | undefined>()
+  const [editLeadMusicianId, setEditLeadMusicianId] = useState<string | undefined>()
+  const [editCantorId, setEditCantorId] = useState<string | undefined>()
 
   // State for delete confirmation
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -149,11 +163,23 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
         mass_times_template_id: massTime.id,
         time: newTime + ':00',
         day_type: newDayType,
+        presider_id: newPresiderId,
+        location_id: newLocationId,
+        length_of_time: newLengthOfTime,
+        homilist_id: newHomilistId,
+        lead_musician_id: newLeadMusicianId,
+        cantor_id: newCantorId,
       })
       toast.success('Mass time added')
       setIsAddDialogOpen(false)
       setNewTime('09:00')
       setNewDayType('IS_DAY')
+      setNewPresiderId(undefined)
+      setNewLocationId(undefined)
+      setNewLengthOfTime(undefined)
+      setNewHomilistId(undefined)
+      setNewLeadMusicianId(undefined)
+      setNewCantorId(undefined)
       router.refresh()
     } catch (error) {
       console.error('Error adding item:', error)
@@ -185,6 +211,12 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
     setItemBeingEdited(item)
     setEditTime(item.time.substring(0, 5))
     setEditDayType(item.day_type)
+    setEditPresiderId(item.presider_id)
+    setEditLocationId(item.location_id)
+    setEditLengthOfTime(item.length_of_time)
+    setEditHomilistId(item.homilist_id)
+    setEditLeadMusicianId(item.lead_musician_id)
+    setEditCantorId(item.cantor_id)
     setIsEditDialogOpen(true)
   }
 
@@ -195,6 +227,12 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
       await updateTemplateItem(itemBeingEdited.id, massTime.id, {
         time: editTime + ':00',
         day_type: editDayType,
+        presider_id: editPresiderId,
+        location_id: editLocationId,
+        length_of_time: editLengthOfTime,
+        homilist_id: editHomilistId,
+        lead_musician_id: editLeadMusicianId,
+        cantor_id: editCantorId,
       })
       toast.success('Mass time updated')
       setIsEditDialogOpen(false)
@@ -367,7 +405,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
 
       {/* Add Time Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Mass Time</DialogTitle>
             <DialogDescription>
@@ -399,6 +437,60 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
                 Select &quot;Vigil&quot; for masses that occur the evening before (e.g., Saturday evening for Sunday).
               </p>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="lengthOfTime">Duration (minutes)</Label>
+              <Input
+                id="lengthOfTime"
+                type="number"
+                min="0"
+                placeholder="e.g., 60"
+                value={newLengthOfTime ?? ''}
+                onChange={(e) => setNewLengthOfTime(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Expected duration of the mass in minutes.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <LocationPickerField
+                value={newLocationId}
+                onChange={setNewLocationId}
+                placeholder="Select location (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="presider">Presider</Label>
+              <PersonPickerField
+                value={newPresiderId}
+                onChange={setNewPresiderId}
+                placeholder="Select presider (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="homilist">Homilist</Label>
+              <PersonPickerField
+                value={newHomilistId}
+                onChange={setNewHomilistId}
+                placeholder="Select homilist (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="leadMusician">Lead Musician</Label>
+              <PersonPickerField
+                value={newLeadMusicianId}
+                onChange={setNewLeadMusicianId}
+                placeholder="Select lead musician (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cantor">Cantor</Label>
+              <PersonPickerField
+                value={newCantorId}
+                onChange={setNewCantorId}
+                placeholder="Select cantor (optional)"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isAddingItem}>
@@ -413,7 +505,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
 
       {/* Edit Time Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Mass Time</DialogTitle>
             <DialogDescription>
@@ -444,6 +536,60 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               <p className="text-xs text-muted-foreground">
                 Select &quot;Vigil&quot; for masses that occur the evening before (e.g., Saturday evening for Sunday).
               </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editLengthOfTime">Duration (minutes)</Label>
+              <Input
+                id="editLengthOfTime"
+                type="number"
+                min="0"
+                placeholder="e.g., 60"
+                value={editLengthOfTime ?? ''}
+                onChange={(e) => setEditLengthOfTime(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Expected duration of the mass in minutes.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editLocation">Location</Label>
+              <LocationPickerField
+                value={editLocationId}
+                onChange={setEditLocationId}
+                placeholder="Select location (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editPresider">Presider</Label>
+              <PersonPickerField
+                value={editPresiderId}
+                onChange={setEditPresiderId}
+                placeholder="Select presider (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editHomilist">Homilist</Label>
+              <PersonPickerField
+                value={editHomilistId}
+                onChange={setEditHomilistId}
+                placeholder="Select homilist (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editLeadMusician">Lead Musician</Label>
+              <PersonPickerField
+                value={editLeadMusicianId}
+                onChange={setEditLeadMusicianId}
+                placeholder="Select lead musician (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editCantor">Cantor</Label>
+              <PersonPickerField
+                value={editCantorId}
+                onChange={setEditCantorId}
+                placeholder="Select cantor (optional)"
+              />
             </div>
           </div>
           <DialogFooter>

@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
-import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, type MassStatus, type MassTemplate } from "@/lib/constants"
+import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, LITURGICAL_COLOR_VALUES, LITURGICAL_COLOR_LABELS, type MassStatus, type MassTemplate, type LiturgicalColor } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PetitionEditor, type PetitionTemplate } from "@/components/petition-editor"
@@ -38,7 +38,8 @@ const massSchema = z.object({
   petitions: z.string().optional(),
   announcements: z.string().optional(),
   note: z.string().optional(),
-  mass_template_id: z.string().optional()
+  mass_template_id: z.string().optional(),
+  liturgical_color: z.enum(LITURGICAL_COLOR_VALUES).optional()
 })
 
 interface MassFormProps {
@@ -63,6 +64,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [announcements, setAnnouncements] = useState(mass?.announcements || "")
   const [petitions, setPetitions] = useState(mass?.petitions || "")
   const [massTemplateId, setMassTemplateId] = useState<MassTemplate>((mass?.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE)
+  const [liturgicalColor, setLiturgicalColor] = useState<LiturgicalColor | undefined>(mass?.liturgical_color as LiturgicalColor | undefined)
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
@@ -322,6 +324,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         announcements: announcements || undefined,
         note: note || undefined,
         mass_template_id: massTemplateId || undefined,
+        liturgical_color: liturgicalColor || undefined,
       })
 
       if (isEditing) {
@@ -375,6 +378,22 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
               value,
               label: getStatusLabel(value, 'en')
             }))}
+          />
+
+          <FormField
+            id="liturgical_color"
+            inputType="select"
+            label="Liturgical Color"
+            description="The liturgical color for this Mass celebration"
+            value={liturgicalColor || ''}
+            onChange={(value) => setLiturgicalColor(value as LiturgicalColor)}
+            options={[
+              { value: '', label: 'Not specified' },
+              ...LITURGICAL_COLOR_VALUES.map((value) => ({
+                value,
+                label: LITURGICAL_COLOR_LABELS[value].en
+              }))
+            ]}
           />
 
           <LiturgicalEventPickerField
