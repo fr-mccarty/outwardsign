@@ -390,6 +390,15 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 />
               )}
 
+              <SidebarMenuItem key="WeekendSummary">
+                <SidebarMenuButton asChild>
+                  <Link href="/weekend-summary" onClick={handleLinkClick}>
+                    <CalendarDays />
+                    <span>Weekend Summary</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
             </SidebarMenu>
           </SidebarGroupContent>
 
