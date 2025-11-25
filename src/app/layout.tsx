@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppContextProvider } from "@/contexts/AppContextProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
+import {APP_NAME} from "@/lib/constants";
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -17,10 +17,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const APP_DESCRIPTION = "Plan, prepare, and celebrate sacraments together with your parish.";
+
 export const metadata: Metadata = {
   title: `${APP_NAME}`,
-  description: `${APP_TAGLINE}`,
+  description: APP_DESCRIPTION,
   manifest: "/site.webmanifest",
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    url: "https://outwardsign.church",
+    siteName: APP_NAME,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: APP_NAME,
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    images: ["/og-image.png"],
+  },
   icons: {
     icon: [
       {
