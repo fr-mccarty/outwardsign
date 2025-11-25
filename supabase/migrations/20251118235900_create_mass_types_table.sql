@@ -29,6 +29,10 @@ CREATE INDEX idx_mass_types_parish_id ON mass_types(parish_id);
 CREATE INDEX idx_mass_types_active ON mass_types(active);
 CREATE INDEX idx_mass_types_display_order ON mass_types(display_order);
 
+-- Grant permissions
+GRANT ALL ON mass_types TO anon;
+GRANT ALL ON mass_types TO authenticated;
+
 -- Enable RLS
 ALTER TABLE mass_types ENABLE ROW LEVEL SECURITY;
 

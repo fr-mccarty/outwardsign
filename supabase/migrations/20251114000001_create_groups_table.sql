@@ -19,6 +19,10 @@ CREATE TRIGGER update_groups_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+-- Grant permissions
+GRANT ALL ON public.groups TO anon;
+GRANT ALL ON public.groups TO authenticated;
+
 -- Enable Row Level Security
 ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
 

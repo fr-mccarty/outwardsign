@@ -13,6 +13,10 @@ CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON public.group_members(gr
 CREATE INDEX IF NOT EXISTS idx_group_members_person_id ON public.group_members(person_id);
 CREATE INDEX IF NOT EXISTS idx_group_members_group_role_id ON public.group_members(group_role_id);
 
+-- Grant permissions
+GRANT ALL ON public.group_members TO anon;
+GRANT ALL ON public.group_members TO authenticated;
+
 -- Enable Row Level Security
 ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;
 
