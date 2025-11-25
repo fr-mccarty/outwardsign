@@ -12,6 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { LanguageSelector } from "@/components/language-selector"
 import { HomeFeatureCard } from "@/components/home-feature-card"
+import { Logo } from "@/components/logo"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -730,7 +731,7 @@ function HomeContent() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <Flower className="h-8 w-8 text-primary" />
+                <Logo size="medium" />
                 <div className="flex flex-col">
                   <span className="text-xl font-bold">{APP_NAME}</span>
                   <span className="text-xs text-muted-foreground">{APP_TAGLINE}</span>
@@ -754,15 +755,15 @@ function HomeContent() {
 
       {/* Mobile Menu */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
-          <SheetHeader>
+        <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0 flex flex-col">
+          <SheetHeader className="p-6 pb-0">
             <SheetTitle className="flex items-center gap-2">
-              <Flower className="h-6 w-6 text-primary" />
+              <Logo size="small" />
               {APP_NAME}
             </SheetTitle>
           </SheetHeader>
 
-          <div className="flex flex-col gap-6 mt-8">
+          <div className="flex flex-col gap-6 mt-8 px-6 pb-16 overflow-y-auto flex-1">
             {/* Navigation Links - Always visible in menu */}
             <nav className="flex flex-col gap-4">
               <Link

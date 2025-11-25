@@ -410,7 +410,6 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={leadMusician.showPicker}
               onShowPickerChange={leadMusician.setShowPicker}
               placeholder="Select Lead Musician"
-              openToNewPerson={!leadMusician.value}
             />
             <PersonPickerField
               label="Cantor"
@@ -419,7 +418,6 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={cantor.showPicker}
               onShowPickerChange={cantor.setShowPicker}
               placeholder="Select Cantor"
-              openToNewPerson={!cantor.value}
             />
           </div>
 
@@ -570,7 +568,6 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={gospelReader.showPicker}
               onShowPickerChange={gospelReader.setShowPicker}
               placeholder="Select Gospel Reader"
-              openToNewPerson={!gospelReader.value}
             />
           </div>
       </FormSectionCard>

@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Flower, Loader2 } from 'lucide-react'
+import { Logo } from '@/components/logo'
+import { Loader2 } from 'lucide-react'
 import { APP_NAME } from '@/lib/constants'
 import { createParishWithSuperAdmin } from '@/lib/auth/parish'
 import { populateInitialParishData } from '@/lib/actions/setup'
@@ -115,9 +116,7 @@ export default function OnboardingPage() {
           <CardContent className="pt-6">
             <div className="text-center space-y-6">
               <div className="inline-flex items-center justify-center">
-                <div className="flex aspect-square size-16 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Flower className="size-8" />
-                </div>
+                <Logo size="large" />
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-semibold text-foreground">
@@ -146,9 +145,7 @@ export default function OnboardingPage() {
         {/* Logo Header */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center space-x-4">
-            <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Flower className="size-7" />
-            </div>
+            <Logo size="large" />
             <div className="font-semibold text-2xl text-foreground">{APP_NAME}</div>
           </div>
           <h2 className="mt-6 text-xl text-muted-foreground">Welcome! Let&apos;s set up your parish</h2>

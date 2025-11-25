@@ -17,7 +17,6 @@ import {
   Home,
   FileText,
   BookOpen,
-  Flower,
   Calendar,
   Settings,
   Church,
@@ -27,6 +26,7 @@ import {
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
+import { Logo } from "@/components/logo"
 import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
 import { canAccessModule, canManageParishSettings, type UserParishRole, type ModuleName } from "@/lib/auth/permissions-client"
 
@@ -59,9 +59,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard" onClick={handleLinkClick}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Flower className="size-4" />
-                </div>
+                <Logo size="medium" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{APP_NAME}</span>
                   <span className="truncate text-xs">{APP_TAGLINE}</span>
@@ -394,14 +392,33 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
             <SidebarMenu>
 
               {canManageParish && (
-                <SidebarMenuItem key="ParishSettings">
-                  <SidebarMenuButton asChild>
-                    <Link href="/settings/parish" onClick={handleLinkClick}>
-                      <Church />
-                      <span>Parish Settings</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <CollapsibleNavSection
+                  name="Parish Settings"
+                  icon={Church}
+                  items={[
+                    {
+                      title: "General",
+                      url: "/settings/parish/general",
+                      icon: Settings,
+                    },
+                    {
+                      title: "Mass Intentions",
+                      url: "/settings/parish/mass-intentions",
+                      icon: List,
+                    },
+                    {
+                      title: "Petitions",
+                      url: "/settings/parish/petitions",
+                      icon: FileText,
+                    },
+                    {
+                      title: "Members",
+                      url: "/settings/parish/members",
+                      icon: Users,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
               )}
 
               <SidebarMenuItem key="UserSettings">

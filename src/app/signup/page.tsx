@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Logo } from '@/components/logo'
 import Link from 'next/link'
-import { Flower, CheckCircle } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import {APP_NAME} from "@/lib/constants";
 
 function SignupForm() {
@@ -145,9 +146,7 @@ function SignupForm() {
         {/* Logo Header */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center justify-center space-x-4 hover:opacity-80 transition-opacity">
-            <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Flower className="size-7" />
-            </div>
+            <Logo size="large" />
             <div className="font-semibold text-2xl text-foreground">{APP_NAME}</div>
           </Link>
         </div>
