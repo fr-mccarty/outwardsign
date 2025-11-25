@@ -20,6 +20,44 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: `${APP_NAME}`,
   description: `${APP_TAGLINE}`,
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      {
+        url: "/favicon-dark.ico",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-light.ico",
+        media: "(prefers-color-scheme: dark)",
+      },
+      {
+        url: "/favicon-dark-32x32.png",
+        type: "image/png",
+        sizes: "32x32",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-light-32x32.png",
+        type: "image/png",
+        sizes: "32x32",
+        media: "(prefers-color-scheme: dark)",
+      },
+      {
+        url: "/favicon-dark-16x16.png",
+        type: "image/png",
+        sizes: "16x16",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-light-16x16.png",
+        type: "image/png",
+        sizes: "16x16",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
