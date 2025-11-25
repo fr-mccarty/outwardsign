@@ -1,0 +1,21 @@
+# Allow search engines to crawl public pages
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /onboarding
+Disallow: /dashboard
+Disallow: /weddings
+Disallow: /funerals
+Disallow: /baptisms
+Disallow: /presentations
+Disallow: /quinceaneras
+Disallow: /calendar
+Disallow: /people
+Disallow: /groups
+Disallow: /masses
+Disallow: /settings
+Disallow: /print
+Disallow: /api
+
+Sitemap: https://outwardsign.church/sitemap.xml

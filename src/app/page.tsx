@@ -697,8 +697,33 @@ function HomeContent() {
     router.push(`?${params.toString()}`, { scroll: false })
   }
 
+  // JSON-LD structured data for Google Search
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Outward Sign",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Plan, prepare, and celebrate sacraments together with your parish. Free and open source sacrament management for Catholic parishes.",
+    "url": "https://outwardsign.church",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Outward Sign"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Structured data for Google */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Navigation Header */}
       <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
