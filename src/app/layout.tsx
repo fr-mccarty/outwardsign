@@ -5,6 +5,7 @@ import { AppContextProvider } from "@/contexts/AppContextProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {process.env.NODE_ENV === "production" && <Analytics />}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
