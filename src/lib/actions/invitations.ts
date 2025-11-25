@@ -162,6 +162,13 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   const inviterName = user.email || 'A parish member'
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/accept-invitation?token=${token}`
 
+  console.log('[Invitation Email] Attempting to send invitation email:', {
+    to: data.email,
+    parish: parish.name,
+    inviter: inviterName,
+    link: invitationLink,
+  })
+
   const emailResult = await sendParishInvitationEmail(
     data.email,
     parish.name,
@@ -169,8 +176,13 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
     invitationLink
   )
 
-  if (!emailResult.success) {
-    console.error('Failed to send invitation email:', emailResult.error)
+  if (emailResult.success) {
+    console.log('[Invitation Email] Successfully sent:', {
+      to: data.email,
+      messageId: emailResult.messageId,
+    })
+  } else {
+    console.error('[Invitation Email] Failed to send:', emailResult.error)
     // Don't throw - invitation was created successfully, email is secondary
   }
 

@@ -30,7 +30,17 @@ export async function sendEmail({
 }: EmailParams) {
   try {
     const toAddresses = Array.isArray(to) ? to : [to]
-    
+
+    console.log('[AWS SES] Preparing to send email:', {
+      to: toAddresses,
+      from,
+      subject,
+      replyTo: replyTo || '(none)',
+      region: process.env.AWS_REGION || 'us-east-1',
+      hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
+      hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY,
+    })
+
     const params = {
       Destination: {
         ToAddresses: toAddresses,
@@ -81,7 +91,7 @@ export async function sendParishInvitationEmail(
   inviterName: string,
   invitationLink: string
 ) {
-  const subject = `You've been invited to join ${parishName} on Liturgy.faith`
+  const subject = `You've been invited to join ${parishName} on Outward Sign`
   
   const htmlBody = `
     <!DOCTYPE html>
@@ -131,12 +141,12 @@ export async function sendParishInvitationEmail(
       </head>
       <body>
         <div class="header">
-          <h1>Liturgy.faith</h1>
+          <h1>Outward Sign</h1>
         </div>
         <div class="content">
           <h2>You're invited to join ${parishName}</h2>
           <p>Hi there,</p>
-          <p>${inviterName} has invited you to join <strong>${parishName}</strong> on Liturgy.faith, a platform for managing liturgical planning and parish activities.</p>
+          <p>${inviterName} has invited you to join <strong>${parishName}</strong> on Outward Sign, a platform for managing liturgical planning and parish activities.</p>
           <p>To accept this invitation and create your account, please click the button below:</p>
           <div style="text-align: center;">
             <a href="${invitationLink}" class="button">Accept Invitation</a>
@@ -145,10 +155,10 @@ export async function sendParishInvitationEmail(
           <p style="word-break: break-all; color: #0070f3;">${invitationLink}</p>
           <p>This invitation link will expire in 7 days for security reasons.</p>
           <p>If you have any questions, please don't hesitate to reach out.</p>
-          <p>Best regards,<br>The Liturgy.faith Team</p>
+          <p>Best regards,<br>The Outward Sign Team</p>
         </div>
         <div class="footer">
-          <p>This email was sent to ${email} because someone invited you to join their parish on Liturgy.faith.</p>
+          <p>This email was sent to ${email} because someone invited you to join their parish on Outward Sign.</p>
           <p>If you didn't expect this invitation, you can safely ignore this email.</p>
         </div>
       </body>
@@ -156,11 +166,11 @@ export async function sendParishInvitationEmail(
   `
   
   const textBody = `
-You're invited to join ${parishName} on Liturgy.faith
+You're invited to join ${parishName} on Outward Sign
 
 Hi there,
 
-${inviterName} has invited you to join ${parishName} on Liturgy.faith, a platform for managing liturgical planning and parish activities.
+${inviterName} has invited you to join ${parishName} on Outward Sign, a platform for managing liturgical planning and parish activities.
 
 To accept this invitation and create your account, please visit:
 ${invitationLink}
@@ -170,10 +180,10 @@ This invitation link will expire in 7 days for security reasons.
 If you have any questions, please don't hesitate to reach out.
 
 Best regards,
-The Liturgy.faith Team
+The Outward Sign Team
 
 ---
-This email was sent to ${email} because someone invited you to join their parish on Liturgy.faith.
+This email was sent to ${email} because someone invited you to join their parish on Outward Sign.
 If you didn't expect this invitation, you can safely ignore this email.
   `
 
