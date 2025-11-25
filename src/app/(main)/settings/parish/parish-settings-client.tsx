@@ -28,7 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { SettingsPage } from '@/components/settings-page'
 import { Save, RefreshCw, Users, MoreVertical, Trash2, Settings, Plus, DollarSign, Send, FileText, Edit } from "lucide-react"
 import { updateParish, getParishMembers, removeParishMember, updateMemberRole, updateParishSettings } from '@/lib/actions/setup'
-import { createParishInvitation, revokeParishInvitation, resendParishInvitation, type ParishInvitation } from '@/lib/actions/invitations'
+import { createParishInvitation, revokeParishInvitation, resendParishInvitation, getParishInvitations, type ParishInvitation } from '@/lib/actions/invitations'
 import { getPetitionTemplates, deletePetitionTemplate, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
 import { Parish, ParishSettings } from '@/lib/types'
 import { USER_PARISH_ROLE_LABELS, USER_PARISH_ROLE_VALUES, type UserParishRoleType } from '@/lib/constants'
@@ -124,6 +124,16 @@ export function ParishSettingsClient({
       toast.error('Failed to load parish members')
     } finally {
       setLoadingMembers(false)
+    }
+  }
+
+  async function loadInvitations() {
+    try {
+      const invitationsResult = await getParishInvitations()
+      setInvitations(invitationsResult)
+    } catch (error) {
+      console.error('Error loading invitations:', error)
+      toast.error('Failed to load invitations')
     }
   }
 
@@ -239,7 +249,7 @@ export function ParishSettingsClient({
       setInviteEmail('')
       setInviteRole('staff')
       setInviteModules([])
-      router.refresh()
+      await loadInvitations()
     } catch (error) {
       console.error('Error sending invitation:', error)
       toast.error('Failed to send invitation')
@@ -252,7 +262,7 @@ export function ParishSettingsClient({
     try {
       await resendParishInvitation(invitationId)
       toast.success('Invitation resent successfully!')
-      router.refresh()
+      await loadInvitations()
     } catch (error) {
       console.error('Error resending invitation:', error)
       toast.error('Failed to resend invitation')
@@ -263,7 +273,7 @@ export function ParishSettingsClient({
     try {
       await revokeParishInvitation(invitationId)
       toast.success('Invitation revoked successfully')
-      router.refresh()
+      await loadInvitations()
     } catch (error) {
       console.error('Error revoking invitation:', error)
       toast.error('Failed to revoke invitation')
