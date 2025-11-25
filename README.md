@@ -521,7 +521,7 @@ The `docs/` directory contains in-depth developer/AI documentation on specialize
 - **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Comprehensive component catalog
 - **[STYLES.md](./docs/STYLES.md)** - Styling guidelines and theme tokens
 - **[WEEKEND_SUMMARY.md](./docs/WEEKEND_SUMMARY.md)** - Weekend summary module documentation
-- **[PERSONA.md](./docs/PERSONA.md)** - User personas and use cases
+- **[personas/](./docs/personas/README.md)** - User personas and use cases
 
 ### Testing Documentation
 
