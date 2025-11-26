@@ -10,34 +10,9 @@ import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { PaginatedParams, PaginatedResult } from './people'
 import type { MassStatus } from '@/lib/constants'
+import { createMassSchema, updateMassSchema, type CreateMassData, type UpdateMassData } from '@/lib/schemas/masses'
 
-export interface CreateMassData {
-  event_id?: string
-  presider_id?: string
-  homilist_id?: string
-  liturgical_event_id?: string
-  mass_roles_template_id?: string
-  status?: MassStatus
-  mass_template_id?: string
-  announcements?: string
-  note?: string
-  petitions?: string
-  liturgical_color?: string
-}
-
-export interface UpdateMassData {
-  event_id?: string | null
-  presider_id?: string | null
-  homilist_id?: string | null
-  liturgical_event_id?: string | null
-  mass_roles_template_id?: string | null
-  status?: MassStatus | null
-  mass_template_id?: string | null
-  announcements?: string | null
-  note?: string | null
-  petitions?: string | null
-  liturgical_color?: string | null
-}
+export type { CreateMassData, UpdateMassData }
 
 export interface MassFilterParams {
   search?: string
@@ -330,22 +305,25 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'masses')
 
+  // Validate data with Zod schema
+  const validatedData = createMassSchema.parse(data)
+
   const { data: mass, error } = await supabase
     .from('masses')
     .insert([
       {
         parish_id: selectedParishId,
-        event_id: data.event_id || null,
-        presider_id: data.presider_id || null,
-        homilist_id: data.homilist_id || null,
-        liturgical_event_id: data.liturgical_event_id || null,
-        mass_roles_template_id: data.mass_roles_template_id || null,
-        status: data.status || 'PLANNING',
-        mass_template_id: data.mass_template_id || null,
-        announcements: data.announcements || null,
-        note: data.note || null,
-        petitions: data.petitions || null,
-        liturgical_color: data.liturgical_color || null,
+        event_id: validatedData.event_id || null,
+        presider_id: validatedData.presider_id || null,
+        homilist_id: validatedData.homilist_id || null,
+        liturgical_event_id: validatedData.liturgical_event_id || null,
+        mass_roles_template_id: validatedData.mass_roles_template_id || null,
+        status: validatedData.status || 'PLANNING',
+        mass_template_id: validatedData.mass_template_id || null,
+        announcements: validatedData.announcements || null,
+        note: validatedData.note || null,
+        petitions: validatedData.petitions || null,
+        liturgical_color: validatedData.liturgical_color || null,
       }
     ])
     .select()
@@ -373,9 +351,12 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mass
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'masses')
 
+  // Validate data with Zod schema
+  const validatedData = updateMassSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([, value]) => value !== undefined)
   )
 
   const { data: mass, error } = await supabase

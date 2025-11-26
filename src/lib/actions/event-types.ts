@@ -3,13 +3,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { EventType } from '@/lib/types'
-
-export interface CreateEventTypeData {
-  name: string
-  description?: string
-  is_active?: boolean
-  display_order?: number
-}
+import {
+  createEventTypeSchema,
+  updateEventTypeSchema,
+  type CreateEventTypeData,
+  type UpdateEventTypeData,
+} from '@/lib/schemas/event-types'
 
 /**
  * Get all event types for the current parish
@@ -130,6 +129,9 @@ export async function createEventType(eventTypeData: CreateEventTypeData): Promi
     throw new Error('No parish found for user')
   }
 
+  // Validate input data
+  createEventTypeSchema.parse(eventTypeData)
+
   const { data, error } = await supabase
     .from('event_types')
     .insert({
@@ -156,13 +158,16 @@ export async function createEventType(eventTypeData: CreateEventTypeData): Promi
 /**
  * Update an existing event type
  */
-export async function updateEventType(id: string, eventTypeData: Partial<CreateEventTypeData>): Promise<EventType> {
+export async function updateEventType(id: string, eventTypeData: UpdateEventTypeData): Promise<EventType> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
   }
+
+  // Validate input data
+  updateEventTypeSchema.parse(eventTypeData)
 
   const { data, error } = await supabase
     .from('event_types')

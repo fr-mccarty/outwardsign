@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Dialog,
   DialogContent,
@@ -14,6 +16,10 @@ import { FormInput } from '@/components/form-input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { createEventType, updateEventType } from '@/lib/actions/event-types'
+import {
+  createEventTypeSchema,
+  type CreateEventTypeData,
+} from '@/lib/schemas/event-types'
 import { toast } from 'sonner'
 import type { EventType } from '@/lib/types'
 
@@ -31,41 +37,59 @@ export function EventTypeFormDialog({
   onSuccess,
 }: EventTypeFormDialogProps) {
   const isEditing = !!eventType
-  const [isLoading, setIsLoading] = useState(false)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [isActive, setIsActive] = useState(true)
 
-  // Initialize form when eventType changes
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = useForm<CreateEventTypeData>({
+    resolver: zodResolver(createEventTypeSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      is_active: true,
+    },
+  })
+
+  const name = watch('name')
+  const description = watch('description')
+  const isActive = watch('is_active')
+
+  // Initialize form when dialog opens or eventType changes
   useEffect(() => {
-    if (eventType) {
-      setName(eventType.name)
-      setDescription(eventType.description || '')
-      setIsActive(eventType.is_active)
-    } else {
-      setName('')
-      setDescription('')
-      setIsActive(true)
+    if (open) {
+      if (eventType) {
+        reset({
+          name: eventType.name,
+          description: eventType.description || '',
+          is_active: eventType.is_active,
+        })
+      } else {
+        reset({
+          name: '',
+          description: '',
+          is_active: true,
+        })
+      }
     }
-  }, [eventType])
+  }, [eventType, open, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateEventTypeData) => {
     try {
       if (isEditing) {
         await updateEventType(eventType.id, {
-          name,
-          description: description || undefined,
-          is_active: isActive,
+          name: data.name,
+          description: data.description || undefined,
+          is_active: data.is_active,
         })
         toast.success('Event type updated successfully')
       } else {
         await createEventType({
-          name,
-          description: description || undefined,
-          is_active: isActive,
+          name: data.name,
+          description: data.description || undefined,
+          is_active: data.is_active,
         })
         toast.success('Event type created successfully')
       }
@@ -73,15 +97,13 @@ export function EventTypeFormDialog({
     } catch (error) {
       console.error('Failed to save event type:', error)
       toast.error(`Failed to ${isEditing ? 'update' : 'create'} event type`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Edit Event Type' : 'Create Event Type'}</DialogTitle>
             <DialogDescription>
@@ -96,7 +118,8 @@ export function EventTypeFormDialog({
               id="name"
               label="Name"
               value={name}
-              onChange={setName}
+              onChange={(value) => setValue('name', value)}
+              error={errors.name?.message}
               required
               placeholder="e.g., Parish Meeting, Fundraiser, etc."
             />
@@ -105,8 +128,9 @@ export function EventTypeFormDialog({
               id="description"
               label="Description"
               inputType="textarea"
-              value={description}
-              onChange={setDescription}
+              value={description || ''}
+              onChange={(value) => setValue('description', value)}
+              error={errors.description?.message}
               placeholder="Optional description of this event type..."
               rows={3}
             />
@@ -120,8 +144,8 @@ export function EventTypeFormDialog({
               </div>
               <Switch
                 id="is-active"
-                checked={isActive}
-                onCheckedChange={setIsActive}
+                checked={isActive ?? true}
+                onCheckedChange={(checked) => setValue('is_active', checked)}
               />
             </div>
           </div>
@@ -131,12 +155,12 @@ export function EventTypeFormDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : isEditing ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
         </form>

@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Dialog,
   DialogContent,
@@ -10,12 +12,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { createMassType, updateMassType, type MassType } from '@/lib/actions/mass-types'
+import {
+  createMassTypeSchema,
+  type CreateMassTypeData,
+} from '@/lib/schemas/mass-types'
+import { FormInput } from '@/components/form-input'
 
 interface MassTypeFormDialogProps {
   open: boolean
@@ -32,46 +35,44 @@ export function MassTypeFormDialog({
 }: MassTypeFormDialogProps) {
   const isEditing = !!massType
 
-  // Form state
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [active, setActive] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
+  // Initialize form with React Hook Form
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = useForm<CreateMassTypeData>({
+    resolver: zodResolver(createMassTypeSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      active: true,
+    },
+  })
 
   // Reset form when dialog opens/closes or massType changes
   useEffect(() => {
     if (open) {
       if (massType) {
-        setName(massType.name)
-        setDescription(massType.description || '')
-        setActive(massType.active)
+        reset({
+          name: massType.name,
+          description: massType.description || '',
+          active: massType.active,
+        })
       } else {
         // Reset to defaults for create
-        setName('')
-        setDescription('')
-        setActive(true)
+        reset({
+          name: '',
+          description: '',
+          active: true,
+        })
       }
     }
-  }, [open, massType])
+  }, [open, massType, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateMassTypeData) => {
     try {
-      // Basic validation
-      if (!name.trim()) {
-        toast.error('Name is required')
-        setIsLoading(false)
-        return
-      }
-
-      const data = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        active,
-      }
-
       if (isEditing) {
         await updateMassType(massType.id, data)
         toast.success('Mass type updated successfully')
@@ -85,15 +86,18 @@ export function MassTypeFormDialog({
       console.error('Error saving mass type:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to save mass type'
       toast.error(errorMessage)
-    } finally {
-      setIsLoading(false)
     }
   }
+
+  // Watch form values for controlled components
+  const nameValue = watch('name')
+  const descriptionValue = watch('description')
+  const activeValue = watch('active')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Edit Mass Type' : 'Create Mass Type'}</DialogTitle>
             <DialogDescription>
@@ -105,42 +109,38 @@ export function MassTypeFormDialog({
 
           <div className="space-y-4 py-4">
             {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Weekend, Daily, Adoration"
-                required
-              />
-            </div>
+            <FormInput
+              id="name"
+              label="Name"
+              required
+              value={nameValue}
+              onChange={(value) => setValue('name', value)}
+              placeholder="e.g., Weekend, Daily, Adoration"
+              error={errors.name?.message}
+            />
 
             {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">
-                Description <span className="text-xs text-muted-foreground">(optional)</span>
-              </Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of this mass type"
-                rows={2}
-              />
-            </div>
+            <FormInput
+              id="description"
+              label="Description"
+              description="(optional)"
+              inputType="textarea"
+              value={descriptionValue}
+              onChange={(value) => setValue('description', value)}
+              placeholder="Brief description of this mass type"
+              rows={2}
+              error={errors.description?.message}
+            />
 
             {/* Active Checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="active"
-                checked={active}
-                onCheckedChange={(checked) => setActive(checked as boolean)}
-              />
-              <Label htmlFor="active" className="text-sm font-normal cursor-pointer">
-                Active (show in mass times forms)
-              </Label>
-            </div>
+            <FormInput
+              id="active"
+              label="Active (show in mass times forms)"
+              inputType="checkbox"
+              value={activeValue}
+              onChange={(value: boolean) => setValue('active', value)}
+              error={errors.active?.message}
+            />
           </div>
 
           <DialogFooter>
@@ -148,12 +148,12 @@ export function MassTypeFormDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : isEditing ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
         </form>

@@ -6,6 +6,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import { Person } from '@/lib/types'
+import { createPersonSchema, updatePersonSchema, CreatePersonData, UpdatePersonData } from '@/lib/schemas/people'
 
 /**
  * Build robust search conditions for people queries
@@ -68,38 +69,6 @@ function buildPeopleSearchConditions(search: string): string[] {
   }
 
   return searchConditions
-}
-
-export interface CreatePersonData {
-  first_name: string
-  first_name_pronunciation?: string
-  last_name: string
-  last_name_pronunciation?: string
-  phone_number?: string
-  email?: string
-  street?: string
-  city?: string
-  state?: string
-  zipcode?: string
-  sex?: 'Male' | 'Female'
-  note?: string
-  mass_times_template_item_ids?: string[]
-}
-
-export interface UpdatePersonData {
-  first_name?: string
-  first_name_pronunciation?: string
-  last_name?: string
-  last_name_pronunciation?: string
-  phone_number?: string
-  email?: string
-  street?: string
-  city?: string
-  state?: string
-  zipcode?: string
-  sex?: 'Male' | 'Female'
-  note?: string
-  mass_times_template_item_ids?: string[]
 }
 
 export interface PersonFilterParams {
@@ -248,24 +217,27 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data
+  const validatedData = createPersonSchema.parse(data)
+
   const { data: person, error } = await supabase
     .from('people')
     .insert([
       {
         parish_id: selectedParishId,
-        first_name: data.first_name,
-        first_name_pronunciation: data.first_name_pronunciation || null,
-        last_name: data.last_name,
-        last_name_pronunciation: data.last_name_pronunciation || null,
-        phone_number: data.phone_number || null,
-        email: data.email || null,
-        street: data.street || null,
-        city: data.city || null,
-        state: data.state || null,
-        zipcode: data.zipcode || null,
-        sex: data.sex || null,
-        note: data.note || null,
-        mass_times_template_item_ids: data.mass_times_template_item_ids || [],
+        first_name: validatedData.first_name,
+        first_name_pronunciation: validatedData.first_name_pronunciation || null,
+        last_name: validatedData.last_name,
+        last_name_pronunciation: validatedData.last_name_pronunciation || null,
+        phone_number: validatedData.phone_number || null,
+        email: validatedData.email || null,
+        street: validatedData.street || null,
+        city: validatedData.city || null,
+        state: validatedData.state || null,
+        zipcode: validatedData.zipcode || null,
+        sex: validatedData.sex || null,
+        note: validatedData.note || null,
+        mass_times_template_item_ids: validatedData.mass_times_template_item_ids || [],
       }
     ])
     .select()
@@ -294,20 +266,23 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data
+  const validatedData = updatePersonSchema.parse(data)
+
   const updateData: Record<string, unknown> = {}
-  if (data.first_name !== undefined) updateData.first_name = data.first_name
-  if (data.first_name_pronunciation !== undefined) updateData.first_name_pronunciation = data.first_name_pronunciation || null
-  if (data.last_name !== undefined) updateData.last_name = data.last_name
-  if (data.last_name_pronunciation !== undefined) updateData.last_name_pronunciation = data.last_name_pronunciation || null
-  if (data.phone_number !== undefined) updateData.phone_number = data.phone_number || null
-  if (data.email !== undefined) updateData.email = data.email || null
-  if (data.street !== undefined) updateData.street = data.street || null
-  if (data.city !== undefined) updateData.city = data.city || null
-  if (data.state !== undefined) updateData.state = data.state || null
-  if (data.zipcode !== undefined) updateData.zipcode = data.zipcode || null
-  if (data.sex !== undefined) updateData.sex = data.sex || null
-  if (data.note !== undefined) updateData.note = data.note || null
-  if (data.mass_times_template_item_ids !== undefined) updateData.mass_times_template_item_ids = data.mass_times_template_item_ids || []
+  if (validatedData.first_name !== undefined) updateData.first_name = validatedData.first_name
+  if (validatedData.first_name_pronunciation !== undefined) updateData.first_name_pronunciation = validatedData.first_name_pronunciation || null
+  if (validatedData.last_name !== undefined) updateData.last_name = validatedData.last_name
+  if (validatedData.last_name_pronunciation !== undefined) updateData.last_name_pronunciation = validatedData.last_name_pronunciation || null
+  if (validatedData.phone_number !== undefined) updateData.phone_number = validatedData.phone_number || null
+  if (validatedData.email !== undefined) updateData.email = validatedData.email || null
+  if (validatedData.street !== undefined) updateData.street = validatedData.street || null
+  if (validatedData.city !== undefined) updateData.city = validatedData.city || null
+  if (validatedData.state !== undefined) updateData.state = validatedData.state || null
+  if (validatedData.zipcode !== undefined) updateData.zipcode = validatedData.zipcode || null
+  if (validatedData.sex !== undefined) updateData.sex = validatedData.sex || null
+  if (validatedData.note !== undefined) updateData.note = validatedData.note || null
+  if (validatedData.mass_times_template_item_ids !== undefined) updateData.mass_times_template_item_ids = validatedData.mass_times_template_item_ids || []
 
   const { data: person, error } = await supabase
     .from('people')

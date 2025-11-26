@@ -5,6 +5,12 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
+import {
+  createMassTypeSchema,
+  updateMassTypeSchema,
+  type CreateMassTypeData,
+  type UpdateMassTypeData,
+} from '@/lib/schemas/mass-types'
 
 // MassType interface
 export interface MassType {
@@ -19,21 +25,8 @@ export interface MassType {
   updated_at: string
 }
 
-// Create data interface
-export interface CreateMassTypeData {
-  name: string
-  description?: string
-  display_order?: number
-  active?: boolean
-}
-
-// Update data interface
-export interface UpdateMassTypeData {
-  name?: string
-  description?: string | null
-  display_order?: number
-  active?: boolean
-}
+// Re-export types from schema
+export type { CreateMassTypeData, UpdateMassTypeData }
 
 /**
  * Get all mass types for the selected parish
@@ -124,15 +117,18 @@ export async function createMassType(data: CreateMassTypeData): Promise<MassType
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'masses')
 
+  // Validate data
+  const validatedData = createMassTypeSchema.parse(data)
+
   const { data: massType, error } = await supabase
     .from('mass_types')
     .insert([
       {
         parish_id: selectedParishId,
-        name: data.name,
-        description: data.description || null,
-        display_order: data.display_order ?? 0,
-        active: data.active !== undefined ? data.active : true,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        display_order: validatedData.display_order ?? 0,
+        active: validatedData.active !== undefined ? validatedData.active : true,
         is_system: false,
       },
     ])
@@ -168,11 +164,15 @@ export async function updateMassType(id: string, data: UpdateMassTypeData): Prom
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'masses')
 
+  // Validate data
+  const validatedData = updateMassTypeSchema.parse(data)
+
   const updateData: Record<string, unknown> = {}
-  if (data.name !== undefined) updateData.name = data.name
-  if (data.description !== undefined) updateData.description = data.description
-  if (data.display_order !== undefined) updateData.display_order = data.display_order
-  if (data.active !== undefined) updateData.active = data.active
+  if (validatedData.name !== undefined) updateData.name = validatedData.name
+  if (validatedData.description !== undefined) updateData.description = validatedData.description
+  if (validatedData.display_order !== undefined)
+    updateData.display_order = validatedData.display_order
+  if (validatedData.active !== undefined) updateData.active = validatedData.active
 
   const { data: massType, error } = await supabase
     .from('mass_types')

@@ -425,7 +425,7 @@ export function MassPicker({
           setShowPresiderPicker(false)
         }}
         selectedPersonId={selectedPresider?.id}
-        visibleFields={['email', 'phone_number']}
+        additionalVisibleFields={['email', 'phone_number']}
       />
     </>
   )

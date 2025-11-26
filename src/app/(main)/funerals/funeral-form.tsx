@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { z } from "zod"
+import { useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -11,6 +12,10 @@ import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
 import { createFuneral, updateFuneral, type FuneralWithRelations } from "@/lib/actions/funerals"
 import { getIndividualReadings } from "@/lib/actions/readings"
+import {
+  createFuneralSchema,
+  type CreateFuneralData
+} from "@/lib/schemas/funerals"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -31,35 +36,6 @@ import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 
-// Zod validation schema
-const funeralSchema = z.object({
-  status: z.enum(MODULE_STATUS_VALUES).optional(),
-  funeral_event_id: z.string().optional(),
-  funeral_meal_event_id: z.string().optional(),
-  deceased_id: z.string().optional(),
-  family_contact_id: z.string().optional(),
-  coordinator_id: z.string().optional(),
-  presider_id: z.string().optional(),
-  homilist_id: z.string().optional(),
-  lead_musician_id: z.string().optional(),
-  cantor_id: z.string().optional(),
-  first_reader_id: z.string().optional(),
-  second_reader_id: z.string().optional(),
-  psalm_reader_id: z.string().optional(),
-  gospel_reader_id: z.string().optional(),
-  petition_reader_id: z.string().optional(),
-  first_reading_id: z.string().optional(),
-  psalm_id: z.string().optional(),
-  second_reading_id: z.string().optional(),
-  gospel_reading_id: z.string().optional(),
-  psalm_is_sung: z.boolean().optional(),
-  petitions_read_by_second_reader: z.boolean().optional(),
-  petitions: z.string().optional(),
-  announcements: z.string().optional(),
-  note: z.string().optional(),
-  funeral_template_id: z.string().optional()
-})
-
 interface FuneralFormProps {
   funeral?: FuneralWithRelations
   formId?: string
@@ -69,23 +45,57 @@ interface FuneralFormProps {
 export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormProps) {
   const router = useRouter()
   const isEditing = !!funeral
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateFuneralData>({
+    resolver: zodResolver(createFuneralSchema),
+    defaultValues: {
+      status: (funeral?.status as ModuleStatus) || "ACTIVE",
+      funeral_event_id: funeral?.funeral_event_id || null,
+      funeral_meal_event_id: funeral?.funeral_meal_event_id || null,
+      deceased_id: funeral?.deceased_id || null,
+      family_contact_id: funeral?.family_contact_id || null,
+      coordinator_id: funeral?.coordinator_id || null,
+      presider_id: funeral?.presider_id || null,
+      homilist_id: funeral?.homilist_id || null,
+      lead_musician_id: funeral?.lead_musician_id || null,
+      cantor_id: funeral?.cantor_id || null,
+      first_reader_id: funeral?.first_reader_id || null,
+      second_reader_id: funeral?.second_reader_id || null,
+      psalm_reader_id: funeral?.psalm_reader_id || null,
+      gospel_reader_id: funeral?.gospel_reader_id || null,
+      petition_reader_id: funeral?.petition_reader_id || null,
+      first_reading_id: funeral?.first_reading_id || null,
+      psalm_id: funeral?.psalm_id || null,
+      second_reading_id: funeral?.second_reading_id || null,
+      gospel_reading_id: funeral?.gospel_reading_id || null,
+      psalm_is_sung: funeral?.psalm_is_sung || false,
+      petitions_read_by_second_reader: funeral?.petitions_read_by_second_reader || false,
+      petitions: funeral?.petitions || null,
+      announcements: funeral?.announcements || null,
+      note: funeral?.note || null,
+      funeral_template_id: (funeral?.funeral_template_id as FuneralTemplate) || FUNERAL_DEFAULT_TEMPLATE,
+    },
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
-  // State for all fields
-  const [status, setStatus] = useState<ModuleStatus>(funeral?.status || "ACTIVE")
-  const [note, setNote] = useState(funeral?.note || "")
-  const [announcements, setAnnouncements] = useState(funeral?.announcements || "")
-  const [petitions, setPetitions] = useState(funeral?.petitions || "")
-  const [funeralTemplateId, setFuneralTemplateId] = useState<FuneralTemplate>((funeral?.funeral_template_id as FuneralTemplate) || FUNERAL_DEFAULT_TEMPLATE)
-
-  // Boolean states
-  const [psalmIsSung, setPsalmIsSung] = useState(funeral?.psalm_is_sung || false)
-  const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(funeral?.petitions_read_by_second_reader || false)
+  // Watch form values
+  const status = watch("status")
+  const note = watch("note")
+  const announcements = watch("announcements")
+  const petitions = watch("petitions")
+  const funeralTemplateId = watch("funeral_template_id")
+  const psalmIsSung = watch("psalm_is_sung")
+  const petitionsReadBySecondReader = watch("petitions_read_by_second_reader")
 
   // Picker states using usePickerState hook - Events
   const funeralEvent = usePickerState<Event>()
@@ -112,7 +122,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
   const [showGospelReadingPicker, setShowGospelReadingPicker] = useState(false)
   const [readings, setReadings] = useState<IndividualReading[]>([])
 
-  // Selected readings
+  // Selected readings (for display purposes)
   const [firstReading, setFirstReading] = useState<IndividualReading | null>(null)
   const [psalm, setPsalm] = useState<IndividualReading | null>(null)
   const [secondReading, setSecondReading] = useState<IndividualReading | null>(null)
@@ -132,7 +142,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
     loadReadings()
   }, [])
 
-  // Initialize form with funeral data when editing
+  // Initialize picker states when editing
   useEffect(() => {
     if (funeral) {
       // Set events
@@ -161,6 +171,81 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [funeral])
+
+  // Sync picker values to form when they change - Events
+  useEffect(() => {
+    setValue("funeral_event_id", funeralEvent.value?.id || null)
+  }, [funeralEvent.value, setValue])
+
+  useEffect(() => {
+    setValue("funeral_meal_event_id", funeralMealEvent.value?.id || null)
+  }, [funeralMealEvent.value, setValue])
+
+  // Sync picker values to form when they change - People
+  useEffect(() => {
+    setValue("deceased_id", deceased.value?.id || null)
+  }, [deceased.value, setValue])
+
+  useEffect(() => {
+    setValue("family_contact_id", familyContact.value?.id || null)
+  }, [familyContact.value, setValue])
+
+  useEffect(() => {
+    setValue("coordinator_id", coordinator.value?.id || null)
+  }, [coordinator.value, setValue])
+
+  useEffect(() => {
+    setValue("presider_id", presider.value?.id || null)
+  }, [presider.value, setValue])
+
+  useEffect(() => {
+    setValue("homilist_id", homilist.value?.id || null)
+  }, [homilist.value, setValue])
+
+  useEffect(() => {
+    setValue("lead_musician_id", leadMusician.value?.id || null)
+  }, [leadMusician.value, setValue])
+
+  useEffect(() => {
+    setValue("cantor_id", cantor.value?.id || null)
+  }, [cantor.value, setValue])
+
+  useEffect(() => {
+    setValue("first_reader_id", firstReader.value?.id || null)
+  }, [firstReader.value, setValue])
+
+  useEffect(() => {
+    setValue("second_reader_id", secondReader.value?.id || null)
+  }, [secondReader.value, setValue])
+
+  useEffect(() => {
+    setValue("psalm_reader_id", psalmReader.value?.id || null)
+  }, [psalmReader.value, setValue])
+
+  useEffect(() => {
+    setValue("gospel_reader_id", gospelReader.value?.id || null)
+  }, [gospelReader.value, setValue])
+
+  useEffect(() => {
+    setValue("petition_reader_id", petitionReader.value?.id || null)
+  }, [petitionReader.value, setValue])
+
+  // Sync reading picker values to form when they change
+  useEffect(() => {
+    setValue("first_reading_id", firstReading?.id || null)
+  }, [firstReading, setValue])
+
+  useEffect(() => {
+    setValue("psalm_id", psalm?.id || null)
+  }, [psalm, setValue])
+
+  useEffect(() => {
+    setValue("second_reading_id", secondReading?.id || null)
+  }, [secondReading, setValue])
+
+  useEffect(() => {
+    setValue("gospel_reading_id", gospelReading?.id || null)
+  }, [gospelReading, setValue])
 
   // Handle inserting template petitions
   const handleInsertTemplate = (templateId: string): string[] => {
@@ -206,63 +291,25 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
     return "Funeral Meal"
   }, [deceased.value])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateFuneralData) => {
     try {
-      // Validate with Zod
-      const funeralData = funeralSchema.parse({
-        status: status || undefined,
-        funeral_event_id: funeralEvent.value?.id,
-        funeral_meal_event_id: funeralMealEvent.value?.id,
-        deceased_id: deceased.value?.id,
-        family_contact_id: familyContact.value?.id,
-        coordinator_id: coordinator.value?.id,
-        presider_id: presider.value?.id,
-        homilist_id: homilist.value?.id,
-        lead_musician_id: leadMusician.value?.id,
-        cantor_id: cantor.value?.id,
-        first_reader_id: firstReader.value?.id,
-        second_reader_id: secondReader.value?.id,
-        psalm_reader_id: psalmReader.value?.id,
-        gospel_reader_id: gospelReader.value?.id,
-        petition_reader_id: petitionReader.value?.id,
-        first_reading_id: firstReading?.id,
-        psalm_id: psalm?.id,
-        second_reading_id: secondReading?.id,
-        gospel_reading_id: gospelReading?.id,
-        psalm_is_sung: psalmIsSung,
-        petitions_read_by_second_reader: petitionsReadBySecondReader,
-        petitions: petitions || undefined,
-        announcements: announcements || undefined,
-        note: note || undefined,
-        funeral_template_id: funeralTemplateId || undefined,
-      })
-
       if (isEditing && funeral) {
-        await updateFuneral(funeral.id, funeralData)
+        await updateFuneral(funeral.id, data)
         toast.success('Funeral updated successfully')
         router.refresh() // Stay on edit page to show updated data
       } else {
-        const newFuneral = await createFuneral(funeralData)
+        const newFuneral = await createFuneral(data)
         toast.success('Funeral created successfully!')
         router.push(`/funerals/${newFuneral.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error(`Failed to ${isEditing ? 'update' : 'create'} funeral:`, error)
-        toast.error(`Failed to ${isEditing ? 'update' : 'create'} funeral. Please try again.`)
-      }
-    } finally {
-      setIsLoading(false)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} funeral:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} funeral. Please try again.`)
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-8">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Key Information */}
       <FormSectionCard
         title="Key Information"
@@ -276,6 +323,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             onShowPickerChange={deceased.setShowPicker}
             placeholder="Select Deceased"
             openToNewPerson={!deceased.value}
+            additionalVisibleFields={['email', 'phone_number', 'sex', 'note']}
           />
           <EventPickerField
             label="Funeral Mass Event"
@@ -325,6 +373,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             onShowPickerChange={familyContact.setShowPicker}
             placeholder="Select Family Contact"
             openToNewPerson={!familyContact.value}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
       </FormSectionCard>
 
@@ -342,6 +391,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Homilist"
@@ -351,6 +401,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={homilist.setShowPicker}
               placeholder="Select Homilist"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
       </FormSectionCard>
@@ -373,6 +424,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={leadMusician.setShowPicker}
               placeholder="Select Lead Musician"
               openToNewPerson={!leadMusician.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Cantor"
@@ -382,6 +434,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={cantor.setShowPicker}
               placeholder="Select Cantor"
               openToNewPerson={!cantor.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -412,6 +465,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={firstReader.setShowPicker}
               placeholder="Select First Reader"
               openToNewPerson={!firstReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -437,6 +491,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
                 onShowPickerChange={psalmReader.setShowPicker}
                 placeholder="Select Psalm Reader"
                 openToNewPerson={!psalmReader.value}
+                additionalVisibleFields={['email', 'phone_number', 'note']}
               />
             )}
           </div>
@@ -444,8 +499,8 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
           <div className="flex items-center space-x-2">
             <Checkbox
               id="psalm_is_sung"
-              checked={psalmIsSung}
-              onCheckedChange={(checked) => setPsalmIsSung(checked as boolean)}
+              checked={psalmIsSung || false}
+              onCheckedChange={(checked) => setValue("psalm_is_sung", checked as boolean)}
             />
             <label
               htmlFor="psalm_is_sung"
@@ -476,6 +531,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={secondReader.setShowPicker}
               placeholder="Select Second Reader"
               openToNewPerson={!secondReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -500,14 +556,15 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={gospelReader.setShowPicker}
               placeholder="Select Gospel Reader"
               openToNewPerson={!gospelReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
       </FormSectionCard>
 
       {/* Petitions */}
       <PetitionEditor
-        value={petitions}
-        onChange={setPetitions}
+        value={petitions || ""}
+        onChange={(value) => setValue("petitions", value)}
         onInsertTemplate={handleInsertTemplate}
         templates={petitionTemplates}
       />
@@ -519,8 +576,8 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
           <div className="flex items-center space-x-2">
             <Checkbox
               id="petitions_read_by_second_reader"
-              checked={petitionsReadBySecondReader}
-              onCheckedChange={(checked) => setPetitionsReadBySecondReader(checked as boolean)}
+              checked={petitionsReadBySecondReader || false}
+              onCheckedChange={(checked) => setValue("petitions_read_by_second_reader", checked as boolean)}
             />
             <label
               htmlFor="petitions_read_by_second_reader"
@@ -539,6 +596,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
               onShowPickerChange={petitionReader.setShowPicker}
               placeholder="Select Petition Reader"
               openToNewPerson={!petitionReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           )}
       </FormSectionCard>
@@ -552,11 +610,12 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             id="announcements"
             label="Announcements"
             description="These announcements will be printed on the last page of the liturgy script"
-            value={announcements}
-            onChange={setAnnouncements}
+            value={announcements || ""}
+            onChange={(value) => setValue("announcements", value)}
             placeholder="Enter any announcements..."
             inputType="textarea"
             rows={3}
+            error={errors.announcements?.message}
           />
       </FormSectionCard>
 
@@ -572,11 +631,15 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Coordinator"
             openToNewPerson={!coordinator.value}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
 
           <div className="space-y-2">
             <Label htmlFor="funeral_template_id">Liturgy Template</Label>
-            <Select value={funeralTemplateId} onValueChange={(value) => setFuneralTemplateId(value as FuneralTemplate)}>
+            <Select
+              value={funeralTemplateId || ""}
+              onValueChange={(value) => setValue("funeral_template_id", value as FuneralTemplate)}
+            >
               <SelectTrigger id="funeral_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -594,16 +657,20 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             id="note"
             label="Notes (Optional)"
             description="These notes are just for reference and will not be printed in the script"
-            value={note}
-            onChange={setNote}
+            value={note || ""}
+            onChange={(value) => setValue("note", value)}
             placeholder="Enter any additional notes..."
             inputType="textarea"
             rows={3}
+            error={errors.note?.message}
           />
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
+            <Select
+              value={status || ""}
+              onValueChange={(value) => setValue("status", value as ModuleStatus)}
+            >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -621,7 +688,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
       {/* Submit Buttons */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/funerals/${funeral.id}` : '/funerals'}
         moduleName="Funeral"
       />

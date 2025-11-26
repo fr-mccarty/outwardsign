@@ -291,6 +291,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
                 onShowPickerChange={setShowPersonPicker}
                 placeholder="Search or create a person"
                 required
+                additionalVisibleFields={['email', 'phone_number', 'note']}
               />
 
               <FormInput

@@ -8,32 +8,12 @@ import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Baptism, Person, Event } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import type { ModuleStatus } from '@/lib/constants'
-// Type definitions for baptism data
-export interface CreateBaptismData {
-  baptism_event_id?: string
-  child_id?: string
-  mother_id?: string
-  father_id?: string
-  sponsor_1_id?: string
-  sponsor_2_id?: string
-  presider_id?: string
-  status?: ModuleStatus
-  baptism_template_id?: string
-  note?: string
-}
-
-export interface UpdateBaptismData {
-  baptism_event_id?: string | null
-  child_id?: string | null
-  mother_id?: string | null
-  father_id?: string | null
-  sponsor_1_id?: string | null
-  sponsor_2_id?: string | null
-  presider_id?: string | null
-  status?: ModuleStatus | null
-  baptism_template_id?: string | null
-  note?: string | null
-}
+import {
+  createBaptismSchema,
+  updateBaptismSchema,
+  type CreateBaptismData,
+  type UpdateBaptismData
+} from '@/lib/schemas/baptisms'
 
 export interface BaptismFilterParams {
   search?: string
@@ -42,6 +22,7 @@ export interface BaptismFilterParams {
 
 export interface BaptismWithNames extends Baptism {
   child?: Person | null
+  presider?: Person | null
   baptism_event?: Event | null
 }
 
@@ -55,6 +36,7 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
     .select(`
       *,
       child:people!child_id(*),
+      presider:people!presider_id(*),
       baptism_event:events!baptism_event_id(*)
     `)
 
@@ -188,21 +170,24 @@ export async function createBaptism(data: CreateBaptismData): Promise<Baptism> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'baptisms')
 
+  // Validate data
+  const validatedData = createBaptismSchema.parse(data)
+
   const { data: baptism, error } = await supabase
     .from('baptisms')
     .insert([
       {
         parish_id: selectedParishId,
-        baptism_event_id: data.baptism_event_id || null,
-        child_id: data.child_id || null,
-        mother_id: data.mother_id || null,
-        father_id: data.father_id || null,
-        sponsor_1_id: data.sponsor_1_id || null,
-        sponsor_2_id: data.sponsor_2_id || null,
-        presider_id: data.presider_id || null,
-        status: data.status || null,
-        baptism_template_id: data.baptism_template_id || null,
-        note: data.note || null,
+        baptism_event_id: validatedData.baptism_event_id || null,
+        child_id: validatedData.child_id || null,
+        mother_id: validatedData.mother_id || null,
+        father_id: validatedData.father_id || null,
+        sponsor_1_id: validatedData.sponsor_1_id || null,
+        sponsor_2_id: validatedData.sponsor_2_id || null,
+        presider_id: validatedData.presider_id || null,
+        status: validatedData.status || null,
+        baptism_template_id: validatedData.baptism_template_id || null,
+        note: validatedData.note || null,
       }
     ])
     .select()
@@ -230,9 +215,12 @@ export async function updateBaptism(id: string, data: UpdateBaptismData): Promis
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'baptisms')
 
+  // Validate data
+  const validatedData = updateBaptismSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
   )
 
   const { data: baptism, error } = await supabase

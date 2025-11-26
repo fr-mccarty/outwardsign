@@ -1,10 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { z } from "zod"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
-import { createMassRoleTemplate, updateMassRoleTemplate, type CreateMassRoleTemplateData, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
+import { createMassRoleTemplate, updateMassRoleTemplate, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
+import { createMassRoleTemplateSchema, type CreateMassRoleTemplateData } from "@/lib/schemas/mass-role-templates"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
@@ -12,14 +14,6 @@ import { MassRoleTemplateItemList } from "@/components/mass-role-template-item-l
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { LITURGICAL_CONTEXT_VALUES, LITURGICAL_CONTEXT_LABELS, LITURGICAL_CONTEXT_DESCRIPTIONS, type LiturgicalContext } from "@/lib/constants"
-
-// Zod validation schema - parameters field removed (managed separately)
-const massRoleTemplateSchema = z.object({
-  name: z.string().min(1, "Template name is required"),
-  description: z.string().optional(),
-  note: z.string().optional(),
-  liturgical_contexts: z.array(z.string()).optional(),
-})
 
 interface MassRoleTemplateFormProps {
   template?: MassRoleTemplate
@@ -30,68 +24,45 @@ interface MassRoleTemplateFormProps {
 export function MassRoleTemplateForm({ template, formId, onLoadingChange }: MassRoleTemplateFormProps) {
   const router = useRouter()
   const isEditing = !!template
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize form with React Hook Form
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateMassRoleTemplateData>({
+    resolver: zodResolver(createMassRoleTemplateSchema),
+    defaultValues: {
+      name: template?.name || "",
+      description: template?.description || "",
+      note: template?.note || "",
+      liturgical_contexts: template?.liturgical_contexts || [],
+    },
+  })
+
+  // Watch form values
+  const name = watch("name")
+  const description = watch("description")
+  const note = watch("note")
+  const liturgicalContexts = watch("liturgical_contexts") || []
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
-
-  // Form state
-  const [name, setName] = useState(template?.name || "")
-  const [description, setDescription] = useState(template?.description || "")
-  const [note, setNote] = useState(template?.note || "")
-  const [liturgicalContexts, setLiturgicalContexts] = useState<LiturgicalContext[]>(
-    template?.liturgical_contexts || []
-  )
-
-  // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({})
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
   // Toggle liturgical context
   const handleLiturgicalContextToggle = (context: LiturgicalContext, checked: boolean) => {
     if (checked) {
-      setLiturgicalContexts([...liturgicalContexts, context])
+      setValue("liturgical_contexts", [...liturgicalContexts, context])
     } else {
-      setLiturgicalContexts(liturgicalContexts.filter(c => c !== context))
+      setValue("liturgical_contexts", liturgicalContexts.filter(c => c !== context))
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrors({})
-
+  const onSubmit = async (data: CreateMassRoleTemplateData) => {
     try {
-      // Validate with Zod
-      const validationResult = massRoleTemplateSchema.safeParse({
-        name,
-        description: description || undefined,
-        note: note || undefined,
-        liturgical_contexts: liturgicalContexts,
-      })
-
-      if (!validationResult.success) {
-        const fieldErrors: Record<string, string> = {}
-        validationResult.error.issues.forEach((issue) => {
-          if (issue.path[0]) {
-            fieldErrors[issue.path[0].toString()] = issue.message
-          }
-        })
-        setErrors(fieldErrors)
-        toast.error("Please fix validation errors")
-        setIsLoading(false)
-        return
-      }
-
-      // Prepare data (parameters not included - managed separately via drag-drop)
-      const data: CreateMassRoleTemplateData = {
-        name,
-        description: description || undefined,
-        note: note || undefined,
-        liturgical_contexts: liturgicalContexts,
-      }
-
       if (isEditing) {
         // Update existing template
         await updateMassRoleTemplate(template.id, data)
@@ -106,8 +77,6 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
     } catch (error) {
       console.error('Failed to save template:', error)
       toast.error('Failed to save template. Please try again.')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -117,7 +86,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
     : '/mass-role-templates'
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
         title="Template Information"
@@ -127,12 +96,12 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             id="name"
             label="Template Name"
             value={name}
-            onChange={setName}
+            onChange={(value) => setValue("name", value)}
             required
-            error={errors.name}
+            error={errors.name?.message}
             description="A descriptive name for this template (e.g., 'Sunday Mass - Full Choir', 'Weekday Mass')"
             placeholder="Enter template name"
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
 
           <FormInput
@@ -140,12 +109,12 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             inputType="textarea"
             label="Description"
             value={description}
-            onChange={setDescription}
-            error={errors.description}
+            onChange={(value) => setValue("description", value)}
+            error={errors.description?.message}
             description="A brief description of when this template should be used"
             placeholder="Enter template description"
             rows={3}
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
 
           <FormInput
@@ -153,12 +122,12 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             inputType="textarea"
             label="Note"
             value={note}
-            onChange={setNote}
-            error={errors.note}
+            onChange={(value) => setValue("note", value)}
+            error={errors.note?.message}
             description="Notes for staff (not visible to ministers)"
             placeholder="Enter notes"
             rows={2}
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
       </FormSectionCard>
 
@@ -176,7 +145,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
                 onCheckedChange={(checked) =>
                   handleLiturgicalContextToggle(context, checked === true)
                 }
-                disabled={isLoading}
+                disabled={isSubmitting}
               />
               <div className="grid gap-0.5 leading-none">
                 <Label
@@ -213,7 +182,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
 
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={cancelHref}
         moduleName="Mass Role Template"
       />

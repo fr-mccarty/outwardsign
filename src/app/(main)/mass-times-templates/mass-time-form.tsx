@@ -459,6 +459,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               onShowPickerChange={newPresider.setShowPicker}
               placeholder="Select presider (optional)"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Homilist"
@@ -468,6 +469,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               onShowPickerChange={newHomilist.setShowPicker}
               placeholder="Select homilist (optional)"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
           <DialogFooter>
@@ -545,6 +547,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               onShowPickerChange={editPresider.setShowPicker}
               placeholder="Select presider (optional)"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Homilist"
@@ -554,6 +557,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
               onShowPickerChange={editHomilist.setShowPicker}
               placeholder="Select homilist (optional)"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
           <DialogFooter>

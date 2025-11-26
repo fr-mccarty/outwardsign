@@ -6,6 +6,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import type { PaginatedParams, PaginatedResult } from './people'
+import { createLocationSchema, updateLocationSchema, type CreateLocationData, type UpdateLocationData } from '@/lib/schemas/locations'
 
 export interface Location {
   id: string
@@ -21,25 +22,7 @@ export interface Location {
   updated_at: string
 }
 
-export interface CreateLocationData {
-  name: string
-  description?: string
-  street?: string
-  city?: string
-  state?: string
-  country?: string
-  phone_number?: string
-}
-
-export interface UpdateLocationData {
-  name?: string
-  description?: string
-  street?: string
-  city?: string
-  state?: string
-  country?: string
-  phone_number?: string
-}
+export type { CreateLocationData, UpdateLocationData }
 
 export interface LocationFilterParams {
   search?: string
@@ -151,6 +134,9 @@ export async function createLocation(data: CreateLocationData): Promise<Location
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data
+  createLocationSchema.parse(data)
+
   const { data: location, error } = await supabase
     .from('locations')
     .insert([
@@ -188,6 +174,9 @@ export async function updateLocation(id: string, data: UpdateLocationData): Prom
     throw new Error('Not authenticated')
   }
   await requireEditSharedResources(user.id, selectedParishId)
+
+  // Validate data
+  updateLocationSchema.parse(data)
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(

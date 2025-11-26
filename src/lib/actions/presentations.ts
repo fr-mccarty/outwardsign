@@ -27,6 +27,7 @@ export interface PresentationWithNames extends Presentation {
   child?: Person | null
   mother?: Person | null
   father?: Person | null
+  coordinator?: Person | null
   presentation_event?: Event | null
 }
 
@@ -42,6 +43,7 @@ export async function getPresentations(filters?: PresentationFilterParams): Prom
       child:people!child_id(*),
       mother:people!mother_id(*),
       father:people!father_id(*),
+      coordinator:people!coordinator_id(*),
       presentation_event:events!presentation_event_id(*)
     `)
 

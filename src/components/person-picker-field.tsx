@@ -20,7 +20,7 @@ interface PersonPickerFieldProps {
   placeholder?: string
   required?: boolean
   openToNewPerson?: boolean
-  visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation'
+  additionalVisibleFields?: string[] // Additional fields to show: 'email', 'phone_number', 'sex', 'note'
   requiredFields?: string[] // Fields that should be marked as required in the picker form
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
   testId?: string // Optional override for data-testid
@@ -36,7 +36,7 @@ export function PersonPickerField({
   placeholder = 'Select Person',
   required = false,
   openToNewPerson = false,
-  visibleFields,
+  additionalVisibleFields,
   requiredFields,
   autoSetSex,
   testId,
@@ -50,19 +50,16 @@ export function PersonPickerField({
     const lastName = person.last_name
     const lastNamePronunciation = person.last_name_pronunciation
 
-    // Show pronunciation only if pronunciation fields are in visibleFields
-    const showFirstPronunciation = visibleFields?.includes('first_name_pronunciation') && firstNamePronunciation
-    const showLastPronunciation = visibleFields?.includes('last_name_pronunciation') && lastNamePronunciation
-
-    if (!showFirstPronunciation && !showLastPronunciation) {
+    // Always show pronunciation if the person has it
+    if (!firstNamePronunciation && !lastNamePronunciation) {
       return `${firstName} ${lastName}`
     }
 
-    // Build name with pronunciation only where it exists and is visible
-    const firstPart = showFirstPronunciation
+    // Build name with pronunciation where it exists
+    const firstPart = firstNamePronunciation
       ? `${firstName} (${firstNamePronunciation})`
       : firstName
-    const lastPart = showLastPronunciation
+    const lastPart = lastNamePronunciation
       ? `${lastName} (${lastNamePronunciation})`
       : lastName
 
@@ -114,7 +111,7 @@ export function PersonPickerField({
           onSelect={onValueChange}
           selectedPersonId={value?.id}
           openToNewPerson={openToNewPerson}
-          visibleFields={visibleFields}
+          additionalVisibleFields={additionalVisibleFields}
           requiredFields={requiredFields}
           editMode={value !== null}
           personToEdit={value}

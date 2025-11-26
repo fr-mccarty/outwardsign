@@ -127,6 +127,7 @@ export function AddMembershipModal({
                 onShowPickerChange={person.setShowPicker}
                 placeholder="Select Person"
                 required
+                additionalVisibleFields={['email', 'phone_number', 'note']}
               />
             )}
 

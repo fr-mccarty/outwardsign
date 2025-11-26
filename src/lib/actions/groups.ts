@@ -6,6 +6,12 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
+import {
+  createGroupSchema,
+  updateGroupSchema,
+  type CreateGroupData,
+  type UpdateGroupData
+} from '@/lib/schemas/groups'
 
 export interface Group {
   id: string
@@ -41,17 +47,8 @@ export interface GroupWithMembers extends Group {
   members: GroupMember[]
 }
 
-export interface CreateGroupData {
-  name: string
-  description?: string
-  is_active?: boolean
-}
-
-export interface UpdateGroupData {
-  name?: string
-  description?: string
-  is_active?: boolean
-}
+// Re-export types for backward compatibility
+export type { CreateGroupData, UpdateGroupData }
 
 export async function getGroups(): Promise<Group[]> {
   const selectedParishId = await requireSelectedParish()
@@ -142,14 +139,17 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'groups')
 
+  // REQUIRED: Server-side validation (security boundary)
+  const validatedData = createGroupSchema.parse(data)
+
   const { data: group, error } = await supabase
     .from('groups')
     .insert([
       {
         parish_id: selectedParishId,
-        name: data.name,
-        description: data.description || null,
-        is_active: data.is_active ?? true,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        is_active: validatedData.is_active ?? true,
       }
     ])
     .select()
@@ -178,10 +178,13 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'groups')
 
+  // REQUIRED: Server-side validation (security boundary)
+  const validatedData = updateGroupSchema.parse(data)
+
   const updateData: Record<string, unknown> = {}
-  if (data.name !== undefined) updateData.name = data.name
-  if (data.description !== undefined) updateData.description = data.description || null
-  if (data.is_active !== undefined) updateData.is_active = data.is_active
+  if (validatedData.name !== undefined) updateData.name = validatedData.name
+  if (validatedData.description !== undefined) updateData.description = validatedData.description || null
+  if (validatedData.is_active !== undefined) updateData.is_active = validatedData.is_active
 
   const { data: group, error } = await supabase
     .from('groups')

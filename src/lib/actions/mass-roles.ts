@@ -6,24 +6,10 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { MassRole, MassRoleInstance, Person } from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
+import { createMassRoleSchema, updateMassRoleSchema } from '@/lib/schemas/mass-roles'
+import type { CreateMassRoleData, UpdateMassRoleData } from '@/lib/schemas/mass-roles'
 
 // ========== MASS ROLE DEFINITIONS ==========
-
-export interface CreateMassRoleData {
-  name: string
-  description?: string
-  note?: string
-  is_active?: boolean
-  display_order?: number
-}
-
-export interface UpdateMassRoleData {
-  name?: string
-  description?: string | null
-  note?: string | null
-  is_active?: boolean
-  display_order?: number | null
-}
 
 export async function getMassRoles(): Promise<MassRole[]> {
   const selectedParishId = await requireSelectedParish()
@@ -228,16 +214,19 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Validate data with Zod schema
+  const validatedData = createMassRoleSchema.parse(data)
+
   const { data: role, error } = await supabase
     .from('mass_roles')
     .insert([
       {
         parish_id: selectedParishId,
-        name: data.name,
-        description: data.description || null,
-        note: data.note || null,
-        is_active: data.is_active ?? true,
-        display_order: data.display_order || null,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        note: validatedData.note || null,
+        is_active: validatedData.is_active ?? true,
+        display_order: validatedData.display_order || null,
       }
     ])
     .select()
@@ -257,9 +246,12 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Validate data with Zod schema
+  const validatedData = updateMassRoleSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
   )
 
   const { data: role, error } = await supabase

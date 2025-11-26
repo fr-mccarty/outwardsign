@@ -161,7 +161,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             onShowPickerChange={child.setShowPicker}
             placeholder="Select Child"
             openToNewPerson={!child.value}
-            visibleFields={['email', 'phone_number', 'sex', 'note']}
+            additionalVisibleFields={['email', 'phone_number', 'sex', 'note']}
             testId="child"
           />
           <EventPickerField
@@ -186,14 +186,15 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonPickerField
-              label="Family Contact"
+              label="Mother"
               value={mother.value}
               onValueChange={mother.setValue}
               showPicker={mother.showPicker}
               onShowPickerChange={mother.setShowPicker}
-              placeholder="Select Family Contact"
+              placeholder="Select Mother"
               openToNewPerson={!mother.value}
-              visibleFields={['email', 'phone_number', 'note']}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
+              autoSetSex="FEMALE"
               testId="mother"
             />
             <PersonPickerField
@@ -204,7 +205,8 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
               onShowPickerChange={father.setShowPicker}
               placeholder="Select Father"
               openToNewPerson={!father.value}
-              visibleFields={['email', 'phone_number', 'note']}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
+              autoSetSex="MALE"
             />
           </div>
       </FormSectionCard>
@@ -221,7 +223,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             showPicker={coordinator.showPicker}
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Presider"
-            visibleFields={['email', 'phone_number', 'note']}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
             autoSetSex="MALE"
           />
       </FormSectionCard>

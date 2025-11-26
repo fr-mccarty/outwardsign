@@ -8,63 +8,13 @@ import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Quinceanera, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
+import {
+  createQuinceaneraSchema,
+  updateQuinceaneraSchema,
+  type CreateQuinceaneraData,
+  type UpdateQuinceaneraData
+} from '@/lib/schemas/quinceaneras'
 import type { ModuleStatus } from '@/lib/constants'
-
-export interface CreateQuinceaneraData {
-  quinceanera_event_id?: string
-  quinceanera_reception_id?: string
-  quinceanera_id?: string
-  family_contact_id?: string
-  coordinator_id?: string
-  presider_id?: string
-  homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
-  status?: ModuleStatus
-  first_reading_id?: string
-  psalm_id?: string
-  psalm_reader_id?: string
-  psalm_is_sung?: boolean
-  second_reading_id?: string
-  gospel_reading_id?: string
-  gospel_reader_id?: string
-  first_reader_id?: string
-  second_reader_id?: string
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string
-  petitions?: string
-  announcements?: string
-  note?: string
-  quinceanera_template_id?: string
-}
-
-export interface UpdateQuinceaneraData {
-  quinceanera_event_id?: string | null
-  quinceanera_reception_id?: string | null
-  quinceanera_id?: string | null
-  family_contact_id?: string | null
-  coordinator_id?: string | null
-  presider_id?: string | null
-  homilist_id?: string | null
-  lead_musician_id?: string | null
-  cantor_id?: string | null
-  status?: ModuleStatus | null
-  first_reading_id?: string | null
-  psalm_id?: string | null
-  psalm_reader_id?: string | null
-  psalm_is_sung?: boolean
-  second_reading_id?: string | null
-  gospel_reading_id?: string | null
-  gospel_reader_id?: string | null
-  first_reader_id?: string | null
-  second_reader_id?: string | null
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string | null
-  petitions?: string | null
-  announcements?: string | null
-  note?: string | null
-  quinceanera_template_id?: string | null
-}
 
 export interface QuinceaneraFilterParams {
   search?: string
@@ -74,6 +24,7 @@ export interface QuinceaneraFilterParams {
 export interface QuinceaneraWithNames extends Quinceanera {
   quinceanera?: Person | null
   family_contact?: Person | null
+  presider?: Person | null
   quinceanera_event?: Event | null
 }
 
@@ -88,6 +39,7 @@ export async function getQuinceaneras(filters?: QuinceaneraFilterParams): Promis
       *,
       quinceanera:people!quinceanera_id(*),
       family_contact:people!family_contact_id(*),
+      presider:people!presider_id(*),
       quinceanera_event:events!quinceanera_event_id(*)
     `)
 
@@ -269,6 +221,9 @@ export async function createQuinceanera(data: CreateQuinceaneraData): Promise<Qu
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'quinceaneras')
 
+  // Validate data with schema
+  createQuinceaneraSchema.parse(data)
+
   const { data: quinceanera, error } = await supabase
     .from('quinceaneras')
     .insert([
@@ -325,6 +280,9 @@ export async function updateQuinceanera(id: string, data: UpdateQuinceaneraData)
   }
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'quinceaneras')
+
+  // Validate data with schema
+  updateQuinceaneraSchema.parse(data)
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(

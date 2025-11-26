@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { z } from "zod"
+import { useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -11,6 +12,10 @@ import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
 import { createQuinceanera, updateQuinceanera, type QuinceaneraWithRelations } from "@/lib/actions/quinceaneras"
 import { getIndividualReadings } from "@/lib/actions/readings"
+import {
+  createQuinceaneraSchema,
+  type CreateQuinceaneraData
+} from "@/lib/schemas/quinceaneras"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -31,35 +36,6 @@ import { usePickerState } from "@/hooks/use-picker-state"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 
-// Zod validation schema
-const quinceaneraSchema = z.object({
-  status: z.enum(MODULE_STATUS_VALUES).optional(),
-  quinceanera_event_id: z.string().optional(),
-  quinceanera_reception_id: z.string().optional(),
-  quinceanera_id: z.string().optional(),
-  family_contact_id: z.string().optional(),
-  coordinator_id: z.string().optional(),
-  presider_id: z.string().optional(),
-  homilist_id: z.string().optional(),
-  lead_musician_id: z.string().optional(),
-  cantor_id: z.string().optional(),
-  first_reader_id: z.string().optional(),
-  second_reader_id: z.string().optional(),
-  psalm_reader_id: z.string().optional(),
-  gospel_reader_id: z.string().optional(),
-  petition_reader_id: z.string().optional(),
-  first_reading_id: z.string().optional(),
-  psalm_id: z.string().optional(),
-  second_reading_id: z.string().optional(),
-  gospel_reading_id: z.string().optional(),
-  psalm_is_sung: z.boolean().optional(),
-  petitions_read_by_second_reader: z.boolean().optional(),
-  petitions: z.string().optional(),
-  announcements: z.string().optional(),
-  note: z.string().optional(),
-  quinceanera_template_id: z.string().optional()
-})
-
 interface QuinceaneraFormProps {
   quinceanera?: QuinceaneraWithRelations
   formId?: string
@@ -69,23 +45,57 @@ interface QuinceaneraFormProps {
 export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: QuinceaneraFormProps) {
   const router = useRouter()
   const isEditing = !!quinceanera
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateQuinceaneraData>({
+    resolver: zodResolver(createQuinceaneraSchema),
+    defaultValues: {
+      status: (quinceanera?.status as ModuleStatus) || "ACTIVE",
+      quinceanera_event_id: quinceanera?.quinceanera_event_id || null,
+      quinceanera_reception_id: quinceanera?.quinceanera_reception_id || null,
+      quinceanera_id: quinceanera?.quinceanera_id || null,
+      family_contact_id: quinceanera?.family_contact_id || null,
+      coordinator_id: quinceanera?.coordinator_id || null,
+      presider_id: quinceanera?.presider_id || null,
+      homilist_id: quinceanera?.homilist_id || null,
+      lead_musician_id: quinceanera?.lead_musician_id || null,
+      cantor_id: quinceanera?.cantor_id || null,
+      first_reader_id: quinceanera?.first_reader_id || null,
+      second_reader_id: quinceanera?.second_reader_id || null,
+      psalm_reader_id: quinceanera?.psalm_reader_id || null,
+      gospel_reader_id: quinceanera?.gospel_reader_id || null,
+      petition_reader_id: quinceanera?.petition_reader_id || null,
+      first_reading_id: quinceanera?.first_reading_id || null,
+      psalm_id: quinceanera?.psalm_id || null,
+      second_reading_id: quinceanera?.second_reading_id || null,
+      gospel_reading_id: quinceanera?.gospel_reading_id || null,
+      psalm_is_sung: quinceanera?.psalm_is_sung || false,
+      petitions_read_by_second_reader: quinceanera?.petitions_read_by_second_reader || false,
+      petitions: quinceanera?.petitions || null,
+      announcements: quinceanera?.announcements || null,
+      note: quinceanera?.note || null,
+      quinceanera_template_id: (quinceanera?.quinceanera_template_id as QuinceaneraTemplate) || QUINCEANERA_DEFAULT_TEMPLATE,
+    },
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
-  // State for all fields
-  const [status, setStatus] = useState<ModuleStatus>(quinceanera?.status || "ACTIVE")
-  const [note, setNote] = useState(quinceanera?.note || "")
-  const [announcements, setAnnouncements] = useState(quinceanera?.announcements || "")
-  const [petitions, setPetitions] = useState(quinceanera?.petitions || "")
-  const [quinceaneraTemplateId, setQuinceaneraTemplateId] = useState<QuinceaneraTemplate>((quinceanera?.quinceanera_template_id as QuinceaneraTemplate) || QUINCEANERA_DEFAULT_TEMPLATE)
-
-  // Boolean states
-  const [psalmIsSung, setPsalmIsSung] = useState(quinceanera?.psalm_is_sung || false)
-  const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(quinceanera?.petitions_read_by_second_reader || false)
+  // Watch form values
+  const status = watch("status")
+  const note = watch("note")
+  const announcements = watch("announcements")
+  const petitions = watch("petitions")
+  const quinceaneraTemplateId = watch("quinceanera_template_id")
+  const psalmIsSung = watch("psalm_is_sung")
+  const petitionsReadBySecondReader = watch("petitions_read_by_second_reader")
 
   // Picker states using usePickerState hook - Events
   const quinceaneraEvent = usePickerState<Event>()
@@ -132,7 +142,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     loadReadings()
   }, [])
 
-  // Initialize form with quinceanera data when editing
+  // Initialize picker states when editing
   useEffect(() => {
     if (quinceanera) {
       // Set events
@@ -161,6 +171,81 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quinceanera])
+
+  // Sync picker values to form when they change - Events
+  useEffect(() => {
+    setValue("quinceanera_event_id", quinceaneraEvent.value?.id || null)
+  }, [quinceaneraEvent.value, setValue])
+
+  useEffect(() => {
+    setValue("quinceanera_reception_id", quinceaneraReception.value?.id || null)
+  }, [quinceaneraReception.value, setValue])
+
+  // Sync picker values to form when they change - People
+  useEffect(() => {
+    setValue("quinceanera_id", quinceaneraGirl.value?.id || null)
+  }, [quinceaneraGirl.value, setValue])
+
+  useEffect(() => {
+    setValue("family_contact_id", familyContact.value?.id || null)
+  }, [familyContact.value, setValue])
+
+  useEffect(() => {
+    setValue("coordinator_id", coordinator.value?.id || null)
+  }, [coordinator.value, setValue])
+
+  useEffect(() => {
+    setValue("presider_id", presider.value?.id || null)
+  }, [presider.value, setValue])
+
+  useEffect(() => {
+    setValue("homilist_id", homilist.value?.id || null)
+  }, [homilist.value, setValue])
+
+  useEffect(() => {
+    setValue("lead_musician_id", leadMusician.value?.id || null)
+  }, [leadMusician.value, setValue])
+
+  useEffect(() => {
+    setValue("cantor_id", cantor.value?.id || null)
+  }, [cantor.value, setValue])
+
+  useEffect(() => {
+    setValue("first_reader_id", firstReader.value?.id || null)
+  }, [firstReader.value, setValue])
+
+  useEffect(() => {
+    setValue("second_reader_id", secondReader.value?.id || null)
+  }, [secondReader.value, setValue])
+
+  useEffect(() => {
+    setValue("psalm_reader_id", psalmReader.value?.id || null)
+  }, [psalmReader.value, setValue])
+
+  useEffect(() => {
+    setValue("gospel_reader_id", gospelReader.value?.id || null)
+  }, [gospelReader.value, setValue])
+
+  useEffect(() => {
+    setValue("petition_reader_id", petitionReader.value?.id || null)
+  }, [petitionReader.value, setValue])
+
+  // Sync reading picker values to form when they change
+  useEffect(() => {
+    setValue("first_reading_id", firstReading?.id || null)
+  }, [firstReading, setValue])
+
+  useEffect(() => {
+    setValue("psalm_id", psalm?.id || null)
+  }, [psalm, setValue])
+
+  useEffect(() => {
+    setValue("second_reading_id", secondReading?.id || null)
+  }, [secondReading, setValue])
+
+  useEffect(() => {
+    setValue("gospel_reading_id", gospelReading?.id || null)
+  }, [gospelReading, setValue])
 
   // Handle inserting template petitions
   const handleInsertTemplate = (templateId: string): string[] => {
@@ -206,63 +291,25 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
     return "Quinceañera Reception"
   }, [quinceaneraGirl.value])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateQuinceaneraData) => {
     try {
-      // Validate with Zod
-      const quinceaneraData = quinceaneraSchema.parse({
-        status: status || undefined,
-        quinceanera_event_id: quinceaneraEvent.value?.id,
-        quinceanera_reception_id: quinceaneraReception.value?.id,
-        quinceanera_id: quinceaneraGirl.value?.id,
-        family_contact_id: familyContact.value?.id,
-        coordinator_id: coordinator.value?.id,
-        presider_id: presider.value?.id,
-        homilist_id: homilist.value?.id,
-        lead_musician_id: leadMusician.value?.id,
-        cantor_id: cantor.value?.id,
-        first_reader_id: firstReader.value?.id,
-        second_reader_id: secondReader.value?.id,
-        psalm_reader_id: psalmReader.value?.id,
-        gospel_reader_id: gospelReader.value?.id,
-        petition_reader_id: petitionReader.value?.id,
-        first_reading_id: firstReading?.id,
-        psalm_id: psalm?.id,
-        second_reading_id: secondReading?.id,
-        gospel_reading_id: gospelReading?.id,
-        psalm_is_sung: psalmIsSung,
-        petitions_read_by_second_reader: petitionsReadBySecondReader,
-        petitions: petitions || undefined,
-        announcements: announcements || undefined,
-        note: note || undefined,
-        quinceanera_template_id: quinceaneraTemplateId || undefined,
-      })
-
-      if (isEditing) {
-        await updateQuinceanera(quinceanera.id, quinceaneraData)
+      if (isEditing && quinceanera) {
+        await updateQuinceanera(quinceanera.id, data)
         toast.success('Quinceañera updated successfully')
         router.refresh() // Stay on edit page to show updated data
       } else {
-        const newQuinceanera = await createQuinceanera(quinceaneraData)
+        const newQuinceanera = await createQuinceanera(data)
         toast.success('Quinceañera created successfully!')
         router.push(`/quinceaneras/${newQuinceanera.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera:`, error)
-        toast.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera. Please try again.`)
-      }
-    } finally {
-      setIsLoading(false)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} quinceañera. Please try again.`)
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-8">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Key Information */}
       <FormSectionCard
         title="Key Information"
@@ -277,6 +324,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             placeholder="Select Quinceañera"
             openToNewPerson={!quinceaneraGirl.value}
             testId="quinceanera"
+            autoSetSex="FEMALE"
           />
           <EventPickerField
             label="Mass Event"
@@ -326,6 +374,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             onShowPickerChange={familyContact.setShowPicker}
             placeholder="Select Family Contact"
             openToNewPerson={!familyContact.value}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
       </FormSectionCard>
 
@@ -343,6 +392,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={presider.setShowPicker}
               placeholder="Select Presider"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Homilist"
@@ -352,6 +402,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={homilist.setShowPicker}
               placeholder="Select Homilist"
               autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
       </FormSectionCard>
@@ -374,6 +425,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={leadMusician.setShowPicker}
               placeholder="Select Lead Musician"
               openToNewPerson={!leadMusician.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Cantor"
@@ -383,6 +435,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={cantor.setShowPicker}
               placeholder="Select Cantor"
               openToNewPerson={!cantor.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -413,6 +466,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={firstReader.setShowPicker}
               placeholder="Select First Reader"
               openToNewPerson={!firstReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -438,6 +492,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
                 onShowPickerChange={psalmReader.setShowPicker}
                 placeholder="Select Psalm Reader"
                 openToNewPerson={!psalmReader.value}
+                additionalVisibleFields={['email', 'phone_number', 'note']}
               />
             )}
           </div>
@@ -445,8 +500,8 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
           <div className="flex items-center space-x-2">
             <Checkbox
               id="psalm_is_sung"
-              checked={psalmIsSung}
-              onCheckedChange={(checked) => setPsalmIsSung(checked as boolean)}
+              checked={psalmIsSung || false}
+              onCheckedChange={(checked) => setValue("psalm_is_sung", checked as boolean)}
             />
             <label
               htmlFor="psalm_is_sung"
@@ -477,6 +532,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={secondReader.setShowPicker}
               placeholder="Select Second Reader"
               openToNewPerson={!secondReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -501,14 +557,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={gospelReader.setShowPicker}
               placeholder="Select Gospel Reader"
               openToNewPerson={!gospelReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
       </FormSectionCard>
 
       {/* Petitions */}
       <PetitionEditor
-        value={petitions}
-        onChange={setPetitions}
+        value={petitions || ""}
+        onChange={(value) => setValue("petitions", value)}
         onInsertTemplate={handleInsertTemplate}
         templates={petitionTemplates}
       />
@@ -520,8 +577,8 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
         <div className="flex items-center space-x-2">
             <Checkbox
               id="petitions_read_by_second_reader"
-              checked={petitionsReadBySecondReader}
-              onCheckedChange={(checked) => setPetitionsReadBySecondReader(checked as boolean)}
+              checked={petitionsReadBySecondReader || false}
+              onCheckedChange={(checked) => setValue("petitions_read_by_second_reader", checked as boolean)}
             />
             <label
               htmlFor="petitions_read_by_second_reader"
@@ -540,6 +597,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
               onShowPickerChange={petitionReader.setShowPicker}
               placeholder="Select Petition Reader"
               openToNewPerson={!petitionReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           )}
       </FormSectionCard>
@@ -553,11 +611,12 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             id="announcements"
             label="Announcements"
             description="These announcements will be printed on the last page of the liturgy script"
-            value={announcements}
-            onChange={setAnnouncements}
+            value={announcements || ""}
+            onChange={(value) => setValue("announcements", value)}
             placeholder="Enter any announcements..."
             inputType="textarea"
             rows={3}
+            error={errors.announcements?.message}
           />
       </FormSectionCard>
 
@@ -573,11 +632,15 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Coordinator"
             openToNewPerson={!coordinator.value}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
 
           <div className="space-y-2">
             <Label htmlFor="quinceanera_template_id">Liturgy Template</Label>
-            <Select value={quinceaneraTemplateId} onValueChange={(value) => setQuinceaneraTemplateId(value as QuinceaneraTemplate)}>
+            <Select
+              value={quinceaneraTemplateId || ""}
+              onValueChange={(value) => setValue("quinceanera_template_id", value as QuinceaneraTemplate)}
+            >
               <SelectTrigger id="quinceanera_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -595,16 +658,20 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             id="note"
             label="Notes (Optional)"
             description="These notes are just for reference and will not be printed in the script"
-            value={note}
-            onChange={setNote}
+            value={note || ""}
+            onChange={(value) => setValue("note", value)}
             placeholder="Enter any additional notes..."
             inputType="textarea"
             rows={3}
+            error={errors.note?.message}
           />
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
+            <Select
+              value={status || ""}
+              onValueChange={(value) => setValue("status", value as ModuleStatus)}
+            >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -622,7 +689,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
       {/* Submit Buttons */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/quinceaneras/${quinceanera.id}` : '/quinceaneras'}
         moduleName="Quinceañera"
       />

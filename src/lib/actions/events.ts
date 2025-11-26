@@ -6,8 +6,9 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import { Event, Location, Person, EventType } from '@/lib/types'
-import type { LiturgicalLanguage, RelatedEventType } from '@/lib/constants'
 import type { PaginatedParams, PaginatedResult } from './people'
+import { createEventSchema, updateEventSchema, type CreateEventData, type UpdateEventData } from '@/lib/schemas/events'
+import { RelatedEventType, LiturgicalLanguage } from '@/lib/constants'
 
 export interface EventWithRelations extends Event {
   location?: Location | null
@@ -15,39 +16,7 @@ export interface EventWithRelations extends Event {
   event_type?: EventType | null
 }
 
-export interface CreateEventData {
-  name: string
-  description?: string
-  responsible_party_id?: string
-  event_type_id?: string
-  related_event_type?: RelatedEventType
-  start_date?: string
-  start_time?: string
-  end_date?: string
-  end_time?: string
-  timezone?: string
-  location_id?: string
-  language?: LiturgicalLanguage
-  event_template_id?: string
-  note?: string
-}
-
-export interface UpdateEventData {
-  name?: string
-  description?: string
-  responsible_party_id?: string
-  event_type_id?: string
-  related_event_type?: RelatedEventType
-  start_date?: string
-  start_time?: string
-  end_date?: string
-  end_time?: string
-  timezone?: string
-  location_id?: string
-  language?: LiturgicalLanguage
-  event_template_id?: string
-  note?: string
-}
+export type { CreateEventData, UpdateEventData }
 
 export interface EventFilterParams {
   search?: string
@@ -231,25 +200,28 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data
+  const validatedData = createEventSchema.parse(data)
+
   const { data: event, error } = await supabase
     .from('events')
     .insert([
       {
         parish_id: selectedParishId,
-        name: data.name,
-        description: data.description || null,
-        responsible_party_id: data.responsible_party_id || null,
-        event_type_id: data.event_type_id || null,
-        related_event_type: data.related_event_type || null,
-        start_date: data.start_date || null,
-        start_time: data.start_time || null,
-        end_date: data.end_date || null,
-        end_time: data.end_time || null,
-        timezone: data.timezone || 'UTC',
-        location_id: data.location_id || null,
-        language: data.language || 'en',
-        event_template_id: data.event_template_id || null,
-        note: data.note || null,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        responsible_party_id: validatedData.responsible_party_id || null,
+        event_type_id: validatedData.event_type_id || null,
+        related_event_type: validatedData.related_event_type || null,
+        start_date: validatedData.start_date || null,
+        start_time: validatedData.start_time || null,
+        end_date: validatedData.end_date || null,
+        end_time: validatedData.end_time || null,
+        timezone: validatedData.timezone || 'UTC',
+        location_id: validatedData.location_id || null,
+        language: validatedData.language || 'en',
+        event_template_id: validatedData.event_template_id || null,
+        note: validatedData.note || null,
       }
     ])
     .select()
@@ -276,21 +248,24 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data
+  const validatedData = updateEventSchema.parse(data)
+
   const updateData: Record<string, unknown> = {}
-  if (data.name !== undefined) updateData.name = data.name
-  if (data.description !== undefined) updateData.description = data.description || null
-  if (data.responsible_party_id !== undefined) updateData.responsible_party_id = data.responsible_party_id
-  if (data.event_type_id !== undefined) updateData.event_type_id = data.event_type_id || null
-  if (data.related_event_type !== undefined) updateData.related_event_type = data.related_event_type || null
-  if (data.start_date !== undefined) updateData.start_date = data.start_date || null
-  if (data.start_time !== undefined) updateData.start_time = data.start_time || null
-  if (data.end_date !== undefined) updateData.end_date = data.end_date || null
-  if (data.end_time !== undefined) updateData.end_time = data.end_time || null
-  if (data.timezone !== undefined) updateData.timezone = data.timezone || null
-  if (data.location_id !== undefined) updateData.location_id = data.location_id || null
-  if (data.language !== undefined) updateData.language = data.language || null
-  if (data.event_template_id !== undefined) updateData.event_template_id = data.event_template_id || null
-  if (data.note !== undefined) updateData.note = data.note || null
+  if (validatedData.name !== undefined) updateData.name = validatedData.name
+  if (validatedData.description !== undefined) updateData.description = validatedData.description || null
+  if (validatedData.responsible_party_id !== undefined) updateData.responsible_party_id = validatedData.responsible_party_id
+  if (validatedData.event_type_id !== undefined) updateData.event_type_id = validatedData.event_type_id || null
+  if (validatedData.related_event_type !== undefined) updateData.related_event_type = validatedData.related_event_type || null
+  if (validatedData.start_date !== undefined) updateData.start_date = validatedData.start_date || null
+  if (validatedData.start_time !== undefined) updateData.start_time = validatedData.start_time || null
+  if (validatedData.end_date !== undefined) updateData.end_date = validatedData.end_date || null
+  if (validatedData.end_time !== undefined) updateData.end_time = validatedData.end_time || null
+  if (validatedData.timezone !== undefined) updateData.timezone = validatedData.timezone || null
+  if (validatedData.location_id !== undefined) updateData.location_id = validatedData.location_id || null
+  if (validatedData.language !== undefined) updateData.language = validatedData.language || null
+  if (validatedData.event_template_id !== undefined) updateData.event_template_id = validatedData.event_template_id || null
+  if (validatedData.note !== undefined) updateData.note = validatedData.note || null
 
   const { data: event, error } = await supabase
     .from('events')

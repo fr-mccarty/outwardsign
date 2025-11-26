@@ -1,10 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { z } from "zod"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createMassIntention, updateMassIntention, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
+import { createMassIntentionSchema, type CreateMassIntentionData } from "@/lib/schemas/mass-intentions"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -18,19 +20,6 @@ import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
 import type { MassWithNames } from "@/lib/actions/masses"
 
-// Zod validation schema
-const massIntentionSchema = z.object({
-  mass_offered_for: z.string().min(1, 'Please enter what the Mass is offered for'),
-  status: z.enum(MASS_INTENTION_STATUS_VALUES).optional(),
-  date_requested: z.string().optional(),
-  date_received: z.string().optional(),
-  stipend_in_cents: z.number().optional(),
-  note: z.string().optional(),
-  requested_by_id: z.string().optional(),
-  mass_id: z.string().optional(),
-  mass_intention_template_id: z.string().optional()
-})
-
 interface MassIntentionFormProps {
   intention?: MassIntentionWithRelations
   formId?: string
@@ -40,23 +29,41 @@ interface MassIntentionFormProps {
 export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIntentionFormProps) {
   const router = useRouter()
   const isEditing = !!intention
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateMassIntentionData>({
+    resolver: zodResolver(createMassIntentionSchema),
+    defaultValues: {
+      mass_offered_for: intention?.mass_offered_for || "",
+      status: intention?.status || "REQUESTED",
+      date_requested: intention?.date_requested || null,
+      date_received: intention?.date_received || null,
+      stipend_in_cents: intention?.stipend_in_cents || null,
+      note: intention?.note || null,
+      requested_by_id: intention?.requested_by_id || null,
+      mass_id: intention?.mass_id || null,
+      mass_intention_template_id: (intention?.mass_intention_template_id as MassIntentionTemplate) || MASS_INTENTION_DEFAULT_TEMPLATE,
+    },
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
-  // State for all fields
-  const [status, setStatus] = useState<MassIntentionStatus>(intention?.status || "REQUESTED")
-  const [massOfferedFor, setMassOfferedFor] = useState(intention?.mass_offered_for || "")
-  const [dateRequested, setDateRequested] = useState(intention?.date_requested || "")
-  const [dateReceived, setDateReceived] = useState(intention?.date_received || "")
-  const [stipendInCents, setStipendInCents] = useState<string>(
-    intention?.stipend_in_cents ? (intention.stipend_in_cents / 100).toFixed(2) : ""
-  )
-  const [note, setNote] = useState(intention?.note || "")
-  const [massIntentionTemplateId, setMassIntentionTemplateId] = useState<MassIntentionTemplate>((intention?.mass_intention_template_id as MassIntentionTemplate) || MASS_INTENTION_DEFAULT_TEMPLATE)
+  // Watch form values
+  const status = watch("status")
+  const massOfferedFor = watch("mass_offered_for")
+  const dateRequested = watch("date_requested")
+  const dateReceived = watch("date_received")
+  const stipendInCents = watch("stipend_in_cents")
+  const note = watch("note")
+  const massIntentionTemplateId = watch("mass_intention_template_id")
 
   // Picker states
   const requestedBy = usePickerState<Person>()
@@ -71,50 +78,34 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [intention])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  // Sync picker values to form when they change
+  useEffect(() => {
+    setValue("requested_by_id", requestedBy.value?.id || null)
+  }, [requestedBy.value, setValue])
 
+  useEffect(() => {
+    setValue("mass_id", assignedMass.value?.id || null)
+  }, [assignedMass.value, setValue])
+
+  const onSubmit = async (data: CreateMassIntentionData) => {
     try {
-      // Convert stipend from dollars to cents
-      const stipendCents = stipendInCents ? Math.round(parseFloat(stipendInCents) * 100) : undefined
-
-      // Validate with Zod
-      const intentionData = massIntentionSchema.parse({
-        mass_id: assignedMass.value?.id,
-        mass_offered_for: massOfferedFor || undefined,
-        requested_by_id: requestedBy.value?.id,
-        date_requested: dateRequested || undefined,
-        date_received: dateReceived || undefined,
-        stipend_in_cents: stipendCents,
-        status: status || undefined,
-        note: note || undefined,
-        mass_intention_template_id: massIntentionTemplateId || undefined,
-      })
-
-      if (isEditing) {
-        await updateMassIntention(intention.id, intentionData)
+      if (isEditing && intention) {
+        await updateMassIntention(intention.id, data)
         toast.success('Mass intention updated successfully')
-        router.refresh() // Refresh to get updated data
+        router.refresh() // Stay on edit page to show updated data
       } else {
-        const newIntention = await createMassIntention(intentionData)
+        const newIntention = await createMassIntention(data)
         toast.success('Mass intention created successfully')
         router.push(`/mass-intentions/${newIntention.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error('Error saving Mass intention:', error)
-        toast.error(isEditing ? 'Failed to update Mass intention' : 'Failed to create Mass intention')
-      }
-    } finally {
-      setIsLoading(false)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} mass intention:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} mass intention. Please try again.`)
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
         title="Mass Intention Details"
@@ -125,9 +116,10 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             label="Mass Offered For"
             description="Who or what this Mass is being offered for (required)"
             value={massOfferedFor}
-            onChange={setMassOfferedFor}
+            onChange={(value) => setValue("mass_offered_for", value)}
             placeholder="In memory of John Smith"
             required
+            error={errors.mass_offered_for?.message}
           />
 
           <PersonPickerField
@@ -138,6 +130,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             showPicker={requestedBy.showPicker}
             onShowPickerChange={requestedBy.setShowPicker}
             openToNewPerson={!requestedBy.value}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
 
           <MassPickerField
@@ -154,8 +147,9 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             inputType="select"
             label="Status"
             description="Current status of this Mass intention"
-            value={status}
-            onChange={(value) => setStatus(value as MassIntentionStatus)}
+            value={status || ""}
+            onChange={(value) => setValue("status", value as MassIntentionStatus)}
+            error={errors.status?.message}
           >
             {MASS_INTENTION_STATUS_VALUES.map((value) => (
               <SelectItem key={value} value={value}>
@@ -169,8 +163,9 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             inputType="select"
             label="Print Template"
             description="Choose the template for printing this Mass intention"
-            value={massIntentionTemplateId}
-            onChange={(value) => setMassIntentionTemplateId(value as MassIntentionTemplate)}
+            value={massIntentionTemplateId || ""}
+            onChange={(value) => setValue("mass_intention_template_id", value as MassIntentionTemplate)}
+            error={errors.mass_intention_template_id?.message}
           >
             {MASS_INTENTION_TEMPLATE_VALUES.map((value) => (
               <SelectItem key={value} value={value}>
@@ -190,8 +185,9 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             inputType="date"
             label="Date Requested"
             description="When the parishioner requested this Mass intention"
-            value={dateRequested}
-            onChange={setDateRequested}
+            value={dateRequested || ""}
+            onChange={(value) => setValue("date_requested", value || null)}
+            error={errors.date_requested?.message}
           />
 
           <FormInput
@@ -199,56 +195,47 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             inputType="date"
             label="Date Received"
             description="When the parish office received this request"
-            value={dateReceived}
-            onChange={setDateReceived}
+            value={dateReceived || ""}
+            onChange={(value) => setValue("date_received", value || null)}
+            error={errors.date_received?.message}
           />
 
           <FormInput
             id="stipend_amount"
             inputType="number"
-            label="Stipend Amount"
-            description="Offering amount in dollars (e.g., 10.00)"
-            value={stipendInCents}
-            onChange={setStipendInCents}
-            placeholder="10.00"
-            step="0.01"
+            label="Stipend Amount (cents)"
+            description="Offering amount in cents (e.g., 1000 for $10.00)"
+            value={stipendInCents?.toString() || ""}
+            onChange={(value) => setValue("stipend_in_cents", value ? parseInt(value) : null)}
+            placeholder="1000"
+            step="1"
             min="0"
+            error={errors.stipend_in_cents?.message}
           />
       </FormSectionCard>
 
       {/* Template and Notes */}
       <FormSectionCard
-        title="Template and Notes"
-        description="Liturgy template selection and additional information"
+        title="Notes"
+        description="Additional information about this Mass intention"
       >
-        <FormInput
-          id="mass_intention_template_id"
-          label="Liturgy Template"
-          inputType="select"
-          value={massIntentionTemplateId}
-          onChange={(value) => setMassIntentionTemplateId(value as MassIntentionTemplate)}
-          options={MASS_INTENTION_TEMPLATE_VALUES.map((templateId) => ({
-            value: templateId,
-            label: MASS_INTENTION_TEMPLATE_LABELS[templateId].en,
-          }))}
-        />
-
         <FormInput
           id="note"
           label="Notes (Optional)"
           description="Additional information or special requests"
           inputType="textarea"
-          value={note}
-          onChange={setNote}
+          value={note || ""}
+          onChange={(value) => setValue("note", value || null)}
           placeholder="Add any additional notes or special requests..."
           rows={3}
+          error={errors.note?.message}
         />
       </FormSectionCard>
 
       {/* Form Actions */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/mass-intentions/${intention.id}` : '/mass-intentions'}
         moduleName="Mass Intention"
       />

@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { createParish, populateInitialParishData } from '@/lib/actions/setup'
 import { setSelectedParish } from '@/lib/auth/parish'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
+import { createParishSchema, type CreateParishData } from '@/lib/schemas/parishes'
 
 interface CreateParishFormProps {
   onCancel: () => void
@@ -15,26 +17,27 @@ interface CreateParishFormProps {
 }
 
 export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    city: '',
-    state: ''
-  })
-  const [creating, setCreating] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.name.trim() || !formData.city.trim() || !formData.state.trim()) {
-      toast.error('Please fill in all fields')
-      return
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting }
+  } = useForm<CreateParishData>({
+    resolver: zodResolver(createParishSchema),
+    defaultValues: {
+      name: '',
+      city: '',
+      state: ''
     }
+  })
 
-    setCreating(true)
+  const formData = watch()
 
+  const onSubmit = async (data: CreateParishData) => {
     try {
-      const result = await createParish(formData)
+      const result = await createParish(data)
 
       // Populate initial parish data (readings, petition templates, group roles, mass roles)
       try {
@@ -58,13 +61,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
     } catch (error) {
       console.error('Error creating parish:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to create parish')
-    } finally {
-      setCreating(false)
     }
-  }
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   return (
@@ -76,38 +73,41 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormInput
             id="name"
             label="Parish Name"
             value={formData.name}
-            onChange={(value) => handleChange('name', value)}
+            onChange={(value) => setValue('name', value)}
             placeholder="St. Mary's Catholic Church"
             required
+            error={errors.name?.message}
           />
 
           <FormInput
             id="city"
             label="City"
             value={formData.city}
-            onChange={(value) => handleChange('city', value)}
+            onChange={(value) => setValue('city', value)}
             placeholder="New York"
             required
+            error={errors.city?.message}
           />
 
           <FormInput
             id="state"
             label="State"
             value={formData.state}
-            onChange={(value) => handleChange('state', value)}
+            onChange={(value) => setValue('state', value)}
             placeholder="NY"
             maxLength={2}
             required
+            error={errors.state?.message}
           />
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={creating} className="flex-1">
-              {creating ? 'Creating...' : 'Create Parish'}
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
+              {isSubmitting ? 'Creating...' : 'Create Parish'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel

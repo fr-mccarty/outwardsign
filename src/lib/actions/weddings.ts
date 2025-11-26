@@ -8,71 +8,16 @@ import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Wedding, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
+import {
+  createWeddingSchema,
+  updateWeddingSchema,
+  type CreateWeddingData,
+  type UpdateWeddingData
+} from '@/lib/schemas/weddings'
 import type { ModuleStatus } from '@/lib/constants'
 
-export interface CreateWeddingData {
-  wedding_event_id?: string
-  bride_id?: string
-  groom_id?: string
-  coordinator_id?: string
-  presider_id?: string
-  homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
-  reception_event_id?: string
-  rehearsal_event_id?: string
-  rehearsal_dinner_event_id?: string
-  witness_1_id?: string
-  witness_2_id?: string
-  status?: ModuleStatus
-  first_reading_id?: string
-  psalm_id?: string
-  psalm_reader_id?: string
-  psalm_is_sung?: boolean
-  second_reading_id?: string
-  gospel_reading_id?: string
-  gospel_reader_id?: string
-  first_reader_id?: string
-  second_reader_id?: string
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string
-  petitions?: string
-  announcements?: string
-  notes?: string
-  wedding_template_id?: string
-}
-
-export interface UpdateWeddingData {
-  wedding_event_id?: string | null
-  bride_id?: string | null
-  groom_id?: string | null
-  coordinator_id?: string | null
-  presider_id?: string | null
-  homilist_id?: string | null
-  lead_musician_id?: string | null
-  cantor_id?: string | null
-  reception_event_id?: string | null
-  rehearsal_event_id?: string | null
-  rehearsal_dinner_event_id?: string | null
-  witness_1_id?: string | null
-  witness_2_id?: string | null
-  status?: ModuleStatus | null
-  first_reading_id?: string | null
-  psalm_id?: string | null
-  psalm_reader_id?: string | null
-  psalm_is_sung?: boolean
-  second_reading_id?: string | null
-  gospel_reading_id?: string | null
-  gospel_reader_id?: string | null
-  first_reader_id?: string | null
-  second_reader_id?: string | null
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string | null
-  petitions?: string | null
-  announcements?: string | null
-  notes?: string | null
-  wedding_template_id?: string | null
-}
+// Note: CreateWeddingData and UpdateWeddingData types are imported from '@/lib/schemas/weddings'
+// They cannot be re-exported from this 'use server' file
 
 export interface WeddingFilterParams {
   search?: string
@@ -82,6 +27,7 @@ export interface WeddingFilterParams {
 export interface WeddingWithNames extends Wedding {
   bride?: Person | null
   groom?: Person | null
+  presider?: Person | null
   wedding_event?: Event | null
 }
 
@@ -96,6 +42,7 @@ export async function getWeddings(filters?: WeddingFilterParams): Promise<Weddin
       *,
       bride:people!bride_id(*),
       groom:people!groom_id(*),
+      presider:people!presider_id(*),
       wedding_event:events!wedding_event_id(*)
     `)
 
@@ -293,6 +240,9 @@ export async function createWedding(data: CreateWeddingData): Promise<Wedding> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'weddings')
 
+  // REQUIRED: Server-side validation (security boundary)
+  const validatedData = createWeddingSchema.parse(data)
+
   const { data: wedding, error } = await supabase
     .from('weddings')
     .insert([
@@ -354,9 +304,12 @@ export async function updateWedding(id: string, data: UpdateWeddingData): Promis
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'weddings')
 
+  // REQUIRED: Server-side validation (security boundary)
+  const validatedData = updateWeddingSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
   )
 
   const { data: wedding, error } = await supabase

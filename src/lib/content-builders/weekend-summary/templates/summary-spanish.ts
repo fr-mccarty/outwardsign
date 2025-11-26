@@ -30,8 +30,8 @@ export function buildSummarySpanish(
     data.masses.forEach(mass => {
       const date = mass.event?.start_date || ''
       const time = mass.event?.start_time || ''
-      const name = mass.event?.location?.name || 'Ubicación Desconocida'
-      const presider = mass.presider?.full_name || 'Por Determinar'
+      const name = mass.event?.location?.name || 'Ubicación no asignada'
+      const presider = mass.presider?.full_name || 'Celebrante no asignado'
 
       allEvents.push({
         date,
@@ -46,12 +46,12 @@ export function buildSummarySpanish(
   // Recopilar Bodas
   if (params.includeSacraments && data.weddings.length > 0) {
     data.weddings.forEach(wedding => {
-      const bride = wedding.bride?.full_name || 'Desconocido'
-      const groom = wedding.groom?.full_name || 'Desconocido'
+      const bride = wedding.bride?.full_name || 'Novia no asignada'
+      const groom = wedding.groom?.full_name || 'Novio no asignado'
       const date = wedding.wedding_event?.start_date || ''
       const time = wedding.wedding_event?.start_time || ''
       const name = `${bride} y ${groom}`
-      const presider = wedding.presider?.full_name || 'Por Determinar'
+      const presider = wedding.presider?.full_name || 'Celebrante no asignado'
 
       allEvents.push({
         date,
@@ -68,8 +68,8 @@ export function buildSummarySpanish(
     data.baptisms.forEach(baptism => {
       const date = baptism.baptism_event?.start_date || ''
       const time = baptism.baptism_event?.start_time || ''
-      const name = baptism.child?.full_name || 'Desconocido'
-      const presider = baptism.presider?.full_name || 'Por Determinar'
+      const name = baptism.child?.full_name || 'Niño/a no asignado/a'
+      const presider = baptism.presider?.full_name || 'Celebrante no asignado'
 
       allEvents.push({
         date,
@@ -86,8 +86,8 @@ export function buildSummarySpanish(
     data.funerals.forEach(funeral => {
       const date = funeral.funeral_event?.start_date || ''
       const time = funeral.funeral_event?.start_time || ''
-      const name = funeral.deceased?.full_name || 'Desconocido'
-      const presider = funeral.presider?.full_name || 'Por Determinar'
+      const name = funeral.deceased?.full_name || 'Difunto/a no asignado/a'
+      const presider = funeral.presider?.full_name || 'Celebrante no asignado'
 
       allEvents.push({
         date,
@@ -104,8 +104,8 @@ export function buildSummarySpanish(
     data.presentations.forEach(presentation => {
       const date = presentation.presentation_event?.start_date || ''
       const time = presentation.presentation_event?.start_time || ''
-      const name = presentation.child?.full_name || 'Desconocido'
-      const coordinator = presentation.coordinator?.full_name || 'Por Determinar'
+      const name = presentation.child?.full_name || 'Niño/a no asignado/a'
+      const coordinator = presentation.coordinator?.full_name || 'Celebrante no asignado'
 
       allEvents.push({
         date,
@@ -122,8 +122,8 @@ export function buildSummarySpanish(
     data.quinceaneras.forEach(quince => {
       const date = quince.quinceanera_event?.start_date || ''
       const time = quince.quinceanera_event?.start_time || ''
-      const name = quince.quinceanera?.full_name || 'Desconocido'
-      const presider = quince.presider?.full_name || 'Por Determinar'
+      const name = quince.quinceanera?.full_name || 'Quinceañera no asignada'
+      const presider = quince.presider?.full_name || 'Celebrante no asignado'
 
       allEvents.push({
         date,

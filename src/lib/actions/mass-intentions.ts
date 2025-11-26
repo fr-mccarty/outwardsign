@@ -7,30 +7,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { MassIntention, Person, Mass } from '@/lib/types'
 import type { MassIntentionStatus } from '@/lib/constants'
-
-export interface CreateMassIntentionData {
-  mass_id?: string
-  mass_offered_for?: string
-  requested_by_id?: string
-  date_received?: string
-  date_requested?: string
-  stipend_in_cents?: number
-  status?: MassIntentionStatus
-  mass_intention_template_id?: string
-  note?: string
-}
-
-export interface UpdateMassIntentionData {
-  mass_id?: string | null
-  mass_offered_for?: string | null
-  requested_by_id?: string | null
-  date_received?: string | null
-  date_requested?: string | null
-  stipend_in_cents?: number | null
-  status?: MassIntentionStatus | null
-  mass_intention_template_id?: string | null
-  note?: string | null
-}
+import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIntentionData, type UpdateMassIntentionData } from '@/lib/schemas/mass-intentions'
 
 export interface MassIntentionFilterParams {
   search?: string
@@ -255,6 +232,9 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'mass-intentions')
 
+  // Validate data with schema
+  createMassIntentionSchema.parse(data)
+
   const { data: intention, error } = await supabase
     .from('mass_intentions')
     .insert([
@@ -295,6 +275,9 @@ export async function updateMassIntention(id: string, data: UpdateMassIntentionD
   }
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'mass-intentions')
+
+  // Validate data with schema
+  updateMassIntentionSchema.parse(data)
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(

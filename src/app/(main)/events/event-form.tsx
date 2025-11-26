@@ -1,9 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
-import { createEvent, updateEvent, type CreateEventData, type EventWithRelations } from "@/lib/actions/events"
+import { createEvent, updateEvent, type EventWithRelations } from "@/lib/actions/events"
+import { createEventSchema, type CreateEventData } from "@/lib/schemas/events"
 import type { Person, Location, EventType } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -23,88 +26,99 @@ interface EventFormProps {
 export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const router = useRouter()
   const isEditing = !!event
-  const [isLoading, setIsLoading] = useState(false)
 
-  // Notify parent component of loading state changes
-  useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+  // Initialize form with React Hook Form
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateEventData>({
+    resolver: zodResolver(createEventSchema),
+    defaultValues: {
+      name: event?.name || "",
+      description: event?.description || "",
+      start_date: event?.start_date || "",
+      start_time: event?.start_time || "",
+      end_date: event?.end_date || "",
+      end_time: event?.end_time || "",
+      language: event?.language || "en",
+      note: event?.note || "",
+    },
+  })
 
-  const [name, setName] = useState(event?.name || "")
-  const [description, setDescription] = useState(event?.description || "")
-  const [startDate, setStartDate] = useState(event?.start_date || "")
-  const [startTime, setStartTime] = useState(event?.start_time || "")
-  const [endDate, setEndDate] = useState(event?.end_date || "")
-  const [endTime, setEndTime] = useState(event?.end_time || "")
-  const [language, setLanguage] = useState<LiturgicalLanguage>(event?.language || "en")
-  const [notes, setNotes] = useState(event?.note || "")
+  // Watch form values
+  const name = watch("name")
+  const description = watch("description")
+  const startDate = watch("start_date")
+  const startTime = watch("start_time")
+  const endDate = watch("end_date")
+  const endTime = watch("end_time")
+  const language = watch("language")
+  const notes = watch("note")
 
   // Picker states
   const responsibleParty = usePickerState<Person>()
   const location = usePickerState<Location>()
   const eventType = usePickerState<EventType>()
 
+  // Notify parent component of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
+
   // Initialize picker values with existing data
   useEffect(() => {
     if (event?.location && !location.value) {
       location.setValue(event.location)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.location])
-
-  useEffect(() => {
+    if (event?.responsible_party && !responsibleParty.value) {
+      responsibleParty.setValue(event.responsible_party)
+    }
     if (event?.event_type && !eventType.value) {
       eventType.setValue(event.event_type)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.event_type])
+  }, [event])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  // Sync picker values to form state
+  useEffect(() => {
+    setValue("responsible_party_id", responsibleParty.value?.id || undefined)
+  }, [responsibleParty.value, setValue])
 
+  useEffect(() => {
+    setValue("location_id", location.value?.id || undefined)
+  }, [location.value, setValue])
+
+  useEffect(() => {
+    setValue("event_type_id", eventType.value?.id || undefined)
+  }, [eventType.value, setValue])
+
+  const onSubmit = async (data: CreateEventData) => {
     // Validate required fields
     if (!eventType.value && !event?.related_event_type) {
       toast.error('Please select an event type')
-      setIsLoading(false)
       return
     }
 
     try {
-      const eventData: CreateEventData = {
-        name,
-        description: description || undefined,
-        responsible_party_id: responsibleParty.value?.id || undefined,
-        event_type_id: eventType.value?.id || undefined,
-        // related_event_type is read-only and set by the system when creating events from modules
-        start_date: startDate || undefined,
-        start_time: startTime || undefined,
-        end_date: endDate || undefined,
-        end_time: endTime || undefined,
-        location_id: location.value?.id || undefined,
-        language: language || undefined,
-        note: notes || undefined,
-      }
-
       if (isEditing) {
-        await updateEvent(event.id, eventData)
+        await updateEvent(event.id, data)
         toast.success('Event updated successfully')
         router.refresh() // Refresh to get updated data
       } else {
-        const newEvent = await createEvent(eventData)
+        const newEvent = await createEvent(data)
         toast.success('Event created successfully!')
         router.push(`/events/${newEvent.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} event:`, error)
       toast.error(`Failed to ${isEditing ? 'update' : 'create'} event. Please try again.`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} id={formId} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} id={formId} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
         title="Basic Information"
@@ -114,19 +128,21 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           id="name"
           label="Event Name"
           value={name}
-          onChange={setName}
+          onChange={(value) => setValue("name", value)}
           required
           placeholder="Enter event name"
+          error={errors.name?.message}
         />
 
         <FormInput
           id="description"
           label="Description"
           inputType="textarea"
-          value={description}
-          onChange={setDescription}
+          value={description || ""}
+          onChange={(value) => setValue("description", value)}
           placeholder="Enter event description..."
           rows={3}
+          error={errors.description?.message}
         />
 
         {/* Show related event type as read-only if it exists (module-linked event) */}
@@ -159,6 +175,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           onShowPickerChange={responsibleParty.setShowPicker}
           description="Person responsible for organizing this event"
           placeholder="Select Responsible Party"
+          additionalVisibleFields={['email', 'phone_number', 'note']}
         />
       </FormSectionCard>
 
@@ -172,16 +189,18 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             id="start_date"
             label="Start Date"
             inputType="date"
-            value={startDate}
-            onChange={setStartDate}
+            value={startDate || ""}
+            onChange={(value) => setValue("start_date", value)}
+            error={errors.start_date?.message}
           />
 
           <FormInput
             id="start_time"
             label="Start Time"
             inputType="time"
-            value={startTime}
-            onChange={setStartTime}
+            value={startTime || ""}
+            onChange={(value) => setValue("start_time", value)}
+            error={errors.start_time?.message}
           />
         </div>
 
@@ -190,16 +209,18 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             id="end_date"
             label="End Date"
             inputType="date"
-            value={endDate}
-            onChange={setEndDate}
+            value={endDate || ""}
+            onChange={(value) => setValue("end_date", value)}
+            error={errors.end_date?.message}
           />
 
           <FormInput
             id="end_time"
             label="End Time"
             inputType="time"
-            value={endTime}
-            onChange={setEndTime}
+            value={endTime || ""}
+            onChange={(value) => setValue("end_time", value)}
+            error={errors.end_time?.message}
           />
         </div>
       </FormSectionCard>
@@ -225,12 +246,13 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             id="language"
             label="Language"
             inputType="select"
-            value={language}
-            onChange={(value) => setLanguage(value as LiturgicalLanguage)}
+            value={language || "en"}
+            onChange={(value) => setValue("language", value as LiturgicalLanguage)}
             options={LITURGICAL_LANGUAGE_VALUES.map((lang) => ({
               value: lang,
               label: LITURGICAL_LANGUAGE_LABELS[lang].en
             }))}
+            error={errors.language?.message}
           />
         </div>
       </FormSectionCard>
@@ -244,16 +266,17 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           id="notes"
           label="Notes"
           inputType="textarea"
-          value={notes}
-          onChange={setNotes}
+          value={notes || ""}
+          onChange={(value) => setValue("note", value)}
           placeholder="Enter any additional notes..."
           rows={4}
+          error={errors.note?.message}
         />
       </FormSectionCard>
 
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/events/${event.id}` : "/events"}
         moduleName="Event"
       />

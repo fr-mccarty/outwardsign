@@ -1,6 +1,7 @@
 // Month view event items
 export { LiturgicalEventItemMonth } from './liturgical-event-item-month'
 export { ParishEventItemMonth } from './parish-event-item-month'
+export { MobileEventIndicators } from './mobile-event-indicators'
 
 // Week view event items
 export { LiturgicalEventItemWeek } from './liturgical-event-item-week'

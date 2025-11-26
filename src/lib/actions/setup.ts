@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { seedParishData } from '@/lib/seeding/parish-seed-data'
+import { createParishSchema, updateParishSchema, type CreateParishData, type UpdateParishData } from '@/lib/schemas/parishes'
 
 /**
  * Populates initial data for a newly created parish.
@@ -73,11 +74,7 @@ export async function createTestParish() {
   }
 }
 
-export async function createParish(data: {
-  name: string
-  city: string
-  state: string
-}) {
+export async function createParish(data: CreateParishData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -85,15 +82,18 @@ export async function createParish(data: {
     redirect('/login')
   }
 
+  // Validate input data
+  const validatedData = createParishSchema.parse(data)
+
   try {
     // Use the database function to create parish with admin role
     // This bypasses RLS policies using SECURITY DEFINER
     const { data: result, error: functionError } = await supabase
       .rpc('create_parish_with_admin', {
         p_user_id: user.id,
-        p_name: data.name.trim(),
-        p_city: data.city.trim(),
-        p_state: data.state.trim()
+        p_name: validatedData.name,
+        p_city: validatedData.city,
+        p_state: validatedData.state
       })
       .single()
 
@@ -129,17 +129,16 @@ export async function createParish(data: {
   }
 }
 
-export async function updateParish(parishId: string, data: {
-  name: string
-  city: string
-  state: string
-}) {
+export async function updateParish(parishId: string, data: UpdateParishData) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
   }
+
+  // Validate input data
+  const validatedData = updateParishSchema.parse(data)
 
   try {
     // Check if user has admin rights for this parish
@@ -157,11 +156,7 @@ export async function updateParish(parishId: string, data: {
     // Update the parish
     const { data: parish, error: parishError } = await supabase
       .from('parishes')
-      .update({
-        name: data.name.trim(),
-        city: data.city.trim(),
-        state: data.state.trim()
-      })
+      .update(validatedData)
       .eq('id', parishId)
       .select()
       .single()

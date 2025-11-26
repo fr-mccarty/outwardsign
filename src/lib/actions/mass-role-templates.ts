@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import type { LiturgicalContext } from '@/lib/constants'
+import { createMassRoleTemplateSchema, updateMassRoleTemplateSchema, type CreateMassRoleTemplateData, type UpdateMassRoleTemplateData } from '@/lib/schemas/mass-role-templates'
 
 // Types
 export interface MassRoleTemplate {
@@ -32,19 +33,7 @@ export interface MassRoleTemplateWithItems extends MassRoleTemplate {
   }>
 }
 
-export interface CreateMassRoleTemplateData {
-  name: string
-  description?: string
-  note?: string
-  liturgical_contexts?: LiturgicalContext[]
-}
-
-export interface UpdateMassRoleTemplateData {
-  name?: string
-  description?: string
-  note?: string
-  liturgical_contexts?: LiturgicalContext[]
-}
+export type { CreateMassRoleTemplateData, UpdateMassRoleTemplateData }
 
 // Get all mass role templates for the current parish
 export async function getMassRoleTemplates(): Promise<MassRoleTemplate[]> {
@@ -123,6 +112,10 @@ export async function getMassRoleTemplate(id: string): Promise<MassRoleTemplate 
 export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): Promise<MassRoleTemplate> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+
+  // Validate data with schema
+  createMassRoleTemplateSchema.parse(data)
+
   const supabase = await createClient()
 
   const { data: template, error } = await supabase
@@ -150,6 +143,10 @@ export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): 
 export async function updateMassRoleTemplate(id: string, data: UpdateMassRoleTemplateData): Promise<MassRoleTemplate> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
+
+  // Validate data with schema
+  updateMassRoleTemplateSchema.parse(data)
+
   const supabase = await createClient()
 
   // Build update object from only defined values (filters out undefined)

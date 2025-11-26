@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { z } from "zod"
+import { useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -10,6 +11,10 @@ import { Separator } from "@/components/ui/separator"
 import { BookOpen } from "lucide-react"
 import { createWedding, updateWedding, type WeddingWithRelations } from "@/lib/actions/weddings"
 import { getIndividualReadings } from "@/lib/actions/readings"
+import {
+  createWeddingSchema,
+  type CreateWeddingData
+} from "@/lib/schemas/weddings"
 import type { Person, IndividualReading, Event } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -30,39 +35,7 @@ import { PetitionEditor, type PetitionTemplate } from "@/components/petition-edi
 import { weddingTemplates, buildWeddingPetitions } from "@/lib/petition-templates/wedding"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { Button } from "@/components/ui/button"
-
-// Zod validation schema
-const weddingSchema = z.object({
-  status: z.enum(MODULE_STATUS_VALUES).optional(),
-  wedding_event_id: z.string().optional(),
-  reception_event_id: z.string().optional(),
-  rehearsal_event_id: z.string().optional(),
-  rehearsal_dinner_event_id: z.string().optional(),
-  bride_id: z.string().optional(),
-  groom_id: z.string().optional(),
-  coordinator_id: z.string().optional(),
-  presider_id: z.string().optional(),
-  homilist_id: z.string().optional(),
-  lead_musician_id: z.string().optional(),
-  cantor_id: z.string().optional(),
-  witness_1_id: z.string().optional(),
-  witness_2_id: z.string().optional(),
-  first_reader_id: z.string().optional(),
-  second_reader_id: z.string().optional(),
-  psalm_reader_id: z.string().optional(),
-  gospel_reader_id: z.string().optional(),
-  petition_reader_id: z.string().optional(),
-  first_reading_id: z.string().optional(),
-  psalm_id: z.string().optional(),
-  second_reading_id: z.string().optional(),
-  gospel_reading_id: z.string().optional(),
-  psalm_is_sung: z.boolean().optional(),
-  petitions_read_by_second_reader: z.boolean().optional(),
-  petitions: z.string().optional(),
-  announcements: z.string().optional(),
-  notes: z.string().optional(),
-  wedding_template_id: z.string().optional()
-})
+import { useState } from "react"
 
 interface WeddingFormProps {
   wedding?: WeddingWithRelations
@@ -73,23 +46,61 @@ interface WeddingFormProps {
 export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormProps) {
   const router = useRouter()
   const isEditing = !!wedding
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateWeddingData>({
+    resolver: zodResolver(createWeddingSchema),
+    defaultValues: {
+      status: (wedding?.status as ModuleStatus) || "ACTIVE",
+      wedding_event_id: wedding?.wedding_event_id || null,
+      reception_event_id: wedding?.reception_event_id || null,
+      rehearsal_event_id: wedding?.rehearsal_event_id || null,
+      rehearsal_dinner_event_id: wedding?.rehearsal_dinner_event_id || null,
+      bride_id: wedding?.bride_id || null,
+      groom_id: wedding?.groom_id || null,
+      coordinator_id: wedding?.coordinator_id || null,
+      presider_id: wedding?.presider_id || null,
+      homilist_id: wedding?.homilist_id || null,
+      lead_musician_id: wedding?.lead_musician_id || null,
+      cantor_id: wedding?.cantor_id || null,
+      witness_1_id: wedding?.witness_1_id || null,
+      witness_2_id: wedding?.witness_2_id || null,
+      first_reader_id: wedding?.first_reader_id || null,
+      second_reader_id: wedding?.second_reader_id || null,
+      psalm_reader_id: wedding?.psalm_reader_id || null,
+      gospel_reader_id: wedding?.gospel_reader_id || null,
+      petition_reader_id: wedding?.petition_reader_id || null,
+      first_reading_id: wedding?.first_reading_id || null,
+      psalm_id: wedding?.psalm_id || null,
+      second_reading_id: wedding?.second_reading_id || null,
+      gospel_reading_id: wedding?.gospel_reading_id || null,
+      psalm_is_sung: wedding?.psalm_is_sung || false,
+      petitions_read_by_second_reader: wedding?.petitions_read_by_second_reader || false,
+      petitions: wedding?.petitions || null,
+      announcements: wedding?.announcements || null,
+      notes: wedding?.notes || null,
+      wedding_template_id: (wedding?.wedding_template_id as WeddingTemplate) || WEDDING_DEFAULT_TEMPLATE,
+    },
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
-  // State for all fields
-  const [status, setStatus] = useState<ModuleStatus>(wedding?.status || "ACTIVE")
-  const [notes, setNotes] = useState(wedding?.notes || "")
-  const [announcements, setAnnouncements] = useState(wedding?.announcements || "")
-  const [petitions, setPetitions] = useState(wedding?.petitions || "")
-  const [weddingTemplateId, setWeddingTemplateId] = useState<WeddingTemplate>((wedding?.wedding_template_id as WeddingTemplate) || WEDDING_DEFAULT_TEMPLATE)
-
-  // Boolean states
-  const [psalmIsSung, setPsalmIsSung] = useState(wedding?.psalm_is_sung || false)
-  const [petitionsReadBySecondReader, setPetitionsReadBySecondReader] = useState(wedding?.petitions_read_by_second_reader || false)
+  // Watch form values
+  const status = watch("status")
+  const notes = watch("notes")
+  const announcements = watch("announcements")
+  const petitions = watch("petitions")
+  const weddingTemplateId = watch("wedding_template_id")
+  const psalmIsSung = watch("psalm_is_sung")
+  const petitionsReadBySecondReader = watch("petitions_read_by_second_reader")
 
   // Picker states using usePickerState hook - Events
   const weddingEvent = usePickerState<Event>()
@@ -120,7 +131,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
   const [showGospelReadingPicker, setShowGospelReadingPicker] = useState(false)
   const [readings, setReadings] = useState<IndividualReading[]>([])
 
-  // Selected readings
+  // Selected readings (for display purposes)
   const [firstReading, setFirstReading] = useState<IndividualReading | null>(null)
   const [psalm, setPsalm] = useState<IndividualReading | null>(null)
   const [secondReading, setSecondReading] = useState<IndividualReading | null>(null)
@@ -140,7 +151,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     loadReadings()
   }, [])
 
-  // Initialize form with wedding data when editing
+  // Initialize picker states when editing
   useEffect(() => {
     if (wedding) {
       // Set events
@@ -173,6 +184,97 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wedding])
+
+  // Sync picker values to form when they change - Events
+  useEffect(() => {
+    setValue("wedding_event_id", weddingEvent.value?.id || null)
+  }, [weddingEvent.value, setValue])
+
+  useEffect(() => {
+    setValue("reception_event_id", receptionEvent.value?.id || null)
+  }, [receptionEvent.value, setValue])
+
+  useEffect(() => {
+    setValue("rehearsal_event_id", rehearsalEvent.value?.id || null)
+  }, [rehearsalEvent.value, setValue])
+
+  useEffect(() => {
+    setValue("rehearsal_dinner_event_id", rehearsalDinnerEvent.value?.id || null)
+  }, [rehearsalDinnerEvent.value, setValue])
+
+  // Sync picker values to form when they change - People
+  useEffect(() => {
+    setValue("bride_id", bride.value?.id || null)
+  }, [bride.value, setValue])
+
+  useEffect(() => {
+    setValue("groom_id", groom.value?.id || null)
+  }, [groom.value, setValue])
+
+  useEffect(() => {
+    setValue("coordinator_id", coordinator.value?.id || null)
+  }, [coordinator.value, setValue])
+
+  useEffect(() => {
+    setValue("presider_id", presider.value?.id || null)
+  }, [presider.value, setValue])
+
+  useEffect(() => {
+    setValue("homilist_id", homilist.value?.id || null)
+  }, [homilist.value, setValue])
+
+  useEffect(() => {
+    setValue("lead_musician_id", leadMusician.value?.id || null)
+  }, [leadMusician.value, setValue])
+
+  useEffect(() => {
+    setValue("cantor_id", cantor.value?.id || null)
+  }, [cantor.value, setValue])
+
+  useEffect(() => {
+    setValue("witness_1_id", witness1.value?.id || null)
+  }, [witness1.value, setValue])
+
+  useEffect(() => {
+    setValue("witness_2_id", witness2.value?.id || null)
+  }, [witness2.value, setValue])
+
+  useEffect(() => {
+    setValue("first_reader_id", firstReader.value?.id || null)
+  }, [firstReader.value, setValue])
+
+  useEffect(() => {
+    setValue("second_reader_id", secondReader.value?.id || null)
+  }, [secondReader.value, setValue])
+
+  useEffect(() => {
+    setValue("psalm_reader_id", psalmReader.value?.id || null)
+  }, [psalmReader.value, setValue])
+
+  useEffect(() => {
+    setValue("gospel_reader_id", gospelReader.value?.id || null)
+  }, [gospelReader.value, setValue])
+
+  useEffect(() => {
+    setValue("petition_reader_id", petitionReader.value?.id || null)
+  }, [petitionReader.value, setValue])
+
+  // Sync reading picker values to form when they change
+  useEffect(() => {
+    setValue("first_reading_id", firstReading?.id || null)
+  }, [firstReading, setValue])
+
+  useEffect(() => {
+    setValue("psalm_id", psalm?.id || null)
+  }, [psalm, setValue])
+
+  useEffect(() => {
+    setValue("second_reading_id", secondReading?.id || null)
+  }, [secondReading, setValue])
+
+  useEffect(() => {
+    setValue("gospel_reading_id", gospelReading?.id || null)
+  }, [gospelReading, setValue])
 
   // Handle inserting template petitions
   const handleInsertTemplate = (templateId: string): string[] => {
@@ -219,67 +321,25 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
     return "Reception"
   }, [bride.value, groom.value])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateWeddingData) => {
     try {
-      // Validate with Zod
-      const weddingData = weddingSchema.parse({
-        status: status || undefined,
-        wedding_event_id: weddingEvent.value?.id,
-        reception_event_id: receptionEvent.value?.id,
-        rehearsal_event_id: rehearsalEvent.value?.id,
-        rehearsal_dinner_event_id: rehearsalDinnerEvent.value?.id,
-        bride_id: bride.value?.id,
-        groom_id: groom.value?.id,
-        coordinator_id: coordinator.value?.id,
-        presider_id: presider.value?.id,
-        homilist_id: homilist.value?.id,
-        lead_musician_id: leadMusician.value?.id,
-        cantor_id: cantor.value?.id,
-        witness_1_id: witness1.value?.id,
-        witness_2_id: witness2.value?.id,
-        first_reader_id: firstReader.value?.id,
-        second_reader_id: secondReader.value?.id,
-        psalm_reader_id: psalmReader.value?.id,
-        gospel_reader_id: gospelReader.value?.id,
-        petition_reader_id: petitionReader.value?.id,
-        first_reading_id: firstReading?.id,
-        psalm_id: psalm?.id,
-        second_reading_id: secondReading?.id,
-        gospel_reading_id: gospelReading?.id,
-        psalm_is_sung: psalmIsSung,
-        petitions_read_by_second_reader: petitionsReadBySecondReader,
-        petitions: petitions || undefined,
-        announcements: announcements || undefined,
-        notes: notes || undefined,
-        wedding_template_id: weddingTemplateId || undefined,
-      })
-
       if (isEditing && wedding) {
-        await updateWedding(wedding.id, weddingData)
+        await updateWedding(wedding.id, data)
         toast.success('Wedding updated successfully')
         router.refresh() // Stay on edit page to show updated data
       } else {
-        const newWedding = await createWedding(weddingData)
+        const newWedding = await createWedding(data)
         toast.success('Wedding created successfully!')
         router.push(`/weddings/${newWedding.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error(`Failed to ${isEditing ? 'update' : 'create'} wedding:`, error)
-        toast.error(`Failed to ${isEditing ? 'update' : 'create'} wedding. Please try again.`)
-      }
-    } finally {
-      setIsLoading(false)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} wedding:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} wedding. Please try again.`)
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Key Information */}
       <FormSectionCard
         title="Key Information"
@@ -294,6 +354,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             onShowPickerChange={bride.setShowPicker}
             placeholder="Select Bride"
             openToNewPerson={!bride.value}
+            autoSetSex="FEMALE"
           />
           <PersonPickerField
             label="Groom"
@@ -303,6 +364,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             onShowPickerChange={groom.setShowPicker}
             placeholder="Select Groom"
             openToNewPerson={!groom.value}
+            autoSetSex="MALE"
           />
         </div>
         <EventPickerField
@@ -380,6 +442,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             onShowPickerChange={presider.setShowPicker}
             placeholder="Select Presider"
             autoSetSex="MALE"
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
           <PersonPickerField
             label="Homilist"
@@ -389,6 +452,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             onShowPickerChange={homilist.setShowPicker}
             placeholder="Select Homilist"
             autoSetSex="MALE"
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
         </div>
       </FormSectionCard>
@@ -410,6 +474,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={leadMusician.showPicker}
               onShowPickerChange={leadMusician.setShowPicker}
               placeholder="Select Lead Musician"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Cantor"
@@ -418,6 +483,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={cantor.showPicker}
               onShowPickerChange={cantor.setShowPicker}
               placeholder="Select Cantor"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -436,6 +502,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               onShowPickerChange={witness1.setShowPicker}
               placeholder="Select Witness 1"
               openToNewPerson={!witness1.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Witness 2"
@@ -445,6 +512,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               onShowPickerChange={witness2.setShowPicker}
               placeholder="Select Witness 2"
               openToNewPerson={!witness2.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -475,6 +543,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               onShowPickerChange={firstReader.setShowPicker}
               placeholder="Select First Reader"
               openToNewPerson={!firstReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -502,6 +571,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
                 onShowPickerChange={psalmReader.setShowPicker}
                 placeholder="Select Psalm Reader"
                 openToNewPerson={!psalmReader.value}
+                additionalVisibleFields={['email', 'phone_number', 'note']}
               />
             )}
           </div>
@@ -509,8 +579,8 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
           <div className="flex items-center space-x-2">
             <Checkbox
               id="psalm_is_sung"
-              checked={psalmIsSung}
-              onCheckedChange={(checked) => setPsalmIsSung(checked as boolean)}
+              checked={psalmIsSung || false}
+              onCheckedChange={(checked) => setValue("psalm_is_sung", checked as boolean)}
             />
             <label
               htmlFor="psalm_is_sung"
@@ -543,6 +613,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               onShowPickerChange={secondReader.setShowPicker}
               placeholder="Select Second Reader"
               openToNewPerson={!secondReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -568,6 +639,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               showPicker={gospelReader.showPicker}
               onShowPickerChange={gospelReader.setShowPicker}
               placeholder="Select Gospel Reader"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
       </FormSectionCard>
@@ -580,8 +652,8 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
           <div className="flex items-center space-x-2">
             <Checkbox
               id="petitions_read_by_second_reader"
-              checked={petitionsReadBySecondReader}
-              onCheckedChange={(checked) => setPetitionsReadBySecondReader(checked as boolean)}
+              checked={petitionsReadBySecondReader || false}
+              onCheckedChange={(checked) => setValue("petitions_read_by_second_reader", checked as boolean)}
             />
             <label
               htmlFor="petitions_read_by_second_reader"
@@ -600,14 +672,15 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
               onShowPickerChange={petitionReader.setShowPicker}
               placeholder="Select Petition Reader"
               openToNewPerson={!petitionReader.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           )}
       </FormSectionCard>
 
       {/* Petition Editor */}
       <PetitionEditor
-        value={petitions}
-        onChange={setPetitions}
+        value={petitions || ""}
+        onChange={(value) => setValue("petitions", value)}
         onInsertTemplate={handleInsertTemplate}
         templates={petitionTemplates}
       />
@@ -621,11 +694,12 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             id="announcements"
             label="Announcements"
             description="These announcements will be printed on the last page of the liturgy script"
-            value={announcements}
-            onChange={setAnnouncements}
+            value={announcements || ""}
+            onChange={(value) => setValue("announcements", value)}
             placeholder="Enter any announcements..."
             inputType="textarea"
             rows={3}
+            error={errors.announcements?.message}
           />
       </FormSectionCard>
 
@@ -642,13 +716,17 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             onShowPickerChange={coordinator.setShowPicker}
             placeholder="Select Coordinator"
             openToNewPerson={!coordinator.value}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
 
           <Separator />
 
           <div className="space-y-2">
             <Label htmlFor="wedding_template_id">Liturgy Template</Label>
-            <Select value={weddingTemplateId} onValueChange={(value) => setWeddingTemplateId(value as WeddingTemplate)}>
+            <Select
+              value={weddingTemplateId || ""}
+              onValueChange={(value) => setValue("wedding_template_id", value as WeddingTemplate)}
+            >
               <SelectTrigger id="wedding_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -666,16 +744,20 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             id="notes"
             label="Notes (Optional)"
             description="These notes are just for reference and will not be printed in the script"
-            value={notes}
-            onChange={setNotes}
+            value={notes || ""}
+            onChange={(value) => setValue("notes", value)}
             placeholder="Enter any additional notes..."
             inputType="textarea"
             rows={3}
+            error={errors.notes?.message}
           />
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
+            <Select
+              value={status || ""}
+              onValueChange={(value) => setValue("status", value as ModuleStatus)}
+            >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -693,7 +775,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
       {/* Submit Buttons */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/weddings/${wedding.id}` : '/weddings'}
         moduleName="Wedding"
       />

@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createMassRole, updateMassRole, MassRoleWithRelations } from "@/lib/actions/mass-roles"
 import { createMassRoleMember, deleteMassRoleMember, updateMassRoleMember } from "@/lib/actions/mass-role-members"
-import { MassRole, Person } from "@/lib/types"
+import { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
@@ -17,14 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, X, Users } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
-
-// Zod validation schema
-const massRoleSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
-  note: z.string().optional(),
-  is_active: z.boolean(),
-})
+import { createMassRoleSchema, type CreateMassRoleData } from "@/lib/schemas/mass-roles"
 
 interface MassRoleFormProps {
   massRole?: MassRoleWithRelations
@@ -35,18 +29,33 @@ interface MassRoleFormProps {
 export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleFormProps) {
   const router = useRouter()
   const isEditing = !!massRole
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting }
+  } = useForm<CreateMassRoleData>({
+    resolver: zodResolver(createMassRoleSchema),
+    defaultValues: {
+      name: massRole?.name || "",
+      description: massRole?.description || "",
+      note: massRole?.note || "",
+      is_active: massRole?.is_active ?? true,
+    }
+  })
+
+  // Watch form values for controlled inputs
+  const name = watch("name")
+  const description = watch("description")
+  const note = watch("note")
+  const isActive = watch("is_active")
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
-
-  // State for all fields
-  const [name, setName] = useState(massRole?.name || "")
-  const [description, setDescription] = useState(massRole?.description || "")
-  const [note, setNote] = useState(massRole?.note || "")
-  const [isActive, setIsActive] = useState(massRole?.is_active ?? true)
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
   // Member management state
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
@@ -60,18 +69,15 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
   // Local state for members (optimistic updates)
   const [members, setMembers] = useState(massRole?.mass_role_members || [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateMassRoleData) => {
     try {
-      // Validate with Zod
-      const massRoleData = massRoleSchema.parse({
-        name,
-        description: description || undefined,
-        note: note || undefined,
-        is_active: isActive,
-      })
+      // Prepare data for submission
+      const massRoleData = {
+        name: data.name,
+        description: data.description || undefined,
+        note: data.note || undefined,
+        is_active: data.is_active,
+      }
 
       if (isEditing) {
         await updateMassRole(massRole.id, massRoleData)
@@ -83,14 +89,8 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
         router.push(`/mass-roles/${newMassRole.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error('Error saving mass role:', error)
-        toast.error(isEditing ? 'Failed to update mass role' : 'Failed to create mass role')
-      }
-    } finally {
-      setIsLoading(false)
+      console.error('Error saving mass role:', error)
+      toast.error(isEditing ? 'Failed to update mass role' : 'Failed to create mass role')
     }
   }
 
@@ -192,7 +192,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
 
   return (
     <>
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
         title="Basic Information"
@@ -204,9 +204,10 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           description="Name of the liturgical role (e.g., Lector, Eucharistic Minister, Altar Server)"
           inputType="text"
           value={name}
-          onChange={setName}
+          onChange={(value) => setValue("name", value)}
           placeholder="Enter role name..."
           required
+          error={errors.name?.message}
         />
 
         <FormInput
@@ -215,9 +216,10 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           description="Brief description of this role's responsibilities"
           inputType="textarea"
           value={description}
-          onChange={setDescription}
+          onChange={(value) => setValue("description", value)}
           placeholder="Describe the role's responsibilities..."
           rows={3}
+          error={errors.description?.message}
         />
 
         <FormInput
@@ -226,7 +228,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           label="Active"
           description="Inactive roles are hidden from selection but not deleted"
           value={isActive}
-          onChange={setIsActive}
+          onChange={(value: boolean) => setValue("is_active", value)}
         />
       </FormSectionCard>
 
@@ -240,9 +242,10 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           label="Notes"
           inputType="textarea"
           value={note}
-          onChange={setNote}
+          onChange={(value) => setValue("note", value)}
           placeholder="Add any internal notes or reminders..."
           rows={3}
+          error={errors.note?.message}
         />
       </FormSectionCard>
 
@@ -395,7 +398,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
       {/* Form Actions */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/mass-roles/${massRole.id}` : '/mass-roles'}
         moduleName="Mass Role"
       />
@@ -421,6 +424,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
               onShowPickerChange={setShowPersonPicker}
               placeholder="Search or create a person"
               required
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
 
             <FormInput

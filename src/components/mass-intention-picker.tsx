@@ -408,7 +408,7 @@ export function MassIntentionPicker({
           setShowRequestedByPicker(false)
         }}
         selectedPersonId={selectedRequestedBy?.id}
-        visibleFields={['email', 'phone_number']}
+        additionalVisibleFields={['email', 'phone_number']}
       />
     </>
   )

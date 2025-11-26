@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { FormInput } from "@/components/form-input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Save, X } from "lucide-react"
-import { createGroup, updateGroup, type Group, type CreateGroupData, type UpdateGroupData } from '@/lib/actions/groups'
+import { createGroup, updateGroup, type Group } from '@/lib/actions/groups'
+import { createGroupSchema, type CreateGroupData, type UpdateGroupData } from '@/lib/schemas/groups'
 import { toast } from 'sonner'
 
 interface GroupFormDialogProps {
@@ -18,44 +21,51 @@ interface GroupFormDialogProps {
 }
 
 export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupFormDialogProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    is_active: true
+  const {
+    watch,
+    setValue,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm<CreateGroupData>({
+    resolver: zodResolver(createGroupSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      is_active: true
+    }
   })
-  const [saving, setSaving] = useState(false)
+
+  // Watch form values
+  const name = watch('name')
+  const description = watch('description')
+  const is_active = watch('is_active')
 
   // Update form data when group prop changes
   useEffect(() => {
     if (group) {
-      setFormData({
+      reset({
         name: group.name,
         description: group.description || '',
         is_active: group.is_active
       })
     } else {
-      setFormData({
+      reset({
         name: '',
         description: '',
         is_active: true
       })
     }
-  }, [group, open])
+  }, [group, open, reset])
 
-  const handleSubmit = async () => {
-    if (!formData.name.trim()) {
-      toast.error('Group name is required')
-      return
-    }
-
-    setSaving(true)
+  const onSubmit = async (data: CreateGroupData) => {
     try {
       if (group) {
         // Edit mode
         const updateData: UpdateGroupData = {
-          name: formData.name,
-          description: formData.description || undefined,
-          is_active: formData.is_active
+          name: data.name,
+          description: data.description || undefined,
+          is_active: data.is_active
         }
 
         await updateGroup(group.id, updateData)
@@ -63,12 +73,7 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
         onSuccess(group.id)
       } else {
         // Create mode
-        const createData: CreateGroupData = {
-          name: formData.name,
-          description: formData.description || undefined,
-          is_active: formData.is_active
-        }
-        const newGroup = await createGroup(createData)
+        const newGroup = await createGroup(data)
         toast.success('Group created successfully')
         onSuccess(newGroup.id)
       }
@@ -77,8 +82,6 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
     } catch (error) {
       console.error('Failed to save group:', error)
       toast.error('Failed to save group')
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -91,49 +94,52 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormInput
             id="name"
             label="Group Name"
-            value={formData.name}
-            onChange={(value) => setFormData({...formData, name: value})}
+            value={name || ''}
+            onChange={(value) => setValue('name', value)}
             placeholder="e.g., Choir, Youth Servers, Wedding Team"
             required
+            error={errors.name?.message}
           />
 
           <FormInput
             id="description"
             label="Description"
             inputType="textarea"
-            value={formData.description}
-            onChange={(value) => setFormData({...formData, description: value})}
+            value={description || ''}
+            onChange={(value) => setValue('description', value)}
             description="Optional description of the group's purpose or special notes"
+            error={errors.description?.message}
           />
 
           <div className="flex items-center space-x-2">
             <Switch
               id="is_active"
-              checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData({...formData, is_active: checked})}
+              checked={is_active ?? true}
+              onCheckedChange={(checked) => setValue('is_active', checked)}
             />
             <Label htmlFor="is_active">Active</Label>
           </div>
 
           <div className="flex gap-2 justify-end">
             <Button
+              type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={saving}
+              disabled={isSubmitting}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
+            <Button type="submit" disabled={isSubmitting}>
               <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Saving...' : group ? 'Update' : 'Create'}
+              {isSubmitting ? 'Saving...' : group ? 'Update' : 'Create'}
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

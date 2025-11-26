@@ -90,6 +90,7 @@ export function MassRoleMembersActions({ massRoles, allPeople }: MassRoleMembers
               onShowPickerChange={setShowPersonPicker}
               placeholder="Select a person..."
               required
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <div className="flex justify-end gap-3">
               <Button

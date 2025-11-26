@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { z } from "zod"
+import { useEffect, useRef } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
@@ -26,21 +27,8 @@ import { PeoplePicker } from "@/components/people-picker"
 import { MassIntentionPicker } from "@/components/mass-intention-picker"
 import { RoleFulfillmentBadge } from "@/components/role-fulfillment-badge"
 import { Plus, X, Heart } from "lucide-react"
-
-// Zod validation schema
-const massSchema = z.object({
-  status: z.enum(MASS_STATUS_VALUES).optional(),
-  event_id: z.string().optional(),
-  presider_id: z.string().optional(),
-  homilist_id: z.string().optional(),
-  liturgical_event_id: z.string().optional(),
-  mass_roles_template_id: z.string().optional(),
-  petitions: z.string().optional(),
-  announcements: z.string().optional(),
-  note: z.string().optional(),
-  mass_template_id: z.string().optional(),
-  liturgical_color: z.enum(LITURGICAL_COLOR_VALUES).optional()
-})
+import { createMassSchema, type CreateMassData } from "@/lib/schemas/masses"
+import { useState } from "react"
 
 interface MassFormProps {
   mass?: MassWithRelations
@@ -51,20 +39,29 @@ interface MassFormProps {
 export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const router = useRouter()
   const isEditing = !!mass
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form
+  const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<CreateMassData>({
+    resolver: zodResolver(createMassSchema),
+    defaultValues: {
+      status: mass?.status || "ACTIVE",
+      event_id: mass?.event_id || undefined,
+      presider_id: mass?.presider_id || undefined,
+      homilist_id: mass?.homilist_id || undefined,
+      liturgical_event_id: mass?.liturgical_event_id || undefined,
+      mass_roles_template_id: mass?.mass_roles_template_id || undefined,
+      petitions: mass?.petitions || undefined,
+      announcements: mass?.announcements || undefined,
+      note: mass?.note || undefined,
+      mass_template_id: (mass?.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE,
+      liturgical_color: (mass?.liturgical_color as LiturgicalColor) || undefined,
+    }
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
-
-  // State for all fields
-  const [status, setStatus] = useState<MassStatus>(mass?.status || "ACTIVE")
-  const [note, setNote] = useState(mass?.note || "")
-  const [announcements, setAnnouncements] = useState(mass?.announcements || "")
-  const [petitions, setPetitions] = useState(mass?.petitions || "")
-  const [massTemplateId, setMassTemplateId] = useState<MassTemplate>((mass?.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE)
-  const [liturgicalColor, setLiturgicalColor] = useState<LiturgicalColor | undefined>(mass?.liturgical_color as LiturgicalColor | undefined)
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
@@ -87,7 +84,6 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [templateItems, setTemplateItems] = useState<MassRoleTemplateItemWithRole[]>([])
 
   // Track if we've initialized to prevent infinite loops
-  const initializedRef = useRef(false)
   const initializedMassIdRef = useRef<string | null>(null)
 
   // Initialize form with mass data when editing
@@ -114,11 +110,26 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       if (mass.mass_intention) {
         setMassIntention(mass.mass_intention)
       }
-
-      initializedRef.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mass?.id]) // Only re-run when mass ID changes
+
+  // Sync picker values to form state
+  useEffect(() => {
+    setValue('event_id', event.value?.id)
+  }, [event.value, setValue])
+
+  useEffect(() => {
+    setValue('presider_id', presider.value?.id)
+  }, [presider.value, setValue])
+
+  useEffect(() => {
+    setValue('homilist_id', homilist.value?.id)
+  }, [homilist.value, setValue])
+
+  useEffect(() => {
+    setValue('liturgical_event_id', liturgicalEvent.value?.id)
+  }, [liturgicalEvent.value, setValue])
 
   // Load all templates when the form mounts
   useEffect(() => {
@@ -218,6 +229,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   // Handle template change - clear existing role assignments if editing
   const handleTemplateChange = async (newTemplateId: string) => {
     setMassRolesTemplateId(newTemplateId)
+    setValue('mass_roles_template_id', newTemplateId || undefined)
 
     // If editing an existing mass, clear all existing mass role assignments
     if (isEditing && mass?.id && massRoles.length > 0) {
@@ -307,49 +319,25 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateMassData) => {
     try {
-      // Validate with Zod
-      const massData = massSchema.parse({
-        status: status || undefined,
-        event_id: event.value?.id,
-        presider_id: presider.value?.id,
-        homilist_id: homilist.value?.id,
-        liturgical_event_id: liturgicalEvent.value?.id,
-        mass_roles_template_id: massRolesTemplateId || undefined,
-        petitions: petitions || undefined,
-        announcements: announcements || undefined,
-        note: note || undefined,
-        mass_template_id: massTemplateId || undefined,
-        liturgical_color: liturgicalColor || undefined,
-      })
-
       if (isEditing) {
-        await updateMass(mass.id, massData)
+        await updateMass(mass.id, data)
         toast.success('Mass updated successfully')
         router.refresh() // Stay on edit page to show updated data
       } else {
-        const newMass = await createMass(massData)
+        const newMass = await createMass(data)
         toast.success('Mass created successfully')
         router.push(`/masses/${newMass.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error('Error saving mass:', error)
-        toast.error(isEditing ? 'Failed to update mass' : 'Failed to create mass')
-      }
-    } finally {
-      setIsLoading(false)
+      console.error('Error saving mass:', error)
+      toast.error(isEditing ? 'Failed to update mass' : 'Failed to create mass')
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
         title="Basic Information"
@@ -372,12 +360,13 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             inputType="select"
             label="Status"
             description="Current status of this Mass"
-            value={status}
-            onChange={(value) => setStatus(value as MassStatus)}
+            value={watch('status') || 'ACTIVE'}
+            onChange={(value) => setValue('status', value as MassStatus)}
             options={MASS_STATUS_VALUES.map((value) => ({
               value,
               label: getStatusLabel(value, 'en')
             }))}
+            error={errors.status?.message}
           />
 
           <FormInput
@@ -385,13 +374,14 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             inputType="select"
             label="Liturgical Color"
             description="The liturgical color for this Mass celebration"
-            value={liturgicalColor || ''}
-            onChange={(value) => setLiturgicalColor(value ? (value as LiturgicalColor) : undefined)}
+            value={watch('liturgical_color') || ''}
+            onChange={(value) => setValue('liturgical_color', value ? (value as LiturgicalColor) : undefined)}
             placeholder="Select liturgical color (optional)"
             options={LITURGICAL_COLOR_VALUES.map((value) => ({
               value,
               label: LITURGICAL_COLOR_LABELS[value].en
             }))}
+            error={errors.liturgical_color?.message}
           />
 
           <LiturgicalEventPickerField
@@ -408,12 +398,13 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             inputType="select"
             label="Print Template"
             description="Choose the liturgy template for this Mass"
-            value={massTemplateId}
-            onChange={(value) => setMassTemplateId(value as MassTemplate)}
+            value={watch('mass_template_id') || MASS_DEFAULT_TEMPLATE}
+            onChange={(value) => setValue('mass_template_id', value as MassTemplate)}
             options={MASS_TEMPLATE_VALUES.map((value) => ({
               value,
               label: MASS_TEMPLATE_LABELS[value].en
             }))}
+            error={errors.mass_template_id?.message}
           />
       </FormSectionCard>
 
@@ -430,7 +421,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={presider.showPicker}
             onShowPickerChange={presider.setShowPicker}
             autoSetSex="MALE"
-            visibleFields={['email', 'phone_number', 'note']}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
 
           <PersonPickerField
@@ -441,7 +432,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             showPicker={homilist.showPicker}
             onShowPickerChange={homilist.setShowPicker}
             autoSetSex="MALE"
-            visibleFields={['email', 'phone_number', 'note']}
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
       </FormSectionCard>
 
@@ -633,8 +624,8 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
 
       {/* Petitions */}
       <PetitionEditor
-        value={petitions}
-        onChange={setPetitions}
+        value={watch('petitions') || ''}
+        onChange={(value) => setValue('petitions', value)}
         templates={petitionTemplates}
         onInsertTemplate={handleInsertTemplate}
       />
@@ -648,10 +639,11 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             id="announcements"
             label="Announcement Text"
             inputType="textarea"
-            value={announcements}
-            onChange={setAnnouncements}
+            value={watch('announcements') || ''}
+            onChange={(value) => setValue('announcements', value)}
             placeholder="Enter announcements here..."
             rows={6}
+            error={errors.announcements?.message}
           />
       </FormSectionCard>
 
@@ -664,12 +656,13 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           id="mass_template_id"
           label="Liturgy Template"
           inputType="select"
-          value={massTemplateId}
-          onChange={(value) => setMassTemplateId(value as MassTemplate)}
+          value={watch('mass_template_id') || MASS_DEFAULT_TEMPLATE}
+          onChange={(value) => setValue('mass_template_id', value as MassTemplate)}
           options={MASS_TEMPLATE_VALUES.map((templateId) => ({
             value: templateId,
             label: MASS_TEMPLATE_LABELS[templateId].en,
           }))}
+          error={errors.mass_template_id?.message}
         />
 
         <FormInput
@@ -677,17 +670,18 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             label="Notes (Optional)"
             description="Internal notes and reminders (not included in printed liturgy)"
             inputType="textarea"
-            value={note}
-            onChange={setNote}
+            value={watch('note') || ''}
+            onChange={(value) => setValue('note', value)}
             placeholder="Add any internal notes or reminders..."
             rows={3}
+            error={errors.note?.message}
           />
       </FormSectionCard>
 
       {/* Form Actions */}
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/masses/${mass.id}` : '/masses'}
         moduleName="Mass"
       />

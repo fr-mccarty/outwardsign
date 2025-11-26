@@ -4,14 +4,16 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Mail, Phone } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Mail, Phone, ChevronDown, ChevronRight } from 'lucide-react'
 import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
-import { PickerFieldConfig } from '@/types/core-picker'
+import { PickerFieldConfig, CustomFormComponentProps } from '@/types/core-picker'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import { SEX_VALUES, SEX_LABELS, type Sex } from '@/lib/constants'
+import { FormInput } from '@/components/form-input'
 
 interface PeoplePickerProps {
   open: boolean
@@ -21,8 +23,8 @@ interface PeoplePickerProps {
   emptyMessage?: string
   selectedPersonId?: string
   className?: string
-  visibleFields?: string[] // Optional fields to show: 'email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation'
-  requiredFields?: string[] // Fields that should be marked as required: 'email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation'
+  additionalVisibleFields?: string[] // Additional fields to show: 'email', 'phone_number', 'sex', 'note'
+  requiredFields?: string[] // Fields that should be marked as required: 'email', 'phone_number', 'sex', 'note'
   openToNewPerson?: boolean
   autoOpenCreateForm?: boolean
   defaultCreateFormData?: Record<string, any>
@@ -32,8 +34,9 @@ interface PeoplePickerProps {
   filterByMassRole?: string // Filter people by mass role membership
 }
 
-// Default visible fields - defined outside component to prevent re-creation
-const DEFAULT_VISIBLE_FIELDS = ['email', 'phone_number', 'sex', 'note', 'first_name_pronunciation', 'last_name_pronunciation']
+// Default additional visible fields - defined outside component to prevent re-creation
+// Note: first_name, last_name, and pronunciation fields are always shown (pronunciation via toggle)
+const DEFAULT_ADDITIONAL_FIELDS = ['email', 'phone_number', 'sex', 'note']
 
 // Empty object constant to prevent re-creation on every render
 const EMPTY_FORM_DATA = {}
@@ -45,7 +48,7 @@ export function PeoplePicker({
   placeholder = 'Search for a person...',
   emptyMessage = 'No people found.',
   selectedPersonId,
-  visibleFields,
+  additionalVisibleFields,
   requiredFields,
   openToNewPerson = false,
   autoOpenCreateForm = false,
@@ -61,6 +64,7 @@ export function PeoplePicker({
   const [totalCount, setTotalCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [showPronunciation, setShowPronunciation] = useState(false)
   const PAGE_SIZE = 10
 
   // Debounce search query with 1000ms delay
@@ -72,16 +76,30 @@ export function PeoplePicker({
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  // Auto-expand pronunciation section when editing a person with pronunciation data
+  useEffect(() => {
+    if (editMode && personToEdit) {
+      const hasPronunciationData =
+        personToEdit.first_name_pronunciation || personToEdit.last_name_pronunciation
+      setShowPronunciation(!!hasPronunciationData)
+    } else if (!open) {
+      // Reset when picker closes
+      setShowPronunciation(false)
+    }
+  }, [editMode, personToEdit, open])
+
   // Memoize helper functions to prevent unnecessary re-renders
-  const isFieldVisible = useCallback(
+  // Note: isFieldVisible only applies to additional fields (email, phone, sex, note)
+  // First name, last name, and pronunciation fields are always available
+  const isAdditionalFieldVisible = useCallback(
     (fieldName: string) => {
       // Hide sex field if autoSetSex is provided
       if (fieldName === 'sex' && autoSetSex) {
         return false
       }
-      return checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS)
+      return checkFieldVisible(fieldName, additionalVisibleFields, DEFAULT_ADDITIONAL_FIELDS)
     },
-    [visibleFields, autoSetSex]
+    [additionalVisibleFields, autoSetSex]
   )
   const isFieldRequired = useCallback(
     (fieldName: string) => checkFieldRequired(fieldName, requiredFields),
@@ -139,15 +157,17 @@ export function PeoplePicker({
     setCurrentPage(1) // Reset to first page when searching
   }
 
-  // Build create fields configuration dynamically - memoized to prevent infinite re-renders
+  // Build create fields configuration for schema validation
+  // Note: The actual form rendering is handled by PersonFormFields below
+  // First name, last name, and pronunciation fields are always included
   const createFields: PickerFieldConfig[] = useMemo(() => {
     const fields: PickerFieldConfig[] = [
+      // Core name fields - always present
       {
         key: 'first_name',
         label: 'First Name',
         type: 'text',
         required: true,
-        placeholder: 'John',
         validation: z.string().min(1, 'First name is required'),
       },
       {
@@ -155,52 +175,43 @@ export function PeoplePicker({
         label: 'Last Name',
         type: 'text',
         required: true,
-        placeholder: 'Doe',
         validation: z.string().min(1, 'Last name is required'),
       },
-    ]
-
-    if (isFieldVisible('first_name_pronunciation')) {
-      fields.push({
+      // Pronunciation fields - always in schema (optional, shown via toggle)
+      {
         key: 'first_name_pronunciation',
         label: 'First Name Pronunciation',
         type: 'text',
-        required: isFieldRequired('first_name_pronunciation'),
-        placeholder: 'JAHN',
-      })
-    }
-
-    if (isFieldVisible('last_name_pronunciation')) {
-      fields.push({
+        required: false,
+      },
+      {
         key: 'last_name_pronunciation',
         label: 'Last Name Pronunciation',
         type: 'text',
-        required: isFieldRequired('last_name_pronunciation'),
-        placeholder: 'DOH',
-      })
-    }
+        required: false,
+      },
+    ]
 
-    if (isFieldVisible('email')) {
+    // Additional configurable fields
+    if (isAdditionalFieldVisible('email')) {
       fields.push({
         key: 'email',
         label: 'Email',
         type: 'email',
         required: isFieldRequired('email'),
-        placeholder: 'john.doe@example.com',
       })
     }
 
-    if (isFieldVisible('phone_number')) {
+    if (isAdditionalFieldVisible('phone_number')) {
       fields.push({
         key: 'phone_number',
         label: 'Phone',
         type: 'tel',
         required: isFieldRequired('phone_number'),
-        placeholder: '(555) 123-4567',
       })
     }
 
-    if (isFieldVisible('sex')) {
+    if (isAdditionalFieldVisible('sex')) {
       fields.push({
         key: 'sex',
         label: 'Sex',
@@ -208,23 +219,161 @@ export function PeoplePicker({
         required: isFieldRequired('sex'),
         options: SEX_VALUES.map(value => ({
           value,
-          label: SEX_LABELS[value].en // Using English labels for now
+          label: SEX_LABELS[value].en
         })),
       })
     }
 
-    if (isFieldVisible('note')) {
+    if (isAdditionalFieldVisible('note')) {
       fields.push({
         key: 'note',
         label: 'Note',
         type: 'textarea',
         required: isFieldRequired('note'),
-        placeholder: 'Add any notes about this person...',
       })
     }
 
     return fields
-  }, [isFieldVisible, isFieldRequired])
+  }, [isAdditionalFieldVisible, isFieldRequired])
+
+  // Custom form component with pronunciation toggle
+  const PersonFormFields = useCallback(
+    ({ form, errors }: CustomFormComponentProps) => {
+      const { watch, setValue } = form
+
+      const getError = (field: string) => {
+        const error = errors[field]
+        return error?.message ? String(error.message) : undefined
+      }
+
+      return (
+        <div className="space-y-4">
+          {/* First Name - always shown */}
+          <FormInput
+            id="first_name"
+            label="First Name"
+            inputType="text"
+            value={watch('first_name') ?? ''}
+            onChange={(value) => setValue('first_name', value, { shouldValidate: true })}
+            placeholder="John"
+            required
+            error={getError('first_name')}
+          />
+
+          {/* Last Name - always shown */}
+          <FormInput
+            id="last_name"
+            label="Last Name"
+            inputType="text"
+            value={watch('last_name') ?? ''}
+            onChange={(value) => setValue('last_name', value, { shouldValidate: true })}
+            placeholder="Doe"
+            required
+            error={getError('last_name')}
+          />
+
+          {/* Pronunciation Toggle - always shown */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowPronunciation(!showPronunciation)}
+            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            {showPronunciation ? (
+              <ChevronDown className="h-3 w-3 mr-1" />
+            ) : (
+              <ChevronRight className="h-3 w-3 mr-1" />
+            )}
+            {showPronunciation ? 'Hide pronunciation' : 'Add pronunciation guide'}
+          </Button>
+
+          {/* Pronunciation Fields - shown when toggle is expanded */}
+          {showPronunciation && (
+            <>
+              <FormInput
+                id="first_name_pronunciation"
+                label="First Name Pronunciation"
+                inputType="text"
+                value={watch('first_name_pronunciation') ?? ''}
+                onChange={(value) => setValue('first_name_pronunciation', value, { shouldValidate: true })}
+                placeholder="JAHN"
+                description="How to pronounce the first name"
+                error={getError('first_name_pronunciation')}
+              />
+              <FormInput
+                id="last_name_pronunciation"
+                label="Last Name Pronunciation"
+                inputType="text"
+                value={watch('last_name_pronunciation') ?? ''}
+                onChange={(value) => setValue('last_name_pronunciation', value, { shouldValidate: true })}
+                placeholder="DOH"
+                description="How to pronounce the last name"
+                error={getError('last_name_pronunciation')}
+              />
+            </>
+          )}
+
+          {/* Additional configurable fields */}
+          {isAdditionalFieldVisible('email') && (
+            <FormInput
+              id="email"
+              label="Email"
+              inputType="email"
+              value={watch('email') ?? ''}
+              onChange={(value) => setValue('email', value, { shouldValidate: true })}
+              placeholder="john.doe@example.com"
+              required={isFieldRequired('email')}
+              error={getError('email')}
+            />
+          )}
+
+          {isAdditionalFieldVisible('phone_number') && (
+            <FormInput
+              id="phone_number"
+              label="Phone"
+              inputType="tel"
+              value={watch('phone_number') ?? ''}
+              onChange={(value) => setValue('phone_number', value, { shouldValidate: true })}
+              placeholder="(555) 123-4567"
+              required={isFieldRequired('phone_number')}
+              error={getError('phone_number')}
+            />
+          )}
+
+          {isAdditionalFieldVisible('sex') && (
+            <FormInput
+              id="sex"
+              label="Sex"
+              inputType="select"
+              value={watch('sex') ?? ''}
+              onChange={(value) => setValue('sex', value, { shouldValidate: true })}
+              options={SEX_VALUES.map(value => ({
+                value,
+                label: SEX_LABELS[value].en
+              }))}
+              required={isFieldRequired('sex')}
+              error={getError('sex')}
+            />
+          )}
+
+          {isAdditionalFieldVisible('note') && (
+            <FormInput
+              id="note"
+              label="Note"
+              inputType="textarea"
+              value={watch('note') ?? ''}
+              onChange={(value) => setValue('note', value, { shouldValidate: true })}
+              placeholder="Add any notes about this person..."
+              required={isFieldRequired('note')}
+              error={getError('note')}
+            />
+          )}
+        </div>
+      )
+    },
+    [isAdditionalFieldVisible, isFieldRequired, showPronunciation]
+  )
 
   // Handle creating a new person
   const handleCreatePerson = async (data: any): Promise<Person> => {
@@ -341,6 +490,7 @@ export function PeoplePicker({
       pageSize={PAGE_SIZE}
       onPageChange={handlePageChange}
       onSearch={handleSearchChange}
+      CustomFormComponent={PersonFormFields}
     />
   )
 }

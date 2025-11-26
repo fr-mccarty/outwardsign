@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { z } from "zod"
+import { useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Label } from "@/components/ui/label"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
@@ -23,20 +24,10 @@ import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import type { Person, Event } from "@/lib/types"
-
-// Zod validation schema
-const baptismSchema = z.object({
-  baptism_event_id: z.string().optional(),
-  child_id: z.string().optional(),
-  mother_id: z.string().optional(),
-  father_id: z.string().optional(),
-  sponsor_1_id: z.string().optional(),
-  sponsor_2_id: z.string().optional(),
-  presider_id: z.string().optional(),
-  status: z.enum(MODULE_STATUS_VALUES).optional(),
-  baptism_template_id: z.enum(BAPTISM_TEMPLATE_VALUES).optional(),
-  note: z.string().optional()
-})
+import {
+  createBaptismSchema,
+  type CreateBaptismData
+} from "@/lib/schemas/baptisms"
 
 interface BaptismFormProps {
   baptism?: BaptismWithRelations
@@ -47,18 +38,38 @@ interface BaptismFormProps {
 export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormProps) {
   const router = useRouter()
   const isEditing = !!baptism
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Initialize React Hook Form with Zod validation
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreateBaptismData>({
+    resolver: zodResolver(createBaptismSchema),
+    defaultValues: {
+      status: (baptism?.status as ModuleStatus) || "ACTIVE",
+      baptism_event_id: baptism?.baptism_event_id || null,
+      child_id: baptism?.child_id || null,
+      mother_id: baptism?.mother_id || null,
+      father_id: baptism?.father_id || null,
+      sponsor_1_id: baptism?.sponsor_1_id || null,
+      sponsor_2_id: baptism?.sponsor_2_id || null,
+      presider_id: baptism?.presider_id || null,
+      baptism_template_id: (baptism?.baptism_template_id as BaptismTemplate) || BAPTISM_DEFAULT_TEMPLATE,
+      note: baptism?.note || null,
+    },
+  })
 
   // Notify parent component of loading state changes
   useEffect(() => {
-    onLoadingChange?.(isLoading)
-  }, [isLoading, onLoadingChange])
+    onLoadingChange?.(isSubmitting)
+  }, [isSubmitting, onLoadingChange])
 
-  // State for all fields
-
-  const [status, setStatus] = useState<ModuleStatus>(baptism?.status || "ACTIVE")
-  const [note, setNote] = useState(baptism?.note || "")
-  const [baptismTemplateId, setBaptismTemplateId] = useState<BaptismTemplate>((baptism?.baptism_template_id as BaptismTemplate) || BAPTISM_DEFAULT_TEMPLATE)
+  // Watch form values
+  const status = watch("status")
+  const note = watch("note")
+  const baptismTemplateId = watch("baptism_template_id")
 
   // Picker states using usePickerState hook
   const baptismEvent = usePickerState<Event>()
@@ -69,7 +80,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
   const sponsor2 = usePickerState<Person>()
   const presider = usePickerState<Person>()
 
-  // Initialize form with baptism data when editing
+  // Initialize picker states when editing
   useEffect(() => {
     if (baptism) {
       // Set event
@@ -86,6 +97,36 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baptism])
 
+  // Sync picker values to form when they change - Event
+  useEffect(() => {
+    setValue("baptism_event_id", baptismEvent.value?.id || null)
+  }, [baptismEvent.value, setValue])
+
+  // Sync picker values to form when they change - People
+  useEffect(() => {
+    setValue("child_id", child.value?.id || null)
+  }, [child.value, setValue])
+
+  useEffect(() => {
+    setValue("mother_id", mother.value?.id || null)
+  }, [mother.value, setValue])
+
+  useEffect(() => {
+    setValue("father_id", father.value?.id || null)
+  }, [father.value, setValue])
+
+  useEffect(() => {
+    setValue("sponsor_1_id", sponsor1.value?.id || null)
+  }, [sponsor1.value, setValue])
+
+  useEffect(() => {
+    setValue("sponsor_2_id", sponsor2.value?.id || null)
+  }, [sponsor2.value, setValue])
+
+  useEffect(() => {
+    setValue("presider_id", presider.value?.id || null)
+  }, [presider.value, setValue])
+
   // Compute suggested event name based on child
   const suggestedBaptismName = useMemo(() => {
     const childFirstName = child.value?.first_name
@@ -101,48 +142,25 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
     return "Baptism"
   }, [child.value])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreateBaptismData) => {
     try {
-      // Validate with Zod
-      const formData = baptismSchema.parse({
-        baptism_event_id: baptismEvent.value?.id,
-        child_id: child.value?.id,
-        mother_id: mother.value?.id,
-        father_id: father.value?.id,
-        sponsor_1_id: sponsor1.value?.id,
-        sponsor_2_id: sponsor2.value?.id,
-        presider_id: presider.value?.id,
-        status: status || undefined,
-        baptism_template_id: baptismTemplateId || undefined,
-        note: note || undefined,
-      })
-
       if (isEditing && baptism) {
-        await updateBaptism(baptism.id, formData)
+        await updateBaptism(baptism.id, data)
         toast.success('Baptism updated successfully')
         router.refresh() // Stay on edit page to show updated data
       } else {
-        const newBaptism = await createBaptism(formData)
+        const newBaptism = await createBaptism(data)
         toast.success('Baptism created successfully')
         router.push(`/baptisms/${newBaptism.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error('Error saving baptism:', error)
-        toast.error('Failed to save baptism. Please try again.')
-      }
-    } finally {
-      setIsLoading(false)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} baptism:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} baptism. Please try again.`)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} id={formId} className="space-y-8">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Key Information */}
       <FormSectionCard
         title="Key Information"
@@ -156,6 +174,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             onShowPickerChange={child.setShowPicker}
             placeholder="Select Child"
             openToNewPerson={!child.value}
+            additionalVisibleFields={['email', 'phone_number', 'sex', 'note']}
           />
           <EventPickerField
             label="Baptism Event"
@@ -189,6 +208,8 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
               onShowPickerChange={mother.setShowPicker}
               placeholder="Select Mother"
               openToNewPerson={!mother.value}
+              autoSetSex="FEMALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Father"
@@ -198,6 +219,8 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
               onShowPickerChange={father.setShowPicker}
               placeholder="Select Father"
               openToNewPerson={!father.value}
+              autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
 
@@ -215,6 +238,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
               onShowPickerChange={sponsor1.setShowPicker}
               placeholder="Select Godparent 1"
               openToNewPerson={!sponsor1.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
             <PersonPickerField
               label="Godparent 2"
@@ -224,6 +248,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
               onShowPickerChange={sponsor2.setShowPicker}
               placeholder="Select Godparent 2"
               openToNewPerson={!sponsor2.value}
+              additionalVisibleFields={['email', 'phone_number', 'note']}
             />
           </div>
       </FormSectionCard>
@@ -241,6 +266,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             onShowPickerChange={presider.setShowPicker}
             placeholder="Select Presider"
             autoSetSex="MALE"
+            additionalVisibleFields={['email', 'phone_number', 'note']}
           />
       </FormSectionCard>
 
@@ -250,7 +276,10 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       >
         <div className="space-y-2">
             <Label htmlFor="baptism_template_id">Ceremony Template</Label>
-            <Select value={baptismTemplateId} onValueChange={(value) => setBaptismTemplateId(value as BaptismTemplate)}>
+            <Select
+              value={baptismTemplateId || ""}
+              onValueChange={(value) => setValue("baptism_template_id", value as BaptismTemplate)}
+            >
               <SelectTrigger id="baptism_template_id">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
@@ -268,16 +297,20 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             id="note"
             label="Notes (Optional)"
             inputType="textarea"
-            value={note}
-            onChange={setNote}
+            value={note || ""}
+            onChange={(value) => setValue("note", value)}
             placeholder="Add any additional note or special instructions..."
             rows={4}
             description="Additional information or special considerations"
+            error={errors.note?.message}
           />
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as ModuleStatus)}>
+            <Select
+              value={status || ""}
+              onValueChange={(value) => setValue("status", value as ModuleStatus)}
+            >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -296,7 +329,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
       <FormBottomActions
         isEditing={isEditing}
         cancelHref={isEditing && baptism ? `/baptisms/${baptism.id}` : "/baptisms"}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         moduleName="Baptism"
       />
     </form>

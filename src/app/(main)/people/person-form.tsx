@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { z } from "zod"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
@@ -10,22 +11,7 @@ import { createPerson, updatePerson } from "@/lib/actions/people"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-
-// Zod validation schema
-const personSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  first_name_pronunciation: z.string().optional(),
-  last_name: z.string().min(1, 'Last name is required'),
-  last_name_pronunciation: z.string().optional(),
-  phone_number: z.string().optional(),
-  email: z.string().email('Invalid email address').optional().or(z.literal('')),
-  street: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipcode: z.string().optional(),
-  note: z.string().optional(),
-  mass_times_template_item_ids: z.array(z.string()).optional()
-})
+import { createPersonSchema, type CreatePersonData } from "@/lib/schemas/people"
 
 interface PersonFormProps {
   person?: Person
@@ -36,47 +22,67 @@ interface PersonFormProps {
 export function PersonForm({ person, formId = 'person-form', onLoadingChange }: PersonFormProps) {
   const router = useRouter()
   const isEditing = !!person
-  const [isLoading, setIsLoading] = useState(false)
-  const [firstName, setFirstName] = useState(person?.first_name || "")
-  const [firstNamePronunciation, setFirstNamePronunciation] = useState(person?.first_name_pronunciation || "")
-  const [lastName, setLastName] = useState(person?.last_name || "")
-  const [lastNamePronunciation, setLastNamePronunciation] = useState(person?.last_name_pronunciation || "")
-  const [phoneNumber, setPhoneNumber] = useState(person?.phone_number || "")
-  const [email, setEmail] = useState(person?.email || "")
-  const [street, setStreet] = useState(person?.street || "")
-  const [city, setCity] = useState(person?.city || "")
-  const [state, setState] = useState(person?.state || "")
-  const [zipcode, setZipcode] = useState(person?.zipcode || "")
-  const [note, setNote] = useState(person?.note || "")
-  const [massTimeIds, setMassTimeIds] = useState<string[]>(person?.mass_times_template_item_ids || [])
+
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<CreatePersonData>({
+    resolver: zodResolver(createPersonSchema),
+    defaultValues: {
+      first_name: person?.first_name || "",
+      first_name_pronunciation: person?.first_name_pronunciation || "",
+      last_name: person?.last_name || "",
+      last_name_pronunciation: person?.last_name_pronunciation || "",
+      phone_number: person?.phone_number || "",
+      email: person?.email || "",
+      street: person?.street || "",
+      city: person?.city || "",
+      state: person?.state || "",
+      zipcode: person?.zipcode || "",
+      note: person?.note || "",
+      mass_times_template_item_ids: person?.mass_times_template_item_ids || [],
+    },
+  })
+
+  // Watch form values
+  const firstName = watch("first_name")
+  const firstNamePronunciation = watch("first_name_pronunciation")
+  const lastName = watch("last_name")
+  const lastNamePronunciation = watch("last_name_pronunciation")
+  const phoneNumber = watch("phone_number")
+  const email = watch("email")
+  const street = watch("street")
+  const city = watch("city")
+  const state = watch("state")
+  const zipcode = watch("zipcode")
+  const note = watch("note")
+  const massTimeIds = watch("mass_times_template_item_ids")
 
   // Sync loading state with parent wrapper
   useEffect(() => {
     if (onLoadingChange) {
-      onLoadingChange(isLoading)
+      onLoadingChange(isSubmitting)
     }
-  }, [isLoading, onLoadingChange])
+  }, [isSubmitting, onLoadingChange])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const onSubmit = async (data: CreatePersonData) => {
     try {
-      // Validate with Zod
-      const personData = personSchema.parse({
-        first_name: firstName,
-        first_name_pronunciation: firstNamePronunciation || undefined,
-        last_name: lastName,
-        last_name_pronunciation: lastNamePronunciation || undefined,
-        phone_number: phoneNumber || undefined,
-        email: email || undefined,
-        street: street || undefined,
-        city: city || undefined,
-        state: state || undefined,
-        zipcode: zipcode || undefined,
-        note: note || undefined,
-        mass_times_template_item_ids: massTimeIds.length > 0 ? massTimeIds : undefined,
-      })
+      // Convert empty strings to undefined
+      const personData = {
+        ...data,
+        first_name_pronunciation: data.first_name_pronunciation || undefined,
+        last_name_pronunciation: data.last_name_pronunciation || undefined,
+        phone_number: data.phone_number || undefined,
+        email: data.email || undefined,
+        street: data.street || undefined,
+        city: data.city || undefined,
+        state: data.state || undefined,
+        zipcode: data.zipcode || undefined,
+        note: data.note || undefined,
+        mass_times_template_item_ids: data.mass_times_template_item_ids && data.mass_times_template_item_ids.length > 0 ? data.mass_times_template_item_ids : undefined,
+      }
 
       if (isEditing) {
         await updatePerson(person.id, personData)
@@ -88,19 +94,13 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         router.push(`/people/${newPerson.id}/edit`)
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error(`Failed to ${isEditing ? 'update' : 'create'} person:`, error)
-        toast.error(`Failed to ${isEditing ? 'update' : 'create'} person. Please try again.`)
-      }
-    } finally {
-      setIsLoading(false)
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} person:`, error)
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} person. Please try again.`)
     }
   }
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <FormSectionCard
         title="Person Details"
         description="Basic information and contact details"
@@ -110,18 +110,20 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="first_name"
             label="First Name"
             value={firstName}
-            onChange={setFirstName}
+            onChange={(value) => setValue("first_name", value)}
             required
             placeholder="Enter first name"
+            error={errors.first_name?.message}
           />
 
           <FormInput
             id="last_name"
             label="Last Name"
             value={lastName}
-            onChange={setLastName}
+            onChange={(value) => setValue("last_name", value)}
             required
             placeholder="Enter last name"
+            error={errors.last_name?.message}
           />
         </div>
 
@@ -129,17 +131,19 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           <FormInput
             id="first_name_pronunciation"
             label="First Name Pronunciation (Optional)"
-            value={firstNamePronunciation}
-            onChange={setFirstNamePronunciation}
+            value={firstNamePronunciation || ""}
+            onChange={(value) => setValue("first_name_pronunciation", value)}
             placeholder="How to pronounce first name"
+            error={errors.first_name_pronunciation?.message}
           />
 
           <FormInput
             id="last_name_pronunciation"
             label="Last Name Pronunciation (Optional)"
-            value={lastNamePronunciation}
-            onChange={setLastNamePronunciation}
+            value={lastNamePronunciation || ""}
+            onChange={(value) => setValue("last_name_pronunciation", value)}
             placeholder="How to pronounce last name"
+            error={errors.last_name_pronunciation?.message}
           />
         </div>
 
@@ -148,52 +152,58 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             id="email"
             label="Email (Optional)"
             inputType="email"
-            value={email}
-            onChange={setEmail}
+            value={email || ""}
+            onChange={(value) => setValue("email", value)}
             placeholder="Enter email address"
+            error={errors.email?.message}
           />
 
           <FormInput
             id="phone_number"
             label="Phone Number (Optional)"
             inputType="tel"
-            value={phoneNumber}
-            onChange={setPhoneNumber}
+            value={phoneNumber || ""}
+            onChange={(value) => setValue("phone_number", value)}
             placeholder="Enter phone number"
+            error={errors.phone_number?.message}
           />
         </div>
 
         <FormInput
           id="street"
           label="Street Address (Optional)"
-          value={street}
-          onChange={setStreet}
+          value={street || ""}
+          onChange={(value) => setValue("street", value)}
           placeholder="Enter street address"
+          error={errors.street?.message}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FormInput
             id="city"
             label="City (Optional)"
-            value={city}
-            onChange={setCity}
+            value={city || ""}
+            onChange={(value) => setValue("city", value)}
             placeholder="Enter city"
+            error={errors.city?.message}
           />
 
           <FormInput
             id="state"
             label="State (Optional)"
-            value={state}
-            onChange={setState}
+            value={state || ""}
+            onChange={(value) => setValue("state", value)}
             placeholder="Enter state"
+            error={errors.state?.message}
           />
 
           <FormInput
             id="zipcode"
             label="Zip Code (Optional)"
-            value={zipcode}
-            onChange={setZipcode}
+            value={zipcode || ""}
+            onChange={(value) => setValue("zipcode", value)}
             placeholder="Enter zip code"
+            error={errors.zipcode?.message}
           />
         </div>
 
@@ -201,10 +211,11 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           id="note"
           label="Notes (Optional)"
           inputType="textarea"
-          value={note}
-          onChange={setNote}
+          value={note || ""}
+          onChange={(value) => setValue("note", value)}
           placeholder="Enter any additional notes..."
           rows={4}
+          error={errors.note?.message}
         />
       </FormSectionCard>
 
@@ -213,15 +224,15 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         description="Select which masses this person typically attends"
       >
         <MassAttendanceSelector
-          selectedIds={massTimeIds}
-          onChange={setMassTimeIds}
-          disabled={isLoading}
+          selectedIds={massTimeIds || []}
+          onChange={(ids) => setValue("mass_times_template_item_ids", ids)}
+          disabled={isSubmitting}
         />
       </FormSectionCard>
 
       <FormBottomActions
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         cancelHref={isEditing ? `/people/${person.id}` : "/people"}
         moduleName="Person"
       />

@@ -8,63 +8,16 @@ import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Funeral, Person, Event } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
+import {
+  createFuneralSchema,
+  updateFuneralSchema,
+  type CreateFuneralData,
+  type UpdateFuneralData
+} from '@/lib/schemas/funerals'
 import type { ModuleStatus } from '@/lib/constants'
 
-export interface CreateFuneralData {
-  funeral_event_id?: string
-  funeral_meal_event_id?: string
-  deceased_id?: string
-  family_contact_id?: string
-  coordinator_id?: string
-  presider_id?: string
-  homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
-  status?: ModuleStatus
-  first_reading_id?: string
-  psalm_id?: string
-  psalm_reader_id?: string
-  psalm_is_sung?: boolean
-  second_reading_id?: string
-  gospel_reading_id?: string
-  gospel_reader_id?: string
-  first_reader_id?: string
-  second_reader_id?: string
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string
-  petitions?: string
-  announcements?: string
-  note?: string
-  funeral_template_id?: string
-}
-
-export interface UpdateFuneralData {
-  funeral_event_id?: string | null
-  funeral_meal_event_id?: string | null
-  deceased_id?: string | null
-  family_contact_id?: string | null
-  coordinator_id?: string | null
-  presider_id?: string | null
-  homilist_id?: string | null
-  lead_musician_id?: string | null
-  cantor_id?: string | null
-  status?: ModuleStatus | null
-  first_reading_id?: string | null
-  psalm_id?: string | null
-  psalm_reader_id?: string | null
-  psalm_is_sung?: boolean
-  second_reading_id?: string | null
-  gospel_reading_id?: string | null
-  gospel_reader_id?: string | null
-  first_reader_id?: string | null
-  second_reader_id?: string | null
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string | null
-  petitions?: string | null
-  announcements?: string | null
-  note?: string | null
-  funeral_template_id?: string | null
-}
+// Note: CreateFuneralData and UpdateFuneralData types are imported from '@/lib/schemas/funerals'
+// They cannot be re-exported from this 'use server' file
 
 export interface FuneralFilterParams {
   search?: string
@@ -74,6 +27,7 @@ export interface FuneralFilterParams {
 export interface FuneralWithNames extends Funeral {
   deceased?: Person | null
   family_contact?: Person | null
+  presider?: Person | null
   funeral_event?: Event | null
 }
 
@@ -88,6 +42,7 @@ export async function getFunerals(filters?: FuneralFilterParams): Promise<Funera
       *,
       deceased:people!deceased_id(*),
       family_contact:people!family_contact_id(*),
+      presider:people!presider_id(*),
       funeral_event:events!funeral_event_id(*)
     `)
 
@@ -269,6 +224,9 @@ export async function createFuneral(data: CreateFuneralData): Promise<Funeral> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'funerals')
 
+  // REQUIRED: Server-side validation (security boundary)
+  const validatedData = createFuneralSchema.parse(data)
+
   const { data: funeral, error } = await supabase
     .from('funerals')
     .insert([
@@ -326,9 +284,12 @@ export async function updateFuneral(id: string, data: UpdateFuneralData): Promis
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'funerals')
 
+  // REQUIRED: Server-side validation (security boundary)
+  const validatedData = updateFuneralSchema.parse(data)
+
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
   )
 
   const { data: funeral, error } = await supabase

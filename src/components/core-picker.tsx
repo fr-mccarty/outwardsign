@@ -429,11 +429,11 @@ export function CorePicker<T>({
             <DialogDescription>
               <Button
                 type="button"
-                variant="link"
+                variant="outline"
                 size="sm"
                 onClick={resetForm}
                 disabled={isCreating}
-                className="h-auto p-0 text-sm"
+                className="h-6 px-2 text-xs"
               >
                 Select from list instead
               </Button>

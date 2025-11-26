@@ -7,6 +7,12 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import type { LiturgicalLanguage, ReadingCategory } from '@/lib/constants'
+import {
+  createReadingSchema,
+  updateReadingSchema,
+  type CreateReadingData,
+  type UpdateReadingData
+} from '@/lib/schemas/readings'
 
 export interface Reading {
   id: string
@@ -18,15 +24,6 @@ export interface Reading {
   pericope: string | null
   text: string | null
   parish_id: string | null
-}
-
-export interface CreateReadingData {
-  categories?: string[]
-  conclusion?: string
-  introduction?: string
-  language?: LiturgicalLanguage
-  pericope: string
-  text: string
 }
 
 export interface ReadingFilterParams {
@@ -48,17 +45,20 @@ export async function createReading(data: CreateReadingData): Promise<Reading> {
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data with schema
+  const validatedData = createReadingSchema.parse(data)
+
   const { data: reading, error } = await supabase
     .from('readings')
     .insert([
       {
         parish_id: selectedParishId,
-        categories: data.categories || null,
-        conclusion: data.conclusion || null,
-        introduction: data.introduction || null,
-        language: data.language || null,
-        pericope: data.pericope,
-        text: data.text,
+        categories: validatedData.categories || null,
+        conclusion: validatedData.conclusion || null,
+        introduction: validatedData.introduction || null,
+        language: validatedData.language || null,
+        pericope: validatedData.pericope,
+        text: validatedData.text,
       },
     ])
     .select()
@@ -127,7 +127,7 @@ export async function getReading(id: string): Promise<Reading | null> {
   return data
 }
 
-export async function updateReading(id: string, data: CreateReadingData): Promise<Reading> {
+export async function updateReading(id: string, data: UpdateReadingData): Promise<Reading> {
   const supabase = await createClient()
 
   const selectedParishId = await requireSelectedParish()
@@ -140,15 +140,18 @@ export async function updateReading(id: string, data: CreateReadingData): Promis
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Validate data with schema
+  const validatedData = updateReadingSchema.parse(data)
+
   const { data: reading, error } = await supabase
     .from('readings')
     .update({
-      categories: data.categories || null,
-      conclusion: data.conclusion || null,
-      introduction: data.introduction || null,
-      language: data.language || null,
-      pericope: data.pericope,
-      text: data.text,
+      categories: validatedData.categories || null,
+      conclusion: validatedData.conclusion || null,
+      introduction: validatedData.introduction || null,
+      language: validatedData.language || null,
+      pericope: validatedData.pericope,
+      text: validatedData.text,
     })
     .eq('id', id)
     .select()
