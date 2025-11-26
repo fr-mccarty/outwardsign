@@ -545,6 +545,19 @@ export const PETITION_LANGUAGE_LABELS: Record<PetitionLanguage, { en: string; es
   'bilingual': { en: 'Bilingual', es: 'Bilingüe' }
 }
 
+// Default Petition Text
+// Used when "Insert Default Text" is clicked in petition template forms
+export const DEFAULT_PETITIONS = {
+  en: `For our community and all our intentions.
+For peace in our world.
+For the sick and suffering.
+For our deceased brothers and sisters.`,
+  es: `Por nuestra comunidad y todas nuestras intenciones.
+Por la paz en nuestro mundo.
+Por los enfermos y los que sufren.
+Por nuestros hermanos y hermanas difuntos.`
+}
+
 // Active/Inactive Status Labels
 export const ACTIVE_STATUS_LABELS = {
   en: 'Active',

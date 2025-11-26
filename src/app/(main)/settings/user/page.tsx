@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SettingsPage } from '@/components/settings-page'
-import { FormField } from '@/components/form-field'
+import { FormInput } from '@/components/form-input'
 import { Save, User, Globe, RefreshCw } from "lucide-react"
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { useAppContext } from '@/contexts/AppContextProvider'
@@ -106,7 +106,7 @@ export default function UserSettingsPage() {
             <CardTitle>Language and Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <FormField
+            <FormInput
               id="language"
               label="Preferred Language"
               description="Your interface language preference"

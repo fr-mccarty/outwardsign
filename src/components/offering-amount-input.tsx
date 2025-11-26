@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { FormField } from '@/components/form-field'
+import { FormInput } from '@/components/form-input'
 import { 
   Popover,
   PopoverContent,
@@ -276,7 +276,7 @@ export function OfferingAmountInput({
                   </div>
                   
                   <div className="space-y-3">
-                    <FormField
+                    <FormInput
                       id="custom-amount"
                       label="Amount ($)"
                       value={customAmount}
@@ -288,7 +288,7 @@ export function OfferingAmountInput({
                       required
                     />
                     
-                    <FormField
+                    <FormInput
                       id="custom-label"
                       label="Button Label (optional)"
                       value={customLabel}

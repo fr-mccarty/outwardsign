@@ -7,11 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { CalendarIcon } from 'lucide-react'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { formatDatePretty } from '@/lib/utils/formatters'
-import { cn } from '@/lib/utils'
+import { DatePickerField } from '@/components/date-picker-field'
 
 export function WeekendSummarySetup() {
   const router = useRouter()
@@ -50,36 +46,16 @@ export function WeekendSummarySetup() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Sunday Date Picker */}
-          <div className="space-y-2">
-            <Label htmlFor="sunday-date">Sunday Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="sunday-date"
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !sundayDate && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {sundayDate ? formatDatePretty(sundayDate.toISOString().split('T')[0]) : 'Select a Sunday'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={sundayDate}
-                  onSelect={setSundayDate}
-                  disabled={(date) => date.getDay() !== 0} // Only allow Sundays
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <p className="text-sm text-muted-foreground">
-              Select a Sunday to represent the weekend. Only Sundays are selectable.
-            </p>
-          </div>
+          <DatePickerField
+            id="sunday-date"
+            label="Sunday Date"
+            value={sundayDate}
+            onValueChange={setSundayDate}
+            placeholder="Select a Sunday"
+            description="Select a Sunday to represent the weekend. Only Sundays are selectable."
+            disabled={(date) => date.getDay() !== 0}
+            closeOnSelect
+          />
 
           {/* Options Checkboxes */}
           <div className="space-y-4">

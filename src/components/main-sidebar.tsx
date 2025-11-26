@@ -69,7 +69,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="pb-16">
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -80,6 +80,15 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                   <Link href="/dashboard" onClick={handleLinkClick}>
                     <Home />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem key="Calendar">
+                <SidebarMenuButton asChild>
+                  <Link href="/calendar?view=month" onClick={handleLinkClick}>
+                    <Calendar />
+                    <span>Calendar</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -103,15 +112,6 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                   defaultOpen={false}
                 />
               )}
-
-              <SidebarMenuItem key="Calendar">
-                <SidebarMenuButton asChild>
-                  <Link href="/calendar?view=month" onClick={handleLinkClick}>
-                    <Calendar />
-                    <span>Calendar</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
 
               <CollapsibleNavSection
                 name="Events"

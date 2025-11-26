@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Save, X } from "lucide-react"
@@ -92,7 +92,7 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
         </DialogHeader>
 
         <div className="space-y-4">
-          <FormField
+          <FormInput
             id="name"
             label="Group Name"
             value={formData.name}
@@ -101,7 +101,7 @@ export function GroupFormDialog({ open, onOpenChange, group, onSuccess }: GroupF
             required
           />
 
-          <FormField
+          <FormInput
             id="description"
             label="Description"
             inputType="textarea"

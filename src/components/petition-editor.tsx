@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { FormSectionCard } from '@/components/form-section-card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { FileText, Info } from 'lucide-react'
 import {
   Dialog,
@@ -13,13 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { DialogButton } from '@/components/dialog-button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormInput } from '@/components/form-input'
 
 export interface PetitionTemplate {
   id: string
@@ -68,18 +61,21 @@ export function PetitionEditor({
       {/* Template Selector (if available) */}
       {!readOnly && templates.length > 0 && onInsertTemplate && (
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-            <SelectTrigger className="w-full sm:w-[250px]">
-              <SelectValue placeholder="Select template..." />
-            </SelectTrigger>
-            <SelectContent>
-              {templates.map((template) => (
-                <SelectItem key={template.id} value={template.id}>
-                  {template.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="w-full sm:w-[250px]">
+            <FormInput
+              id="petition-template-select"
+              label="Template"
+              inputType="select"
+              value={selectedTemplateId}
+              onChange={setSelectedTemplateId}
+              options={templates.map((template) => ({
+                value: template.id,
+                label: template.name,
+              }))}
+              placeholder="Select template..."
+              hideLabel
+            />
+          </div>
           <Button type="button" variant="outline" size="sm" onClick={insertTemplate} className="w-full sm:w-auto">
             <FileText className="h-4 w-4 mr-2" />
             Insert Template
@@ -142,12 +138,16 @@ export function PetitionEditor({
 
         {/* Simple Text Area */}
         <div className="space-y-2">
-          <Textarea
+          <FormInput
+            id="petitions-text"
+            label="Petitions"
+            inputType="textarea"
             value={value}
-            onChange={e => onChange(e.target.value)}
+            onChange={onChange}
             placeholder="Enter petitions, one per line...&#10;&#10;Example:&#10;For the bride and groom, that their love may grow stronger each day.&#10;For all married couples, that they may find joy in their commitment.&#10;For those who are sick or suffering, that they may know God's healing presence."
             className="min-h-[300px]"
             disabled={readOnly}
+            hideLabel
           />
           <p className="text-xs text-muted-foreground">
             {value.split('\n').filter(line => line.trim()).length} petition(s)

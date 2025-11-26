@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createMassRole, updateMassRole, MassRoleWithRelations } from "@/lib/actions/mass-roles"
 import { createMassRoleMember, deleteMassRoleMember, updateMassRoleMember } from "@/lib/actions/mass-role-members"
@@ -198,7 +198,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
         title="Basic Information"
         description="Core details for this mass role"
       >
-        <FormField
+        <FormInput
           id="name"
           label="Role Name"
           description="Name of the liturgical role (e.g., Lector, Eucharistic Minister, Altar Server)"
@@ -209,7 +209,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           required
         />
 
-        <FormField
+        <FormInput
           id="description"
           label="Description"
           description="Brief description of this role's responsibilities"
@@ -220,7 +220,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
           rows={3}
         />
 
-        <FormField
+        <FormInput
           id="is_active"
           inputType="checkbox"
           label="Active"
@@ -235,7 +235,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
         title="Notes"
         description="Internal notes and reminders (not shown to ministers)"
       >
-        <FormField
+        <FormInput
           id="note"
           label="Notes"
           inputType="textarea"
@@ -423,7 +423,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
               required
             />
 
-            <FormField
+            <FormInput
               id="membership_type"
               label="Membership Type"
               inputType="select"

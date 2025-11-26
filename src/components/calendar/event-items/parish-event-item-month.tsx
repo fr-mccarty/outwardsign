@@ -25,16 +25,16 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
     <CalendarTooltip title={event.title}>
       <div
         className={cn(
-          "text-xs px-2 py-1 rounded cursor-pointer transition-all flex items-center gap-1",
+          "text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded cursor-pointer transition-all flex items-center gap-0.5 sm:gap-1",
           "bg-card text-card-foreground border",
           "hover:shadow-md hover:scale-[1.02] hover:border-primary/50 hover:bg-accent"
         )}
         onClick={onClick}
       >
-        {ModuleIcon && <ModuleIcon className="h-3 w-3 flex-shrink-0" />}
+        {ModuleIcon && <ModuleIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />}
         {liturgicalColor && (
           <div
-            className="w-2 h-2 rounded-full border border-background shadow-sm flex-shrink-0"
+            className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full border border-background shadow-sm flex-shrink-0"
             style={{ backgroundColor: liturgicalColor }}
           />
         )}

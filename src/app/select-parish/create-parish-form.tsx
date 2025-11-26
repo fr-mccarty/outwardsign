@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createParish, populateInitialParishData } from '@/lib/actions/setup'
 import { setSelectedParish } from '@/lib/auth/parish'
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
+import { FormInput } from '@/components/form-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 
@@ -77,7 +77,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField
+          <FormInput
             id="name"
             label="Parish Name"
             value={formData.name}
@@ -86,7 +86,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             required
           />
 
-          <FormField
+          <FormInput
             id="city"
             label="City"
             value={formData.city}
@@ -95,7 +95,7 @@ export function CreateParishForm({ onCancel, onSuccess }: CreateParishFormProps)
             required
           />
 
-          <FormField
+          <FormInput
             id="state"
             label="State"
             value={formData.state}

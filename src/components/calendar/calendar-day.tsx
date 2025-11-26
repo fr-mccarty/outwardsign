@@ -123,17 +123,17 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
     <>
       <div
         className={cn(
-          "min-h-[100px] border p-3 transition-colors rounded-sm",
+          "min-h-[60px] sm:min-h-[100px] border p-1.5 sm:p-3 transition-colors rounded-sm",
           "bg-card",
           !day.isCurrentMonth && "bg-muted/30 text-muted-foreground opacity-60",
           day.isToday && "ring-2 ring-primary bg-primary/5"
         )}
       >
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
           <Link
             href={dayViewUrl}
             className={cn(
-              "font-medium text-sm hover:bg-accent hover:text-accent-foreground rounded px-1.5 py-0.5 -ml-1.5 transition-colors",
+              "font-medium text-xs sm:text-sm hover:bg-accent hover:text-accent-foreground rounded px-1 sm:px-1.5 py-0.5 -ml-1 sm:-ml-1.5 transition-colors",
               day.isToday && "text-primary font-bold"
             )}
             onClick={(e) => e.stopPropagation()}
@@ -143,12 +143,12 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
 
           {/* Liturgical color blocks (month view only) */}
           {view === 'month' && liturgicalEventColorGroups.length > 0 && (
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-0.5 sm:gap-1 items-center">
               {liturgicalEventColorGroups.map((group, groupIndex) => (
                 <CalendarTooltip key={groupIndex} title={group.event.title}>
                   <div
                     className={cn(
-                      "flex gap-0 cursor-pointer overflow-hidden rounded-[3px] transition-all hover:scale-110 hover:shadow-md",
+                      "flex gap-0 cursor-pointer overflow-hidden rounded-[2px] sm:rounded-[3px] transition-all hover:scale-110 hover:shadow-md",
                       group.colors.length > 1 && "border border-border"
                     )}
                     onClick={(e) => {
@@ -159,7 +159,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
                     {group.colors.map((color, colorIndex) => (
                       <div
                         key={colorIndex}
-                        className="h-4"
+                        className="h-3 sm:h-4"
                         style={{
                           backgroundColor: getLiturgicalCssVarValue(color.toLowerCase()),
                           width: `${calculateColorWidth(group.colors.length)}px`

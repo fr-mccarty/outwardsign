@@ -51,6 +51,7 @@ import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { TestingBanner } from "@/components/testing-banner"
+import { createClient } from "@/lib/supabase/client"
 
 // Translations for the homepage
 const translations = {
@@ -62,7 +63,8 @@ const translations = {
       about: "About",
       documentation: "Documentation",
       login: "Login",
-      getStarted: "Get Started"
+      getStarted: "Get Started",
+      goToDashboard: "Go to Dashboard"
     },
     hero: {
       forCatholicParishes: "For Catholic Parishes",
@@ -371,7 +373,8 @@ const translations = {
       about: "Sobre Nosotros",
       documentation: "Documentación",
       login: "Iniciar Sesión",
-      getStarted: "Comenzar"
+      getStarted: "Comenzar",
+      goToDashboard: "Ir al Panel"
     },
     hero: {
       forCatholicParishes: "Para Parroquias Católicas",
@@ -680,7 +683,18 @@ function HomeContent() {
   const { theme, setTheme } = useTheme()
   const [language, setLanguage] = useState<HomeLanguage>(DEFAULT_HOME_LANGUAGE)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const t = translations[language]
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsAuthenticated(!!user)
+    }
+    checkAuth()
+  }, [])
 
   // Read language from URL on mount
   useEffect(() => {
@@ -847,12 +861,23 @@ function HomeContent() {
               <Separator />
 
               <div className="flex flex-col gap-3">
-                <Button asChild variant="outline" className="w-full" data-testid="home-login-button">
-                  <Link href="/login">{t.nav.login}</Link>
-                </Button>
-                <Button asChild className="w-full">
-                  <Link href="/signup">{t.nav.getStarted}</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <Button asChild className="w-full">
+                    <Link href="/dashboard">
+                      <ArrowRight className="h-4 w-4 mr-2" />
+                      {t.nav.goToDashboard}
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild variant="outline" className="w-full" data-testid="home-login-button">
+                      <Link href="/login">{t.nav.login}</Link>
+                    </Button>
+                    <Button asChild className="w-full">
+                      <Link href="/signup">{t.nav.getStarted}</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -890,23 +915,36 @@ function HomeContent() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <Button asChild size="lg" className="text-lg px-8 h-12">
-              <Link href="/signup">
-                <Heart className="h-5 w-5 mr-2" />
-                {t.hero.getStartedFree}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 h-12">
-              <Link href="#how-it-works">
-                {t.hero.seeHowItWorks}
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="text-lg px-8 h-12">
+                <Link href="/dashboard">
+                  <ArrowRight className="h-5 w-5 mr-2" />
+                  {t.nav.goToDashboard}
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild size="lg" className="text-lg px-8 h-12">
+                  <Link href="/signup">
+                    <Heart className="h-5 w-5 mr-2" />
+                    {t.hero.getStartedFree}
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="text-lg px-8 h-12">
+                  <Link href="#how-it-works">
+                    {t.hero.seeHowItWorks}
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
-          <p className="text-sm text-muted-foreground pt-4">
-            {t.hero.disclaimer}
-          </p>
+          {!isAuthenticated && (
+            <p className="text-sm text-muted-foreground pt-4">
+              {t.hero.disclaimer}
+            </p>
+          )}
 
           {/* Problem Statement Banner */}
           <div className="max-w-4xl mx-auto pt-12">
@@ -1580,22 +1618,35 @@ function HomeContent() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-8 h-12">
-              <Link href="/signup">
-                <Church className="h-5 w-5 mr-2" />
-                {t.finalCTA.getStartedFree}
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg px-8 h-12">
-              <Link href="/login">
-                {t.finalCTA.signInToYourParish}
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="text-lg px-8 h-12">
+                <Link href="/dashboard">
+                  <ArrowRight className="h-5 w-5 mr-2" />
+                  {t.nav.goToDashboard}
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild size="lg" className="text-lg px-8 h-12">
+                  <Link href="/signup">
+                    <Church className="h-5 w-5 mr-2" />
+                    {t.finalCTA.getStartedFree}
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="text-lg px-8 h-12">
+                  <Link href="/login">
+                    {t.finalCTA.signInToYourParish}
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
-          <p className="text-sm text-muted-foreground pt-4 font-medium">
-            {t.finalCTA.disclaimer}
-          </p>
+          {!isAuthenticated && (
+            <p className="text-sm text-muted-foreground pt-4 font-medium">
+              {t.finalCTA.disclaimer}
+            </p>
+          )}
         </Card>
         </div>
 

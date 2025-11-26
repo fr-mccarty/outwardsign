@@ -17,7 +17,7 @@ import {
 } from '@/components/data-table';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormInput } from '@/components/form-input';
 
 interface PetitionTemplateListProps {
   templates: PetitionContextTemplate[];
@@ -197,33 +197,39 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
         onSearchChange={setSearchTerm}
         searchPlaceholder="Search templates..."
         actions={
-          <div className="flex gap-2">
-            <Select value={moduleFilter} onValueChange={setModuleFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All modules" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All modules</SelectItem>
-                {PETITION_MODULE_VALUES.map(module => (
-                  <SelectItem key={module} value={module}>
-                    {PETITION_MODULE_LABELS[module].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={languageFilter} onValueChange={setLanguageFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All languages" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All languages</SelectItem>
-                {PETITION_LANGUAGE_VALUES.map(lang => (
-                  <SelectItem key={lang} value={lang}>
-                    {PETITION_LANGUAGE_LABELS[lang].en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex gap-2 items-end">
+            <FormInput
+              id="module-filter"
+              label="Module"
+              hideLabel
+              inputType="select"
+              value={moduleFilter || "all"}
+              onChange={(value) => setModuleFilter(value === "all" ? "" : value)}
+              options={[
+                { value: "all", label: "All modules" },
+                ...PETITION_MODULE_VALUES.map(module => ({
+                  value: module,
+                  label: PETITION_MODULE_LABELS[module].en
+                }))
+              ]}
+              className="w-[180px]"
+            />
+            <FormInput
+              id="language-filter"
+              label="Language"
+              hideLabel
+              inputType="select"
+              value={languageFilter || "all"}
+              onChange={(value) => setLanguageFilter(value === "all" ? "" : value)}
+              options={[
+                { value: "all", label: "All languages" },
+                ...PETITION_LANGUAGE_VALUES.map(lang => ({
+                  value: lang,
+                  label: PETITION_LANGUAGE_LABELS[lang].en
+                }))
+              ]}
+              className="w-[150px]"
+            />
             <Button asChild size="sm">
               <Link href="/settings/petitions/create">
                 <Plus className="h-4 w-4 mr-2" />

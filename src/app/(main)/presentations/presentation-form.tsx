@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
@@ -249,7 +249,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             </Select>
           </div>
 
-          <FormField
+          <FormInput
             id="note"
             label="Notes (Optional)"
             inputType="textarea"

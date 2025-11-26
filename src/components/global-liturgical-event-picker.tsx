@@ -3,16 +3,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormInput } from '@/components/form-input'
 import { Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-react'
 import { getGlobalLiturgicalEventsPaginated, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { toast } from 'sonner'
@@ -388,31 +381,25 @@ export function GlobalLiturgicalEventPicker({
             /* List View - Start Date and Locale side by side */
             <>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="start-date">Start Date</Label>
-                  <Input
-                    id="start-date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => handleStartDateChange(e.target.value)}
-                  />
-                </div>
+                <FormInput
+                  id="start-date"
+                  label="Start Date"
+                  inputType="date"
+                  value={startDate}
+                  onChange={handleStartDateChange}
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="locale-select">Calendar Locale</Label>
-                  <Select value={selectedLocale} onValueChange={handleLocaleChange}>
-                    <SelectTrigger id="locale-select">
-                      <SelectValue placeholder="Select locale" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LOCALE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <FormInput
+                  id="locale-select"
+                  label="Calendar Locale"
+                  inputType="select"
+                  value={selectedLocale}
+                  onChange={handleLocaleChange}
+                  options={LOCALE_OPTIONS.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                />
               </div>
 
               {/* Date range description */}
@@ -423,21 +410,17 @@ export function GlobalLiturgicalEventPicker({
           ) : (
             /* Calendar View - Locale selector and month navigation */
             <>
-              <div className="space-y-2">
-                <Label htmlFor="locale-select">Calendar Locale</Label>
-                <Select value={selectedLocale} onValueChange={handleLocaleChange}>
-                  <SelectTrigger id="locale-select">
-                    <SelectValue placeholder="Select locale" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LOCALE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <FormInput
+                id="locale-select-calendar"
+                label="Calendar Locale"
+                inputType="select"
+                value={selectedLocale}
+                onChange={handleLocaleChange}
+                options={LOCALE_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: option.label,
+                }))}
+              />
 
               {/* Month navigation */}
               <div className="flex items-center justify-between">

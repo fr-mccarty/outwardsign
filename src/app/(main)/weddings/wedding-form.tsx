@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
@@ -617,7 +617,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
         title="Announcements"
         description="Announcements for the end of the liturgy"
       >
-          <FormField
+          <FormInput
             id="announcements"
             label="Announcements"
             description="These announcements will be printed on the last page of the liturgy script"
@@ -662,7 +662,7 @@ export function WeddingForm({ wedding, formId, onLoadingChange }: WeddingFormPro
             </Select>
           </div>
 
-          <FormField
+          <FormInput
             id="notes"
             label="Notes (Optional)"
             description="These notes are just for reference and will not be printed in the script"

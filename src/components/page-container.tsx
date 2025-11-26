@@ -48,7 +48,9 @@ export function PageContainer({
           )}
         </div>
 
-        {children}
+        <div className="space-y-6">
+          {children}
+        </div>
       </div>
     </div>
   )

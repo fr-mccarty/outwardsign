@@ -951,27 +951,39 @@ import { EventFormFields } from '@/components/event-form-fields'
 
 **How It Works:**
 
-1. **CorePicker receives `CustomFormComponent` prop** - A React component that receives form state
-2. **Custom component gets full control** - Receives `formData`, `setFormData`, `errors`, `isEditMode`
+1. **CorePicker receives `CustomFormComponent` prop** - A React component that receives React Hook Form instance
+2. **Custom component gets full control** - Receives `form` (UseFormReturn), `errors`, `isEditMode`
 3. **Custom component renders fields** - Can render any UI, manage modals, handle complex logic
-4. **Form state updates directly** - Calling `setFormData` updates CorePicker's internal form state
-5. **Validation still runs** - CorePicker validates using `createFields` configuration
-6. **Submit works normally** - `onCreateSubmit` receives the form data as usual
+4. **Form state managed by React Hook Form** - Use `watch()` to read values and `setValue()` to update
+5. **Validation via Zod** - CorePicker builds a Zod schema from `createFields` for validation
+6. **Submit works normally** - `onCreateSubmit` receives the validated form data
 
 **Props Passed to CustomFormComponent:**
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `formData` | `Record<string, any>` | Current form field values |
-| `setFormData` | `React.Dispatch<SetStateAction<Record<string, any>>>` | Function to update form state |
-| `errors` | `Record<string, string>` | Validation errors by field key |
+| `form` | `UseFormReturn<Record<string, any>>` | React Hook Form instance with `watch`, `setValue`, `register`, etc. |
+| `errors` | `FieldErrors<Record<string, any>>` | Validation errors object from React Hook Form |
 | `isEditMode` | `boolean` | Whether form is in edit mode (true) or create mode (false) |
+
+**Extracting Error Messages:**
+
+React Hook Form's errors are objects with `{message, type, ref}`. Use a helper to extract string messages:
+
+```typescript
+const getErrorMessage = (fieldName: string): string | undefined => {
+  const error = errors[fieldName]
+  if (!error) return undefined
+  const message = error.message
+  return typeof message === 'string' ? message : undefined
+}
+```
 
 **Important Notes:**
 
-- **`createFields` still required** - CorePicker uses this for validation, even with custom rendering
-- **Direct state access** - Custom component updates form state directly via `setFormData`
-- **No ref gymnastics** - No need for complex ref passing or callback chaining
+- **`createFields` still required** - CorePicker uses this to build the Zod validation schema
+- **Use React Hook Form methods** - `watch('fieldName')` reads values, `setValue('fieldName', value, { shouldValidate: true })` updates
+- **No useState needed for form state** - React Hook Form manages everything
 - **Clean separation** - Form logic is isolated in the custom component
 - **Full React features** - Can use hooks, context, nested components, anything React supports
 
@@ -993,27 +1005,38 @@ The EventPicker uses this pattern to provide a time input with a "common times" 
 />
 
 // EventFormFields manages time field + common times modal
-export function EventFormFields({ formData, setFormData, errors }) {
+export function EventFormFields({ form, errors }) {
+  const { watch, setValue } = form
   const [showCommonTimesModal, setShowCommonTimesModal] = useState(false)
+
+  // Helper to extract error messages safely
+  const getErrorMessage = (fieldName: string): string | undefined => {
+    const error = errors[fieldName]
+    if (!error) return undefined
+    return typeof error.message === 'string' ? error.message : undefined
+  }
 
   return (
     <>
       <div className="flex gap-2">
         <Input
           type="time"
-          value={formData.start_time || ''}
-          onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
+          value={watch('start_time') ?? ''}
+          onChange={(e) => setValue('start_time', e.target.value, { shouldValidate: true })}
         />
         <Button onClick={() => setShowCommonTimesModal(true)}>
           <Clock />
         </Button>
       </div>
+      {getErrorMessage('start_time') && (
+        <p className="text-sm text-destructive">{getErrorMessage('start_time')}</p>
+      )}
 
       <CommonTimesModal
         open={showCommonTimesModal}
         onOpenChange={setShowCommonTimesModal}
         onSelectTime={(time) => {
-          setFormData(prev => ({ ...prev, start_time: time }))
+          setValue('start_time', time, { shouldValidate: true })
         }}
       />
     </>

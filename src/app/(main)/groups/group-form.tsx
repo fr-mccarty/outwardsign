@@ -1,14 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Users } from "lucide-react"
 import { createGroup, updateGroup, type GroupWithMembers, type GroupMember, addGroupMember, removeGroupMember } from "@/lib/actions/groups"
 import { getGroupRoles, type GroupRole } from "@/lib/actions/group-roles"
 import type { Person } from "@/lib/types"
@@ -18,13 +17,6 @@ import { FormBottomActions } from "@/components/form-bottom-actions"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { ListCard, CardListItem } from "@/components/list-card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 // Zod validation schema
 const groupSchema = z.object({
@@ -32,6 +24,8 @@ const groupSchema = z.object({
   description: z.string().optional(),
   is_active: z.boolean().optional(),
 })
+
+type GroupFormValues = z.infer<typeof groupSchema>
 
 interface GroupFormProps {
   group?: GroupWithMembers
@@ -49,10 +43,15 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
     onLoadingChange?.(isLoading)
   }, [isLoading, onLoadingChange])
 
-  // State for group fields
-  const [name, setName] = useState(group?.name || "")
-  const [description, setDescription] = useState(group?.description || "")
-  const [isActive, setIsActive] = useState(group?.is_active ?? true)
+  // React Hook Form setup
+  const form = useForm<GroupFormValues>({
+    resolver: zodResolver(groupSchema),
+    defaultValues: {
+      name: group?.name || "",
+      description: group?.description || "",
+      is_active: group?.is_active ?? true,
+    },
+  })
 
   // Member management state
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
@@ -75,17 +74,15 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
     }
   }, [isEditing])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: GroupFormValues) => {
     setIsLoading(true)
 
     try {
-      // Validate with Zod
-      const groupData = groupSchema.parse({
-        name,
-        description: description || undefined,
-        is_active: isActive,
-      })
+      const groupData = {
+        name: data.name,
+        description: data.description || undefined,
+        is_active: data.is_active,
+      }
 
       if (isEditing && group) {
         await updateGroup(group.id, groupData)
@@ -97,12 +94,8 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
         router.push(`/groups/${newGroup.id}/edit`) // Go to edit page
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message)
-      } else {
-        console.error('Error saving group:', error)
-        toast.error(isEditing ? 'Failed to update group' : 'Failed to create group')
-      }
+      console.error('Error saving group:', error)
+      toast.error(isEditing ? 'Failed to update group' : 'Failed to create group')
     } finally {
       setIsLoading(false)
     }
@@ -194,38 +187,41 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
 
   return (
     <>
-      <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+      <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Group Information */}
         <FormSectionCard
           title="Group Information"
           description="Basic information about this group"
         >
-          <FormField
+          <FormInput
             id="name"
             label="Name"
-            value={name}
-            onChange={setName}
+            value={form.watch('name')}
+            onChange={(value) => form.setValue('name', value)}
             placeholder="e.g., Lectors, Eucharistic Ministers, Choir"
             required
+            error={form.formState.errors.name?.message}
           />
 
-          <FormField
+          <FormInput
             id="description"
             inputType="textarea"
             label="Description"
-            value={description}
-            onChange={setDescription}
+            value={form.watch('description') || ''}
+            onChange={(value) => form.setValue('description', value)}
             placeholder="Optional description of this group's purpose"
             rows={3}
+            error={form.formState.errors.description?.message}
           />
 
-          <FormField
+          <FormInput
             id="is_active"
             inputType="checkbox"
             label="Active"
             description="Inactive groups are hidden from selection but not deleted"
-            value={isActive}
-            onChange={setIsActive}
+            value={form.watch('is_active') ?? true}
+            onChange={(value: boolean) => form.setValue('is_active', value)}
+            error={form.formState.errors.is_active?.message}
           />
         </FormSectionCard>
 
@@ -297,25 +293,21 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
                 required
               />
 
-              <div className="space-y-2">
-                <Label htmlFor="group_role">Group Role (Optional)</Label>
-                <Select
-                  value={selectedGroupRoleId}
-                  onValueChange={setSelectedGroupRoleId}
-                >
-                  <SelectTrigger id="group_role">
-                    <SelectValue placeholder="Select role (optional)..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No role</SelectItem>
-                    {groupRoles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <FormInput
+                id="group_role"
+                label="Group Role"
+                inputType="select"
+                value={selectedGroupRoleId}
+                onChange={setSelectedGroupRoleId}
+                placeholder="Select role (optional)"
+                options={[
+                  { value: 'none', label: 'No role' },
+                  ...groupRoles.map((role) => ({
+                    value: role.id,
+                    label: role.name,
+                  })),
+                ]}
+              />
             </div>
 
             <DialogFooter>

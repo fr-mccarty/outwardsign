@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -367,7 +367,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             openToNewEvent={!event.value}
           />
 
-          <FormField
+          <FormInput
             id="status"
             inputType="select"
             label="Status"
@@ -380,7 +380,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             }))}
           />
 
-          <FormField
+          <FormInput
             id="liturgical_color"
             inputType="select"
             label="Liturgical Color"
@@ -403,7 +403,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onShowPickerChange={liturgicalEvent.setShowPicker}
           />
 
-          <FormField
+          <FormInput
             id="template"
             inputType="select"
             label="Print Template"
@@ -518,7 +518,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           description="Assign people to liturgical mass roles for this Mass"
         >
           {allTemplates.length > 0 ? (
-              <FormField
+              <FormInput
                 id="mass_roles_template_id"
                 inputType="select"
                 label="Mass Role Template"
@@ -644,7 +644,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         title="Announcements"
         description="Full text of announcements to be read before Mass"
       >
-        <FormField
+        <FormInput
             id="announcements"
             label="Announcement Text"
             inputType="textarea"
@@ -660,7 +660,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
         title="Template and Notes"
         description="Liturgy template selection and internal notes"
       >
-        <FormField
+        <FormInput
           id="mass_template_id"
           label="Liturgy Template"
           inputType="select"
@@ -672,7 +672,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
           }))}
         />
 
-        <FormField
+        <FormInput
             id="note"
             label="Notes (Optional)"
             description="Internal notes and reminders (not included in printed liturgy)"

@@ -1,15 +1,15 @@
 import { PageContainer } from "@/components/page-container";
-import PetitionTemplateForm from "../petition-template-form";
+import { PetitionTemplateViewClient } from "./petition-template-view-client";
 import { getPetitionTemplateById } from '@/lib/actions/petition-templates';
-import { getPetitionContextSettings } from '@/lib/actions/petition-settings';
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import { requireSelectedParish } from "@/lib/auth/parish";
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter';
 
 export const dynamic = 'force-dynamic'
 
-export default async function EditPetitionTemplatePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ViewPetitionTemplatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,16 +37,22 @@ export default async function EditPetitionTemplatePage({ params }: { params: Pro
     notFound();
   }
 
-  // Get petition settings for this template
-  const settings = await getPetitionContextSettings();
-  const templateSettings = settings[id] || '';
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Settings", href: "/settings" },
+    { label: "Petitions", href: "/settings/petitions" },
+    { label: template.title }
+  ]
 
   return (
-    <PageContainer
-      title="Edit Petition Template"
-      description="Update your petition template and default text"
-    >
-      <PetitionTemplateForm template={template} templateSettings={templateSettings} />
-    </PageContainer>
+    <>
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+      <PageContainer
+        title={template.title}
+        description="Petition template details"
+      >
+        <PetitionTemplateViewClient template={template} />
+      </PageContainer>
+    </>
   );
 }

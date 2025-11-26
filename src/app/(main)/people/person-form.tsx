@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { MassAttendanceSelector } from "@/components/mass-attendance-selector"
@@ -106,7 +106,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         description="Basic information and contact details"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
+          <FormInput
             id="first_name"
             label="First Name"
             value={firstName}
@@ -115,7 +115,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             placeholder="Enter first name"
           />
 
-          <FormField
+          <FormInput
             id="last_name"
             label="Last Name"
             value={lastName}
@@ -126,7 +126,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
+          <FormInput
             id="first_name_pronunciation"
             label="First Name Pronunciation (Optional)"
             value={firstNamePronunciation}
@@ -134,7 +134,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             placeholder="How to pronounce first name"
           />
 
-          <FormField
+          <FormInput
             id="last_name_pronunciation"
             label="Last Name Pronunciation (Optional)"
             value={lastNamePronunciation}
@@ -144,7 +144,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
+          <FormInput
             id="email"
             label="Email (Optional)"
             inputType="email"
@@ -153,7 +153,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             placeholder="Enter email address"
           />
 
-          <FormField
+          <FormInput
             id="phone_number"
             label="Phone Number (Optional)"
             inputType="tel"
@@ -163,7 +163,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           />
         </div>
 
-        <FormField
+        <FormInput
           id="street"
           label="Street Address (Optional)"
           value={street}
@@ -172,7 +172,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FormField
+          <FormInput
             id="city"
             label="City (Optional)"
             value={city}
@@ -180,7 +180,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             placeholder="Enter city"
           />
 
-          <FormField
+          <FormInput
             id="state"
             label="State (Optional)"
             value={state}
@@ -188,7 +188,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
             placeholder="Enter state"
           />
 
-          <FormField
+          <FormInput
             id="zipcode"
             label="Zip Code (Optional)"
             value={zipcode}
@@ -197,7 +197,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           />
         </div>
 
-        <FormField
+        <FormInput
           id="note"
           label="Notes (Optional)"
           inputType="textarea"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createLocation, updateLocation, type CreateLocationData } from "@/lib/actions/locations"
 import type { Location } from "@/lib/types"
@@ -72,7 +72,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         title="Basic Information"
         description="Location name and description"
       >
-        <FormField
+        <FormInput
           id="name"
           label="Location Name"
           value={name}
@@ -81,7 +81,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           placeholder="Enter location name"
         />
 
-        <FormField
+        <FormInput
           id="description"
           label="Description"
           inputType="textarea"
@@ -97,7 +97,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         title="Address"
         description="Location address details"
       >
-        <FormField
+        <FormInput
           id="street"
           label="Street Address"
           value={street}
@@ -106,7 +106,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
+          <FormInput
             id="city"
             label="City"
             value={city}
@@ -114,7 +114,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
             placeholder="Enter city"
           />
 
-          <FormField
+          <FormInput
             id="state"
             label="State"
             value={state}
@@ -123,7 +123,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
           />
         </div>
 
-        <FormField
+        <FormInput
           id="country"
           label="Country"
           value={country}
@@ -137,7 +137,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         title="Contact Information"
         description="Phone number for this location"
       >
-        <FormField
+        <FormInput
           id="phone_number"
           label="Phone Number"
           inputType="tel"

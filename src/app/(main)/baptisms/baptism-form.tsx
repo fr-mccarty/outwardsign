@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { z } from "zod"
 import { Label } from "@/components/ui/label"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Separator } from "@/components/ui/separator"
 import { createBaptism, updateBaptism, type BaptismWithRelations } from "@/lib/actions/baptisms"
@@ -264,7 +264,7 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             </Select>
           </div>
 
-          <FormField
+          <FormInput
             id="note"
             label="Notes (Optional)"
             inputType="textarea"

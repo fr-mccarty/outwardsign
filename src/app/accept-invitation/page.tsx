@@ -2,10 +2,12 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Loader2, CheckCircle, AlertCircle, UserPlus, LogIn } from 'lucide-react'
+import { APP_NAME } from '@/lib/constants'
 
 interface InvitationData {
   parish_name: string
@@ -19,24 +21,32 @@ function AcceptInvitationForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
-  
+
   const [invitation, setInvitation] = useState<InvitationData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [accepting, setAccepting] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [acceptSuccess, setAcceptSuccess] = useState(false)
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid invitation link')
+      setError('Invalid invitation link - no token provided')
       setLoading(false)
       return
     }
 
-    fetchInvitation()
+    checkAuthAndFetchInvitation()
   }, [token])
 
-  const fetchInvitation = async () => {
+  const checkAuthAndFetchInvitation = async () => {
     try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      setIsAuthenticated(!!user)
+
+      // Fetch invitation details
       const response = await fetch(`/api/invitations/${token}`)
       const data = await response.json()
 
@@ -45,6 +55,11 @@ function AcceptInvitationForm() {
       }
 
       setInvitation(data.invitation)
+
+      // If user is already authenticated, auto-accept the invitation
+      if (user) {
+        await autoAcceptInvitation(user.id)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load invitation')
     } finally {
@@ -52,33 +67,64 @@ function AcceptInvitationForm() {
     }
   }
 
-  const acceptInvitation = async () => {
-    if (!invitation) return
-
+  const autoAcceptInvitation = async (userId: string) => {
     setAccepting(true)
     try {
-      // Redirect to signup with invitation token
-      router.push(`/signup?invitation=${token}&email=${encodeURIComponent(invitation.email)}`)
+      const response = await fetch('/api/invitations/accept', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          userId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to accept invitation')
+      }
+
+      setAcceptSuccess(true)
+
+      // Redirect to dashboard after a brief success message
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to accept invitation')
       setAccepting(false)
     }
   }
 
+  const handleSignup = () => {
+    if (!invitation) return
+    router.push(`/signup?invitation=${token}&email=${encodeURIComponent(invitation.email)}`)
+  }
+
+  const handleLogin = () => {
+    if (!invitation) return
+    router.push(`/login?invitation=${token}&email=${encodeURIComponent(invitation.email)}`)
+  }
+
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="flex items-center justify-center p-8">
-            <Loader2 className="w-8 h-8 animate-spin" />
-            <span className="ml-2">Loading invitation...</span>
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">Loading invitation...</span>
           </CardContent>
         </Card>
       </div>
     )
   }
 
-  if (error) {
+  // Error state
+  if (error && !acceptSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
@@ -105,6 +151,32 @@ function AcceptInvitationForm() {
     )
   }
 
+  // Success state (after auto-accepting for authenticated users)
+  if (acceptSuccess && invitation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center text-green-600">
+              <CheckCircle className="w-5 h-5 mr-2" />
+              Invitation Accepted!
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                You've successfully joined <strong>{invitation.parish_name}</strong>.
+                Redirecting to your dashboard...
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // No invitation found
   if (!invitation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -132,52 +204,63 @@ function AcceptInvitationForm() {
     )
   }
 
+  // Main invitation display (for unauthenticated users)
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center">
-            <CheckCircle className="w-5 h-5 mr-2" />
+            <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
             You're Invited!
           </CardTitle>
           <CardDescription>
-            Join {invitation.parish_name} on Liturgy.faith
+            Join {invitation.parish_name} on {APP_NAME}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                You've been invited to join <strong>{invitation.parish_name}</strong> as a {invitation.roles.join(', ')}.
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">
+                You've been invited to join:
               </p>
+              <p className="font-semibold text-lg">{invitation.parish_name}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Email: <strong>{invitation.email}</strong>
+                Role: <span className="font-medium text-foreground">{invitation.roles.join(', ')}</span>
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Email: <span className="font-medium text-foreground">{invitation.email}</span>
               </p>
             </div>
 
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                Click the button below to create your account and join the parish.
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground text-center">
+                Choose how you'd like to continue:
               </p>
+
+              <Button
+                onClick={handleSignup}
+                disabled={accepting}
+                className="w-full"
+                size="lg"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Create New Account
+              </Button>
+
+              <Button
+                onClick={handleLogin}
+                disabled={accepting}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign in with Existing Account
+              </Button>
             </div>
 
-            <Button
-              onClick={acceptInvitation}
-              disabled={accepting}
-              className="w-full"
-            >
-              {accepting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Accepting...
-                </>
-              ) : (
-                'Accept Invitation & Create Account'
-              )}
-            </Button>
-
-            <p className="text-xs text-muted-foreground text-center">
-              By accepting, you'll be redirected to create your account.
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              After signing in or creating an account, you'll be automatically added to {invitation.parish_name}.
             </p>
           </div>
         </CardContent>
@@ -188,7 +271,11 @@ function AcceptInvitationForm() {
 
 export default function AcceptInvitationPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
       <AcceptInvitationForm />
     </Suspense>
   )

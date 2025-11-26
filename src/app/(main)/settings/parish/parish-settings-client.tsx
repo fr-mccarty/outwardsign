@@ -7,7 +7,7 @@ import { FormSectionCard } from '@/components/form-section-card'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { FormField } from '@/components/form-field'
+import { FormInput } from '@/components/form-input'
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -362,7 +362,7 @@ export function ParishSettingsClient({
       <FormSectionCard title="Parish Information">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <FormField
+            <FormInput
               id="name"
               label="Parish Name"
               value={formData.name}
@@ -373,7 +373,7 @@ export function ParishSettingsClient({
           </div>
 
           <div>
-            <FormField
+            <FormInput
               id="city"
               label="City"
               value={formData.city}
@@ -384,7 +384,7 @@ export function ParishSettingsClient({
           </div>
 
           <div>
-            <FormField
+            <FormInput
               id="state"
               label="State"
               value={formData.state}
@@ -400,7 +400,7 @@ export function ParishSettingsClient({
         title="Liturgical Settings"
         description="This determines which liturgical calendar events are imported from the API"
       >
-        <FormField
+        <FormInput
           id="liturgical-locale"
           label="Liturgical Calendar Locale"
           inputType="select"
@@ -449,7 +449,7 @@ export function ParishSettingsClient({
           {quickAmountsData.map((quickAmount, index) => (
             <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
               <div className="flex-1 grid grid-cols-2 gap-4">
-                <FormField
+                <FormInput
                   id={`amount-${index}`}
                   label="Amount (cents)"
                   inputType="number"
@@ -460,7 +460,7 @@ export function ParishSettingsClient({
                   min="1"
                   step="1"
                 />
-                <FormField
+                <FormInput
                   id={`label-${index}`}
                   label="Display Label"
                   value={quickAmount.label}
@@ -683,7 +683,7 @@ export function ParishSettingsClient({
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <FormField
+                <FormInput
                   id="invite-email"
                   label="Email Address"
                   inputType="email"
@@ -692,7 +692,7 @@ export function ParishSettingsClient({
                   placeholder="member@example.com"
                   required
                 />
-                <FormField
+                <FormInput
                   id="invite-role"
                   label="Role"
                   inputType="select"
@@ -857,7 +857,7 @@ export function ParishSettingsClient({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <FormField
+            <FormInput
               id="edit-role"
               label="Role"
               inputType="select"

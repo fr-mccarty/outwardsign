@@ -4,25 +4,21 @@ import { useState, useEffect } from 'react'
 import { PageContainer } from '@/components/page-container'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
+import { FormInput } from '@/components/form-input'
 import { Badge } from '@/components/ui/badge'
 import { Save, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { useRouter } from 'next/navigation'
 import { getDefaultPetitions, updateDefaultPetitions } from '@/lib/actions/parish-settings'
-
-const DEFAULT_PETITIONS = `For our community and all our intentions.
-For peace in our world.
-For the sick and suffering.
-For our deceased brothers and sisters.`
+import { DEFAULT_PETITIONS } from '@/lib/constants'
 
 export default function DefaultPetitionsPage() {
   const { setBreadcrumbs } = useBreadcrumbs()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
-  const [petitionText, setPetitionText] = useState(DEFAULT_PETITIONS)
+  const [petitionText, setPetitionText] = useState(DEFAULT_PETITIONS.en)
 
   useEffect(() => {
     setBreadcrumbs([
@@ -55,7 +51,7 @@ export default function DefaultPetitionsPage() {
   }
 
   const handleResetToDefault = () => {
-    setPetitionText(DEFAULT_PETITIONS)
+    setPetitionText(DEFAULT_PETITIONS.en)
     toast.success('Reset to default petitions template')
   }
 
@@ -125,7 +121,7 @@ export default function DefaultPetitionsPage() {
               </Button>
             </div>
 
-            <FormField
+            <FormInput
               id="petitionText"
               label=""
               description=""

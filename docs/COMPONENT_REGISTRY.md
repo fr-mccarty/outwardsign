@@ -17,14 +17,77 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 
 ## Form Components
 
-### FormField
+### FormInput (Custom Component)
+**Path:** `src/components/form-input.tsx`
+
+**Purpose:** All-in-one form field component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description). Provides consistent styling and layout for all form inputs.
+
+**CRITICAL:** ALL form inputs, selects, and textareas MUST use this component (unless using React Hook Form with validation, see FormField below).
+
+**How it works:** FormInput is a **props-based component** - you pass field configuration as props, and it renders everything internally including the label (connected via `htmlFor`/`id`), the input, and optional description.
+
+**Supported Input Types:** FormInput supports plain inputs (text, email, password, number, date, time), textareas, and select dropdowns.
+
+**Note:** This is the simpler version without validation error handling. For forms with React Hook Form + Zod validation, use FormField (ui) instead.
+
+**Props:**
+- `id` (required): Field identifier
+- `label` (required): Field label text
+- `value` (required): Current field value (string)
+- `onChange` (required): Value change handler
+- `inputType`: `'text' | 'email' | 'password' | 'number' | 'date' | 'time' | 'textarea' | 'select'` (default: 'text')
+- `description`: Optional help text below label
+- `required`: Show required indicator (HTML5 validation only, no visual indicator yet)
+- `placeholder`: Placeholder text (text/textarea inputs only)
+- `options`: Array of `{value, label}` for select inputs
+- `rows`: Number of rows for textarea
+- `maxLength`: Max character length (text inputs only)
+- `min`, `max`, `step`: Number/date/time input constraints
+
+**Usage:**
+```tsx
+// Text input
+<FormInput
+  id="title"
+  label="Title"
+  value={title}
+  onChange={setTitle}
+  required
+/>
+
+// Textarea
+<FormInput
+  id="description"
+  label="Description"
+  inputType="textarea"
+  value={description}
+  onChange={setDescription}
+  rows={10}
+/>
+
+// Select
+<FormInput
+  id="module"
+  label="Module"
+  inputType="select"
+  value={module}
+  onChange={setModule}
+  options={[
+    { value: 'weddings', label: 'Weddings' },
+    { value: 'funerals', label: 'Funerals' }
+  ]}
+  description="Optional help text"
+/>
+```
+
+### FormField (UI Component with Validation)
 **Path:** `src/components/ui/form-field.tsx`
 
-**Purpose:** All-in-one form field component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description + error message). Provides consistent styling, accessibility, and layout for all form inputs.
+**Purpose:** Enhanced version of FormInput with validation error support. All-in-one form field component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description + error message). Provides consistent styling, accessibility, and layout for all form inputs with validation.
 
-**CRITICAL:** ALL form inputs, selects, and textareas MUST use this component.
+**CRITICAL:** Use this component when building forms with React Hook Form + Zod validation. For simple forms without validation, use FormInput instead.
 
-**How it works:** FormField is a **props-based component** - you pass field configuration as props, and it renders everything internally including the label (connected via `htmlFor`/`id`), the input, optional description, and error messages.
+**How it works:** FormField is a **props-based component** - you pass field configuration as props, and it renders everything internally including the label (connected via `htmlFor`/`id`), the input, optional description, and error messages. Shows red asterisk for required fields.
 
 **Supported Input Types:** FormField supports plain inputs (text, email, password, number, date, time), textareas, select dropdowns, and checkboxes. For radio buttons, date pickers, file uploads, or other complex form elements not listed, use the base shadcn/ui components directly with proper Label association.
 

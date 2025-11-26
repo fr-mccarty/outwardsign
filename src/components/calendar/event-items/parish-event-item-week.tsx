@@ -35,23 +35,23 @@ export function ParishEventItemWeek({ event, onClick }: ParishEventItemWeekProps
     <CalendarTooltip title={event.title}>
       <div
         className={cn(
-          "text-sm px-3 py-2 rounded cursor-pointer hover:shadow-md transition-all",
+          "text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded cursor-pointer hover:shadow-md transition-all",
           "bg-card text-card-foreground border"
         )}
         onClick={onClick}
       >
-        <div className="font-medium flex items-center gap-2 min-w-0">
-          {ModuleIcon && <ModuleIcon className="h-4 w-4 flex-shrink-0" />}
+        <div className="font-medium flex items-center gap-1.5 sm:gap-2 min-w-0">
+          {ModuleIcon && <ModuleIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />}
           {liturgicalColor && (
             <div
-              className="w-2.5 h-2.5 rounded-full border border-background shadow-sm flex-shrink-0"
+              className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-background shadow-sm flex-shrink-0"
               style={{ backgroundColor: liturgicalColor }}
             />
           )}
           <span className="truncate">{event.title}</span>
         </div>
         {eventTypeLabel && (
-          <div className="text-xs mt-1 opacity-80">
+          <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 opacity-80">
             {eventTypeLabel}
           </div>
         )}

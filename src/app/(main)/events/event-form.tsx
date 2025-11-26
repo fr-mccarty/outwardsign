@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createEvent, updateEvent, type CreateEventData, type EventWithRelations } from "@/lib/actions/events"
 import type { Person, Location, EventType } from "@/lib/types"
@@ -110,7 +110,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         title="Basic Information"
         description="General event details"
       >
-        <FormField
+        <FormInput
           id="name"
           label="Event Name"
           value={name}
@@ -119,7 +119,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           placeholder="Enter event name"
         />
 
-        <FormField
+        <FormInput
           id="description"
           label="Description"
           inputType="textarea"
@@ -131,7 +131,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
 
         {/* Show related event type as read-only if it exists (module-linked event) */}
         {event?.related_event_type ? (
-          <FormField
+          <FormInput
             id="related_event_type"
             label="Event Type"
             value={RELATED_EVENT_TYPE_LABELS[event.related_event_type]?.en || event.related_event_type}
@@ -168,7 +168,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         description="When the event takes place"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
+          <FormInput
             id="start_date"
             label="Start Date"
             inputType="date"
@@ -176,7 +176,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             onChange={setStartDate}
           />
 
-          <FormField
+          <FormInput
             id="start_time"
             label="Start Time"
             inputType="time"
@@ -186,7 +186,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
+          <FormInput
             id="end_date"
             label="End Date"
             inputType="date"
@@ -194,7 +194,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             onChange={setEndDate}
           />
 
-          <FormField
+          <FormInput
             id="end_time"
             label="End Time"
             inputType="time"
@@ -221,7 +221,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             openToNewLocation={!isEditing}
           />
 
-          <FormField
+          <FormInput
             id="language"
             label="Language"
             inputType="select"
@@ -240,7 +240,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         title="Additional Information"
         description="Notes and other details"
       >
-        <FormField
+        <FormInput
           id="notes"
           label="Notes"
           inputType="textarea"

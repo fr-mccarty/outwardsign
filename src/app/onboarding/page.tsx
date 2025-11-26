@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { FormField } from '@/components/ui/form-field'
+import { FormInput } from '@/components/form-input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Logo } from '@/components/logo'
 import { Loader2 } from 'lucide-react'
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <FormField
+              <FormInput
                 id="parishName"
                 label="Parish Name"
                 value={parishName}
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
                 required
                 placeholder="e.g., St. Mary's Catholic Church"
               />
-              <FormField
+              <FormInput
                 id="city"
                 label="City"
                 value={city}
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
                 required
                 placeholder="e.g., Boston"
               />
-              <FormField
+              <FormInput
                 id="state"
                 label="State"
                 value={state}

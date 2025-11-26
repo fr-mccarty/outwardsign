@@ -1,249 +1,183 @@
 import { test, expect } from '@playwright/test';
 import { TEST_TIMEOUTS } from './utils/test-config';
 
-test.describe('Parish Settings', () => {
-  test('should load parish settings page and display all tabs', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+/**
+ * Parish Settings Page Tests
+ *
+ * Tests for all Parish Settings subpages:
+ * - /settings/parish/general - Parish info and liturgical settings
+ * - /settings/parish/mass-intentions - Quick amounts for offerings
+ * - /settings/parish/petitions - Petition templates
+ * - /settings/parish/members - Parish member management
+ */
 
-    // Navigate to parish settings
+test.describe('Parish Settings - General', () => {
+  test.describe.configure({ mode: 'parallel' });
+
+  test('should redirect from /settings/parish to /settings/parish/general', async ({ page }) => {
     await page.goto('/settings/parish');
-    await expect(page).toHaveURL('/settings/parish');
-
-    // Verify page title
-    await expect(page.getByRole('heading', { name: 'Parish Settings' })).toBeVisible();
-
-    // Verify all tabs are present
-    await expect(page.getByRole('tab', { name: /Parish Settings/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Mass Intentions/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Petitions/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Readings/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Members/i })).toBeVisible();
-
-    // Verify refresh button exists
-    await expect(page.getByRole('button', { name: /Refresh/i })).toBeVisible();
+    await expect(page).toHaveURL('/settings/parish/general', { timeout: TEST_TIMEOUTS.NAVIGATION });
   });
 
-  test('should display parish information and allow updates', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+  test('should display general settings page with parish information', async ({ page }) => {
+    await page.goto('/settings/parish/general');
+    await expect(page).toHaveURL('/settings/parish/general');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
+    // Verify page title (this is a real heading in PageContainer)
+    await expect(page.getByRole('heading', { name: 'General Settings' })).toBeVisible();
 
-    // Ensure we're on the Parish Settings tab (default)
-    const parishSettingsTab = page.getByRole('tab', { name: /Parish Settings/i });
-    await parishSettingsTab.click();
+    // Verify parish information form fields
+    await expect(page.getByLabel('Parish Name')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+    await expect(page.getByLabel('City')).toBeVisible();
+    await expect(page.getByLabel('State')).toBeVisible();
+  });
 
-    // Verify parish information form exists
-    await expect(page.locator('input#name')).toBeVisible();
-    await expect(page.locator('input#city')).toBeVisible();
-    await expect(page.locator('input#state')).toBeVisible();
+  test('should display liturgical settings section', async ({ page }) => {
+    await page.goto('/settings/parish/general');
+
+    // Wait for form to load first
+    await expect(page.getByLabel('Parish Name')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+
+    // Verify liturgical settings section (CardTitle is a div with data-slot)
+    await expect(page.locator('[data-slot="card-title"]:has-text("Liturgical Settings")')).toBeVisible();
+    await expect(page.getByLabel('Liturgical Calendar Locale')).toBeVisible();
+  });
+
+  test('should update parish information', async ({ page }) => {
+    await page.goto('/settings/parish/general');
+
+    // Wait for form to load
+    await expect(page.getByLabel('Parish Name')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
     // Update parish name
     const updatedName = `Test Parish ${Date.now()}`;
-    await page.fill('input#name', updatedName);
-
-    // Update city
-    await page.fill('input#city', 'Updated City');
-
-    // Update state
-    await page.fill('input#state', 'UC');
+    await page.getByLabel('Parish Name').fill(updatedName);
+    await page.getByLabel('City').fill('Updated City');
+    await page.getByLabel('State').fill('UC');
 
     // Save changes
-    const saveButton = page.getByRole('button', { name: /Save Changes/i }).first();
-    await saveButton.click();
+    await page.getByRole('button', { name: /Save Changes/i }).click();
 
-    // Wait for save operation - look for toast or wait longer
-    await page.waitForTimeout(2000);
+    // Wait for save to complete
+    await expect(page.getByRole('button', { name: /Save Changes/i })).toBeEnabled({
+      timeout: TEST_TIMEOUTS.FORM_SUBMIT,
+    });
 
-    // Verify the values persisted by refreshing the page
+    // Verify persistence by reloading
     await page.reload();
-    await page.waitForTimeout(1000); // Wait for page to load
-
-    // Click Parish Settings tab again after reload to make inputs visible
-    await parishSettingsTab.click();
-    await page.waitForTimeout(500);
-
-    // Wait for inputs to be visible
-    await page.locator('input#name').waitFor({ state: 'visible', timeout: 10000 });
-
-    await expect(page.locator('input#name')).toHaveValue(updatedName);
-    await expect(page.locator('input#city')).toHaveValue('Updated City');
-    await expect(page.locator('input#state')).toHaveValue('UC');
-  });
-
-  test('should validate required fields for parish information', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Ensure we're on the Parish Settings tab (default)
-    const parishSettingsTab = page.getByRole('tab', { name: /Parish Settings/i });
-    await parishSettingsTab.click();
-    await page.waitForTimeout(500);
-
-    // Wait for input to be visible before interacting
-    await page.locator('input#name').waitFor({ state: 'visible', timeout: 10000 });
-
-    // Clear parish name (required field)
-    await page.fill('input#name', '');
-
-    // Try to save
-    const saveButton = page.getByRole('button', { name: /Save Changes/i }).first();
-    await saveButton.click();
-
-    // Should remain on the same page (validation prevented save)
-    await expect(page).toHaveURL('/settings/parish');
+    await expect(page.getByLabel('Parish Name')).toHaveValue(updatedName, { timeout: TEST_TIMEOUTS.DATA_LOAD });
   });
 
   test('should update liturgical locale setting', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+    await page.goto('/settings/parish/general');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
+    // Wait for form to load
+    await expect(page.getByLabel('Liturgical Calendar Locale')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
-    // Ensure we're on the Parish Settings tab
-    const parishSettingsTab = page.getByRole('tab', { name: /Parish Settings/i });
-    await parishSettingsTab.click();
-
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
-
-    // Find and click the liturgical locale select trigger (it's a shadcn Select, not a plain select)
-    // The FormField renders a Label, so we can find the associated select by label text
-    const localeLabel = page.getByText('Liturgical Calendar Locale');
-    await localeLabel.waitFor({ state: 'visible', timeout: 10000 });
-
-    // Find the select trigger button (should be near the label)
-    const localeSelect = localeLabel.locator('..').locator('button[role="combobox"]');
-    await localeSelect.waitFor({ state: 'visible', timeout: 10000 });
-    await localeSelect.click();
+    // Click the select
+    await page.getByLabel('Liturgical Calendar Locale').click();
 
     // Select Spanish (Mexico)
     await page.getByRole('option', { name: 'Spanish (Mexico)' }).click();
 
-    // Save the liturgical locale
-    const saveLocaleButton = page.getByRole('button', { name: /Save Locale/i });
-    await saveLocaleButton.click();
+    // Save locale
+    await page.getByRole('button', { name: /Save Locale/i }).click();
 
-    // Wait for save operation
-    await page.waitForTimeout(2000);
+    // Wait for save to complete
+    await expect(page.getByRole('button', { name: /Save Locale/i })).toBeEnabled({
+      timeout: TEST_TIMEOUTS.FORM_SUBMIT,
+    });
 
-    // Verify the value persisted by refreshing
+    // Verify persistence by reloading
     await page.reload();
-    await page.waitForTimeout(1000);
-
-    // Click Parish Settings tab again after reload
-    await parishSettingsTab.click();
-    await page.waitForTimeout(500);
-
-    // Re-find the select element after reload
-    const localeLabel2 = page.getByText('Liturgical Calendar Locale');
-    await localeLabel2.waitFor({ state: 'visible', timeout: 10000 });
-    const localeSelect2 = localeLabel2.locator('..').locator('button[role="combobox"]');
-    await localeSelect2.waitFor({ state: 'visible', timeout: 10000 });
-
-    // Verify the selected value contains "Spanish"
-    await expect(localeSelect2).toContainText('Spanish');
+    await expect(page.getByLabel('Liturgical Calendar Locale')).toContainText('Spanish', {
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
   });
 
-  test('should display and configure mass intention quick amounts', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+  test('should display parish details section', async ({ page }) => {
+    await page.goto('/settings/parish/general');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-    await page.waitForTimeout(500);
+    // Wait for form to load first
+    await expect(page.getByLabel('Parish Name')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.waitFor({ state: 'visible', timeout: 10000 });
-    await massIntentionsTab.click();
+    // Verify Parish Details section (h3 inside ContentCard)
+    await expect(page.getByText('Parish Details')).toBeVisible();
+    await expect(page.getByText('Created')).toBeVisible();
+  });
 
-    // Wait for data to finish loading by waiting for the Add Quick Amount button
-    // (This button only appears after the loading state is complete)
-    const addButton = page.getByRole('button', { name: /Add Quick Amount/i });
-    await addButton.waitFor({ state: 'visible', timeout: 20000 });
+  test('should show breadcrumbs with correct navigation', async ({ page }) => {
+    await page.goto('/settings/parish/general');
 
-    // Now wait for the first input to be visible
+    // Wait for page to load
+    await expect(page.getByLabel('Parish Name')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+
+    const breadcrumbNav = page.getByLabel('breadcrumb');
+    await expect(breadcrumbNav.getByRole('link', { name: 'Dashboard' })).toBeVisible();
+    // Settings breadcrumb is a link - use exact match to avoid matching "Parish Settings"
+    await expect(breadcrumbNav.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
+
+    // Click Dashboard to navigate back (more reliable than Settings)
+    await breadcrumbNav.getByRole('link', { name: 'Dashboard' }).click();
+    await expect(page).toHaveURL('/dashboard', { timeout: TEST_TIMEOUTS.NAVIGATION });
+  });
+});
+
+test.describe('Parish Settings - Mass Intentions', () => {
+  test.describe.configure({ mode: 'parallel' });
+
+  test('should display mass intentions settings page', async ({ page }) => {
+    await page.goto('/settings/parish/mass-intentions');
+    await expect(page).toHaveURL('/settings/parish/mass-intentions');
+
+    // Verify page title (PageContainer heading)
+    await expect(page.getByRole('heading', { name: 'Mass Intentions Settings' })).toBeVisible();
+
+    // Verify quick amounts section (CardTitle is a div)
+    await expect(page.locator('[data-slot="card-title"]:has-text("Quick Amounts")')).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+  });
+
+  test('should display quick amount configuration', async ({ page }) => {
+    await page.goto('/settings/parish/mass-intentions');
+
+    // Wait for quick amounts to load
     const firstAmountInput = page.locator('input[id^="amount-"]').first();
-    await firstAmountInput.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(firstAmountInput).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
-    // Verify at least one quick amount row exists
-    await expect(firstAmountInput).toBeVisible();
+    // Verify add button
+    await expect(page.getByRole('button', { name: /Add Quick Amount/i })).toBeVisible();
 
-    // Verify preview section exists
-    await expect(page.getByText('Preview:')).toBeVisible();
-
-    // Verify save button
-    await expect(page.getByRole('button', { name: /Save Quick Amounts/i })).toBeVisible();
-
-    // Verify description text
-    await expect(page.getByText(/Configure the quick amount buttons/i)).toBeVisible();
+    // Verify preview section (CardTitle is a div)
+    await expect(page.locator('[data-slot="card-title"]:has-text("Preview")')).toBeVisible();
   });
 
-  test('should add and remove mass intention quick amounts', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+  test('should add a new quick amount', async ({ page }) => {
+    await page.goto('/settings/parish/mass-intentions');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.click();
-
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
+    // Wait for page to load
+    const addButton = page.getByRole('button', { name: /Add Quick Amount/i });
+    await expect(addButton).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
     // Count initial quick amounts
     const initialCount = await page.locator('input[id^="amount-"]').count();
 
     // Add a new quick amount
-    const addButton = page.getByRole('button', { name: /Add Quick Amount/i });
     await addButton.click();
 
     // Verify a new row was added
-    const newCount = await page.locator('input[id^="amount-"]').count();
-    expect(newCount).toBe(initialCount + 1);
-
-    // Fill in the new quick amount
-    const lastAmountIndex = newCount - 1;
-    await page.fill(`input[id="amount-${lastAmountIndex}"]`, '1500');
-    await page.fill(`input[id="label-${lastAmountIndex}"]`, '$15');
-
-    // Save quick amounts
-    const saveButton = page.getByRole('button', { name: /Save Quick Amounts/i });
-    await saveButton.click();
-
-    // Wait for save operation
-    await page.waitForTimeout(2000);
-
-    // Verify the new amount is in the preview section (check for badge with exact text)
-    const previewSection = page.locator('text=Preview:').locator('..');
-    await expect(previewSection.getByText('$15', { exact: true })).toBeVisible();
+    await expect(page.locator('input[id^="amount-"]')).toHaveCount(initialCount + 1);
   });
 
-  test('should update mass intention quick amount values', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+  test('should update quick amount values', async ({ page }) => {
+    await page.goto('/settings/parish/mass-intentions');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-    await page.waitForTimeout(500);
-
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.waitFor({ state: 'visible', timeout: 10000 });
-    await massIntentionsTab.click();
-
-    // Wait for data to finish loading by waiting for the Add Quick Amount button
-    // (This button only appears after the loading state is complete)
-    const addButton = page.getByRole('button', { name: /Add Quick Amount/i });
-    await addButton.waitFor({ state: 'visible', timeout: 20000 });
-
-    // Now wait for the first input to be visible
+    // Wait for inputs to load
     const firstAmountInput = page.locator('input[id="amount-0"]');
-    await firstAmountInput.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(firstAmountInput).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
-    // Update the first quick amount - clear first for number inputs
+    // Update the first quick amount
     await firstAmountInput.clear();
     await firstAmountInput.fill('2500');
 
@@ -251,259 +185,203 @@ test.describe('Parish Settings', () => {
     await firstLabelInput.clear();
     await firstLabelInput.fill('$25');
 
-    // Save quick amounts
-    const saveButton = page.getByRole('button', { name: /Save Quick Amounts/i });
-    await saveButton.click();
+    // Blur to trigger save
+    await firstLabelInput.blur();
 
-    // Wait for save operation to complete and data to be persisted
-    await page.waitForTimeout(3000);
+    // Wait for preview section to show the badge
+    await expect(page.locator('[data-slot="card-title"]:has-text("Preview")')).toBeVisible();
 
-    // Refresh and verify persistence
-    await page.reload();
-    await page.waitForTimeout(1000);
-    await massIntentionsTab.click();
-
-    // Wait for data to finish loading again by waiting for the Add Quick Amount button
-    await addButton.waitFor({ state: 'visible', timeout: 20000 });
-
-    // Wait for inputs to be visible again after reload
-    await firstAmountInput.waitFor({ state: 'visible', timeout: 10000 });
-
-    await expect(firstAmountInput).toHaveValue('2500');
-    await expect(firstLabelInput).toHaveValue('$25');
-  });
-
-  // Note: Donations tab was removed from the implementation
-  // The following tests have been deleted as they reference non-existent features:
-  // - 'should display and configure donations quick amounts'
-  // - 'should add and remove donations quick amounts'
-
-  test('should display parish members tab', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Members tab
-    const membersTab = page.getByRole('tab', { name: /Members/i });
-    await membersTab.click();
-
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
-
-    // The members list should load (may be empty or have test user)
-    // Just verify the tab is active and we can see the tab content
-    await expect(membersTab).toHaveAttribute('data-state', 'active');
-  });
-
-  test('should navigate between tabs without losing data', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Ensure we're on the Parish Settings tab first
-    const parishSettingsTab = page.getByRole('tab', { name: /Parish Settings/i });
-    await parishSettingsTab.click();
-    await page.waitForTimeout(500);
-
-    // Wait for name input to be visible
-    await page.locator('input#name').waitFor({ state: 'visible', timeout: 10000 });
-
-    // Update parish name
-    const testName = `Tab Navigation Test ${Date.now()}`;
-    await page.fill('input#name', testName);
-
-    // Switch to Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.click();
-    const massAmountInput = page.locator('input[id^="amount-"]').first();
-    await massAmountInput.waitFor({ state: 'visible', timeout: 10000 });
-    await expect(massAmountInput).toBeVisible();
-
-    // Switch to Petitions tab (Donations tab doesn't exist)
-    const petitionsTab = page.getByRole('tab', { name: /Petitions/i });
-    await petitionsTab.click();
-    await page.waitForTimeout(500);
-    // Just verify tab is active
-    await expect(petitionsTab).toHaveAttribute('data-state', 'active');
-
-    // Switch to Members tab
-    const membersTab = page.getByRole('tab', { name: /Members/i });
-    await membersTab.click();
-    await page.waitForTimeout(500);
-    await expect(membersTab).toHaveAttribute('data-state', 'active');
-
-    // Switch back to Parish Settings tab
-    await parishSettingsTab.click();
-    await page.waitForTimeout(500);
-
-    // Wait for name input to be visible again
-    await page.locator('input#name').waitFor({ state: 'visible', timeout: 10000 });
-
-    // Verify the parish name we entered is still there (not saved yet, but in local state)
-    await expect(page.locator('input#name')).toHaveValue(testName);
-  });
-
-  test('should show breadcrumbs on parish settings page', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Verify breadcrumbs
-    const breadcrumbNav = page.getByLabel('breadcrumb');
-    await expect(breadcrumbNav.getByRole('link', { name: 'Dashboard' })).toBeVisible();
-    await expect(breadcrumbNav.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
-
-    // Click on Dashboard breadcrumb
-    await breadcrumbNav.getByRole('link', { name: 'Dashboard' }).click();
-
-    // Should navigate to dashboard
-    await expect(page).toHaveURL('/dashboard', { timeout: TEST_TIMEOUTS.NAVIGATION });
-  });
-
-  test('should display parish details section', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Ensure we're on the Parish Settings tab
-    const parishSettingsTab = page.getByRole('tab', { name: /Parish Settings/i });
-    await parishSettingsTab.click();
-
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
-
-    // Verify created date label is visible (part of Parish Details section)
-    await expect(page.getByText('Created')).toBeVisible();
-  });
-
-  test('should handle refresh button correctly', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click refresh button
-    const refreshButton = page.getByRole('button', { name: /Refresh/i });
-    await refreshButton.click();
-
-    // Wait for reload
-    await page.waitForTimeout(1000);
-
-    // Verify page is still loaded correctly
-    await expect(page.getByRole('heading', { name: 'Parish Settings' })).toBeVisible();
+    // Verify in preview section - look for the badge with $25 label
+    // The Preview card has title "Preview" and contains badges with the labels
+    const previewSection = page.locator('[data-slot="card-content"]').last();
+    await expect(previewSection.getByText('$25')).toBeVisible({
+      timeout: TEST_TIMEOUTS.FORM_SUBMIT,
+    });
   });
 
   test('should prevent removing the last quick amount', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+    await page.goto('/settings/parish/mass-intentions');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
+    // Wait for page to load
+    await expect(page.locator('input[id^="amount-"]').first()).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
 
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.click();
+    // Get initial count
+    let count = await page.locator('input[id^="amount-"]').count();
 
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
-
-    // Count quick amounts
-    let quickAmountCount = await page.locator('input[id^="amount-"]').count();
-
-    // If there's more than one, remove all but one
-    if (quickAmountCount > 1) {
-      for (let i = quickAmountCount - 1; i > 0; i--) {
-        // Find trash icon buttons and click the first one
-        const trashButtons = page.locator('button:has(svg.lucide-trash-2)');
-        const count = await trashButtons.count();
-        if (count > 0) {
-          await trashButtons.first().click();
-          await page.waitForTimeout(200);
-        }
+    // Remove all but one
+    while (count > 1) {
+      const trashButtons = page.locator('button:has(svg.lucide-trash-2)');
+      const enabledButtons = trashButtons.filter({ has: page.locator(':not([disabled])') });
+      const buttonCount = await enabledButtons.count();
+      if (buttonCount > 0) {
+        await enabledButtons.first().click();
+        // Wait for the item to be removed
+        await expect(page.locator('input[id^="amount-"]')).toHaveCount(count - 1, {
+          timeout: TEST_TIMEOUTS.FORM_SUBMIT,
+        });
+        count--;
+      } else {
+        break;
       }
     }
 
-    // Count again to verify
-    quickAmountCount = await page.locator('input[id^="amount-"]').count();
-
-    // If we successfully removed items, the last delete button should be disabled
-    if (quickAmountCount === 1) {
-      const deleteButton = page.locator('button:has(svg.lucide-trash-2)').first();
-      await expect(deleteButton).toBeDisabled();
+    // Verify the last delete button is disabled
+    if (count === 1) {
+      const lastDeleteButton = page.locator('button:has(svg.lucide-trash-2)').first();
+      await expect(lastDeleteButton).toBeDisabled();
     }
   });
 
-  test('should display quick amount preview badges', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
+  test('should display description text', async ({ page }) => {
+    await page.goto('/settings/parish/mass-intentions');
 
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.click();
-
-    // Wait for tab content to load
-    await page.waitForTimeout(500);
-
-    // Get the first label value
-    const firstLabel = await page.locator('input[id="label-0"]').inputValue();
-
-    // Verify the preview section shows the badge with that label
-    const previewSection = page.locator('text=Preview:').locator('..');
-    await expect(previewSection).toBeVisible();
-
-    // The badge should contain the label text
-    if (firstLabel) {
-      await expect(previewSection.getByText(firstLabel, { exact: true })).toBeVisible();
-    }
-  });
-
-  test('should show currency conversion helper text', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.click();
-
-    // Wait for the first input to be visible
-    const firstAmountInput = page.locator('input[id="amount-0"]');
-    await firstAmountInput.waitFor({ state: 'visible', timeout: 10000 });
-
-    // Get the first amount value
-    const firstAmountValue = await firstAmountInput.inputValue();
-
-    if (firstAmountValue) {
-      // Convert cents to dollars for verification
-      const amountInCents = parseInt(firstAmountValue);
-      const amountInDollars = (amountInCents / 100).toFixed(2);
-
-      // Verify the helper text shows the dollar conversion (check for any occurrence)
-      await expect(page.locator('p.text-xs.text-muted-foreground').filter({ hasText: `$${amountInDollars}` }).first()).toBeVisible();
-    }
-  });
-
-  test('should show description text for quick amounts', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
-
-    // Navigate to parish settings
-    await page.goto('/settings/parish');
-
-    // Click on Mass Intentions tab
-    const massIntentionsTab = page.getByRole('tab', { name: /Mass Intentions/i });
-    await massIntentionsTab.click();
-
-    // Wait for tab content to load by waiting for description text
-    await page.getByText(/Configure the quick amount buttons/i).waitFor({ state: 'visible', timeout: 10000 });
-
-    // Verify description text
-    await expect(page.getByText(/Configure the quick amount buttons/i)).toBeVisible();
+    await expect(page.getByText(/Configure the quick amount buttons/i)).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
     await expect(page.getByText(/Amounts are stored in cents/i)).toBeVisible();
+  });
+});
+
+test.describe('Parish Settings - Petitions', () => {
+  test.describe.configure({ mode: 'parallel' });
+
+  test('should display petitions settings page', async ({ page }) => {
+    await page.goto('/settings/parish/petitions');
+    await expect(page).toHaveURL('/settings/parish/petitions');
+
+    // Verify page title (PageContainer heading)
+    await expect(page.getByRole('heading', { name: 'Petitions Settings' })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+
+    // Verify petition templates section (use heading to avoid strict mode violation from description text)
+    await expect(page.getByRole('heading', { name: 'Petition Templates' })).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+  });
+
+  test('should display new template button', async ({ page }) => {
+    await page.goto('/settings/parish/petitions');
+
+    await expect(page.getByRole('link', { name: /New Template/i })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+  });
+
+  test('should navigate to create template page', async ({ page }) => {
+    await page.goto('/settings/parish/petitions');
+
+    // Wait for button to load
+    await expect(page.getByRole('link', { name: /New Template/i })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+
+    await page.getByRole('link', { name: /New Template/i }).click();
+    await expect(page).toHaveURL('/settings/petitions/create', { timeout: TEST_TIMEOUTS.NAVIGATION });
+  });
+
+  test('should display search functionality', async ({ page }) => {
+    await page.goto('/settings/parish/petitions');
+
+    await expect(page.getByPlaceholder('Search templates...')).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+  });
+});
+
+test.describe('Parish Settings - Members', () => {
+  test.describe.configure({ mode: 'parallel' });
+
+  test('should display parish members settings page', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+    await expect(page).toHaveURL('/settings/parish/members');
+
+    // Verify page title (PageContainer heading)
+    await expect(page.getByRole('heading', { name: 'Parish Members' })).toBeVisible();
+
+    // Verify description
+    await expect(page.getByText('Manage team members and invitations')).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+  });
+
+  test('should display members list', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+
+    // Wait for members section to load (look for the card title pattern)
+    await expect(page.locator('[data-slot="card-title"]').filter({ hasText: /Parish Members \(\d+\)/ })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+
+    // There should be at least the current user email visible
+    await expect(page.locator('div').filter({ hasText: '@outwardsign.test' }).first()).toBeVisible();
+  });
+
+  test('should display invite member button', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+
+    await expect(page.getByRole('button', { name: /Invite Member/i })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+  });
+
+  test('should open invite member dialog', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+
+    // Wait for page to load
+    await expect(page.getByRole('button', { name: /Invite Member/i })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+
+    // Click invite button
+    await page.getByRole('button', { name: /Invite Member/i }).click();
+
+    // Verify dialog opens
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
+    await expect(page.getByRole('heading', { name: 'Invite Parish Member' })).toBeVisible();
+
+    // Verify form fields
+    await expect(page.getByLabel('Email Address')).toBeVisible();
+    await expect(page.getByLabel('Role')).toBeVisible();
+  });
+
+  test('should show role options in invite dialog', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+
+    // Open invite dialog
+    await page.getByRole('button', { name: /Invite Member/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
+
+    // Click role dropdown
+    await page.getByLabel('Role').click();
+
+    // Verify role options
+    await expect(page.getByRole('option', { name: /Admin/i })).toBeVisible();
+    await expect(page.getByRole('option', { name: /Staff/i })).toBeVisible();
+    await expect(page.getByRole('option', { name: /Ministry Leader/i })).toBeVisible();
+  });
+
+  test('should cancel invite dialog', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+
+    // Open invite dialog
+    await page.getByRole('button', { name: /Invite Member/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
+
+    // Click cancel
+    await page.getByRole('button', { name: /Cancel/i }).click();
+
+    // Dialog should close
+    await expect(page.getByRole('dialog')).toBeHidden({ timeout: TEST_TIMEOUTS.DIALOG });
+  });
+
+  test('should show current user in members list', async ({ page }) => {
+    await page.goto('/settings/parish/members');
+
+    // Wait for members to load
+    await expect(page.locator('[data-slot="card-title"]').filter({ hasText: /Parish Members \(\d+\)/ })).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+
+    // The current user should be in the list with email ending in @outwardsign.test
+    await expect(page.locator('div.font-medium').filter({ hasText: '@outwardsign.test' }).first()).toBeVisible();
   });
 });

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
@@ -548,7 +548,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
         title="Announcements"
         description="Special announcements for the end of the liturgy"
       >
-          <FormField
+          <FormInput
             id="announcements"
             label="Announcements"
             description="These announcements will be printed on the last page of the liturgy script"
@@ -590,7 +590,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             </Select>
           </div>
 
-          <FormField
+          <FormInput
             id="note"
             label="Notes (Optional)"
             description="These notes are just for reference and will not be printed in the script"

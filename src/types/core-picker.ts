@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { UseFormReturn, FieldErrors } from 'react-hook-form'
 
 /**
  * Field type for picker inline creation forms
@@ -15,6 +16,19 @@ export type PickerFieldType =
   | 'select'
   | 'textarea'
   | 'custom'
+
+/**
+ * Props passed to CustomFormComponent for rendering custom form fields
+ * Uses React Hook Form for form state management
+ */
+export interface CustomFormComponentProps {
+  /** React Hook Form instance with all form methods (watch, setValue, register, etc.) */
+  form: UseFormReturn<Record<string, any>>
+  /** Current form validation errors */
+  errors: FieldErrors<Record<string, any>>
+  /** Whether the form is in edit mode (updating existing entity) */
+  isEditMode: boolean
+}
 
 /**
  * Configuration for a single field in the picker's inline creation form
@@ -109,13 +123,27 @@ export interface CorePickerProps<T> {
    * ```
    */
   defaultCreateFormData?: Record<string, any>
-  /** Custom form component that replaces the default form fields rendering */
-  CustomFormComponent?: React.ComponentType<{
-    formData: Record<string, any>
-    setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>
-    errors: Record<string, string>
-    isEditMode: boolean
-  }>
+  /**
+   * Custom form component that replaces the default form fields rendering.
+   * Receives React Hook Form instance for full control over form state.
+   *
+   * @example
+   * ```tsx
+   * const MyCustomForm: CustomFormComponentProps = ({ form, errors, isEditMode }) => {
+   *   const { watch, setValue } = form
+   *   return (
+   *     <FormInput
+   *       id="name"
+   *       label="Name"
+   *       value={watch('name')}
+   *       onChange={(value) => setValue('name', value)}
+   *       error={errors.name?.message as string}
+   *     />
+   *   )
+   * }
+   * ```
+   */
+  CustomFormComponent?: React.ComponentType<CustomFormComponentProps>
 
   // Inline editing
   /** Whether to open in edit mode (skips selection list, goes straight to form) */

@@ -22,7 +22,7 @@ import {
 import { RELATED_EVENT_TYPE_LABELS, RelatedEventType } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 import { useAppContext } from '@/contexts/AppContextProvider'
-import { FormField } from "@/components/form-field"
+import { FormInput } from "@/components/form-input"
 import type { EventType } from "@/lib/types"
 
 interface Stats {
@@ -164,21 +164,21 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
+            <FormInput
               id="start-date"
               label="From Date"
               inputType="date"
               value={startDate}
               onChange={(value) => updateFilters('start_date', value)}
             />
-            <FormField
+            <FormInput
               id="end-date"
               label="To Date"
               inputType="date"
               value={endDate}
               onChange={(value) => updateFilters('end_date', value)}
             />
-            <FormField
+            <FormInput
               id="sort"
               label="Sort By Date"
               inputType="select"

@@ -52,9 +52,9 @@ export function CalendarHeader({
   }
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-4">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -62,7 +62,7 @@ export function CalendarHeader({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-xl font-semibold min-w-[200px] text-center">
+          <h2 className="text-base sm:text-xl font-semibold min-w-[140px] sm:min-w-[200px] text-center">
             {formatPeriodTitle()}
           </h2>
           <Button
@@ -81,11 +81,11 @@ export function CalendarHeader({
           Today
         </Button>
       </div>
-      
-      <div className="flex items-center gap-3">
+
+      <div className="flex items-center justify-between sm:justify-end gap-3">
         {showViewSelector && onViewChange && (
           <Select value={view} onValueChange={(value: CalendarView) => onViewChange(value)}>
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-[100px] sm:w-[120px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -95,7 +95,7 @@ export function CalendarHeader({
             </SelectContent>
           </Select>
         )}
-        
+
         {actions}
       </div>
     </div>

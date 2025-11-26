@@ -1,42 +1,54 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { UseFormReturn, FieldErrors } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Clock, MapPin, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LocationPicker } from '@/components/location-picker'
 import { CommonTimesModal } from '@/components/common-times-modal'
+import { FormInput } from '@/components/form-input'
 import type { Location } from '@/lib/types'
 
+// Timezone options for the select field
+const TIMEZONE_OPTIONS = [
+  { value: 'America/New_York', label: 'Eastern (ET)' },
+  { value: 'America/Chicago', label: 'Central (CT)' },
+  { value: 'America/Denver', label: 'Mountain (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific (PT)' },
+]
+
 interface EventFormFieldsProps {
-  formData: Record<string, any>
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>
-  errors: Record<string, string>
+  form: UseFormReturn<Record<string, any>>
+  errors: FieldErrors<Record<string, any>>
   isEditMode: boolean
   visibleFields?: string[]
   requiredFields?: string[]
 }
 
 export function EventFormFields({
-  formData,
-  setFormData,
+  form,
   errors,
   visibleFields = ['location', 'note'],
   requiredFields = [],
 }: EventFormFieldsProps) {
+  const { watch, setValue } = form
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [showCommonTimesModal, setShowCommonTimesModal] = useState(false)
+
+  // Watch form values
+  const formData = {
+    name: watch('name') ?? '',
+    start_date: watch('start_date') ?? '',
+    start_time: watch('start_time') ?? '',
+    timezone: watch('timezone') ?? 'America/Chicago',
+    location_id: watch('location_id'),
+    location: watch('location'),
+    note: watch('note') ?? '',
+  }
 
   // Initialize selectedLocation from formData.location if it exists
   useEffect(() => {
@@ -59,47 +71,46 @@ export function EventFormFields({
   }
 
   const updateField = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }))
+    setValue(key, value, { shouldValidate: true })
+  }
+
+  // Helper to get error message from FieldErrors
+  // Ensures we only ever return a string, never an object
+  const getErrorMessage = (fieldName: string): string | undefined => {
+    const error = errors[fieldName]
+    if (!error) return undefined
+    const message = error.message
+    // Ensure message is a string (defensive check)
+    return typeof message === 'string' ? message : undefined
   }
 
   return (
     <>
       {/* Name Field */}
-      <div className="space-y-2">
-        <Label htmlFor="name" className={cn(errors.name && 'text-destructive')}>
-          Name
-          <span className="text-destructive ml-1">*</span>
-        </Label>
-        <Input
-          id="name"
-          type="text"
-          value={formData.name || ''}
-          onChange={(e) => updateField('name', e.target.value)}
-          placeholder="Wedding Ceremony"
-          className={cn(errors.name && 'border-destructive')}
-        />
-        {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-      </div>
+      <FormInput
+        id="name"
+        label="Name"
+        value={formData.name}
+        onChange={(value) => updateField('name', value)}
+        placeholder="Wedding Ceremony"
+        required
+        error={getErrorMessage('name')}
+      />
 
       {/* Date Field */}
-      <div className="space-y-2">
-        <Label htmlFor="start_date" className={cn(errors.start_date && 'text-destructive')}>
-          Date
-          <span className="text-destructive ml-1">*</span>
-        </Label>
-        <Input
-          id="start_date"
-          type="date"
-          value={formData.start_date || ''}
-          onChange={(e) => updateField('start_date', e.target.value)}
-          className={cn(errors.start_date && 'border-destructive')}
-        />
-        {errors.start_date && <p className="text-sm text-destructive">{errors.start_date}</p>}
-      </div>
+      <FormInput
+        id="start_date"
+        label="Date"
+        inputType="date"
+        value={formData.start_date}
+        onChange={(value) => updateField('start_date', value)}
+        required
+        error={getErrorMessage('start_date')}
+      />
 
-      {/* Time Field with Common Times Button */}
-      <div className="space-y-2">
-        <Label htmlFor="start_time" className={cn(errors.start_time && 'text-destructive')}>
+      {/* Time Field with Common Times Button - Custom layout since FormInput doesn't support adjacent buttons */}
+      <div>
+        <Label htmlFor="start_time" className="text-sm font-medium mb-1">
           Time
           <span className="text-destructive ml-1">*</span>
         </Label>
@@ -107,9 +118,10 @@ export function EventFormFields({
           <Input
             id="start_time"
             type="time"
-            value={formData.start_time || ''}
+            value={formData.start_time}
             onChange={(e) => updateField('start_time', e.target.value)}
-            className={cn('flex-1', errors.start_time && 'border-destructive')}
+            className={cn('flex-1', getErrorMessage('start_time') && 'ring-2 ring-destructive-ring focus-visible:ring-destructive-ring')}
+            aria-invalid={!!getErrorMessage('start_time')}
           />
           <Button
             type="button"
@@ -125,39 +137,27 @@ export function EventFormFields({
             <Clock className="h-4 w-4" />
           </Button>
         </div>
-        {errors.start_time && <p className="text-sm text-destructive">{errors.start_time}</p>}
+        {getErrorMessage('start_time') && (
+          <p className="text-sm text-destructive mt-1">{getErrorMessage('start_time')}</p>
+        )}
       </div>
 
       {/* Timezone Field */}
-      <div className="space-y-2">
-        <Label htmlFor="timezone" className={cn(errors.timezone && 'text-destructive')}>
-          Time Zone
-          <span className="text-destructive ml-1">*</span>
-        </Label>
-        <Select
-          value={formData.timezone || 'America/Chicago'}
-          onValueChange={(value) => updateField('timezone', value)}
-        >
-          <SelectTrigger
-            id="timezone"
-            className={cn(errors.timezone && 'border-destructive')}
-          >
-            <SelectValue placeholder="Select timezone" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="America/New_York">Eastern (ET)</SelectItem>
-            <SelectItem value="America/Chicago">Central (CT)</SelectItem>
-            <SelectItem value="America/Denver">Mountain (MT)</SelectItem>
-            <SelectItem value="America/Los_Angeles">Pacific (PT)</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.timezone && <p className="text-sm text-destructive">{errors.timezone}</p>}
-      </div>
+      <FormInput
+        id="timezone"
+        label="Time Zone"
+        inputType="select"
+        value={formData.timezone}
+        onChange={(value) => updateField('timezone', value)}
+        options={TIMEZONE_OPTIONS}
+        required
+        error={getErrorMessage('timezone')}
+      />
 
-      {/* Location Field */}
+      {/* Location Field - Custom since it uses LocationPicker */}
       {isFieldVisible('location') && (
-        <div className="space-y-2">
-          <Label htmlFor="location_id" className={cn(errors.location_id && 'text-destructive')}>
+        <div>
+          <Label htmlFor="location_id" className="text-sm font-medium mb-1">
             Location
             {isFieldRequired('location') && <span className="text-destructive ml-1">*</span>}
           </Label>
@@ -191,32 +191,30 @@ export function EventFormFields({
                 e.stopPropagation()
                 setShowLocationPicker(true)
               }}
-              className={cn('w-full justify-start', errors.location_id && 'border-destructive')}
+              className={cn('w-full justify-start', getErrorMessage('location_id') && 'ring-2 ring-destructive-ring')}
             >
               <MapPin className="h-4 w-4 mr-2" />
               Select Location
             </Button>
           )}
-          {errors.location_id && <p className="text-sm text-destructive">{errors.location_id}</p>}
+          {getErrorMessage('location_id') && (
+            <p className="text-sm text-destructive mt-1">{getErrorMessage('location_id')}</p>
+          )}
         </div>
       )}
 
       {/* Note Field */}
       {isFieldVisible('note') && (
-        <div className="space-y-2">
-          <Label htmlFor="note" className={cn(errors.note && 'text-destructive')}>
-            Note
-            {isFieldRequired('note') && <span className="text-destructive ml-1">*</span>}
-          </Label>
-          <Textarea
-            id="note"
-            value={formData.note || ''}
-            onChange={(e) => updateField('note', e.target.value)}
-            placeholder="Add any notes about this event..."
-            className={cn(errors.note && 'border-destructive')}
-          />
-          {errors.note && <p className="text-sm text-destructive">{errors.note}</p>}
-        </div>
+        <FormInput
+          id="note"
+          label="Note"
+          inputType="textarea"
+          value={formData.note}
+          onChange={(value) => updateField('note', value)}
+          placeholder="Add any notes about this event..."
+          required={isFieldRequired('note')}
+          error={getErrorMessage('note')}
+        />
       )}
 
       {/* Common Times Modal */}

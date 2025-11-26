@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { getAllMassTimeOptions, type MassTimeOption } from "@/lib/helpers/mass-attendance"
 import { formatTime } from "@/lib/utils/formatters"
 import { LITURGICAL_DAYS_OF_WEEK_VALUES } from "@/lib/constants"
@@ -91,7 +91,7 @@ export function MassAttendanceSelector({
           <h4 className="font-medium text-sm text-muted-foreground">{groupedOptions[dayKey].displayName}</h4>
           <div className="space-y-2 pl-2">
             {groupedOptions[dayKey].options.map((option) => (
-              <FormField
+              <FormInput
                 key={option.id}
                 id={`mass-time-${option.id}`}
                 inputType="checkbox"

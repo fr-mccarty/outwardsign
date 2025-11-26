@@ -3,6 +3,7 @@ import PetitionTemplateForm from "../petition-template-form";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { requireSelectedParish } from "@/lib/auth/parish";
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter';
 
 export const dynamic = 'force-dynamic'
 
@@ -27,12 +28,22 @@ export default async function CreatePetitionTemplatePage() {
     redirect('/dashboard');
   }
 
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Settings", href: "/settings" },
+    { label: "Petitions", href: "/settings/petitions" },
+    { label: "Create Template" }
+  ]
+
   return (
-    <PageContainer
-      title="Create Petition Template"
-      description="Create a new petition template for your liturgical celebrations"
-    >
-      <PetitionTemplateForm />
-    </PageContainer>
+    <>
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+      <PageContainer
+        title="Create Petition Template"
+        description="Create a new petition template for your liturgical celebrations"
+      >
+        <PetitionTemplateForm />
+      </PageContainer>
+    </>
   );
 }

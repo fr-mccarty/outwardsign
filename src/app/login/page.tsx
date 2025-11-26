@@ -1,19 +1,53 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
-import { FormField } from '@/components/ui/form-field'
+import { FormInput } from '@/components/form-input'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Logo } from '@/components/logo'
 import Link from 'next/link'
-import { Flower } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import {APP_NAME} from "@/lib/constants";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [invitationToken, setInvitationToken] = useState<string | null>(null)
+  const [parishName, setParishName] = useState<string>('')
+
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const invitation = searchParams.get('invitation')
+    const emailParam = searchParams.get('email')
+
+    if (invitation) {
+      setInvitationToken(invitation)
+      fetchInvitationDetails(invitation)
+    }
+
+    if (emailParam) {
+      setEmail(decodeURIComponent(emailParam))
+    }
+  }, [searchParams])
+
+  const fetchInvitationDetails = async (token: string) => {
+    try {
+      const response = await fetch(`/api/invitations/${token}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setParishName(data.invitation.parish_name)
+      }
+    } catch (err) {
+      console.error('Failed to fetch invitation details:', err)
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,18 +55,52 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
-      setError(error.message)
+    if (loginError) {
+      setError(loginError.message)
       setLoading(false)
-    } else {
-      // Successful login - redirect to dashboard
-      window.location.href = '/dashboard'
+      return
     }
+
+    // If we have an invitation token, accept it after successful login
+    if (invitationToken && data.user) {
+      try {
+        const acceptResponse = await fetch('/api/invitations/accept', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: invitationToken,
+            userId: data.user.id,
+          }),
+        })
+
+        const acceptData = await acceptResponse.json()
+
+        if (!acceptResponse.ok) {
+          setError(`Signed in but failed to join parish: ${acceptData.error}`)
+          setLoading(false)
+          return
+        }
+
+        // Log any warnings but continue
+        if (acceptData.warning) {
+          console.warn('Invitation acceptance warning:', acceptData.warning)
+        }
+      } catch (err) {
+        setError('Signed in but failed to join parish. Please try accepting the invitation again.')
+        setLoading(false)
+        return
+      }
+    }
+
+    // Successful login (with or without invitation)
+    window.location.href = '/dashboard'
   }
 
   return (
@@ -41,22 +109,33 @@ export default function LoginPage() {
         {/* Logo Header */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center justify-center space-x-4 hover:opacity-80 transition-opacity">
-            <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Flower className="size-7" />
-            </div>
+            <Logo size="large" />
             <div className="font-semibold text-2xl text-foreground">{APP_NAME}</div>
           </Link>
         </div>
+
+        {/* Invitation Banner */}
+        {invitationToken && parishName && (
+          <Alert>
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>
+              You're joining <strong>{parishName}</strong>! Sign in below to accept the invitation.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Card className="w-full">
         <CardHeader>
-          <CardTitle>Sign in to {APP_NAME}</CardTitle>
+          <CardTitle>
+            {invitationToken && parishName ? `Join ${parishName}` : `Sign in to ${APP_NAME}`}
+          </CardTitle>
           <CardDescription>
-            Enter your email and password to sign in
+            {invitationToken ? 'Sign in with your existing account' : 'Enter your email and password to sign in'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            <FormField
+            <FormInput
               id="email"
               label="Email"
               inputType="email"
@@ -64,9 +143,10 @@ export default function LoginPage() {
               onChange={setEmail}
               required
               placeholder="you@example.com"
+              disabled={!!searchParams.get('email')}
               autoFocus
             />
-            <FormField
+            <FormInput
               id="password"
               label="Password"
               inputType="password"
@@ -75,14 +155,20 @@ export default function LoginPage() {
               required
             />
             {error && (
-              <div className="text-red-500 text-sm">{error}</div>
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : invitationToken ? `Join ${parishName}` : 'Sign in'}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="text-primary hover:underline" data-testid="login-signup-link">
+              <Link
+                href={invitationToken ? `/signup?invitation=${invitationToken}&email=${encodeURIComponent(email)}` : '/signup'}
+                className="text-primary hover:underline"
+                data-testid="login-signup-link"
+              >
                 Sign up
               </Link>
             </p>
@@ -91,5 +177,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

@@ -11,15 +11,8 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { Loader2, Sparkles, Plus, Trash2 } from 'lucide-react'
+import { FormInput } from '@/components/form-input'
 import { toast } from 'sonner'
 import { generatePetitions, type GeneratedPetition } from '@/lib/actions/generate-petitions'
 import { getPetitionTemplates, type PetitionContextTemplate } from '@/lib/actions/petition-templates'
@@ -196,24 +189,19 @@ export function PetitionWizard({
         <div className="flex-1 overflow-y-auto -mx-6 px-6">
           <div className="space-y-4 py-1">
           {/* Template Selection */}
-          <div className="space-y-2">
-            <Label>Select Template</Label>
-            <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a petition template..." />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map(template => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedTemplate && selectedTemplate.description && (
-              <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
-            )}
-          </div>
+          <FormInput
+            id="petition-template"
+            label="Select Template"
+            inputType="select"
+            value={selectedTemplateId}
+            onChange={setSelectedTemplateId}
+            options={templates.map(template => ({
+              value: template.id,
+              label: template.title,
+            }))}
+            placeholder="Choose a petition template..."
+            description={selectedTemplate?.description}
+          />
 
           {/* Context Information */}
           {(contextNames.length > 0 || occasion) && (
@@ -232,16 +220,15 @@ export function PetitionWizard({
           )}
 
           {/* Additional Context */}
-          <div className="space-y-2">
-            <Label htmlFor="additional-context">Additional Context (Optional)</Label>
-            <Textarea
-              id="additional-context"
-              value={additionalContext}
-              onChange={e => setAdditionalContext(e.target.value)}
-              placeholder="Add any specific details you'd like included in the petitions..."
-              rows={2}
-            />
-          </div>
+          <FormInput
+            id="additional-context"
+            label="Additional Context (Optional)"
+            inputType="textarea"
+            value={additionalContext}
+            onChange={setAdditionalContext}
+            placeholder="Add any specific details you'd like included in the petitions..."
+            rows={2}
+          />
 
           {/* Generate Button */}
           <Button

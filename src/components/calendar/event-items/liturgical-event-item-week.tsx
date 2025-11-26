@@ -32,7 +32,7 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
     <CalendarTooltip title={event.title}>
       <div
         className={cn(
-          "relative text-sm py-2 rounded cursor-pointer hover:brightness-110 transition-all overflow-hidden",
+          "relative text-xs sm:text-sm py-1.5 sm:py-2 rounded cursor-pointer hover:brightness-110 transition-all overflow-hidden",
           colorStyles
         )}
         onClick={onClick}
@@ -63,7 +63,10 @@ export function LiturgicalEventItemWeek({ event, onClick }: LiturgicalEventItemW
         </div>
 
         {/* Content with left padding to account for liturgical bars */}
-        <div style={{ paddingLeft: `${LITURGICAL_COLOR_BAR_TOTAL_WIDTH + 12}px`, paddingRight: '12px' }}>
+        <div
+          className="pr-2 sm:pr-3"
+          style={{ paddingLeft: `${LITURGICAL_COLOR_BAR_TOTAL_WIDTH + 8}px` }}
+        >
           <div className="font-medium truncate">{event.title}</div>
         </div>
       </div>

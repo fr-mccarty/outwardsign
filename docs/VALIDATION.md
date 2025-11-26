@@ -2,10 +2,10 @@
 
 > **🔴 Context Requirement:** When adding validation to ANY form, you MUST include this file in your context. This file contains the authoritative validation patterns using React Hook Form + Zod that ensure consistent error handling across the application.
 
-> **See Also:** [FORMS.md](./FORMS.md) for general form patterns, styling, event handling, and FormField usage
+> **See Also:** [FORMS.md](./FORMS.md) for general form patterns, styling, event handling, and FormInput usage
 
 This document explains **validation-specific patterns** in Outward Sign using React Hook Form + Zod, including:
-- FormField integration with validation errors
+- FormInput integration with validation errors
 - Module form validation patterns
 - Picker component validation
 
@@ -33,28 +33,28 @@ if (error instanceof z.ZodError) {
 
 ## Table of Contents
 
-1. [FormField Component (CRITICAL)](#1-formfield-component-critical)
+1. [FormInput Component (CRITICAL)](#1-forminput-component-critical)
 2. [Module Form Validation](#2-module-form-validation)
 3. [Picker Component Validation](#3-picker-component-validation)
 
 ---
 
-## 1. FormField Component (CRITICAL)
+## 1. FormInput Component (CRITICAL)
 
-> **For comprehensive FormField documentation, see [FORMS.md § FormField Usage](./FORMS.md#-formfield-usage-critical---required)**
+> **For comprehensive FormInput documentation, see [FORMS.md § FormInput Usage](./FORMS.md#-formfield-usage-critical---required)**
 
-**ALL form inputs, selects, and textareas MUST use the `FormField` component.** This is a non-negotiable requirement for consistency across the application.
+**ALL form inputs, selects, and textareas MUST use the `FormInput` component.** This is a non-negotiable requirement for consistency across the application.
 
-This section focuses on **FormField's integration with validation** (React Hook Form + Zod). For general FormField usage, styling, props reference, and prohibited patterns, see FORMS.md.
+This section focuses on **FormInput's integration with validation** (React Hook Form + Zod). For general FormInput usage, styling, props reference, and prohibited patterns, see FORMS.md.
 
-### FormField with Validation Errors
+### FormInput with Validation Errors
 
-FormField integrates seamlessly with React Hook Form validation by accepting an `error` prop:
+FormInput integrates seamlessly with React Hook Form validation by accepting an `error` prop:
 
 ```tsx
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FormField } from '@/components/form-field'
+import { FormInput } from '@/components/form-input'
 
 const { watch, setValue, formState: { errors } } = useForm<FormData>({
   resolver: zodResolver(schema),
@@ -66,8 +66,8 @@ const status = watch('status')
 
 return (
   <form>
-    {/* Pass error message to FormField for validation display */}
-    <FormField
+    {/* Pass error message to FormInput for validation display */}
+    <FormInput
       id="first-name"
       label="First Name"
       value={firstName}
@@ -76,7 +76,7 @@ return (
       required
     />
 
-    <FormField
+    <FormInput
       id="status"
       label="Status"
       inputType="select"
@@ -91,7 +91,7 @@ return (
 
 **Key Points:**
 - ✅ Pass `error={errors.fieldName?.message}` to display validation errors
-- ✅ FormField automatically adds red border when error is present
+- ✅ FormInput automatically adds red border when error is present
 - ✅ Error message displays below the input
 - ✅ Works with all input types (text, textarea, select, etc.)
 
@@ -244,7 +244,7 @@ import {
   type CreatePresentationData
 } from '@/lib/schemas/presentations'
 import { FormBottomActions } from '@/components/form-bottom-actions'
-import { FormField } from '@/components/form-field'
+import { FormInput } from '@/components/form-input'
 
 interface PresentationFormProps {
   presentation?: PresentationWithRelations
@@ -301,8 +301,8 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {/* Status Select - Using FormField */}
-      <FormField
+      {/* Status Select - Using FormInput */}
+      <FormInput
         id="status"
         label="Status"
         inputType="select"
@@ -315,8 +315,8 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
         ]}
       />
 
-      {/* Notes Textarea - Using FormField */}
-      <FormField
+      {/* Notes Textarea - Using FormInput */}
+      <FormInput
         id="note"
         label="Notes"
         description="Additional information about this presentation"
@@ -341,7 +341,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
 **Key Points:**
 1. **No manual useState for form fields** - React Hook Form manages all form state
 2. **Automatic validation** - zodResolver connects Zod schema to React Hook Form
-3. **Use setValue() to update fields** - For FormField components
+3. **Use setValue() to update fields** - For FormInput components
 4. **Use watch() to read field values** - For controlled components
 5. **Still use useState for UI state** - Modal visibility, selected entities for display
 6. **isSubmitting from formState** - Use for loading state instead of manual isLoading
@@ -482,7 +482,7 @@ Picker components that include inline "Add New" forms should use **React Hook Fo
 
 - **Client-side validation** - Automatic via React Hook Form with zodResolver
 - **Visual error indicators** - Red borders and error messages below invalid fields
-- **Standardized UI** - Use FormField component for consistent styling
+- **Standardized UI** - Use FormInput component for consistent styling
 
 ### Validation Pattern
 
@@ -561,12 +561,12 @@ const onSubmitNewPerson = async (data: NewPersonFormData) => {
 }
 ```
 
-#### Step 4: Use FormField Component for Form Fields
+#### Step 4: Use FormInput Component for Form Fields
 
-The `FormField` component now supports validation errors. Use it for all form fields:
+The `FormInput` component now supports validation errors. Use it for all form fields:
 
 ```typescript
-<FormField
+<FormInput
   id="first_name"
   label="First Name"
   inputType="text"
@@ -577,7 +577,7 @@ The `FormField` component now supports validation errors. Use it for all form fi
   error={errors.first_name?.message}
 />
 
-<FormField
+<FormInput
   id="last_name"
   label="Last Name"
   inputType="text"
@@ -588,7 +588,7 @@ The `FormField` component now supports validation errors. Use it for all form fi
   error={errors.last_name?.message}
 />
 
-<FormField
+<FormInput
   id="email"
   label="Email"
   inputType="email"
@@ -600,7 +600,7 @@ The `FormField` component now supports validation errors. Use it for all form fi
 
 **Key Points:**
 - Pass `error={errors.field_name?.message}` to show validation errors
-- FormField automatically adds red border and displays error message
+- FormInput automatically adds red border and displays error message
 - Use `watch()` to get current field values
 - Use `setValue()` to update field values
 - Mark required fields with `required` prop
@@ -611,7 +611,7 @@ Replace manual form submission with `handleSubmit`:
 
 ```typescript
 <form onSubmit={handleSubmit(onSubmitNewPerson)} className="space-y-4">
-  {/* FormField components */}
+  {/* FormInput components */}
 
   <DialogFooter>
     <Button
@@ -639,7 +639,7 @@ Replace manual form submission with `handleSubmit`:
 </form>
 ```
 
-### FormField Error Display
+### FormInput Error Display
 
 When an `error` prop is provided:
 - Input shows red border (`border-red-500`)
@@ -715,9 +715,9 @@ const newPersonSchema = z.object({
 })
 ```
 
-#### 2. Use FormField for All Text Inputs
+#### 2. Use FormInput for All Text Inputs
 
-Use the standardized FormField component instead of raw Input components:
+Use the standardized FormInput component instead of raw Input components:
 
 ```typescript
 // ❌ WRONG - Manual input with inline error handling
@@ -727,8 +727,8 @@ Use the standardized FormField component instead of raw Input components:
 />
 {errors.first_name && <p className="text-sm text-red-500">{errors.first_name.message}</p>}
 
-// ✅ CORRECT - Use FormField
-<FormField
+// ✅ CORRECT - Use FormInput
+<FormInput
   id="first_name"
   label="First Name"
   value={watch('first_name')}
@@ -790,8 +790,8 @@ When updating a picker component to use validation:
 - [ ] Define Zod schema for the inline form
 - [ ] Replace `useState` form state with `useForm`
 - [ ] Update submit handler to use `handleSubmit(onSubmit)`
-- [ ] Replace manual Input components with FormField
-- [ ] Add `error` prop to FormField for validation errors
+- [ ] Replace manual Input components with FormInput
+- [ ] Add `error` prop to FormInput for validation errors
 - [ ] Use `isSubmitting` for loading state
 - [ ] Test: Submit empty form → Should show red borders and error messages
 - [ ] Test: Submit valid form → Should create entity and auto-select it
@@ -804,7 +804,7 @@ See `src/components/people-picker.tsx` for the complete reference implementation
 **Key features:**
 - ✅ Zod schema with required first_name and last_name
 - ✅ React Hook Form integration
-- ✅ FormField components with error display
+- ✅ FormInput components with error display
 - ✅ Red borders on validation errors
 - ✅ Auto-select newly created person
 - ✅ Form reset on cancel
@@ -826,10 +826,10 @@ See `src/components/people-picker.tsx` for the complete reference implementation
 
 ### Key Principles
 
-1. **FormField Component (CRITICAL)**
-   - ✅ **ALWAYS use FormField** for all inputs, selects, and textareas
+1. **FormInput Component (CRITICAL)**
+   - ✅ **ALWAYS use FormInput** for all inputs, selects, and textareas
    - ❌ **NEVER use bare** Input, Select, or Textarea components
-   - ⚠️ **Ask user first** if FormField cannot be used
+   - ⚠️ **Ask user first** if FormInput cannot be used
 
 2. **Module Form Validation**
    - ✅ **Always validate on server** with `.parse()` (security boundary)
@@ -840,14 +840,14 @@ See `src/components/people-picker.tsx` for the complete reference implementation
 
 3. **Picker Component Validation**
    - ✅ **Define schemas at component level** (not in separate files)
-   - ✅ **Use FormField with error prop** for consistent error display
+   - ✅ **Use FormInput with error prop** for consistent error display
    - ✅ **Auto-select newly created entities**
    - ✅ **Reset form on cancel**
    - ✅ **Use isSubmitting for loading state**
 
 ### Benefits
 
-1. **Consistency** - FormField ensures uniform styling and behavior
+1. **Consistency** - FormInput ensures uniform styling and behavior
 2. **Type Safety** - Zod schemas provide runtime validation and TypeScript types
 3. **Automatic Validation** - No manual `.safeParse()` calls needed
 4. **Better UX** - Instant feedback with clear error messages

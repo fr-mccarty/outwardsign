@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DialogButton } from "@/components/dialog-button"
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { Label } from "@/components/ui/label"
-import { FormField } from '@/components/form-field'
+import { FormInput } from '@/components/form-input'
 import { PageContainer } from '@/components/page-container'
 import { Loading } from '@/components/loading'
 import { Plus, Edit, Trash2 } from "lucide-react"
@@ -164,7 +164,7 @@ export default function PetitionContextsPage() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <FormField
+              <FormInput
                 id="title"
                 label="Title"
                 value={formData.title}
@@ -172,14 +172,14 @@ export default function PetitionContextsPage() {
                 placeholder="e.g., Christmas Mass, Easter Vigil"
                 required
               />
-              <FormField
+              <FormInput
                 id="description"
                 label="Description"
                 value={formData.description || ''}
                 onChange={(value) => setFormData({ ...formData, description: value })}
                 placeholder="Brief description of when to use this context"
               />
-              <FormField
+              <FormInput
                 id="context"
                 label="Template Text"
                 inputType="textarea"

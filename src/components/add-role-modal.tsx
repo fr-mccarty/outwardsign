@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { createMassRole } from '@/lib/actions/mass-roles'
 import { toast } from 'sonner'
 import type { MassRole } from '@/lib/types'
@@ -102,7 +102,7 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <FormField
+            <FormInput
               id="name"
               label="Mass Role Name"
               value={name}
@@ -114,7 +114,7 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
               disabled={isLoading}
             />
 
-            <FormField
+            <FormInput
               id="description"
               inputType="textarea"
               label="Description"
@@ -127,7 +127,7 @@ export function AddRoleModal({ open, onOpenChange, onRoleCreated }: AddRoleModal
               disabled={isLoading}
             />
 
-            <FormField
+            <FormInput
               id="note"
               inputType="textarea"
               label="Internal Note"

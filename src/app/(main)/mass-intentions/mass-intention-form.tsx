@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createMassIntention, updateMassIntention, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
 import type { Person } from "@/lib/types"
@@ -120,7 +120,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         title="Mass Intention Details"
         description="Core information about this Mass intention"
       >
-        <FormField
+        <FormInput
             id="mass_offered_for"
             label="Mass Offered For"
             description="Who or what this Mass is being offered for (required)"
@@ -149,7 +149,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             onShowPickerChange={assignedMass.setShowPicker}
           />
 
-          <FormField
+          <FormInput
             id="status"
             inputType="select"
             label="Status"
@@ -162,9 +162,9 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
                 {getStatusLabel(value, 'en')}
               </SelectItem>
             ))}
-          </FormField>
+          </FormInput>
 
-          <FormField
+          <FormInput
             id="mass_intention_template_id"
             inputType="select"
             label="Print Template"
@@ -177,7 +177,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
                 {MASS_INTENTION_TEMPLATE_LABELS[value].en}
               </SelectItem>
             ))}
-          </FormField>
+          </FormInput>
       </FormSectionCard>
 
       {/* Dates and Financial Information */}
@@ -185,7 +185,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         title="Dates and Stipend"
         description="When the intention was requested/received and stipend amount"
       >
-        <FormField
+        <FormInput
             id="date_requested"
             inputType="date"
             label="Date Requested"
@@ -194,7 +194,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             onChange={setDateRequested}
           />
 
-          <FormField
+          <FormInput
             id="date_received"
             inputType="date"
             label="Date Received"
@@ -203,7 +203,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
             onChange={setDateReceived}
           />
 
-          <FormField
+          <FormInput
             id="stipend_amount"
             inputType="number"
             label="Stipend Amount"
@@ -221,7 +221,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         title="Template and Notes"
         description="Liturgy template selection and additional information"
       >
-        <FormField
+        <FormInput
           id="mass_intention_template_id"
           label="Liturgy Template"
           inputType="select"
@@ -233,7 +233,7 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           }))}
         />
 
-        <FormField
+        <FormInput
           id="note"
           label="Notes (Optional)"
           description="Additional information or special requests"

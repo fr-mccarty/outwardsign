@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createMassRoleTemplate, updateMassRoleTemplate, type CreateMassRoleTemplateData, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { useRouter } from "next/navigation"
@@ -123,7 +123,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
         title="Template Information"
         description="Define the basic details for this Mass role template"
       >
-        <FormField
+        <FormInput
             id="name"
             label="Template Name"
             value={name}
@@ -135,7 +135,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             disabled={isLoading}
           />
 
-          <FormField
+          <FormInput
             id="description"
             inputType="textarea"
             label="Description"
@@ -148,7 +148,7 @@ export function MassRoleTemplateForm({ template, formId, onLoadingChange }: Mass
             disabled={isLoading}
           />
 
-          <FormField
+          <FormInput
             id="note"
             inputType="textarea"
             label="Note"

@@ -66,15 +66,17 @@ export function CalendarGrid<T extends CalendarItem = CalendarItem>({
   }
 
   const days = getCalendarDays()
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekDaysFull = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekDaysShort = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
   const gridCols = view === 'day' ? 'grid-cols-1' : 'grid-cols-7'
 
   return (
-    <div className={`grid ${gridCols} gap-2`}>
-      {view !== 'day' && weekDays.map((day) => (
-        <div key={day} className="p-2 text-center text-sm font-semibold text-foreground/70 border-b border-border pb-3">
-          {day}
+    <div className={`grid ${gridCols} gap-1 sm:gap-2`}>
+      {view !== 'day' && weekDaysFull.map((day, index) => (
+        <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-semibold text-foreground/70 border-b border-border pb-2 sm:pb-3">
+          <span className="hidden sm:inline">{day}</span>
+          <span className="sm:hidden">{weekDaysShort[index]}</span>
         </div>
       ))}
       {days.map((day, index) => (

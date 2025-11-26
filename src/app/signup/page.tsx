@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { FormField } from '@/components/ui/form-field'
+import { FormInput } from '@/components/form-input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Logo } from '@/components/logo'
 import Link from 'next/link'
@@ -169,7 +169,7 @@ function SignupForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
-            <FormField
+            <FormInput
               id="email"
               label="Email"
               inputType="email"
@@ -179,7 +179,7 @@ function SignupForm() {
               disabled={!!searchParams.get('email')}
               autoFocus
             />
-            <FormField
+            <FormInput
               id="password"
               label="Password"
               description="Must be at least 6 characters"

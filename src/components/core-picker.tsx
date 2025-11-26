@@ -1,24 +1,19 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
+import { useForm, UseFormReturn } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Search, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { CorePickerProps, PickerFieldConfig } from '@/types/core-picker'
 import { cn } from '@/lib/utils'
 import { capitalizeFirstLetter } from '@/lib/utils/formatters'
+import { FormInput } from '@/components/form-input'
 
 /**
  * STABLE DEFAULTS
@@ -28,6 +23,67 @@ import { capitalizeFirstLetter } from '@/lib/utils/formatters'
  */
 const EMPTY_CREATE_FIELDS: PickerFieldConfig[] = []
 const EMPTY_FORM_DATA: Record<string, any> = {}
+
+/**
+ * Build a Zod schema from createFields configuration
+ * This allows us to use React Hook Form's zodResolver for validation
+ */
+function buildSchemaFromFields(fields: PickerFieldConfig[]): z.ZodObject<any> {
+  const shape: Record<string, z.ZodTypeAny> = {}
+
+  fields.forEach((field) => {
+    // Use the field's custom validation if provided
+    if (field.validation) {
+      shape[field.key] = field.required
+        ? field.validation
+        : field.validation.optional()
+    } else {
+      // Build default schema based on field type
+      let fieldSchema: z.ZodTypeAny
+
+      switch (field.type) {
+        case 'email':
+          fieldSchema = z.string().email('Invalid email address')
+          break
+        case 'number':
+          fieldSchema = z.coerce.number()
+          break
+        case 'checkbox':
+          fieldSchema = z.boolean()
+          break
+        case 'date':
+        case 'time':
+        case 'datetime-local':
+        case 'text':
+        case 'tel':
+        case 'textarea':
+        case 'select':
+        case 'custom':
+        default:
+          fieldSchema = z.string()
+          break
+      }
+
+      // Apply required/optional
+      if (field.required) {
+        if (field.type === 'checkbox') {
+          // Checkboxes don't need min length
+          shape[field.key] = fieldSchema
+        } else {
+          // String fields need min(1) to be truly required
+          shape[field.key] = fieldSchema.refine(
+            (val) => val !== undefined && val !== null && val !== '',
+            { message: `${field.label} is required` }
+          )
+        }
+      } else {
+        shape[field.key] = fieldSchema.optional().or(z.literal(''))
+      }
+    }
+  })
+
+  return z.object(shape)
+}
 
 /**
  * CorePicker - Reusable picker modal component
@@ -97,8 +153,6 @@ export function CorePicker<T>({
 }: CorePickerProps<T>) {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [createFormData, setCreateFormData] = useState<Record<string, any>>(defaultCreateFormData)
-  const [createFormErrors, setCreateFormErrors] = useState<Record<string, string>>({})
   const [isCreating, setIsCreating] = useState(false)
   const [entityIdBeingEdited, setEntityIdBeingEdited] = useState<string | null>(null)
 
@@ -108,6 +162,32 @@ export function CorePicker<T>({
 
   // Determine if we're in edit mode
   const isEditMode = editMode && entityToEdit !== null
+
+  // Build Zod schema from createFields - memoized for performance
+  const formSchema = useMemo(() => buildSchemaFromFields(createFields), [createFields])
+
+  // Build default values from createFields and defaultCreateFormData
+  const defaultValues = useMemo(() => {
+    const values: Record<string, any> = {}
+    createFields.forEach((field) => {
+      values[field.key] = field.type === 'checkbox' ? false : ''
+    })
+    return { ...values, ...defaultCreateFormData }
+  }, [createFields, defaultCreateFormData])
+
+  // Initialize React Hook Form
+  const form = useForm<Record<string, any>>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  })
+
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = form
 
   // Auto-open create form when picker opens (or edit form in edit mode)
   useEffect(() => {
@@ -137,23 +217,20 @@ export function CorePicker<T>({
         const entityData: Record<string, any> = {}
         createFields.forEach((field) => {
           const value = (entityToEdit as any)[field.key]
-          if (value !== undefined && value !== null) {
-            entityData[field.key] = value
-          }
+          entityData[field.key] = value !== undefined && value !== null ? value : (field.type === 'checkbox' ? false : '')
         })
-        setCreateFormData(entityData)
+        reset(entityData)
         setEntityIdBeingEdited(getItemId(entityToEdit))
       } else {
         // Create mode: use default form data
-        setCreateFormData(defaultCreateFormData)
+        reset(defaultValues)
         setEntityIdBeingEdited(null)
       }
-      setCreateFormErrors({})
     }
 
     // Update the ref for next render
     previousOpenRef.current = open
-  }, [open, isEditMode, entityToEdit, defaultCreateFormData, createFields, getItemId])
+  }, [open, isEditMode, entityToEdit, defaultValues, createFields, getItemId, reset])
 
   // Client-side search across multiple fields (only when pagination is disabled)
   const filteredItems = useMemo(() => {
@@ -184,12 +261,11 @@ export function CorePicker<T>({
   }
 
   // Reset form to initial state
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setShowCreateForm(false)
-    setCreateFormData(defaultCreateFormData)
-    setCreateFormErrors({})
+    reset(defaultValues)
     setEntityIdBeingEdited(null)
-  }
+  }, [reset, defaultValues])
 
   // Handle item selection
   const handleItemSelect = (item: T) => {
@@ -199,55 +275,8 @@ export function CorePicker<T>({
     setShowCreateForm(false)
   }
 
-  // Handle create form field change
-  const handleCreateFieldChange = (key: string, value: any) => {
-    setCreateFormData((prev) => ({ ...prev, [key]: value }))
-    // Clear error for this field
-    if (createFormErrors[key]) {
-      setCreateFormErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[key]
-        return newErrors
-      })
-    }
-  }
-
-  // Validate create form
-  const validateCreateForm = (): boolean => {
-    const errors: Record<string, string> = {}
-
-    createFields.forEach((field) => {
-      const value = createFormData[field.key]
-
-      // Check required fields
-      if (field.required && !value) {
-        errors[field.key] = `${field.label} is required`
-        return
-      }
-
-      // Run Zod validation if provided
-      if (field.validation && value) {
-        const result = field.validation.safeParse(value)
-        if (!result.success) {
-          errors[field.key] = result.error.issues[0].message
-        }
-      }
-    })
-
-    setCreateFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  // Handle create/update form submission
-  const handleCreateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    e.stopPropagation() // Prevent parent form submission
-
-    if (!validateCreateForm()) {
-      toast.error('Please fix the errors in the form')
-      return
-    }
-
+  // Handle create/update form submission (called by React Hook Form's handleSubmit)
+  const onFormSubmit = async (formData: Record<string, any>) => {
     try {
       setIsCreating(true)
 
@@ -255,11 +284,11 @@ export function CorePicker<T>({
 
       if (isEditMode && entityIdBeingEdited && onUpdateSubmit) {
         // Update existing item
-        resultItem = await onUpdateSubmit(entityIdBeingEdited, createFormData)
+        resultItem = await onUpdateSubmit(entityIdBeingEdited, formData)
         toast.success(`${capitalizeFirstLetter(entityName)} updated successfully`)
       } else if (onCreateSubmit) {
         // Create new item
-        resultItem = await onCreateSubmit(createFormData)
+        resultItem = await onCreateSubmit(formData)
         toast.success(`${capitalizeFirstLetter(entityName)} created successfully`)
       } else {
         return
@@ -276,14 +305,28 @@ export function CorePicker<T>({
     }
   }
 
-  // Render a form field based on configuration
-  const renderFormField = (field: PickerFieldConfig) => {
-    const value = createFormData[field.key] || ''
-    const error = createFormErrors[field.key]
-    const hasError = !!error
+  // Wrapper for form submission that prevents parent form bubbling
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.stopPropagation() // Prevent parent form submission
+    handleSubmit(onFormSubmit)(e)
+  }
 
-    // Custom field type
+  // Helper to safely extract error message as string
+  const getFieldErrorMessage = (fieldKey: string): string | undefined => {
+    const error = errors[fieldKey]
+    if (!error) return undefined
+    const message = error.message
+    return typeof message === 'string' ? message : undefined
+  }
+
+  // Render a form field based on configuration using FormInput
+  const renderFormField = (field: PickerFieldConfig) => {
+    const value = watch(field.key)
+    const errorMessage = getFieldErrorMessage(field.key)
+
+    // Custom field type - FormInput doesn't support custom rendering
     if (field.type === 'custom' && field.render) {
+      const hasError = !!errorMessage
       return (
         <div key={field.key} className="space-y-2">
           <Label htmlFor={field.key} className={cn(hasError && 'text-destructive')}>
@@ -291,14 +334,14 @@ export function CorePicker<T>({
             {field.required && <span className="text-destructive ml-1">*</span>}
           </Label>
           {field.render({
-            value,
-            onChange: (newValue) => handleCreateFieldChange(field.key, newValue),
-            error,
+            value: value ?? '',
+            onChange: (newValue) => setValue(field.key, newValue, { shouldValidate: true }),
+            error: errorMessage,
           })}
           {field.description && !hasError && (
             <p className="text-sm text-muted-foreground">{field.description}</p>
           )}
-          {hasError && <p className="text-sm text-destructive">{error}</p>}
+          {hasError && <p className="text-sm text-destructive">{errorMessage}</p>}
         </div>
       )
     }
@@ -306,57 +349,36 @@ export function CorePicker<T>({
     // Select field
     if (field.type === 'select') {
       return (
-        <div key={field.key} className="space-y-2">
-          <Label htmlFor={field.key} className={cn(hasError && 'text-destructive')}>
-            {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
-          </Label>
-          <Select
-            value={value}
-            onValueChange={(newValue) => handleCreateFieldChange(field.key, newValue)}
-          >
-            <SelectTrigger
-              id={field.key}
-              className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
-            >
-              <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
-            </SelectTrigger>
-            <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {field.description && !hasError && (
-            <p className="text-sm text-muted-foreground">{field.description}</p>
-          )}
-          {hasError && <p className="text-sm text-destructive">{error}</p>}
-        </div>
+        <FormInput
+          key={field.key}
+          id={field.key}
+          label={field.label}
+          inputType="select"
+          value={value ?? ''}
+          onChange={(newValue) => setValue(field.key, newValue, { shouldValidate: true })}
+          options={field.options}
+          description={field.description}
+          required={field.required}
+          error={errorMessage}
+        />
       )
     }
 
     // Textarea field
     if (field.type === 'textarea') {
       return (
-        <div key={field.key} className="space-y-2">
-          <Label htmlFor={field.key} className={cn(hasError && 'text-destructive')}>
-            {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
-          </Label>
-          <Textarea
-            id={field.key}
-            value={value}
-            onChange={(e) => handleCreateFieldChange(field.key, e.target.value)}
-            placeholder={field.placeholder}
-            className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
-          />
-          {field.description && !hasError && (
-            <p className="text-sm text-muted-foreground">{field.description}</p>
-          )}
-          {hasError && <p className="text-sm text-destructive">{error}</p>}
-        </div>
+        <FormInput
+          key={field.key}
+          id={field.key}
+          label={field.label}
+          inputType="textarea"
+          value={value ?? ''}
+          onChange={(newValue) => setValue(field.key, newValue, { shouldValidate: true })}
+          placeholder={field.placeholder}
+          description={field.description}
+          required={field.required}
+          error={errorMessage}
+        />
       )
     }
 
@@ -364,53 +386,34 @@ export function CorePicker<T>({
     if (field.type === 'checkbox') {
       const checked = value === true || value === 'true'
       return (
-        <div key={field.key} className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={field.key}
-              checked={checked}
-              onCheckedChange={(newValue) => handleCreateFieldChange(field.key, newValue)}
-              className={cn(hasError && 'border-destructive')}
-            />
-            <Label
-              htmlFor={field.key}
-              className={cn(
-                'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-                hasError && 'text-destructive'
-              )}
-            >
-              {field.label}
-              {field.required && <span className="text-destructive ml-1">*</span>}
-            </Label>
-          </div>
-          {field.description && !hasError && (
-            <p className="text-sm text-muted-foreground">{field.description}</p>
-          )}
-          {hasError && <p className="text-sm text-destructive">{error}</p>}
-        </div>
+        <FormInput
+          key={field.key}
+          id={field.key}
+          label={field.label}
+          inputType="checkbox"
+          value={checked}
+          onChange={(newValue) => setValue(field.key, newValue, { shouldValidate: true })}
+          description={field.description}
+          required={field.required}
+          error={errorMessage}
+        />
       )
     }
 
-    // Standard input fields
+    // Standard input fields (text, email, tel, date, time, datetime-local, number)
     return (
-      <div key={field.key} className="space-y-2">
-        <Label htmlFor={field.key} className={cn(hasError && 'text-destructive')}>
-          {field.label}
-          {field.required && <span className="text-destructive ml-1">*</span>}
-        </Label>
-        <Input
-          id={field.key}
-          type={field.type}
-          value={value}
-          onChange={(e) => handleCreateFieldChange(field.key, e.target.value)}
-          placeholder={field.placeholder}
-          className={cn(hasError && 'border-destructive focus-visible:ring-destructive')}
-        />
-        {field.description && !hasError && (
-          <p className="text-sm text-muted-foreground">{field.description}</p>
-        )}
-        {hasError && <p className="text-sm text-destructive">{error}</p>}
-      </div>
+      <FormInput
+        key={field.key}
+        id={field.key}
+        label={field.label}
+        inputType={field.type}
+        value={value ?? ''}
+        onChange={(newValue) => setValue(field.key, newValue, { shouldValidate: true })}
+        placeholder={field.placeholder}
+        description={field.description}
+        required={field.required}
+        error={errorMessage}
+      />
     )
   }
 
@@ -456,12 +459,11 @@ export function CorePicker<T>({
         <div className="flex-1 overflow-y-auto px-1">
           {showCreateForm ? (
             /* Inline creation form */
-            <form onSubmit={handleCreateSubmit} className="space-y-4 py-1">
+            <form onSubmit={handleFormSubmit} className="space-y-4 py-1">
               {CustomFormComponent ? (
                 <CustomFormComponent
-                  formData={createFormData}
-                  setFormData={setCreateFormData}
-                  errors={createFormErrors}
+                  form={form}
+                  errors={errors}
                   isEditMode={isEditMode}
                 />
               ) : (

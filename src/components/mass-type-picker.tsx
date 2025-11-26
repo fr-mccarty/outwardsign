@@ -9,9 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Plus } from 'lucide-react'
+import { FormInput } from '@/components/form-input'
 import { toast } from 'sonner'
 import { getMassTypes, createMassType, type MassType } from '@/lib/actions/mass-types'
 
@@ -121,17 +120,15 @@ export function MassTypePicker({ value, onChange, disabled }: MassTypePickerProp
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="create_name">Name *</Label>
-                <Input
-                  id="create_name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Weekend, Daily, Adoration"
-                  required
-                  autoFocus
-                />
-              </div>
+              <FormInput
+                id="create_name"
+                label="Name"
+                value={name}
+                onChange={setName}
+                placeholder="e.g., Weekend, Daily, Adoration"
+                required
+                autoFocus
+              />
             </div>
 
             <div className="flex justify-end gap-2">

@@ -27,8 +27,8 @@ setup('authenticate as staff user', async ({ page }) => {
   await page.fill('input[type="email"]', testEmail);
   await page.fill('input[type="password"]', testPassword);
 
-  // Submit login form
-  await page.click('button[type="submit"]');
+  // Submit login form (use force: true to bypass NextJS dev overlay if present)
+  await page.click('button[type="submit"]', { force: true });
 
   // Wait for successful login - could redirect to dashboard or onboarding
   // Use networkidle instead of load event (dashboard has slow client hydration)

@@ -6,7 +6,7 @@
 - [🔴 Form Input Styling (CRITICAL)](#-form-input-styling-critical)
 - [🔴 Form Component Structure](#-form-component-structure)
 - [🔴 Shared Form Components](#-shared-form-components)
-- [🔴 FormField Usage (CRITICAL - REQUIRED)](#-formfield-usage-critical---required)
+- [🔴 FormInput Usage (CRITICAL - REQUIRED)](#-formfield-usage-critical---required)
 - [Form Event Handling](#form-event-handling)
 - [Validation](#validation)
 
@@ -62,7 +62,7 @@ All module forms should follow this structure (`[entity]-form.tsx`):
 **Key Characteristics:**
 - Detects mode: entity prop = edit, no prop = create
 - **Type**: Accepts `[Entity]WithRelations` for edit mode (not base [Entity] type)
-- Structure: FormFields (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel at BOTTOM)
+- Structure: FormInputs (all inputs) → Checkbox groups → Guidelines Card → Button group (Submit/Cancel at BOTTOM)
 - Uses SaveButton and CancelButton components at the bottom of the form
 - Calls `create[Entity]()` or `update[Entity]()` Server Action
 
@@ -144,7 +144,7 @@ The following components should be used in all forms for consistency:
 ### Core Form Components:
 - **`SaveButton`** - Handles loading state, shows spinner while saving
 - **`CancelButton`** - Standard cancel button with routing
-- **`FormField`** - All-in-one form field component (**REQUIRED** for all inputs/selects/textareas)
+- **`FormInput`** - All-in-one form field component (**REQUIRED** for all inputs/selects/textareas)
 - **`EventDisplay`** - Display event date/time/location in forms
 
 ### Picker Components:
@@ -171,13 +171,13 @@ The following components should be used in all forms for consistency:
 
 ---
 
-## 🔴 FormField Usage (CRITICAL - REQUIRED)
+## 🔴 FormInput Usage (CRITICAL - REQUIRED)
 
-**ALL form inputs, selects, and textareas MUST use the `FormField` component.** This is an all-in-one component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description + error message). This ensures consistent styling, labels, descriptions, accessibility, and layout across the application.
+**ALL form inputs, selects, and textareas MUST use the `FormInput` component.** This is an all-in-one component that takes props and internally renders the complete field structure (Label + Input/Textarea/Select + description + error message). This ensures consistent styling, labels, descriptions, accessibility, and layout across the application.
 
-### How FormField Works:
+### How FormInput Works:
 
-`FormField` is a **props-based component** that accepts field configuration and renders everything internally:
+`FormInput` is a **props-based component** that accepts field configuration and renders everything internally:
 - Automatically renders the `<Label>` connected to the input via `htmlFor`/`id`
 - Renders the appropriate input type (`<Input>`, `<Textarea>`, or `<Select>`)
 - Displays optional description text
@@ -187,8 +187,8 @@ The following components should be used in all forms for consistency:
 ### REQUIRED Pattern:
 
 ```tsx
-// ✅ CORRECT - FormField for text input
-<FormField
+// ✅ CORRECT - FormInput for text input
+<FormInput
   id="field-name"
   label="Field Label"
   description="Optional description text"
@@ -197,8 +197,8 @@ The following components should be used in all forms for consistency:
   required={true}
 />
 
-// ✅ CORRECT - FormField for textarea
-<FormField
+// ✅ CORRECT - FormInput for textarea
+<FormInput
   id="notes"
   label="Notes"
   inputType="textarea"
@@ -207,8 +207,8 @@ The following components should be used in all forms for consistency:
   rows={12}
 />
 
-// ✅ CORRECT - FormField for select
-<FormField
+// ✅ CORRECT - FormInput for select
+<FormInput
   id="status"
   label="Status"
   inputType="select"
@@ -220,8 +220,8 @@ The following components should be used in all forms for consistency:
   ]}
 />
 
-// ✅ CORRECT - FormField for optional select with placeholder
-<FormField
+// ✅ CORRECT - FormInput for optional select with placeholder
+<FormInput
   id="liturgical_color"
   label="Liturgical Color"
   inputType="select"
@@ -259,7 +259,7 @@ The following components should be used in all forms for consistency:
 
 ```tsx
 // ❌ WRONG - Empty string as an option value causes Radix UI errors
-<FormField
+<FormInput
   id="liturgical_color"
   inputType="select"
   value={liturgicalColor || ''}
@@ -272,7 +272,7 @@ The following components should be used in all forms for consistency:
 />
 
 // ✅ CORRECT - Use placeholder prop instead
-<FormField
+<FormInput
   id="liturgical_color"
   inputType="select"
   value={liturgicalColor || ''}
@@ -292,7 +292,7 @@ This is because the Select value can be set to an empty string to clear
 the selection and show the placeholder.
 ```
 
-**Why use FormField?**
+**Why use FormInput?**
 - **Consistency** - All fields have the same structure across the app
 - **Accessibility** - Automatically connects labels to inputs and handles ARIA attributes
 - **Less boilerplate** - One component instead of composing Label + Input + description + error
@@ -302,10 +302,10 @@ the selection and show the placeholder.
 ### Exceptions:
 
 - Picker components (PeoplePicker, EventPicker, ReadingPickerModal) have their own internal structure
-- Radio button groups (not yet supported by FormField - use base shadcn/ui components)
-- File upload inputs (not yet supported by FormField - use base shadcn/ui components)
+- Radio button groups (not yet supported by FormInput - use base shadcn/ui components)
+- File upload inputs (not yet supported by FormInput - use base shadcn/ui components)
 - Special UI patterns explicitly approved by the user
-- **If you encounter a situation where FormField cannot be used, ALWAYS ask the user before proceeding with an alternative approach**
+- **If you encounter a situation where FormInput cannot be used, ALWAYS ask the user before proceeding with an alternative approach**
 
 ---
 
@@ -420,7 +420,7 @@ const onSubmit = async (data: CreateEntityData) => {
 
 // Use in form
 <form onSubmit={handleSubmit(onSubmit)}>
-  <FormField
+  <FormInput
     id="name"
     label="Name"
     value={watch('name')}
@@ -441,7 +441,7 @@ const onSubmit = async (data: CreateEntityData) => {
 **See [VALIDATION.md](./VALIDATION.md) for:**
 - Complete implementation guide
 - Schema definition patterns
-- FormField integration with validation errors
+- FormInput integration with validation errors
 - Picker component validation
 - Common validation rules
 

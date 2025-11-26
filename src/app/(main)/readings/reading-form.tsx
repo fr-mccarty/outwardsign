@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { z } from "zod"
-import { FormField } from "@/components/ui/form-field"
+import { FormInput } from "@/components/form-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { FormSectionCard } from "@/components/form-section-card"
@@ -96,7 +96,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
         title="Reading Details"
         description="Scripture reading or liturgical text information"
       >
-        <FormField
+        <FormInput
           id="pericope"
           label="Pericope"
           value={pericope}
@@ -106,7 +106,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
           description="The scripture reference or title of the reading"
         />
 
-        <FormField
+        <FormInput
           id="language"
           label="Language"
           inputType="select"
@@ -118,7 +118,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
           }))}
         />
 
-        <FormField
+        <FormInput
           id="introduction"
           label="Introduction (Optional)"
           inputType="textarea"
@@ -129,7 +129,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
           description="Text read before the main reading (e.g., &quot;A reading from the Book of Genesis&quot;)"
         />
 
-        <FormField
+        <FormInput
           id="text"
           label="Reading Text"
           inputType="textarea"
@@ -141,7 +141,7 @@ export function ReadingForm({ reading, formId = 'reading-form', onLoadingChange 
           description="The complete text of the scripture reading or liturgical text"
         />
 
-        <FormField
+        <FormInput
           id="conclusion"
           label="Conclusion (Optional)"
           inputType="textarea"

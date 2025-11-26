@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
+import { FormInput } from '@/components/form-input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { createEventType, updateEventType } from '@/lib/actions/event-types'
@@ -92,7 +92,7 @@ export function EventTypeFormDialog({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <FormField
+            <FormInput
               id="name"
               label="Name"
               value={name}
@@ -101,7 +101,7 @@ export function EventTypeFormDialog({
               placeholder="e.g., Parish Meeting, Fundraiser, etc."
             />
 
-            <FormField
+            <FormInput
               id="description"
               label="Description"
               inputType="textarea"
