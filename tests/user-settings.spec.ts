@@ -11,7 +11,7 @@ import { TEST_TIMEOUTS } from './utils/test-config';
 test.describe('User Settings Page', () => {
   test.describe.configure({ mode: 'parallel' });
 
-  test('should display user settings page with tabs', async ({ page }) => {
+  test('should display user settings page with form sections', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
 
     await page.goto('/settings/user');
@@ -20,9 +20,11 @@ test.describe('User Settings Page', () => {
     // Verify page title
     await expect(page.getByRole('heading', { name: 'User Preferences' })).toBeVisible();
 
-    // Verify tabs are present
-    await expect(page.getByRole('tab', { name: /General/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Account/i })).toBeVisible();
+    // Verify form sections are present (single form, no tabs)
+    await expect(page.locator('[data-slot="card-title"]:has-text("Language and Preferences")')).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
+    await expect(page.locator('[data-slot="card-title"]:has-text("Account Information")')).toBeVisible();
   });
 
   test('should display language preference selector', async ({ page }) => {
@@ -30,7 +32,7 @@ test.describe('User Settings Page', () => {
 
     await page.goto('/settings/user');
 
-    // Wait for the page to load (CardTitle is a div, not a heading)
+    // Wait for the page to load
     await expect(page.locator('[data-slot="card-title"]:has-text("Language and Preferences")')).toBeVisible({
       timeout: TEST_TIMEOUTS.DATA_LOAD,
     });
@@ -57,61 +59,45 @@ test.describe('User Settings Page', () => {
     // Select Spanish
     await page.getByRole('option', { name: /Espa.*Spanish/i }).click();
 
-    // Click Save Changes
-    await page.getByRole('button', { name: /Save Changes/i }).click();
+    // Click Save Changes (button in header)
+    await page.getByRole('button', { name: /Save Changes/i }).first().click();
 
     // Wait for save to complete (the button text changes during saving)
-    await expect(page.getByRole('button', { name: /Save Changes/i })).toBeEnabled({ timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await expect(page.getByRole('button', { name: /Save Changes/i }).first()).toBeEnabled({ timeout: TEST_TIMEOUTS.FORM_SUBMIT });
   });
 
-  test('should display account information tab', async ({ page }) => {
+  test('should display account information section', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
 
     await page.goto('/settings/user');
 
-    // Wait for tabs to load
-    await expect(page.getByRole('tab', { name: /Account/i })).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
-
-    // Click on Account tab
-    await page.getByRole('tab', { name: /Account/i }).click();
-
-    // Wait for account info to load (CardTitle is a div, not a heading)
-    await expect(page.locator('[data-slot="card-title"]:has-text("Account Information")')).toBeVisible();
+    // Wait for page to load
+    await expect(page.locator('[data-slot="card-title"]:has-text("Account Information")')).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
 
     // Verify account information fields are present
     await expect(page.getByText('Email')).toBeVisible();
     await expect(page.getByText('User ID')).toBeVisible();
     await expect(page.getByText('Account Created')).toBeVisible();
+    await expect(page.getByText('Settings Last Updated')).toBeVisible();
   });
 
-  test('should show user email in account tab', async ({ page }) => {
+  test('should show user email in account section', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
 
     await page.goto('/settings/user');
 
-    // Wait for tabs to load
-    await expect(page.getByRole('tab', { name: /Account/i })).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+    // Wait for page to load
+    await expect(page.locator('[data-slot="card-title"]:has-text("Account Information")')).toBeVisible({
+      timeout: TEST_TIMEOUTS.DATA_LOAD,
+    });
 
-    // Click on Account tab
-    await page.getByRole('tab', { name: /Account/i }).click();
-
-    // Wait for account info to load
-    await expect(page.locator('[data-slot="card-title"]:has-text("Account Information")')).toBeVisible();
-
-    // Verify email is displayed in the Account tab content (test users have email ending in @outwardsign.test)
-    await expect(page.getByLabel('Account').locator('p:has-text("@outwardsign.test")')).toBeVisible();
+    // Verify email is displayed (test users have email ending in @outwardsign.test)
+    await expect(page.locator('p:has-text("@outwardsign.test")')).toBeVisible();
   });
 
-  test('should have refresh button', async ({ page }) => {
-    // Test is pre-authenticated via playwright/.auth/staff.json
-
-    await page.goto('/settings/user');
-
-    // Verify refresh button exists (wait for page to load first)
-    await expect(page.getByRole('button', { name: /Refresh/i })).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
-  });
-
-  test('should refresh settings when clicking refresh button', async ({ page }) => {
+  test('should have save button in header and footer', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
 
     await page.goto('/settings/user');
@@ -121,13 +107,9 @@ test.describe('User Settings Page', () => {
       timeout: TEST_TIMEOUTS.DATA_LOAD,
     });
 
-    // Click refresh button
-    const refreshButton = page.getByRole('button', { name: /Refresh/i });
-    await refreshButton.click();
-
-    // Wait for refresh to complete (button should still be visible)
-    await expect(refreshButton).toBeVisible();
-    await expect(page.locator('[data-slot="card-title"]:has-text("Language and Preferences")')).toBeVisible();
+    // Verify save buttons exist (one in header, one at bottom)
+    const saveButtons = page.getByRole('button', { name: /Save Changes/i });
+    await expect(saveButtons).toHaveCount(2);
   });
 
   test('should show breadcrumbs with correct navigation', async ({ page }) => {
@@ -164,11 +146,11 @@ test.describe('User Settings Page', () => {
     await languageSelect.click();
     await page.getByRole('option', { name: /Fran.*French/i }).click();
 
-    // Save changes
-    await page.getByRole('button', { name: /Save Changes/i }).click();
+    // Save changes (use first button - in header)
+    await page.getByRole('button', { name: /Save Changes/i }).first().click();
 
     // Wait for save to complete
-    await expect(page.getByRole('button', { name: /Save Changes/i })).toBeEnabled({ timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+    await expect(page.getByRole('button', { name: /Save Changes/i }).first()).toBeEnabled({ timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Reload the page
     await page.reload();

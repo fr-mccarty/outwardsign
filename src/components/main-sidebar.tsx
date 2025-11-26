@@ -421,14 +421,18 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 />
               )}
 
-              <SidebarMenuItem key="UserSettings">
-                <SidebarMenuButton asChild>
-                  <Link href="/settings" onClick={handleLinkClick}>
-                    <User />
-                    <span>User Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <CollapsibleNavSection
+                name="User Settings"
+                icon={User}
+                items={[
+                  {
+                    title: "General",
+                    url: "/settings/user",
+                    icon: Settings,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
             </SidebarMenu>
           </SidebarGroupContent>
