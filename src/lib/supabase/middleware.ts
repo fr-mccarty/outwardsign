@@ -37,9 +37,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Allow access to public pages without authentication
-  const publicPaths = ['/', '/login', '/signup']
-  const isPublicPath = publicPaths.some(path => request.nextUrl.pathname === path)
-  
+  const publicPaths = ['/', '/login', '/signup', '/accept-invitation', '/auth/callback']
+  const publicPathPrefixes = ['/api/invitations']
+
+  const isPublicPath = publicPaths.some(path => request.nextUrl.pathname === path) ||
+    publicPathPrefixes.some(prefix => request.nextUrl.pathname.startsWith(prefix))
+
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
