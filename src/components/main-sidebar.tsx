@@ -21,7 +21,7 @@ import {
   Settings,
   Church,
   Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
-  BookHeart, CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock
+  BookHeart, CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -433,6 +433,15 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 ]}
                 defaultOpen={false}
               />
+
+              <SidebarMenuItem key="Support">
+                <SidebarMenuButton asChild>
+                  <Link href="/support" onClick={handleLinkClick}>
+                    <HelpCircle />
+                    <span>Support</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
             </SidebarMenu>
           </SidebarGroupContent>

@@ -18,7 +18,8 @@ import {
   ChevronRight,
   FileQuestion,
   Code,
-  Heart
+  Heart,
+  Mail
 } from 'lucide-react'
 
 interface NavItem {
@@ -101,6 +102,11 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
       title: lang === 'en' ? 'FAQ' : 'Preguntas Frecuentes',
       href: `/documentation/${lang}/faq`,
       icon: FileQuestion,
+    },
+    {
+      title: lang === 'en' ? 'Contact Us' : 'Contáctanos',
+      href: `/documentation/${lang}/contact`,
+      icon: Mail,
     },
     {
       title: lang === 'en' ? 'For Developers' : 'Para Desarrolladores',
