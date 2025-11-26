@@ -80,7 +80,6 @@ function SignupForm() {
           },
           body: JSON.stringify({
             token: invitationToken,
-            userId: signUpData.user.id,
           }),
         })
 

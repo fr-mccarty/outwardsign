@@ -824,8 +824,8 @@ export function ParishSettingsClient({
       content: petitionsContent
     },
     {
-      value: 'members',
-      label: 'Members',
+      value: 'users',
+      label: 'Users',
       icon: <Users className="h-4 w-4" />,
       badge: members.length + invitations.length,
       content: membersContent

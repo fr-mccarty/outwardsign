@@ -76,7 +76,6 @@ function LoginForm() {
           },
           body: JSON.stringify({
             token: invitationToken,
-            userId: data.user.id,
           }),
         })
 

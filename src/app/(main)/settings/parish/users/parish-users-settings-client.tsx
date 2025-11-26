@@ -31,7 +31,7 @@ import { USER_PARISH_ROLE_LABELS, USER_PARISH_ROLE_VALUES, type UserParishRoleTy
 import { toast } from 'sonner'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
-interface ParishMember {
+interface ParishUser {
   user_id: string
   roles: string[]
   enabled_modules: string[]
@@ -42,27 +42,27 @@ interface ParishMember {
   } | null
 }
 
-interface ParishMembersSettingsClientProps {
+interface ParishUsersSettingsClientProps {
   parish: Parish
-  initialMembers: ParishMember[]
+  initialUsers: ParishUser[]
   initialInvitations: ParishInvitation[]
   currentUserId: string
 }
 
-export function ParishMembersSettingsClient({
+export function ParishUsersSettingsClient({
   parish,
-  initialMembers,
+  initialUsers,
   initialInvitations,
   currentUserId
-}: ParishMembersSettingsClientProps) {
+}: ParishUsersSettingsClientProps) {
   const router = useRouter()
-  const [members, setMembers] = useState<ParishMember[]>(initialMembers)
+  const [users, setUsers] = useState<ParishUser[]>(initialUsers)
   const [invitations, setInvitations] = useState<ParishInvitation[]>(initialInvitations)
   const [saving, setSaving] = useState(false)
-  const [loadingMembers, setLoadingMembers] = useState(false)
-  const [memberToRemove, setMemberToRemove] = useState<{ userId: string; email: string } | null>(null)
+  const [loadingUsers, setLoadingUsers] = useState(false)
+  const [userToRemove, setUserToRemove] = useState<{ userId: string; email: string } | null>(null)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
-  const [memberToEdit, setMemberToEdit] = useState<{ userId: string; email: string; roles: string[]; enabled_modules: string[] } | null>(null)
+  const [userToEdit, setUserToEdit] = useState<{ userId: string; email: string; roles: string[]; enabled_modules: string[] } | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editRole, setEditRole] = useState<UserParishRoleType>('parishioner')
   const [editModules, setEditModules] = useState<string[]>([])
@@ -71,16 +71,16 @@ export function ParishMembersSettingsClient({
   const [inviteRole, setInviteRole] = useState<UserParishRoleType>('staff')
   const [inviteModules, setInviteModules] = useState<string[]>([])
 
-  async function loadMembers() {
+  async function loadUsers() {
     try {
-      setLoadingMembers(true)
-      const membersResult = await getParishMembers(parish.id)
-      setMembers(membersResult.members || [])
+      setLoadingUsers(true)
+      const usersResult = await getParishMembers(parish.id)
+      setUsers(usersResult.members || [])
     } catch (error) {
-      console.error('Error loading members:', error)
-      toast.error('Failed to load parish members')
+      console.error('Error loading users:', error)
+      toast.error('Failed to load parish users')
     } finally {
-      setLoadingMembers(false)
+      setLoadingUsers(false)
     }
   }
 
@@ -95,26 +95,26 @@ export function ParishMembersSettingsClient({
   }
 
   const handleOpenRemoveDialog = (userId: string, email: string) => {
-    setMemberToRemove({ userId, email })
+    setUserToRemove({ userId, email })
     setRemoveDialogOpen(true)
   }
 
   const handleConfirmRemove = async () => {
-    if (!memberToRemove) return
+    if (!userToRemove) return
 
     try {
-      await removeParishMember(parish.id, memberToRemove.userId)
-      toast.success('Member removed successfully')
-      setMemberToRemove(null)
-      await loadMembers()
+      await removeParishMember(parish.id, userToRemove.userId)
+      toast.success('User removed successfully')
+      setUserToRemove(null)
+      await loadUsers()
     } catch (error) {
-      console.error('Error removing member:', error)
-      toast.error('Failed to remove member')
+      console.error('Error removing user:', error)
+      toast.error('Failed to remove user')
       throw error
     }
   }
 
-  const handleInviteMember = async () => {
+  const handleInviteUser = async () => {
     if (!inviteEmail || !inviteRole) {
       toast.error('Please enter an email and select a role')
       return
@@ -180,30 +180,30 @@ export function ParishMembersSettingsClient({
   }
 
   const handleOpenEditDialog = (userId: string, email: string, roles: string[], enabled_modules: string[]) => {
-    setMemberToEdit({ userId, email, roles, enabled_modules })
+    setUserToEdit({ userId, email, roles, enabled_modules })
     setEditRole(roles[0] as UserParishRoleType || 'parishioner')
     setEditModules(enabled_modules || [])
     setEditDialogOpen(true)
   }
 
   const handleConfirmEdit = async () => {
-    if (!memberToEdit) return
+    if (!userToEdit) return
 
     try {
       setSaving(true)
       await updateMemberRole(
         parish.id,
-        memberToEdit.userId,
+        userToEdit.userId,
         [editRole],
         editRole === 'ministry-leader' ? editModules : undefined
       )
-      toast.success('Member role updated successfully')
+      toast.success('User role updated successfully')
       setEditDialogOpen(false)
-      setMemberToEdit(null)
-      await loadMembers()
+      setUserToEdit(null)
+      await loadUsers()
     } catch (error) {
-      console.error('Error updating member role:', error)
-      toast.error('Failed to update member role')
+      console.error('Error updating user role:', error)
+      toast.error('Failed to update user role')
     } finally {
       setSaving(false)
     }
@@ -217,20 +217,20 @@ export function ParishMembersSettingsClient({
     setInviteDialogOpen(true)
   }
 
-  const renderMemberItem = (member: ParishMember) => (
+  const renderUserItem = (user: ParishUser) => (
     <div className="flex items-center justify-between p-4 border rounded-lg">
       <div className="flex-1">
         <div className="font-medium">
-          {member.users?.email || 'Parish Member'}
+          {user.users?.email || 'Parish User'}
         </div>
         <div className="text-sm text-muted-foreground">
-          {member.users?.created_at
-            ? `Member since ${new Date(member.users.created_at).toLocaleDateString()}`
-            : 'Parish team member'
+          {user.users?.created_at
+            ? `User since ${new Date(user.users.created_at).toLocaleDateString()}`
+            : 'Parish team user'
           }
         </div>
         <div className="text-sm text-muted-foreground mt-2">
-          {member.roles.map(role => getRoleLabel(role)).join(', ')}
+          {user.roles.map(role => getRoleLabel(role)).join(', ')}
         </div>
       </div>
       <DropdownMenu>
@@ -242,23 +242,23 @@ export function ParishMembersSettingsClient({
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={() => handleOpenEditDialog(
-              member.user_id,
-              member.users?.email || 'Unknown',
-              member.roles,
-              member.enabled_modules || []
+              user.user_id,
+              user.users?.email || 'Unknown',
+              user.roles,
+              user.enabled_modules || []
             )}
-            disabled={member.user_id === currentUserId}
+            disabled={user.user_id === currentUserId}
           >
             <Edit className="h-4 w-4 mr-2" />
-            {member.user_id === currentUserId ? 'Edit Role (You)' : 'Edit Role'}
+            {user.user_id === currentUserId ? 'Edit Role (You)' : 'Edit Role'}
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => handleOpenRemoveDialog(member.user_id, member.users?.email || 'Unknown')}
+            onClick={() => handleOpenRemoveDialog(user.user_id, user.users?.email || 'Unknown')}
             className="text-destructive"
-            disabled={member.user_id === currentUserId}
+            disabled={user.user_id === currentUserId}
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {member.user_id === currentUserId ? 'Cannot Remove Yourself' : 'Remove from Parish'}
+            {user.user_id === currentUserId ? 'Cannot Remove Yourself' : 'Remove from Parish'}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -268,8 +268,8 @@ export function ParishMembersSettingsClient({
   return (
     <>
       <PageContainer
-        title="Parish Members"
-        description="Manage team members and invitations for your parish"
+        title="Parish Users"
+        description="Manage team users and invitations for your parish"
       >
         {/* Pending Invitations */}
         {invitations.length > 0 && (
@@ -321,24 +321,24 @@ export function ParishMembersSettingsClient({
           </ContentCard>
         )}
 
-        {/* Active Members */}
+        {/* Active Users */}
         <ListCard
-          title={`Parish Members (${members.length})`}
-          description="Manage team members and their roles"
-          items={members}
-          renderItem={renderMemberItem}
-          getItemId={(member) => member.user_id}
+          title={`Parish Users (${users.length})`}
+          description="Manage team users and their roles"
+          items={users}
+          renderItem={renderUserItem}
+          getItemId={(user) => user.user_id}
           onAdd={handleInviteClick}
-          addButtonLabel="Invite Member"
-          emptyMessage="No members found"
+          addButtonLabel="Invite User"
+          emptyMessage="No users found"
         />
       </PageContainer>
 
-      {/* Invite Member Dialog */}
+      {/* Invite User Dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Invite Parish Member</DialogTitle>
+                  <DialogTitle>Invite Parish User</DialogTitle>
                   <DialogDescription>
                     Send an invitation to join this parish. They will receive an email with a link to create their account.
                   </DialogDescription>
@@ -350,7 +350,7 @@ export function ParishMembersSettingsClient({
                     inputType="email"
                     value={inviteEmail}
                     onChange={setInviteEmail}
-                    placeholder="member@example.com"
+                    placeholder="user@example.com"
                     required
                   />
                   <FormInput
@@ -396,20 +396,20 @@ export function ParishMembersSettingsClient({
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleInviteMember} disabled={saving}>
+            <Button onClick={handleInviteUser} disabled={saving}>
               {saving ? 'Sending...' : 'Send Invitation'}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Member Role Dialog */}
+      {/* Edit User Role Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Member Role</DialogTitle>
+            <DialogTitle>Edit User Role</DialogTitle>
             <DialogDescription>
-              Update the role and permissions for <strong>{memberToEdit?.email}</strong>
+              Update the role and permissions for <strong>{userToEdit?.email}</strong>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -463,12 +463,12 @@ export function ParishMembersSettingsClient({
         </DialogContent>
       </Dialog>
 
-      {/* Remove Member Confirmation Dialog */}
+      {/* Remove User Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={removeDialogOpen}
         onOpenChange={setRemoveDialogOpen}
-        title="Remove Parish Member"
-        itemName={memberToRemove?.email}
+        title="Remove Parish User"
+        itemName={userToRemove?.email}
         actionLabel="Remove"
         onConfirm={handleConfirmRemove}
       />

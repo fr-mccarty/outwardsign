@@ -4,16 +4,26 @@ import { setSelectedParish } from '@/lib/auth/parish'
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, userId } = await request.json()
-    
-    if (!token || !userId) {
+    const { token } = await request.json()
+
+    if (!token) {
       return NextResponse.json(
-        { error: 'Token and userId are required' },
+        { error: 'Token is required' },
         { status: 400 }
       )
     }
 
     const supabase = await createClient()
+
+    // Get the authenticated user from the session (server-side verification)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'You must be logged in to accept an invitation' },
+        { status: 401 }
+      )
+    }
 
     // Fetch invitation with parish details
     const { data: invitation, error: invitationError } = await supabase
@@ -32,7 +42,7 @@ export async function POST(request: NextRequest) {
     // Check if invitation has expired
     const now = new Date()
     const expiresAt = new Date(invitation.expires_at)
-    
+
     if (now > expiresAt) {
       return NextResponse.json(
         { error: 'Invitation has expired' },
@@ -48,14 +58,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Note: Email verification is handled during signup process
-    // The invitation token itself provides sufficient security
+    // Verify the authenticated user's email matches the invitation email
+    const userEmail = user.email?.toLowerCase()
+    const invitationEmail = invitation.email.toLowerCase()
 
-    // Add user to parish
+    if (userEmail !== invitationEmail) {
+      return NextResponse.json(
+        { error: `This invitation was sent to ${invitation.email}. You are logged in as ${user.email}.` },
+        { status: 403 }
+      )
+    }
+
+    // Add user to parish (using verified user.id from session, not from request)
     const { error: addUserError } = await supabase
       .from('parish_users')
       .insert({
-        user_id: userId,
+        user_id: user.id,
         parish_id: invitation.parish_id,
         roles: invitation.roles,
         enabled_modules: invitation.enabled_modules

@@ -28,6 +28,8 @@ function AcceptInvitationForm() {
   const [accepting, setAccepting] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [acceptSuccess, setAcceptSuccess] = useState(false)
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
+  const [emailMismatch, setEmailMismatch] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -45,6 +47,9 @@ function AcceptInvitationForm() {
       const { data: { user } } = await supabase.auth.getUser()
 
       setIsAuthenticated(!!user)
+      if (user?.email) {
+        setCurrentUserEmail(user.email)
+      }
 
       // Fetch invitation details
       const response = await fetch(`/api/invitations/${token}`)
@@ -56,9 +61,18 @@ function AcceptInvitationForm() {
 
       setInvitation(data.invitation)
 
-      // If user is already authenticated, auto-accept the invitation
+      // If user is already authenticated, check if their email matches the invitation
       if (user) {
-        await autoAcceptInvitation(user.id)
+        const invitationEmail = data.invitation.email.toLowerCase()
+        const userEmail = user.email?.toLowerCase()
+
+        if (userEmail === invitationEmail) {
+          // Email matches - auto-accept the invitation
+          await autoAcceptInvitation()
+        } else {
+          // Email mismatch - show warning instead of auto-accepting
+          setEmailMismatch(true)
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load invitation')
@@ -67,7 +81,7 @@ function AcceptInvitationForm() {
     }
   }
 
-  const autoAcceptInvitation = async (userId: string) => {
+  const autoAcceptInvitation = async () => {
     setAccepting(true)
     try {
       const response = await fetch('/api/invitations/accept', {
@@ -77,7 +91,6 @@ function AcceptInvitationForm() {
         },
         body: JSON.stringify({
           token,
-          userId,
         }),
       })
 
@@ -107,6 +120,13 @@ function AcceptInvitationForm() {
   const handleLogin = () => {
     if (!invitation) return
     router.push(`/login?invitation=${token}&email=${encodeURIComponent(invitation.email)}`)
+  }
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    // Reload the page to reset state
+    window.location.reload()
   }
 
   // Loading state
@@ -170,6 +190,68 @@ function AcceptInvitationForm() {
                 Redirecting to your dashboard...
               </AlertDescription>
             </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Email mismatch state (logged in as different user than invitation)
+  if (emailMismatch && invitation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center text-amber-600">
+              <AlertCircle className="w-5 h-5 mr-2" />
+              Wrong Account
+            </CardTitle>
+            <CardDescription>
+              This invitation was sent to a different email address
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <p className="mb-2">
+                    This invitation was sent to <strong>{invitation.email}</strong>, but you&apos;re currently signed in as <strong>{currentUserEmail}</strong>.
+                  </p>
+                  <p>
+                    To accept this invitation, please sign out and then sign in with the correct account.
+                  </p>
+                </AlertDescription>
+              </Alert>
+
+              <div className="bg-muted p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Invitation to join:
+                </p>
+                <p className="font-semibold">{invitation.parish_name}</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Role: <span className="font-medium text-foreground">{invitation.roles.join(', ')}</span>
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={handleSignOut}
+                  className="w-full"
+                  size="lg"
+                >
+                  Sign Out & Continue
+                </Button>
+                <Button
+                  onClick={() => router.push('/dashboard')}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  Go to Dashboard
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

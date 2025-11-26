@@ -412,8 +412,8 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       icon: FileText,
                     },
                     {
-                      title: "Members",
-                      url: "/settings/parish/members",
+                      title: "Users",
+                      url: "/settings/parish/users",
                       icon: Users,
                     },
                   ]}
