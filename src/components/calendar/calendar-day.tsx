@@ -39,16 +39,24 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
       ? day.items.filter(item => !isLiturgicalEvent(item))
       : day.items
 
-    // In week/day views, sort so liturgical events appear first
-    if (view === 'week' || view === 'day') {
-      itemsToShow = [...itemsToShow].sort((a, b) => {
+    // Sort events: liturgical first (week/day views), then by start_time (earliest first)
+    itemsToShow = [...itemsToShow].sort((a, b) => {
+      // In week/day views, liturgical events appear first
+      if (view === 'week' || view === 'day') {
         const aIsLiturgical = isLiturgicalEvent(a)
         const bIsLiturgical = isLiturgicalEvent(b)
         if (aIsLiturgical && !bIsLiturgical) return -1
         if (!aIsLiturgical && bIsLiturgical) return 1
-        return 0
-      })
-    }
+      }
+
+      // Sort by start_time (earliest first, events without time go last)
+      const aTime = (a as any).start_time
+      const bTime = (b as any).start_time
+      if (aTime && !bTime) return -1
+      if (!aTime && bTime) return 1
+      if (aTime && bTime) return aTime.localeCompare(bTime)
+      return 0
+    })
 
     // Mobile/tablet view for month - show parish event icons only (below lg breakpoint)
     // Liturgical events are shown as dots near the date number

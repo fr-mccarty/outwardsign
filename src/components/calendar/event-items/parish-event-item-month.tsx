@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { getModuleIcon } from '@/components/calendar/module-icons'
 import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
+import { formatTime } from '@/lib/utils/formatters'
 
 interface ParishEventItemMonthProps {
   event: {
@@ -10,6 +11,7 @@ interface ParishEventItemMonthProps {
     title: string
     moduleType?: string | null
     liturgicalColor?: string // Hex color from liturgical calendar
+    start_time?: string | null
     [key: string]: any
   }
   onClick?: (e: React.MouseEvent) => void
@@ -21,8 +23,13 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
   // Extract liturgical color for left border
   const liturgicalColor = event.liturgicalColor
 
+  // Format tooltip title with time if available
+  const tooltipTitle = event.start_time
+    ? `${event.title} - ${formatTime(event.start_time)}`
+    : event.title
+
   return (
-    <CalendarTooltip title={event.title}>
+    <CalendarTooltip title={tooltipTitle}>
       <div
         className={cn(
           "text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded cursor-pointer transition-all flex items-center gap-0.5 sm:gap-1",

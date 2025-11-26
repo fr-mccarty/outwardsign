@@ -25,6 +25,7 @@ interface LiturgicalCalendarItem extends CalendarItem {
   liturgicalEvent?: GlobalLiturgicalEvent
   liturgicalColor?: string
   moduleType?: string | null
+  start_time?: string | null
 }
 
 // Transform Event to CalendarItem
@@ -40,6 +41,7 @@ function eventToCalendarItem(event: EventWithModuleLink): LiturgicalCalendarItem
     event_type: eventTypeName, // Store the display name for calendar rendering
     isLiturgical: false,
     moduleType: event.moduleLink?.moduleType || null,
+    start_time: event.start_time || null,
   }
 }
 
