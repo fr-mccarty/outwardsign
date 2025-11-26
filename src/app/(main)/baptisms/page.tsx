@@ -47,7 +47,7 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Our Baptisms"
-      description="Manage baptism celebrations in your parish."
+      description="Welcoming new members into the Body of Christ."
       actions={<ModuleCreateButton moduleName="Baptism" href="/baptisms/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

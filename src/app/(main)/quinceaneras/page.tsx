@@ -47,7 +47,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Our Quinceañeras"
-      description="Manage quinceañera celebrations in your parish."
+      description="A Latino tradition celebrating a young woman's 15th birthday and her faith journey."
       actions={<ModuleCreateButton moduleName="Quinceañera" href="/quinceaneras/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

@@ -47,7 +47,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Funerals"
-      description="Manage funeral services in your parish."
+      description="Commending the deceased to God's mercy."
       actions={<ModuleCreateButton moduleName="Funeral" href="/funerals/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

@@ -75,7 +75,7 @@ export default async function MassesPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Masses"
-      description="Manage Mass celebrations in your parish."
+      description="The source and summit of Catholic life."
       actions={
         <div className="flex gap-2">
           {canSchedule && (

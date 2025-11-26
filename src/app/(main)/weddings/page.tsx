@@ -47,7 +47,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Our Weddings"
-      description="Manage wedding celebrations in your parish."
+      description="Uniting couples in the bond of marriage before God."
       actions={<ModuleCreateButton moduleName="Wedding" href="/weddings/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />

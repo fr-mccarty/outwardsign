@@ -47,7 +47,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Our Presentations"
-      description="Manage child presentations in your parish."
+      description="A Latino tradition of presenting children to God, typically at age three."
       actions={<ModuleCreateButton moduleName="Presentation" href="/presentations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
