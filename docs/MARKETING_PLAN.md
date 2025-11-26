@@ -40,7 +40,7 @@ Outward Sign is a free, open-source sacrament and sacramental management tool de
 
 ### Overview
 
-**Philosophy:** Outward Sign remains 100% free to parishes forever. Instead of charging users or seeking venture capital, we pursue sponsorship from Catholic organizations that share our mission of serving the Church and strengthening parish life.
+**Philosophy:** Outward Sign is a free tool for parishes. Instead of charging users or seeking venture capital, we pursue sponsorship from Catholic organizations that share our mission of serving the Church and strengthening parish life.
 
 **Win-Win Value Proposition:** Sponsors gain meaningful brand visibility within a highly targeted Catholic audience (parish leaders and staff) while supporting a tool that directly serves the Church's sacramental mission. Parishes get excellent free software. Everyone wins.
 
@@ -48,7 +48,7 @@ Outward Sign is a free, open-source sacrament and sacramental management tool de
 
 **For Outward Sign:**
 - Sustainable funding without compromising mission
-- Maintains "free forever" promise to parishes
+- Maintains free access for parishes
 - Aligns with Catholic community values
 - No pressure to monetize user data or add paywalls
 - Support from organizations that understand our mission
@@ -280,7 +280,7 @@ Outward Sign is a free, open-source sacrament and sacramental management tool de
 ❌ **We Won't:**
 - Accept sponsors that contradict Catholic teaching
 - Allow sponsors to access private parish data
-- Create paywalls or premium tiers (stay 100% free forever)
+- Create paywalls or premium tiers (stay free for parishes)
 - Compromise user privacy for sponsor benefit
 - Allow intrusive advertising (pop-ups, autoplay videos, etc.)
 - Prioritize sponsor interests over parish needs
@@ -358,7 +358,7 @@ Dear [Contact Name],
 I'm reaching out because [Publisher/Organization] shares Outward Sign's mission: serving Catholic parishes with excellence.
 
 **What is Outward Sign?**
-Outward Sign is a free, open-source sacrament management tool helping Catholic parishes prepare weddings, funerals, baptisms, and other sacramental celebrations with beauty and care. We're built by and for the Catholic community—100% free to parishes, forever.
+Outward Sign is a free, open-source sacrament management tool helping Catholic parishes prepare weddings, funerals, baptisms, and other sacramental celebrations with beauty and care. We're built by and for the Catholic community—a free tool for parishes.
 
 **Why am I reaching out to you?**
 Rather than charging parishes or seeking venture capital, we're pursuing sponsorship from Catholic organizations that want to reach and serve parish leaders. This creates a win-win:
@@ -486,7 +486,7 @@ Three key personas must all approve adoption:
 **Key Points:**
 - Setup: 15 minutes. First wedding: 20 minutes. Never start from scratch again.
 - Walk into the sacristy confident: complete, print-ready scripts every time
-- Free forever - no budget request, no finance committee approval needed
+- Free tool - no budget request, no finance committee approval needed
 - Your team handles the details; you celebrate beautifully
 
 **Addressing Concerns:**
@@ -942,7 +942,7 @@ Based on persona feedback, recommended homepage flow:
 14. **Final CTA**
     - "Beautiful Celebrations Are Evangelization"
     - Two CTAs: "Get Started Free" + "Sign In to Your Parish"
-    - Trust signals: "No credit card • Free forever • Open source"
+    - Trust signals: "No credit card • Free tool • Open source"
 
 ### Persona-Specific Landing Pages
 

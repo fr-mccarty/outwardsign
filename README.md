@@ -408,7 +408,7 @@ For additional help, check the [GitHub Issues](https://github.com/yourusername/o
 
 ## 💝 Free & Open Source
 
-**Outward Sign is completely free and always will be.**
+**Outward Sign is a free tool for Catholic parishes.**
 
 This project is open source and built for the Catholic community. We believe that every parish, regardless of size or budget, should have access to excellent tools for celebrating the sacraments and sacramentals.
 

@@ -23,7 +23,7 @@
 - The emphasis on having scripts "printed and ready in a binder for the priest" shows they understand exactly what he needs
 
 **Budget concerns immediately addressed:**
-- "Free forever • No credit card required • No hidden fees" appears THREE times - this directly addresses his chronic budget anxiety
+- "Free tool • No credit card required • No hidden fees" appears multiple times - this directly addresses his chronic budget anxiety
 - The entire "Free & Open Source" section speaks to his financial constraints
 
 **Simplicity promise:**
@@ -42,7 +42,7 @@
 - *"Will this create MORE work initially while we're transitioning from our current system?"*
 
 **Trust issues:**
-- *"It says it's free forever, but there must be a catch. What am I missing?"*
+- *"It says it's free, but there must be a catch. What am I missing?"*
 - *"Is anyone actually using this? I don't see any testimonials from other priests."*
 
 ### Persuasiveness: **6/10 - Interested but Cautious**
@@ -99,7 +99,7 @@ She'd probably create a detailed pros/cons list, visit the site multiple times, 
 ### What Would Resonate with Her ✅
 
 **Financial sustainability addressed upfront:**
-- "Free forever • No credit card required • No hidden fees" repeated three times - This is music to her ears given her constant budget scrutiny
+- "Free tool • No credit card required • No hidden fees" repeated multiple times - This is music to her ears given her constant budget scrutiny
 - "No subscriptions, no hidden fees, no limitations—ever" - Directly addresses her #1 concern: "Can we really afford this?"
 - "Every parish deserves access to excellent sacrament preparation tools, regardless of budget" - This aligns with her stewardship values
 
@@ -141,7 +141,7 @@ She'd probably create a detailed pros/cons list, visit the site multiple times, 
 
 ### Persuasiveness: **5/10 - Skeptical but Open-Minded**
 
-Carmen would highlight the "free forever" feature in yellow on her printout, then write in the margin: "Too good to be true?" She'd create a spreadsheet comparing current costs vs. potential time savings, research the open source sustainability model, and want to schedule a call with someone who can answer her technical and financial questions before recommending adoption to Fr. Michael. Her pro-social nature means she wants this to work for her colleagues, but her fiduciary responsibility means she needs to see the complete picture first.
+Carmen would highlight the "free tool" feature in yellow on her printout, then write in the margin: "Too good to be true?" She'd create a spreadsheet comparing current costs vs. potential time savings, research the open source sustainability model, and want to schedule a call with someone who can answer her technical and financial questions before recommending adoption to Fr. Michael. Her pro-social nature means she wants this to work for her colleagues, but her fiduciary responsibility means she needs to see the complete picture first.
 
 ---
 
@@ -205,7 +205,7 @@ Add a brief FAQ or sidebar:
 
 **"Why is this free?"**
 
-"We believe every parish deserves excellent sacrament preparation tools, regardless of budget. This is our service to the Catholic community, built by developers who care about the Church. Open source means transparent, community-supported, and free forever."
+"We believe every parish deserves excellent sacrament preparation tools, regardless of budget. This is our service to the Catholic community, built by developers who care about the Church. Open source means transparent and community-supported."
 
 ### 9. **Demonstrate Theological Understanding** (Both)
 
@@ -217,7 +217,7 @@ The catechism quote is good, but add:
 ### 10. **Add a "Common Questions" Section**
 
 Address:
-- "Is this really free forever?" → Yes, explanation
+- "Is this really free?" → Yes, explanation
 - "What if I need help?" → Support options
 - "Can I try it before committing?" → Guest/demo mode
 - "What if my parish has unique needs?" → Customization options

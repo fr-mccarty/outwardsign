@@ -660,7 +660,7 @@ export const HOME_PAGE_TRANSLATIONS = {
       subtitle: "The Sacraments and Sacramentals are the core activity of your parish. Stop juggling scattered documents, endless email chains, and last-minute scrambling. Prepare beautiful celebrations.",
       getStartedFree: "Get Started Free",
       seeHowItWorks: "See How It Works",
-      disclaimer: "Free forever • No credit card required • Open source",
+      disclaimer: "Free tool • No credit card required • Open source",
       problemStatement: "An outward sign instituted by Christ to give grace.",
       problemDescription: "This is the traditional Catholic definition of a sacrament. From weddings to funerals, baptisms to quinceañeras—with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
     },
@@ -744,7 +744,7 @@ export const HOME_PAGE_TRANSLATIONS = {
         description: "Built for the Catholic community. Every parish deserves access to excellent sacrament preparation tools, regardless of budget. No subscriptions, no hidden fees, no limitations—ever.",
         noCost: {
           title: "No Cost",
-          description: "Use all features free forever"
+          description: "Use all features for free"
         },
         openSource: {
           title: "Open Source",
@@ -899,12 +899,12 @@ export const HOME_PAGE_TRANSLATIONS = {
       subtitle: "Join parishes who are creating moments of profound spiritual significance through careful preparation, clear communication, and beautiful celebrations of these outward signs instituted by Christ to give grace.",
       getStartedFree: "Get Started Free",
       signInToYourParish: "Sign In to Your Parish",
-      disclaimer: "100% Free Forever • No Credit Card • No Hidden Fees • Open Source"
+      disclaimer: "Free Tool • No Credit Card • No Hidden Fees • Open Source"
     },
     footer: {
       madeWith: "Made with care for Catholic parishes",
       collaboration: "A collaborative effort between CatholicOS and Lolek Productions",
-      freeForever: "Free Forever",
+      freeForever: "Free Tool",
       openSource: "Open Source",
       viewOnGithub: "View on GitHub",
       license: "Licensed under MIT • Community-driven development"
@@ -927,7 +927,7 @@ export const HOME_PAGE_TRANSLATIONS = {
       subtitle: "Los Sacramentos y Sacramentales son la actividad central de tu parroquia. Deja de hacer malabarismos con documentos dispersos, cadenas interminables de correos electrónicos y preparativos de último minuto. Prepara celebraciones hermosas.",
       getStartedFree: "Comenzar Gratis",
       seeHowItWorks: "Ver Cómo Funciona",
-      disclaimer: "Gratis para siempre • No se requiere tarjeta de crédito • Código abierto",
+      disclaimer: "Herramienta gratuita • No se requiere tarjeta de crédito • Código abierto",
       problemStatement: "Un signo visible instituido por Cristo para dar la gracia.",
       problemDescription: "Esta es la definición católica tradicional de un sacramento. Desde bodas hasta funerales, bautismos hasta quinceañeras—con comunicación clara y preparación adecuada, creas momentos de profundo significado espiritual para los individuos y toda la comunidad."
     },
@@ -1011,7 +1011,7 @@ export const HOME_PAGE_TRANSLATIONS = {
         description: "Construido para la comunidad católica. Cada parroquia merece acceso a excelentes herramientas de preparación sacramental, independientemente del presupuesto. Sin suscripciones, sin tarifas ocultas, sin limitaciones—nunca.",
         noCost: {
           title: "Sin Costo",
-          description: "Usa todas las funciones gratis para siempre"
+          description: "Usa todas las funciones gratis"
         },
         openSource: {
           title: "Código Abierto",
@@ -1166,12 +1166,12 @@ export const HOME_PAGE_TRANSLATIONS = {
       subtitle: "Únete a las parroquias que están creando momentos de profundo significado espiritual a través de una preparación cuidadosa, comunicación clara y celebraciones hermosas de estos signos visibles instituidos por Cristo para dar la gracia.",
       getStartedFree: "Comenzar Gratis",
       signInToYourParish: "Inicia Sesión en tu Parroquia",
-      disclaimer: "100% Gratis Para Siempre • Sin Tarjeta de Crédito • Sin Tarifas Ocultas • Código Abierto"
+      disclaimer: "Herramienta Gratuita • Sin Tarjeta de Crédito • Sin Tarifas Ocultas • Código Abierto"
     },
     footer: {
       madeWith: "Hecho con cuidado para parroquias católicas",
       collaboration: "Un esfuerzo colaborativo entre CatholicOS y Lolek Productions",
-      freeForever: "Gratis Para Siempre",
+      freeForever: "Herramienta Gratuita",
       openSource: "Código Abierto",
       viewOnGithub: "Ver en GitHub",
       license: "Licenciado bajo MIT • Desarrollo impulsado por la comunidad"

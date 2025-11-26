@@ -8,7 +8,7 @@ Outward Sign is a free, open-source sacrament and sacramental management tool de
 
 ### Is Outward Sign really free?
 
-Yes! Outward Sign is 100% free forever. There are no subscription fees, no hidden costs, and no credit card required. It's built for the Catholic community by the Catholic community.
+Yes! Outward Sign is a free tool. There are no subscription fees, no hidden costs, and no credit card required. It's built for the Catholic community by the Catholic community.
 
 ### Do I need technical knowledge to use Outward Sign?
 

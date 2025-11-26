@@ -490,11 +490,11 @@ Generate liturgy script and print for presider.
 
 ### General Questions
 
-**Q: Is this really free forever?**
-A: Yes! Outward Sign is funded by Catholic sponsors who want to support parish ministry. You'll never be charged for using any features.
+**Q: Is this really free?**
+A: Yes! Outward Sign is a free tool funded by Catholic sponsors who want to support parish ministry. You won't be charged for using any features.
 
 **Q: What if I need help?**
-A: Email support@outwardsign.church or check our documentation. We typically respond within 24 hours.
+A: Email fr.josh@lolekproductions.org or check our documentation. We typically respond within 48 hours.
 
 **Q: Can I export my data if I ever want to leave?**
 A: Absolutely. Export all events, people, and readings anytime. No vendor lock-in.
@@ -555,7 +555,7 @@ A: Yes. All data is encrypted and stored securely. We follow industry best pract
 
 **Problem: I'm locked out of my account**
 - Too many failed login attempts? Wait 15 minutes and try again
-- Still locked? Email support@outwardsign.church with your email address
+- Still locked? Email fr.josh@lolekproductions.org with your email address
 
 ### Event Creation Issues
 
@@ -601,8 +601,8 @@ A: Yes. All data is encrypted and stored securely. We follow industry best pract
 
 ### Contact Support
 
-**Email:** support@outwardsign.church
-**Response Time:** Within 24 hours (usually faster)
+**Email:** fr.josh@lolekproductions.org
+**Response Time:** Within 48 hours
 
 **When contacting support, include:**
 - Your parish name
@@ -653,4 +653,4 @@ We review all feedback and prioritize based on what serves parishes best.
 
 **Welcome to Outward Sign. Let's make sacrament preparation simple and beautiful together.**
 
-*Questions? Email us at support@outwardsign.church*
+*Questions? Email us at fr.josh@lolekproductions.org*

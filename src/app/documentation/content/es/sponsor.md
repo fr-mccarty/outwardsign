@@ -220,7 +220,7 @@ Absolutamente. Podemos incluir dedicatorias conmemorativas u honoríficas con el
 
 ### ¿Qué pasa si nuestra parroquia no puede pagar el patrocinio?
 
-Outward Sign es y siempre será **100% gratuito** para todas las parroquias. El patrocinio nunca es requerido para usar la aplicación completa. Las parroquias adineradas y los donantes generosos patrocinan el proyecto para que cada parroquia, independientemente de los recursos, pueda beneficiarse.
+Outward Sign es una **herramienta gratuita** para todas las parroquias. El patrocinio nunca es requerido para usar la aplicación completa. Las parroquias adineradas y los donantes generosos patrocinan el proyecto para que cada parroquia, independientemente de los recursos, pueda beneficiarse.
 
 ### ¿Podemos patrocinar características específicas?
 

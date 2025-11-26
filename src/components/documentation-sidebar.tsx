@@ -19,7 +19,8 @@ import {
   FileQuestion,
   Code,
   Heart,
-  Mail
+  Mail,
+  HandHeart
 } from 'lucide-react'
 
 interface NavItem {
@@ -107,6 +108,11 @@ export function DocumentationSidebar({ lang }: DocumentationSidebarProps) {
       title: lang === 'en' ? 'Contact Us' : 'Contáctanos',
       href: `/documentation/${lang}/contact`,
       icon: Mail,
+    },
+    {
+      title: lang === 'en' ? 'Support the Project' : 'Apoya el Proyecto',
+      href: `/documentation/${lang}/support`,
+      icon: HandHeart,
     },
     {
       title: lang === 'en' ? 'For Developers' : 'Para Desarrolladores',

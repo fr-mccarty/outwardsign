@@ -8,7 +8,7 @@ Outward Sign es una herramienta gratuita y de código abierto para la gestión d
 
 ### ¿Outward Sign es realmente gratis?
 
-¡Sí! Outward Sign es 100% gratis para siempre. No hay tarifas de suscripción, sin costos ocultos y no se requiere tarjeta de crédito. Está construido para la comunidad católica por la comunidad católica.
+¡Sí! Outward Sign es una herramienta gratuita. No hay tarifas de suscripción, sin costos ocultos y no se requiere tarjeta de crédito. Está construido para la comunidad católica por la comunidad católica.
 
 ### ¿Necesito conocimientos técnicos para usar Outward Sign?
 

@@ -220,7 +220,7 @@ Absolutely. We can include memorial or honorific dedications with your sponsorsh
 
 ### What if our parish can't afford sponsorship?
 
-Outward Sign is and always will be **100% free** for all parishes. Sponsorship is never required to use the full application. Wealthy parishes and generous donors sponsor the project so that every parish, regardless of resources, can benefit.
+Outward Sign is a **free tool** for all parishes. Sponsorship is never required to use the full application. Wealthy parishes and generous donors sponsor the project so that every parish, regardless of resources, can benefit.
 
 ### Can we sponsor specific features?
 
