@@ -75,8 +75,8 @@ const translations = {
       getStartedFree: "Get Started Free",
       seeHowItWorks: "See How It Works",
       disclaimer: "Free tool • No credit card required • Open source",
-      problemStatement: "An outward sign instituted by Christ to give grace.",
-      problemDescription: "This is the traditional Catholic definition of a sacrament. From weddings to funerals, baptisms to quinceañeras—with clear communication and proper preparation, you create moments of profound spiritual significance for individuals and the entire community."
+      catechismQuote: "A Sacrament is an outward sign instituted by Christ to give grace.",
+      catechismReference: "— Baltimore Catechism No. 3, Lesson 13 (Third Plenary Council of Baltimore, 1885)"
     },
     features: {
       sectionTitle: "Everything You Need in One Place",
@@ -200,8 +200,6 @@ const translations = {
     sacraments: {
       sectionTitle: "Manage Every Sacrament & Sacramental",
       sectionSubtitle: "Dedicated workflows for each type of sacrament and sacramental your parish celebrates.",
-      catechismQuote: "The sacraments are efficacious signs of grace, instituted by Christ and entrusted to the Church, by which divine life is dispensed to us.",
-      catechismReference: "— Catechism of the Catholic Church (CCC 1131)",
       weddings: {
         title: "Weddings",
         description: "Bride, groom, ceremony planning, and celebration details"
@@ -385,8 +383,8 @@ const translations = {
       getStartedFree: "Comenzar Gratis",
       seeHowItWorks: "Ver Cómo Funciona",
       disclaimer: "Herramienta gratuita • No se requiere tarjeta de crédito • Código abierto",
-      problemStatement: "Un signo visible instituido por Cristo para dar la gracia.",
-      problemDescription: "Esta es la definición católica tradicional de un sacramento. Desde bodas hasta funerales, bautismos hasta quinceañeras—con comunicación clara y preparación adecuada, creas momentos de profundo significado espiritual para los individuos y toda la comunidad."
+      catechismQuote: "Un Sacramento es un signo exterior instituido por Cristo para dar la gracia.",
+      catechismReference: "— Catecismo de Baltimore No. 3, Lección 13 (Tercer Concilio Plenario de Baltimore, 1885)"
     },
     features: {
       sectionTitle: "Todo lo que Necesitas en un Solo Lugar",
@@ -510,8 +508,6 @@ const translations = {
     sacraments: {
       sectionTitle: "Gestiona Cada Sacramento y Sacramental",
       sectionSubtitle: "Flujos de trabajo dedicados para cada tipo de sacramento y sacramental que tu parroquia celebra.",
-      catechismQuote: "Los sacramentos son signos eficaces de la gracia, instituidos por Cristo y confiados a la Iglesia, por los cuales nos es dispensada la vida divina.",
-      catechismReference: "— Catecismo de la Iglesia Católica (CIC 1131)",
       weddings: {
         title: "Bodas",
         description: "Novia, novio, planificación de ceremonia y detalles de celebración"
@@ -950,9 +946,11 @@ function HomeContent() {
           <div className="max-w-4xl mx-auto pt-12">
             <Card className="border-2 border-primary/20 bg-primary/5">
               <CardContent className="p-8">
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  <span className="font-semibold text-foreground">{t.hero.problemStatement}</span>
-                  {" "}{t.hero.problemDescription}
+                <p className="text-xl md:text-2xl font-semibold italic text-foreground leading-relaxed text-center">
+                  "{t.hero.catechismQuote}"
+                </p>
+                <p className="text-sm text-muted-foreground text-center mt-4">
+                  {t.hero.catechismReference}
                 </p>
               </CardContent>
             </Card>
@@ -1090,20 +1088,6 @@ function HomeContent() {
                 {t.sacraments.sectionSubtitle}
               </p>
             </div>
-
-          {/* Catechism Quote Banner */}
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-2 border-primary/20 bg-primary/5">
-              <CardContent className="p-8">
-                <p className="text-lg italic text-muted-foreground leading-relaxed text-center">
-                  "{t.sacraments.catechismQuote}"
-                </p>
-                <p className="text-sm text-muted-foreground text-center mt-4">
-                  {t.sacraments.catechismReference}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card className="bg-card text-card-foreground text-center hover:shadow-lg transition-all hover:border-primary/20 border">
