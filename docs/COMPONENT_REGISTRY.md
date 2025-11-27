@@ -784,7 +784,7 @@ const bride = usePickerState<Person>()
 - `placeholder`: Button text when no event selected
 - `required`: Show required indicator
 - `openToNewEvent`: Auto-open create form when no event is selected (use `!value`, default: false)
-- `defaultEventType`: Default event type for creation (e.g., "MASS", "WEDDING", "FUNERAL")
+- `defaultRelatedEventType`: Default event type for creation (e.g., "MASS", "WEDDING", "FUNERAL")
 - `defaultName`: Pre-fills the event name field in create form - useful for module-specific defaults like "Holy Mass" for masses
 - `disableSearch`: Disable search functionality
 - `error`: Validation error message
@@ -808,7 +808,7 @@ const weddingEvent = usePickerState<Event>()
   onShowPickerChange={weddingEvent.setShowPicker}
   placeholder="Select Wedding Event"
   openToNewEvent={!weddingEvent.value}
-  defaultEventType="WEDDING"
+  defaultRelatedEventType="WEDDING"
   defaultName="Wedding Ceremony"
   disableSearch={true}
 />
@@ -823,7 +823,7 @@ const massEvent = usePickerState<Event>()
   onValueChange={massEvent.setValue}
   showPicker={massEvent.showPicker}
   onShowPickerChange={massEvent.setShowPicker}
-  defaultEventType="MASS"
+  defaultRelatedEventType="MASS"
   defaultName="Holy Mass"
   openToNewEvent={!massEvent.value}
 />
@@ -991,7 +991,7 @@ export function MyForm({ initialData }: MyFormProps) {
         onShowPickerChange={weddingEvent.setShowPicker}
         placeholder="Select Wedding Event"
         openToNewEvent={!weddingEvent.value}
-        defaultEventType="WEDDING"
+        defaultRelatedEventType="WEDDING"
         defaultName="Wedding Ceremony"
       />
 

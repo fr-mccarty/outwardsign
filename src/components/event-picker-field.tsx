@@ -4,6 +4,7 @@ import { EventPicker } from '@/components/event-picker'
 import { PickerField } from '@/components/picker-field'
 import { Calendar, ExternalLink } from 'lucide-react'
 import type { Event } from '@/lib/types'
+import type { RelatedEventType } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -19,7 +20,7 @@ interface EventPickerFieldProps {
   placeholder?: string
   required?: boolean
   openToNewEvent?: boolean
-  defaultEventType?: string
+  defaultRelatedEventType?: RelatedEventType
   defaultName?: string
   disableSearch?: boolean
   visibleFields?: string[] // Optional fields to show: 'location', 'note'
@@ -66,7 +67,7 @@ export function EventPickerField({
   placeholder = 'Select Event',
   required = false,
   openToNewEvent = false,
-  defaultEventType,
+  defaultRelatedEventType,
   defaultName,
   disableSearch = false,
   visibleFields,
@@ -101,8 +102,12 @@ export function EventPickerField({
         required={required}
         icon={Calendar}
         renderValue={(event) => (
-          <span className="leading-tight">{formatEventDateTime(event)}</span>
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium leading-tight">{event.name}</span>
+            <span className="text-xs text-muted-foreground leading-tight">{formatEventDateTime(event)}</span>
+          </div>
         )}
+        displayLayout="multi-line"
         navigationButton={
           <Button
             type="button"
@@ -123,7 +128,7 @@ export function EventPickerField({
           selectedEventId={value?.id}
           selectedEvent={value}
           openToNewEvent={openToNewEvent}
-          defaultEventType={defaultEventType}
+          defaultRelatedEventType={defaultRelatedEventType}
           defaultName={defaultName}
           disableSearch={disableSearch}
           visibleFields={visibleFields}

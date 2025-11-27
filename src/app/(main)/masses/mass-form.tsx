@@ -350,7 +350,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             onValueChange={event.setValue}
             showPicker={event.showPicker}
             onShowPickerChange={event.setShowPicker}
-            defaultEventType="MASS"
+            defaultRelatedEventType="MASS"
             defaultName="Holy Mass"
             openToNewEvent={!event.value}
           />

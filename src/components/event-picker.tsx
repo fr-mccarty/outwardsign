@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { EventFormFields } from '@/components/event-form-fields'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
+import type { RelatedEventType } from '@/lib/constants'
 
 interface EventPickerProps {
   open: boolean
@@ -20,7 +21,7 @@ interface EventPickerProps {
   selectedEventId?: string
   selectedEvent?: Event | null
   className?: string
-  defaultEventType?: string
+  defaultRelatedEventType?: RelatedEventType
   defaultName?: string
   openToNewEvent?: boolean
   disableSearch?: boolean
@@ -59,7 +60,7 @@ export function EventPicker({
   placeholder = 'Search for an event...',
   emptyMessage = 'No events found.',
   selectedEventId,
-  defaultEventType = 'EVENT',
+  defaultRelatedEventType,
   defaultName = '',
   openToNewEvent = false,
   visibleFields,
@@ -199,7 +200,7 @@ export function EventPicker({
   const handleCreateEvent = async (data: any): Promise<Event> => {
     const newEvent = await createEvent({
       name: data.name,
-      related_event_type: defaultEventType as any,
+      related_event_type: defaultRelatedEventType,
       start_date: data.start_date,
       start_time: data.start_time,
       timezone: data.timezone || getDefaultTimezone(),
@@ -217,7 +218,7 @@ export function EventPicker({
   const handleUpdateEvent = async (id: string, data: any): Promise<Event> => {
     const updatedEvent = await updateEvent(id, {
       name: data.name,
-      related_event_type: data.related_event_type || defaultEventType,
+      related_event_type: data.related_event_type || defaultRelatedEventType,
       start_date: data.start_date,
       start_time: data.start_time,
       timezone: data.timezone || getDefaultTimezone(),

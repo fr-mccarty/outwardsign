@@ -469,7 +469,7 @@ Pass default values to the create form:
   onValueChange={event.setValue}
   showPicker={event.showPicker}
   onShowPickerChange={event.setShowPicker}
-  defaultEventType="MASS"
+  defaultRelatedEventType="MASS"
   defaultName="Holy Mass" // Pre-fills the name field
   openToNewEvent={true}
 />
@@ -630,7 +630,7 @@ interface EventPickerProps {
   onOpenChange: (open: boolean) => void
   onSelect: (event: Event) => void
   selectedEventId?: string
-  defaultEventType?: string // Default: 'EVENT'
+  defaultRelatedEventType?: string // Default: 'EVENT'
   defaultName?: string // Pre-fill event name field
   visibleFields?: string[] // ['location', 'note']
   requiredFields?: string[] // ['location']
@@ -641,7 +641,7 @@ interface EventPickerProps {
 
 **Key Props:**
 - `defaultName` - Pre-fills the event name field in the create form. Useful for setting module-specific defaults (e.g., "Holy Mass" for masses, "Wedding" for weddings)
-- `defaultEventType` - Sets the event type (e.g., "MASS", "WEDDING", "FUNERAL")
+- `defaultRelatedEventType` - Sets the event type (e.g., "MASS", "WEDDING", "FUNERAL")
 
 **Visible Fields:**
 - `location` - Nested LocationPicker (custom field)
@@ -810,7 +810,7 @@ const suggestedEventName = useMemo(() => {
   showPicker={weddingEvent.showPicker}
   onShowPickerChange={weddingEvent.setShowPicker}
   openToNewEvent={!isEditing}
-  defaultEventType="WEDDING"
+  defaultRelatedEventType="WEDDING"
   defaultCreateFormData={{ name: suggestedEventName }}
 />
 ```

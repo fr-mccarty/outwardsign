@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { LITURGICAL_LANGUAGE_VALUES } from '@/lib/constants'
+import { LITURGICAL_LANGUAGE_VALUES, RELATED_EVENT_TYPE_VALUES } from '@/lib/constants'
 
 // Create event schema
 export const createEventSchema = z.object({
@@ -7,14 +7,7 @@ export const createEventSchema = z.object({
   description: z.string().optional().nullable(),
   responsible_party_id: z.string().uuid().optional().nullable(),
   event_type_id: z.string().uuid().optional().nullable(),
-  related_event_type: z.enum([
-    'wedding',
-    'funeral',
-    'baptism',
-    'presentation',
-    'quinceanera',
-    'mass',
-  ]).optional().nullable(),
+  related_event_type: z.enum(RELATED_EVENT_TYPE_VALUES).optional().nullable(),
   start_date: z.string().optional().nullable(),
   start_time: z.string().optional().nullable(),
   end_date: z.string().optional().nullable(),

@@ -151,7 +151,7 @@ const weddingEvent = usePickerState<Event>()
   showPicker={weddingEvent.showPicker}
   onShowPickerChange={weddingEvent.setShowPicker}
   openToNewEvent={!weddingEvent.value}  // ✅ CORRECT: Check if THIS event is set
-  defaultEventType="WEDDING"
+  defaultRelatedEventType="WEDDING"
 />
 ```
 
@@ -285,7 +285,7 @@ export function WeddingForm({ wedding }: WeddingFormProps) {
         showPicker={weddingEvent.showPicker}
         onShowPickerChange={weddingEvent.setShowPicker}
         openToNewEvent={!weddingEvent.value}  // ✅ Opens when event field is empty
-        defaultEventType="WEDDING"
+        defaultRelatedEventType="WEDDING"
       />
     </form>
   )

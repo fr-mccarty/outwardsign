@@ -334,7 +334,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             onShowPickerChange={quinceaneraEvent.setShowPicker}
             placeholder="Add Quinceañera Ceremony"
             openToNewEvent={!quinceaneraEvent.value}
-            defaultEventType="QUINCEANERA"
+            defaultRelatedEventType="QUINCEANERA"
             defaultName={RELATED_EVENT_TYPE_LABELS.QUINCEANERA.en}
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedQuinceaneraName }}
@@ -354,7 +354,7 @@ export function QuinceaneraForm({ quinceanera, formId, onLoadingChange }: Quince
             onShowPickerChange={quinceaneraReception.setShowPicker}
             placeholder="Add Reception"
             openToNewEvent={!quinceaneraReception.value}
-            defaultEventType="OTHER"
+            defaultRelatedEventType="QUINCEANERA_RECEPTION"
             defaultName="Quinceañera Reception"
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedReceptionName }}

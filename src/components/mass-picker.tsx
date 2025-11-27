@@ -408,7 +408,7 @@ export function MassPicker({
           setShowEventPicker(false)
         }}
         selectedEventId={selectedEvent?.id}
-        defaultEventType="MASS"
+        defaultRelatedEventType="MASS"
         visibleFields={['location', 'note']}
       />
 

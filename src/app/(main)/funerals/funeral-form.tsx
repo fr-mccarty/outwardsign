@@ -333,7 +333,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             onShowPickerChange={funeralEvent.setShowPicker}
             placeholder="Add Funeral Service"
             openToNewEvent={!funeralEvent.value}
-            defaultEventType="FUNERAL"
+            defaultRelatedEventType="FUNERAL"
             defaultName={RELATED_EVENT_TYPE_LABELS.FUNERAL.en}
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedFuneralName }}
@@ -353,7 +353,7 @@ export function FuneralForm({ funeral, formId, onLoadingChange }: FuneralFormPro
             onShowPickerChange={funeralMealEvent.setShowPicker}
             placeholder="Add Funeral Meal"
             openToNewEvent={!funeralMealEvent.value}
-            defaultEventType="OTHER"
+            defaultRelatedEventType="FUNERAL_MEAL"
             defaultName="Funeral Meal"
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedFuneralMealName }}

@@ -172,7 +172,7 @@ export function PresentationForm({ presentation, formId, onLoadingChange }: Pres
             onShowPickerChange={presentationEvent.setShowPicker}
             placeholder="Select Presentation Event"
             openToNewEvent={!presentationEvent.value}
-            defaultEventType="PRESENTATION"
+            defaultRelatedEventType="PRESENTATION"
             defaultName={RELATED_EVENT_TYPE_LABELS.PRESENTATION.en}
             disableSearch={true}
             defaultCreateFormData={{ name: suggestedPresentationName }}
