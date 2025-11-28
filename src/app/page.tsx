@@ -354,6 +354,16 @@ const translations = {
         description: "Joe brings decades of experience in Catholic media and technology. As co-founder of Lolek Productions, he has dedicated his career to creating high-quality tools that serve the Church's mission of evangelization."
       }
     },
+    partners: {
+      sectionTitle: "Our Partners",
+      sectionSubtitle: "We're grateful to work with these partners who share our mission of serving the Church.",
+      liturgicalCalendar: {
+        name: "Fr. John Romano D'Orazio",
+        title: "Liturgical Calendar API",
+        description: "Fr. John Romano D'Orazio provides the comprehensive Liturgical Calendar API that powers Outward Sign's liturgical calendar integration. His freely available API delivers accurate liturgical data for the universal Church, including feast days, solemnities, memorials, and liturgical seasons.",
+        linkText: "Visit Liturgical Calendar API"
+      }
+    },
     footer: {
       madeWith: "Made with care for Catholic parishes",
       collaboration: "A collaborative effort between CatholicOS and Lolek Productions",
@@ -660,6 +670,16 @@ const translations = {
         name: "Joe Sterett",
         role: "Director Ejecutivo",
         description: "Joe aporta décadas de experiencia en medios católicos y tecnología. Como cofundador de Lolek Productions, ha dedicado su carrera a crear herramientas de alta calidad que sirven a la misión evangelizadora de la Iglesia."
+      }
+    },
+    partners: {
+      sectionTitle: "Nuestros Socios",
+      sectionSubtitle: "Estamos agradecidos de trabajar con estos socios que comparten nuestra misión de servir a la Iglesia.",
+      liturgicalCalendar: {
+        name: "P. John Romano D'Orazio",
+        title: "API del Calendario Litúrgico",
+        description: "El P. John Romano D'Orazio proporciona la completa API del Calendario Litúrgico que impulsa la integración del calendario litúrgico de Outward Sign. Su API gratuita ofrece datos litúrgicos precisos para la Iglesia universal, incluyendo fiestas, solemnidades, memorias y tiempos litúrgicos.",
+        linkText: "Visitar API del Calendario Litúrgico"
       }
     },
     footer: {
@@ -1694,6 +1714,46 @@ function HomeContent() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Partners Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-bold">{t.partners.sectionTitle}</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.partners.sectionSubtitle}
+              </p>
+            </div>
+
+            <div className="max-w-2xl mx-auto">
+              {/* Fr. John Romano D'Orazio - Liturgical Calendar API */}
+              <Card className="bg-card text-card-foreground border">
+                <CardContent className="pt-8 pb-8">
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div className="p-4 bg-primary/10 rounded-xl flex-shrink-0">
+                      <Calendar className="h-12 w-12 text-primary" />
+                    </div>
+                    <div className="text-center md:text-left space-y-3">
+                      <div>
+                        <h3 className="font-bold text-xl">{t.partners.liturgicalCalendar.name}</h3>
+                        <p className="text-sm text-primary font-medium">{t.partners.liturgicalCalendar.title}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {t.partners.liturgicalCalendar.description}
+                      </p>
+                      <Button asChild variant="outline" size="sm">
+                        <a href="https://litcal.johnromanodorazio.com" target="_blank" rel="noopener noreferrer">
+                          {t.partners.liturgicalCalendar.linkText}
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
