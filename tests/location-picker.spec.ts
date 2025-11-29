@@ -48,6 +48,9 @@ test.describe('Location Picker Component', () => {
    * 1. User can create a location with only the required name field
    * 2. Newly created location is auto-selected
    * 3. No redirect occurs - stays on event form
+   *
+   * Note: On event create page, openToNewLocation=true so the create form
+   * auto-opens when the picker opens. No need to click "Add New Location".
    */
   test('should create new location from picker with minimal data and auto-select', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -60,20 +63,19 @@ test.describe('Location Picker Component', () => {
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Click "Add New Location" button
-    const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Location/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
-    await addNewButton.click();
+    // On create page, the create form auto-opens (openToNewLocation=true)
+    // Wait for the form to render by checking for the Save button
+    const dialog = page.locator('[role="dialog"]');
+    const saveButton = dialog.getByRole('button', { name: /Save Location/i });
+    await expect(saveButton).toBeVisible();
 
     // Fill in minimal location data (just name, which is required)
     const locationName = `Minimal Test Location ${Date.now()}`;
-    const nameInput = page.locator('[role="dialog"]').getByLabel('Name');
+    const nameInput = dialog.locator('#name');
     await expect(nameInput).toBeVisible();
     await nameInput.fill(locationName);
 
     // Submit the location creation
-    const saveButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Location/i });
-    await expect(saveButton).toBeVisible();
     await saveButton.click();
 
     // Picker dialog should be closed
@@ -96,6 +98,9 @@ test.describe('Location Picker Component', () => {
    * 1. User can create a location with full address details
    * 2. All address fields are saved correctly
    * 3. Location is auto-selected and displayed with full address
+   *
+   * Note: On event create page, openToNewLocation=true so the create form
+   * auto-opens when the picker opens. No need to click "Add New Location".
    */
   test('should create location with complete address information', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -108,10 +113,11 @@ test.describe('Location Picker Component', () => {
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Click "Add New Location"
-    const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Location/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
-    await addNewButton.click();
+    // On create page, the create form auto-opens (openToNewLocation=true)
+    // Wait for the form to render by checking for the Save button
+    const dialog = page.locator('[role="dialog"]');
+    const saveButton = dialog.getByRole('button', { name: /Save Location/i });
+    await expect(saveButton).toBeVisible();
 
     // Fill in complete location data
     const locationData = {
@@ -123,8 +129,7 @@ test.describe('Location Picker Component', () => {
       phone: '(555) 987-6543',
     };
 
-    const dialog = page.locator('[role="dialog"]');
-    await dialog.getByLabel('Name').fill(locationData.name);
+    await dialog.locator('#name').fill(locationData.name);
 
     // Fill optional fields if visible
     const streetInput = dialog.getByLabel('Street');
@@ -153,7 +158,7 @@ test.describe('Location Picker Component', () => {
     }
 
     // Submit
-    await dialog.getByRole('button', { name: /Save Location/i }).click();
+    await saveButton.click();
 
     // Verify picker closed and location selected
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -172,6 +177,9 @@ test.describe('Location Picker Component', () => {
    * 2. User can select an existing location
    * 3. Selected location is displayed correctly
    * 4. No redirect occurs - stays on event form
+   *
+   * Note: On event create page, openToNewLocation=true so the create form
+   * auto-opens. We need to click "Select from list instead" to see locations.
    */
   test('should select existing location from picker', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -202,38 +210,28 @@ test.describe('Location Picker Component', () => {
     const locationDialog = page.getByTestId('location-picker-dialog');
     await locationDialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Wait for the loading spinner to appear (locations start loading)
-    const loadingSpinner = locationDialog.locator('.animate-spin').first();
-    try {
-      await loadingSpinner.waitFor({ state: 'visible', timeout: 2000 });
-      // Then wait for it to disappear (loading complete)
-      await loadingSpinner.waitFor({ state: 'detached', timeout: 5000 });
-    } catch {
-      // If spinner never appears, locations may already be loaded or cached
-      console.log('Loading spinner not detected, proceeding...');
-    }
-    await page.waitForTimeout(500); // Let dialog fully render after loading
+    // On create page, the create form auto-opens. Click "Select from list instead" to see locations
+    const selectFromListButton = locationDialog.getByRole('button', { name: /Select from list instead/i });
+    await expect(selectFromListButton).toBeVisible();
+    await selectFromListButton.click();
+
+    // Wait for locations to load
+    const searchInput = locationDialog.getByPlaceholder(/Search/i);
+    await expect(searchInput).toBeVisible();
 
     // Try to find the location by its data-testid
     const locationCard = locationDialog.locator(`[data-testid="location-picker-dialog-${locationId}"]`).first();
 
     if (await locationCard.count() > 0) {
       console.log(`✓ Found location card for ${locationId}, clicking...`);
-      await locationCard.click({ force: true });
+      await locationCard.click();
     } else {
       // Fallback: search for location by name, then click
       console.log(`✗ Location card not found by ID, trying to search by name...`);
+      await searchInput.fill(locationName);
       const locationButton = locationDialog.getByRole('button', { name: new RegExp(locationName, 'i') }).first();
-      if (await locationButton.count() > 0) {
-        console.log(`✓ Found location by name, clicking...`);
-        await locationButton.click({ force: true });
-      } else {
-        console.log(`✗ Location not found, clicking first available location...`);
-        const firstLocationButton = locationDialog.getByRole('button').filter({ hasText: /\w+/ }).first();
-        if (await firstLocationButton.count() > 0) {
-          await firstLocationButton.click({ force: true });
-        }
-      }
+      await expect(locationButton).toBeVisible();
+      await locationButton.click();
     }
 
     // Picker should close after selection
@@ -314,6 +312,9 @@ test.describe('Location Picker Component', () => {
    * 1. User can select a location
    * 2. User can clear the selection using the X button
    * 3. Location picker field returns to empty state
+   *
+   * Note: On event create page, openToNewLocation=true so the create form
+   * auto-opens. We need to click "Select from list instead" to see locations.
    */
   test('should clear selected location', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -329,31 +330,50 @@ test.describe('Location Picker Component', () => {
     // Go to event form
     await page.goto('/events/create');
 
-    // Open picker and select the location
+    // Open picker
     await page.getByTestId('location-trigger').first().click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    const dialog = page.locator('[role="dialog"]');
+    await dialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Click the first location
-    const firstLocation = page.locator('[role="dialog"]').getByRole('button').filter({ hasText: /\w+/ }).first();
-    if (await firstLocation.count() > 0) {
-      await firstLocation.click();
-    }
+    // On create page, the create form auto-opens. Click "Select from list instead"
+    const selectFromListButton = dialog.getByRole('button', { name: /Select from list instead/i });
+    await expect(selectFromListButton).toBeVisible();
+    await selectFromListButton.click();
+
+    // Wait for list to load and click the first location
+    const searchInput = dialog.getByPlaceholder(/Search/i);
+    await expect(searchInput).toBeVisible();
+
+    // Search for the location we just created to ensure we select it
+    await searchInput.fill('clear test');
+
+    // Wait for search results and click the location card
+    // Location cards have testids like "location-picker-dialog-{id}"
+    const locationCard = dialog.locator('[data-testid^="location-picker-dialog-"]').first();
+    await expect(locationCard).toBeVisible();
+    await locationCard.click();
+
+    // Dialog should close after selection
+    await expect(dialog).toHaveCount(0);
 
     // Verify location is selected
     await expect(page.getByTestId('location-selected-value')).toBeVisible();
 
-    // Now clear the selection by clicking the X button
-    const clearButton = page.getByTestId('location-trigger').first().locator('button').last();
+    // Now clear the selection by clicking the X button (using the clear testid)
+    const clearButton = page.getByTestId('location-clear');
+    await expect(clearButton).toBeVisible();
+    await clearButton.click();
 
-    if (await clearButton.isVisible()) {
-      await clearButton.click();
+    // Confirmation dialog appears - confirm the removal
+    const confirmButton = page.getByRole('button', { name: /Remove/i });
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
 
-      // Verify location is no longer selected
-      await expect(page.getByTestId('location-selected-value')).not.toBeVisible();
+    // Verify location is no longer selected
+    await expect(page.getByTestId('location-selected-value')).not.toBeVisible();
 
-      // Verify picker shows placeholder again
-      await expect(page.getByTestId('location-trigger').first()).toContainText('Select');
-    }
+    // Verify picker trigger shows placeholder again
+    await expect(page.getByTestId('location-trigger').first()).toBeVisible();
 
     console.log('Successfully cleared selected location');
   });
@@ -365,6 +385,9 @@ test.describe('Location Picker Component', () => {
    * 1. Event form data is preserved when opening picker
    * 2. Form data is preserved after selecting a location
    * 3. No data loss during picker interactions
+   *
+   * Note: On event create page, openToNewLocation=true so the create form
+   * auto-opens. We need to click "Select from list instead" to see locations.
    */
   test('should preserve event form context when using location picker', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -380,27 +403,36 @@ test.describe('Location Picker Component', () => {
     // Go to event form
     await page.goto('/events/create');
 
-    // Fill in some event form data first
+    // Fill in some event form data first (name and start_time - avoiding date picker)
     const eventName = 'Important Event - Context Test';
     await page.fill('#name', eventName);
-    await page.fill('#start_date', '2025-12-25');
+    await page.fill('#start_time', '10:30');
 
-    // Now open location picker and select the location
+    // Now open location picker
     await page.getByTestId('location-trigger').first().click();
-    await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+    const dialog = page.locator('[role="dialog"]');
+    await dialog.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
+
+    // On create page, the create form auto-opens. Click "Select from list instead"
+    const selectFromListButton = dialog.getByRole('button', { name: /Select from list instead/i });
+    await expect(selectFromListButton).toBeVisible();
+    await selectFromListButton.click();
+
+    // Wait for list to load
+    const searchInput = dialog.getByPlaceholder(/Search/i);
+    await expect(searchInput).toBeVisible();
 
     // Select the first location
-    const firstLocation = page.locator('[role="dialog"]').getByRole('button').filter({ hasText: /\w+/ }).first();
-    if (await firstLocation.count() > 0) {
-      await firstLocation.click();
-    }
+    const firstLocation = dialog.getByRole('button').filter({ hasText: /location/i }).first();
+    await expect(firstLocation).toBeVisible();
+    await firstLocation.click();
 
     // Verify we're still on the create page
     await expect(page).toHaveURL('/events/create');
 
     // Verify all original form data is still there
     await expect(page.locator('#name')).toHaveValue(eventName);
-    await expect(page.locator('#start_date')).toHaveValue('2025-12-25');
+    await expect(page.locator('#start_time')).toHaveValue('10:30');
 
     // Verify location is selected
     await expect(page.getByTestId('location-selected-value')).toBeVisible();
@@ -415,6 +447,9 @@ test.describe('Location Picker Component', () => {
    * 1. Location picker validates required name field
    * 2. Cannot submit without entering a name
    * 3. Error handling works correctly
+   *
+   * Note: On event create page, openToNewLocation=true so the create form
+   * auto-opens when the picker opens. No need to click "Add New Location".
    */
   test('should validate required name field when creating location', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -426,20 +461,20 @@ test.describe('Location Picker Component', () => {
     await page.getByTestId('location-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
-    // Click "Add New Location"
-    const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Location/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
-    await addNewButton.click();
+    // On create page, the create form auto-opens (openToNewLocation=true)
+    // Wait for the form to render by checking for the Save button
+    const dialog = page.locator('[role="dialog"]');
+    const saveButton = dialog.getByRole('button', { name: /Save Location/i });
+    await expect(saveButton).toBeVisible();
 
     // Try to submit without filling the required name field
-    const saveButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Location/i });
     await saveButton.click();
 
     // Dialog should stay open (validation failed)
-    await expect(page.locator('[role="dialog"]').first()).toBeVisible();
+    await expect(dialog).toBeVisible();
 
     // Now fill the name and try again
-    await page.locator('[role="dialog"]').getByLabel('Name').fill('Valid Location Name');
+    await dialog.locator('#name').fill('Valid Location Name');
     await saveButton.click();
 
     // Dialog should close and location should be selected
