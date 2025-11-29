@@ -351,6 +351,7 @@ export interface Person {
   zipcode?: string
   sex?: 'Male' | 'Female'
   note?: string
+  avatar_url?: string  // Storage path to profile photo in person-avatars bucket
   mass_times_template_item_ids?: string[]
   created_at: string
   updated_at: string

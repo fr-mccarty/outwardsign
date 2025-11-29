@@ -1,11 +1,14 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { Person } from '@/lib/types'
+import { getPersonAvatarSignedUrls } from '@/lib/actions/people'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
 import { Plus, User, Mail, Phone, MapPin, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -26,6 +29,40 @@ interface PeopleListClientProps {
 export function PeopleListClient({ initialData, stats }: PeopleListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({})
+
+  // Fetch signed URLs for all people with avatars
+  useEffect(() => {
+    async function fetchAvatarUrls() {
+      const paths = initialData
+        .filter(p => p.avatar_url)
+        .map(p => p.avatar_url as string)
+
+      if (paths.length === 0) return
+
+      try {
+        const urls = await getPersonAvatarSignedUrls(paths)
+        // Map from storage path back to person id
+        const urlsByPersonId: Record<string, string> = {}
+        initialData.forEach(person => {
+          if (person.avatar_url && urls[person.avatar_url]) {
+            urlsByPersonId[person.id] = urls[person.avatar_url]
+          }
+        })
+        setAvatarUrls(urlsByPersonId)
+      } catch (error) {
+        console.error('Failed to fetch avatar URLs:', error)
+      }
+    }
+    fetchAvatarUrls()
+  }, [initialData])
+
+  // Get initials for a person
+  const getInitials = (person: Person) => {
+    const first = person.first_name?.charAt(0) || ''
+    const last = person.last_name?.charAt(0) || ''
+    return (first + last).toUpperCase() || '?'
+  }
 
   // Get current filter values from URL
   const searchTerm = searchParams.get('search') || ''
@@ -68,7 +105,17 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
           {initialData.map((person) => (
             <ListViewCard
               key={person.id}
-              title={`${person.first_name} ${person.last_name}`}
+              title={
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 flex-shrink-0">
+                    {avatarUrls[person.id] && (
+                      <AvatarImage src={avatarUrls[person.id]} alt={person.full_name} />
+                    )}
+                    <AvatarFallback className="text-sm">{getInitials(person)}</AvatarFallback>
+                  </Avatar>
+                  <span>{person.first_name} {person.last_name}</span>
+                </div>
+              }
               editHref={`/people/${person.id}/edit`}
               viewHref={`/people/${person.id}`}
             >

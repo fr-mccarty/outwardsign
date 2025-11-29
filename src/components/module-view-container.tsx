@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { renderHTML } from '@/lib/renderers/html-renderer'
@@ -41,10 +42,10 @@ interface ModuleViewContainerProps {
    * Function to build liturgy document from entity (optional)
    * @param entity - The entity with relations
    * @param templateId - The template ID to use
-   * @returns Document structure for rendering
+   * @returns Document structure for rendering (can be sync or async)
    * If not provided, children must be provided for content
    */
-  buildLiturgy?: (entity: any, templateId: string) => LiturgyDocument
+  buildLiturgy?: (entity: any, templateId: string) => LiturgyDocument | Promise<LiturgyDocument>
 
   /**
    * Function to extract template ID from entity (optional)
@@ -120,19 +121,37 @@ export function ModuleViewContainer({
   details,
   onDelete,
 }: ModuleViewContainerProps) {
-  // Only build liturgy if builder functions are provided
-  let liturgyContent: React.ReactNode = null
+  const [liturgyContent, setLiturgyContent] = useState<React.ReactNode>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  if (buildLiturgy && getTemplateId) {
-    // Get template ID from entity
-    const templateId = getTemplateId(entity)
+  // Build liturgy content when entity or template changes
+  useEffect(() => {
+    async function buildContent() {
+      if (!buildLiturgy || !getTemplateId) {
+        setLiturgyContent(null)
+        return
+      }
 
-    // Build liturgy content using module-specific builder
-    const liturgyDocument = buildLiturgy(entity, templateId)
+      setIsLoading(true)
+      try {
+        // Get template ID from entity
+        const templateId = getTemplateId(entity)
 
-    // Render to HTML/React elements
-    liturgyContent = renderHTML(liturgyDocument)
-  }
+        // Build liturgy content using module-specific builder (supports async)
+        const liturgyDocument = await Promise.resolve(buildLiturgy(entity, templateId))
+
+        // Render to HTML/React elements
+        setLiturgyContent(renderHTML(liturgyDocument))
+      } catch (error) {
+        console.error('Error building liturgy content:', error)
+        setLiturgyContent(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    buildContent()
+  }, [entity, buildLiturgy, getTemplateId])
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
@@ -154,10 +173,14 @@ export function ModuleViewContainer({
         {children}
 
         {/* Liturgy Content (only if liturgy builder is provided) */}
-        {liturgyContent && (
+        {(liturgyContent || isLoading) && (
           <Card className="bg-white">
             <CardContent className="p-6 space-y-6">
-              {liturgyContent}
+              {isLoading ? (
+                <div className="text-center text-muted-foreground py-8">Loading content...</div>
+              ) : (
+                liturgyContent
+              )}
             </CardContent>
           </Card>
         )}

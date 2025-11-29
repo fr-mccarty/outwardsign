@@ -28,8 +28,8 @@ export interface PdfRouteConfig<T> {
   entityName: string
   /** Function to fetch the entity by ID */
   fetchEntity: (id: string) => Promise<T | null>
-  /** Function to build the liturgy document from the entity */
-  buildContent: (entity: T, templateId?: string) => LiturgyDocument
+  /** Function to build the liturgy document from the entity (can be sync or async) */
+  buildContent: (entity: T, templateId?: string) => LiturgyDocument | Promise<LiturgyDocument>
   /** Function to generate the filename for the PDF */
   getFilename: (entity: T) => string
   /** Optional: Default template ID if entity doesn't have one */
@@ -46,8 +46,8 @@ export interface WordRouteConfig<T> {
   entityName: string
   /** Function to fetch the entity by ID */
   fetchEntity: (id: string) => Promise<T | null>
-  /** Function to build the liturgy document from the entity */
-  buildContent: (entity: T, templateId?: string) => LiturgyDocument
+  /** Function to build the liturgy document from the entity (can be sync or async) */
+  buildContent: (entity: T, templateId?: string) => LiturgyDocument | Promise<LiturgyDocument>
   /** Function to generate the filename for the Word document */
   getFilename: (entity: T) => string
   /** Optional: Default template ID if entity doesn't have one */
@@ -93,8 +93,8 @@ export function createPdfRoute<T>(config: PdfRouteConfig<T>) {
         templateId = entity[config.templateIdField] as string
       }
 
-      // Build liturgy content using centralized content builder
-      const liturgyDocument = config.buildContent(entity, templateId)
+      // Build liturgy content using centralized content builder (supports async)
+      const liturgyDocument = await Promise.resolve(config.buildContent(entity, templateId))
 
       // Render to PDF format
       const content = renderPDF(liturgyDocument)
@@ -182,8 +182,8 @@ export function createWordRoute<T>(config: WordRouteConfig<T>) {
         templateId = entity[config.templateIdField] as string
       }
 
-      // Build liturgy content using centralized content builder
-      const liturgyDocument = config.buildContent(entity, templateId)
+      // Build liturgy content using centralized content builder (supports async)
+      const liturgyDocument = await Promise.resolve(config.buildContent(entity, templateId))
 
       // Render to Word format
       const paragraphs = renderWord(liturgyDocument)

@@ -7,7 +7,8 @@ import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { MassAttendanceSelector } from "@/components/mass-attendance-selector"
-import { createPerson, updatePerson } from "@/lib/actions/people"
+import { ImageCropUpload } from "@/components/image-crop-upload"
+import { createPerson, updatePerson, uploadPersonAvatar, deletePersonAvatar, getPersonAvatarSignedUrl } from "@/lib/actions/people"
 import { generatePronunciation } from "@/lib/actions/generate-pronunciation"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -26,6 +27,24 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
   const router = useRouter()
   const isEditing = !!person
   const [isGenerating, setIsGenerating] = useState(false)
+  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null)
+  const [pendingAvatarData, setPendingAvatarData] = useState<{ base64: string; extension: string } | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+
+  // Fetch signed URL for existing avatar on mount
+  useEffect(() => {
+    async function fetchAvatarUrl() {
+      if (person?.avatar_url) {
+        try {
+          const url = await getPersonAvatarSignedUrl(person.avatar_url)
+          setAvatarSignedUrl(url)
+        } catch (error) {
+          console.error('Failed to get avatar URL:', error)
+        }
+      }
+    }
+    fetchAvatarUrl()
+  }, [person?.avatar_url])
 
   const {
     handleSubmit,
@@ -94,6 +113,18 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         router.refresh() // Stay on edit page
       } else {
         const newPerson = await createPerson(personData)
+
+        // Upload avatar if pending (create mode stores base64 until person is created)
+        if (pendingAvatarData) {
+          try {
+            await uploadPersonAvatar(newPerson.id, pendingAvatarData.base64, pendingAvatarData.extension)
+          } catch (avatarError) {
+            console.error('Failed to upload avatar:', avatarError)
+            // Don't fail the whole operation, person was created
+            toast.error('Person created but photo upload failed')
+          }
+        }
+
         toast.success('Person created successfully!')
         router.push(`/people/${newPerson.id}/edit`)
       }
@@ -101,6 +132,62 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       console.error(`Failed to ${isEditing ? 'update' : 'create'} person:`, error)
       toast.error(`Failed to ${isEditing ? 'update' : 'create'} person. Please try again.`)
     }
+  }
+
+  // Handle image cropped - upload immediately in edit mode, store for later in create mode
+  const handleImageCropped = async (base64Data: string, extension: string) => {
+    if (isEditing && person) {
+      // Edit mode: upload immediately
+      try {
+        setIsUploadingAvatar(true)
+        const storagePath = await uploadPersonAvatar(person.id, base64Data, extension)
+        const url = await getPersonAvatarSignedUrl(storagePath)
+        setAvatarSignedUrl(url)
+        toast.success('Photo uploaded successfully')
+      } catch (error) {
+        console.error('Failed to upload avatar:', error)
+        toast.error('Failed to upload photo')
+        throw error // Re-throw to let ImageCropUpload know it failed
+      } finally {
+        setIsUploadingAvatar(false)
+      }
+    } else {
+      // Create mode: store base64 for upload after person is created
+      setPendingAvatarData({ base64: base64Data, extension })
+      // Show preview using base64 directly
+      setAvatarSignedUrl(base64Data)
+      toast.success('Photo ready to upload')
+    }
+  }
+
+  // Handle image removed
+  const handleImageRemoved = async () => {
+    if (isEditing && person) {
+      // Edit mode: delete from storage
+      try {
+        setIsUploadingAvatar(true)
+        await deletePersonAvatar(person.id)
+        setAvatarSignedUrl(null)
+        toast.success('Photo removed')
+      } catch (error) {
+        console.error('Failed to remove avatar:', error)
+        toast.error('Failed to remove photo')
+        throw error
+      } finally {
+        setIsUploadingAvatar(false)
+      }
+    } else {
+      // Create mode: just clear pending data
+      setPendingAvatarData(null)
+      setAvatarSignedUrl(null)
+    }
+  }
+
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    const first = firstName?.charAt(0) || ''
+    const last = lastName?.charAt(0) || ''
+    return (first + last).toUpperCase() || '?'
   }
 
   const handleGeneratePronunciations = async () => {
@@ -134,6 +221,20 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Photo Upload Section */}
+      <FormSectionCard
+        title="Profile Photo"
+        description="Upload a photo to help identify this person (optional)"
+      >
+        <ImageCropUpload
+          currentImageUrl={avatarSignedUrl}
+          onImageCropped={handleImageCropped}
+          onImageRemoved={handleImageRemoved}
+          disabled={isSubmitting || isUploadingAvatar}
+          fallbackInitials={getInitials()}
+        />
+      </FormSectionCard>
+
       <FormSectionCard
         title="Person Details"
         description="Basic information and contact details"

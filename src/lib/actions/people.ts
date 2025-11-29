@@ -401,3 +401,241 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
     totalPages,
   }
 }
+
+// ============================================================================
+// PERSON AVATAR MANAGEMENT
+// ============================================================================
+
+const AVATAR_BUCKET = 'person-avatars'
+
+/**
+ * Upload a person's avatar image to Supabase Storage
+ * @param personId - ID of the person
+ * @param base64Data - Base64 encoded image data (already cropped on client)
+ * @param fileExtension - File extension (jpg, png, or webp)
+ * @returns Storage path to be stored in avatar_url field
+ */
+export async function uploadPersonAvatar(
+  personId: string,
+  base64Data: string,
+  fileExtension: string
+): Promise<string> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
+  // Verify the person belongs to the user's parish
+  const { data: person, error: personError } = await supabase
+    .from('people')
+    .select('id, parish_id')
+    .eq('id', personId)
+    .eq('parish_id', selectedParishId)
+    .single()
+
+  if (personError || !person) {
+    throw new Error('Person not found or access denied')
+  }
+
+  // Delete existing avatar files to prevent orphaned files
+  const { data: existingFiles } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .list(selectedParishId, {
+      search: personId,
+    })
+
+  if (existingFiles && existingFiles.length > 0) {
+    const filesToDelete = existingFiles
+      .filter(f => f.name.startsWith(personId))
+      .map(f => `${selectedParishId}/${f.name}`)
+
+    if (filesToDelete.length > 0) {
+      await supabase.storage.from(AVATAR_BUCKET).remove(filesToDelete)
+    }
+  }
+
+  // Convert base64 to buffer
+  // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
+  const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, '')
+  const buffer = Buffer.from(base64Clean, 'base64')
+
+  // Determine content type
+  const contentTypeMap: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+  }
+  const contentType = contentTypeMap[fileExtension.toLowerCase()] || 'image/jpeg'
+
+  // Upload file to storage
+  const storagePath = `${selectedParishId}/${personId}.${fileExtension.toLowerCase()}`
+  const { error: uploadError } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(storagePath, buffer, {
+      contentType,
+      upsert: true,
+    })
+
+  if (uploadError) {
+    console.error('Error uploading avatar:', uploadError)
+    throw new Error('Failed to upload avatar')
+  }
+
+  // Update person record with storage path
+  const { error: updateError } = await supabase
+    .from('people')
+    .update({ avatar_url: storagePath })
+    .eq('id', personId)
+
+  if (updateError) {
+    console.error('Error updating person avatar_url:', updateError)
+    throw new Error('Failed to update person record')
+  }
+
+  revalidatePath('/people')
+  revalidatePath(`/people/${personId}`)
+
+  return storagePath
+}
+
+/**
+ * Delete a person's avatar from Supabase Storage
+ * @param personId - ID of the person
+ */
+export async function deletePersonAvatar(personId: string): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check permissions
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+  await requireEditSharedResources(user.id, selectedParishId)
+
+  // Fetch person to get current avatar_url
+  const { data: person, error: fetchError } = await supabase
+    .from('people')
+    .select('id, avatar_url, parish_id')
+    .eq('id', personId)
+    .eq('parish_id', selectedParishId)
+    .single()
+
+  if (fetchError || !person) {
+    throw new Error('Person not found or access denied')
+  }
+
+  // Delete file from storage if it exists
+  if (person.avatar_url) {
+    const { error: deleteError } = await supabase.storage
+      .from(AVATAR_BUCKET)
+      .remove([person.avatar_url])
+
+    if (deleteError) {
+      console.error('Error deleting avatar from storage:', deleteError)
+      // Continue to update database even if storage delete fails
+    }
+  }
+
+  // Update person record to clear avatar_url
+  const { error: updateError } = await supabase
+    .from('people')
+    .update({ avatar_url: null })
+    .eq('id', personId)
+
+  if (updateError) {
+    console.error('Error clearing person avatar_url:', updateError)
+    throw new Error('Failed to update person record')
+  }
+
+  revalidatePath('/people')
+  revalidatePath(`/people/${personId}`)
+}
+
+/**
+ * Generate a temporary signed URL for viewing a private avatar image
+ * @param storagePath - Storage path from person.avatar_url (e.g., "parish_id/person_id.jpg")
+ * @returns Signed URL string with 1-hour expiry
+ */
+export async function getPersonAvatarSignedUrl(storagePath: string): Promise<string | null> {
+  if (!storagePath) {
+    return null
+  }
+
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Extract parish_id from storage path for security check
+  const pathParishId = storagePath.split('/')[0]
+  if (pathParishId !== selectedParishId) {
+    throw new Error('Access denied: Cannot access avatar from another parish')
+  }
+
+  // Generate signed URL with 1-hour expiry
+  const { data, error } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .createSignedUrl(storagePath, 3600) // 1 hour in seconds
+
+  if (error) {
+    console.error('Error generating signed URL:', error)
+    return null
+  }
+
+  return data.signedUrl
+}
+
+/**
+ * Batch generate signed URLs for multiple avatars
+ * @param storagePaths - Array of storage paths
+ * @returns Record mapping storage paths to signed URLs
+ */
+export async function getPersonAvatarSignedUrls(
+  storagePaths: string[]
+): Promise<Record<string, string>> {
+  if (!storagePaths || storagePaths.length === 0) {
+    return {}
+  }
+
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Filter paths to only include those from the current parish
+  const validPaths = storagePaths.filter(path => {
+    const pathParishId = path.split('/')[0]
+    return pathParishId === selectedParishId
+  })
+
+  if (validPaths.length === 0) {
+    return {}
+  }
+
+  // Generate signed URLs in batch
+  const { data, error } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .createSignedUrls(validPaths, 3600) // 1 hour in seconds
+
+  if (error) {
+    console.error('Error generating signed URLs:', error)
+    return {}
+  }
+
+  // Build result map
+  const result: Record<string, string> = {}
+  data?.forEach((item) => {
+    if (item.signedUrl && item.path) {
+      result[item.path] = item.signedUrl
+    }
+  })
+
+  return result
+}

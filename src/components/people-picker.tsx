@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Mail, Phone, ChevronDown, ChevronRight, Sparkles, Loader2 } from 'lucide-react'
-import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
+import { getPeoplePaginated, createPerson, updatePerson, uploadPersonAvatar, deletePersonAvatar, getPersonAvatarSignedUrl, getPersonAvatarSignedUrls } from '@/lib/actions/people'
 import { generatePronunciation } from '@/lib/actions/generate-pronunciation'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
@@ -15,6 +15,7 @@ import { PickerFieldConfig, CustomFormComponentProps } from '@/types/core-picker
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import { SEX_VALUES, SEX_LABELS, type Sex } from '@/lib/constants'
 import { FormInput } from '@/components/form-input'
+import { ImageCropUpload } from '@/components/image-crop-upload'
 
 interface PeoplePickerProps {
   open: boolean
@@ -67,6 +68,10 @@ export function PeoplePicker({
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [showPronunciation, setShowPronunciation] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({})
+  const [pendingAvatarData, setPendingAvatarData] = useState<{ base64: string; extension: string } | null>(null)
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const PAGE_SIZE = 10
 
   // Debounce search query with 1000ms delay
@@ -84,11 +89,49 @@ export function PeoplePicker({
       const hasPronunciationData =
         personToEdit.first_name_pronunciation || personToEdit.last_name_pronunciation
       setShowPronunciation(!!hasPronunciationData)
+      // Set avatar preview URL if editing person with avatar
+      if (personToEdit.avatar_url) {
+        getPersonAvatarSignedUrl(personToEdit.avatar_url).then(url => {
+          setAvatarPreviewUrl(url)
+        }).catch(console.error)
+      } else {
+        setAvatarPreviewUrl(null)
+      }
     } else if (!open) {
       // Reset when picker closes
       setShowPronunciation(false)
+      setPendingAvatarData(null)
+      setAvatarPreviewUrl(null)
     }
   }, [editMode, personToEdit, open])
+
+  // Fetch signed URLs for all people with avatars
+  useEffect(() => {
+    async function fetchAvatarUrls() {
+      const paths = people
+        .filter(p => p.avatar_url)
+        .map(p => p.avatar_url as string)
+
+      if (paths.length === 0) return
+
+      try {
+        const urls = await getPersonAvatarSignedUrls(paths)
+        // Map from storage path to person id
+        const urlsByPersonId: Record<string, string> = {}
+        people.forEach(person => {
+          if (person.avatar_url && urls[person.avatar_url]) {
+            urlsByPersonId[person.id] = urls[person.avatar_url]
+          }
+        })
+        setAvatarUrls(urlsByPersonId)
+      } catch (error) {
+        console.error('Failed to fetch avatar URLs:', error)
+      }
+    }
+    if (people.length > 0) {
+      fetchAvatarUrls()
+    }
+  }, [people])
 
   // Memoize helper functions to prevent unnecessary re-renders
   // Note: isFieldVisible only applies to additional fields (email, phone, sex, note)
@@ -238,6 +281,62 @@ export function PeoplePicker({
     return fields
   }, [isAdditionalFieldVisible, isFieldRequired])
 
+  // Handle image cropped in picker form
+  const handlePickerImageCropped = useCallback(async (base64Data: string, extension: string) => {
+    if (editMode && personToEdit) {
+      // Edit mode: upload immediately
+      try {
+        setIsUploadingAvatar(true)
+        const storagePath = await uploadPersonAvatar(personToEdit.id, base64Data, extension)
+        const url = await getPersonAvatarSignedUrl(storagePath)
+        setAvatarPreviewUrl(url)
+        // Update avatarUrls for the person
+        setAvatarUrls(prev => ({ ...prev, [personToEdit.id]: url || '' }))
+        toast.success('Photo uploaded successfully')
+      } catch (error) {
+        console.error('Failed to upload avatar:', error)
+        toast.error('Failed to upload photo')
+        throw error
+      } finally {
+        setIsUploadingAvatar(false)
+      }
+    } else {
+      // Create mode: store base64 for upload after person is created
+      setPendingAvatarData({ base64: base64Data, extension })
+      // Show preview using base64 directly
+      setAvatarPreviewUrl(base64Data)
+      toast.success('Photo ready to upload')
+    }
+  }, [editMode, personToEdit])
+
+  // Handle image removed in picker form
+  const handlePickerImageRemoved = useCallback(async () => {
+    if (editMode && personToEdit) {
+      // Edit mode: delete from storage
+      try {
+        setIsUploadingAvatar(true)
+        await deletePersonAvatar(personToEdit.id)
+        setAvatarPreviewUrl(null)
+        setAvatarUrls(prev => {
+          const newUrls = { ...prev }
+          delete newUrls[personToEdit.id]
+          return newUrls
+        })
+        toast.success('Photo removed')
+      } catch (error) {
+        console.error('Failed to remove avatar:', error)
+        toast.error('Failed to remove photo')
+        throw error
+      } finally {
+        setIsUploadingAvatar(false)
+      }
+    } else {
+      // Create mode: just clear pending data
+      setPendingAvatarData(null)
+      setAvatarPreviewUrl(null)
+    }
+  }, [editMode, personToEdit])
+
   // Custom form component with pronunciation toggle
   const PersonFormFields = useCallback(
     ({ form, errors }: CustomFormComponentProps) => {
@@ -280,8 +379,25 @@ export function PeoplePicker({
         }
       }
 
+      // Get initials for avatar fallback
+      const getInitials = () => {
+        const first = watch('first_name')?.charAt(0) || ''
+        const last = watch('last_name')?.charAt(0) || ''
+        return (first + last).toUpperCase() || '?'
+      }
+
       return (
         <div className="space-y-4">
+          {/* Profile Photo */}
+          <ImageCropUpload
+            currentImageUrl={avatarPreviewUrl}
+            onImageCropped={handlePickerImageCropped}
+            onImageRemoved={handlePickerImageRemoved}
+            disabled={isUploadingAvatar}
+            fallbackInitials={getInitials()}
+            label="Profile Photo (Optional)"
+          />
+
           {/* First Name - always shown */}
           <FormInput
             id="first_name"
@@ -426,7 +542,7 @@ export function PeoplePicker({
         </div>
       )
     },
-    [isAdditionalFieldVisible, isFieldRequired, showPronunciation, isGenerating]
+    [isAdditionalFieldVisible, isFieldRequired, showPronunciation, isGenerating, avatarPreviewUrl, handlePickerImageCropped, handlePickerImageRemoved, isUploadingAvatar]
   )
 
   // Handle creating a new person
@@ -441,6 +557,26 @@ export function PeoplePicker({
       sex: autoSetSex || data.sex || undefined,
       note: data.note || undefined,
     })
+
+    // Upload avatar if pending
+    if (pendingAvatarData) {
+      try {
+        const storagePath = await uploadPersonAvatar(newPerson.id, pendingAvatarData.base64, pendingAvatarData.extension)
+        const url = await getPersonAvatarSignedUrl(storagePath)
+        // Update the new person with avatar URL
+        newPerson.avatar_url = storagePath
+        if (url) {
+          setAvatarUrls(prev => ({ ...prev, [newPerson.id]: url }))
+        }
+      } catch (error) {
+        console.error('Failed to upload avatar:', error)
+        // Don't fail the whole operation, person was created
+        toast.error('Person created but photo upload failed')
+      }
+      // Clear pending avatar data
+      setPendingAvatarData(null)
+      setAvatarPreviewUrl(null)
+    }
 
     // Add to local list
     setPeople((prev) => [newPerson, ...prev])
@@ -476,6 +612,9 @@ export function PeoplePicker({
     return (
       <div className="flex items-center gap-3">
         <Avatar className="h-8 w-8">
+          {avatarUrls[person.id] && (
+            <AvatarImage src={avatarUrls[person.id]} alt={person.full_name} />
+          )}
           <AvatarFallback className="text-xs">
             {getPersonInitials(person)}
           </AvatarFallback>

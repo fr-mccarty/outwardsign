@@ -5,20 +5,57 @@
  */
 
 import type { Person } from '@/lib/types'
-import type { LiturgyDocument, ContentSection } from '@/lib/types/liturgy-content'
+import type { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatDate } from '@/lib/utils/formatters'
 import { buildCoverPage, type CoverPageSection } from '@/lib/content-builders/shared/builders'
+import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
 
 /**
  * Build person contact card document
  *
  * Creates a simple contact card with person information
+ * Async to support fetching signed URLs for avatar images
  */
-export function buildPersonContactCard(person: Person): LiturgyDocument {
+export async function buildPersonContactCard(person: Person): Promise<LiturgyDocument> {
   const sections: ContentSection[] = []
 
   // 1. COVER PAGE
   const coverSections: CoverPageSection[] = []
+
+  // Profile Photo section (if avatar exists)
+  if (person.avatar_url) {
+    try {
+      const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url)
+      if (signedUrl) {
+        // Add a section with the avatar image before other sections
+        const photoElements: ContentElement[] = [
+          {
+            type: 'section-title',
+            text: 'Profile Photo',
+          },
+          {
+            type: 'image',
+            url: signedUrl,
+            alt: person.full_name || 'Profile Photo',
+            width: 150,
+            height: 150,
+            alignment: 'center',
+          },
+          {
+            type: 'spacer',
+            size: 'medium',
+          },
+        ]
+        sections.push({
+          id: 'profile-photo',
+          elements: photoElements,
+        })
+      }
+    } catch (error) {
+      // Silently skip if we can't get the signed URL
+      console.error('Failed to get avatar signed URL for PDF:', error)
+    }
+  }
 
   // Contact Information subsection
   const contactRows = []

@@ -11,7 +11,7 @@ import { LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 
 interface ListViewCardProps {
-  title: string
+  title: string | ReactNode
   editHref: string
   viewHref: string
   viewButtonText?: string
@@ -58,14 +58,14 @@ export function ListViewCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 overflow-hidden">
             <TooltipProvider>
-              <Tooltip open={isClamped ? undefined : false}>
+              <Tooltip open={isClamped && typeof title === 'string' ? undefined : false}>
                 <TooltipTrigger asChild>
                   <CardTitle ref={titleRef} className="text-lg line-clamp-1 cursor-default">
                     {title}
                   </CardTitle>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{title}</p>
+                  {typeof title === 'string' ? <p>{title}</p> : title}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

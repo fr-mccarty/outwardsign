@@ -14,6 +14,7 @@ export const createPersonSchema = z.object({
   zipcode: z.string().optional().nullable(),
   sex: z.enum(['Male', 'Female']).optional().nullable(),
   note: z.string().optional().nullable(),
+  avatar_url: z.string().optional().nullable(),  // Storage path to profile photo
   mass_times_template_item_ids: z.array(z.string()).optional().nullable(),
 })
 

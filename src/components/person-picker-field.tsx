@@ -1,14 +1,16 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { PeoplePicker } from '@/components/people-picker'
 import { PickerField } from '@/components/picker-field'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { User, ExternalLink } from 'lucide-react'
 import type { Person } from '@/lib/types'
 import type { Sex } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
 
 interface PersonPickerFieldProps {
   label: string
@@ -43,8 +45,35 @@ export function PersonPickerField({
 }: PersonPickerFieldProps) {
   const router = useRouter()
   const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
-  const renderPersonValue = (person: Person) => {
+  // Fetch signed URL for avatar when value changes
+  useEffect(() => {
+    async function fetchAvatarUrl() {
+      if (value?.avatar_url) {
+        try {
+          const url = await getPersonAvatarSignedUrl(value.avatar_url)
+          setAvatarUrl(url)
+        } catch (error) {
+          console.error('Failed to get avatar URL:', error)
+          setAvatarUrl(null)
+        }
+      } else {
+        setAvatarUrl(null)
+      }
+    }
+    fetchAvatarUrl()
+  }, [value?.avatar_url, value?.id])
+
+  // Get initials for avatar fallback
+  const getInitials = (person: Person) => {
+    const first = person.first_name?.charAt(0) || ''
+    const last = person.last_name?.charAt(0) || ''
+    return (first + last).toUpperCase() || '?'
+  }
+
+  // Format name with pronunciation
+  const formatPersonName = (person: Person) => {
     const firstName = person.first_name
     const firstNamePronunciation = person.first_name_pronunciation
     const lastName = person.last_name
@@ -64,6 +93,18 @@ export function PersonPickerField({
       : lastName
 
     return `${firstPart} ${lastPart}`
+  }
+
+  const renderPersonValue = (person: Person) => {
+    return (
+      <div className="flex items-center gap-2">
+        <Avatar className="h-6 w-6 flex-shrink-0">
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={person.full_name} />}
+          <AvatarFallback className="text-xs">{getInitials(person)}</AvatarFallback>
+        </Avatar>
+        <span>{formatPersonName(person)}</span>
+      </div>
+    )
   }
 
   const handleNavigateToPerson = (e: React.MouseEvent) => {

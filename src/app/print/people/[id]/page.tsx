@@ -26,7 +26,7 @@ export default async function PrintPersonPage({ params }: PageProps) {
   }
 
   // Build contact card content using centralized content builder
-  const contactCardDocument = buildPersonContactCard(person)
+  const contactCardDocument = await buildPersonContactCard(person)
 
   // Render to HTML
   const content = renderHTML(contactCardDocument)

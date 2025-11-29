@@ -172,6 +172,18 @@ export interface SpacerElement extends BaseElement {
 }
 
 /**
+ * Image element for profile photos and other images
+ */
+export interface ImageElement extends BaseElement {
+  type: 'image'
+  url: string
+  alt?: string
+  width?: number  // in pixels
+  height?: number  // in pixels
+  alignment?: 'left' | 'center' | 'right'
+}
+
+/**
  * Union type of all possible content elements
  */
 export type ContentElement =
@@ -193,6 +205,7 @@ export type ContentElement =
   | PriestTextElement
   | InfoRowElement
   | SpacerElement
+  | ImageElement
 
 // ============================================================================
 // SECTION TYPES

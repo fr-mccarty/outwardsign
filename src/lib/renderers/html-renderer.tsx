@@ -234,6 +234,39 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       return <div key={index} style={{ marginBottom: `${convert.pointsToPx(spacerSize)}px` }} />
     }
 
+    case 'image': {
+      const imageStyle: React.CSSProperties = {
+        display: 'block',
+        maxWidth: '100%',
+        height: 'auto',
+        borderRadius: '4px',
+      }
+
+      if (element.width) {
+        imageStyle.width = `${element.width}px`
+      }
+      if (element.height) {
+        imageStyle.height = `${element.height}px`
+      }
+
+      const containerStyle: React.CSSProperties = {
+        textAlign: element.alignment || 'center',
+        marginTop: '8px',
+        marginBottom: '8px',
+      }
+
+      return (
+        <div key={index} style={containerStyle}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={element.url}
+            alt={element.alt || 'Image'}
+            style={imageStyle}
+          />
+        </div>
+      )
+    }
+
     default:
       return null
   }

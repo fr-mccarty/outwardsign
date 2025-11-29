@@ -1,10 +1,12 @@
 "use client"
 
-import { deletePerson } from '@/lib/actions/people'
+import { useState, useEffect } from 'react'
+import { deletePerson, getPersonAvatarSignedUrl } from '@/lib/actions/people'
 import type { Person } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildPersonContactCard } from '@/lib/content-builders/person'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Edit, Printer, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
 import { getPersonFilename } from '@/lib/utils/formatters'
@@ -14,6 +16,29 @@ interface PersonViewClientProps {
 }
 
 export function PersonViewClient({ person }: PersonViewClientProps) {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  // Fetch signed URL for avatar on mount
+  useEffect(() => {
+    async function fetchAvatarUrl() {
+      if (person.avatar_url) {
+        try {
+          const url = await getPersonAvatarSignedUrl(person.avatar_url)
+          setAvatarUrl(url)
+        } catch (error) {
+          console.error('Failed to get avatar URL:', error)
+        }
+      }
+    }
+    fetchAvatarUrl()
+  }, [person.avatar_url])
+
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    const first = person.first_name?.charAt(0) || ''
+    const last = person.last_name?.charAt(0) || ''
+    return (first + last).toUpperCase() || '?'
+  }
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
     return getPersonFilename(person, extension)
@@ -58,8 +83,16 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
   // Generate details section content
   const details = (
     <>
+      {/* Profile Photo */}
+      <div className="flex justify-center pb-4">
+        <Avatar className="h-32 w-32">
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={person.full_name} />}
+          <AvatarFallback className="text-3xl">{getInitials()}</AvatarFallback>
+        </Avatar>
+      </div>
+
       {(person.first_name_pronunciation || person.last_name_pronunciation) && (
-        <div>
+        <div className="border-t pt-2">
           <span className="font-medium">Pronunciation:</span>
           <div className="text-sm text-muted-foreground mt-1">
             {person.first_name_pronunciation && person.last_name_pronunciation
