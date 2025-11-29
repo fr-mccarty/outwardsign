@@ -205,25 +205,24 @@ Profile photos provide visual confirmation of identity, making it easier to iden
 **Migration File:** `supabase/migrations/YYYYMMDDHHMMSS_add_person_avatar_url.sql`
 
 **Changes Required:**
-```sql
--- Add avatar_url column to people table
-ALTER TABLE people ADD COLUMN avatar_url TEXT;
-
--- Add comment documenting the field
-COMMENT ON COLUMN people.avatar_url IS 'URL to person profile photo stored in Supabase Storage (bucket: person-avatars)';
-
--- No index needed - avatar_url is not used for queries/filtering
-```
+- Add a new column `avatar_url` to the `people` table
+  - Type: TEXT (nullable)
+  - Purpose: Store the storage path to the person's profile photo in Supabase Storage
+  - Add a comment documenting this field references the 'person-avatars' bucket
+  - No index needed (not used for queries or filtering)
 
 **Table:** `people`
-**Column:** `avatar_url TEXT` (nullable)
-**Purpose:** Store Supabase Storage URL for person profile photo
+**New Column:** `avatar_url`
+- Data Type: TEXT
+- Nullable: Yes (photos are optional)
+- Default Value: None
+- Constraints: None (stores a string path to Supabase Storage)
 
 **Notes:**
-- Field is nullable (photos are optional)
-- No default value
-- No foreign key constraint (URL string pointing to Supabase Storage)
-- RLS policies already exist for people table (no changes needed)
+- Field is nullable since photos are optional
+- No default value needed
+- No foreign key constraint (simple string path)
+- Existing RLS policies for people table remain unchanged
 
 ---
 
@@ -259,57 +258,35 @@ person-avatars/
 
 **RLS Policies for Storage:**
 
-1. **Select (View Images):**
-   ```sql
-   CREATE POLICY "Parish members can view their parish person avatars"
-   ON storage.objects FOR SELECT
-   TO authenticated
-   USING (
-     bucket_id = 'person-avatars' AND
-     (storage.foldername(name))[1] IN (
-       SELECT parish_id::text FROM parish_users WHERE user_id = auth.uid()
-     )
-   );
-   ```
+Four storage policies are needed to enforce parish-scoped access control:
 
-2. **Insert (Upload Images):**
-   ```sql
-   CREATE POLICY "Parish members can upload avatars for their parish"
-   ON storage.objects FOR INSERT
-   TO authenticated
-   WITH CHECK (
-     bucket_id = 'person-avatars' AND
-     (storage.foldername(name))[1] IN (
-       SELECT parish_id::text FROM parish_users WHERE user_id = auth.uid()
-     )
-   );
-   ```
+1. **SELECT Policy (View Images):**
+   - Name: "Parish members can view their parish person avatars"
+   - Target: storage.objects table
+   - Operation: SELECT
+   - Users: authenticated only
+   - Logic: Allow access if bucket is 'person-avatars' AND the folder name (first path segment) matches a parish_id where the user is a member
 
-3. **Update (Replace Images):**
-   ```sql
-   CREATE POLICY "Parish members can update avatars for their parish"
-   ON storage.objects FOR UPDATE
-   TO authenticated
-   USING (
-     bucket_id = 'person-avatars' AND
-     (storage.foldername(name))[1] IN (
-       SELECT parish_id::text FROM parish_users WHERE user_id = auth.uid()
-     )
-   );
-   ```
+2. **INSERT Policy (Upload Images):**
+   - Name: "Parish members can upload avatars for their parish"
+   - Target: storage.objects table
+   - Operation: INSERT
+   - Users: authenticated only
+   - Logic: Allow upload if bucket is 'person-avatars' AND the folder name (first path segment) matches a parish_id where the user is a member
 
-4. **Delete (Remove Images):**
-   ```sql
-   CREATE POLICY "Parish members can delete avatars for their parish"
-   ON storage.objects FOR DELETE
-   TO authenticated
-   USING (
-     bucket_id = 'person-avatars' AND
-     (storage.foldername(name))[1] IN (
-       SELECT parish_id::text FROM parish_users WHERE user_id = auth.uid()
-     )
-   );
-   ```
+3. **UPDATE Policy (Replace Images):**
+   - Name: "Parish members can update avatars for their parish"
+   - Target: storage.objects table
+   - Operation: UPDATE
+   - Users: authenticated only
+   - Logic: Allow update if bucket is 'person-avatars' AND the folder name (first path segment) matches a parish_id where the user is a member
+
+4. **DELETE Policy (Remove Images):**
+   - Name: "Parish members can delete avatars for their parish"
+   - Target: storage.objects table
+   - Operation: DELETE
+   - Users: authenticated only
+   - Logic: Allow deletion if bucket is 'person-avatars' AND the folder name (first path segment) matches a parish_id where the user is a member
 
 **Migration Approach:**
 - Storage bucket must be created manually (see bucket setup method above)
@@ -323,34 +300,16 @@ person-avatars/
 **File:** `src/lib/types.ts`
 
 **Changes Required:**
-```typescript
-export interface Person {
-  id: string
-  parish_id: string
-  first_name: string
-  first_name_pronunciation?: string
-  last_name: string
-  last_name_pronunciation?: string
-  full_name: string
-  full_name_pronunciation: string
-  phone_number?: string
-  email?: string
-  street?: string
-  city?: string
-  state?: string
-  zipcode?: string
-  sex?: 'Male' | 'Female'
-  note?: string
-  mass_times_template_item_ids?: string[]
-  avatar_url?: string  // NEW: URL to profile photo in Supabase Storage
-  created_at: string
-  updated_at: string
-}
-```
+Add a new optional field to the existing Person interface:
+- Field Name: `avatar_url`
+- Type: `string` (optional/nullable)
+- Purpose: Stores the storage path to the person's profile photo in Supabase Storage
+- Example value: `"parish_uuid/person_uuid.jpg"`
 
 **Notes:**
-- `avatar_url` is optional (nullable in database)
-- Type matches database column type (TEXT → string)
+- Field is optional (nullable in database, optional in TypeScript)
+- Type is `string` to match database column type (TEXT → string)
+- Add this field alongside the existing Person interface fields (id, parish_id, first_name, last_name, email, phone_number, etc.)
 
 ---
 
@@ -359,38 +318,20 @@ export interface Person {
 **File:** `src/lib/schemas/people.ts`
 
 **Changes Required:**
-```typescript
-import { z } from 'zod'
+Add validation for the new `avatar_url` field to both create and update schemas:
+- Add `avatar_url` to the `createPersonSchema`
+  - Validation: Must be a valid URL format (string with URL validation)
+  - Optional: Yes
+  - Nullable: Yes
+  - Consistent with other optional person fields (phone_number, email, etc.)
 
-// Create person schema
-export const createPersonSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  first_name_pronunciation: z.string().optional().nullable(),
-  last_name: z.string().min(1, 'Last name is required'),
-  last_name_pronunciation: z.string().optional().nullable(),
-  phone_number: z.string().optional().nullable(),
-  email: z.string().email('Invalid email address').optional().nullable().or(z.literal('')),
-  street: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  state: z.string().optional().nullable(),
-  zipcode: z.string().optional().nullable(),
-  sex: z.enum(['Male', 'Female']).optional().nullable(),
-  note: z.string().optional().nullable(),
-  mass_times_template_item_ids: z.array(z.string()).optional().nullable(),
-  avatar_url: z.string().url().optional().nullable(),  // NEW: URL validation
-})
+The `updatePersonSchema` will automatically include this field since it's derived from `createPersonSchema.partial()`
 
-// Update person schema (all fields optional)
-export const updatePersonSchema = createPersonSchema.partial()
-
-// Export types using z.infer
-export type CreatePersonData = z.infer<typeof createPersonSchema>
-export type UpdatePersonData = z.infer<typeof updatePersonSchema>
-```
-
-**Notes:**
-- `avatar_url` validated as URL format
-- Optional and nullable (consistent with other optional fields)
+**Validation Rules:**
+- Must be a valid URL string format if provided
+- Can be null or undefined (optional field)
+- No minimum/maximum length requirements
+- Consistent with existing optional field patterns in the schema
 
 ---
 
@@ -400,65 +341,51 @@ export type UpdatePersonData = z.infer<typeof updatePersonSchema>
 
 **New Functions Required:**
 
-```typescript
-/**
- * Upload person avatar image to Supabase Storage
- *
- * @param personId - ID of the person
- * @param file - Base64 encoded image data (already cropped on client)
- * @param fileExtension - File extension (jpg, png, webp)
- * @returns avatar_url - Public URL of uploaded image
- */
-export async function uploadPersonAvatar(
-  personId: string,
-  file: string, // base64 data URL
-  fileExtension: string
-): Promise<string>
+Three new server actions are needed to handle avatar upload, deletion, and signed URL generation:
 
-/**
- * Delete person avatar image from Supabase Storage
- *
- * @param personId - ID of the person
- */
-export async function deletePersonAvatar(personId: string): Promise<void>
-
-/**
- * Get signed URL for person avatar (for displaying private images)
- *
- * @param storagePath - Storage path from person.avatar_url (e.g., "parish_id/person_id.jpg")
- * @returns Signed URL with 1-hour expiry for authenticated viewing
- */
-export async function getPersonAvatarSignedUrl(storagePath: string): Promise<string>
-```
-
-**Implementation Details:**
-
-1. **uploadPersonAvatar:**
-   - Requires authentication (use `requireSelectedParish()` and `ensureJWTClaims()`)
-   - Verify person belongs to user's parish
-   - **Delete ALL old avatars** for this person (to handle extension changes):
-     - List all files in `{parish_id}/` with prefix `{person_id}.`
+**1. uploadPersonAvatar Function**
+- Purpose: Upload a person's avatar image to Supabase Storage
+- Parameters:
+  - `personId` (string): ID of the person
+  - `file` (string): Base64 encoded image data (already cropped on client)
+  - `fileExtension` (string): File extension (jpg, png, or webp)
+- Returns: Storage path (string) to be stored in avatar_url field
+- Implementation steps:
+  1. Require authentication using existing auth helpers (requireSelectedParish, ensureJWTClaims)
+  2. Verify the person belongs to the user's parish (security check)
+  3. Delete ALL existing avatar files for this person to prevent orphaned files
+     - List all files in the parish folder with the person's ID as prefix
      - Delete each found file (handles .jpg, .png, .webp from previous uploads)
-   - Convert base64 to buffer
-   - Upload to storage: `{parish_id}/{person_id}.{extension}`
-   - **Store storage PATH in database** (not URL): `{parish_id}/{person_id}.{extension}`
-   - Update person record with new `avatar_url` (the storage path)
-   - Revalidate paths: `/people`, `/people/{id}`, `/people/{id}/edit`
-   - Return avatar_url (storage path)
+  4. Convert base64 string to buffer for upload
+  5. Upload file to storage bucket at path: `{parish_id}/{person_id}.{extension}`
+  6. Update person record in database with storage PATH (not full URL)
+  7. Revalidate relevant paths for cache invalidation
+  8. Return the storage path
 
-2. **deletePersonAvatar:**
-   - Requires authentication
-   - Verify person belongs to user's parish
-   - Get person record to find avatar_url (storage path)
-   - Delete file from storage using the path
-   - Update person record (set `avatar_url` to null)
-   - Revalidate paths: `/people`, `/people/{id}`, `/people/{id}/edit`
+**2. deletePersonAvatar Function**
+- Purpose: Delete a person's avatar from Supabase Storage
+- Parameters:
+  - `personId` (string): ID of the person
+- Returns: void (no return value)
+- Implementation steps:
+  1. Require authentication
+  2. Verify person belongs to user's parish
+  3. Fetch person record to get current avatar_url (storage path)
+  4. Delete file from storage using the path
+  5. Update person record in database (set avatar_url to null)
+  6. Revalidate relevant paths
 
-3. **getPersonAvatarSignedUrl:**
-   - Requires authentication (use `requireSelectedParish()` and `ensureJWTClaims()`)
-   - Verify the storage path belongs to user's parish (extract parish_id from path)
-   - Generate signed URL with 1-hour expiry: `supabase.storage.from('person-avatars').createSignedUrl(storagePath, 3600)`
-   - Return signed URL for temporary authenticated access
+**3. getPersonAvatarSignedUrl Function**
+- Purpose: Generate a temporary signed URL for viewing private avatar images
+- Parameters:
+  - `storagePath` (string): Storage path from person.avatar_url (e.g., "parish_id/person_id.jpg")
+- Returns: Signed URL string with 1-hour expiry
+- Implementation steps:
+  1. Require authentication
+  2. Extract parish_id from the storage path (first path segment)
+  3. Verify the parish_id matches a parish where the user is a member (security check)
+  4. Generate signed URL using Supabase Storage API with 1-hour expiry (3600 seconds)
+  5. Return the temporary signed URL
 
 **Existing Functions - No Changes:**
 - `createPerson()` - already handles all person fields including new avatar_url
@@ -484,33 +411,28 @@ export async function getPersonAvatarSignedUrl(storagePath: string): Promise<str
 - Base64 output for upload
 - Error handling with toast notifications
 
-**Props:**
-```typescript
-interface ImageCropUploadProps {
-  currentImageUrl?: string | null  // Existing image URL (for edit mode)
-  onImageCropped: (croppedImage: string, extension: string) => Promise<void>  // Callback with base64 data
-  onImageRemoved?: () => Promise<void>  // Callback for remove button
-  label?: string  // Field label
-  description?: string  // Helper text
-  disabled?: boolean  // Disable upload
-  aspectRatio?: number  // Default: 1 (square)
-  targetWidth?: number  // Default: 400
-  targetHeight?: number  // Default: 400
-}
-```
+**Component Props:**
+The component should accept these props:
+- `currentImageUrl` (optional string): Existing image URL for edit mode
+- `onImageCropped` (callback function): Receives cropped base64 image and extension
+- `onImageRemoved` (optional callback function): Called when photo is removed
+- `label` (optional string): Field label text
+- `description` (optional string): Helper text below label
+- `disabled` (optional boolean): Disables upload controls
+- `aspectRatio` (optional number): Crop aspect ratio, defaults to 1 (square)
+- `targetWidth` (optional number): Target output width in pixels, defaults to 400
+- `targetHeight` (optional number): Target output height in pixels, defaults to 400
 
-**Implementation Notes:**
-- Use shadcn Button component for file picker
-- Use shadcn Dialog component for crop modal
-- Use shadcn-image-cropper for cropping interface
+**Implementation Approach:**
+- Use shadcn Button component for file picker button
+- Use shadcn Dialog component for crop modal window
+- Integrate shadcn-image-cropper library for cropping interface
 - Display current image using shadcn Avatar component
-- "Remove Photo" button (no confirmation dialog)
-- Toast notifications for errors (file size, file type)
+- Include "Remove Photo" button (no confirmation dialog needed)
+- Show toast notifications for validation errors (file size, file type)
 
-**Installation Required:**
-```bash
-npm install shadcn-image-cropper
-```
+**Library Installation:**
+Install the shadcn-image-cropper package via npm
 
 #### Modified Component: PersonForm
 
@@ -518,105 +440,54 @@ npm install shadcn-image-cropper
 
 **Changes Required:**
 
-1. **Add state for avatar:**
-   ```typescript
-   const [avatarUrl, setAvatarUrl] = useState<string | null>(person?.avatar_url || null)
-   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-   ```
+1. **Add Component State:**
+   Add two new state variables to track avatar upload:
+   - `avatarUrl`: Stores the current avatar URL (initialized from person.avatar_url if editing)
+   - `isUploadingAvatar`: Boolean flag to track upload/deletion in progress
 
-2. **Add photo upload section at TOP of form (before FormSectionCard):**
-   ```tsx
-   <div className="space-y-6">
-     <ImageCropUpload
-       currentImageUrl={avatarUrl}
-       onImageCropped={handleImageCropped}
-       onImageRemoved={handleImageRemoved}
-       label="Profile Photo (Optional)"
-       description="Upload a photo to help identify this person"
-       disabled={isSubmitting || isUploadingAvatar}
-     />
+2. **Add Photo Upload Section:**
+   Position the ImageCropUpload component at the TOP of the form (before all other form sections):
+   - Pass current avatar URL from state
+   - Connect to image cropped and removed handlers
+   - Use label: "Profile Photo (Optional)"
+   - Use description: "Upload a photo to help identify this person"
+   - Disable when form is submitting or avatar is uploading
+   - Wrap in a container with the existing FormSectionCard components
 
-     <FormSectionCard title="Person Details" description="...">
-       {/* Existing form fields */}
-     </FormSectionCard>
-   </div>
-   ```
+3. **Implement Image Crop Handler:**
+   Create an async handler for when user crops an image:
+   - **Create Mode** (no person.id yet):
+     - Store base64 image in state temporarily
+     - Don't upload to storage yet (person doesn't exist)
+   - **Edit Mode** (person.id exists):
+     - Set uploading flag to true
+     - Call uploadPersonAvatar server action with person ID, base64 data, and extension
+     - Update avatar URL in state with returned storage path
+     - Show success toast message
+     - Handle errors with error toast
+     - Clear uploading flag when complete
 
-3. **Add handler for image crop:**
-   ```typescript
-   const handleImageCropped = async (croppedImage: string, extension: string) => {
-     if (!person?.id) {
-       // Create mode - store temporarily, upload after person is created
-       setAvatarUrl(croppedImage)
-       return
-     }
+4. **Implement Image Removal Handler:**
+   Create an async handler for when user removes photo:
+   - **Create Mode**:
+     - Simply clear avatar URL from state
+   - **Edit Mode**:
+     - Set uploading flag to true
+     - Call deletePersonAvatar server action
+     - Clear avatar URL in state (set to null)
+     - Show success toast message
+     - Handle errors with error toast
+     - Clear uploading flag when complete
 
-     // Edit mode - upload immediately
-     try {
-       setIsUploadingAvatar(true)
-       const newAvatarUrl = await uploadPersonAvatar(person.id, croppedImage, extension)
-       setAvatarUrl(newAvatarUrl)
-       toast.success('Photo uploaded successfully')
-     } catch (error) {
-       console.error('Failed to upload photo:', error)
-       toast.error('Failed to upload photo. Please try again.')
-     } finally {
-       setIsUploadingAvatar(false)
-     }
-   }
-   ```
-
-4. **Add handler for image removal:**
-   ```typescript
-   const handleImageRemoved = async () => {
-     if (!person?.id) {
-       // Create mode - just clear state
-       setAvatarUrl(null)
-       return
-     }
-
-     // Edit mode - delete from storage
-     try {
-       setIsUploadingAvatar(true)
-       await deletePersonAvatar(person.id)
-       setAvatarUrl(null)
-       toast.success('Photo removed successfully')
-     } catch (error) {
-       console.error('Failed to remove photo:', error)
-       toast.error('Failed to remove photo. Please try again.')
-     } finally {
-       setIsUploadingAvatar(false)
-     }
-   }
-   ```
-
-5. **Update form submit to handle avatar in create mode:**
-   ```typescript
-   const onSubmit = async (data: CreatePersonData) => {
-     try {
-       if (isEditing) {
-         await updatePerson(person.id, personData)
-         // Avatar already uploaded in edit mode
-         toast.success('Person updated successfully')
-         router.refresh()
-       } else {
-         const newPerson = await createPerson(personData)
-
-         // Upload avatar if one was selected
-         if (avatarUrl && avatarUrl.startsWith('data:')) {
-           const extension = avatarUrl.match(/data:image\/(\w+);/)?.[1] || 'jpg'
-           await uploadPersonAvatar(newPerson.id, avatarUrl, extension)
-         }
-
-         toast.success('Person created successfully!')
-         router.push(`/people/${newPerson.id}/edit`)
-       }
-     } catch (error) {
-       console.error(`Failed to ${isEditing ? 'update' : 'create'} person:`, error)
-       toast.error(`Failed to ${isEditing ? 'update' : 'create'} person. Please try again.`)
-     }
-   }
-   ```
+5. **Update Form Submit Handler:**
+   Modify the existing onSubmit function to handle avatar upload in create mode:
+   - **Edit Mode**: No changes needed (avatar already uploaded immediately)
+   - **Create Mode**:
+     - After createPerson succeeds and returns new person ID
+     - Check if avatarUrl exists and is base64 (starts with "data:")
+     - If yes, extract file extension from data URL
+     - Call uploadPersonAvatar with new person ID, base64 data, and extension
+     - Wait for upload to complete before redirecting
 
 **Notes:**
 - Photo upload section appears ABOVE all other form sections (top of page)
@@ -632,78 +503,41 @@ npm install shadcn-image-cropper
 
 **Changes Required:**
 
-1. **Add avatar display with signed URL to ModuleViewContainer:**
+1. **Convert to Client Component:**
+   - Add 'use client' directive at top of file
+   - Import Avatar components, useState, useEffect, and getPersonAvatarSignedUrl
 
-```tsx
-'use client'
+2. **Add State for Signed URL:**
+   - Add state variable to store the signed URL (nullable string)
+   - Initialize to null
 
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { useState, useEffect } from 'react'
-import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
+3. **Fetch Signed URL on Mount:**
+   - Add useEffect hook that runs when component mounts or when person.avatar_url changes
+   - Inside effect:
+     - Check if person has avatar_url
+     - If yes, call getPersonAvatarSignedUrl server action
+     - Store result in state
+     - Handle errors gracefully (set state to null on error)
 
-export function PersonViewClient({ person }: PersonViewClientProps) {
-  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null)
+4. **Create Initials Helper:**
+   - Add helper function to generate person initials from first/last name
+   - Take first character of first_name and last_name
+   - Convert to uppercase
+   - Return as string
 
-  // Fetch signed URL when component mounts or avatar_url changes
-  useEffect(() => {
-    async function fetchSignedUrl() {
-      if (person.avatar_url) {
-        try {
-          const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url)
-          setAvatarSignedUrl(signedUrl)
-        } catch (error) {
-          console.error('Failed to get signed URL:', error)
-          setAvatarSignedUrl(null)
-        }
-      }
-    }
-    fetchSignedUrl()
-  }, [person.avatar_url])
-
-  // Helper to get person initials
-  const getInitials = () => {
-    const firstName = person.first_name?.charAt(0) || ''
-    const lastName = person.last_name?.charAt(0) || ''
-    return (firstName + lastName).toUpperCase()
-  }
-
-  // Add avatar to details section
-  const details = (
-    <>
-      {/* NEW: Avatar display with signed URL */}
-      <div className="flex justify-center mb-4">
-        <Avatar className="h-32 w-32">
-          {avatarSignedUrl && (
-            <AvatarImage src={avatarSignedUrl} alt={person.full_name} />
-          )}
-          <AvatarFallback className="text-2xl">
-            {getInitials()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-
-      {/* Existing details */}
-      {(person.first_name_pronunciation || person.last_name_pronunciation) && (
-        // ... existing pronunciation display
-      )}
-      {/* ... rest of existing details */}
-    </>
-  )
-
-  return (
-    <ModuleViewContainer
-      // ... existing props
-      details={details}
-    />
-  )
-}
-```
+5. **Add Avatar to Details Section:**
+   - In the existing ModuleViewContainer details prop:
+   - Add a centered container at the top (before existing details)
+   - Render Avatar component (large size, e.g., 128x128px)
+   - If signed URL exists, render AvatarImage with the signed URL
+   - Always render AvatarFallback with person initials
+   - Keep all existing details sections below the avatar
 
 **Notes:**
-- Component must be client component ('use client') to use useState/useEffect
-- Fetches signed URL on mount and when avatar_url changes
-- Handles error case gracefully (falls back to initials)
-- Signed URL cached in state for 1-hour validity
+- Component must be client component to use useState/useEffect
+- Signed URL is fetched on mount and when avatar_url changes
+- Error case is handled gracefully (falls back to initials)
+- Signed URL is cached in state (valid for 1 hour)
 
 ---
 
@@ -713,92 +547,39 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
 
 **Changes Required:**
 
-```tsx
-'use client'
+1. **Add State for Signed URLs:**
+   - Add state variable to store signed URLs for all people
+   - Use Record/object type with person.id as key and signed URL as value
 
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { useState, useEffect } from 'react'
-import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
+2. **Batch Fetch Signed URLs on Mount:**
+   - Add useEffect that runs when initialData changes
+   - Filter initialData to get only people with avatar_url
+   - Use Promise.all to fetch signed URLs in parallel for all people
+   - For each person:
+     - Call getPersonAvatarSignedUrl with their avatar_url
+     - Store result in URLs object keyed by person.id
+     - Handle errors gracefully (skip person if fetch fails)
+   - Update state with all fetched URLs
 
-export function PeopleListClient({ initialData, stats }: PeopleListClientProps) {
-  const [avatarSignedUrls, setAvatarSignedUrls] = useState<Record<string, string>>({})
+3. **Create Initials Helper:**
+   - Add helper function to generate initials from person's name
+   - Extract first character from first_name and last_name
+   - Convert to uppercase and return
 
-  // Fetch signed URLs for all people with avatars
-  useEffect(() => {
-    async function fetchSignedUrls() {
-      const urls: Record<string, string> = {}
-
-      await Promise.all(
-        initialData
-          .filter(person => person.avatar_url)
-          .map(async (person) => {
-            try {
-              const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url!)
-              urls[person.id] = signedUrl
-            } catch (error) {
-              console.error(`Failed to get signed URL for person ${person.id}:`, error)
-            }
-          })
-      )
-
-      setAvatarSignedUrls(urls)
-    }
-
-    fetchSignedUrls()
-  }, [initialData])
-
-  // Helper to get person initials
-  const getPersonInitials = (person: Person) => {
-    const firstName = person.first_name?.charAt(0) || ''
-    const lastName = person.last_name?.charAt(0) || ''
-    return (firstName + lastName).toUpperCase()
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* ... existing search card */}
-
-      {/* People List */}
-      {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((person) => (
-            <ListViewCard
-              key={person.id}
-              title={
-                <div className="flex items-center gap-3">
-                  {/* NEW: Avatar in list with signed URL */}
-                  <Avatar className="h-10 w-10">
-                    {avatarSignedUrls[person.id] && (
-                      <AvatarImage src={avatarSignedUrls[person.id]} alt={person.full_name} />
-                    )}
-                    <AvatarFallback>
-                      {getPersonInitials(person)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span>{person.first_name} {person.last_name}</span>
-                </div>
-              }
-              editHref={`/people/${person.id}/edit`}
-              viewHref={`/people/${person.id}`}
-            >
-              {/* ... existing card content */}
-            </ListViewCard>
-          ))}
-        </div>
-      ) : (
-        // ... existing empty state
-      )}
-    </div>
-  )
-}
-```
+4. **Update List Card Title:**
+   - Modify the existing ListViewCard title prop
+   - Wrap current title in a flex container with gap
+   - Add Avatar component before the person name:
+     - Small size (e.g., 40x40px)
+     - If signed URL exists for this person, render AvatarImage with the URL
+     - Always render AvatarFallback with person initials
+   - Keep existing person name display after avatar
 
 **Notes:**
-- Component must be client component ('use client')
-- Fetches signed URLs in parallel for all people with avatars
-- Uses Promise.all for efficient batch loading
-- Stores URLs in Record<string, string> keyed by person.id
-- Falls back to initials if URL fetch fails or doesn't exist
+- Signed URLs are fetched in parallel using Promise.all for efficiency
+- URLs are stored in object/Record keyed by person.id
+- Falls back to initials if URL fetch fails or avatar doesn't exist
+- Existing list functionality remains unchanged
 
 ---
 
@@ -808,93 +589,41 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
 
 **Changes Required:**
 
-1. **Add avatars to list view with signed URLs:**
+1. **Add State for Signed URLs:**
+   - Add state variable to store signed URLs for all people in picker
+   - Use Record/object type with person.id as key
 
-```tsx
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { useState, useEffect } from 'react'
-import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
+2. **Batch Fetch Signed URLs:**
+   - Add useEffect that runs when people list changes
+   - Check if people list exists
+   - Filter to get only people with avatar_url
+   - Use Promise.all to fetch signed URLs in parallel
+   - For each person, call getPersonAvatarSignedUrl
+   - Store results in URLs object keyed by person.id
+   - Handle errors gracefully (skip if fetch fails)
+   - Update state with all URLs
 
-export function PeoplePicker({ ... }: PeoplePickerProps) {
-  // ... existing state and logic
-  const [avatarSignedUrls, setAvatarSignedUrls] = useState<Record<string, string>>({})
+3. **Update renderItem Function:**
+   - Modify existing renderItem to include avatar
+   - Add flex container with gap
+   - Add Avatar component before person info:
+     - Small size (e.g., 40x40px)
+     - If signed URL exists for person, render AvatarImage
+     - Always render AvatarFallback with initials
+   - Keep existing person info (name, email, phone) after avatar
 
-  // Fetch signed URLs for all people in the list
-  useEffect(() => {
-    async function fetchSignedUrls() {
-      if (!people) return
+4. **✅ ADD ImageCropUpload to CREATE Form (Inline Dialog):**
+   - Add ImageCropUpload component at top of inline create form in picker dialog
+   - Follow same pattern as main person form
+   - Photo upload is optional during inline creation
+   - Store cropped base64 image in component state
+   - Upload to storage after person is created (see Picker Create Flow below)
 
-      const urls: Record<string, string> = {}
-
-      await Promise.all(
-        people
-          .filter(person => person.avatar_url)
-          .map(async (person) => {
-            try {
-              const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url!)
-              urls[person.id] = signedUrl
-            } catch (error) {
-              console.error(`Failed to get signed URL for person ${person.id}:`, error)
-            }
-          })
-      )
-
-      setAvatarSignedUrls(urls)
-    }
-
-    fetchSignedUrls()
-  }, [people])
-
-  // Modify renderItem to include avatar with signed URL
-  const renderItem = (person: Person, isSelected: boolean) => (
-    <div className="flex items-center gap-3">
-      {/* NEW: Avatar in picker list with signed URL */}
-      <Avatar className="h-10 w-10">
-        {avatarSignedUrls[person.id] && (
-          <AvatarImage src={avatarSignedUrls[person.id]} alt={person.full_name} />
-        )}
-        <AvatarFallback>
-          {getPersonInitials(person)}
-        </AvatarFallback>
-      </Avatar>
-
-      {/* Existing person info */}
-      <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">
-          {getPersonDisplayName(person)}
-        </div>
-        {person.email && (
-          <div className="text-sm text-muted-foreground flex items-center gap-1">
-            <Mail className="h-3 w-3" />
-            {person.email}
-          </div>
-        )}
-        {person.phone_number && (
-          <div className="text-sm text-muted-foreground flex items-center gap-1">
-            <Phone className="h-3 w-3" />
-            {person.phone_number}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  return (
-    <CorePicker
-      // ... existing props
-      renderItem={renderItem}
-    />
-  )
-}
-```
-
-2. **✅ NEW: Add ImageCropUpload to CREATE form (inline dialog):**
-
-The person picker create dialog should include the ImageCropUpload component at the top of the inline form, following the same pattern as the main person form. Photo upload is optional during inline creation.
-
-3. **✅ NEW: Add ImageCropUpload to EDIT view (inline dialog):**
-
-The person picker edit dialog should include the ImageCropUpload component, allowing users to add, replace, or remove photos without navigating to the main person edit page.
+5. **✅ ADD ImageCropUpload to EDIT View (Inline Dialog):**
+   - Add ImageCropUpload component to inline edit dialog
+   - Allow users to add, replace, or remove photos
+   - Same handlers as main person form (upload immediately in edit mode)
+   - No need to navigate to main person edit page
 
 **Notes:**
 - Avatars appear in picker LIST view with signed URLs
@@ -924,52 +653,35 @@ When a photo is uploaded in picker create mode:
 
 **Changes Required:**
 
-Add image to PDF cover page when avatar exists:
+1. **Make Function Async:**
+   - Change buildPersonContactCard to async function (required to fetch signed URL)
 
-```typescript
-import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
+2. **Add Signed URL Import:**
+   - Import getPersonAvatarSignedUrl from people actions
 
-export async function buildPersonContactCard(person: Person): Promise<LiturgyDocument> {
-  const sections: ContentSection[] = []
-
-  // 1. COVER PAGE
-  const coverSections: CoverPageSection[] = []
-
-  // NEW: Add profile photo section if avatar exists
-  if (person.avatar_url) {
-    try {
-      // Get signed URL for PDF generation
-      const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url)
-
-      coverSections.push({
-        title: 'Profile Photo',
-        image: {
-          url: signedUrl,  // Use signed URL, not storage path
-          width: 150,
-          height: 150,
-          alignment: 'center'
-        }
-      })
-    } catch (error) {
-      console.error('Failed to get signed URL for PDF:', error)
-      // Silently skip image if URL generation fails
-    }
-  }
-
-  // Contact Information subsection
-  // ... existing contact rows
-
-  // ... rest of existing implementation
-}
-```
+3. **Add Avatar to Cover Page:**
+   - In the cover page sections array, before adding contact information:
+   - Check if person.avatar_url exists
+   - If yes:
+     - Wrap in try-catch block
+     - Call getPersonAvatarSignedUrl to get temporary signed URL
+     - Add new cover page section:
+       - Title: "Profile Photo"
+       - Image object with properties:
+         - url: use the signed URL (not storage path)
+         - width: 150px
+         - height: 150px
+         - alignment: center
+     - If signed URL fetch fails, silently skip (don't add image section)
+   - Continue with existing contact information sections
 
 **Notes:**
-- **Function must be async** to fetch signed URL
-- Image appears at top of PDF cover page
-- Only included when `avatar_url` exists and signed URL is successfully generated
-- Sized appropriately for PDF layout (150x150px)
-- Centered alignment
-- Gracefully handles signed URL generation failures
+- Function MUST be async to await signed URL generation
+- Image appears at top of PDF cover page before contact information
+- Only included when avatar_url exists AND signed URL is successfully generated
+- Sized appropriately for PDF layout (150x150px square)
+- Centered alignment for professional appearance
+- Errors are handled gracefully (image simply doesn't appear in PDF)
 
 ---
 
