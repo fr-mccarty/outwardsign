@@ -5,8 +5,9 @@ import { z } from 'zod'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Mail, Phone, ChevronDown, ChevronRight } from 'lucide-react'
+import { Mail, Phone, ChevronDown, ChevronRight, Sparkles, Loader2 } from 'lucide-react'
 import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
+import { generatePronunciation } from '@/lib/actions/generate-pronunciation'
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
@@ -65,6 +66,7 @@ export function PeoplePicker({
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [showPronunciation, setShowPronunciation] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const PAGE_SIZE = 10
 
   // Debounce search query with 1000ms delay
@@ -246,6 +248,38 @@ export function PeoplePicker({
         return error?.message ? String(error.message) : undefined
       }
 
+      const handleGeneratePronunciations = async () => {
+        const firstName = watch('first_name')?.trim()
+        const lastName = watch('last_name')?.trim()
+
+        if (!firstName && !lastName) {
+          toast.error('Please enter both first and last name before generating pronunciations')
+          return
+        }
+
+        try {
+          setIsGenerating(true)
+          const result = await generatePronunciation({
+            firstName: firstName || '',
+            lastName: lastName || '',
+          })
+
+          // Set pronunciations in form
+          setValue('first_name_pronunciation', result.firstNamePronunciation, { shouldValidate: true })
+          setValue('last_name_pronunciation', result.lastNamePronunciation, { shouldValidate: true })
+
+          // Show pronunciation fields after generation
+          setShowPronunciation(true)
+
+          toast.success('Pronunciations generated successfully')
+        } catch (error) {
+          console.error('Failed to generate pronunciations:', error)
+          toast.error('Failed to generate pronunciations. Please try again.')
+        } finally {
+          setIsGenerating(false)
+        }
+      }
+
       return (
         <div className="space-y-4">
           {/* First Name - always shown */}
@@ -255,7 +289,6 @@ export function PeoplePicker({
             inputType="text"
             value={watch('first_name') ?? ''}
             onChange={(value) => setValue('first_name', value, { shouldValidate: true })}
-            placeholder="John"
             required
             error={getError('first_name')}
           />
@@ -267,7 +300,6 @@ export function PeoplePicker({
             inputType="text"
             value={watch('last_name') ?? ''}
             onChange={(value) => setValue('last_name', value, { shouldValidate: true })}
-            placeholder="Doe"
             required
             error={getError('last_name')}
           />
@@ -288,6 +320,30 @@ export function PeoplePicker({
             {showPronunciation ? 'Hide pronunciation' : 'Add pronunciation guide'}
           </Button>
 
+          {/* Generate Pronunciations Button - shown when name exists */}
+          {(watch('first_name') || watch('last_name')) && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleGeneratePronunciations}
+              disabled={isGenerating}
+              className="mt-2 h-7 px-2 text-xs"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  Generate Pronunciations with AI
+                </>
+              )}
+            </Button>
+          )}
+
           {/* Pronunciation Fields - shown when toggle is expanded */}
           {showPronunciation && (
             <>
@@ -297,7 +353,6 @@ export function PeoplePicker({
                 inputType="text"
                 value={watch('first_name_pronunciation') ?? ''}
                 onChange={(value) => setValue('first_name_pronunciation', value, { shouldValidate: true })}
-                placeholder="JAHN"
                 description="How to pronounce the first name"
                 error={getError('first_name_pronunciation')}
               />
@@ -307,7 +362,6 @@ export function PeoplePicker({
                 inputType="text"
                 value={watch('last_name_pronunciation') ?? ''}
                 onChange={(value) => setValue('last_name_pronunciation', value, { shouldValidate: true })}
-                placeholder="DOH"
                 description="How to pronounce the last name"
                 error={getError('last_name_pronunciation')}
               />
@@ -372,7 +426,7 @@ export function PeoplePicker({
         </div>
       )
     },
-    [isAdditionalFieldVisible, isFieldRequired, showPronunciation]
+    [isAdditionalFieldVisible, isFieldRequired, showPronunciation, isGenerating]
   )
 
   // Handle creating a new person

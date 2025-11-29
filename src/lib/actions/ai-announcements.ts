@@ -1,6 +1,7 @@
 'use server'
 
 import Anthropic from '@anthropic-ai/sdk'
+import { CLAUDE_MODEL } from '@/lib/constants/ai'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -39,7 +40,7 @@ export async function generateAnnouncementWithAI(prompt: string, parishId: strin
     
     // Make API call to Claude using the SDK
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: CLAUDE_MODEL,
       max_tokens: 500,
       system: `You are a helpful assistant that writes parish announcements. Your task is to create professional, warm, and appropriate announcements for a Catholic parish community. 
 

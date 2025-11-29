@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
@@ -8,10 +8,13 @@ import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { MassAttendanceSelector } from "@/components/mass-attendance-selector"
 import { createPerson, updatePerson } from "@/lib/actions/people"
+import { generatePronunciation } from "@/lib/actions/generate-pronunciation"
 import type { Person } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { createPersonSchema, type CreatePersonData } from "@/lib/schemas/people"
+import { Button } from "@/components/ui/button"
+import { Sparkles, Loader2 } from "lucide-react"
 
 interface PersonFormProps {
   person?: Person
@@ -22,6 +25,7 @@ interface PersonFormProps {
 export function PersonForm({ person, formId = 'person-form', onLoadingChange }: PersonFormProps) {
   const router = useRouter()
   const isEditing = !!person
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const {
     handleSubmit,
@@ -99,6 +103,35 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
     }
   }
 
+  const handleGeneratePronunciations = async () => {
+    const currentFirstName = firstName?.trim()
+    const currentLastName = lastName?.trim()
+
+    if (!currentFirstName && !currentLastName) {
+      toast.error('Please enter both first and last name before generating pronunciations')
+      return
+    }
+
+    try {
+      setIsGenerating(true)
+      const result = await generatePronunciation({
+        firstName: currentFirstName || '',
+        lastName: currentLastName || '',
+      })
+
+      // Set pronunciations in form
+      setValue('first_name_pronunciation', result.firstNamePronunciation, { shouldValidate: true })
+      setValue('last_name_pronunciation', result.lastNamePronunciation, { shouldValidate: true })
+
+      toast.success('Pronunciations generated successfully')
+    } catch (error) {
+      console.error('Failed to generate pronunciations:', error)
+      toast.error('Failed to generate pronunciations. Please try again.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <FormSectionCard
@@ -127,24 +160,48 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormInput
-            id="first_name_pronunciation"
-            label="First Name Pronunciation (Optional)"
-            value={firstNamePronunciation || ""}
-            onChange={(value) => setValue("first_name_pronunciation", value)}
-            placeholder="How to pronounce first name"
-            error={errors.first_name_pronunciation?.message}
-          />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormInput
+              id="first_name_pronunciation"
+              label="First Name Pronunciation (Optional)"
+              value={firstNamePronunciation || ""}
+              onChange={(value) => setValue("first_name_pronunciation", value)}
+              placeholder="How to pronounce first name"
+              error={errors.first_name_pronunciation?.message}
+            />
 
-          <FormInput
-            id="last_name_pronunciation"
-            label="Last Name Pronunciation (Optional)"
-            value={lastNamePronunciation || ""}
-            onChange={(value) => setValue("last_name_pronunciation", value)}
-            placeholder="How to pronounce last name"
-            error={errors.last_name_pronunciation?.message}
-          />
+            <FormInput
+              id="last_name_pronunciation"
+              label="Last Name Pronunciation (Optional)"
+              value={lastNamePronunciation || ""}
+              onChange={(value) => setValue("last_name_pronunciation", value)}
+              placeholder="How to pronounce last name"
+              error={errors.last_name_pronunciation?.message}
+            />
+          </div>
+
+          {(firstName || lastName) && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleGeneratePronunciations}
+              disabled={isGenerating || isSubmitting}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Pronunciations with AI
+                </>
+              )}
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

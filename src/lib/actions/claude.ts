@@ -1,6 +1,7 @@
 'use server'
 
 import Anthropic from '@anthropic-ai/sdk'
+import { CLAUDE_MODEL } from '@/lib/constants/ai'
 import type { IndividualReading } from './readings'
 
 const anthropic = new Anthropic({
@@ -79,7 +80,7 @@ Respond in this exact JSON format:
 
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: CLAUDE_MODEL,
       max_tokens: 1000,
       messages: [
         {

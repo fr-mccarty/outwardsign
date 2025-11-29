@@ -8,6 +8,7 @@ import { replaceTemplateVariables, getTemplateVariables } from '@/lib/template-u
 import { getPetitionTemplate } from './petition-templates'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import type { LiturgicalLanguage } from '@/lib/constants'
+import { CLAUDE_MODEL } from '@/lib/constants/ai'
 
 export async function createBasicPetition(data: { title: string; date: string }) {
   const supabase = await createClient()
@@ -341,7 +342,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: CLAUDE_MODEL,
         max_tokens: 1000,
         messages: [
           {
