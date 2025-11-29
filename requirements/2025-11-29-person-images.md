@@ -229,13 +229,24 @@ COMMENT ON COLUMN people.avatar_url IS 'URL to person profile photo stored in Su
 
 ### 2. Supabase Storage Setup
 
+**🔴 IMPORTANT - Bucket Setup Method:**
+Supabase Storage buckets **cannot** be created via SQL migrations. The bucket must be created manually via:
+- **Supabase Dashboard** (Settings → Storage → New Bucket), OR
+- **Supabase CLI:** `supabase storage buckets create person-avatars`
+
 **Bucket Configuration:**
 
 **Bucket Name:** `person-avatars`
 **Settings:**
-- Public: `false` (authenticated access only)
+- **Public: `false`** (private bucket, images accessed via signed URLs)
 - File Size Limit: `5MB`
 - Allowed MIME Types: `image/jpeg`, `image/png`, `image/webp`
+
+**Why Private Bucket with Signed URLs:**
+- Enhanced security - images not directly accessible without authentication
+- Signed URLs have expiration (1 hour) for temporary access
+- RLS policies enforce parish-scoped access control
+- Better privacy for sensitive profile photos
 
 **Folder Structure:**
 ```
@@ -300,9 +311,10 @@ person-avatars/
    );
    ```
 
-**Setup Method:**
-- Storage bucket and RLS policies should be created via migration file
-- Use `CREATE BUCKET` SQL commands in migration (supported by Supabase)
+**Migration Approach:**
+- Storage bucket must be created manually (see bucket setup method above)
+- RLS policies CAN be created via migration (shown above)
+- Migration file should include a comment noting that bucket must exist first
 
 ---
 
@@ -411,12 +423,12 @@ export async function uploadPersonAvatar(
 export async function deletePersonAvatar(personId: string): Promise<void>
 
 /**
- * Get signed URL for person avatar (for authenticated viewing)
+ * Get signed URL for person avatar (for displaying private images)
  *
- * @param avatarUrl - Storage path from person.avatar_url
- * @returns Signed URL with temporary access token
+ * @param storagePath - Storage path from person.avatar_url (e.g., "parish_id/person_id.jpg")
+ * @returns Signed URL with 1-hour expiry for authenticated viewing
  */
-export async function getPersonAvatarUrl(avatarUrl: string): Promise<string>
+export async function getPersonAvatarSignedUrl(storagePath: string): Promise<string>
 ```
 
 **Implementation Details:**
@@ -424,26 +436,29 @@ export async function getPersonAvatarUrl(avatarUrl: string): Promise<string>
 1. **uploadPersonAvatar:**
    - Requires authentication (use `requireSelectedParish()` and `ensureJWTClaims()`)
    - Verify person belongs to user's parish
-   - Delete old avatar if it exists
+   - **Delete ALL old avatars** for this person (to handle extension changes):
+     - List all files in `{parish_id}/` with prefix `{person_id}.`
+     - Delete each found file (handles .jpg, .png, .webp from previous uploads)
    - Convert base64 to buffer
    - Upload to storage: `{parish_id}/{person_id}.{extension}`
-   - Get public URL from storage
-   - Update person record with new `avatar_url`
+   - **Store storage PATH in database** (not URL): `{parish_id}/{person_id}.{extension}`
+   - Update person record with new `avatar_url` (the storage path)
    - Revalidate paths: `/people`, `/people/{id}`, `/people/{id}/edit`
-   - Return avatar_url
+   - Return avatar_url (storage path)
 
 2. **deletePersonAvatar:**
    - Requires authentication
    - Verify person belongs to user's parish
-   - Get person record to find avatar_url
-   - Delete file from storage
+   - Get person record to find avatar_url (storage path)
+   - Delete file from storage using the path
    - Update person record (set `avatar_url` to null)
    - Revalidate paths: `/people`, `/people/{id}`, `/people/{id}/edit`
 
-3. **getPersonAvatarUrl:**
-   - For private storage access
-   - Generate signed URL with 1-hour expiry
-   - Return signed URL for authenticated viewing
+3. **getPersonAvatarSignedUrl:**
+   - Requires authentication (use `requireSelectedParish()` and `ensureJWTClaims()`)
+   - Verify the storage path belongs to user's parish (extract parish_id from path)
+   - Generate signed URL with 1-hour expiry: `supabase.storage.from('person-avatars').createSignedUrl(storagePath, 3600)`
+   - Return signed URL for temporary authenticated access
 
 **Existing Functions - No Changes:**
 - `createPerson()` - already handles all person fields including new avatar_url
@@ -617,12 +632,34 @@ npm install shadcn-image-cropper
 
 **Changes Required:**
 
-1. **Add avatar display to ModuleViewContainer:**
+1. **Add avatar display with signed URL to ModuleViewContainer:**
 
 ```tsx
+'use client'
+
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useState, useEffect } from 'react'
+import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
 
 export function PersonViewClient({ person }: PersonViewClientProps) {
+  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null)
+
+  // Fetch signed URL when component mounts or avatar_url changes
+  useEffect(() => {
+    async function fetchSignedUrl() {
+      if (person.avatar_url) {
+        try {
+          const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url)
+          setAvatarSignedUrl(signedUrl)
+        } catch (error) {
+          console.error('Failed to get signed URL:', error)
+          setAvatarSignedUrl(null)
+        }
+      }
+    }
+    fetchSignedUrl()
+  }, [person.avatar_url])
+
   // Helper to get person initials
   const getInitials = () => {
     const firstName = person.first_name?.charAt(0) || ''
@@ -633,11 +670,11 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
   // Add avatar to details section
   const details = (
     <>
-      {/* NEW: Avatar display */}
+      {/* NEW: Avatar display with signed URL */}
       <div className="flex justify-center mb-4">
         <Avatar className="h-32 w-32">
-          {person.avatar_url && (
-            <AvatarImage src={person.avatar_url} alt={person.full_name} />
+          {avatarSignedUrl && (
+            <AvatarImage src={avatarSignedUrl} alt={person.full_name} />
           )}
           <AvatarFallback className="text-2xl">
             {getInitials()}
@@ -662,6 +699,12 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
 }
 ```
 
+**Notes:**
+- Component must be client component ('use client') to use useState/useEffect
+- Fetches signed URL on mount and when avatar_url changes
+- Handles error case gracefully (falls back to initials)
+- Signed URL cached in state for 1-hour validity
+
 ---
 
 #### Modified Component: PeopleListClient
@@ -671,9 +714,39 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
 **Changes Required:**
 
 ```tsx
+'use client'
+
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useState, useEffect } from 'react'
+import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
 
 export function PeopleListClient({ initialData, stats }: PeopleListClientProps) {
+  const [avatarSignedUrls, setAvatarSignedUrls] = useState<Record<string, string>>({})
+
+  // Fetch signed URLs for all people with avatars
+  useEffect(() => {
+    async function fetchSignedUrls() {
+      const urls: Record<string, string> = {}
+
+      await Promise.all(
+        initialData
+          .filter(person => person.avatar_url)
+          .map(async (person) => {
+            try {
+              const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url!)
+              urls[person.id] = signedUrl
+            } catch (error) {
+              console.error(`Failed to get signed URL for person ${person.id}:`, error)
+            }
+          })
+      )
+
+      setAvatarSignedUrls(urls)
+    }
+
+    fetchSignedUrls()
+  }, [initialData])
+
   // Helper to get person initials
   const getPersonInitials = (person: Person) => {
     const firstName = person.first_name?.charAt(0) || ''
@@ -693,10 +766,10 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
               key={person.id}
               title={
                 <div className="flex items-center gap-3">
-                  {/* NEW: Avatar in list */}
+                  {/* NEW: Avatar in list with signed URL */}
                   <Avatar className="h-10 w-10">
-                    {person.avatar_url && (
-                      <AvatarImage src={person.avatar_url} alt={person.full_name} />
+                    {avatarSignedUrls[person.id] && (
+                      <AvatarImage src={avatarSignedUrls[person.id]} alt={person.full_name} />
                     )}
                     <AvatarFallback>
                       {getPersonInitials(person)}
@@ -720,6 +793,13 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
 }
 ```
 
+**Notes:**
+- Component must be client component ('use client')
+- Fetches signed URLs in parallel for all people with avatars
+- Uses Promise.all for efficient batch loading
+- Stores URLs in Record<string, string> keyed by person.id
+- Falls back to initials if URL fetch fails or doesn't exist
+
 ---
 
 #### Modified Component: PeoplePicker
@@ -728,21 +808,50 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
 
 **Changes Required:**
 
-1. **Add avatars to list view:**
+1. **Add avatars to list view with signed URLs:**
 
 ```tsx
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useState, useEffect } from 'react'
+import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
 
 export function PeoplePicker({ ... }: PeoplePickerProps) {
   // ... existing state and logic
+  const [avatarSignedUrls, setAvatarSignedUrls] = useState<Record<string, string>>({})
 
-  // Modify renderItem to include avatar
+  // Fetch signed URLs for all people in the list
+  useEffect(() => {
+    async function fetchSignedUrls() {
+      if (!people) return
+
+      const urls: Record<string, string> = {}
+
+      await Promise.all(
+        people
+          .filter(person => person.avatar_url)
+          .map(async (person) => {
+            try {
+              const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url!)
+              urls[person.id] = signedUrl
+            } catch (error) {
+              console.error(`Failed to get signed URL for person ${person.id}:`, error)
+            }
+          })
+      )
+
+      setAvatarSignedUrls(urls)
+    }
+
+    fetchSignedUrls()
+  }, [people])
+
+  // Modify renderItem to include avatar with signed URL
   const renderItem = (person: Person, isSelected: boolean) => (
     <div className="flex items-center gap-3">
-      {/* NEW: Avatar in picker list */}
+      {/* NEW: Avatar in picker list with signed URL */}
       <Avatar className="h-10 w-10">
-        {person.avatar_url && (
-          <AvatarImage src={person.avatar_url} alt={person.full_name} />
+        {avatarSignedUrls[person.id] && (
+          <AvatarImage src={avatarSignedUrls[person.id]} alt={person.full_name} />
         )}
         <AvatarFallback>
           {getPersonInitials(person)}
@@ -788,11 +897,24 @@ The person picker create dialog should include the ImageCropUpload component at 
 The person picker edit dialog should include the ImageCropUpload component, allowing users to add, replace, or remove photos without navigating to the main person edit page.
 
 **Notes:**
-- Avatars appear in picker LIST view
+- Avatars appear in picker LIST view with signed URLs
 - ✅ **Avatars CAN be uploaded in picker CREATE form** (inline form includes ImageCropUpload)
 - ✅ **Avatars CAN be changed in picker EDIT view** (inline edit includes ImageCropUpload)
 - After person is created and selected, avatar appears in the PickerField display
 - Same upload/crop flow as main person form (base64 in create mode, immediate upload in edit mode)
+
+**🔴 CRITICAL - Picker Create Flow with Avatar:**
+When a photo is uploaded in picker create mode:
+1. User crops photo → ImageCropUpload stores base64 in picker component state
+2. User submits inline create form → `createPerson()` is called
+3. After `createPerson()` succeeds with new person ID:
+   - Check if base64 avatar exists in picker state
+   - If exists, call `uploadPersonAvatar(newPerson.id, base64Data, extension)`
+   - Wait for upload to complete
+4. Re-fetch people list to include new person with avatar_url
+5. Display new person in picker with signed URL
+
+**Implementation Location:** The picker component's inline create form submission handler must handle this flow.
 
 ---
 
@@ -805,7 +927,9 @@ The person picker edit dialog should include the ImageCropUpload component, allo
 Add image to PDF cover page when avatar exists:
 
 ```typescript
-export function buildPersonContactCard(person: Person): LiturgyDocument {
+import { getPersonAvatarSignedUrl } from '@/lib/actions/people'
+
+export async function buildPersonContactCard(person: Person): Promise<LiturgyDocument> {
   const sections: ContentSection[] = []
 
   // 1. COVER PAGE
@@ -813,15 +937,23 @@ export function buildPersonContactCard(person: Person): LiturgyDocument {
 
   // NEW: Add profile photo section if avatar exists
   if (person.avatar_url) {
-    coverSections.push({
-      title: 'Profile Photo',
-      image: {
-        url: person.avatar_url,
-        width: 150,
-        height: 150,
-        alignment: 'center'
-      }
-    })
+    try {
+      // Get signed URL for PDF generation
+      const signedUrl = await getPersonAvatarSignedUrl(person.avatar_url)
+
+      coverSections.push({
+        title: 'Profile Photo',
+        image: {
+          url: signedUrl,  // Use signed URL, not storage path
+          width: 150,
+          height: 150,
+          alignment: 'center'
+        }
+      })
+    } catch (error) {
+      console.error('Failed to get signed URL for PDF:', error)
+      // Silently skip image if URL generation fails
+    }
   }
 
   // Contact Information subsection
@@ -832,10 +964,12 @@ export function buildPersonContactCard(person: Person): LiturgyDocument {
 ```
 
 **Notes:**
+- **Function must be async** to fetch signed URL
 - Image appears at top of PDF cover page
-- Only included when `avatar_url` exists
+- Only included when `avatar_url` exists and signed URL is successfully generated
 - Sized appropriately for PDF layout (150x150px)
 - Centered alignment
+- Gracefully handles signed URL generation failures
 
 ---
 
@@ -1045,14 +1179,23 @@ const initials = getPersonAvatarInitials(person) // "JS"
 
 **Tasks:**
 1. Create migration file for `avatar_url` column
-2. Create migration for Supabase Storage bucket `person-avatars`
-3. Create RLS policies for storage bucket
+   - **Migration timestamp format:** `YYYYMMDDHHmmss` (e.g., `20251129143000`)
+   - Use current timestamp within 30 days of creation date
+   - Filename: `supabase/migrations/20251129143000_add_person_avatar_url.sql`
+2. Create Supabase Storage bucket `person-avatars` **via Dashboard or CLI** (NOT via SQL)
+   - Use Dashboard: Settings → Storage → New Bucket
+   - OR use CLI: `supabase storage buckets create person-avatars`
+   - Set to **Private** (Public: false)
+   - Configure MIME types: `image/jpeg`, `image/png`, `image/webp`
+   - Set file size limit: 5MB
+3. Create RLS policies for storage bucket (can be in migration file)
 4. Test migration locally with `npm run db:fresh`
 5. Verify storage bucket created and accessible
 
 **Deliverables:**
-- Migration file: `supabase/migrations/YYYYMMDDHHMMSS_add_person_avatar_url.sql`
-- Storage bucket with RLS policies configured
+- Migration file: `supabase/migrations/20251129143000_add_person_avatar_url.sql`
+- Storage bucket `person-avatars` created (private)
+- RLS policies configured for storage bucket
 
 ---
 
@@ -1087,19 +1230,27 @@ const initials = getPersonAvatarInitials(person) // "JS"
 ### Phase 4: ImageCropUpload Component (Day 3)
 
 **Tasks:**
-1. Install shadcn-image-cropper: `npm install shadcn-image-cropper`
-2. Create `src/components/image-crop-upload.tsx`
-3. Implement file picker button
-4. Implement client-side validation (size, type)
-5. Integrate shadcn-image-cropper
-6. Implement crop to 400x400px
-7. Add error handling with toast notifications
-8. Test component in isolation
+1. **⚠️ Verify library compatibility FIRST:**
+   - Check `shadcn-image-cropper` is maintained and compatible with current React/Next.js versions
+   - Review library documentation and examples
+   - **If issues found, consider alternatives:**
+     - `react-easy-crop` (popular, well-maintained)
+     - `react-image-crop` (official React cropper)
+     - `cropperjs` (vanilla JS, needs React wrapper)
+2. Install chosen library: `npm install shadcn-image-cropper` (or alternative)
+3. Create `src/components/image-crop-upload.tsx`
+4. Implement file picker button
+5. Implement client-side validation (size, type)
+6. Integrate cropping library
+7. Implement crop to 400x400px square output
+8. Add error handling with toast notifications
+9. Test component in isolation
 
 **Deliverables:**
+- Verified library compatibility
 - Fully functional ImageCropUpload component
 - Client-side validation working
-- Cropping interface working
+- Cropping interface working and tested
 
 ---
 
@@ -1198,12 +1349,15 @@ const initials = getPersonAvatarInitials(person) // "JS"
 **Risks:**
 - Unauthorized access to person photos
 - Cross-parish data access
+- Signed URL leakage or sharing
 
 **Mitigations:**
-- RLS policies enforce parish-scoped access
-- Storage bucket is private (not public)
-- Signed URLs for temporary access
-- Parish ID in folder structure for isolation
+- **Storage bucket is PRIVATE** - no direct URL access
+- **Signed URLs with 1-hour expiry** - temporary authenticated access only
+- **RLS policies enforce parish-scoped access** - users can only generate signed URLs for their parish
+- **Parish ID in folder structure** for additional isolation
+- **Server-side URL generation** - all signed URLs created by authenticated server actions
+- Signed URLs cannot be used after expiration (must re-fetch)
 
 ### 3. Data Privacy
 
