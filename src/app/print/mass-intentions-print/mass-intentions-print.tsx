@@ -13,6 +13,7 @@ import {
   type MassIntentionWithNames
 } from '@/lib/actions/mass-intentions'
 import { toast } from 'sonner'
+import { toLocalDateString } from '@/lib/utils/formatters'
 
 type PrintFormat = 'all' | 'scheduled' | 'unscheduled' | 'date-range'
 
@@ -32,8 +33,8 @@ export function MassIntentionsPrint() {
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
     
-    setStartDate(firstDay.toISOString().split('T')[0])
-    setEndDate(lastDay.toISOString().split('T')[0])
+    setStartDate(toLocalDateString(firstDay))
+    setEndDate(toLocalDateString(lastDay))
   }, [])
 
   const loadIntentions = async () => {

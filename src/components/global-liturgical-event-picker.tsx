@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { FormInput } from '@/components/form-input'
+import { DatePickerField } from '@/components/date-picker-field'
+import { toLocalDateString } from '@/lib/utils/formatters'
 import { Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-react'
 import { getGlobalLiturgicalEventsPaginated, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { toast } from 'sonner'
@@ -33,10 +35,10 @@ const STORAGE_KEY_VIEW_MODE = 'liturgical-event-picker-view-mode'
 // Get initial start date from localStorage or default to current date
 const getInitialStartDate = (): string => {
   if (typeof window === 'undefined') {
-    return new Date().toISOString().split('T')[0]
+    return toLocalDateString(new Date())
   }
   const stored = localStorage.getItem(STORAGE_KEY_START_DATE)
-  return stored || new Date().toISOString().split('T')[0]
+  return stored || toLocalDateString(new Date())
 }
 
 // Save start date to localStorage
@@ -76,9 +78,9 @@ const saveViewMode = (mode: ViewMode) => {
 
 // Calculate end date (1 year from start date)
 const calculateEndDate = (startDate: string): string => {
-  const date = new Date(startDate)
+  const date = new Date(startDate + 'T12:00:00')
   date.setFullYear(date.getFullYear() + 1)
-  return date.toISOString().split('T')[0]
+  return toLocalDateString(date)
 }
 
 // Available locale options
@@ -118,8 +120,8 @@ export function GlobalLiturgicalEventPicker({
       endOfCalendar.setDate(endOfCalendar.getDate() + 42)
 
       return {
-        start: startOfCalendar.toISOString().split('T')[0],
-        end: endOfCalendar.toISOString().split('T')[0]
+        start: toLocalDateString(startOfCalendar),
+        end: toLocalDateString(endOfCalendar)
       }
     } else {
       // For list view, use start date + 1 year
@@ -381,12 +383,12 @@ export function GlobalLiturgicalEventPicker({
             /* List View - Start Date and Locale side by side */
             <>
               <div className="grid grid-cols-2 gap-3">
-                <FormInput
+                <DatePickerField
                   id="start-date"
                   label="Start Date"
-                  inputType="date"
-                  value={startDate}
-                  onChange={handleStartDateChange}
+                  value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+                  onValueChange={(date) => handleStartDateChange(date ? toLocalDateString(date) : '')}
+                  closeOnSelect
                 />
 
                 <FormInput
@@ -404,7 +406,7 @@ export function GlobalLiturgicalEventPicker({
 
               {/* Date range description */}
               <p className="text-xs text-muted-foreground">
-                Events starting {new Date(startDate).toLocaleDateString()}
+                Events starting {startDate ? new Date(startDate + 'T12:00:00').toLocaleDateString() : 'today'}
               </p>
             </>
           ) : (

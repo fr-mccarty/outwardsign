@@ -238,9 +238,42 @@ When you need a formatter that doesn't exist:
 
 ## Date Formatting Functions
 
-**Location:** `src/lib/utils/formatters.ts` and `src/lib/utils/formatters.ts`
+**Location:** `src/lib/utils/formatters.ts`
 
 All date formatting functions accept either a string or Date object and handle errors gracefully.
+
+### 🔴 toLocalDateString() - CRITICAL FOR DATE CONVERSION
+
+**Purpose:** Convert a Date object to a YYYY-MM-DD string using LOCAL timezone.
+
+**CRITICAL:** Use this instead of `date.toISOString().split('T')[0]`
+
+The `toISOString()` method converts to UTC, which can shift the date by a day in western timezones. For example, if you're in EST (UTC-5) at 10 PM on January 15th, `toISOString()` returns a UTC time that could be January 16th.
+
+This function uses local date methods (`getFullYear`, `getMonth`, `getDate`) to ensure the date string matches what the user sees on their calendar.
+
+```typescript
+import { toLocalDateString } from '@/lib/utils/formatters'
+
+// User in EST timezone at 10 PM on January 15th
+const date = new Date('2025-01-15T22:00:00-05:00')
+
+// ❌ WRONG - May return "2025-01-16" (UTC shifted the date)
+date.toISOString().split('T')[0]
+
+// ✅ CORRECT - Returns "2025-01-15" (local date preserved)
+toLocalDateString(date)
+```
+
+**Use for:**
+- Converting Date objects to YYYY-MM-DD strings for URLs
+- Converting Date objects to YYYY-MM-DD strings for API calls
+- Any time you need to convert a Date object to a date-only string
+- When working with date pickers that return Date objects
+
+**Do NOT use for:**
+- Display purposes (use `formatDatePretty`, `formatDateLong`, etc.)
+- Strings that are already in YYYY-MM-DD format
 
 ### formatDate() ✨ Enhanced
 

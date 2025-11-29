@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { LocationPicker } from '@/components/location-picker'
 import { CommonTimesModal } from '@/components/common-times-modal'
 import { FormInput } from '@/components/form-input'
+import { DatePickerField } from '@/components/date-picker-field'
+import { toLocalDateString } from '@/lib/utils/formatters'
 import type { Location } from '@/lib/types'
 
 // Timezone options for the select field
@@ -98,14 +100,14 @@ export function EventFormFields({
       />
 
       {/* Date Field */}
-      <FormInput
+      <DatePickerField
         id="start_date"
         label="Date"
-        inputType="date"
-        value={formData.start_date}
-        onChange={(value) => updateField('start_date', value)}
+        value={formData.start_date ? new Date(formData.start_date + 'T12:00:00') : undefined}
+        onValueChange={(date) => updateField('start_date', date ? toLocalDateString(date) : '')}
         required
         error={getErrorMessage('start_date')}
+        closeOnSelect
       />
 
       {/* Time Field with Common Times Button - Custom layout since FormInput doesn't support adjacent buttons */}

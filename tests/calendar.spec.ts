@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { TEST_TIMEOUTS } from './utils/test-config';
+import { TEST_TIMEOUTS, toLocalDateString } from './utils/test-config';
 
 test.describe('Calendar Module', () => {
   test('should load calendar page with month view by default', async ({ page }) => {
@@ -122,7 +122,7 @@ test.describe('Calendar Module', () => {
     await page.getByRole('option').first().click();
 
     // Set start date to today
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalDateString(new Date());
     await page.fill('#start_date', today);
 
     // Submit the form
@@ -160,8 +160,8 @@ test.describe('Calendar Module', () => {
     await page.locator('#event_type').click();
     await page.getByRole('option').first().click();
 
-    const today = new Date().toISOString().split('T')[0];
-    await page.fill('#start_date', today);
+    const todayStr = toLocalDateString(new Date());
+    await page.fill('#start_date', todayStr);
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const submitButton = page.locator('button[type="submit"]').last();

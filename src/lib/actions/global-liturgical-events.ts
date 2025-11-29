@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { toLocalDateString } from '@/lib/utils/formatters'
 import type { PaginatedParams, PaginatedResult } from './people'
 
 export interface GlobalLiturgicalEvent {
@@ -157,8 +158,8 @@ export async function getGlobalLiturgicalEventsByMonth(
   const startDate = new Date(year, month - 1, 1)
   const endDate = new Date(year, month, 0) // Last day of month
 
-  const startDateStr = startDate.toISOString().split('T')[0]
-  const endDateStr = endDate.toISOString().split('T')[0]
+  const startDateStr = toLocalDateString(startDate)
+  const endDateStr = toLocalDateString(endDate)
 
   return getGlobalLiturgicalEvents(startDateStr, endDateStr, locale)
 }

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { toLocalDateString } from './utils/test-config'
 
 test.describe('Weekend Summary Module', () => {
   test.beforeEach(async ({ page }) => {
@@ -107,7 +108,7 @@ test.describe('Weekend Summary Module', () => {
     // Use a future Sunday date that won't have data
     const nextSunday = new Date()
     nextSunday.setDate(nextSunday.getDate() + ((7 - nextSunday.getDay()) % 7 || 7))
-    const dateStr = nextSunday.toISOString().split('T')[0]
+    const dateStr = toLocalDateString(nextSunday)
 
     await page.goto(`/weekend-summary/view?date=${dateStr}&sacraments=true&masses=true&massRoles=true`)
 
@@ -128,7 +129,7 @@ test.describe('Weekend Summary Module', () => {
     // Navigate to view page
     const nextSunday = new Date()
     nextSunday.setDate(nextSunday.getDate() + ((7 - nextSunday.getDay()) % 7 || 7))
-    const dateStr = nextSunday.toISOString().split('T')[0]
+    const dateStr = toLocalDateString(nextSunday)
 
     await page.goto(`/weekend-summary/view?date=${dateStr}&sacraments=true&masses=true`)
 
@@ -145,7 +146,7 @@ test.describe('Weekend Summary Module', () => {
     // Navigate to a weekend summary view page (no data, should show empty state)
     const nextSunday = new Date()
     nextSunday.setDate(nextSunday.getDate() + ((7 - nextSunday.getDay()) % 7 || 7))
-    const sundayStr = nextSunday.toISOString().split('T')[0]
+    const sundayStr = toLocalDateString(nextSunday)
 
     await page.goto(`/weekend-summary/view?date=${sundayStr}&sacraments=true&masses=true&massRoles=false`)
 

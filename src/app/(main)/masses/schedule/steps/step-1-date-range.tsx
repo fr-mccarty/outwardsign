@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { DatePickerField } from "@/components/date-picker-field"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import {
   Dialog,
   DialogContent,
@@ -22,14 +22,14 @@ import Link from 'next/link'
 import { getDayCount } from '@/lib/utils/formatters'
 import { RoleAvailabilityModal } from './role-availability-modal'
 
-// Date shortcut helpers
+// Date shortcut helpers - using toLocalDateString to avoid timezone bugs
 function getNextMonthRange(): { start: string; end: string } {
   const today = new Date()
   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
   const lastDayOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0)
   return {
-    start: nextMonth.toISOString().split('T')[0],
-    end: lastDayOfNextMonth.toISOString().split('T')[0],
+    start: toLocalDateString(nextMonth),
+    end: toLocalDateString(lastDayOfNextMonth),
   }
 }
 
@@ -37,8 +37,8 @@ function getRestOfThisMonthRange(): { start: string; end: string } {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
   return {
-    start: today.toISOString().split('T')[0],
-    end: lastDayOfMonth.toISOString().split('T')[0],
+    start: toLocalDateString(today),
+    end: toLocalDateString(lastDayOfMonth),
   }
 }
 
@@ -47,8 +47,8 @@ function getNextWeeksRange(weeks: number): { start: string; end: string } {
   const endDate = new Date(today)
   endDate.setDate(today.getDate() + (weeks * 7) - 1)
   return {
-    start: today.toISOString().split('T')[0],
-    end: endDate.toISOString().split('T')[0],
+    start: toLocalDateString(today),
+    end: toLocalDateString(endDate),
   }
 }
 
@@ -57,8 +57,8 @@ function getNextQuarterRange(): { start: string; end: string } {
   const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
   const threeMonthsLater = new Date(today.getFullYear(), today.getMonth() + 4, 0)
   return {
-    start: nextMonth.toISOString().split('T')[0],
-    end: threeMonthsLater.toISOString().split('T')[0],
+    start: toLocalDateString(nextMonth),
+    end: toLocalDateString(threeMonthsLater),
   }
 }
 
@@ -68,8 +68,8 @@ function getCalendarQuarterRange(quarter: 1 | 2 | 3 | 4, year?: number): { start
   const start = new Date(targetYear, startMonth, 1)
   const end = new Date(targetYear, startMonth + 3, 0)
   return {
-    start: start.toISOString().split('T')[0],
-    end: end.toISOString().split('T')[0],
+    start: toLocalDateString(start),
+    end: toLocalDateString(end),
   }
 }
 
@@ -132,32 +132,24 @@ export function Step1DateRange({ startDate, endDate, onChange, massRolesWithCoun
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">
-                Start Date <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => onChange('startDate', e.target.value)}
-                required
-              />
-            </div>
+            <DatePickerField
+              id="startDate"
+              label="Start Date"
+              value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+              onValueChange={(date) => onChange('startDate', date ? toLocalDateString(date) : '')}
+              required
+              closeOnSelect
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="endDate">
-                End Date <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => onChange('endDate', e.target.value)}
-                min={startDate}
-                required
-              />
-            </div>
+            <DatePickerField
+              id="endDate"
+              label="End Date"
+              value={endDate ? new Date(endDate + 'T12:00:00') : undefined}
+              onValueChange={(date) => onChange('endDate', date ? toLocalDateString(date) : '')}
+              disabled={(date) => startDate ? date < new Date(startDate + 'T00:00:00') : false}
+              required
+              closeOnSelect
+            />
           </div>
 
           {isValid && (

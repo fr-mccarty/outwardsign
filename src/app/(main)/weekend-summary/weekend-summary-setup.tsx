@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { DatePickerField } from '@/components/date-picker-field'
+import { toLocalDateString } from '@/lib/utils/formatters'
 
 export function WeekendSummarySetup() {
   const router = useRouter()
@@ -23,7 +24,7 @@ export function WeekendSummarySetup() {
 
     // Build query string from selections
     const params = new URLSearchParams()
-    params.set('date', sundayDate.toISOString().split('T')[0])
+    params.set('date', toLocalDateString(sundayDate))
     if (includeSacraments) params.set('sacraments', 'true')
     if (includeMasses) params.set('masses', 'true')
     if (includeMassRoles) params.set('massRoles', 'true')

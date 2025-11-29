@@ -4,6 +4,8 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
+import { DatePickerField } from "@/components/date-picker-field"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createEvent, updateEvent, type EventWithRelations } from "@/lib/actions/events"
 import { createEventSchema, type CreateEventData } from "@/lib/schemas/events"
@@ -185,13 +187,13 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         description="When the event takes place"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
+          <DatePickerField
             id="start_date"
             label="Start Date"
-            inputType="date"
-            value={startDate || ""}
-            onChange={(value) => setValue("start_date", value)}
+            value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+            onValueChange={(date) => setValue("start_date", date ? toLocalDateString(date) : "")}
             error={errors.start_date?.message}
+            closeOnSelect
           />
 
           <FormInput
@@ -205,13 +207,13 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
+          <DatePickerField
             id="end_date"
             label="End Date"
-            inputType="date"
-            value={endDate || ""}
-            onChange={(value) => setValue("end_date", value)}
+            value={endDate ? new Date(endDate + 'T12:00:00') : undefined}
+            onValueChange={(date) => setValue("end_date", date ? toLocalDateString(date) : "")}
             error={errors.end_date?.message}
+            closeOnSelect
           />
 
           <FormInput

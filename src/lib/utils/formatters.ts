@@ -297,6 +297,38 @@ export function formatEventDateTimeCompact(
 }
 
 /**
+ * Convert a Date object to a YYYY-MM-DD string using LOCAL timezone
+ *
+ * 🔴 CRITICAL: Use this instead of date.toISOString().split('T')[0]
+ *
+ * The toISOString() method converts to UTC, which can shift the date by a day
+ * in western timezones. For example, if you're in EST (UTC-5) at 10 PM on
+ * January 15th, toISOString() returns a UTC time that could be January 16th.
+ *
+ * This function uses local date methods (getFullYear, getMonth, getDate) to
+ * ensure the date string matches what the user sees on their calendar.
+ *
+ * @param date - Date object to convert
+ * @returns Date string in YYYY-MM-DD format using local timezone
+ *
+ * @example
+ * // User in EST timezone at 10 PM on January 15th
+ * const date = new Date('2025-01-15T22:00:00-05:00')
+ *
+ * // ❌ WRONG - Returns "2025-01-16" (UTC shifted the date)
+ * date.toISOString().split('T')[0]
+ *
+ * // ✅ CORRECT - Returns "2025-01-15" (local date preserved)
+ * toLocalDateString(date)
+ */
+export function toLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
  * Format date as numeric (e.g., "7/15/2025")
  *
  * @param date - Date string or Date object
@@ -932,7 +964,8 @@ export function getPersonPageTitle(person: {
  */
 export function formatDateForFilename(date?: string | null): string {
   if (!date) return 'NoDate'
-  return new Date(date).toISOString().split('T')[0].replace(/-/g, '')
+  // Input is already YYYY-MM-DD format, just remove the dashes
+  return date.replace(/-/g, '')
 }
 
 /**

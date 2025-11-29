@@ -9,8 +9,10 @@ import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Church, Calendar, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { DatePickerField } from "@/components/date-picker-field"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import { ListViewCard } from "@/components/list-view-card"
 import {
   Select,
@@ -43,12 +45,23 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
   const currentPage = parseInt(searchParams.get('page') || '1')
   const currentLimit = parseInt(searchParams.get('limit') || '50')
 
+  // Helper to parse URL date string to Date object
+  const parseUrlDate = (dateStr: string | null): Date | undefined => {
+    if (!dateStr) return undefined
+    return new Date(dateStr + 'T12:00:00')
+  }
+
   // Get today's date as default
-  const today = new Date().toISOString().split('T')[0]
+  const todayDate = new Date()
+  const todayStr = toLocalDateString(todayDate)
 
   const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
-  const [startDate, setStartDate] = useState(searchParams.get('start_date') || today)
-  const [endDate, setEndDate] = useState(searchParams.get('end_date') || '')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    parseUrlDate(searchParams.get('start_date')) || todayDate
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    parseUrlDate(searchParams.get('end_date'))
+  )
 
   // Update URL with new filter values
   const updateFilters = (updates: Record<string, string>) => {
@@ -78,12 +91,13 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
 
   const clearFilters = () => {
     setSearchValue('')
-    setStartDate(today)
-    setEndDate('')
+    setStartDate(todayDate)
+    setEndDate(undefined)
     router.push('/masses')
   }
 
-  const hasActiveFilters = searchValue || selectedStatus !== 'all' || startDate !== today || endDate
+  const hasActiveFilters = searchValue || selectedStatus !== 'all' ||
+    (startDate && toLocalDateString(startDate) !== todayStr) || endDate
 
   // Calculate pagination info
   const totalPages = Math.ceil(stats.filtered / currentLimit)
@@ -122,32 +136,28 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
           {/* Date Range and Filters Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Start Date */}
-            <div className="space-y-2">
-              <Label htmlFor="start_date">Start Date</Label>
-              <Input
-                id="start_date"
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value)
-                  updateFilters({ start_date: e.target.value })
-                }}
-              />
-            </div>
+            <DatePickerField
+              id="start_date"
+              label="Start Date"
+              value={startDate}
+              onValueChange={(date) => {
+                setStartDate(date)
+                updateFilters({ start_date: date ? toLocalDateString(date) : '' })
+              }}
+              closeOnSelect
+            />
 
             {/* End Date */}
-            <div className="space-y-2">
-              <Label htmlFor="end_date">End Date</Label>
-              <Input
-                id="end_date"
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value)
-                  updateFilters({ end_date: e.target.value })
-                }}
-              />
-            </div>
+            <DatePickerField
+              id="end_date"
+              label="End Date"
+              value={endDate}
+              onValueChange={(date) => {
+                setEndDate(date)
+                updateFilters({ end_date: date ? toLocalDateString(date) : '' })
+              }}
+              closeOnSelect
+            />
 
             {/* Status Filter */}
             <div className="space-y-2">

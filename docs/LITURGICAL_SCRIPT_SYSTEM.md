@@ -954,20 +954,18 @@ export async function GET(
 Make filenames descriptive:
 
 ```typescript
+import { formatDateForFilename } from '@/lib/utils/formatters'
+
 // Wedding
 const brideLastName = wedding.bride?.last_name || 'Bride'
 const groomLastName = wedding.groom?.last_name || 'Groom'
-const date = wedding.wedding_event?.start_date
-  ? new Date(wedding.wedding_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-  : 'NoDate'
+const date = formatDateForFilename(wedding.wedding_event?.start_date)
 const filename = `${brideLastName}-${groomLastName}-${date}.pdf`
 // Result: "Smith-Johnson-20250315.pdf"
 
 // Funeral
 const lastName = funeral.deceased?.last_name || 'Deceased'
-const date = funeral.funeral_event?.start_date
-  ? new Date(funeral.funeral_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-  : 'NoDate'
+const date = formatDateForFilename(funeral.funeral_event?.start_date)
 const filename = `${lastName}-Funeral-${date}.pdf`
 // Result: "Williams-Funeral-20250320.pdf"
 ```

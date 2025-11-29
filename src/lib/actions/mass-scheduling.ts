@@ -7,6 +7,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { MassScheduleEntry } from '@/app/(main)/masses/schedule/steps/step-2-schedule-pattern'
 import { getLiturgicalContextFromGrade, type LiturgicalContext } from '@/lib/constants'
+import { toLocalDateString } from '@/lib/utils/formatters'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
 export interface ScheduleMassesParams {
@@ -160,7 +161,7 @@ export async function scheduleMasses(
 
       while (currentDate <= end) {
         const dayOfWeek = currentDate.getDay()
-        const dateStr = currentDate.toISOString().split('T')[0]
+        const dateStr = toLocalDateString(currentDate)
 
         // Find all schedule entries matching this day
         const matchingEntries = params.schedule.filter(
@@ -772,7 +773,7 @@ export async function getPersonSchedulingConflicts(
 
       while (currentDate <= end) {
         conflicts.push({
-          date: currentDate.toISOString().split('T')[0],
+          date: toLocalDateString(currentDate),
           reason: blackout.reason || 'Blackout period',
         })
         currentDate.setDate(currentDate.getDate() + 1)
@@ -832,8 +833,8 @@ async function getMonthlyAssignmentCount(
   date: string
 ): Promise<number> {
   const massDate = new Date(date)
-  const startOfMonth = new Date(massDate.getFullYear(), massDate.getMonth(), 1).toISOString().split('T')[0]
-  const endOfMonth = new Date(massDate.getFullYear(), massDate.getMonth() + 1, 0).toISOString().split('T')[0]
+  const startOfMonth = toLocalDateString(new Date(massDate.getFullYear(), massDate.getMonth(), 1))
+  const endOfMonth = toLocalDateString(new Date(massDate.getFullYear(), massDate.getMonth() + 1, 0))
 
   const { count } = await supabase
     .from('mass_assignment')

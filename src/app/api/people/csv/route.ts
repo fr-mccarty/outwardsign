@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPeople } from '@/lib/actions/people'
 import { createClient } from '@/lib/supabase/server'
+import { toLocalDateString } from '@/lib/utils/formatters'
 
 export async function GET() {
   try {
@@ -51,7 +52,7 @@ export async function GET() {
     const csvContent = csvRows.join('\n')
 
     // Generate filename with current date
-    const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
+    const currentDate = toLocalDateString(new Date()).replace(/-/g, '')
     const filename = `people-${currentDate}.csv`
 
     // Return CSV file

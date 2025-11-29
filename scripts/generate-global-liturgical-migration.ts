@@ -68,7 +68,9 @@ async function main() {
   try {
     const events = await fetchLiturgicalCalendar(year, locale)
 
-    const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '')
+    // Use local date to avoid timezone shift issues
+    const now = new Date()
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
     const migrationFile = `supabase/migrations/${timestamp}000002_seed_global_liturgical_events_${year}_${locale}.sql`
 
     let sql = `-- Seed global_liturgical_events table for year ${year} (locale: ${locale})

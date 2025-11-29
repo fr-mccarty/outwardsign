@@ -89,7 +89,7 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
 
 **How it works:** FormField is a **props-based component** - you pass field configuration as props, and it renders everything internally including the label (connected via `htmlFor`/`id`), the input, optional description, and error messages. Shows red asterisk for required fields.
 
-**Supported Input Types:** FormField supports plain inputs (text, email, password, number, date, time), textareas, select dropdowns, and checkboxes. For radio buttons, date pickers, file uploads, or other complex form elements not listed, use the base shadcn/ui components directly with proper Label association.
+**Supported Input Types:** FormField supports plain inputs (text, email, password, number, date, time), textareas, select dropdowns, and checkboxes. For calendar-style date pickers, use `DatePickerField`. For radio buttons, file uploads, or other complex form elements not listed, use the base shadcn/ui components directly with proper Label association.
 
 **Props:**
 - `id` (required): Field identifier
@@ -171,6 +171,85 @@ A comprehensive catalog of reusable components in the Outward Sign application. 
   onChange={setEventDate}
 />
 ```
+
+---
+
+### DatePickerField
+**Path:** `src/components/date-picker-field.tsx`
+
+**Purpose:** Date picker field with calendar popover for selecting dates. Provides a more user-friendly date selection experience than the native HTML date input.
+
+**When to Use:**
+- Use `DatePickerField` when you need a visual calendar picker for date selection
+- Use `FormField` with `inputType="date"` for simple date inputs (native browser input)
+
+**Key Features:**
+- Calendar popover with visual date selection
+- Formatted date display using `formatDatePretty()`
+- Optional date disabling via callback function
+- Auto-close on selection (optional)
+- Required field indicator
+- Description text support
+
+**Props:**
+- `id`: Field identifier (optional, auto-generated from label if not provided)
+- `label` (required): Field label text
+- `value` (required): Selected date (`Date | undefined`)
+- `onValueChange` (required): Date change handler `(date: Date | undefined) => void`
+- `placeholder`: Placeholder text (default: "Select a date")
+- `description`: Optional help text below the field
+- `required`: Show red asterisk indicator (default: `false`)
+- `disabled`: Function to disable specific dates `(date: Date) => boolean`
+- `closeOnSelect`: Auto-close popover when date is selected (default: `false`)
+
+**Usage:**
+```tsx
+import { DatePickerField } from '@/components/date-picker-field'
+
+// Basic usage
+const [eventDate, setEventDate] = useState<Date | undefined>()
+
+<DatePickerField
+  label="Event Date"
+  value={eventDate}
+  onValueChange={setEventDate}
+  required
+/>
+
+// With description and disabled dates
+<DatePickerField
+  label="Appointment Date"
+  value={appointmentDate}
+  onValueChange={setAppointmentDate}
+  description="Select a date for your appointment"
+  disabled={(date) => date < new Date()}  // Disable past dates
+  closeOnSelect
+/>
+
+// With custom placeholder
+<DatePickerField
+  label="Birth Date"
+  value={birthDate}
+  onValueChange={setBirthDate}
+  placeholder="Choose birth date"
+/>
+```
+
+**🔴 CRITICAL - Converting Date to String:**
+
+This component uses a `Date` object for value. When converting to a string (for URLs, API calls, etc.), **ALWAYS use `toLocalDateString()`** to avoid timezone issues:
+
+```tsx
+import { toLocalDateString } from '@/lib/utils/formatters'
+
+// ❌ WRONG - May shift date by a day in western timezones
+const dateStr = value.toISOString().split('T')[0]
+
+// ✅ CORRECT - Preserves local date
+const dateStr = toLocalDateString(value)
+```
+
+See [FORMATTERS.md](./FORMATTERS.md#-tolocaledatestring---critical-for-date-conversion) for detailed explanation of the timezone bug.
 
 ---
 

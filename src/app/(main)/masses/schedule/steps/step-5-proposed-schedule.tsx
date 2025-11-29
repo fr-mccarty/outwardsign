@@ -30,7 +30,7 @@ import { Calendar } from '@/components/calendar/calendar'
 import { CalendarItem, CalendarView } from '@/components/calendar/types'
 import { MassTimesTemplate, MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek, DEFAULT_TIMEZONE } from "@/lib/constants"
-import { formatDate, formatTime, getDayOfWeekNumber } from "@/lib/utils/formatters"
+import { formatDate, formatTime, getDayOfWeekNumber, toLocalDateString } from "@/lib/utils/formatters"
 import { format } from 'date-fns'
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'
@@ -482,7 +482,7 @@ export function generateProposedMasses(
 
   while (currentDate <= end) {
     const dayNumber = currentDate.getUTCDay()
-    const dateStr = currentDate.toISOString().split('T')[0]
+    const dateStr = toLocalDateString(currentDate)
 
     // Check if there's a liturgical event on this date
     const liturgicalEvent = eventsByDate.get(dateStr)
@@ -534,7 +534,7 @@ export function generateProposedMasses(
               // Vigil Mass: occurs the day before
               massDateObj = new Date(currentDate)
               massDateObj.setUTCDate(massDateObj.getUTCDate() - 1)
-              massDate = massDateObj.toISOString().split('T')[0]
+              massDate = toLocalDateString(massDateObj)
             } else {
               // IS_DAY or default: occurs on the actual day
               massDate = dateStr

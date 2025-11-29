@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePickerField } from '@/components/date-picker-field'
+import { toLocalDateString } from '@/lib/utils/formatters'
 import {
   Table,
   TableBody,
@@ -23,8 +24,8 @@ import Link from 'next/link'
 import { PageContainer } from '@/components/page-container'
 
 export function MassIntentionsReportClient() {
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined)
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined)
   const [intentions, setIntentions] = useState<MassIntentionReportData[]>([])
   const [totalStipends, setTotalStipends] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -37,11 +38,14 @@ export function MassIntentionsReportClient() {
       return
     }
 
+    const startDateStr = startDate ? toLocalDateString(startDate) : undefined
+    const endDateStr = endDate ? toLocalDateString(endDate) : undefined
+
     setIsLoading(true)
     try {
       const result = await getMassIntentionsReport({
-        startDate: startDate || undefined,
-        endDate: endDate || undefined
+        startDate: startDateStr,
+        endDate: endDateStr
       })
       setIntentions(result.intentions)
       setTotalStipends(result.totalStipends)
@@ -81,8 +85,8 @@ export function MassIntentionsReportClient() {
       return
     }
     const params = new URLSearchParams()
-    if (startDate) params.set('startDate', startDate)
-    if (endDate) params.set('endDate', endDate)
+    if (startDate) params.set('startDate', toLocalDateString(startDate))
+    if (endDate) params.set('endDate', toLocalDateString(endDate))
     window.open(`/print/mass-intentions/report?${params.toString()}`, '_blank')
   }
 
@@ -94,8 +98,8 @@ export function MassIntentionsReportClient() {
 
     try {
       const params = new URLSearchParams()
-      if (startDate) params.set('startDate', startDate)
-      if (endDate) params.set('endDate', endDate)
+      if (startDate) params.set('startDate', toLocalDateString(startDate))
+      if (endDate) params.set('endDate', toLocalDateString(endDate))
 
       const response = await fetch(`/api/mass-intentions/report/csv?${params.toString()}`)
       if (!response.ok) throw new Error('Failed to download CSV')
@@ -204,24 +208,20 @@ export function MassIntentionsReportClient() {
             <CardContent className="p-6 space-y-6">
               {/* Date Range Selection */}
               <div className="flex flex-col md:flex-row gap-4 items-end">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="startDate">Start Date (Optional)</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="endDate">End Date (Optional)</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                </div>
+                <DatePickerField
+                  id="startDate"
+                  label="Start Date (Optional)"
+                  value={startDate}
+                  onValueChange={setStartDate}
+                  closeOnSelect
+                />
+                <DatePickerField
+                  id="endDate"
+                  label="End Date (Optional)"
+                  value={endDate}
+                  onValueChange={setEndDate}
+                  closeOnSelect
+                />
                 <Button
                   onClick={handleGenerateReport}
                   disabled={isLoading}

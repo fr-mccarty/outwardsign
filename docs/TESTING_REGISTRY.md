@@ -35,6 +35,7 @@ This document provides a complete reference of all test files and individual tes
   - [Person Picker](#person-picker)
   - [Event Picker](#event-picker)
   - [Mass Picker](#mass-picker)
+  - [Date Picker](#date-picker)
 - [Application Features](#application-features)
   - [Dashboard](#dashboard)
   - [Calendar](#calendar)
@@ -424,6 +425,22 @@ This document provides a complete reference of all test files and individual tes
 | should display masses in picker | Confirms picker loads and displays mass cards from the database with correct count |
 | should clear selected mass | Verifies user can clear a selected mass using the X button and field returns to empty state |
 | should preserve mass intention form context when using mass picker | Critical test ensuring picker doesn't navigate away or lose parent form data when selecting a mass |
+
+### Date Picker
+
+#### `tests/date-picker.spec.ts` (8 tests)
+
+**Module:** DatePickerField Component
+
+| Test | Description |
+|------|-------------|
+| should display date picker with placeholder | Verifies date picker button shows placeholder text when no date is selected |
+| should open calendar popover when clicked | Validates calendar popover opens with month navigation when button is clicked |
+| should display selected date correctly without timezone shift | Critical test verifying selected date displays correctly without UTC timezone shift bug |
+| should pass selected date to URL correctly | Confirms selected date is correctly converted to YYYY-MM-DD format in URL parameters |
+| should only enable Sundays for weekend summary | Validates date picker correctly enables/disables dates based on `disabled` callback prop |
+| should close calendar after selecting date when closeOnSelect is true | Verifies calendar closes automatically when `closeOnSelect` prop is enabled |
+| should handle date selection near midnight correctly | Edge case test ensuring date selection works correctly near midnight in any timezone |
 
 ---
 

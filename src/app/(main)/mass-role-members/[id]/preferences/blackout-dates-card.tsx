@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { DatePickerField } from "@/components/date-picker-field"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Save, X, CalendarX } from "lucide-react"
 import type { MassRoleBlackoutDate } from "@/lib/actions/mass-role-members-compat"
@@ -27,14 +28,14 @@ export function BlackoutDatesCard({
   const [isAdding, setIsAdding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined)
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined)
   const [reason, setReason] = useState('')
 
   const handleAdd = () => {
     setIsAdding(true)
-    setStartDate('')
-    setEndDate('')
+    setStartDate(undefined)
+    setEndDate(undefined)
     setReason('')
   }
 
@@ -48,7 +49,7 @@ export function BlackoutDatesCard({
       return
     }
 
-    if (new Date(endDate) < new Date(startDate)) {
+    if (endDate < startDate) {
       toast.error('End date must be after start date')
       return
     }
@@ -57,8 +58,8 @@ export function BlackoutDatesCard({
     try {
       await createBlackoutDate({
         person_id: personId,
-        start_date: startDate,
-        end_date: endDate,
+        start_date: toLocalDateString(startDate),
+        end_date: toLocalDateString(endDate),
         reason: reason || undefined
       })
       toast.success('Blackout date added successfully')
@@ -116,24 +117,22 @@ export function BlackoutDatesCard({
           {isAdding && (
             <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start-date">Start Date</Label>
-                  <Input
-                    id="start-date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end-date">End Date</Label>
-                  <Input
-                    id="end-date"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                </div>
+                <DatePickerField
+                  id="start-date"
+                  label="Start Date"
+                  value={startDate}
+                  onValueChange={setStartDate}
+                  required
+                  closeOnSelect
+                />
+                <DatePickerField
+                  id="end-date"
+                  label="End Date"
+                  value={endDate}
+                  onValueChange={setEndDate}
+                  required
+                  closeOnSelect
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="reason">Reason (Optional)</Label>

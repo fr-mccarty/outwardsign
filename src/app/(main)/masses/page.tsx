@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
 import { CalendarClock } from 'lucide-react'
 import Link from 'next/link'
+import { toLocalDateString } from '@/lib/utils/formatters'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,7 @@ export default async function MassesPage({ searchParams }: PageProps) {
   const params = await searchParams
 
   // Get current date for default start_date filter
-  const today = new Date().toISOString().split('T')[0]
+  const today = toLocalDateString(new Date())
 
   // Build filters from search params
   const filters: MassFilterParams = {

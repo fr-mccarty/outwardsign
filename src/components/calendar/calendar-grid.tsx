@@ -2,6 +2,7 @@
 
 import { CalendarDay } from "./calendar-day"
 import { CalendarGridProps, CalendarItem, CalendarDay as CalendarDayType } from "./types"
+import { toLocalDateString } from '@/lib/utils/formatters'
 
 export function CalendarGrid<T extends CalendarItem = CalendarItem>({
   currentDate,
@@ -48,7 +49,7 @@ export function CalendarGrid<T extends CalendarItem = CalendarItem>({
       const dayItems = items.filter(item => {
         if (!item.date) return false
         // Compare date strings directly to avoid timezone issues
-        const currentDateStr = currentDateForLoop.toISOString().split('T')[0]
+        const currentDateStr = toLocalDateString(currentDateForLoop)
         return item.date === currentDateStr
       })
 

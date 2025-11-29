@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CalendarIcon } from 'lucide-react'
-import { formatDatePretty } from '@/lib/utils/formatters'
+import { formatDatePretty, toLocalDateString } from '@/lib/utils/formatters'
 import { cn } from '@/lib/utils'
 
 interface DatePickerFieldProps {
@@ -19,6 +19,8 @@ interface DatePickerFieldProps {
   required?: boolean
   disabled?: (date: Date) => boolean
   closeOnSelect?: boolean
+  /** Validation error message from React Hook Form */
+  error?: string
 }
 
 export function DatePickerField({
@@ -31,9 +33,12 @@ export function DatePickerField({
   required = false,
   disabled,
   closeOnSelect = false,
+  error,
 }: DatePickerFieldProps) {
   const [open, setOpen] = useState(false)
   const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
+  const errorId = error ? `${fieldId}-error` : undefined
+  const hasError = !!error
 
   const handleSelect = (date: Date | undefined) => {
     onValueChange(date)
@@ -53,13 +58,16 @@ export function DatePickerField({
           <Button
             id={fieldId}
             variant="outline"
+            aria-describedby={errorId}
+            aria-invalid={hasError}
             className={cn(
               'w-full justify-start text-left font-normal',
-              !value && 'text-muted-foreground'
+              !value && 'text-muted-foreground',
+              hasError && 'ring-2 ring-destructive-ring focus-visible:ring-destructive-ring'
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value ? formatDatePretty(value.toISOString().split('T')[0]) : placeholder}
+            {value ? formatDatePretty(toLocalDateString(value)) : placeholder}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -74,6 +82,11 @@ export function DatePickerField({
       </Popover>
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+      {error && (
+        <p id={errorId} className="text-sm text-destructive mt-1">
+          {error}
+        </p>
       )}
     </div>
   )

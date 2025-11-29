@@ -33,3 +33,19 @@ export const TEST_SELECTORS = {
   TOAST_SUCCESS: 'text=/successfully/i',
   TOAST_ERROR: 'text=/error|failed/i',
 } as const;
+
+/**
+ * Convert a Date to a local date string (YYYY-MM-DD format)
+ *
+ * This uses local timezone to avoid date shifting issues that occur
+ * with toISOString() which converts to UTC.
+ *
+ * @example
+ * toLocalDateString(new Date()) // "2025-11-29"
+ */
+export function toLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { TEST_TIMEOUTS } from './utils/test-config';
+import { TEST_TIMEOUTS, toLocalDateString } from './utils/test-config';
 
 test.describe('Dashboard', () => {
   // Enable parallel execution - tests in this file don't interfere with each other
@@ -211,7 +211,7 @@ test.describe('Dashboard', () => {
     // Set date to 7 days from now
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
+    const futureDateStr = toLocalDateString(futureDate);
     await page.fill('#start_date', futureDateStr);
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));

@@ -4,6 +4,8 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
+import { DatePickerField } from "@/components/date-picker-field"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createMassIntention, updateMassIntention, type MassIntentionWithRelations } from "@/lib/actions/mass-intentions"
 import { createMassIntentionSchema, type CreateMassIntentionData } from "@/lib/schemas/mass-intentions"
@@ -180,24 +182,24 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
         title="Dates and Stipend"
         description="When the intention was requested/received and stipend amount"
       >
-        <FormInput
+        <DatePickerField
             id="date_requested"
-            inputType="date"
             label="Date Requested"
             description="When the parishioner requested this Mass intention"
-            value={dateRequested || ""}
-            onChange={(value) => setValue("date_requested", value || null)}
+            value={dateRequested ? new Date(dateRequested + 'T12:00:00') : undefined}
+            onValueChange={(date) => setValue("date_requested", date ? toLocalDateString(date) : null)}
             error={errors.date_requested?.message}
+            closeOnSelect
           />
 
-          <FormInput
+          <DatePickerField
             id="date_received"
-            inputType="date"
             label="Date Received"
             description="When the parish office received this request"
-            value={dateReceived || ""}
-            onChange={(value) => setValue("date_received", value || null)}
+            value={dateReceived ? new Date(dateReceived + 'T12:00:00') : undefined}
+            onValueChange={(date) => setValue("date_received", date ? toLocalDateString(date) : null)}
             error={errors.date_received?.message}
+            closeOnSelect
           />
 
           <FormInput

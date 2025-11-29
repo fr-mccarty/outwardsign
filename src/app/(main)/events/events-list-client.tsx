@@ -23,6 +23,8 @@ import { RELATED_EVENT_TYPE_LABELS, RelatedEventType } from "@/lib/constants"
 import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
 import { useAppContext } from '@/contexts/AppContextProvider'
 import { FormInput } from "@/components/form-input"
+import { DatePickerField } from "@/components/date-picker-field"
+import { toLocalDateString } from "@/lib/utils/formatters"
 import type { EventType } from "@/lib/types"
 
 interface Stats {
@@ -64,7 +66,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
       const params = new URLSearchParams(searchParams.toString())
 
       if (!hasStartDate) {
-        const today = new Date().toISOString().split('T')[0]
+        const today = toLocalDateString(new Date())
         params.set('start_date', today)
       }
 
@@ -164,19 +166,19 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormInput
+            <DatePickerField
               id="start-date"
               label="From Date"
-              inputType="date"
-              value={startDate}
-              onChange={(value) => updateFilters('start_date', value)}
+              value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+              onValueChange={(date) => updateFilters('start_date', date ? toLocalDateString(date) : '')}
+              closeOnSelect
             />
-            <FormInput
+            <DatePickerField
               id="end-date"
               label="To Date"
-              inputType="date"
-              value={endDate}
-              onChange={(value) => updateFilters('end_date', value)}
+              value={endDate ? new Date(endDate + 'T12:00:00') : undefined}
+              onValueChange={(date) => updateFilters('end_date', date ? toLocalDateString(date) : '')}
+              closeOnSelect
             />
             <FormInput
               id="sort"

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { toLocalDateString } from './utils/test-config'
 
 test.describe('Weekend Summary Print View', () => {
   test.beforeEach(async ({ page }) => {
@@ -65,7 +66,7 @@ test.describe('Weekend Summary Print View', () => {
     // Navigate directly to print page with query params
     const nextSunday = new Date()
     nextSunday.setDate(nextSunday.getDate() + ((7 - nextSunday.getDay()) % 7 || 7))
-    const dateStr = nextSunday.toISOString().split('T')[0]
+    const dateStr = toLocalDateString(nextSunday)
 
     await page.goto(`/print/weekend-summary?date=${dateStr}&sacraments=true&masses=true`)
 

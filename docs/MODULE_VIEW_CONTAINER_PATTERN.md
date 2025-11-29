@@ -138,9 +138,7 @@ export function WeddingViewClient({ wedding }: WeddingViewClientProps) {
   const generateFilename = (extension: string) => {
     const brideLastName = wedding.bride?.last_name || 'Bride'
     const groomLastName = wedding.groom?.last_name || 'Groom'
-    const weddingDate = wedding.wedding_event?.start_date
-      ? new Date(wedding.wedding_event.start_date).toISOString().split('T')[0].replace(/-/g, '')
-      : 'NoDate'
+    const weddingDate = formatDateForFilename(wedding.wedding_event?.start_date)
     return `${brideLastName}-${groomLastName}-${weddingDate}.${extension}`
   }
 

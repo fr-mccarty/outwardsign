@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { CalendarDayProps, CalendarItem } from "./types"
 import type { CalendarDay } from "./types"
 import { LITURGICAL_COLOR_BAR_TOTAL_WIDTH } from '@/lib/constants'
+import { toLocalDateString } from '@/lib/utils/formatters'
 import {
   ParishEventItemMonth,
   ParishEventItemWeek,
@@ -148,7 +149,7 @@ export function CalendarDay<T extends CalendarItem = CalendarItem>({
   }
 
   // Format date for URL parameter (YYYY-MM-DD)
-  const formattedDate = day.date.toISOString().split('T')[0]
+  const formattedDate = toLocalDateString(day.date)
   const dayViewUrl = `/calendar?view=day&date=${formattedDate}`
 
   // Check if there are any events for mobile tap

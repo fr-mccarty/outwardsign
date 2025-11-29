@@ -10,6 +10,7 @@ import { getPresentations, PresentationWithRelations } from './presentations'
 import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
 import { getMasses, MassWithNames } from './masses'
 import { getMassRoleInstances, MassRoleInstanceWithRelations } from './mass-roles'
+import { toLocalDateString } from '@/lib/utils/formatters'
 
 export interface WeekendSummaryParams {
   sundayDate: string // ISO date string (YYYY-MM-DD)
@@ -55,7 +56,7 @@ export async function getWeekendSummaryData(
   const saturday = new Date(sunday)
   saturday.setDate(saturday.getDate() - 1)
 
-  const saturdayDate = saturday.toISOString().split('T')[0]
+  const saturdayDate = toLocalDateString(saturday)
   const sundayDate = params.sundayDate
 
   // Initialize result
