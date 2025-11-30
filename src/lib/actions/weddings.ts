@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
-import { Wedding, Person, Event } from '@/lib/types'
+import { Wedding, Person } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
 import {
@@ -15,6 +15,7 @@ import {
   type UpdateWeddingData
 } from '@/lib/schemas/weddings'
 import type { ModuleStatus } from '@/lib/constants'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 // Note: CreateWeddingData and UpdateWeddingData types are imported from '@/lib/schemas/weddings'
 // They cannot be re-exported from this 'use server' file
@@ -22,19 +23,73 @@ import type { ModuleStatus } from '@/lib/constants'
 export interface WeddingFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+  start_date?: string
+  end_date?: string
 }
 
 export interface WeddingWithNames extends Wedding {
   bride?: Person | null
   groom?: Person | null
   presider?: Person | null
-  wedding_event?: Event | null
+  wedding_event?: EventWithRelations | null
+}
+
+export interface WeddingStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getWeddingStats(filteredWeddings: WeddingWithNames[]): Promise<WeddingStats> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Fetch all weddings for total stats (no filters)
+  const { data: allWeddings } = await supabase
+    .from('weddings')
+    .select(`
+      *,
+      wedding_event:events!wedding_event_id(*)
+    `)
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const total = allWeddings?.length || 0
+  const upcoming = allWeddings?.filter(w => {
+    const weddingDate = w.wedding_event?.start_date
+    if (!weddingDate) return false
+    return new Date(weddingDate) >= today
+  }).length || 0
+  const past = allWeddings?.filter(w => {
+    const weddingDate = w.wedding_event?.start_date
+    if (!weddingDate) return false
+    return new Date(weddingDate) < today
+  }).length || 0
+  const filtered = filteredWeddings.length
+
+  return {
+    total,
+    upcoming,
+    past,
+    filtered
+  }
 }
 
 export async function getWeddings(filters?: WeddingFilterParams): Promise<WeddingWithNames[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Calculate pagination
+  const page = filters?.page || 1
+  const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
+  const offset = (page - 1) * limit
 
   let query = supabase
     .from('weddings')
@@ -43,7 +98,7 @@ export async function getWeddings(filters?: WeddingFilterParams): Promise<Weddin
       bride:people!bride_id(*),
       groom:people!groom_id(*),
       presider:people!presider_id(*),
-      wedding_event:events!wedding_event_id(*)
+      wedding_event:events!wedding_event_id(*, location:locations(*))
     `)
 
   // Apply status filter at database level
@@ -51,7 +106,18 @@ export async function getWeddings(filters?: WeddingFilterParams): Promise<Weddin
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply database-level sorting for created_at fields
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    // Default to most recent first
+    query = query.order('created_at', { ascending: false })
+  }
+
+  // Apply pagination at database level
+  query = query.range(offset, offset + limit - 1)
 
   const { data, error } = await query
 
@@ -62,21 +128,69 @@ export async function getWeddings(filters?: WeddingFilterParams): Promise<Weddin
 
   let weddings = data || []
 
-  // Apply search filter in application layer (searching related table fields)
+  // Apply search filter in application layer (searching related table fields and notes)
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
     weddings = weddings.filter(wedding => {
       const brideFirstName = wedding.bride?.first_name?.toLowerCase() || ''
       const brideLastName = wedding.bride?.last_name?.toLowerCase() || ''
+      const brideFull = wedding.bride?.full_name?.toLowerCase() || ''
       const groomFirstName = wedding.groom?.first_name?.toLowerCase() || ''
       const groomLastName = wedding.groom?.last_name?.toLowerCase() || ''
+      const groomFull = wedding.groom?.full_name?.toLowerCase() || ''
+      const notes = wedding.notes?.toLowerCase() || ''
 
       return (
         brideFirstName.includes(searchTerm) ||
         brideLastName.includes(searchTerm) ||
+        brideFull.includes(searchTerm) ||
         groomFirstName.includes(searchTerm) ||
-        groomLastName.includes(searchTerm)
+        groomLastName.includes(searchTerm) ||
+        groomFull.includes(searchTerm) ||
+        notes.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date range filter
+  if (filters?.start_date || filters?.end_date) {
+    weddings = weddings.filter(wedding => {
+      const weddingDate = wedding.wedding_event?.start_date
+      if (!weddingDate) return false
+
+      const date = new Date(weddingDate)
+      const startDate = filters.start_date ? new Date(filters.start_date) : null
+      const endDate = filters.end_date ? new Date(filters.end_date) : null
+
+      if (startDate && date < startDate) return false
+      if (endDate && date > endDate) return false
+
+      return true
+    })
+  }
+
+  // Apply application-level sorting for related fields (date and name)
+  if (filters?.sort === 'date_asc' || filters?.sort === 'date_desc') {
+    weddings = weddings.sort((a, b) => {
+      const dateA = a.wedding_event?.start_date || ''
+      const dateB = b.wedding_event?.start_date || ''
+
+      // Handle nulls - push to end
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+
+      const comparison = new Date(dateA).getTime() - new Date(dateB).getTime()
+      return filters.sort === 'date_asc' ? comparison : -comparison
+    })
+  } else if (filters?.sort === 'name_asc' || filters?.sort === 'name_desc') {
+    weddings = weddings.sort((a, b) => {
+      // Use bride's full name for primary sort (could also use groom or both)
+      const nameA = a.bride?.full_name || a.groom?.full_name || ''
+      const nameB = b.bride?.full_name || b.groom?.full_name || ''
+
+      const comparison = nameA.localeCompare(nameB)
+      return filters.sort === 'name_asc' ? comparison : -comparison
     })
   }
 

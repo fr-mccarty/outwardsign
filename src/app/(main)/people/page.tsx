@@ -10,7 +10,11 @@ import { redirect } from 'next/navigation'
 import { PeopleListClient } from './people-list-client'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string }>
+  searchParams: Promise<{
+    search?: string
+    sort?: string
+    page?: string
+  }>
 }
 
 export default async function PeoplePage({ searchParams }: PageProps) {
@@ -26,7 +30,10 @@ export default async function PeoplePage({ searchParams }: PageProps) {
 
   // Build filters from search params
   const filters: PersonFilterParams = {
-    search: params.search
+    search: params.search,
+    sort: (params.sort as PersonFilterParams['sort']) || 'name_asc',
+    page: params.page ? parseInt(params.page) : 1,
+    limit: 50
   }
 
   // Fetch people server-side with filters

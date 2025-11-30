@@ -1,18 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Person } from '@/lib/types'
-import { getPersonAvatarSignedUrls } from '@/lib/actions/people'
+import { deletePerson } from '@/lib/actions/people'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
-import { Plus, User, Mail, Phone, MapPin, Search, Filter } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
+import { Plus, User, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { useListFilters } from "@/hooks/use-list-filters"
+import {
+  buildAvatarColumn,
+  buildWhoColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface Stats {
   total: number
@@ -26,144 +35,202 @@ interface PeopleListClientProps {
   stats: Stats
 }
 
+// Define sort options specific to People module
+const PEOPLE_SORT_OPTIONS = [
+  { value: 'name_asc', label: 'Name (A-Z)' },
+  { value: 'name_desc', label: 'Name (Z-A)' },
+  { value: 'created_desc', label: 'Recently Created' },
+  { value: 'created_asc', label: 'Oldest Created' }
+] as const
+
 export function PeopleListClient({ initialData, stats }: PeopleListClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({})
 
-  // Fetch signed URLs for all people with avatars
-  useEffect(() => {
-    async function fetchAvatarUrls() {
-      const paths = initialData
-        .filter(p => p.avatar_url)
-        .map(p => p.avatar_url as string)
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/people',
+    defaultFilters: { sort: 'name_asc' }
+  })
 
-      if (paths.length === 0) return
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
 
-      try {
-        const urls = await getPersonAvatarSignedUrls(paths)
-        // Map from storage path back to person id
-        const urlsByPersonId: Record<string, string> = {}
-        initialData.forEach(person => {
-          if (person.avatar_url && urls[person.avatar_url]) {
-            urlsByPersonId[person.id] = urls[person.avatar_url]
-          }
-        })
-        setAvatarUrls(urlsByPersonId)
-      } catch (error) {
-        console.error('Failed to fetch avatar URLs:', error)
-      }
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total People' },
+    { value: stats.withEmail, label: 'With Email' },
+    { value: stats.withPhone, label: 'With Phone' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [personToDelete, setPersonToDelete] = useState<Person | null>(null)
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchValue('')
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!personToDelete) return
+
+    try {
+      await deletePerson(personToDelete.id)
+      toast.success('Person deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete person:', error)
+      toast.error('Failed to delete person. Please try again.')
+      throw error
     }
-    fetchAvatarUrls()
-  }, [initialData])
-
-  // Get initials for a person
-  const getInitials = (person: Person) => {
-    const first = person.first_name?.charAt(0) || ''
-    const last = person.last_name?.charAt(0) || ''
-    return (first + last).toUpperCase() || '?'
   }
 
-  // Get current filter values from URL
-  const searchTerm = searchParams.get('search') || ''
-
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
-    }
-    router.push(`/people?${params.toString()}`)
-  }
-
-  const clearFilters = () => {
-    router.push('/people')
-  }
-
-  const hasActiveFilters = searchTerm
+  // Define table columns using column builders
+  const columns = [
+    buildAvatarColumn<Person>({
+      people: (person) => [{
+        id: person.id,
+        first_name: person.first_name,
+        last_name: person.last_name,
+        full_name: person.full_name,
+        avatar_url: person.avatar_url
+      }],
+      type: 'single',
+      size: 'md',
+      hiddenOn: 'sm'
+    }),
+    buildWhoColumn<Person>({
+      getName: (person) => person.full_name,
+      getStatus: () => 'ACTIVE', // People don't have status, use placeholder
+      fallback: 'No name',
+      sortable: true,
+      header: 'Name'
+    }),
+    {
+      key: 'contact',
+      header: 'Contact',
+      cell: (person: Person) => (
+        <div className="flex flex-col gap-1 text-sm">
+          {person.email && (
+            <span className="text-muted-foreground truncate max-w-[200px]">
+              {person.email}
+            </span>
+          )}
+          {person.phone_number && (
+            <span className="text-muted-foreground">
+              {person.phone_number}
+            </span>
+          )}
+          {!person.email && !person.phone_number && (
+            <span className="text-muted-foreground">No contact info</span>
+          )}
+        </div>
+      ),
+      className: 'min-w-[150px] md:min-w-[200px]',
+      hiddenOn: 'md' as const
+    },
+    {
+      key: 'location',
+      header: 'Location',
+      cell: (person: Person) => {
+        if (person.city || person.state) {
+          const location = `${person.city || ''}${person.city && person.state ? ', ' : ''}${person.state || ''}`
+          return <span className="text-sm truncate block max-w-[150px]">{location}</span>
+        }
+        return <span className="text-muted-foreground text-sm">No location</span>
+      },
+      className: 'min-w-[100px] lg:min-w-[120px]',
+      hiddenOn: 'lg' as const
+    },
+    buildActionsColumn<Person>({
+      baseUrl: '/people',
+      onDelete: (person) => {
+        setPersonToDelete(person)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (person) =>
+        `Are you sure you want to delete ${person.full_name}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
-      {/* Search */}
+      {/* Search and Filters */}
       <SearchCard modulePlural="People" moduleSingular="Person">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
             placeholder="Search people by name, email, or phone..."
-            defaultValue={searchTerm}
-            onChange={(e) => updateFilters('search', e.target.value)}
-            className="pl-10"
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: PEOPLE_SORT_OPTIONS
+            }}
           />
         </div>
       </SearchCard>
 
-      {/* People List */}
+      {/* People Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((person) => (
-            <ListViewCard
-              key={person.id}
-              title={
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 flex-shrink-0">
-                    {avatarUrls[person.id] && (
-                      <AvatarImage src={avatarUrls[person.id]} alt={person.full_name} />
-                    )}
-                    <AvatarFallback className="text-sm">{getInitials(person)}</AvatarFallback>
-                  </Avatar>
-                  <span>{person.first_name} {person.last_name}</span>
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(person) => person.id}
+            onRowClick={(person) => router.push(`/people/${person.id}`)}
+            emptyState={{
+              icon: <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No people found' : 'No people yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search to find more people.'
+                : 'Create your first person to start managing your parish directory.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/people/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Person
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
                 </div>
-              }
-              editHref={`/people/${person.id}/edit`}
-              viewHref={`/people/${person.id}`}
-            >
-              <div className="text-sm space-y-2">
-                {person.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground line-clamp-1">{person.email}</span>
-                  </div>
-                )}
-                {person.phone_number && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground">{person.phone_number}</span>
-                  </div>
-                )}
-                {(person.city || person.state) && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground line-clamp-1">
-                      {person.city}{person.city && person.state ? ', ' : ''}{person.state}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {person.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {person.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No people found'
-              : 'No people yet'
-            }
+            {hasActiveFilters ? 'No people found' : 'No people yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search to find more people.'
-              : 'Create your first person to start managing your parish directory.'
-            }
+              : 'Create your first person to start managing your parish directory.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -173,7 +240,7 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -184,27 +251,22 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="People Overview">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total People</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.withEmail}</div>
-              <div className="text-sm text-muted-foreground">With Email</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.withPhone}</div>
-              <div className="text-sm text-muted-foreground">With Phone</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="People Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Person"
+        description={
+          personToDelete
+            ? `Are you sure you want to delete ${personToDelete.full_name}? This action cannot be undone.`
+            : 'Are you sure you want to delete this person? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

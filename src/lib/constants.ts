@@ -5,6 +5,22 @@ export const GITHUB_URL = 'https://github.com/fr-mccarty/outwardsign'
 // Page layout
 export const PAGE_MAX_WIDTH_CLASS = 'max-w-6xl'
 
+// List view pagination
+export const LIST_VIEW_PAGE_SIZE = 50 // Number of items to load per page in list views
+export const SCROLL_TO_TOP_THRESHOLD = 300 // Pixels to scroll before showing scroll-to-top button
+
+// Standard sort options for module list views
+export const STANDARD_SORT_OPTIONS = [
+  { value: 'date_asc', label: 'Date (Earliest First)' },
+  { value: 'date_desc', label: 'Date (Latest First)' },
+  { value: 'name_asc', label: 'Name (A-Z)' },
+  { value: 'name_desc', label: 'Name (Z-A)' },
+  { value: 'created_desc', label: 'Recently Created' },
+  { value: 'created_asc', label: 'Oldest Created' }
+] as const
+
+export type StandardSortOption = typeof STANDARD_SORT_OPTIONS[number]['value']
+
 // Homepage language support
 export const HOME_LANGUAGES = ['en', 'es'] as const
 export type HomeLanguage = typeof HOME_LANGUAGES[number]
@@ -49,6 +65,25 @@ export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = 
   REQUESTED: { en: 'Requested', es: 'Solicitado' },
   CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
   FULFILLED: { en: 'Fulfilled', es: 'Cumplido' }
+}
+
+// Status indicator colors - used for visual status indicators (dots, badges, etc.)
+// Uses semantic CSS variables for proper dark mode support
+export const MODULE_STATUS_COLORS: Record<string, string> = {
+  // Module statuses
+  PLANNING: 'bg-muted-foreground/50',
+  ACTIVE: 'bg-liturgy-green',
+  INACTIVE: 'bg-muted-foreground/50',
+  COMPLETED: 'bg-liturgy-green',
+  CANCELLED: 'bg-destructive',
+
+  // Mass statuses
+  SCHEDULED: 'bg-primary',
+
+  // Mass intention statuses
+  REQUESTED: 'bg-muted-foreground/50',
+  CONFIRMED: 'bg-primary',
+  FULFILLED: 'bg-liturgy-green'
 }
 
 // Related Event Type values (stored as uppercase in database)

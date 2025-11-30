@@ -1,15 +1,23 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getWeddings, type WeddingFilterParams } from "@/lib/actions/weddings"
+import { getWeddings, getWeddingStats, type WeddingFilterParams } from "@/lib/actions/weddings"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { WeddingsListClient } from './weddings-list-client'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    sort?: string
+    page?: string
+    start_date?: string
+    end_date?: string
+  }>
 }
 
 export default async function WeddingsPage({ searchParams }: PageProps) {
@@ -26,18 +34,19 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: WeddingFilterParams = {
     search: params.search,
-    status: params.status as WeddingFilterParams['status']
+    status: params.status as WeddingFilterParams['status'],
+    sort: params.sort as WeddingFilterParams['sort'],
+    page: params.page ? parseInt(params.page, 10) : 1,
+    limit: LIST_VIEW_PAGE_SIZE,
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
   // Fetch weddings server-side with filters
   const weddings = await getWeddings(filters)
 
-  // Compute stats server-side
-  const allWeddings = await getWeddings()
-  const stats = {
-    total: allWeddings.length,
-    filtered: weddings.length,
-  }
+  // Calculate stats server-side
+  const stats = await getWeddingStats(weddings)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

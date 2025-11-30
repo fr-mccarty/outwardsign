@@ -73,6 +73,9 @@ function buildPeopleSearchConditions(search: string): string[] {
 
 export interface PersonFilterParams {
   search?: string
+  sort?: 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
 }
 
 export interface PaginatedParams {
@@ -95,19 +98,43 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Calculate pagination
+  const page = filters?.page || 1
+  const limit = filters?.limit || 50
+  const offset = (page - 1) * limit
+
   let query = supabase
     .from('people')
     .select('*')
     .eq('parish_id', selectedParishId)
 
-  // Apply filters
+  // Apply search filter
   if (filters?.search) {
     const searchConditions = buildPeopleSearchConditions(filters.search)
     query = query.or(searchConditions.join(','))
   }
 
-  query = query.order('last_name', { ascending: true })
-    .order('first_name', { ascending: true })
+  // Apply sorting
+  const sort = filters?.sort || 'name_asc'
+  switch (sort) {
+    case 'name_asc':
+      query = query.order('last_name', { ascending: true }).order('first_name', { ascending: true })
+      break
+    case 'name_desc':
+      query = query.order('last_name', { ascending: false }).order('first_name', { ascending: false })
+      break
+    case 'created_asc':
+      query = query.order('created_at', { ascending: true })
+      break
+    case 'created_desc':
+      query = query.order('created_at', { ascending: false })
+      break
+    default:
+      query = query.order('last_name', { ascending: true }).order('first_name', { ascending: true })
+  }
+
+  // Apply pagination
+  query = query.range(offset, offset + limit - 1)
 
   const { data, error } = await query
 

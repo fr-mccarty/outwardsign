@@ -1269,6 +1269,8 @@ When `DialogTrigger` uses `asChild`, Radix UI merges props with the child compon
 - `language`: Optional language code - automatically renders plain text below title
 - `children`: Card content (required)
 
+**Deprecation Notice:** ListViewCard is being replaced with table-based list views. See PersonAvatarGroup, ClearableSearchInput, ScrollToTopButton, and AdvancedSearch for the new pattern.
+
 **Layout:**
 ```
 ┌─────────────────────────────────────────┐
@@ -1391,6 +1393,135 @@ To maintain readability on mobile devices while showing full details on desktop,
 - **Weddings**: Keep visible: Date/time, Bride, Groom | Hide on mobile: Notes
 - **Funerals**: Keep visible: Date/time, Deceased | Hide on mobile: Family Contact, Notes
 - **Baptisms**: Keep visible: Date/time, Child | Hide on mobile: Notes
+
+---
+
+### ListStatsBar
+**Path:** `src/components/list-stats-bar.tsx`
+
+**Purpose:** Reusable stats/status bar component for displaying metrics on list views with consistent styling and responsive layout.
+
+**Key Features:**
+- Configurable stats via props (no hardcoded values)
+- Responsive grid (2 columns on mobile, 4 columns on larger screens)
+- Automatic grid adjustment based on number of stats
+- Consistent typography and styling using semantic tokens
+- Optional custom title (defaults to "Overview")
+- Uses FormSectionCard for consistent card styling
+
+**Props:**
+- `stats`: Array of `ListStat` objects (required)
+  - Each stat has `value: number` and `label: string`
+- `title`: Section title (optional, default: "Overview")
+- `className`: Additional CSS classes (optional)
+
+**Types:**
+```tsx
+export interface ListStat {
+  value: number
+  label: string
+}
+```
+
+**Usage Examples:**
+
+**Basic - People Module:**
+```tsx
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+
+// In server page, calculate stats
+const stats = {
+  total: allPeople.length,
+  withEmail: allPeople.filter(p => p.email).length,
+  withPhone: allPeople.filter(p => p.phone_number).length,
+  filtered: people.length
+}
+
+// In client component, transform to ListStat array
+const statsList: ListStat[] = [
+  { value: stats.total, label: 'Total People' },
+  { value: stats.withEmail, label: 'With Email' },
+  { value: stats.withPhone, label: 'With Phone' },
+  { value: stats.filtered, label: 'Filtered Results' }
+]
+
+// Render stats bar (only when there's data)
+{stats.total > 0 && (
+  <ListStatsBar title="People Overview" stats={statsList} />
+)}
+```
+
+**Weddings Module:**
+```tsx
+// In server action (weddings.ts)
+export interface WeddingStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getWeddingStats(filteredWeddings: WeddingWithNames[]): Promise<WeddingStats> {
+  // Fetch all weddings
+  const allWeddings = await fetchAllWeddings()
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  return {
+    total: allWeddings.length,
+    upcoming: allWeddings.filter(w => new Date(w.wedding_event?.start_date) >= today).length,
+    past: allWeddings.filter(w => new Date(w.wedding_event?.start_date) < today).length,
+    filtered: filteredWeddings.length
+  }
+}
+
+// In client component
+const statsList: ListStat[] = [
+  { value: stats.total, label: 'Total Weddings' },
+  { value: stats.upcoming, label: 'Upcoming' },
+  { value: stats.past, label: 'Past' },
+  { value: stats.filtered, label: 'Filtered Results' }
+]
+
+{stats.total > 0 && (
+  <ListStatsBar title="Wedding Overview" stats={statsList} />
+)}
+```
+
+**Custom Title:**
+```tsx
+<ListStatsBar
+  title="My Custom Stats"
+  stats={statsList}
+/>
+```
+
+**Grid Layout Behavior:**
+- 1-2 stats: 2 columns on all screens
+- 3 stats: 2 columns on mobile, 3 columns on md+
+- 4+ stats: 2 columns on mobile, 4 columns on md+
+
+**Implementation Pattern:**
+
+1. **Server Page**: Calculate stats from data (all records + filtered results)
+2. **Server Page**: Pass stats object to client component via props
+3. **Client Component**: Transform stats object to `ListStat[]` array
+4. **Client Component**: Render `<ListStatsBar>` only when `total > 0`
+
+**Common Stats Patterns:**
+- **Total**: Total count of all records
+- **Filtered**: Count of records matching current filters
+- **Status-based**: Count by status (Active, Completed, etc.)
+- **Time-based**: Upcoming vs Past (events with dates)
+- **Attribute-based**: With Email, With Phone, etc.
+
+**Notes:**
+- Always calculate stats in server page/action for accuracy
+- Stats should reflect ALL records (not just filtered), except for "Filtered Results"
+- Don't render stats bar if there are no records (`total > 0`)
+- Stats bar appears AFTER the table/list content
+- Uses semantic color tokens for dark mode support
 - **Quinceaneras**: Keep visible: Date/time, Celebrant | Hide on mobile: Notes
 - **Presentations**: Keep visible: Date/time, Child | Hide on mobile: Notes
 
@@ -1399,6 +1530,188 @@ To maintain readability on mobile devices while showing full details on desktop,
 - Hiding all content on mobile forces unnecessary taps to view details
 - Secondary contacts and notes are useful but not critical for identification
 - Desktop users still see full content
+
+---
+
+### PersonAvatarGroup
+**Path:** `src/components/person-avatar-group.tsx`
+
+**Purpose:** Display avatars for a person, couple, or group of people with overlapping layout, tooltips, and fallback initials.
+
+**Key Features:**
+- Three display modes: single, couple, group
+- Automatically fetches signed URLs for avatar images via `useAvatarUrls` hook
+- Tooltip shows person name on hover
+- Fallback initials (first + last name) when no avatar image
+- Overlapping layout for groups with "+N more" indicator
+- Responsive sizing (sm, md, lg)
+
+**Props:**
+- `people`: Array of person objects with `id`, `first_name`, `last_name`, `full_name`, `avatar_url?`
+- `type`: Display mode ('single' | 'couple' | 'group')
+- `size`: Avatar size ('sm' | 'md' | 'lg') - default: 'md'
+- `maxDisplay`: Max avatars to show in group mode - default: 3
+
+**Usage:**
+```tsx
+// Single person
+<PersonAvatarGroup
+  people={[person]}
+  type="single"
+  size="md"
+/>
+
+// Couple (side by side with gap-2)
+<PersonAvatarGroup
+  people={[bride, groom]}
+  type="couple"
+  size="md"
+/>
+
+// Group (overlapping with +N more indicator)
+<PersonAvatarGroup
+  people={godparents}
+  type="group"
+  size="sm"
+  maxDisplay={3}
+/>
+```
+
+**Layout:**
+- **Single**: One circular avatar with tooltip
+- **Couple**: Two avatars side by side with gap-2 spacing
+- **Group**: Overlapping avatars with z-index stacking, "+N more" indicator if count > maxDisplay
+
+---
+
+### ClearableSearchInput
+**Path:** `src/components/clearable-search-input.tsx`
+
+**Purpose:** Search input with search icon on left and clear button (X) on right. Used in module list views for filtering.
+
+**Key Features:**
+- Search icon positioned on left
+- Clear button (X) appears when input has value
+- Keyboard support: Escape key to clear and blur
+- Controlled component (value/onChange props)
+- Accessible with aria-label on clear button
+
+**Props:**
+- `value`: Current search value (string)
+- `onChange`: Value change handler `(value: string) => void`
+- `placeholder`: Placeholder text
+- `className`: Additional CSS classes (optional)
+
+**Usage:**
+```tsx
+const [searchValue, setSearchValue] = useState('')
+
+<ClearableSearchInput
+  value={searchValue}
+  onChange={setSearchValue}
+  placeholder="Search by bride or groom name..."
+  className="w-full"
+/>
+```
+
+**Keyboard Handling:**
+- **Escape**: Clears input and removes focus
+- **Clear button click**: Calls `onChange('')`
+
+---
+
+### ScrollToTopButton
+**Path:** `src/components/scroll-to-top-button.tsx`
+
+**Purpose:** Floating button that appears after scrolling down, scrolls to top on click. Used in module list views with long tables.
+
+**Key Features:**
+- Fixed position (bottom-right, 16px from edges)
+- Only appears when scrolled past threshold (default 300px from `SCROLL_TO_TOP_THRESHOLD`)
+- Smooth scroll animation to top
+- Fade-in animation (animate-in fade-in duration-200)
+- z-index: 40 (below modals, above content)
+- Accessible with aria-label
+
+**Props:**
+- `threshold`: Scroll position threshold in pixels (optional, default from constants)
+
+**Usage:**
+```tsx
+// Use default threshold from constants
+<ScrollToTopButton />
+
+// Custom threshold
+<ScrollToTopButton threshold={500} />
+```
+
+**Behavior:**
+- Hidden initially and when scrollY < threshold
+- Fades in when scrollY > threshold
+- Scrolls to top with smooth behavior on click
+
+---
+
+### AdvancedSearch
+**Path:** `src/components/advanced-search.tsx`
+
+**Purpose:** Reusable collapsible component for advanced search filters including status, sort, and date range filters. Encapsulates the collapsible pattern used across all module list views.
+
+**Key Features:**
+- Collapsible section with rotating chevron indicator
+- Composable: Show only the filters you need (status, sort, date range)
+- Consistent UX across all modules
+- Ghost button trigger with "Advanced" label
+- Smooth CollapsibleContent animation
+
+**Props:**
+- `statusFilter`: Optional status filter configuration
+  - `value`: Current status value
+  - `onChange`: Status change handler
+  - `statusValues`: Array of valid status values
+- `sortFilter`: Optional sort dropdown configuration
+  - `value`: Current sort value
+  - `onChange`: Sort change handler
+  - `sortOptions`: Array of `{value, label}` sort options
+- `dateRangeFilter`: Optional date range filter configuration
+  - `startDate`: Start date (Date | undefined)
+  - `endDate`: End date (Date | undefined)
+  - `onStartDateChange`: Start date change handler
+  - `onEndDateChange`: End date change handler
+- `defaultOpen`: Whether collapsible is open by default (default: false)
+
+**Usage:**
+```tsx
+<AdvancedSearch
+  statusFilter={{
+    value: selectedStatus,
+    onChange: (value) => updateFilter('status', value),
+    statusValues: MODULE_STATUS_VALUES
+  }}
+  sortFilter={{
+    value: selectedSort,
+    onChange: (value) => updateFilter('sort', value),
+    sortOptions: STANDARD_SORT_OPTIONS
+  }}
+  dateRangeFilter={{
+    startDate: startDate,
+    endDate: endDate,
+    onStartDateChange: (date) => {
+      setStartDate(date)
+      updateFilter('start_date', date ? toLocalDateString(date) : '')
+    },
+    onEndDateChange: (date) => {
+      setEndDate(date)
+      updateFilter('end_date', date ? toLocalDateString(date) : '')
+    }
+  }}
+/>
+```
+
+**Notes:**
+- Component returns null if no filters are provided
+- All filters are optional - only render what you need
+- Uses `STANDARD_SORT_OPTIONS` from constants for consistent sort options across modules
 
 ---
 
@@ -2026,6 +2339,164 @@ bride.setValue(p)    // Set person
 bride.showPicker     // Modal open state
 bride.setShowPicker(true)  // Open modal
 ```
+
+---
+
+### useListFilters
+**Path:** `src/hooks/use-list-filters.ts`
+
+**Purpose:** Manages list view filters in URL parameters with consistent pattern across all module list views. Handles URL parameter updates, filter clearing, and page state management.
+
+**Parameters:**
+- `baseUrl`: The base URL for the list view (e.g., '/weddings')
+- `defaultFilters`: Default filter values (optional, e.g., `{ status: 'all', sort: 'date_asc' }`)
+
+**Returns:**
+- `updateFilter(key, value)`: Update a single filter value in URL
+- `clearFilters()`: Clear all filters and return to base URL
+- `getFilterValue(key)`: Get current value of a filter from URL
+- `hasActiveFilters`: Boolean indicating if any non-default filters are active
+
+**Usage:**
+```tsx
+const filters = useListFilters({
+  baseUrl: '/weddings',
+  defaultFilters: { status: 'all', sort: 'date_asc' }
+})
+
+// Update a filter
+filters.updateFilter('status', 'ACTIVE')
+
+// Get current filter value
+const currentStatus = filters.getFilterValue('status')
+
+// Clear all filters
+filters.clearFilters()
+
+// Check if filters are active
+if (filters.hasActiveFilters) {
+  // Show clear button
+}
+```
+
+**Behavior:**
+- Automatically resets to page 1 when filters change (unless updating page param)
+- Removes parameter from URL when value matches default or is empty
+- Page parameter is not considered for `hasActiveFilters` check
+
+---
+
+### useAvatarUrls
+**Path:** `src/hooks/use-avatar-urls.ts`
+
+**Purpose:** Fetches signed URLs for person avatar images. Automatically calls `getPersonAvatarSignedUrls()` server action when people array changes.
+
+**Parameters:**
+- `people`: Array of person objects with `id` and `avatar_url` properties
+
+**Returns:**
+- `Record<string, string>`: Mapping of person.id to signed URL
+
+**Usage:**
+```tsx
+const people = [person1, person2, person3]
+const avatarUrls = useAvatarUrls(people)
+
+// Access signed URL by person ID
+<img src={avatarUrls[person.id]} alt={person.full_name} />
+```
+
+**Behavior:**
+- Only fetches URLs for people with avatar_url values
+- Re-fetches when people array changes
+- Handles errors gracefully with console.error
+- Returns empty object initially, populates on mount
+
+---
+
+### useScrollPosition
+**Path:** `src/hooks/use-scroll-position.ts`
+
+**Purpose:** Tracks window scroll position for showing/hiding scroll-to-top button.
+
+**Parameters:**
+- `threshold`: Scroll position threshold in pixels (default: 300)
+
+**Returns:**
+- `scrollY`: Current scroll position (number)
+- `isAboveThreshold`: Boolean indicating if scrollY > threshold
+
+**Usage:**
+```tsx
+const { scrollY, isAboveThreshold } = useScrollPosition(300)
+
+// Show button when scrolled past threshold
+{isAboveThreshold && <ScrollToTopButton />}
+```
+
+**Behavior:**
+- Uses passive event listener for performance
+- Cleans up event listener on unmount
+- Updates on every scroll event
+
+---
+
+### useInfiniteScroll
+**Path:** `src/hooks/use-infinite-scroll.ts`
+
+**Purpose:** Handles infinite scroll logic for loading more results using IntersectionObserver. Detects when sentinel element is visible and triggers load more callback.
+
+**Parameters:**
+- `loadMore`: Callback to fetch next page `() => void`
+- `hasMore`: Boolean indicating if more results exist
+
+**Returns:**
+- `sentinelRef`: RefObject to attach to bottom element
+- `isLoading`: Boolean indicating if currently loading
+
+**Usage:**
+```tsx
+const { sentinelRef, isLoading } = useInfiniteScroll({
+  loadMore: () => fetchNextPage(),
+  hasMore: hasMoreResults
+})
+
+// Attach sentinel ref to bottom element
+<div ref={sentinelRef} />
+
+// Show loading indicator
+{isLoading && <Spinner />}
+```
+
+**Behavior:**
+- Automatically triggers `loadMore` when sentinel is visible and `hasMore` is true
+- Configurable threshold (default 100px from bottom)
+- Cleans up IntersectionObserver on unmount
+- Prevents multiple simultaneous loads via isLoading state
+
+---
+
+### useMobile
+**Path:** `src/hooks/use-mobile.ts`
+
+**Purpose:** Detects if viewport is mobile size (< 768px). Uses window resize event with debouncing.
+
+**Returns:**
+- `boolean`: True if viewport width < 768px
+
+**Usage:**
+```tsx
+const isMobile = useMobile()
+
+// Conditionally render based on screen size
+{isMobile ? <MobileView /> : <DesktopView />}
+```
+
+**Behavior:**
+- SSR-safe (returns false on server)
+- Uses debounced resize listener for performance
+- Updates on window resize
+- Cleans up listener on unmount
 
 ---
 

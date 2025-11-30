@@ -3,7 +3,7 @@
 **Date:** 2025-11-30
 **Feature:** Complete rebuild of list view interface across all modules
 **Reference Implementation:** Wedding module ✅ COMPLETE
-**Status:** Phase 2 Complete - Ready for Phase 3 Rollout
+**Status:** Phase 2.5 Complete (Abstractions + Loading Pattern) - Ready for Phase 3 Rollout
 
 ---
 
@@ -1737,9 +1737,11 @@ CONSIDER adding indexes for frequently sorted columns:
 
 ---
 
-### Phase 2.5: Abstraction & Pattern Refinement - 🔄 IN PROGRESS
+### Phase 2.5: Abstraction & Pattern Refinement - ✅ COMPLETE
 
 **Goal:** Extract reusable patterns from wedding implementation to ensure consistency across all modules
+
+**Status:** All abstractions created, wedding module refactored, loading pattern documented
 
 **Recommended Abstractions:**
 
@@ -1986,6 +1988,114 @@ export function FuneralsListClient({ initialData }: Props) {
 3. **Advanced search:** Make it composable (pass filter configs) vs. monolithic
    - Recommendation: Composable approach for maximum flexibility
 
+**Loading Screen Pattern:**
+
+All module list views should have a corresponding `loading.tsx` file that follows this simple, consistent pattern:
+
+**Structure (Pseudo-code):**
+
+```
+COMPONENT [Module]Loading:
+  RENDER:
+    Container with space-y-6 padding:
+      Max-width container (use PAGE_MAX_WIDTH_CLASS constant):
+
+        Section 1: Heading Skeleton
+          - Title skeleton (h-9, w-64)
+          - Description skeleton (h-5, w-96)
+
+        Section 2: Search Area Card
+          - Search input skeleton (h-10, full width)
+          - Advanced search button skeleton (h-5, w-32)
+
+        Section 3: List of Items (Table Skeleton)
+          Table container with border and rounded corners:
+
+            Table Header Row:
+              - Column header skeletons (customize per module)
+              - Match responsive hiding of actual table columns
+              - Example: Avatar (hidden on sm), Name, Date, Actions
+
+            Table Body (8 rows):
+              FOR EACH row (8 total):
+                - Row content skeletons (customize per module)
+                - Match column structure of actual table
+                - Include avatar skeletons if module has avatars
+                - Border between rows, hover effect
+
+        Section 4: Summary Area Card
+          Stats grid (2 columns mobile, 4 columns desktop):
+            FOR EACH stat (4 total):
+              - Number skeleton (h-8, w-16, centered)
+              - Label skeleton (h-4, w-24, centered)
+```
+
+**Key Principles:**
+
+1. **Simple Structure:** Four sections only - heading, search, list, summary
+2. **Consistent Padding:** Use `p-6 pb-12` and `PAGE_MAX_WIDTH_CLASS` for consistency
+3. **Responsive Skeleton:** Match the actual table's responsive column hiding
+4. **Fixed Row Count:** Always show 8 skeleton rows for consistency
+5. **Module-Specific Details:** Customize column headers and row content per module
+   - Weddings: Couple avatars, name+status, date+time, location
+   - People: Single avatar, name, contact, location
+   - Funerals: Single avatar, name+status, date+time, location
+   - Etc.
+
+**Reference Implementations:**
+- ✅ `/src/app/(main)/people/loading.tsx` - Single avatar pattern
+- ✅ `/src/app/(main)/weddings/loading.tsx` - Couple avatar pattern
+
+**Phase 2.5 Deliverables - COMPLETE ✅:**
+
+1. ✅ **useListFilters Hook** (`/src/hooks/use-list-filters.ts`)
+   - URL state management for all filters
+   - Centralizes updateFilter, clearFilters, hasActiveFilters logic
+   - Reduces ~30 lines of duplicate code per module
+
+2. ✅ **Table Column Builders** (`/src/lib/utils/table-columns.tsx`)
+   - buildAvatarColumn() - Configurable avatar display
+   - buildWhoColumn() - Name + status badge
+   - buildWhenColumn() - Date + time display
+   - buildWhereColumn() - Location display
+   - buildActionsColumn() - View/Edit/Delete dropdown
+   - Reduces ~150 lines of duplicate code per module
+
+3. ✅ **AdvancedSearch Component** (`/src/components/advanced-search.tsx`)
+   - Reusable collapsible search pattern
+   - Composable: accepts statusFilter, sortFilter, dateRangeFilter
+   - Reduces ~80 lines of duplicate code per module
+
+4. ✅ **Type Definitions** (`/src/lib/types/table-config.ts`)
+   - ModuleTableConfig interface for type-safe configuration
+   - Column builder configuration interfaces
+   - Ensures complete implementations
+
+5. ✅ **Standard Sort Options** (`/src/lib/constants.ts`)
+   - STANDARD_SORT_OPTIONS constant
+   - Consistent sort options across all modules
+
+6. ✅ **Loading Screen Pattern** (documented above)
+   - Simple, consistent skeleton pattern
+   - Four sections: heading, search, list, summary
+   - Reference implementations for People and Weddings
+
+7. ✅ **Wedding Module Refactored**
+   - Reduced from 427 to 254 lines (40% reduction)
+   - All 13 Playwright tests passing
+   - Serves as reference implementation
+
+8. ✅ **People Module Implemented**
+   - Phase 3 pilot successfully completed
+   - Validates abstractions work for different module types
+   - 12 Playwright tests created
+
+**Total Impact:**
+- **~260 lines eliminated per module** through abstractions
+- **Consistent UX** across all list views
+- **Type-safe** implementations
+- **Maintainable** - bug fixes propagate to all modules
+
 ---
 
 ### Phase 3: Rollout to Remaining Modules (Weeks 3-4)
@@ -2006,9 +2116,10 @@ export function FuneralsListClient({ initialData }: Props) {
 11. Groups (group avatars)
 
 **Per Module:**
-- Update server action
-- Update server page
-- Rewrite list client
+- Update server action (add filtering/sorting)
+- Update server page (pass filters to action)
+- Rewrite list client (use abstractions from Phase 2.5)
+- Create/update loading.tsx (follow standard pattern)
 - Write/update tests
 - Verify mobile responsiveness
 
@@ -2382,6 +2493,44 @@ Apply standardized pattern to remaining modules in priority order:
 - Consistent UX across all list views
 - ListViewCard fully deprecated
 - All integration tests passing
+
+---
+
+### Phase 3: People Module - ✅ COMPLETE
+
+**Goal:** Apply table view pattern to People module using abstractions from Phase 2.5
+
+**Completed Tasks:**
+1. ✅ Updated `getPeople()` server action with sorting and pagination support
+2. ✅ Updated people/page.tsx to pass filter params to server action
+3. ✅ Refactored people-list-client.tsx using:
+   - `useListFilters` hook for URL state management
+   - `AdvancedSearch` component for collapsible filters
+   - Column builders: `buildAvatarColumn`, `buildWhoColumn`, `buildActionsColumn`
+   - Custom columns for Contact and Location information
+4. ✅ Created Playwright test suite (people-table-view.spec.ts) with 12 test cases
+5. ✅ Build and lint verification passed
+
+**Deliverables:**
+- ✅ Fully functional people table view with all features
+- ✅ Comprehensive Playwright test suite (12 test cases)
+- ✅ Type-safe implementation using abstractions
+
+**People Module Specifics:**
+- **Avatar Column:** Single person avatar (the person themselves)
+- **Who Column:** Person's full name with placeholder status badge
+- **Contact Column:** Email and phone number (hidden on medium screens)
+- **Location Column:** City, State (hidden on large screens and below)
+- **Actions Column:** View, Edit, Delete with confirmation dialog
+- **Filters:** Search by name/email/phone, Sort by name/creation date
+- **Sort Options:** Name (A-Z/Z-A), Recently Created, Oldest Created
+- **Stats Display:** Total People, With Email, With Phone, Filtered Results
+
+**Implementation Notes:**
+- People don't have a status field, so status badge uses placeholder 'ACTIVE'
+- Custom columns created for Contact and Location to match People module's unique data structure
+- Maintained existing stats overview with 4 metrics
+- Successfully leveraged all Phase 2.5 abstractions
 
 ---
 

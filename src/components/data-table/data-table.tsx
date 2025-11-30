@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DataTableEmpty } from "./data-table-empty";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { cn } from "@/lib/utils";
 
 export type SortDirection = "asc" | "desc" | null;
@@ -48,6 +49,10 @@ interface DataTableProps<T> {
     key: string;
     direction: SortDirection;
   };
+  // Infinite scroll props
+  onLoadMore?: () => void | Promise<void>;
+  hasMore?: boolean;
+  stickyHeader?: boolean;
 }
 
 export function DataTable<T>({
@@ -60,11 +65,20 @@ export function DataTable<T>({
   containerClassName,
   rowClassName,
   defaultSort,
+  onLoadMore,
+  hasMore = false,
+  stickyHeader = false,
 }: DataTableProps<T>) {
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: SortDirection;
   }>(defaultSort || { key: "", direction: null });
+
+  // Infinite scroll hook
+  const { sentinelRef, isLoading } = useInfiniteScroll({
+    onLoadMore: onLoadMore || (() => {}),
+    hasMore,
+  });
 
   const visibleColumns = columns.filter((col) => !col.hidden);
 
@@ -159,9 +173,14 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={cn("border rounded-lg", containerClassName)}>
+    <div className={cn("border rounded-lg overflow-x-auto", containerClassName)}>
       <Table className={className}>
-        <TableHeader className="border-b bg-muted/50">
+        <TableHeader
+          className={cn(
+            "border-b bg-muted/50",
+            stickyHeader && "sticky top-0 z-10"
+          )}
+        >
           <TableRow>
             {visibleColumns.map((column) => (
               <TableHead
@@ -228,6 +247,24 @@ export function DataTable<T>({
               </TableRow>
             );
           })}
+          {/* Infinite scroll sentinel and loading indicator */}
+          {onLoadMore && hasMore && (
+            <TableRow>
+              <TableCell
+                colSpan={visibleColumns.length}
+                className="h-24 text-center"
+              >
+                <div ref={sentinelRef} className="flex items-center justify-center">
+                  {isLoading && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading more...</span>
+                    </div>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
