@@ -508,7 +508,52 @@ export interface PersonGroupMembership {
   } | null
 }
 
-export async function getPeopleWithGroupMemberships() {
+export interface GroupMemberFilters {
+  search?: string
+  sort?: 'name_asc' | 'name_desc' | 'groups_asc' | 'groups_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+}
+
+export interface GroupMemberStats {
+  total: number
+  filtered: number
+}
+
+export interface PersonWithMemberships {
+  person: {
+    id: string
+    first_name: string
+    last_name: string
+    full_name: string
+    email?: string | null
+    phone_number?: string | null
+    avatar_url?: string | null
+  }
+  memberships: Array<{
+    id: string
+    group_id: string
+    group_role_id?: string | null
+    joined_at: string
+    group_role: {
+      id: string
+      name: string
+      description?: string
+    } | null
+  }>
+}
+
+export async function getGroupMemberStats(filters: GroupMemberFilters = {}): Promise<GroupMemberStats> {
+  const allPeople = await getPeopleWithGroupMemberships({})
+  const filteredPeople = await getPeopleWithGroupMemberships(filters)
+
+  return {
+    total: allPeople.length,
+    filtered: filteredPeople.length
+  }
+}
+
+export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters = {}): Promise<PersonWithMemberships[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -527,7 +572,8 @@ export async function getPeopleWithGroupMemberships() {
         last_name,
         full_name,
         email,
-        phone_number
+        phone_number,
+        avatar_url
       ),
       group_role:group_role_id (
         id,
@@ -543,20 +589,76 @@ export async function getPeopleWithGroupMemberships() {
   }
 
   // Group by person
-  const peopleMap = new Map()
+  const peopleMap = new Map<string, PersonWithMemberships>()
 
   for (const membership of (data || [])) {
     const personId = membership.person_id
+    // Supabase returns relations as arrays, get first element
+    const personData = Array.isArray(membership.person) ? membership.person[0] : membership.person
+    const groupRoleData = Array.isArray(membership.group_role) ? membership.group_role[0] : membership.group_role
+
+    if (!personData) continue
+
     if (!peopleMap.has(personId)) {
       peopleMap.set(personId, {
-        person: membership.person,
+        person: personData as PersonWithMemberships['person'],
         memberships: []
       })
     }
-    peopleMap.get(personId).memberships.push(membership)
+    peopleMap.get(personId)!.memberships.push({
+      id: membership.id,
+      group_id: membership.group_id,
+      group_role_id: membership.group_role_id,
+      joined_at: membership.joined_at,
+      group_role: groupRoleData as PersonWithMemberships['memberships'][0]['group_role']
+    })
   }
 
-  return Array.from(peopleMap.values())
+  let result = Array.from(peopleMap.values())
+
+  // Apply search filter
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase()
+    result = result.filter(({ person }) => {
+      const fullName = person.full_name?.toLowerCase() || ''
+      const email = person.email?.toLowerCase() || ''
+      return fullName.includes(searchLower) || email.includes(searchLower)
+    })
+  }
+
+  // Apply sorting
+  if (filters.sort) {
+    switch (filters.sort) {
+      case 'name_asc':
+        result.sort((a, b) => (a.person.full_name || '').localeCompare(b.person.full_name || ''))
+        break
+      case 'name_desc':
+        result.sort((a, b) => (b.person.full_name || '').localeCompare(a.person.full_name || ''))
+        break
+      case 'groups_asc':
+        result.sort((a, b) => a.memberships.length - b.memberships.length)
+        break
+      case 'groups_desc':
+        result.sort((a, b) => b.memberships.length - a.memberships.length)
+        break
+      case 'created_asc':
+        result.sort((a, b) => {
+          const aDate = a.memberships[0]?.joined_at || ''
+          const bDate = b.memberships[0]?.joined_at || ''
+          return aDate.localeCompare(bDate)
+        })
+        break
+      case 'created_desc':
+        result.sort((a, b) => {
+          const aDate = a.memberships[0]?.joined_at || ''
+          const bDate = b.memberships[0]?.joined_at || ''
+          return bDate.localeCompare(aDate)
+        })
+        break
+    }
+  }
+
+  return result
 }
 
 export async function getPersonGroupMemberships(personId: string): Promise<PersonGroupMembership[]> {
