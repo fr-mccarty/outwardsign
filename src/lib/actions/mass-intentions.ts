@@ -12,11 +12,32 @@ import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIn
 export interface MassIntentionFilterParams {
   search?: string
   status?: MassIntentionStatus | 'all'
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+  start_date?: string
+  end_date?: string
 }
 
 export interface MassIntentionWithNames extends MassIntention {
   mass?: Mass | null
   requested_by?: Person | null
+}
+
+export interface MassIntentionStats {
+  total: number
+  requested: number
+  scheduled: number
+  filtered: number
+}
+
+export async function getMassIntentionStats(intentions: MassIntentionWithNames[]): Promise<MassIntentionStats> {
+  return {
+    total: intentions.length,
+    requested: intentions.filter(i => i.status === 'REQUESTED').length,
+    scheduled: intentions.filter(i => i.status === 'CONFIRMED').length,
+    filtered: intentions.length
+  }
 }
 
 export interface PaginatedParams {
@@ -52,7 +73,14 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply sorting at database level for created_at
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
 
   const { data, error } = await query
 
@@ -69,15 +97,62 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
     intentions = intentions.filter(intention => {
       const requestedByFirstName = intention.requested_by?.first_name?.toLowerCase() || ''
       const requestedByLastName = intention.requested_by?.last_name?.toLowerCase() || ''
+      const requestedByFullName = intention.requested_by?.full_name?.toLowerCase() || ''
       const massOfferedFor = intention.mass_offered_for?.toLowerCase() || ''
       const note = intention.note?.toLowerCase() || ''
 
       return (
         requestedByFirstName.includes(searchTerm) ||
         requestedByLastName.includes(searchTerm) ||
+        requestedByFullName.includes(searchTerm) ||
         massOfferedFor.includes(searchTerm) ||
         note.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date range filters (using date_requested field)
+  if (filters?.start_date) {
+    intentions = intentions.filter(intention =>
+      intention.date_requested && intention.date_requested >= filters.start_date!
+    )
+  }
+  if (filters?.end_date) {
+    intentions = intentions.filter(intention =>
+      intention.date_requested && intention.date_requested <= filters.end_date!
+    )
+  }
+
+  // Apply sorting at application level for related fields
+  if (filters?.sort === 'date_asc') {
+    intentions.sort((a, b) => {
+      const dateA = a.date_requested || ''
+      const dateB = b.date_requested || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    intentions.sort((a, b) => {
+      const dateA = a.date_requested || ''
+      const dateB = b.date_requested || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.localeCompare(dateA)
+    })
+  } else if (filters?.sort === 'name_asc') {
+    intentions.sort((a, b) => {
+      const nameA = a.mass_offered_for || ''
+      const nameB = b.mass_offered_for || ''
+      return nameA.localeCompare(nameB)
+    })
+  } else if (filters?.sort === 'name_desc') {
+    intentions.sort((a, b) => {
+      const nameA = a.mass_offered_for || ''
+      const nameB = b.mass_offered_for || ''
+      return nameB.localeCompare(nameA)
     })
   }
 

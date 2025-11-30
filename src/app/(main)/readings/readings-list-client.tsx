@@ -1,157 +1,266 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import type { Reading } from '@/lib/actions/readings'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import type { Reading, ReadingStats } from '@/lib/actions/readings'
+import { deleteReading } from '@/lib/actions/readings'
+import { DataTable } from '@/components/data-table/data-table'
+import type { DataTableColumn } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, BookOpen, Search, Filter } from "lucide-react"
+import { Plus, BookOpen, Filter, MoreVertical } from "lucide-react"
+import { toast } from "sonner"
 import { READING_CATEGORY_LABELS, LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
-import { Input } from "@/components/ui/input"
+import { useListFilters } from "@/hooks/use-list-filters"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ListViewCard } from "@/components/list-view-card"
-import { ReadingCategoryLabel } from "@/components/reading-category-label"
-
-interface Stats {
-  total: number
-  languageCount: number
-  categoryCount: number
-  filtered: number
-  languages: string[]
-  categories: string[]
-}
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface ReadingsListClientProps {
   initialData: Reading[]
-  stats: Stats
+  stats: ReadingStats
 }
+
+// Reading-specific sort options
+const READING_SORT_OPTIONS = [
+  { value: 'created_desc', label: 'Newest First' },
+  { value: 'created_asc', label: 'Oldest First' },
+  { value: 'pericope_asc', label: 'Pericope A-Z' },
+  { value: 'pericope_desc', label: 'Pericope Z-A' }
+]
 
 export function ReadingsListClient({ initialData, stats }: ReadingsListClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const searchTerm = searchParams.get('search') || ''
-  const selectedLanguage = searchParams.get('language') || 'all'
-  const selectedCategory = searchParams.get('category') || 'all'
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/readings',
+    defaultFilters: { sort: 'created_desc' }
+  })
 
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Readings' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [readingToDelete, setReadingToDelete] = useState<Reading | null>(null)
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchValue('')
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!readingToDelete) return
+
+    try {
+      await deleteReading(readingToDelete.id)
+      toast.success('Reading deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete reading:', error)
+      toast.error('Failed to delete reading. Please try again.')
+      throw error
     }
-    router.push(`/readings?${params.toString()}`)
   }
 
-  const clearFilters = () => {
-    router.push('/readings')
-  }
-
-  const hasActiveFilters = searchTerm || selectedLanguage !== 'all' || selectedCategory !== 'all'
+  // Define table columns
+  const columns: DataTableColumn<Reading>[] = [
+    // Title (Pericope) Column
+    {
+      key: 'pericope',
+      header: 'Title',
+      cell: (reading) => {
+        const title = reading.pericope || 'Untitled Reading'
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium">{title}</span>
+            {reading.language && (
+              <span className="text-xs text-muted-foreground">
+                {LITURGICAL_LANGUAGE_LABELS[reading.language]?.en || reading.language}
+              </span>
+            )}
+          </div>
+        )
+      },
+      className: 'max-w-[200px] md:max-w-[250px]',
+      sortable: true,
+      accessorFn: (reading) => reading.pericope || ''
+    },
+    // Categories Column
+    {
+      key: 'categories',
+      header: 'Categories',
+      cell: (reading) => {
+        if (!reading.categories || reading.categories.length === 0) {
+          return <span className="text-muted-foreground text-sm">No categories</span>
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {reading.categories.slice(0, 2).map((category) => (
+              <Badge key={category} variant="secondary" className="text-xs">
+                {READING_CATEGORY_LABELS[category]?.en || category}
+              </Badge>
+            ))}
+            {reading.categories.length > 2 && (
+              <Badge variant="outline" className="text-xs">
+                +{reading.categories.length - 2}
+              </Badge>
+            )}
+          </div>
+        )
+      },
+      className: 'min-w-[150px]',
+      hiddenOn: 'lg'
+    },
+    // Text Preview Column
+    {
+      key: 'text',
+      header: 'Preview',
+      cell: (reading) => {
+        if (!reading.text) {
+          return <span className="text-muted-foreground text-sm">No text</span>
+        }
+        return (
+          <span className="text-sm text-muted-foreground line-clamp-2 max-w-[300px]">
+            {reading.text}
+          </span>
+        )
+      },
+      className: 'min-w-[200px] hidden xl:table-cell'
+    },
+    // Actions Column
+    {
+      key: 'actions',
+      header: '',
+      cell: (reading) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/readings/${reading.id}`}>View</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/readings/${reading.id}/edit`}>Edit</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onSelect={(e) => {
+                e.preventDefault()
+                setReadingToDelete(reading)
+                setDeleteDialogOpen(true)
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+      className: 'w-[50px]'
+    }
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Readings" moduleSingular="Reading">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search readings by pericope or text..."
-              defaultValue={searchTerm}
-              onChange={(e) => updateFilters('search', e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Languages</SelectItem>
-                {stats.languages.map(lang => (
-                  <SelectItem key={lang} value={lang}>
-                    {LITURGICAL_LANGUAGE_LABELS[lang]?.en || lang}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedCategory} onValueChange={(value) => updateFilters('category', value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {stats.categories.map(cat => (
-                  <SelectItem key={cat} value={cat}>
-                    {READING_CATEGORY_LABELS[cat]?.en || cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by pericope, text, introduction, or conclusion..."
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: READING_SORT_OPTIONS
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Readings List */}
+      {/* Readings Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((reading) => (
-            <ListViewCard
-              key={reading.id}
-              title={reading.pericope || 'Untitled Reading'}
-              editHref={`/readings/${reading.id}/edit`}
-              viewHref={`/readings/${reading.id}`}
-              viewButtonText="View Reading"
-              language={reading.language || undefined}
-            >
-              {reading.categories && reading.categories.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {reading.categories.map(category => (
-                    <ReadingCategoryLabel
-                      key={category}
-                      category={category}
-                      variant="secondary"
-                      className="text-xs"
-                    />
-                  ))}
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(reading) => reading.id}
+            onRowClick={(reading) => router.push(`/readings/${reading.id}`)}
+            emptyState={{
+              icon: <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No readings found' : 'No readings yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search or filters to find more readings.'
+                : 'Create your first reading to start building your collection of liturgical texts.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/readings/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Reading
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
                 </div>
-              )}
-
-              {reading.text && (
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {reading.text}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No readings found'
-              : 'No readings yet'
-            }
+            {hasActiveFilters ? 'No readings found' : 'No readings yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search or filters to find more readings.'
-              : 'Create your first reading to start building your collection of liturgical texts.'
-            }
+              : 'Create your first reading to start building your collection of liturgical texts.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -161,7 +270,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -172,27 +281,22 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="Reading Overview">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Readings</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.languageCount}</div>
-              <div className="text-sm text-muted-foreground">Languages</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.categoryCount}</div>
-              <div className="text-sm text-muted-foreground">Categories</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="Reading Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Reading"
+        description={
+          readingToDelete
+            ? `Are you sure you want to delete the reading "${readingToDelete.pericope || 'Untitled Reading'}"? This action cannot be undone.`
+            : 'Are you sure you want to delete this reading? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

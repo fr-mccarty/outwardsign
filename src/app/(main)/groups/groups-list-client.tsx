@@ -1,58 +1,240 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import type { Group } from '@/lib/actions/groups'
+import type { GroupStats } from '@/lib/actions/groups'
+import { deleteGroup } from '@/lib/actions/groups'
+import { DataTable } from '@/components/data-table/data-table'
+import type { DataTableColumn } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
+import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { ListViewCard } from "@/components/list-view-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
-import { Plus, Users } from "lucide-react"
-import { type Group } from '@/lib/actions/groups'
-import Link from 'next/link'
+import Link from "next/link"
+import { Plus, Users, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { useListFilters } from "@/hooks/use-list-filters"
+import { buildActionsColumn } from '@/lib/utils/table-columns'
 
 interface GroupsListClientProps {
   initialData: Group[]
+  stats: GroupStats
 }
 
-export function GroupsListClient({ initialData }: GroupsListClientProps) {
+const GROUP_SORT_OPTIONS = [
+  { value: 'name_asc', label: 'Name (A-Z)' },
+  { value: 'name_desc', label: 'Name (Z-A)' },
+  { value: 'created_asc', label: 'Oldest First' },
+  { value: 'created_desc', label: 'Newest First' }
+]
+
+export function GroupsListClient({ initialData, stats }: GroupsListClientProps) {
   const router = useRouter()
+
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/groups',
+    defaultFilters: { sort: 'name_asc' }
+  })
+
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Groups' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null)
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchValue('')
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!groupToDelete) return
+
+    try {
+      await deleteGroup(groupToDelete.id)
+      toast.success('Group deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete group:', error)
+      toast.error('Failed to delete group. Please try again.')
+      throw error
+    }
+  }
+
+  // Define table columns
+  const columns: DataTableColumn<Group>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      cell: (group) => (
+        <span className="text-sm font-medium">{group.name}</span>
+      ),
+      className: 'min-w-[150px]',
+      sortable: true,
+      accessorFn: (group) => group.name
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      cell: (group) => {
+        if (!group.description) {
+          return <span className="text-muted-foreground text-sm">No description</span>
+        }
+        return (
+          <span className="text-sm line-clamp-2">{group.description}</span>
+        )
+      },
+      className: 'min-w-[200px] max-w-[400px]',
+      hiddenOn: 'md'
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (group) => (
+        <span className={`text-sm ${group.is_active ? 'text-foreground' : 'text-muted-foreground'}`}>
+          {group.is_active ? 'Active' : 'Inactive'}
+        </span>
+      ),
+      className: 'min-w-[100px]',
+      hiddenOn: 'lg'
+    },
+    buildActionsColumn<Group>({
+      baseUrl: '/groups',
+      onDelete: (group) => {
+        setGroupToDelete(group)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (group) =>
+        `Are you sure you want to delete ${group.name}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
-      {/* Groups List */}
-      {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((group) => (
-            <ListViewCard
-              key={group.id}
-              title={group.name}
-              editHref={`/groups/${group.id}/edit`}
-              viewHref={`/groups/${group.id}`}
-              viewButtonText="Preview"
-              status={group.is_active ? 'ACTIVE' : 'INACTIVE'}
-              statusType="module"
-            >
-              {group.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {group.description}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
+      {/* Search and Filters */}
+      <SearchCard modulePlural="Groups" moduleSingular="Group">
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by name or description..."
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: GROUP_SORT_OPTIONS
+            }}
+          />
         </div>
+      </SearchCard>
+
+      {/* Groups Table */}
+      {initialData.length > 0 ? (
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(group) => group.id}
+            onRowClick={(group) => router.push(`/groups/${group.id}`)}
+            emptyState={{
+              icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No groups found' : 'No groups yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search to find more groups.'
+                : 'Create your first group to start managing ministry groups.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/groups/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Group
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">No groups yet</h3>
+          <h3 className="text-lg font-medium mb-2">
+            {hasActiveFilters ? 'No groups found' : 'No groups yet'}
+          </h3>
           <p className="text-muted-foreground mb-6">
-            Create and manage groups of people who can be scheduled together for liturgical services.
+            {hasActiveFilters
+              ? 'Try adjusting your search to find more groups.'
+              : 'Create and manage groups of people who can be scheduled together for liturgical services.'}
           </p>
-          <Button asChild>
-            <Link href="/groups/create">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Group
-            </Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link href="/groups/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Group
+              </Link>
+            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={handleClearFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
         </ContentCard>
       )}
+
+      {/* Quick Stats */}
+      {stats.total > 0 && (
+        <ListStatsBar title="Group Overview" stats={statsList} />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Group"
+        description={
+          groupToDelete
+            ? `Are you sure you want to delete ${groupToDelete.name}? This action cannot be undone.`
+            : 'Are you sure you want to delete this group? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

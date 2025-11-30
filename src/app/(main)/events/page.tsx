@@ -1,12 +1,10 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getEvents, getEventsWithModuleLinks, type EventFilterParams } from "@/lib/actions/events"
-import { getEventTypes } from "@/lib/actions/event-types"
+import { getEventsWithModuleLinks, getEventStats, type EventFilterParams, type EventWithRelations } from "@/lib/actions/events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
-import { RELATED_EVENT_TYPE_VALUES } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{
@@ -39,34 +37,16 @@ export default async function EventsPage({ searchParams }: PageProps) {
     language: params.language as EventFilterParams['language'],
     start_date: params.start_date,
     end_date: params.end_date,
-    sort: params.sort
+    sort: params.sort as EventFilterParams['sort']
   }
 
   // Fetch events server-side with filters and module links
   const events = await getEventsWithModuleLinks(filters)
 
-  // Fetch event types for filter dropdown
-  const eventTypes = await getEventTypes()
-
-  // Compute stats server-side
-  const allEvents = await getEvents()
-  const languages = [...new Set(allEvents.map(e => e.language).filter(Boolean))] as string[]
-
-  const now = new Date()
-  const upcomingEvents = allEvents.filter(e => {
-    if (!e.start_date) return false
-    return new Date(e.start_date) >= now
-  })
-
-  const stats = {
-    total: allEvents.length,
-    upcoming: upcomingEvents.length,
-    past: allEvents.length - upcomingEvents.length,
-    filtered: events.length,
-    eventTypes, // Now contains full EventType objects with id and name
-    relatedEventTypes: Array.from(RELATED_EVENT_TYPE_VALUES), // System-defined types
-    languages
-  }
+  // Compute stats server-side (cast EventWithModuleLink[] to EventWithRelations[] for stats)
+  const allEventsWithLinks = await getEventsWithModuleLinks()
+  const allEvents = allEventsWithLinks as EventWithRelations[]
+  const stats = await getEventStats(allEvents)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

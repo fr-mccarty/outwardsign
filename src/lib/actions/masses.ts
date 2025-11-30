@@ -24,6 +24,13 @@ export interface MassFilterParams {
   limit?: number
 }
 
+export interface MassStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
 export interface MassWithNames extends Mass {
   event?: EventWithRelations | null
   presider?: Person | null
@@ -130,6 +137,57 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
   }
 
   return masses
+}
+
+export async function getMassStats(filters?: MassFilterParams): Promise<MassStats> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get all masses for stats calculation (no pagination)
+  let query = supabase
+    .from('masses')
+    .select(`
+      *,
+      event:events!event_id(*,location:locations(*)),
+      presider:people!presider_id(*),
+      homilist:people!homilist_id(*)
+    `)
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching masses for stats:', error)
+    throw new Error('Failed to fetch masses for stats')
+  }
+
+  const allMasses = data || []
+
+  // Calculate total count
+  const total = allMasses.length
+
+  // Calculate upcoming and past based on event dates
+  const now = new Date()
+  const upcoming = allMasses.filter(mass => {
+    if (!mass.event?.start_date) return false
+    return new Date(mass.event.start_date) >= now
+  }).length
+
+  const past = allMasses.filter(mass => {
+    if (!mass.event?.start_date) return false
+    return new Date(mass.event.start_date) < now
+  }).length
+
+  // Get filtered masses using the same getMasses function
+  const filteredMasses = await getMasses(filters)
+  const filtered = filteredMasses.length
+
+  return {
+    total,
+    upcoming,
+    past,
+    filtered
+  }
 }
 
 export async function getMassesPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassWithNames>> {

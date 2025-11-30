@@ -25,7 +25,28 @@ export interface EventFilterParams {
   language?: LiturgicalLanguage | 'all'
   start_date?: string
   end_date?: string
-  sort?: string
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+}
+
+export interface EventStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getEventStats(events: EventWithRelations[]): Promise<EventStats> {
+  const now = new Date()
+  const todayString = now.toISOString().split('T')[0]
+
+  return {
+    total: events.length,
+    upcoming: events.filter(e => e.start_date && e.start_date >= todayString).length,
+    past: events.filter(e => e.start_date && e.start_date < todayString).length,
+    filtered: events.length
+  }
 }
 
 export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
@@ -405,7 +426,6 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
       responsible_party:people!events_responsible_party_id_fkey(*),
       event_type:event_types(*)
     `)
-    .order('start_date', { ascending: true })
 
   // Apply filters
   if (filters?.search) {
@@ -432,6 +452,16 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
     query = query.lte('start_date', filters.end_date)
   }
 
+  // Apply sorting at database level for created_at
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    // Default: sort by date ascending
+    query = query.order('start_date', { ascending: true, nullsFirst: false })
+  }
+
   const { data, error } = await query
 
   if (error) {
@@ -439,9 +469,44 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
     throw new Error('Failed to fetch events')
   }
 
+  let events = data || []
+
+  // Apply sorting at application level for related fields and date sorting
+  if (filters?.sort === 'date_asc') {
+    events.sort((a, b) => {
+      const dateA = a.start_date || ''
+      const dateB = b.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    events.sort((a, b) => {
+      const dateA = a.start_date || ''
+      const dateB = b.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.localeCompare(dateA)
+    })
+  } else if (filters?.sort === 'name_asc') {
+    events.sort((a, b) => {
+      const nameA = a.name || ''
+      const nameB = b.name || ''
+      return nameA.localeCompare(nameB)
+    })
+  } else if (filters?.sort === 'name_desc') {
+    events.sort((a, b) => {
+      const nameA = a.name || ''
+      const nameB = b.name || ''
+      return nameB.localeCompare(nameA)
+    })
+  }
+
   // Fetch module links for all events in parallel
   const eventsWithLinks = await Promise.all(
-    (data || []).map(async (event) => {
+    events.map(async (event) => {
       const moduleLink = await getEventModuleLink(event.id)
       return {
         ...event,

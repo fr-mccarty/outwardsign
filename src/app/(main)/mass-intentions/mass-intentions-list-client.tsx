@@ -2,181 +2,223 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { MassIntentionWithNames } from '@/lib/actions/mass-intentions'
+import type { MassIntentionWithNames, MassIntentionStats } from '@/lib/actions/mass-intentions'
+import { deleteMassIntention } from '@/lib/actions/mass-intentions'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Heart, Search, Filter, X, DollarSign } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
+import { Plus, Heart, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { MASS_INTENTION_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
+import { toLocalDateString } from "@/lib/utils/formatters"
+import { useListFilters } from "@/hooks/use-list-filters"
+import type { DataTableColumn } from '@/components/data-table/data-table'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { MASS_INTENTION_STATUS_VALUES } from "@/lib/constants"
-import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
-import { formatDatePretty } from "@/lib/utils/formatters"
-
-interface Stats {
-  total: number
-  filtered: number
-}
+  buildWhoColumn,
+  buildWhenColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface MassIntentionsListClientProps {
   initialData: MassIntentionWithNames[]
-  stats: Stats
+  stats: MassIntentionStats
 }
 
 export function MassIntentionsListClient({ initialData, stats }: MassIntentionsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const selectedStatus = searchParams.get('status') || 'all'
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/mass-intentions',
+    defaultFilters: { status: 'all', sort: 'date_desc' }
+  })
 
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Intentions' },
+    { value: stats.requested, label: 'Requested' },
+    { value: stats.scheduled, label: 'Confirmed' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [intentionToDelete, setIntentionToDelete] = useState<MassIntentionWithNames | null>(null)
+
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
+    setSearchValue('')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!intentionToDelete) return
+
+    try {
+      await deleteMassIntention(intentionToDelete.id)
+      toast.success('Mass intention deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete mass intention:', error)
+      toast.error('Failed to delete mass intention. Please try again.')
+      throw error
     }
-    const newUrl = `/mass-intentions${params.toString() ? `?${params.toString()}` : ''}`
-    router.push(newUrl)
   }
 
-  const clearSearch = () => {
-    setSearchValue('')
-    updateFilters('search', '')
+  // Define custom "For" column (replaces Who column for mass intentions)
+  const forColumn: DataTableColumn<MassIntentionWithNames> = {
+    key: 'for',
+    header: 'For',
+    cell: (intention) => (
+      <div className="flex items-center gap-2 max-w-[200px] md:max-w-[250px]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium truncate">
+              {intention.mass_offered_for || 'No intention specified'}
+            </span>
+          </div>
+          {intention.requested_by && (
+            <div className="text-sm text-muted-foreground truncate">
+              Requested by {intention.requested_by.full_name}
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+    sortable: true
   }
 
-  const clearFilters = () => {
-    setSearchValue('')
-    router.push('/mass-intentions')
+  // Define custom "Requested" column (replaces When column - using date_requested instead of event date)
+  const requestedColumn: DataTableColumn<MassIntentionWithNames> = {
+    key: 'requested',
+    header: 'Requested',
+    cell: (intention) => {
+      if (!intention.date_requested) {
+        return <span className="text-sm text-muted-foreground">No date</span>
+      }
+
+      return (
+        <div className="flex flex-col min-w-[120px] md:min-w-[180px]">
+          <span className="text-sm">{toLocalDateString(new Date(intention.date_requested))}</span>
+          {intention.date_received && (
+            <span className="text-xs text-muted-foreground">
+              Received: {toLocalDateString(new Date(intention.date_received))}
+            </span>
+          )}
+        </div>
+      )
+    },
+    sortable: true
   }
 
-  const hasActiveFilters = searchValue || selectedStatus !== 'all'
-
-  const formatStipend = (cents: number | null | undefined) => {
-    if (!cents) return 'No stipend'
-    return `$${(cents / 100).toFixed(2)}`
-  }
+  // Define table columns (no avatar column for mass intentions)
+  const columns = [
+    forColumn,
+    requestedColumn,
+    buildActionsColumn<MassIntentionWithNames>({
+      baseUrl: '/mass-intentions',
+      onDelete: (intention) => {
+        setIntentionToDelete(intention)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (intention) =>
+        `Are you sure you want to delete the mass intention for ${intention.mass_offered_for || 'this intention'}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Mass Intentions" moduleSingular="Mass Intention">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or intention..."
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value)
-                updateFilters('search', e.target.value)
-              }}
-              className="pl-10 pr-10"
-            />
-            {searchValue && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                {MASS_INTENTION_STATUS_VALUES.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {getStatusLabel(status, 'en')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by intention or name..."
+            className="w-full"
+          />
+
+          {/* Advanced Search - Collapsible */}
+          <AdvancedSearch
+            statusFilter={{
+              value: filters.getFilterValue('status'),
+              onChange: (value) => filters.updateFilter('status', value),
+              statusValues: MASS_INTENTION_STATUS_VALUES
+            }}
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: STANDARD_SORT_OPTIONS
+            }}
+            dateRangeFilter={{
+              startDate,
+              endDate,
+              onStartDateChange: (date) => {
+                setStartDate(date)
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
+                setEndDate(date)
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Mass Intentions List */}
+      {/* Mass Intentions Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((intention) => (
-            <ListViewCard
-              key={intention.id}
-              title={intention.mass_offered_for || 'No intention specified'}
-              editHref={`/mass-intentions/${intention.id}/edit`}
-              viewHref={`/mass-intentions/${intention.id}`}
-              viewButtonText="Preview"
-              status={intention.status}
-              statusType="module"
-            >
-              {intention.stipend_in_cents && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <DollarSign className="h-3 w-3" />
-                    {formatStipend(intention.stipend_in_cents)}
-                  </div>
-                </div>
-              )}
-
-              <div className="text-sm space-y-1">
-                {intention.requested_by && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Requested by:</span>{' '}
-                    {intention.requested_by.first_name} {intention.requested_by.last_name}
-                  </p>
-                )}
-                {intention.date_requested && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Date requested:</span>{' '}
-                    {formatDatePretty(intention.date_requested)}
-                  </p>
-                )}
-                {intention.date_received && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Date received:</span>{' '}
-                    {formatDatePretty(intention.date_received)}
-                  </p>
-                )}
-              </div>
-
-              {intention.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {intention.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+        <DataTable
+          columns={columns}
+          data={initialData}
+          keyExtractor={(intention) => intention.id}
+          onRowClick={(intention) => router.push(`/mass-intentions/${intention.id}`)}
+          stickyHeader
+        />
       ) : (
         <ContentCard className="text-center py-12">
           <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
             {hasActiveFilters
-              ? 'No Mass intentions found'
-              : 'No Mass intentions yet'
+              ? 'No mass intentions found'
+              : 'No mass intentions yet'
             }
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
-              ? 'Try adjusting your search or filters to find more Mass intentions.'
-              : 'Create your first Mass intention to start managing Mass offerings in your parish.'
+              ? 'Try adjusting your search or filters to find more mass intentions.'
+              : 'Create your first mass intention to start managing Mass offerings in your parish.'
             }
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -187,7 +229,7 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -196,21 +238,24 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
         </ContentCard>
       )}
 
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
+
       {/* Quick Stats */}
-      {stats.total > 0 && (
-        <FormSectionCard title="Mass Intentions Overview">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Intentions</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
-      )}
+      {stats.total > 0 && <ListStatsBar stats={statsList} />}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Mass Intention"
+        description={
+          intentionToDelete
+            ? `Are you sure you want to delete the mass intention for ${intentionToDelete.mass_offered_for || 'this intention'}?`
+            : 'Are you sure you want to delete this mass intention?'
+        }
+      />
     </div>
   )
 }

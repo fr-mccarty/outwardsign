@@ -19,13 +19,37 @@ import type { ModuleStatus } from '@/lib/constants'
 export interface QuinceaneraFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+  start_date?: string
+  end_date?: string
 }
 
 export interface QuinceaneraWithNames extends Quinceanera {
   quinceanera?: Person | null
   family_contact?: Person | null
   presider?: Person | null
-  quinceanera_event?: Event | null
+  quinceanera_event?: EventWithRelations | null
+}
+
+export interface QuinceaneraStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getQuinceaneraStats(quinceaneras: QuinceaneraWithNames[]): Promise<QuinceaneraStats> {
+  const now = new Date()
+  const todayString = now.toISOString().split('T')[0]
+
+  return {
+    total: quinceaneras.length,
+    upcoming: quinceaneras.filter(q => q.quinceanera_event?.start_date && q.quinceanera_event.start_date >= todayString).length,
+    past: quinceaneras.filter(q => q.quinceanera_event?.start_date && q.quinceanera_event.start_date < todayString).length,
+    filtered: quinceaneras.length
+  }
 }
 
 export async function getQuinceaneras(filters?: QuinceaneraFilterParams): Promise<QuinceaneraWithNames[]> {
@@ -40,7 +64,7 @@ export async function getQuinceaneras(filters?: QuinceaneraFilterParams): Promis
       quinceanera:people!quinceanera_id(*),
       family_contact:people!family_contact_id(*),
       presider:people!presider_id(*),
-      quinceanera_event:events!quinceanera_event_id(*)
+      quinceanera_event:events!quinceanera_event_id(*, location:locations(*))
     `)
 
   // Apply status filter at database level
@@ -48,7 +72,14 @@ export async function getQuinceaneras(filters?: QuinceaneraFilterParams): Promis
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply sorting at database level for created_at
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
 
   const { data, error } = await query
 
@@ -63,17 +94,60 @@ export async function getQuinceaneras(filters?: QuinceaneraFilterParams): Promis
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
     quinceaneras = quinceaneras.filter(quinceanera => {
-      const quinceaneraFirstName = quinceanera.quinceanera?.first_name?.toLowerCase() || ''
-      const quinceaneraLastName = quinceanera.quinceanera?.last_name?.toLowerCase() || ''
-      const contactFirstName = quinceanera.family_contact?.first_name?.toLowerCase() || ''
-      const contactLastName = quinceanera.family_contact?.last_name?.toLowerCase() || ''
+      const quinceaneraFullName = quinceanera.quinceanera?.full_name?.toLowerCase() || ''
+      const contactFullName = quinceanera.family_contact?.full_name?.toLowerCase() || ''
+      const notes = quinceanera.note?.toLowerCase() || ''
 
       return (
-        quinceaneraFirstName.includes(searchTerm) ||
-        quinceaneraLastName.includes(searchTerm) ||
-        contactFirstName.includes(searchTerm) ||
-        contactLastName.includes(searchTerm)
+        quinceaneraFullName.includes(searchTerm) ||
+        contactFullName.includes(searchTerm) ||
+        notes.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date range filters
+  if (filters?.start_date) {
+    quinceaneras = quinceaneras.filter(quinceanera =>
+      quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event.start_date >= filters.start_date!
+    )
+  }
+  if (filters?.end_date) {
+    quinceaneras = quinceaneras.filter(quinceanera =>
+      quinceanera.quinceanera_event?.start_date && quinceanera.quinceanera_event.start_date <= filters.end_date!
+    )
+  }
+
+  // Apply sorting at application level for related fields
+  if (filters?.sort === 'date_asc') {
+    quinceaneras.sort((a, b) => {
+      const dateA = a.quinceanera_event?.start_date || ''
+      const dateB = b.quinceanera_event?.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    quinceaneras.sort((a, b) => {
+      const dateA = a.quinceanera_event?.start_date || ''
+      const dateB = b.quinceanera_event?.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.localeCompare(dateA)
+    })
+  } else if (filters?.sort === 'name_asc') {
+    quinceaneras.sort((a, b) => {
+      const nameA = a.quinceanera?.full_name || ''
+      const nameB = b.quinceanera?.full_name || ''
+      return nameA.localeCompare(nameB)
+    })
+  } else if (filters?.sort === 'name_desc') {
+    quinceaneras.sort((a, b) => {
+      const nameA = a.quinceanera?.full_name || ''
+      const nameB = b.quinceanera?.full_name || ''
+      return nameB.localeCompare(nameA)
     })
   }
 

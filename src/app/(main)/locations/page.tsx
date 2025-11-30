@@ -1,13 +1,13 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getLocations, type LocationFilterParams } from "@/lib/actions/locations"
+import { getLocations, getLocationStats, type LocationFilterParams } from "@/lib/actions/locations"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LocationsListClient } from './locations-list-client'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string }>
+  searchParams: Promise<{ search?: string; sort?: string }>
 }
 
 export default async function LocationsPage({ searchParams }: PageProps) {
@@ -24,18 +24,14 @@ export default async function LocationsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: LocationFilterParams = {
     search: params.search,
+    sort: params.sort,
   }
 
   // Fetch locations server-side with filters
   const locations = await getLocations(filters)
 
-  // Compute stats server-side
-  const allLocations = await getLocations()
-
-  const stats = {
-    total: allLocations.length,
-    filtered: locations.length,
-  }
+  // Fetch stats server-side
+  const stats = await getLocationStats(filters)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

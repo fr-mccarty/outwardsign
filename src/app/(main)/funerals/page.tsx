@@ -1,15 +1,23 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getFunerals, type FuneralFilterParams } from "@/lib/actions/funerals"
+import { getFunerals, getFuneralStats, type FuneralFilterParams } from "@/lib/actions/funerals"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { FuneralsListClient } from './funerals-list-client'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    sort?: string
+    page?: string
+    start_date?: string
+    end_date?: string
+  }>
 }
 
 export default async function FuneralsPage({ searchParams }: PageProps) {
@@ -26,18 +34,19 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: FuneralFilterParams = {
     search: params.search,
-    status: params.status as FuneralFilterParams['status']
+    status: params.status as FuneralFilterParams['status'],
+    sort: params.sort as FuneralFilterParams['sort'],
+    page: params.page ? parseInt(params.page, 10) : 1,
+    limit: LIST_VIEW_PAGE_SIZE,
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
   // Fetch funerals server-side with filters
   const funerals = await getFunerals(filters)
 
-  // Compute stats server-side
-  const allFunerals = await getFunerals()
-  const stats = {
-    total: allFunerals.length,
-    filtered: funerals.length,
-  }
+  // Calculate stats server-side
+  const stats = await getFuneralStats(funerals)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
@@ -46,7 +55,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer
-      title="Funerals"
+      title="Our Funerals"
       description="Commending the deceased to God's mercy."
       actions={<ModuleCreateButton moduleName="Funeral" href="/funerals/create" />}
     >

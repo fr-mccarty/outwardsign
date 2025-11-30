@@ -1,13 +1,19 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getReadings, type ReadingFilterParams } from "@/lib/actions/readings"
+import { getReadings, getReadingStats, type ReadingFilterParams } from "@/lib/actions/readings"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ReadingsListClient } from './readings-list-client'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; language?: string; category?: string }>
+  searchParams: Promise<{
+    search?: string
+    language?: string
+    category?: string
+    sort?: string
+    page?: string
+  }>
 }
 
 export default async function ReadingsPage({ searchParams }: PageProps) {
@@ -25,25 +31,16 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
   const filters: ReadingFilterParams = {
     search: params.search,
     language: params.language as ReadingFilterParams['language'],
-    category: params.category as ReadingFilterParams['category']
+    category: params.category as ReadingFilterParams['category'],
+    sort: params.sort as ReadingFilterParams['sort'],
+    page: params.page ? parseInt(params.page) : undefined
   }
 
   // Fetch readings server-side with filters
   const readings = await getReadings(filters)
 
   // Compute stats server-side
-  const allReadings = await getReadings()
-  const languages = [...new Set(allReadings.map(r => r.language).filter(Boolean))] as string[]
-  const categories = [...new Set(allReadings.flatMap(r => r.categories || []))]
-
-  const stats = {
-    total: allReadings.length,
-    languageCount: languages.length,
-    categoryCount: categories.length,
-    filtered: readings.length,
-    languages,
-    categories
-  }
+  const stats = await getReadingStats(readings)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

@@ -18,12 +18,36 @@ import {
 export interface BaptismFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+  start_date?: string
+  end_date?: string
 }
 
 export interface BaptismWithNames extends Baptism {
   child?: Person | null
   presider?: Person | null
-  baptism_event?: Event | null
+  baptism_event?: EventWithRelations | null
+}
+
+export interface BaptismStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getBaptismStats(baptisms: BaptismWithNames[]): Promise<BaptismStats> {
+  const now = new Date()
+  const todayString = now.toISOString().split('T')[0]
+
+  return {
+    total: baptisms.length,
+    upcoming: baptisms.filter(b => b.baptism_event?.start_date && b.baptism_event.start_date >= todayString).length,
+    past: baptisms.filter(b => b.baptism_event?.start_date && b.baptism_event.start_date < todayString).length,
+    filtered: baptisms.length
+  }
 }
 
 export async function getBaptisms(filters?: BaptismFilterParams): Promise<BaptismWithNames[]> {
@@ -37,7 +61,7 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
       *,
       child:people!child_id(*),
       presider:people!presider_id(*),
-      baptism_event:events!baptism_event_id(*)
+      baptism_event:events!baptism_event_id(*, location:locations(*))
     `)
 
   // Apply status filter at database level
@@ -45,7 +69,14 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply sorting at database level for created_at
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
 
   const { data, error } = await query
 
@@ -60,13 +91,58 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
     baptisms = baptisms.filter(baptism => {
-      const childFirstName = baptism.child?.first_name?.toLowerCase() || ''
-      const childLastName = baptism.child?.last_name?.toLowerCase() || ''
+      const childFullName = baptism.child?.full_name?.toLowerCase() || ''
+      const notes = baptism.note?.toLowerCase() || ''
 
       return (
-        childFirstName.includes(searchTerm) ||
-        childLastName.includes(searchTerm)
+        childFullName.includes(searchTerm) ||
+        notes.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date range filters
+  if (filters?.start_date) {
+    baptisms = baptisms.filter(baptism =>
+      baptism.baptism_event?.start_date && baptism.baptism_event.start_date >= filters.start_date!
+    )
+  }
+  if (filters?.end_date) {
+    baptisms = baptisms.filter(baptism =>
+      baptism.baptism_event?.start_date && baptism.baptism_event.start_date <= filters.end_date!
+    )
+  }
+
+  // Apply sorting at application level for related fields
+  if (filters?.sort === 'date_asc') {
+    baptisms.sort((a, b) => {
+      const dateA = a.baptism_event?.start_date || ''
+      const dateB = b.baptism_event?.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    baptisms.sort((a, b) => {
+      const dateA = a.baptism_event?.start_date || ''
+      const dateB = b.baptism_event?.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.localeCompare(dateA)
+    })
+  } else if (filters?.sort === 'name_asc') {
+    baptisms.sort((a, b) => {
+      const nameA = a.child?.full_name || ''
+      const nameB = b.child?.full_name || ''
+      return nameA.localeCompare(nameB)
+    })
+  } else if (filters?.sort === 'name_desc') {
+    baptisms.sort((a, b) => {
+      const nameA = a.child?.full_name || ''
+      const nameB = b.child?.full_name || ''
+      return nameB.localeCompare(nameA)
     })
   }
 

@@ -1,15 +1,23 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getBaptisms, type BaptismFilterParams } from "@/lib/actions/baptisms"
+import { getBaptisms, getBaptismStats, type BaptismFilterParams } from "@/lib/actions/baptisms"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { BaptismsListClient } from './baptisms-list-client'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    sort?: string
+    page?: string
+    start_date?: string
+    end_date?: string
+  }>
 }
 
 export default async function BaptismsPage({ searchParams }: PageProps) {
@@ -26,18 +34,19 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: BaptismFilterParams = {
     search: params.search,
-    status: params.status as BaptismFilterParams['status']
+    status: params.status as BaptismFilterParams['status'],
+    sort: params.sort as BaptismFilterParams['sort'],
+    page: params.page ? parseInt(params.page, 10) : 1,
+    limit: LIST_VIEW_PAGE_SIZE,
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
   // Fetch baptisms server-side with filters
   const baptisms = await getBaptisms(filters)
 
-  // Compute stats server-side
-  const allBaptisms = await getBaptisms()
-  const stats = {
-    total: allBaptisms.length,
-    filtered: baptisms.length,
-  }
+  // Calculate stats server-side
+  const stats = await getBaptismStats(baptisms)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

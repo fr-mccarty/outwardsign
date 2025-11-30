@@ -26,6 +26,14 @@ export type { CreateLocationData, UpdateLocationData }
 
 export interface LocationFilterParams {
   search?: string
+  sort?: string
+  page?: number
+  limit?: number
+}
+
+export interface LocationStats {
+  total: number
+  filtered: number
 }
 
 export async function getLocations(filters?: LocationFilterParams): Promise<Location[]> {
@@ -37,13 +45,6 @@ export async function getLocations(filters?: LocationFilterParams): Promise<Loca
     .from('locations')
     .select('*')
 
-  // Apply search filter
-  if (filters?.search) {
-    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,city.ilike.%${filters.search}%`)
-  }
-
-  query = query.order('name', { ascending: true })
-
   const { data, error } = await query
 
   if (error) {
@@ -51,7 +52,56 @@ export async function getLocations(filters?: LocationFilterParams): Promise<Loca
     throw new Error('Failed to fetch locations')
   }
 
-  return data || []
+  let results = data || []
+
+  // Apply search filter (application-level)
+  if (filters?.search) {
+    const searchLower = filters.search.toLowerCase()
+    results = results.filter(location =>
+      location.name.toLowerCase().includes(searchLower) ||
+      location.description?.toLowerCase().includes(searchLower) ||
+      location.city?.toLowerCase().includes(searchLower)
+    )
+  }
+
+  // Apply sorting (application-level)
+  const sort = filters?.sort || 'name_asc'
+  switch (sort) {
+    case 'name_asc':
+      results.sort((a, b) => a.name.localeCompare(b.name))
+      break
+    case 'name_desc':
+      results.sort((a, b) => b.name.localeCompare(a.name))
+      break
+    case 'created_asc':
+      results.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      break
+    case 'created_desc':
+      results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      break
+    default:
+      results.sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  return results
+}
+
+export async function getLocationStats(filters?: LocationFilterParams): Promise<LocationStats> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+
+  // Get all locations for total count
+  const allLocations = await getLocations()
+  const total = allLocations.length
+
+  // Get filtered locations for filtered count
+  const filteredLocations = await getLocations(filters)
+  const filtered = filteredLocations.length
+
+  return {
+    total,
+    filtered
+  }
 }
 
 export async function getLocationsPaginated(params?: PaginatedParams): Promise<PaginatedResult<Location>> {

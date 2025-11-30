@@ -1,15 +1,23 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getQuinceaneras, type QuinceaneraFilterParams } from "@/lib/actions/quinceaneras"
+import { getQuinceaneras, getQuinceaneraStats, type QuinceaneraFilterParams } from "@/lib/actions/quinceaneras"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { QuinceanerasListClient } from './quinceaneras-list-client'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    sort?: string
+    page?: string
+    start_date?: string
+    end_date?: string
+  }>
 }
 
 export default async function QuinceanerasPage({ searchParams }: PageProps) {
@@ -26,18 +34,19 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: QuinceaneraFilterParams = {
     search: params.search,
-    status: params.status as QuinceaneraFilterParams['status']
+    status: params.status as QuinceaneraFilterParams['status'],
+    sort: params.sort as QuinceaneraFilterParams['sort'],
+    page: params.page ? parseInt(params.page, 10) : 1,
+    limit: LIST_VIEW_PAGE_SIZE,
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
   // Fetch quinceaneras server-side with filters
   const quinceaneras = await getQuinceaneras(filters)
 
-  // Compute stats server-side
-  const allQuinceaneras = await getQuinceaneras()
-  const stats = {
-    total: allQuinceaneras.length,
-    filtered: quinceaneras.length,
-  }
+  // Calculate stats server-side
+  const stats = await getQuinceaneraStats(quinceaneras)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

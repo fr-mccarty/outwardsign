@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
-import { Presentation, Person, Event } from '@/lib/types'
+import { Presentation, Person } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import {
   createPresentationSchema,
@@ -21,6 +21,11 @@ import type { ModuleStatus } from '@/lib/constants'
 export interface PresentationFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+  start_date?: string
+  end_date?: string
 }
 
 export interface PresentationWithNames extends Presentation {
@@ -28,7 +33,26 @@ export interface PresentationWithNames extends Presentation {
   mother?: Person | null
   father?: Person | null
   coordinator?: Person | null
-  presentation_event?: Event | null
+  presentation_event?: EventWithRelations | null
+}
+
+export interface PresentationStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getPresentationStats(presentations: PresentationWithNames[]): Promise<PresentationStats> {
+  const now = new Date()
+  const todayString = now.toISOString().split('T')[0]
+
+  return {
+    total: presentations.length,
+    upcoming: presentations.filter(p => p.presentation_event?.start_date && p.presentation_event.start_date >= todayString).length,
+    past: presentations.filter(p => p.presentation_event?.start_date && p.presentation_event.start_date < todayString).length,
+    filtered: presentations.length
+  }
 }
 
 export async function getPresentations(filters?: PresentationFilterParams): Promise<PresentationWithNames[]> {
@@ -44,7 +68,7 @@ export async function getPresentations(filters?: PresentationFilterParams): Prom
       mother:people!mother_id(*),
       father:people!father_id(*),
       coordinator:people!coordinator_id(*),
-      presentation_event:events!presentation_event_id(*)
+      presentation_event:events!presentation_event_id(*, location:locations(*))
     `)
 
   // Apply status filter at database level
@@ -52,7 +76,14 @@ export async function getPresentations(filters?: PresentationFilterParams): Prom
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply sorting at database level for created_at
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
 
   const { data, error } = await query
 
@@ -67,21 +98,58 @@ export async function getPresentations(filters?: PresentationFilterParams): Prom
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
     presentations = presentations.filter(presentation => {
-      const childFirstName = presentation.child?.first_name?.toLowerCase() || ''
-      const childLastName = presentation.child?.last_name?.toLowerCase() || ''
-      const motherFirstName = presentation.mother?.first_name?.toLowerCase() || ''
-      const motherLastName = presentation.mother?.last_name?.toLowerCase() || ''
-      const fatherFirstName = presentation.father?.first_name?.toLowerCase() || ''
-      const fatherLastName = presentation.father?.last_name?.toLowerCase() || ''
+      const childFullName = presentation.child?.full_name?.toLowerCase() || ''
+      const notes = presentation.note?.toLowerCase() || ''
 
       return (
-        childFirstName.includes(searchTerm) ||
-        childLastName.includes(searchTerm) ||
-        motherFirstName.includes(searchTerm) ||
-        motherLastName.includes(searchTerm) ||
-        fatherFirstName.includes(searchTerm) ||
-        fatherLastName.includes(searchTerm)
+        childFullName.includes(searchTerm) ||
+        notes.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date range filters
+  if (filters?.start_date) {
+    presentations = presentations.filter(presentation =>
+      presentation.presentation_event?.start_date && presentation.presentation_event.start_date >= filters.start_date!
+    )
+  }
+  if (filters?.end_date) {
+    presentations = presentations.filter(presentation =>
+      presentation.presentation_event?.start_date && presentation.presentation_event.start_date <= filters.end_date!
+    )
+  }
+
+  // Apply sorting at application level for related fields
+  if (filters?.sort === 'date_asc') {
+    presentations.sort((a, b) => {
+      const dateA = a.presentation_event?.start_date || ''
+      const dateB = b.presentation_event?.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    presentations.sort((a, b) => {
+      const dateA = a.presentation_event?.start_date || ''
+      const dateB = b.presentation_event?.start_date || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.localeCompare(dateA)
+    })
+  } else if (filters?.sort === 'name_asc') {
+    presentations.sort((a, b) => {
+      const nameA = a.child?.full_name || ''
+      const nameB = b.child?.full_name || ''
+      return nameA.localeCompare(nameB)
+    })
+  } else if (filters?.sort === 'name_desc') {
+    presentations.sort((a, b) => {
+      const nameA = a.child?.full_name || ''
+      const nameB = b.child?.full_name || ''
+      return nameB.localeCompare(nameA)
     })
   }
 

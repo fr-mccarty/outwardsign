@@ -7,6 +7,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import type { LiturgicalLanguage, ReadingCategory } from '@/lib/constants'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 import {
   createReadingSchema,
   updateReadingSchema,
@@ -30,6 +31,33 @@ export interface ReadingFilterParams {
   search?: string
   language?: LiturgicalLanguage | 'all'
   category?: ReadingCategory | 'all'
+  sort?: 'pericope_asc' | 'pericope_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+}
+
+export interface ReadingStats {
+  total: number
+  filtered: number
+}
+
+export async function getReadingStats(filteredReadings: Reading[]): Promise<ReadingStats> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Fetch all readings for total stats (no filters)
+  const { data: allReadings } = await supabase
+    .from('readings')
+    .select('*')
+
+  const total = allReadings?.length || 0
+  const filtered = filteredReadings.length
+
+  return {
+    total,
+    filtered
+  }
 }
 
 export async function createReading(data: CreateReadingData): Promise<Reading> {
@@ -79,33 +107,81 @@ export async function getReadings(filters?: ReadingFilterParams): Promise<Readin
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
+  // Calculate pagination
+  const page = filters?.page || 1
+  const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
+  const offset = (page - 1) * limit
+
   let query = supabase
     .from('readings')
     .select('*')
 
-  // Apply filters
+  // Apply database-level language filter
   if (filters?.language && filters.language !== 'all') {
     query = query.eq('language', filters.language)
   }
 
+  // Apply database-level category filter
   if (filters?.category && filters.category !== 'all') {
     query = query.contains('categories', [filters.category])
   }
 
-  if (filters?.search) {
-    // Use OR condition for search across multiple fields
-    query = query.or(`pericope.ilike.%${filters.search}%,text.ilike.%${filters.search}%`)
+  // Apply database-level sorting for created_at fields
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    // Default to most recent first
+    query = query.order('created_at', { ascending: false })
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply pagination at database level
+  query = query.range(offset, offset + limit - 1)
 
   const { data, error } = await query
 
   if (error) {
+    console.error('Error fetching readings:', error)
     throw new Error('Failed to fetch readings')
   }
 
-  return data || []
+  let readings = data || []
+
+  // Apply search filter in application layer (searching multiple fields)
+  if (filters?.search) {
+    const searchTerm = filters.search.toLowerCase()
+    readings = readings.filter(reading => {
+      const pericope = reading.pericope?.toLowerCase() || ''
+      const text = reading.text?.toLowerCase() || ''
+      const introduction = reading.introduction?.toLowerCase() || ''
+      const conclusion = reading.conclusion?.toLowerCase() || ''
+
+      return (
+        pericope.includes(searchTerm) ||
+        text.includes(searchTerm) ||
+        introduction.includes(searchTerm) ||
+        conclusion.includes(searchTerm)
+      )
+    })
+  }
+
+  // Apply application-level sorting for pericope
+  if (filters?.sort === 'pericope_asc') {
+    readings.sort((a, b) => {
+      const aVal = a.pericope?.toLowerCase() || ''
+      const bVal = b.pericope?.toLowerCase() || ''
+      return aVal.localeCompare(bVal)
+    })
+  } else if (filters?.sort === 'pericope_desc') {
+    readings.sort((a, b) => {
+      const aVal = a.pericope?.toLowerCase() || ''
+      const bVal = b.pericope?.toLowerCase() || ''
+      return bVal.localeCompare(aVal)
+    })
+  }
+
+  return readings
 }
 
 export async function getReading(id: string): Promise<Reading | null> {

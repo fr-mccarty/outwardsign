@@ -2,165 +2,226 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { FuneralWithNames } from '@/lib/actions/funerals'
+import type { FuneralWithNames, FuneralStats } from '@/lib/actions/funerals'
+import { deleteFuneral } from '@/lib/actions/funerals'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Cross, Calendar, Search, Filter, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
+import { Plus, Cross, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { MODULE_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
+import { toLocalDateString } from "@/lib/utils/formatters"
+import { useListFilters } from "@/hooks/use-list-filters"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { MODULE_STATUS_VALUES } from "@/lib/constants"
-import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
-import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
-
-interface Stats {
-  total: number
-  filtered: number
-}
+  buildAvatarColumn,
+  buildWhoColumn,
+  buildWhenColumn,
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface FuneralsListClientProps {
   initialData: FuneralWithNames[]
-  stats: Stats
+  stats: FuneralStats
 }
 
 export function FuneralsListClient({ initialData, stats }: FuneralsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const selectedStatus = searchParams.get('status') || 'all'
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/funerals',
+    defaultFilters: { status: 'all', sort: 'date_asc' }
+  })
 
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Funerals' },
+    { value: stats.upcoming, label: 'Upcoming' },
+    { value: stats.past, label: 'Past' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [funeralToDelete, setFuneralToDelete] = useState<FuneralWithNames | null>(null)
+
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
+    setSearchValue('')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!funeralToDelete) return
+
+    try {
+      await deleteFuneral(funeralToDelete.id)
+      toast.success('Funeral deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete funeral:', error)
+      toast.error('Failed to delete funeral. Please try again.')
+      throw error
     }
-    const newUrl = `/funerals${params.toString() ? `?${params.toString()}` : ''}`
-    router.push(newUrl)
   }
 
-  const clearSearch = () => {
-    setSearchValue('')
-    updateFilters('search', '')
-  }
-
-  const clearFilters = () => {
-    setSearchValue('')
-    router.push('/funerals')
-  }
-
-  const hasActiveFilters = searchValue || selectedStatus !== 'all'
+  // Define table columns using column builders
+  const columns = [
+    buildAvatarColumn<FuneralWithNames>({
+      people: (funeral) => funeral.deceased ? [{
+        id: funeral.deceased.id,
+        first_name: funeral.deceased.first_name,
+        last_name: funeral.deceased.last_name,
+        full_name: funeral.deceased.full_name,
+        avatar_url: funeral.deceased.avatar_url
+      }] : [],
+      type: 'single',
+      size: 'md',
+      hiddenOn: 'sm'
+    }),
+    buildWhoColumn<FuneralWithNames>({
+      getName: (funeral) => funeral.deceased?.full_name || '',
+      getStatus: (funeral) => funeral.status || 'PLANNING',
+      fallback: 'No deceased assigned',
+      sortable: true
+    }),
+    buildWhenColumn<FuneralWithNames>({
+      getDate: (funeral) => funeral.funeral_event?.start_date || null,
+      getTime: (funeral) => funeral.funeral_event?.start_time || null,
+      sortable: true
+    }),
+    buildWhereColumn<FuneralWithNames>({
+      getLocation: (funeral) => funeral.funeral_event?.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<FuneralWithNames>({
+      baseUrl: '/funerals',
+      onDelete: (funeral) => {
+        setFuneralToDelete(funeral)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (funeral) =>
+        `Are you sure you want to delete the funeral for ${funeral.deceased?.full_name || 'this person'}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Funerals" moduleSingular="Funeral">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by deceased or family contact name..."
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value)
-                updateFilters('search', e.target.value)
-              }}
-              className="pl-10 pr-10"
-            />
-            {searchValue && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                {MODULE_STATUS_VALUES.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {getStatusLabel(status, 'en')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by deceased or family contact name..."
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            statusFilter={{
+              value: filters.getFilterValue('status'),
+              onChange: (value) => filters.updateFilter('status', value),
+              statusValues: MODULE_STATUS_VALUES
+            }}
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: STANDARD_SORT_OPTIONS
+            }}
+            dateRangeFilter={{
+              startDate: startDate,
+              endDate: endDate,
+              onStartDateChange: (date) => {
+                setStartDate(date)
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
+                setEndDate(date)
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Funerals List */}
+      {/* Funerals Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((funeral) => (
-            <ListViewCard
-              key={funeral.id}
-              title="Funeral Service"
-              editHref={`/funerals/${funeral.id}/edit`}
-              viewHref={`/funerals/${funeral.id}`}
-              viewButtonText="Preview"
-              status={funeral.status}
-              statusType="module"
-              language={funeral.funeral_event?.language || undefined}
-              datetime={funeral.funeral_event?.start_date ? {
-                date: funeral.funeral_event.start_date,
-                time: funeral.funeral_event.start_time || undefined
-              } : undefined}
-            >
-              <div className="text-sm space-y-1">
-                {funeral.deceased && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Deceased:</span> {funeral.deceased.first_name} {funeral.deceased.last_name}
-                  </p>
-                )}
-                {funeral.family_contact && (
-                  <p className="text-muted-foreground hidden md:block">
-                    <span className="font-medium">Family Contact:</span> {funeral.family_contact.first_name} {funeral.family_contact.last_name}
-                  </p>
-                )}
-              </div>
-
-              {funeral.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
-                  {funeral.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(funeral) => funeral.id}
+            onRowClick={(funeral) => router.push(`/funerals/${funeral.id}`)}
+            emptyState={{
+              icon: <Cross className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No funerals found' : 'No funerals yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search or filters to find more funerals.'
+                : 'Create your first funeral to start managing funeral services in your parish.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/funerals/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Funeral
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <Cross className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No funerals found'
-              : 'No funerals yet'
-            }
+            {hasActiveFilters ? 'No funerals found' : 'No funerals yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search or filters to find more funerals.'
-              : 'Create your first funeral to start managing funeral services in your parish.'
-            }
+              : 'Create your first funeral to start managing funeral services in your parish.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -170,7 +231,7 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -181,19 +242,22 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="Funeral Overview">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Funerals</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="Funeral Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Funeral"
+        description={
+          funeralToDelete
+            ? `Are you sure you want to delete the funeral for ${funeralToDelete.deceased?.full_name || 'this person'}? This action cannot be undone.`
+            : 'Are you sure you want to delete this funeral? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

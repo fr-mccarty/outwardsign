@@ -2,13 +2,12 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
 import { Button } from '@/components/ui/button'
-import { getMasses, type MassFilterParams } from "@/lib/actions/masses"
+import { getMasses, getMassStats, type MassFilterParams } from "@/lib/actions/masses"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
 import { CalendarClock } from 'lucide-react'
 import Link from 'next/link'
-import { toLocalDateString } from '@/lib/utils/formatters'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,29 +34,20 @@ export default async function MassesPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Get current date for default start_date filter
-  const today = toLocalDateString(new Date())
-
   // Build filters from search params
   const filters: MassFilterParams = {
     search: params.search,
     status: params.status as MassFilterParams['status'],
-    start_date: params.start_date || today, // Default to today
+    start_date: params.start_date,
     end_date: params.end_date,
     sort: (params.sort as MassFilterParams['sort']) || 'date_asc', // Default to date ascending (chronological)
     page: params.page ? parseInt(params.page) : 1,
     limit: params.limit ? parseInt(params.limit) : 50
   }
 
-  // Fetch masses server-side with filters
+  // Fetch masses and stats server-side with filters
   const masses = await getMasses(filters)
-
-  // Compute stats server-side
-  const allMasses = await getMasses({ limit: 10000 }) // Get all for count
-  const stats = {
-    total: allMasses.length,
-    filtered: masses.length,
-  }
+  const stats = await getMassStats(filters)
 
   // Get user role for schedule button permission
   const { data: profile } = await supabase

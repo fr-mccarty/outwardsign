@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
-import { Funeral, Person, Event } from '@/lib/types'
+import { Funeral, Person } from '@/lib/types'
 import { IndividualReading } from '@/lib/actions/readings'
 import { EventWithRelations } from '@/lib/actions/events'
 import {
@@ -15,6 +15,7 @@ import {
   type UpdateFuneralData
 } from '@/lib/schemas/funerals'
 import type { ModuleStatus } from '@/lib/constants'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 // Note: CreateFuneralData and UpdateFuneralData types are imported from '@/lib/schemas/funerals'
 // They cannot be re-exported from this 'use server' file
@@ -22,19 +23,73 @@ import type { ModuleStatus } from '@/lib/constants'
 export interface FuneralFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
+  sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  page?: number
+  limit?: number
+  start_date?: string
+  end_date?: string
 }
 
 export interface FuneralWithNames extends Funeral {
   deceased?: Person | null
   family_contact?: Person | null
   presider?: Person | null
-  funeral_event?: Event | null
+  funeral_event?: EventWithRelations | null
+}
+
+export interface FuneralStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+export async function getFuneralStats(filteredFunerals: FuneralWithNames[]): Promise<FuneralStats> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Fetch all funerals for total stats (no filters)
+  const { data: allFunerals } = await supabase
+    .from('funerals')
+    .select(`
+      *,
+      funeral_event:events!funeral_event_id(*)
+    `)
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const total = allFunerals?.length || 0
+  const upcoming = allFunerals?.filter(f => {
+    const funeralDate = f.funeral_event?.start_date
+    if (!funeralDate) return false
+    return new Date(funeralDate) >= today
+  }).length || 0
+  const past = allFunerals?.filter(f => {
+    const funeralDate = f.funeral_event?.start_date
+    if (!funeralDate) return false
+    return new Date(funeralDate) < today
+  }).length || 0
+  const filtered = filteredFunerals.length
+
+  return {
+    total,
+    upcoming,
+    past,
+    filtered
+  }
 }
 
 export async function getFunerals(filters?: FuneralFilterParams): Promise<FuneralWithNames[]> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
+
+  // Calculate pagination
+  const page = filters?.page || 1
+  const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
+  const offset = (page - 1) * limit
 
   let query = supabase
     .from('funerals')
@@ -43,7 +98,7 @@ export async function getFunerals(filters?: FuneralFilterParams): Promise<Funera
       deceased:people!deceased_id(*),
       family_contact:people!family_contact_id(*),
       presider:people!presider_id(*),
-      funeral_event:events!funeral_event_id(*)
+      funeral_event:events!funeral_event_id(*, location:locations(*))
     `)
 
   // Apply status filter at database level
@@ -51,7 +106,18 @@ export async function getFunerals(filters?: FuneralFilterParams): Promise<Funera
     query = query.eq('status', filters.status)
   }
 
-  query = query.order('created_at', { ascending: false })
+  // Apply database-level sorting for created_at fields
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    // Default to most recent first
+    query = query.order('created_at', { ascending: false })
+  }
+
+  // Apply pagination at database level
+  query = query.range(offset, offset + limit - 1)
 
   const { data, error } = await query
 
@@ -62,21 +128,69 @@ export async function getFunerals(filters?: FuneralFilterParams): Promise<Funera
 
   let funerals = data || []
 
-  // Apply search filter in application layer (searching related table fields)
+  // Apply search filter in application layer (searching related table fields and notes)
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
     funerals = funerals.filter(funeral => {
       const deceasedFirstName = funeral.deceased?.first_name?.toLowerCase() || ''
       const deceasedLastName = funeral.deceased?.last_name?.toLowerCase() || ''
+      const deceasedFull = funeral.deceased?.full_name?.toLowerCase() || ''
       const contactFirstName = funeral.family_contact?.first_name?.toLowerCase() || ''
       const contactLastName = funeral.family_contact?.last_name?.toLowerCase() || ''
+      const contactFull = funeral.family_contact?.full_name?.toLowerCase() || ''
+      const notes = funeral.note?.toLowerCase() || ''
 
       return (
         deceasedFirstName.includes(searchTerm) ||
         deceasedLastName.includes(searchTerm) ||
+        deceasedFull.includes(searchTerm) ||
         contactFirstName.includes(searchTerm) ||
-        contactLastName.includes(searchTerm)
+        contactLastName.includes(searchTerm) ||
+        contactFull.includes(searchTerm) ||
+        notes.includes(searchTerm)
       )
+    })
+  }
+
+  // Apply date range filter
+  if (filters?.start_date || filters?.end_date) {
+    funerals = funerals.filter(funeral => {
+      const funeralDate = funeral.funeral_event?.start_date
+      if (!funeralDate) return false
+
+      const date = new Date(funeralDate)
+      const startDate = filters.start_date ? new Date(filters.start_date) : null
+      const endDate = filters.end_date ? new Date(filters.end_date) : null
+
+      if (startDate && date < startDate) return false
+      if (endDate && date > endDate) return false
+
+      return true
+    })
+  }
+
+  // Apply application-level sorting for related fields (date and name)
+  if (filters?.sort === 'date_asc' || filters?.sort === 'date_desc') {
+    funerals = funerals.sort((a, b) => {
+      const dateA = a.funeral_event?.start_date || ''
+      const dateB = b.funeral_event?.start_date || ''
+
+      // Handle nulls - push to end
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+
+      const comparison = new Date(dateA).getTime() - new Date(dateB).getTime()
+      return filters.sort === 'date_asc' ? comparison : -comparison
+    })
+  } else if (filters?.sort === 'name_asc' || filters?.sort === 'name_desc') {
+    funerals = funerals.sort((a, b) => {
+      // Use deceased's full name for sorting
+      const nameA = a.deceased?.full_name || ''
+      const nameB = b.deceased?.full_name || ''
+
+      const comparison = nameA.localeCompare(nameB)
+      return filters.sort === 'name_asc' ? comparison : -comparison
     })
   }
 

@@ -1,7 +1,7 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getMassIntentions, type MassIntentionFilterParams } from "@/lib/actions/mass-intentions"
+import { getMassIntentions, getMassIntentionStats, type MassIntentionFilterParams } from "@/lib/actions/mass-intentions"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassIntentionsListClient } from './mass-intentions-list-client'
@@ -9,7 +9,7 @@ import { MassIntentionsListClient } from './mass-intentions-list-client'
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{ search?: string; status?: string; sort?: string; start_date?: string; end_date?: string }>
 }
 
 export default async function MassIntentionsPage({ searchParams }: PageProps) {
@@ -26,7 +26,10 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
   // Build filters from search params
   const filters: MassIntentionFilterParams = {
     search: params.search,
-    status: params.status as MassIntentionFilterParams['status']
+    status: params.status as MassIntentionFilterParams['status'],
+    sort: params.sort as MassIntentionFilterParams['sort'],
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
   // Fetch mass intentions server-side with filters
@@ -34,10 +37,7 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
 
   // Compute stats server-side
   const allIntentions = await getMassIntentions()
-  const stats = {
-    total: allIntentions.length,
-    filtered: intentions.length,
-  }
+  const stats = await getMassIntentionStats(allIntentions)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

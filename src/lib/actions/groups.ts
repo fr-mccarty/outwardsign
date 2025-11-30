@@ -50,23 +50,111 @@ export interface GroupWithMembers extends Group {
 // Re-export types for backward compatibility
 export type { CreateGroupData, UpdateGroupData }
 
-export async function getGroups(): Promise<Group[]> {
+export interface GroupFilters {
+  search?: string
+  sort?: string
+  page?: number
+  limit?: number
+}
+
+export interface GroupStats {
+  total: number
+  filtered: number
+}
+
+export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupStats> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
-  
+
+  const supabase = await createClient()
+
+  // Get total count
+  const { count: totalCount, error: totalError } = await supabase
+    .from('groups')
+    .select('*', { count: 'exact', head: true })
+
+  if (totalError) {
+    console.error('Error fetching total count:', totalError)
+    throw new Error('Failed to fetch total count')
+  }
+
+  // Get filtered count (all groups, no search applied)
+  const { data: allGroups, error: allError } = await supabase
+    .from('groups')
+    .select('*')
+
+  if (allError) {
+    console.error('Error fetching groups for filtering:', allError)
+    throw new Error('Failed to fetch groups for filtering')
+  }
+
+  let filteredGroups = allGroups || []
+
+  // Apply search filter (application-level)
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase()
+    filteredGroups = filteredGroups.filter(group =>
+      group.name.toLowerCase().includes(searchLower) ||
+      (group.description && group.description.toLowerCase().includes(searchLower))
+    )
+  }
+
+  return {
+    total: totalCount || 0,
+    filtered: filteredGroups.length
+  }
+}
+
+export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('groups')
     .select('*')
-    .order('name', { ascending: true })
 
   if (error) {
     console.error('Error fetching groups:', error)
     throw new Error('Failed to fetch groups')
   }
 
-  return data || []
+  let groups = data || []
+
+  // Apply search filter (application-level)
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase()
+    groups = groups.filter(group =>
+      group.name.toLowerCase().includes(searchLower) ||
+      (group.description && group.description.toLowerCase().includes(searchLower))
+    )
+  }
+
+  // Apply sorting (application-level)
+  const sort = filters.sort || 'name_asc'
+  groups.sort((a, b) => {
+    switch (sort) {
+      case 'name_desc':
+        return b.name.localeCompare(a.name)
+      case 'created_asc':
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      case 'created_desc':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case 'name_asc':
+      default:
+        return a.name.localeCompare(b.name)
+    }
+  })
+
+  // Apply pagination (application-level)
+  if (filters.page !== undefined && filters.limit !== undefined) {
+    const start = (filters.page - 1) * filters.limit
+    const end = start + filters.limit
+    groups = groups.slice(start, end)
+  }
+
+  return groups
 }
 
 export async function getGroup(id: string): Promise<GroupWithMembers | null> {

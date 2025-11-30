@@ -2,160 +2,226 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { BaptismWithNames } from '@/lib/actions/baptisms'
+import type { BaptismWithNames, BaptismStats } from '@/lib/actions/baptisms'
+import { deleteBaptism } from '@/lib/actions/baptisms'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Droplet, Calendar, Search, Filter, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
+import { Plus, Droplet, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { MODULE_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
+import { toLocalDateString } from "@/lib/utils/formatters"
+import { useListFilters } from "@/hooks/use-list-filters"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { MODULE_STATUS_VALUES } from "@/lib/constants"
-import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
-import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
-
-interface Stats {
-  total: number
-  filtered: number
-}
+  buildAvatarColumn,
+  buildWhoColumn,
+  buildWhenColumn,
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface BaptismsListClientProps {
   initialData: BaptismWithNames[]
-  stats: Stats
+  stats: BaptismStats
 }
 
 export function BaptismsListClient({ initialData, stats }: BaptismsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const selectedStatus = searchParams.get('status') || 'all'
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/baptisms',
+    defaultFilters: { status: 'all', sort: 'date_asc' }
+  })
 
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Baptisms' },
+    { value: stats.upcoming, label: 'Upcoming' },
+    { value: stats.past, label: 'Past' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [baptismToDelete, setBaptismToDelete] = useState<BaptismWithNames | null>(null)
+
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
+    setSearchValue('')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!baptismToDelete) return
+
+    try {
+      await deleteBaptism(baptismToDelete.id)
+      toast.success('Baptism deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete baptism:', error)
+      toast.error('Failed to delete baptism. Please try again.')
+      throw error
     }
-    const newUrl = `/baptisms${params.toString() ? `?${params.toString()}` : ''}`
-    router.push(newUrl)
   }
 
-  const clearSearch = () => {
-    setSearchValue('')
-    updateFilters('search', '')
-  }
-
-  const clearFilters = () => {
-    setSearchValue('')
-    router.push('/baptisms')
-  }
-
-  const hasActiveFilters = searchValue || selectedStatus !== 'all'
+  // Define table columns using column builders
+  const columns = [
+    buildAvatarColumn<BaptismWithNames>({
+      people: (baptism) => baptism.child ? [{
+        id: baptism.child.id,
+        first_name: baptism.child.first_name,
+        last_name: baptism.child.last_name,
+        full_name: baptism.child.full_name,
+        avatar_url: baptism.child.avatar_url
+      }] : [],
+      type: 'single',
+      size: 'md',
+      hiddenOn: 'sm'
+    }),
+    buildWhoColumn<BaptismWithNames>({
+      getName: (baptism) => baptism.child?.full_name || '',
+      getStatus: (baptism) => baptism.status || 'PLANNING',
+      fallback: 'No child assigned',
+      sortable: true
+    }),
+    buildWhenColumn<BaptismWithNames>({
+      getDate: (baptism) => baptism.baptism_event?.start_date || null,
+      getTime: (baptism) => baptism.baptism_event?.start_time || null,
+      sortable: true
+    }),
+    buildWhereColumn<BaptismWithNames>({
+      getLocation: (baptism) => baptism.baptism_event?.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<BaptismWithNames>({
+      baseUrl: '/baptisms',
+      onDelete: (baptism) => {
+        setBaptismToDelete(baptism)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (baptism) =>
+        `Are you sure you want to delete the baptism for ${baptism.child?.full_name || 'this child'}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Baptisms" moduleSingular="Baptism">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by child name..."
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value)
-                updateFilters('search', e.target.value)
-              }}
-              className="pl-10 pr-10"
-            />
-            {searchValue && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                {MODULE_STATUS_VALUES.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {getStatusLabel(status, 'en')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by child name..."
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            statusFilter={{
+              value: filters.getFilterValue('status'),
+              onChange: (value) => filters.updateFilter('status', value),
+              statusValues: MODULE_STATUS_VALUES
+            }}
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: STANDARD_SORT_OPTIONS
+            }}
+            dateRangeFilter={{
+              startDate: startDate,
+              endDate: endDate,
+              onStartDateChange: (date) => {
+                setStartDate(date)
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
+                setEndDate(date)
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Baptisms List */}
+      {/* Baptisms Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((baptism) => (
-            <ListViewCard
-              key={baptism.id}
-              title="Baptism"
-              editHref={`/baptisms/${baptism.id}/edit`}
-              viewHref={`/baptisms/${baptism.id}`}
-              viewButtonText="Preview"
-              status={baptism.status}
-              statusType="module"
-              language={baptism.baptism_event?.language || undefined}
-              datetime={baptism.baptism_event?.start_date ? {
-                date: baptism.baptism_event.start_date,
-                time: baptism.baptism_event.start_time || undefined
-              } : undefined}
-            >
-              <div className="text-sm space-y-1">
-                {baptism.child && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Child:</span> {baptism.child.first_name} {baptism.child.last_name}
-                  </p>
-                )}
-              </div>
-
-              {baptism.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
-                  {baptism.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(baptism) => baptism.id}
+            onRowClick={(baptism) => router.push(`/baptisms/${baptism.id}`)}
+            emptyState={{
+              icon: <Droplet className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No baptisms found' : 'No baptisms yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search or filters to find more baptisms.'
+                : 'Create your first baptism to start managing baptism celebrations in your parish.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/baptisms/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Baptism
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <Droplet className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No baptisms found'
-              : 'No baptisms yet'
-            }
+            {hasActiveFilters ? 'No baptisms found' : 'No baptisms yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search or filters to find more baptisms.'
-              : 'Create your first baptism to start managing baptism celebrations in your parish.'
-            }
+              : 'Create your first baptism to start managing baptism celebrations in your parish.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -165,7 +231,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -176,19 +242,22 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="Baptism Overview">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Baptisms</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="Baptism Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Baptism"
+        description={
+          baptismToDelete
+            ? `Are you sure you want to delete the baptism for ${baptismToDelete.child?.full_name || 'this child'}? This action cannot be undone.`
+            : 'Are you sure you want to delete this baptism? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

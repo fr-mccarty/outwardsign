@@ -1,120 +1,214 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import type { Location } from '@/lib/types'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import type { Location } from '@/lib/actions/locations'
+import type { LocationStats } from '@/lib/actions/locations'
+import { deleteLocation } from '@/lib/actions/locations'
+import { DataTable } from '@/components/data-table/data-table'
+import type { DataTableColumn } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Building, MapPin, Phone, Search, Filter } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
-
-interface Stats {
-  total: number
-  filtered: number
-}
+import { Plus, Building, Filter, MapPin, Phone } from "lucide-react"
+import { toast } from "sonner"
+import { useListFilters } from "@/hooks/use-list-filters"
+import { buildActionsColumn } from '@/lib/utils/table-columns'
 
 interface LocationsListClientProps {
   initialData: Location[]
-  stats: Stats
+  stats: LocationStats
 }
+
+const LOCATION_SORT_OPTIONS = [
+  { value: 'name_asc', label: 'Name (A-Z)' },
+  { value: 'name_desc', label: 'Name (Z-A)' },
+  { value: 'created_asc', label: 'Oldest First' },
+  { value: 'created_desc', label: 'Newest First' }
+]
 
 export function LocationsListClient({ initialData, stats }: LocationsListClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const searchTerm = searchParams.get('search') || ''
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/locations',
+    defaultFilters: { sort: 'name_asc' }
+  })
 
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Locations' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [locationToDelete, setLocationToDelete] = useState<Location | null>(null)
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchValue('')
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!locationToDelete) return
+
+    try {
+      await deleteLocation(locationToDelete.id)
+      toast.success('Location deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete location:', error)
+      toast.error('Failed to delete location. Please try again.')
+      throw error
     }
-    router.push(`/locations?${params.toString()}`)
   }
 
-  const clearFilters = () => {
-    router.push('/locations')
-  }
-
-  const hasActiveFilters = searchTerm !== ''
+  // Define table columns
+  const columns: DataTableColumn<Location>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      cell: (location) => (
+        <span className="text-sm font-medium">{location.name}</span>
+      ),
+      className: 'min-w-[150px]',
+      sortable: true,
+      accessorFn: (location) => location.name
+    },
+    {
+      key: 'address',
+      header: 'Address',
+      cell: (location) => {
+        const addressParts = [location.street, location.city, location.state].filter(Boolean)
+        if (addressParts.length === 0) {
+          return <span className="text-muted-foreground text-sm">No address</span>
+        }
+        return (
+          <div className="flex items-start gap-2">
+            <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <span className="text-sm truncate">{addressParts.join(', ')}</span>
+          </div>
+        )
+      },
+      className: 'min-w-[200px] max-w-[300px]',
+      hiddenOn: 'md'
+    },
+    {
+      key: 'phone',
+      header: 'Phone',
+      cell: (location) => {
+        if (!location.phone_number) {
+          return <span className="text-muted-foreground text-sm">—</span>
+        }
+        return (
+          <div className="flex items-center gap-2">
+            <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm">{location.phone_number}</span>
+          </div>
+        )
+      },
+      className: 'min-w-[120px]',
+      hiddenOn: 'lg'
+    },
+    buildActionsColumn<Location>({
+      baseUrl: '/locations',
+      onDelete: (location) => {
+        setLocationToDelete(location)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (location) =>
+        `Are you sure you want to delete ${location.name}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
-      {/* Search */}
+      {/* Search and Filters */}
       <SearchCard modulePlural="Locations" moduleSingular="Location">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search locations by name, description, or city..."
-              defaultValue={searchTerm}
-              onChange={(e) => updateFilters('search', e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by name, description, or city..."
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: LOCATION_SORT_OPTIONS
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Locations List */}
+      {/* Locations Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((location) => (
-            <ListViewCard
-              key={location.id}
-              title={location.name}
-              editHref={`/locations/${location.id}/edit`}
-              viewHref={`/locations/${location.id}`}
-            >
-              {location.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {location.description}
-                </p>
-              )}
-
-              <div className="text-sm space-y-1">
-                {(location.street || location.city || location.state) && (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground line-clamp-2">
-                      {[location.street, location.city, location.state]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </span>
-                  </div>
-                )}
-                {location.phone_number && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      {location.phone_number}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </ListViewCard>
-          ))}
-        </div>
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(location) => location.id}
+            onRowClick={(location) => router.push(`/locations/${location.id}`)}
+            emptyState={{
+              icon: <Building className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No locations found' : 'No locations yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search to find more locations.'
+                : 'Create your first location to start managing parish venues.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/locations/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Location
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <Building className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No locations found'
-              : 'No locations yet'
-            }
+            {hasActiveFilters ? 'No locations found' : 'No locations yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search to find more locations.'
-              : 'Create your first location to start managing parish venues.'
-            }
+              : 'Create your first location to start managing parish venues.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -124,7 +218,7 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -135,19 +229,22 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="Location Overview">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Locations</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="Location Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Location"
+        description={
+          locationToDelete
+            ? `Are you sure you want to delete ${locationToDelete.name}? This action cannot be undone.`
+            : 'Are you sure you want to delete this location? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

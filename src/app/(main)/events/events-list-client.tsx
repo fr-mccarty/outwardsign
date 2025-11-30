@@ -1,251 +1,222 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
-import type { EventWithModuleLink } from '@/lib/actions/events'
+import type { EventWithModuleLink, EventStats } from '@/lib/actions/events'
+import { deleteEvent } from '@/lib/actions/events'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { Plus, CalendarDays, Search, Filter } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { RELATED_EVENT_TYPE_LABELS, RelatedEventType } from "@/lib/constants"
-import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
-import { useAppContext } from '@/contexts/AppContextProvider'
-import { FormInput } from "@/components/form-input"
-import { DatePickerField } from "@/components/date-picker-field"
+import { Plus, CalendarDays, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { STANDARD_SORT_OPTIONS } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
-import type { EventType } from "@/lib/types"
-
-interface Stats {
-  total: number
-  upcoming: number
-  past: number
-  filtered: number
-  eventTypes: EventType[] // User-defined event types
-  relatedEventTypes: readonly RelatedEventType[] // System-defined types
-  languages: string[]
-}
+import { useListFilters } from "@/hooks/use-list-filters"
+import type { DataTableColumn } from '@/components/data-table/data-table'
+import {
+  buildWhenColumn,
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface EventsListClientProps {
   initialData: EventWithModuleLink[]
-  stats: Stats
+  stats: EventStats
 }
 
 export function EventsListClient({ initialData, stats }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { userSettings } = useAppContext()
-  const userLanguage = (userSettings?.language || 'en') as 'en' | 'es'
 
-  // Get current filter values from URL
-  const searchTerm = searchParams.get('search') || ''
-  const selectedEventTypeId = searchParams.get('event_type_id') || 'all'
-  const selectedRelatedEventType = searchParams.get('related_event_type') || 'all'
-  const selectedLanguage = searchParams.get('language') || 'all'
-  const startDate = searchParams.get('start_date') || ''
-  const endDate = searchParams.get('end_date') || ''
-  const sortOrder = searchParams.get('sort') || 'asc'
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/events',
+    defaultFilters: { sort: 'date_asc' }
+  })
 
-  // Auto-set start_date to today and sort to asc on initial load if not already set
-  useEffect(() => {
-    const hasStartDate = searchParams.get('start_date')
-    const hasSort = searchParams.get('sort')
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
 
-    if (!hasStartDate || !hasSort) {
-      const params = new URLSearchParams(searchParams.toString())
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Events' },
+    { value: stats.upcoming, label: 'Upcoming' },
+    { value: stats.past, label: 'Past' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
 
-      if (!hasStartDate) {
-        const today = toLocalDateString(new Date())
-        params.set('start_date', today)
-      }
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
 
-      if (!hasSort) {
-        params.set('sort', 'asc')
-      }
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [eventToDelete, setEventToDelete] = useState<EventWithModuleLink | null>(null)
 
-      router.replace(`/events?${params.toString()}`)
-    }
-  }, [])
-
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
-    }
-    router.push(`/events?${params.toString()}`)
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
+    setSearchValue('')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    filters.clearFilters()
   }
 
-  const clearFilters = () => {
-    router.push('/events')
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!eventToDelete) return
+
+    try {
+      await deleteEvent(eventToDelete.id)
+      toast.success('Event deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete event:', error)
+      toast.error('Failed to delete event. Please try again.')
+      throw error
+    }
   }
 
-  const hasActiveFilters = searchTerm || selectedEventTypeId !== 'all' || selectedRelatedEventType !== 'all' || selectedLanguage !== 'all' || startDate || endDate || sortOrder !== 'asc'
+  // Define custom "What" column (event name + type)
+  const whatColumn: DataTableColumn<EventWithModuleLink> = {
+    key: 'what',
+    header: 'What',
+    cell: (event) => (
+      <div className="flex items-center gap-2 max-w-[200px] md:max-w-[300px]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium truncate">
+              {event.name || 'Unnamed Event'}
+            </span>
+          </div>
+          {event.event_type?.name && (
+            <div className="text-sm text-muted-foreground truncate">
+              {event.event_type.name}
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+    sortable: true
+  }
+
+  // Define table columns (no avatar column for events)
+  const columns = [
+    whatColumn,
+    buildWhenColumn<EventWithModuleLink>({
+      getDate: (event) => event.start_date || null,
+      getTime: (event) => event.start_time || null,
+      sortable: true
+    }),
+    buildWhereColumn<EventWithModuleLink>({
+      getLocation: (event) => event.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<EventWithModuleLink>({
+      baseUrl: '/events',
+      onDelete: (event) => {
+        setEventToDelete(event)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (event) =>
+        `Are you sure you want to delete the event "${event.name || 'this event'}"?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Events" moduleSingular="Event">
         <div className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search events by name, description, or location..."
-                defaultValue={searchTerm}
-                onChange={(e) => updateFilters('search', e.target.value)}
-                className="pl-10"
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search events by name or description..."
+            className="w-full"
+          />
+
+          {/* Date Range and Sort Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="start-date" className="block text-sm font-medium mb-1.5">
+                From Date
+              </label>
+              <input
+                id="start-date"
+                type="date"
+                value={startDate ? toLocalDateString(startDate) : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined
+                  setStartDate(newDate)
+                  filters.updateFilter('start_date', e.target.value)
+                }}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
-            <div className="flex gap-2">
-              <Select
-                value={selectedEventTypeId !== 'all' ? `user-${selectedEventTypeId}` : selectedRelatedEventType !== 'all' ? `system-${selectedRelatedEventType}` : 'all'}
-                onValueChange={(value) => {
-                  if (value === 'all') {
-                    updateFilters('event_type_id', '')
-                    updateFilters('related_event_type', '')
-                  } else if (value.startsWith('user-')) {
-                    updateFilters('event_type_id', value.substring(5))
-                    updateFilters('related_event_type', '')
-                  } else if (value.startsWith('system-')) {
-                    updateFilters('event_type_id', '')
-                    updateFilters('related_event_type', value.substring(7))
-                  }
+            <div>
+              <label htmlFor="end-date" className="block text-sm font-medium mb-1.5">
+                To Date
+              </label>
+              <input
+                id="end-date"
+                type="date"
+                value={endDate ? toLocalDateString(endDate) : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined
+                  setEndDate(newDate)
+                  filters.updateFilter('end_date', e.target.value)
                 }}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Event Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {stats.eventTypes.length > 0 && (
-                    <>
-                      {stats.eventTypes.map(type => (
-                        <SelectItem key={type.id} value={`user-${type.id}`}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                  {stats.relatedEventTypes.length > 0 && (
-                    <>
-                      {stats.relatedEventTypes.map(type => (
-                        <SelectItem key={type} value={`system-${type}`}>
-                          {RELATED_EVENT_TYPE_LABELS[type]?.[userLanguage] || type}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-              <Select value={selectedLanguage} onValueChange={(value) => updateFilters('language', value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  {stats.languages.map(lang => (
-                    <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <DatePickerField
-              id="start-date"
-              label="From Date"
-              value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
-              onValueChange={(date) => updateFilters('start_date', date ? toLocalDateString(date) : '')}
-              closeOnSelect
-            />
-            <DatePickerField
-              id="end-date"
-              label="To Date"
-              value={endDate ? new Date(endDate + 'T12:00:00') : undefined}
-              onValueChange={(date) => updateFilters('end_date', date ? toLocalDateString(date) : '')}
-              closeOnSelect
-            />
-            <FormInput
-              id="sort"
-              label="Sort By Date"
-              inputType="select"
-              value={sortOrder}
-              onChange={(value) => updateFilters('sort', value)}
-              options={[
-                { value: 'desc', label: 'Newest First' },
-                { value: 'asc', label: 'Oldest First' }
-              ]}
-            />
+            <div>
+              <label htmlFor="sort" className="block text-sm font-medium mb-1.5">
+                Sort By
+              </label>
+              <select
+                id="sort"
+                value={filters.getFilterValue('sort')}
+                onChange={(e) => filters.updateFilter('sort', e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {STANDARD_SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </SearchCard>
 
-      {/* Events List */}
+      {/* Events Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((event) => {
-            const isUpcoming = event.start_date && new Date(event.start_date) >= new Date()
-
-            // Determine edit href based on module link
-            let editHref = `/events/${event.id}/edit`
-            if (event.moduleLink?.moduleType && event.moduleLink?.moduleId) {
-              const { moduleType, moduleId } = event.moduleLink
-              // Handle special plural forms
-              const modulePath = moduleType === 'mass' ? 'masses' : `${moduleType}s`
-              editHref = `/${modulePath}/${moduleId}/edit`
-            }
-
-            return (
-              <ListViewCard
-                key={event.id}
-                title={event.name}
-                editHref={editHref}
-                viewHref={`/events/${event.id}`}
-                viewButtonText="Preview"
-                language={event.language || undefined}
-                datetime={event.start_date ? {
-                  date: event.start_date,
-                  time: event.start_time || undefined
-                } : undefined}
-              >
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs font-medium">
-                    {event.related_event_type
-                      ? (RELATED_EVENT_TYPE_LABELS[event.related_event_type]?.[userLanguage] || event.related_event_type)
-                      : (event.event_type?.name || 'Event')
-                    }
-                  </Badge>
-                  {isUpcoming && (
-                    <Badge variant="default" className="text-xs font-medium bg-green-700 hover:bg-green-700 text-white">
-                      Upcoming
-                    </Badge>
-                  )}
-                </div>
-
-                {event.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mt-3">
-                    {event.description}
-                  </p>
-                )}
-              </ListViewCard>
-            )
-          })}
-        </div>
+        <DataTable
+          columns={columns}
+          data={initialData}
+          keyExtractor={(event) => event.id}
+          onRowClick={(event) => router.push(`/events/${event.id}`)}
+          stickyHeader
+        />
       ) : (
         <ContentCard className="text-center py-12">
           <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -269,7 +240,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -278,29 +249,24 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
         </ContentCard>
       )}
 
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
+
       {/* Quick Stats */}
-      {stats.total > 0 && (
-        <FormSectionCard title="Event Overview">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Events</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.upcoming}</div>
-              <div className="text-sm text-muted-foreground">Upcoming</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.past}</div>
-              <div className="text-sm text-muted-foreground">Past</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
-      )}
+      {stats.total > 0 && <ListStatsBar stats={statsList} />}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Event"
+        description={
+          eventToDelete
+            ? `Are you sure you want to delete the event "${eventToDelete.name || 'this event'}"?`
+            : 'Are you sure you want to delete this event?'
+        }
+      />
     </div>
   )
 }

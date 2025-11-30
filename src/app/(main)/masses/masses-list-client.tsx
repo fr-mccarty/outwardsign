@@ -1,301 +1,269 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import type { MassWithNames } from '@/lib/actions/masses'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import type { MassWithNames, MassStats } from '@/lib/actions/masses'
+import { deleteMass } from '@/lib/actions/masses'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, Church, Calendar, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { DatePickerField } from "@/components/date-picker-field"
+import { Plus, Church, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { MASS_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
-import { ListViewCard } from "@/components/list-view-card"
+import { useListFilters } from "@/hooks/use-list-filters"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { MASS_STATUS_VALUES } from "@/lib/constants"
-import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
-import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
-
-interface Stats {
-  total: number
-  filtered: number
-}
+  buildWhenColumn,
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
+import { DataTableColumn } from '@/components/data-table/data-table'
+import { MODULE_STATUS_COLORS } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface MassesListClientProps {
   initialData: MassWithNames[]
-  stats: Stats
+  stats: MassStats
 }
 
 export function MassesListClient({ initialData, stats }: MassesListClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const selectedStatus = searchParams.get('status') || 'all'
-  const selectedSort = searchParams.get('sort') || 'date_asc'
-  const currentPage = parseInt(searchParams.get('page') || '1')
-  const currentLimit = parseInt(searchParams.get('limit') || '50')
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/masses',
+    defaultFilters: { status: 'all', sort: 'date_asc' }
+  })
 
-  // Helper to parse URL date string to Date object
-  const parseUrlDate = (dateStr: string | null): Date | undefined => {
-    if (!dateStr) return undefined
-    return new Date(dateStr + 'T12:00:00')
-  }
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
 
-  // Get today's date as default
-  const todayDate = new Date()
-  const todayStr = toLocalDateString(todayDate)
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Masses' },
+    { value: stats.upcoming, label: 'Upcoming' },
+    { value: stats.past, label: 'Past' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
 
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = filters.getFilterValue('start_date')
+  const endDateParam = filters.getFilterValue('end_date')
   const [startDate, setStartDate] = useState<Date | undefined>(
-    parseUrlDate(searchParams.get('start_date')) || todayDate
+    startDateParam ? new Date(startDateParam) : undefined
   )
   const [endDate, setEndDate] = useState<Date | undefined>(
-    parseUrlDate(searchParams.get('end_date'))
+    endDateParam ? new Date(endDateParam) : undefined
   )
 
-  // Update URL with new filter values
-  const updateFilters = (updates: Record<string, string>) => {
-    const params = new URLSearchParams(searchParams.toString())
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [massToDelete, setMassToDelete] = useState<MassWithNames | null>(null)
 
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value && value !== 'all' && value !== '') {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
-    })
-
-    // Reset to page 1 when filters change (unless we're specifically updating the page)
-    if (!updates.page) {
-      params.set('page', '1')
-    }
-
-    const newUrl = `/masses${params.toString() ? `?${params.toString()}` : ''}`
-    router.push(newUrl)
-  }
-
-  const clearSearch = () => {
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
     setSearchValue('')
-    updateFilters({ search: '' })
-  }
-
-  const clearFilters = () => {
-    setSearchValue('')
-    setStartDate(todayDate)
+    setStartDate(undefined)
     setEndDate(undefined)
-    router.push('/masses')
+    filters.clearFilters()
   }
 
-  const hasActiveFilters = searchValue || selectedStatus !== 'all' ||
-    (startDate && toLocalDateString(startDate) !== todayStr) || endDate
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
 
-  // Calculate pagination info
-  const totalPages = Math.ceil(stats.filtered / currentLimit)
-  const hasNextPage = currentPage < totalPages
-  const hasPreviousPage = currentPage > 1
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!massToDelete) return
 
+    try {
+      await deleteMass(massToDelete.id)
+      toast.success('Mass deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete mass:', error)
+      toast.error('Failed to delete mass. Please try again.')
+      throw error
+    }
+  }
+
+  // Custom "Who" column for presider/homilist (NO avatars)
+  const buildMassWhoColumn = (): DataTableColumn<MassWithNames> => {
+    return {
+      key: 'who',
+      header: 'Who',
+      cell: (mass) => {
+        const presiderName = mass.presider?.full_name
+        const homilistName = mass.homilist?.full_name
+        const status = mass.status || 'PLANNING'
+        const statusLabel = getStatusLabel(status, 'en')
+        const statusColor = MODULE_STATUS_COLORS[status] || 'bg-muted-foreground/50'
+
+        if (!presiderName && !homilistName) {
+          return (
+            <span className="text-muted-foreground text-sm">
+              No presider assigned
+            </span>
+          )
+        }
+
+        return (
+          <div className="flex items-start gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={`h-2 w-2 rounded-full flex-shrink-0 mt-1.5 ${statusColor}`} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{statusLabel}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <div className="flex flex-col">
+              {presiderName && (
+                <span className="text-sm font-medium">
+                  {presiderName}
+                </span>
+              )}
+              {homilistName && homilistName !== presiderName && (
+                <span className="text-xs text-muted-foreground">
+                  Homilist: {homilistName}
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      },
+      className: 'max-w-[200px] md:max-w-[250px]',
+      sortable: true,
+      accessorFn: (mass) => mass.presider?.full_name || ''
+    }
+  }
+
+  // Define table columns using column builders
+  const columns = [
+    buildMassWhoColumn(),
+    buildWhenColumn<MassWithNames>({
+      getDate: (mass) => mass.event?.start_date || null,
+      getTime: (mass) => mass.event?.start_time || null,
+      sortable: true
+    }),
+    buildWhereColumn<MassWithNames>({
+      getLocation: (mass) => mass.event?.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<MassWithNames>({
+      baseUrl: '/masses',
+      onDelete: (mass) => {
+        setMassToDelete(mass)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (mass) =>
+        `Are you sure you want to delete the mass with presider ${mass.presider?.full_name || 'unknown'}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Masses" moduleSingular="Mass">
         <div className="space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by presider, homilist, or event name..."
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value)
-                updateFilters({ search: e.target.value })
-              }}
-              className="pl-10 pr-10"
-            />
-            {searchValue && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by presider, homilist, or event name..."
+            className="w-full"
+          />
 
-          {/* Date Range and Filters Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Start Date */}
-            <DatePickerField
-              id="start_date"
-              label="Start Date"
-              value={startDate}
-              onValueChange={(date) => {
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            statusFilter={{
+              value: filters.getFilterValue('status'),
+              onChange: (value) => filters.updateFilter('status', value),
+              statusValues: MASS_STATUS_VALUES
+            }}
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: STANDARD_SORT_OPTIONS
+            }}
+            dateRangeFilter={{
+              startDate: startDate,
+              endDate: endDate,
+              onStartDateChange: (date) => {
                 setStartDate(date)
-                updateFilters({ start_date: date ? toLocalDateString(date) : '' })
-              }}
-              closeOnSelect
-            />
-
-            {/* End Date */}
-            <DatePickerField
-              id="end_date"
-              label="End Date"
-              value={endDate}
-              onValueChange={(date) => {
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
                 setEndDate(date)
-                updateFilters({ end_date: date ? toLocalDateString(date) : '' })
-              }}
-              closeOnSelect
-            />
-
-            {/* Status Filter */}
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={selectedStatus} onValueChange={(value) => updateFilters({ status: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  {MASS_STATUS_VALUES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {getStatusLabel(status, 'en')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort Order */}
-            <div className="space-y-2">
-              <Label>Sort By</Label>
-              <Select value={selectedSort} onValueChange={(value) => updateFilters({ sort: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date_asc">Date (Earliest First)</SelectItem>
-                  <SelectItem value="date_desc">Date (Latest First)</SelectItem>
-                  <SelectItem value="created_desc">Recently Created</SelectItem>
-                  <SelectItem value="created_asc">Oldest Created</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Clear Filters Button */}
-          {hasActiveFilters && (
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={clearFilters} size="sm">
-                <X className="h-4 w-4 mr-2" />
-                Clear All Filters
-              </Button>
-            </div>
-          )}
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Masses List */}
+      {/* Masses Table */}
       {initialData.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {initialData.map((mass) => (
-              <ListViewCard
-                key={mass.id}
-                title="Mass"
-                editHref={`/masses/${mass.id}/edit`}
-                viewHref={`/masses/${mass.id}`}
-                viewButtonText="Preview"
-                language={mass.event?.language || undefined}
-                datetime={mass.event?.start_date ? {
-                  date: mass.event.start_date,
-                  time: mass.event.start_time || undefined
-                } : undefined}
-              >
-                <div className="text-sm space-y-1">
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Presider:</span>{' '}
-                    {mass.presider ? `${mass.presider.first_name} ${mass.presider.last_name}` : 'Not assigned'}
-                  </p>
-                  {mass.homilist && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Homilist:</span>{' '}
-                      {mass.homilist.first_name} {mass.homilist.last_name}
-                    </p>
-                  )}
-                  {mass.event?.location && (
-                    <p className="text-muted-foreground">
-                      <span className="font-medium">Location:</span>{' '}
-                      {mass.event.location.name}
-                    </p>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(mass) => mass.id}
+            onRowClick={(mass) => router.push(`/masses/${mass.id}`)}
+            emptyState={{
+              icon: <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No masses found' : 'No masses yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search or filters to find more masses.'
+                : 'Create your first mass to start managing mass celebrations in your parish.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/masses/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Mass
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
                   )}
                 </div>
-
-                {mass.note && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {mass.note}
-                  </p>
-                )}
-              </ListViewCard>
-            ))}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <ContentCard className="py-4">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages} ({stats.filtered} results)
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateFilters({ page: String(currentPage - 1) })}
-                    disabled={!hasPreviousPage}
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateFilters({ page: String(currentPage + 1) })}
-                    disabled={!hasNextPage}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
-              </div>
-            </ContentCard>
-          )}
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
         </>
       ) : (
         <ContentCard className="text-center py-12">
           <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No masses found'
-              : 'No masses yet'
-            }
+            {hasActiveFilters ? 'No masses found' : 'No masses yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search or filters to find more masses.'
-              : 'Create your first Mass to start managing Mass celebrations in your parish.'
-            }
+              : 'Create your first mass to start managing mass celebrations in your parish.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -305,7 +273,7 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -316,19 +284,22 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="Mass Overview">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Masses</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="Mass Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Mass"
+        description={
+          massToDelete
+            ? `Are you sure you want to delete the mass with presider ${massToDelete.presider?.full_name || 'unknown'}? This action cannot be undone.`
+            : 'Are you sure you want to delete this mass? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }

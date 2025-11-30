@@ -2,165 +2,226 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { QuinceaneraWithNames } from '@/lib/actions/quinceaneras'
+import type { QuinceaneraWithNames, QuinceaneraStats } from '@/lib/actions/quinceaneras'
+import { deleteQuinceanera } from '@/lib/actions/quinceaneras'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { FormSectionCard } from "@/components/form-section-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, BookHeart, Calendar, Search, Filter, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { ListViewCard } from "@/components/list-view-card"
+import { Plus, BookHeart, Filter } from "lucide-react"
+import { toast } from "sonner"
+import { MODULE_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
+import { toLocalDateString } from "@/lib/utils/formatters"
+import { useListFilters } from "@/hooks/use-list-filters"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { MODULE_STATUS_VALUES } from "@/lib/constants"
-import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
-import { formatDatePretty, formatTime } from "@/lib/utils/formatters"
-
-interface Stats {
-  total: number
-  filtered: number
-}
+  buildAvatarColumn,
+  buildWhoColumn,
+  buildWhenColumn,
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface QuinceanerasListClientProps {
   initialData: QuinceaneraWithNames[]
-  stats: Stats
+  stats: QuinceaneraStats
 }
 
 export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Get current filter values from URL
-  const selectedStatus = searchParams.get('status') || 'all'
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/quinceaneras',
+    defaultFilters: { status: 'all', sort: 'date_asc' }
+  })
 
-  // Update URL with new filter values
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value && value !== 'all') {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total Quinceañeras' },
+    { value: stats.upcoming, label: 'Upcoming' },
+    { value: stats.past, label: 'Past' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [quinceaneraToDelete, setQuinceaneraToDelete] = useState<QuinceaneraWithNames | null>(null)
+
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
+    setSearchValue('')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!quinceaneraToDelete) return
+
+    try {
+      await deleteQuinceanera(quinceaneraToDelete.id)
+      toast.success('Quinceañera deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete quinceañera:', error)
+      toast.error('Failed to delete quinceañera. Please try again.')
+      throw error
     }
-    const newUrl = `/quinceaneras${params.toString() ? `?${params.toString()}` : ''}`
-    router.push(newUrl)
   }
 
-  const clearSearch = () => {
-    setSearchValue('')
-    updateFilters('search', '')
-  }
-
-  const clearFilters = () => {
-    setSearchValue('')
-    router.push('/quinceaneras')
-  }
-
-  const hasActiveFilters = searchValue || selectedStatus !== 'all'
+  // Define table columns using column builders
+  const columns = [
+    buildAvatarColumn<QuinceaneraWithNames>({
+      people: (quinceanera) => quinceanera.quinceanera ? [{
+        id: quinceanera.quinceanera.id,
+        first_name: quinceanera.quinceanera.first_name,
+        last_name: quinceanera.quinceanera.last_name,
+        full_name: quinceanera.quinceanera.full_name,
+        avatar_url: quinceanera.quinceanera.avatar_url
+      }] : [],
+      type: 'single',
+      size: 'md',
+      hiddenOn: 'sm'
+    }),
+    buildWhoColumn<QuinceaneraWithNames>({
+      getName: (quinceanera) => quinceanera.quinceanera?.full_name || '',
+      getStatus: (quinceanera) => quinceanera.status || 'PLANNING',
+      fallback: 'No quinceañera assigned',
+      sortable: true
+    }),
+    buildWhenColumn<QuinceaneraWithNames>({
+      getDate: (quinceanera) => quinceanera.quinceanera_event?.start_date || null,
+      getTime: (quinceanera) => quinceanera.quinceanera_event?.start_time || null,
+      sortable: true
+    }),
+    buildWhereColumn<QuinceaneraWithNames>({
+      getLocation: (quinceanera) => quinceanera.quinceanera_event?.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<QuinceaneraWithNames>({
+      baseUrl: '/quinceaneras',
+      onDelete: (quinceanera) => {
+        setQuinceaneraToDelete(quinceanera)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (quinceanera) =>
+        `Are you sure you want to delete the quinceañera for ${quinceanera.quinceanera?.full_name || 'this person'}?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard modulePlural="Quinceañeras" moduleSingular="Quinceañera">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by quinceañera or family contact name..."
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value)
-                updateFilters('search', e.target.value)
-              }}
-              className="pl-10 pr-10"
-            />
-            {searchValue && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select value={selectedStatus} onValueChange={(value) => updateFilters('status', value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                {MODULE_STATUS_VALUES.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {getStatusLabel(status, 'en')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by quinceañera or family contact name..."
+            className="w-full"
+          />
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            statusFilter={{
+              value: filters.getFilterValue('status'),
+              onChange: (value) => filters.updateFilter('status', value),
+              statusValues: MODULE_STATUS_VALUES
+            }}
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: STANDARD_SORT_OPTIONS
+            }}
+            dateRangeFilter={{
+              startDate: startDate,
+              endDate: endDate,
+              onStartDateChange: (date) => {
+                setStartDate(date)
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
+                setEndDate(date)
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
       </SearchCard>
 
-      {/* Quinceaneras List */}
+      {/* Quinceañeras Table */}
       {initialData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.map((quinceanera) => (
-            <ListViewCard
-              key={quinceanera.id}
-              title="Quinceañera"
-              editHref={`/quinceaneras/${quinceanera.id}/edit`}
-              viewHref={`/quinceaneras/${quinceanera.id}`}
-              viewButtonText="Preview"
-              status={quinceanera.status}
-              statusType="module"
-              language={quinceanera.quinceanera_event?.language || undefined}
-              datetime={quinceanera.quinceanera_event?.start_date ? {
-                date: quinceanera.quinceanera_event.start_date,
-                time: quinceanera.quinceanera_event.start_time || undefined
-              } : undefined}
-            >
-              <div className="text-sm space-y-1">
-                {quinceanera.quinceanera && (
-                  <p className="text-muted-foreground">
-                    <span className="font-medium">Quinceañera:</span> {quinceanera.quinceanera.first_name} {quinceanera.quinceanera.last_name}
-                  </p>
-                )}
-                {quinceanera.family_contact && (
-                  <p className="text-muted-foreground hidden md:block">
-                    <span className="font-medium">Family Contact:</span> {quinceanera.family_contact.first_name} {quinceanera.family_contact.last_name}
-                  </p>
-                )}
-              </div>
-
-              {quinceanera.note && (
-                <p className="text-sm text-muted-foreground line-clamp-2 hidden md:block">
-                  {quinceanera.note}
-                </p>
-              )}
-            </ListViewCard>
-          ))}
-        </div>
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(quinceanera) => quinceanera.id}
+            onRowClick={(quinceanera) => router.push(`/quinceaneras/${quinceanera.id}`)}
+            emptyState={{
+              icon: <BookHeart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No quinceañeras found' : 'No quinceañeras yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search or filters to find more quinceañeras.'
+                : 'Create your first quinceañera to start managing celebrations in your parish.',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/quinceaneras/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Quinceañera
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <BookHeart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No quinceañeras found'
-              : 'No quinceañeras yet'
-            }
+            {hasActiveFilters ? 'No quinceañeras found' : 'No quinceañeras yet'}
           </h3>
           <p className="text-muted-foreground mb-6">
             {hasActiveFilters
               ? 'Try adjusting your search or filters to find more quinceañeras.'
-              : 'Create your first quinceañera to start managing quinceañera celebrations in your parish.'
-            }
+              : 'Create your first quinceañera to start managing celebrations in your parish.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
@@ -170,7 +231,7 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
               </Link>
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
@@ -181,19 +242,22 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <FormSectionCard title="Quinceañera Overview">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Quinceañeras</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.filtered}</div>
-              <div className="text-sm text-muted-foreground">Filtered Results</div>
-            </div>
-          </div>
-        </FormSectionCard>
+        <ListStatsBar title="Quinceañera Overview" stats={statsList} />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Quinceañera"
+        description={
+          quinceaneraToDelete
+            ? `Are you sure you want to delete the quinceañera for ${quinceaneraToDelete.quinceanera?.full_name || 'this person'}? This action cannot be undone.`
+            : 'Are you sure you want to delete this quinceañera? This action cannot be undone.'
+        }
+        actionLabel="Delete"
+      />
     </div>
   )
 }
