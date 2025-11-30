@@ -11,6 +11,10 @@ ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
 COMMENT ON COLUMN people.avatar_url IS 'Storage path to profile photo in person-avatars bucket (e.g., parish_id/person_id.jpg)';
 
+-- Fix sex column CHECK constraint to use uppercase values matching constants
+ALTER TABLE people DROP CONSTRAINT IF EXISTS people_sex_check;
+ALTER TABLE people ADD CONSTRAINT people_sex_check CHECK (sex IN ('MALE', 'FEMALE'));
+
 -- ============================================================================
 -- 2. STORAGE BUCKET RLS POLICIES
 -- Note: The bucket "person-avatars" must be created manually via Supabase Dashboard

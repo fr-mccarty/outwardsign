@@ -169,7 +169,7 @@ BEGIN
     'Springfield',
     'IL',
     '62701',
-    'Female',
+    'FEMALE',
     'Bride for sample wedding'
   ) RETURNING id INTO v_bride_id;
 
@@ -185,7 +185,7 @@ BEGIN
     'Springfield',
     'IL',
     '62702',
-    'Male',
+    'MALE',
     'Groom for sample wedding'
   ) RETURNING id INTO v_groom_id;
 
@@ -201,7 +201,7 @@ BEGIN
     'Springfield',
     'IL',
     '62710',
-    'Female',
+    'FEMALE',
     'Second bride for sample wedding'
   ) RETURNING id INTO v_bride_2_id;
 
@@ -217,7 +217,7 @@ BEGIN
     'Springfield',
     'IL',
     '62711',
-    'Male',
+    'MALE',
     'Second groom for sample wedding'
   ) RETURNING id INTO v_groom_2_id;
 
@@ -233,7 +233,7 @@ BEGIN
     'Springfield',
     'IL',
     '62703',
-    'Female',
+    'FEMALE',
     'Deceased for sample funeral'
   ) RETURNING id INTO v_deceased_id;
 
@@ -249,7 +249,7 @@ BEGIN
     'Springfield',
     'IL',
     '62703',
-    'Male',
+    'MALE',
     'Family contact for sample funeral'
   ) RETURNING id INTO v_family_contact_id;
 
@@ -265,7 +265,7 @@ BEGIN
     'Springfield',
     'IL',
     '62704',
-    'Female',
+    'FEMALE',
     'Quinceañera for sample celebration'
   ) RETURNING id INTO v_quinceanera_person_id;
 
@@ -281,7 +281,7 @@ BEGIN
     'Springfield',
     'IL',
     '62705',
-    'Female',
+    'FEMALE',
     'Child for sample baptism'
   ) RETURNING id INTO v_child_baptism_id;
 
@@ -297,7 +297,7 @@ BEGIN
     'Springfield',
     'IL',
     '62706',
-    'Male',
+    'MALE',
     'Child for sample presentation'
   ) RETURNING id INTO v_child_presentation_id;
 
@@ -313,7 +313,7 @@ BEGIN
     'Springfield',
     'IL',
     '62705',
-    'Female',
+    'FEMALE',
     'Mother for sample baptism and presentation'
   ) RETURNING id INTO v_mother_id;
 
@@ -329,7 +329,7 @@ BEGIN
     'Springfield',
     'IL',
     '62705',
-    'Male',
+    'MALE',
     'Father for sample baptism and presentation'
   ) RETURNING id INTO v_father_id;
 
@@ -345,7 +345,7 @@ BEGIN
     'Springfield',
     'IL',
     '62707',
-    'Female',
+    'FEMALE',
     'Godmother for sample baptism'
   ) RETURNING id INTO v_sponsor_1_id;
 
@@ -361,7 +361,7 @@ BEGIN
     'Springfield',
     'IL',
     '62708',
-    'Male',
+    'MALE',
     'Godfather for sample baptism'
   ) RETURNING id INTO v_sponsor_2_id;
 
@@ -377,7 +377,7 @@ BEGIN
     'Springfield',
     'IL',
     '62709',
-    'Male',
+    'MALE',
     'Parish priest and presider'
   ) RETURNING id INTO v_presider_id;
 
@@ -393,7 +393,7 @@ BEGIN
     'Springfield',
     'IL',
     '62709',
-    'Male',
+    'MALE',
     'Deacon and homilist'
   ) RETURNING id INTO v_homilist_id;
 
@@ -409,7 +409,7 @@ BEGIN
     'Springfield',
     'IL',
     '62709',
-    'Female',
+    'FEMALE',
     'Wedding and liturgy coordinator'
   ) RETURNING id INTO v_coordinator_id;
 
@@ -425,7 +425,7 @@ BEGIN
     'Springfield',
     'IL',
     '62710',
-    'Male',
+    'MALE',
     'Music director and organist'
   ) RETURNING id INTO v_lead_musician_id;
 
@@ -441,7 +441,7 @@ BEGIN
     'Springfield',
     'IL',
     '62711',
-    'Female',
+    'FEMALE',
     'Parish cantor and soloist'
   ) RETURNING id INTO v_cantor_id;
 
@@ -457,7 +457,7 @@ BEGIN
     'Springfield',
     'IL',
     '62712',
-    'Male',
+    'MALE',
     'First reading lector'
   ) RETURNING id INTO v_first_reader_id;
 
@@ -473,7 +473,7 @@ BEGIN
     'Springfield',
     'IL',
     '62713',
-    'Female',
+    'FEMALE',
     'Second reading lector'
   ) RETURNING id INTO v_second_reader_id;
 
@@ -489,7 +489,7 @@ BEGIN
     'Springfield',
     'IL',
     '62714',
-    'Male',
+    'MALE',
     'Psalm lector'
   ) RETURNING id INTO v_psalm_reader_id;
 
@@ -508,7 +508,7 @@ BEGIN
     'Springfield',
     'IL',
     '62715',
-    'Female',
+    'FEMALE',
     'Petition reader'
   ) RETURNING id INTO v_petition_reader_id;
 
@@ -524,7 +524,7 @@ BEGIN
     'Springfield',
     'IL',
     '62716',
-    'Male',
+    'MALE',
     'Best man and witness'
   ) RETURNING id INTO v_witness_1_id;
 
@@ -540,7 +540,7 @@ BEGIN
     'Springfield',
     'IL',
     '62717',
-    'Female',
+    'FEMALE',
     'Maid of honor and witness'
   ) RETURNING id INTO v_witness_2_id;
 
@@ -559,7 +559,7 @@ BEGIN
     'Springfield',
     'IL',
     '62718',
-    'Female',
+    'FEMALE',
     'Requested mass intention for deceased husband'
   ) RETURNING id INTO v_requested_by_id;
 

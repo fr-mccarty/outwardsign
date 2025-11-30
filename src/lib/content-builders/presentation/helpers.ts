@@ -9,6 +9,7 @@ import {
   formatEventSubtitleEnglish,
   formatEventSubtitleSpanish
 } from '@/lib/utils/formatters'
+import { type Sex } from '@/lib/constants'
 
 // ============================================================================
 // NAME HELPERS
@@ -89,8 +90,8 @@ export function getFatherNameBilingual(presentation: PresentationWithRelations):
 /**
  * Get child's sex with fallback
  */
-export function getChildSex(presentation: PresentationWithRelations): 'Male' | 'Female' {
-  return presentation.child?.sex || 'Male'
+export function getChildSex(presentation: PresentationWithRelations): Sex {
+  return presentation.child?.sex || 'MALE'
 }
 
 /**

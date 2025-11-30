@@ -12,6 +12,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import * as fs from 'fs'
+import * as path from 'path'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -46,6 +48,30 @@ async function seedDevData() {
   console.log('=' .repeat(60))
   console.log('🌱 Development Database Seeding')
   console.log('=' .repeat(60))
+  console.log('')
+
+  // Create storage buckets (needed for person avatars, etc.)
+  console.log('🪣 Creating storage buckets...')
+
+  const bucketsToCreate = [
+    { id: 'person-avatars', name: 'person-avatars', public: false }
+  ]
+
+  for (const bucket of bucketsToCreate) {
+    const { error } = await supabase.storage.createBucket(bucket.id, {
+      public: bucket.public
+    })
+
+    if (error) {
+      if (error.message.includes('already exists')) {
+        console.log(`   ✅ Bucket "${bucket.id}" already exists`)
+      } else {
+        console.error(`   ❌ Error creating bucket "${bucket.id}":`, error)
+      }
+    } else {
+      console.log(`   ✅ Created bucket: ${bucket.id}`)
+    }
+  }
   console.log('')
 
   // Check if dev user exists, create if not
@@ -288,7 +314,7 @@ async function seedDevData() {
         last_name: 'Doe',
         email: 'john.doe@example.com',
         phone_number: '(555) 123-4567',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[0 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -297,7 +323,7 @@ async function seedDevData() {
         last_name: 'Smith',
         email: 'jane.smith@example.com',
         phone_number: '(555) 987-6543',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[1 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -306,7 +332,7 @@ async function seedDevData() {
         last_name: 'Johnson',
         email: 'bob.johnson@example.com',
         phone_number: '(555) 246-8101',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[2 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -315,7 +341,7 @@ async function seedDevData() {
         last_name: 'Garcia',
         email: 'maria.garcia@example.com',
         phone_number: '(555) 369-1214',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[3 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -324,7 +350,7 @@ async function seedDevData() {
         last_name: 'Chen',
         email: 'michael.chen@example.com',
         phone_number: '(555) 482-1357',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[4 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -333,7 +359,7 @@ async function seedDevData() {
         last_name: 'Williams',
         email: 'sarah.williams@example.com',
         phone_number: '(555) 159-2634',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[5 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -342,7 +368,7 @@ async function seedDevData() {
         last_name: 'Martinez',
         email: 'david.martinez@example.com',
         phone_number: '(555) 753-9514',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[6 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -351,7 +377,7 @@ async function seedDevData() {
         last_name: 'Taylor',
         email: 'emily.taylor@example.com',
         phone_number: '(555) 951-7532',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[7 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -360,7 +386,7 @@ async function seedDevData() {
         last_name: 'Anderson',
         email: 'james.anderson@example.com',
         phone_number: '(555) 357-1593',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[8 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -369,7 +395,7 @@ async function seedDevData() {
         last_name: 'Brown',
         email: 'lisa.brown@example.com',
         phone_number: '(555) 753-8642',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[9 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -378,7 +404,7 @@ async function seedDevData() {
         last_name: 'Wilson',
         email: 'robert.wilson@example.com',
         phone_number: '(555) 951-3578',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[10 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -387,7 +413,7 @@ async function seedDevData() {
         last_name: 'Moore',
         email: 'patricia.moore@example.com',
         phone_number: '(555) 159-7534',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[11 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -396,7 +422,7 @@ async function seedDevData() {
         last_name: 'Lee',
         email: 'thomas.lee@example.com',
         phone_number: '(555) 357-9512',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[12 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -405,7 +431,7 @@ async function seedDevData() {
         last_name: 'White',
         email: 'jennifer.white@example.com',
         phone_number: '(555) 753-1596',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[13 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -414,7 +440,7 @@ async function seedDevData() {
         last_name: 'Harris',
         email: 'christopher.harris@example.com',
         phone_number: '(555) 951-7538',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[14 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -423,7 +449,7 @@ async function seedDevData() {
         last_name: 'Clark',
         email: 'linda.clark@example.com',
         phone_number: '(555) 159-3574',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[15 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -432,7 +458,7 @@ async function seedDevData() {
         last_name: 'Rodriguez',
         email: 'daniel.rodriguez@example.com',
         phone_number: '(555) 357-7539',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[16 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -441,7 +467,7 @@ async function seedDevData() {
         last_name: 'Lewis',
         email: 'barbara.lewis@example.com',
         phone_number: '(555) 753-9516',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[17 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -450,7 +476,7 @@ async function seedDevData() {
         last_name: 'Walker',
         email: 'matthew.walker@example.com',
         phone_number: '(555) 951-1597',
-        sex: 'Male',
+        sex: 'MALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[18 % weekendMassTimeItems.length].id] : []
       },
       {
@@ -459,7 +485,7 @@ async function seedDevData() {
         last_name: 'Hall',
         email: 'nancy.hall@example.com',
         phone_number: '(555) 159-7535',
-        sex: 'Female',
+        sex: 'FEMALE',
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[19 % weekendMassTimeItems.length].id] : []
       },
     ])
@@ -600,6 +626,70 @@ async function seedDevData() {
         }
       }
     }
+  }
+
+  // Upload sample avatar images for people created by seed_modules.sql
+  console.log('')
+  console.log('🖼️  Uploading sample avatar images...')
+
+  // Define which people should get avatars (from seed_modules.sql)
+  const avatarAssignments = [
+    { firstName: 'Father John', lastName: "O'Brien", imageFile: 'fr-josh.webp' },
+    { firstName: 'James', lastName: 'Smith', imageFile: 'joe.webp' }
+  ]
+
+  for (const assignment of avatarAssignments) {
+    // Find the person
+    const { data: person, error: personError } = await supabase
+      .from('people')
+      .select('id')
+      .eq('parish_id', parishId)
+      .eq('first_name', assignment.firstName)
+      .eq('last_name', assignment.lastName)
+      .single()
+
+    if (personError || !person) {
+      console.log(`   ⚠️  Could not find ${assignment.firstName} ${assignment.lastName}`)
+      continue
+    }
+
+    // Read the image file from public/team/
+    const imagePath = path.join(process.cwd(), 'public', 'team', assignment.imageFile)
+
+    if (!fs.existsSync(imagePath)) {
+      console.log(`   ⚠️  Image file not found: ${imagePath}`)
+      continue
+    }
+
+    const imageBuffer = fs.readFileSync(imagePath)
+    const fileExtension = path.extname(assignment.imageFile)
+    const storagePath = `${parishId}/${person.id}${fileExtension}`
+
+    // Upload to storage bucket
+    const { error: uploadError } = await supabase.storage
+      .from('person-avatars')
+      .upload(storagePath, imageBuffer, {
+        contentType: fileExtension === '.webp' ? 'image/webp' : 'image/jpeg',
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error(`   ❌ Error uploading avatar for ${assignment.firstName} ${assignment.lastName}:`, uploadError)
+      continue
+    }
+
+    // Update the person's avatar_url
+    const { error: updateError } = await supabase
+      .from('people')
+      .update({ avatar_url: storagePath })
+      .eq('id', person.id)
+
+    if (updateError) {
+      console.error(`   ❌ Error updating avatar_url for ${assignment.firstName} ${assignment.lastName}:`, updateError)
+      continue
+    }
+
+    console.log(`   ✅ Uploaded avatar for ${assignment.firstName} ${assignment.lastName}`)
   }
 
   console.log('')

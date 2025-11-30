@@ -103,8 +103,8 @@ export function EventPickerField({
         icon={Calendar}
         renderValue={(event) => (
           <div className="flex flex-col gap-0.5">
-            <span className="font-medium leading-tight">{event.name}</span>
-            <span className="text-xs text-muted-foreground leading-tight">{formatEventDateTime(event)}</span>
+            <span className="font-medium leading-tight">{formatEventDateTime(event)}</span>
+            <span className="text-xs text-muted-foreground leading-tight">{event.name}</span>
           </div>
         )}
         displayLayout="multi-line"

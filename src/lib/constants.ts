@@ -1179,6 +1179,15 @@ export const HOME_PAGE_TRANSLATIONS = {
   }
 }
 
+// Person Photo Upload Constants
+// Maximum file size for person profile photos (5MB in bytes)
+export const PERSON_PHOTO_MAX_FILE_SIZE = 5 * 1024 * 1024
+// Allowed MIME types for profile photos
+export const PERSON_PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+// Target dimensions for cropped profile photos (square)
+export const PERSON_PHOTO_TARGET_WIDTH = 400
+export const PERSON_PHOTO_TARGET_HEIGHT = 400
+
 // Liturgical Calendar Constants
 // Total width (in pixels) for liturgical color bars across all calendar views
 // Individual bar width = LITURGICAL_COLOR_BAR_TOTAL_WIDTH / number of colors

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { SEX_VALUES } from '@/lib/constants'
 
 // Create person schema
 export const createPersonSchema = z.object({
@@ -12,7 +13,7 @@ export const createPersonSchema = z.object({
   city: z.string().optional().nullable(),
   state: z.string().optional().nullable(),
   zipcode: z.string().optional().nullable(),
-  sex: z.enum(['Male', 'Female']).optional().nullable(),
+  sex: z.enum(SEX_VALUES).optional().nullable(),
   note: z.string().optional().nullable(),
   avatar_url: z.string().optional().nullable(),  // Storage path to profile photo
   mass_times_template_item_ids: z.array(z.string()).optional().nullable(),

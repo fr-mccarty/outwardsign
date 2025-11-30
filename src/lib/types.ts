@@ -1,4 +1,4 @@
-import type { LiturgicalLanguage, ModuleStatus, ReadingCategory, MassStatus, MassIntentionStatus } from './constants'
+import type { LiturgicalLanguage, ModuleStatus, ReadingCategory, MassStatus, MassIntentionStatus, Sex } from './constants'
 
 export interface Petition {
   id: string
@@ -349,7 +349,7 @@ export interface Person {
   city?: string
   state?: string
   zipcode?: string
-  sex?: 'Male' | 'Female'
+  sex?: Sex
   note?: string
   avatar_url?: string  // Storage path to profile photo in person-avatars bucket
   mass_times_template_item_ids?: string[]

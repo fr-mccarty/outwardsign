@@ -5,7 +5,7 @@
  */
 
 import { Person } from '@/lib/types'
-import { MODULE_STATUS_LABELS } from '@/lib/constants'
+import { MODULE_STATUS_LABELS, type Sex } from '@/lib/constants'
 
 // ============================================================================
 // GENDERED TEXT HELPERS
@@ -17,7 +17,7 @@ import { MODULE_STATUS_LABELS } from '@/lib/constants'
  * @param person - Person object with optional sex field
  * @param maleText - Text to return if person is male
  * @param femaleText - Text to return if person is female
- * @param defaultSex - Default sex to use if person.sex is undefined (defaults to 'Male')
+ * @param defaultSex - Default sex to use if person.sex is undefined (defaults to 'MALE')
  * @returns The appropriate gendered text
  *
  * @example
@@ -28,10 +28,10 @@ export function gendered(
   person: Person | null | undefined,
   maleText: string,
   femaleText: string,
-  defaultSex: 'Male' | 'Female' = 'Male'
+  defaultSex: Sex = 'MALE'
 ): string {
   const sex = person?.sex ?? defaultSex
-  return sex === 'Male' ? maleText : femaleText
+  return sex === 'MALE' ? maleText : femaleText
 }
 
 // ============================================================================

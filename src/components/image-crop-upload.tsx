@@ -14,6 +14,12 @@ import {
 import { Label } from '@/components/ui/label'
 import { Upload, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  PERSON_PHOTO_MAX_FILE_SIZE,
+  PERSON_PHOTO_ALLOWED_TYPES,
+  PERSON_PHOTO_TARGET_WIDTH,
+  PERSON_PHOTO_TARGET_HEIGHT,
+} from '@/lib/constants'
 
 interface ImageCropUploadProps {
   currentImageUrl?: string | null
@@ -26,13 +32,8 @@ interface ImageCropUploadProps {
   targetWidth?: number
   targetHeight?: number
   fallbackInitials?: string
+  maxFileSize?: number
 }
-
-// Maximum file size in bytes (5MB)
-const MAX_FILE_SIZE = 5 * 1024 * 1024
-
-// Allowed MIME types
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 // Create image from canvas with cropped area
 async function getCroppedImg(
@@ -90,9 +91,10 @@ export function ImageCropUpload({
   description,
   disabled = false,
   aspectRatio = 1,
-  targetWidth = 400,
-  targetHeight = 400,
+  targetWidth = PERSON_PHOTO_TARGET_WIDTH,
+  targetHeight = PERSON_PHOTO_TARGET_HEIGHT,
   fallbackInitials = '?',
+  maxFileSize = PERSON_PHOTO_MAX_FILE_SIZE,
 }: ImageCropUploadProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null)
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 })
@@ -115,13 +117,14 @@ export function ImageCropUpload({
     e.target.value = ''
 
     // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error('File size must be under 5MB')
+    if (file.size > maxFileSize) {
+      const maxSizeMB = Math.round(maxFileSize / (1024 * 1024))
+      toast.error(`File size must be under ${maxSizeMB}MB`)
       return
     }
 
     // Validate file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (!PERSON_PHOTO_ALLOWED_TYPES.includes(file.type as typeof PERSON_PHOTO_ALLOWED_TYPES[number])) {
       toast.error('Only JPEG, PNG, and WebP images are supported')
       return
     }
@@ -138,7 +141,7 @@ export function ImageCropUpload({
       toast.error('Failed to read file')
     }
     reader.readAsDataURL(file)
-  }, [])
+  }, [maxFileSize])
 
   const handleCropSave = useCallback(async () => {
     if (!imageSrc || !croppedAreaPixels) return

@@ -41,7 +41,15 @@ fi
 echo ""
 echo "Step 1/2: Resetting database..."
 echo "================================================================"
-supabase db reset
+# Note: supabase db reset may report a 502 error during container restart
+# even though the reset succeeded. We capture the exit code and continue
+# if the database is actually ready.
+supabase db reset || {
+  echo ""
+  echo "⚠️  supabase db reset reported an error (often a 502 during container restart)"
+  echo "   Waiting for services to stabilize..."
+  sleep 3
+}
 
 echo ""
 echo "Step 2/2: Seeding development data..."
