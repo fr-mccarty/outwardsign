@@ -1,5 +1,5 @@
-import { Loading } from '@/components/loading'
+import { ViewPageLoading } from "@/components/view-page-loading"
 
-export default function BaptismLoading() {
-  return <Loading variant="route" />
+export default function Loading() {
+  return <ViewPageLoading />
 }

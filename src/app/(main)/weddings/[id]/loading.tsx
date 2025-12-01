@@ -1,5 +1,5 @@
-import { Loading } from '@/components/loading'
+import { ViewPageLoading } from "@/components/view-page-loading"
 
-export default function WeddingLoading() {
-  return <Loading variant="route" />
+export default function Loading() {
+  return <ViewPageLoading />
 }
