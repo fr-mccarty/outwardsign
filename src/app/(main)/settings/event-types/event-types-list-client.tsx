@@ -198,7 +198,7 @@ export function EventTypesListClient({ initialData }: EventTypesListClientProps)
     <PageContainer
       title="Event Types"
       description="Manage custom event types for your parish. Drag to reorder."
-      actions={
+      primaryAction={
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Add Event Type

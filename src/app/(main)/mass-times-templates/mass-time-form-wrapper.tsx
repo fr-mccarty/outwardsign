@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleViewButton } from '@/components/module-view-button'
 import { MassTimeForm } from './mass-time-form'
 import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 import type { MassTimesTemplateItem } from '@/lib/actions/mass-times-template-items'
@@ -24,20 +23,18 @@ export function MassTimeFormWrapper({ massTime, items, title, description }: Mas
     ? 'Edit mass times template details.'
     : 'Create a new mass times template for different seasons or periods.'
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Template" href={`/mass-times-templates/${massTime.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Template" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title || defaultTitle}
       description={description || defaultDescription}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Template" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Mass Times Template',
+          href: `/mass-times-templates/${massTime.id}`
+        }
+      ] : undefined}
     >
       <MassTimeForm massTime={massTime} items={items} formId={formId} onLoadingChange={setIsLoading} />
     </PageContainer>

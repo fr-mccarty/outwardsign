@@ -15,6 +15,7 @@ interface EventTypePickerFieldProps {
   description?: string
   placeholder?: string
   openToNewEventType?: boolean
+  error?: string
 }
 
 export function EventTypePickerField({
@@ -27,6 +28,7 @@ export function EventTypePickerField({
   description,
   placeholder = "Select an event type...",
   openToNewEventType = false,
+  error,
 }: EventTypePickerFieldProps) {
   const handleSelect = (eventType: EventType) => {
     onValueChange(eventType)
@@ -45,6 +47,7 @@ export function EventTypePickerField({
       placeholder={placeholder}
       icon={Tag}
       renderValue={(eventType) => eventType.name}
+      error={error}
     >
       <EventTypePicker
         open={showPicker}

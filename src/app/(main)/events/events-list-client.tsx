@@ -8,6 +8,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
@@ -140,7 +141,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Events" moduleSingular="Event">
+      <SearchCard title="Search Events">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -153,58 +154,21 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
             className="w-full"
           />
 
-          {/* Date Range and Sort Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="start-date" className="block text-sm font-medium mb-1.5">
-                From Date
-              </label>
-              <input
-                id="start-date"
-                type="date"
-                value={startDate ? toLocalDateString(startDate) : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined
-                  setStartDate(newDate)
-                  filters.updateFilter('start_date', e.target.value)
-                }}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            <div>
-              <label htmlFor="end-date" className="block text-sm font-medium mb-1.5">
-                To Date
-              </label>
-              <input
-                id="end-date"
-                type="date"
-                value={endDate ? toLocalDateString(endDate) : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined
-                  setEndDate(newDate)
-                  filters.updateFilter('end_date', e.target.value)
-                }}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            <div>
-              <label htmlFor="sort" className="block text-sm font-medium mb-1.5">
-                Sort By
-              </label>
-              <select
-                id="sort"
-                value={filters.getFilterValue('sort')}
-                onChange={(e) => filters.updateFilter('sort', e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {STANDARD_SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            dateRangeFilter={{
+              startDate: startDate,
+              endDate: endDate,
+              onStartDateChange: (date) => {
+                setStartDate(date)
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
+                setEndDate(date)
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
       </SearchCard>
 

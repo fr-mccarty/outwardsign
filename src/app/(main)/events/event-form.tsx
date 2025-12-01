@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
@@ -64,6 +64,9 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
   const location = usePickerState<Location>()
   const eventType = usePickerState<EventType>()
 
+  // Error state for eventType picker
+  const [eventTypeError, setEventTypeError] = useState<string | undefined>()
+
   // Notify parent component of loading state changes
   useEffect(() => {
     onLoadingChange?.(isSubmitting)
@@ -94,11 +97,16 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
 
   useEffect(() => {
     setValue("event_type_id", eventType.value?.id || undefined)
+    // Clear error when eventType is selected
+    if (eventType.value) {
+      setEventTypeError(undefined)
+    }
   }, [eventType.value, setValue])
 
   const onSubmit = async (data: CreateEventData) => {
     // Validate required fields
     if (!eventType.value && !event?.related_event_type) {
+      setEventTypeError('Please select an event type')
       toast.error('Please select an event type')
       return
     }
@@ -166,6 +174,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             onShowPickerChange={eventType.setShowPicker}
             required
             description="Select or create an event type"
+            error={eventTypeError}
           />
         )}
 

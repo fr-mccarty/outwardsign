@@ -39,7 +39,7 @@ export default async function MassRoleMembersPage({ searchParams }: PageProps) {
     <PageContainer
       title="Mass Role Directory"
       description="View and manage people serving in liturgical roles."
-      actions={<MassRoleMembersActions massRoles={massRoles} allPeople={allPeople} />}
+      primaryAction={<MassRoleMembersActions massRoles={massRoles} allPeople={allPeople} />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassRoleMembersListClient

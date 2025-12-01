@@ -24,20 +24,18 @@ export function QuinceaneraFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!quinceanera
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Quinceañera" href={`/quinceaneras/${quinceanera.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Quinceañera" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Quinceañera" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Quinceañera',
+          href: `/quinceaneras/${quinceanera.id}`
+        }
+      ] : undefined}
     >
       <QuinceaneraForm
         quinceanera={quinceanera}

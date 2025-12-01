@@ -39,7 +39,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/weddings',
-    defaultFilters: { status: 'all', sort: 'date_asc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
   // Local state for search value (synced with URL)
@@ -108,6 +108,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
       hiddenOn: 'sm'
     }),
     buildWhoColumn<WeddingWithNames>({
+      header: 'Couple',
       getName: (wedding) => {
         const brideName = wedding.bride?.full_name
         const groomName = wedding.groom?.full_name
@@ -141,7 +142,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Weddings" moduleSingular="Wedding">
+      <SearchCard title="Search Weddings">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -160,11 +161,6 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
               value: filters.getFilterValue('status'),
               onChange: (value) => filters.updateFilter('status', value),
               statusValues: MODULE_STATUS_VALUES
-            }}
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: STANDARD_SORT_OPTIONS
             }}
             dateRangeFilter={{
               startDate: startDate,

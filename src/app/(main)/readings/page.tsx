@@ -51,7 +51,7 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Readings"
       description="Manage your collection of scripture readings and liturgical texts."
-      actions={<ModuleCreateButton moduleName="Reading" href="/readings/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Reading" href="/readings/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <ReadingsListClient initialData={readings} stats={stats} />

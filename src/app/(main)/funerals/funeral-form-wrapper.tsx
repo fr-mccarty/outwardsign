@@ -24,20 +24,18 @@ export function FuneralFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!funeral
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Funeral" href={`/funerals/${funeral.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Funeral" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Funeral" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Funeral',
+          href: `/funerals/${funeral.id}`
+        }
+      ] : undefined}
     >
       <FuneralForm
         funeral={funeral}

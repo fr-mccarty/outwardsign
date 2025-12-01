@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { MassIntentionForm } from './mass-intention-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleViewButton } from '@/components/module-view-button'
 import type { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 
 interface MassIntentionFormWrapperProps {
@@ -24,20 +23,18 @@ export function MassIntentionFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!intention
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Intention" href={`/mass-intentions/${intention.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Mass Intention" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Mass Intention" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Mass Intention',
+          href: `/mass-intentions/${intention.id}`
+        }
+      ] : undefined}
     >
       <MassIntentionForm
         intention={intention}

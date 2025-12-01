@@ -38,7 +38,7 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/mass-intentions',
-    defaultFilters: { status: 'all', sort: 'date_desc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'date_desc' }
   })
 
   // Local state for search value (synced with URL)
@@ -156,7 +156,7 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Mass Intentions" moduleSingular="Mass Intention">
+      <SearchCard title="Search Mass Intentions">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -175,11 +175,6 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
               value: filters.getFilterValue('status'),
               onChange: (value) => filters.updateFilter('status', value),
               statusValues: MASS_INTENTION_STATUS_VALUES
-            }}
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: STANDARD_SORT_OPTIONS
             }}
             dateRangeFilter={{
               startDate,

@@ -48,7 +48,7 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Mass Intentions"
       description="Manage Mass intentions for your parish."
-      actions={<ModuleCreateButton moduleName="Mass Intention" href="/mass-intentions/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Mass Intention" href="/mass-intentions/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassIntentionsListClient initialData={intentions} stats={stats} />

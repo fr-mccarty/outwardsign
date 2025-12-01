@@ -42,7 +42,7 @@ export default async function LocationsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Locations"
       description="Manage parish locations."
-      actions={<ModuleCreateButton moduleName="Location" href="/locations/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Location" href="/locations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <LocationsListClient initialData={locations} stats={stats} />

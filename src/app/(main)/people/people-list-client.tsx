@@ -162,7 +162,7 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="People" moduleSingular="Person">
+      <SearchCard title="Search People">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -176,13 +176,7 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
           />
 
           {/* Advanced Search Collapsible */}
-          <AdvancedSearch
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: PEOPLE_SORT_OPTIONS
-            }}
-          />
+          <AdvancedSearch />
         </div>
       </SearchCard>
 

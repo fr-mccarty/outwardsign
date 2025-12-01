@@ -120,7 +120,7 @@ export function MassRolesListClient({ massRoles: initialData, userParish }: Mass
       }
     >
       {/* Search Card */}
-      <SearchCard modulePlural="Mass Roles" moduleSingular="Mass Role" className="mb-6">
+      <SearchCard title="Search Mass Roles" className="mb-6">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

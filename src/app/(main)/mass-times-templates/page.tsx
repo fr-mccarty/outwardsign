@@ -51,7 +51,7 @@ export default async function MassTimesPage({ searchParams }: PageProps) {
     <PageContainer
       title="Mass Times Templates"
       description="Manage mass times templates for different seasons and periods."
-      actions={
+      primaryAction={
         <Button asChild>
           <Link href="/mass-times-templates/create">
             <Plus className="h-4 w-4 mr-2" />

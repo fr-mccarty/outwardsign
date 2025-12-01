@@ -2534,4 +2534,67 @@ Apply standardized pattern to remaining modules in priority order:
 
 ---
 
+### Phase 3.1: UI/UX Polish - ✅ COMPLETE
+
+**Date:** 2025-11-30
+**Goal:** Post-rollout improvements based on user feedback
+
+**Completed Tasks:**
+
+1. **✅ PageContainer Actions Pattern**
+   - Added `primaryAction` prop (single dark button)
+   - Added `additionalActions` prop (dropdown with 3-dot menu)
+   - Support for separators in dropdown
+   - Updated 15 list pages, 15 form wrappers, 3 settings pages
+   - Backward compatible (deprecated `actions` prop maintained)
+
+2. **✅ Module-Specific Column Headers**
+   - Baptisms: "Who" → "To Be Baptized"
+   - Funerals: "Who" → "Deceased"
+   - Masses: "Who" → "Name of Mass"
+   - Presentations: "Who" → "Child"
+   - Quinceañeras: "Who" → "Quinceañera"
+   - Weddings: "Who" → "Couple"
+
+3. **✅ Default Status Filter = ACTIVE**
+   - Changed 7 modules from `status: 'all'` to `status: 'ACTIVE'`
+   - Modules: Weddings, Baptisms, Funerals, Presentations, Quinceañeras, Masses, Mass Intentions
+   - Users can still view all statuses via Advanced Search
+
+4. **✅ Removed Sort from Advanced Search**
+   - Removed `sortFilter` from all 13 modules using AdvancedSearch
+   - Sorting now exclusively via table column headers
+   - Eliminates duplication
+
+5. **✅ SearchCard Simplification**
+   - Replaced `modulePlural`/`moduleSingular` with simple `title` prop
+   - Removed redundant description text
+   - Updated 16 list client files
+
+6. **✅ Events Module AdvancedSearch**
+   - Migrated from manual HTML inputs to AdvancedSearch component
+   - Now uses CustomDatePicker and FormInput
+   - Consistent with all other modules
+
+7. **✅ Picker Validation Errors**
+   - Added `error` prop to PickerField component
+   - Red border and error message display on validation failure
+   - Better form UX across all picker types
+
+**Technical Summary:**
+- 78 files changed
+- +4,449 lines added, -2,068 lines removed
+- Net: +2,381 lines
+- All builds passing
+
+**Key Patterns Established:**
+- Primary/secondary action hierarchy
+- Module-specific terminology
+- Default to active records
+- Single source of truth for sorting
+- Simplified search headers
+- Visual validation feedback
+
+---
+
 **END OF REQUIREMENTS DOCUMENT**

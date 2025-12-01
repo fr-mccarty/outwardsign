@@ -140,7 +140,7 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Locations" moduleSingular="Location">
+      <SearchCard title="Search Locations">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -154,13 +154,7 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
           />
 
           {/* Advanced Search Collapsible */}
-          <AdvancedSearch
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: LOCATION_SORT_OPTIONS
-            }}
-          />
+          <AdvancedSearch />
         </div>
       </SearchCard>
 

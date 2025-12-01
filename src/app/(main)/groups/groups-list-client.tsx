@@ -130,7 +130,7 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Groups" moduleSingular="Group">
+      <SearchCard title="Search Groups">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -144,13 +144,7 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
           />
 
           {/* Advanced Search Collapsible */}
-          <AdvancedSearch
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: GROUP_SORT_OPTIONS
-            }}
-          />
+          <AdvancedSearch />
         </div>
       </SearchCard>
 

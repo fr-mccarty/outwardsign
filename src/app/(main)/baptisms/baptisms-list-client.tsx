@@ -39,7 +39,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/baptisms',
-    defaultFilters: { status: 'all', sort: 'date_asc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
   // Local state for search value (synced with URL)
@@ -108,6 +108,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
       hiddenOn: 'sm'
     }),
     buildWhoColumn<BaptismWithNames>({
+      header: 'To Be Baptized',
       getName: (baptism) => baptism.child?.full_name || '',
       getStatus: (baptism) => baptism.status || 'PLANNING',
       fallback: 'No child assigned',
@@ -136,7 +137,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Baptisms" moduleSingular="Baptism">
+      <SearchCard title="Search Baptisms">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -155,11 +156,6 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
               value: filters.getFilterValue('status'),
               onChange: (value) => filters.updateFilter('status', value),
               statusValues: MODULE_STATUS_VALUES
-            }}
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: STANDARD_SORT_OPTIONS
             }}
             dateRangeFilter={{
               startDate: startDate,

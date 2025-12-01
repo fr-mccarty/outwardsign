@@ -57,7 +57,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Events"
       description="Manage parish events and activities."
-      actions={<ModuleCreateButton moduleName="Event" href="/events/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Event" href="/events/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventsListClient initialData={events} stats={stats} />

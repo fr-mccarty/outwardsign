@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { PageContainer } from "@/components/page-container"
 import { ModuleSaveButton } from "@/components/module-save-button"
-import { ModuleViewButton } from "@/components/module-view-button"
 import { MassRoleForm } from "./mass-role-form"
 import { BreadcrumbSetter } from "@/components/breadcrumb-setter"
 import { MassRoleWithRelations } from "@/lib/actions/mass-roles"
@@ -23,22 +22,20 @@ export function MassRoleFormWrapper({ massRole, breadcrumbs }: MassRoleFormWrapp
     ? "Update this mass role definition"
     : "Define a new liturgical role for Mass celebrations"
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Mass Role" href={`/mass-roles/${massRole.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Mass Role" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PageContainer
         title={title}
         description={description}
-        actions={actions}
+        primaryAction={<ModuleSaveButton moduleName="Mass Role" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+        additionalActions={isEditing ? [
+          {
+            type: 'action',
+            label: 'View Mass Role',
+            href: `/mass-roles/${massRole.id}`
+          }
+        ] : undefined}
       >
         <MassRoleForm
           massRole={massRole}

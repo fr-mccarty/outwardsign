@@ -57,7 +57,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Presentations"
       description="A Latino tradition of presenting children to God, typically at age three."
-      actions={<ModuleCreateButton moduleName="Presentation" href="/presentations/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Presentation" href="/presentations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PresentationsListClient initialData={presentations} stats={stats} />

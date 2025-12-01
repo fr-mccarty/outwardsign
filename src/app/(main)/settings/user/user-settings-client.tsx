@@ -67,7 +67,7 @@ export function UserSettingsClient({
     <PageContainer
       title="User Preferences"
       description="Customize your liturgical planning experience"
-      actions={saveButton}
+      primaryAction={saveButton}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <FormSectionCard title="Language and Preferences">

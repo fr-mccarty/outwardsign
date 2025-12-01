@@ -39,7 +39,7 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/quinceaneras',
-    defaultFilters: { status: 'all', sort: 'date_asc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
   // Local state for search value (synced with URL)
@@ -108,6 +108,7 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
       hiddenOn: 'sm'
     }),
     buildWhoColumn<QuinceaneraWithNames>({
+      header: 'Quinceañera',
       getName: (quinceanera) => quinceanera.quinceanera?.full_name || '',
       getStatus: (quinceanera) => quinceanera.status || 'PLANNING',
       fallback: 'No quinceañera assigned',
@@ -136,7 +137,7 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Quinceañeras" moduleSingular="Quinceañera">
+      <SearchCard title="Search Quinceañeras">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -155,11 +156,6 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
               value: filters.getFilterValue('status'),
               onChange: (value) => filters.updateFilter('status', value),
               statusValues: MODULE_STATUS_VALUES
-            }}
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: STANDARD_SORT_OPTIONS
             }}
             dateRangeFilter={{
               startDate: startDate,

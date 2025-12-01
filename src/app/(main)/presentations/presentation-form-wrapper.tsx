@@ -24,20 +24,18 @@ export function PresentationFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!presentation
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Presentation" href={`/presentations/${presentation.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Presentation" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Presentation" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Presentation',
+          href: `/presentations/${presentation.id}`
+        }
+      ] : undefined}
     >
       <PresentationForm
         presentation={presentation}

@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { MassForm } from './mass-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleViewButton } from '@/components/module-view-button'
 import type { MassWithRelations } from '@/lib/actions/masses'
 
 interface MassFormWrapperProps {
@@ -24,20 +23,18 @@ export function MassFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!mass
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Mass" href={`/masses/${mass.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Mass',
+          href: `/masses/${mass.id}`
+        }
+      ] : undefined}
     >
       <MassForm
         mass={mass}

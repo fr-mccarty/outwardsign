@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import Link from "next/link"
 import { Download } from "lucide-react"
 import { getPeople, type PersonFilterParams } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
@@ -57,17 +55,15 @@ export default async function PeoplePage({ searchParams }: PageProps) {
     <PageContainer
       title="Our People"
       description="Manage people in your parish."
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/api/people/csv">
-              <Download className="h-4 w-4 mr-2" />
-              Download CSV
-            </Link>
-          </Button>
-          <ModuleCreateButton moduleName="Person" href="/people/create" />
-        </div>
-      }
+      primaryAction={<ModuleCreateButton moduleName="Person" href="/people/create" />}
+      additionalActions={[
+        {
+          type: 'action',
+          label: 'Download CSV',
+          icon: <Download className="h-4 w-4" />,
+          href: '/api/people/csv'
+        }
+      ]}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <PeopleListClient initialData={people} stats={stats} />

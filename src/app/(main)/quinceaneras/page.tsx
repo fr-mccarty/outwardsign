@@ -57,7 +57,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
     <PageContainer
       title="Our Quinceañeras"
       description="A Latino tradition celebrating a young woman's 15th birthday and her faith journey."
-      actions={<ModuleCreateButton moduleName="Quinceañera" href="/quinceaneras/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Quinceañera" href="/quinceaneras/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <QuinceanerasListClient initialData={quinceaneras} stats={stats} />

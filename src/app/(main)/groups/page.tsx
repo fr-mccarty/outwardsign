@@ -49,7 +49,7 @@ export default async function GroupsPage({ searchParams }: PageProps) {
     <PageContainer
       title="Groups"
       description="Manage groups of people who serve together in liturgical ministries"
-      actions={<ModuleCreateButton moduleName="Group" href="/groups/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Group" href="/groups/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <GroupsListClient initialData={groups} stats={stats} />

@@ -43,7 +43,7 @@ export function MassRoleMembersListClient({
   return (
     <div className="space-y-6">
       {/* Search */}
-      <SearchCard modulePlural="Mass Role Members" moduleSingular="Mass Role Member" className="mb-6">
+      <SearchCard title="Search Mass Role Directory" className="mb-6">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

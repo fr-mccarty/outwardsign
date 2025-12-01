@@ -50,7 +50,7 @@ export default async function MassRoleTemplatesPage({ searchParams }: PageProps)
     <PageContainer
       title="Mass Role Templates"
       description="Manage role assignment templates for different Mass types."
-      actions={<ModuleCreateButton moduleName="Template" href="/mass-role-templates/create" />}
+      primaryAction={<ModuleCreateButton moduleName="Template" href="/mass-role-templates/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassRoleTemplatesListClient initialData={filteredTemplates} stats={stats} />

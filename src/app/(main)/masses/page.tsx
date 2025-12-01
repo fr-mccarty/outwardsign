@@ -67,19 +67,15 @@ export default async function MassesPage({ searchParams }: PageProps) {
     <PageContainer
       title="Masses"
       description="The source and summit of Catholic life."
-      actions={
-        <div className="flex gap-2">
-          {canSchedule && (
-            <Button asChild variant="outline">
-              <Link href="/masses/schedule">
-                <CalendarClock className="h-4 w-4 mr-2" />
-                Schedule Masses
-              </Link>
-            </Button>
-          )}
-          <ModuleCreateButton moduleName="Mass" href="/masses/create" />
-        </div>
-      }
+      primaryAction={<ModuleCreateButton moduleName="Mass" href="/masses/create" />}
+      additionalActions={canSchedule ? [
+        {
+          type: 'action',
+          label: 'Schedule Masses',
+          icon: <CalendarClock className="h-4 w-4" />,
+          href: '/masses/schedule'
+        }
+      ] : undefined}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassesListClient initialData={masses} stats={stats} />

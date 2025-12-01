@@ -24,20 +24,18 @@ export function BaptismFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!baptism
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Baptism" href={`/baptisms/${baptism.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Baptism" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Baptism" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Baptism',
+          href: `/baptisms/${baptism.id}`
+        }
+      ] : undefined}
     >
       <BaptismForm
         baptism={baptism}

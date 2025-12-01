@@ -6,6 +6,7 @@ import { X, Pencil } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { cn } from '@/lib/utils'
 
 interface BasePickerFieldProps<T> {
   label: string
@@ -24,6 +25,7 @@ interface BasePickerFieldProps<T> {
   testId?: string // Optional override for data-testid
   onValueClick?: () => void // Optional custom click handler for the value display
   navigationButton?: ReactNode // Optional navigation button to show between value and clear button
+  error?: string
 }
 
 export function PickerField<T>({
@@ -43,6 +45,7 @@ export function PickerField<T>({
   testId,
   onValueClick,
   navigationButton,
+  error,
 }: BasePickerFieldProps<T>) {
   const labelId = testId || label.toLowerCase().replace(/\s+/g, '-')
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
@@ -81,7 +84,10 @@ export function PickerField<T>({
             <button
               type="button"
               onClick={handleValueClick}
-              className="flex-1 flex items-center justify-between p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left"
+              className={cn(
+                "flex-1 flex items-center justify-between p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left",
+                error && "border-destructive"
+              )}
               data-testid={`${labelId}-selected-value`}
             >
               <span className="text-sm">{renderValue(value)}</span>
@@ -103,7 +109,10 @@ export function PickerField<T>({
             <button
               type="button"
               onClick={handleValueClick}
-              className="flex-1 p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left"
+              className={cn(
+                "flex-1 p-3 border rounded-md bg-muted/50 hover:bg-muted transition-colors text-left",
+                error && "border-destructive"
+              )}
               data-testid={`${labelId}-selected-value`}
             >
               <div className="flex items-center justify-between">
@@ -128,7 +137,10 @@ export function PickerField<T>({
           type="button"
           variant="outline"
           onClick={() => onShowPickerChange(true)}
-          className="w-full justify-start"
+          className={cn(
+            "w-full justify-start",
+            error && "border-destructive"
+          )}
           data-testid={`${labelId}-trigger`}
         >
           <Icon className="h-4 w-4 mr-2" />
@@ -138,6 +150,10 @@ export function PickerField<T>({
 
       {descriptionPosition === 'after' && description && (
         <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
       )}
 
       {/* Picker Modal - passed as children */}

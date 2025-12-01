@@ -228,7 +228,7 @@ export function GroupMembersListClient({
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <div className="space-y-6">
         {/* Search and Add Button */}
-        <SearchCard modulePlural="Group Members" moduleSingular="Group Member">
+        <SearchCard title="Search Group Members">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="flex-1">
@@ -326,13 +326,7 @@ export function GroupMembersListClient({
             </div>
 
             {/* Advanced Search */}
-            <AdvancedSearch
-              sortFilter={{
-                value: filters.getFilterValue('sort'),
-                onChange: (value) => filters.updateFilter('sort', value),
-                sortOptions: GROUP_MEMBER_SORT_OPTIONS
-              }}
-            />
+            <AdvancedSearch />
           </div>
         </SearchCard>
 

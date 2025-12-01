@@ -67,7 +67,7 @@ export function ParishGeneralSettingsClient({
     <PageContainer
       title="General Settings"
       description="Manage your parish information and liturgical settings"
-      actions={
+      primaryAction={
         <Button onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4 mr-2" />
           {saving ? 'Saving...' : 'Save Changes'}

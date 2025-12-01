@@ -24,20 +24,18 @@ export function EventFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!event
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Event" href={`/events/${event.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Event" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Event" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Event',
+          href: `/events/${event.id}`
+        }
+      ] : undefined}
     >
       <EventForm
         event={event}

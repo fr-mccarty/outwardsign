@@ -45,7 +45,7 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/masses',
-    defaultFilters: { status: 'all', sort: 'date_asc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
   // Local state for search value (synced with URL)
@@ -99,25 +99,15 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
     }
   }
 
-  // Custom "Who" column for presider/homilist (NO avatars)
+  // Custom "Name of Mass" column (only shows mass name)
   const buildMassWhoColumn = (): DataTableColumn<MassWithNames> => {
     return {
       key: 'who',
-      header: 'Who',
+      header: 'Name of Mass',
       cell: (mass) => {
-        const presiderName = mass.presider?.full_name
-        const homilistName = mass.homilist?.full_name
         const status = mass.status || 'PLANNING'
         const statusLabel = getStatusLabel(status, 'en')
         const statusColor = MODULE_STATUS_COLORS[status] || 'bg-muted-foreground/50'
-
-        if (!presiderName && !homilistName) {
-          return (
-            <span className="text-muted-foreground text-sm">
-              No presider assigned
-            </span>
-          )
-        }
 
         return (
           <div className="flex items-start gap-2">
@@ -132,23 +122,16 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
               </Tooltip>
             </TooltipProvider>
             <div className="flex flex-col">
-              {presiderName && (
-                <span className="text-sm font-medium">
-                  {presiderName}
-                </span>
-              )}
-              {homilistName && homilistName !== presiderName && (
-                <span className="text-xs text-muted-foreground">
-                  Homilist: {homilistName}
-                </span>
-              )}
+              <span className="text-sm font-medium">
+                {mass.name || 'Unnamed Mass'}
+              </span>
             </div>
           </div>
         )
       },
       className: 'max-w-[200px] md:max-w-[250px]',
       sortable: true,
-      accessorFn: (mass) => mass.presider?.full_name || ''
+      accessorFn: (mass) => mass.name || ''
     }
   }
 
@@ -178,7 +161,7 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Masses" moduleSingular="Mass">
+      <SearchCard title="Search Masses">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -197,11 +180,6 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
               value: filters.getFilterValue('status'),
               onChange: (value) => filters.updateFilter('status', value),
               statusValues: MASS_STATUS_VALUES
-            }}
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: STANDARD_SORT_OPTIONS
             }}
             dateRangeFilter={{
               startDate: startDate,

@@ -192,7 +192,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard modulePlural="Readings" moduleSingular="Reading">
+      <SearchCard title="Search Readings">
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -206,13 +206,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
           />
 
           {/* Advanced Search Collapsible */}
-          <AdvancedSearch
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: READING_SORT_OPTIONS
-            }}
-          />
+          <AdvancedSearch />
         </div>
       </SearchCard>
 

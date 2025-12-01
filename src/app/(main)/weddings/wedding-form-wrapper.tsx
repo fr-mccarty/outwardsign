@@ -24,20 +24,18 @@ export function WeddingFormWrapper({
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!wedding
 
-  const actions = (
-    <>
-      {isEditing && (
-        <ModuleViewButton moduleName="Wedding" href={`/weddings/${wedding.id}`} />
-      )}
-      <ModuleSaveButton moduleName="Wedding" isLoading={isLoading} isEditing={isEditing} form={formId} />
-    </>
-  )
-
   return (
     <PageContainer
       title={title}
       description={description}
-      actions={actions}
+      primaryAction={<ModuleSaveButton moduleName="Wedding" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      additionalActions={isEditing ? [
+        {
+          type: 'action',
+          label: 'View Wedding',
+          href: `/weddings/${wedding.id}`
+        }
+      ] : undefined}
     >
       <WeddingForm
         wedding={wedding}
