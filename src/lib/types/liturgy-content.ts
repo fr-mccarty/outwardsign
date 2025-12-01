@@ -174,6 +174,17 @@ export interface InfoRowElement extends BaseElement {
 }
 
 /**
+ * Info grid row with avatar image (label: avatar + value for person information)
+ */
+export interface InfoRowWithAvatarElement extends BaseElement {
+  type: 'info-row-with-avatar'
+  label: string
+  value: string
+  avatarUrl: string
+  avatarSize?: number // Size of the avatar in pixels (defaults to 40)
+}
+
+/**
  * Empty line for spacing
  */
 export interface SpacerElement extends BaseElement {
@@ -215,6 +226,7 @@ export type ContentElement =
   | PrayerTextElement
   | PriestTextElement
   | InfoRowElement
+  | InfoRowWithAvatarElement
   | SpacerElement
   | ImageElement
 

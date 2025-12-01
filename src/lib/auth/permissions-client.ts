@@ -11,6 +11,7 @@ export const AVAILABLE_MODULES = [
   'weddings',
   'funerals',
   'baptisms',
+  'group-baptisms',
   'presentations',
   'quinceaneras',
   'groups',

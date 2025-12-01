@@ -7,7 +7,7 @@
 > - **[CONTENT_BUILDER_STRUCTURE.md](./CONTENT_BUILDER_STRUCTURE.md)** - Standard liturgical script structure
 > - **[CONTENT_BUILDER_SECTIONS.md](./CONTENT_BUILDER_SECTIONS.md)** - Section types and builder interfaces
 
-This document provides a complete reference of all template files, their IDs, names, descriptions, and purposes across all 7 modules that use the content builder system.
+This document provides a complete reference of all template files, their IDs, names, descriptions, and purposes across all 8 modules that use the content builder system.
 
 ---
 
@@ -19,6 +19,7 @@ This document provides a complete reference of all template files, their IDs, na
   - [Weddings](#weddings)
   - [Funerals](#funerals)
   - [Baptisms](#baptisms)
+  - [Group Baptisms](#group-baptisms)
   - [Presentations](#presentations)
   - [Quinceañeras](#quinceañeras)
   - [Masses](#masses)
@@ -30,8 +31,8 @@ This document provides a complete reference of all template files, their IDs, na
 
 ## Overview
 
-**Total Modules with Templates:** 7
-**Total Templates:** 17
+**Total Modules with Templates:** 8
+**Total Templates:** 19
 
 Each module has a template registry in its `index.ts` file that defines available templates. Templates are referenced by their unique ID and can be selected on the view page via the template selector dialog.
 
@@ -54,11 +55,12 @@ src/lib/content-builders/[module]/
 | **Weddings** | 2 | 1 (Full Script) | 1 (Full Script) | - | - |
 | **Funerals** | 2 | 1 (Full Script) | 1 (Full Script) | - | - |
 | **Baptisms** | 2 | 1 (Summary) | 1 (Summary) | - | - |
+| **Group Baptisms** | 2 | 1 (Summary) | 1 (Summary) | - | - |
 | **Presentations** | 3 | 1 (Full Script) | 1 (Full Script) | 1 | - |
 | **Quinceañeras** | 2 | 1 (Full Script) | 1 (Full Script) | - | - |
 | **Masses** | 2 | 1 | 1 | - | - |
 | **Mass Intentions** | 2 | 1 (Summary) | 1 (Summary) | - | - |
-| **TOTAL** | **17** | **7** | **7** | **1** | **0** |
+| **TOTAL** | **19** | **8** | **8** | **1** | **0** |
 
 **Template Types:**
 - **Full Script** - Complete liturgy with all readings, responses, and directions
@@ -116,6 +118,38 @@ src/lib/content-builders/[module]/
 **Default Template:** `baptism-summary-english`
 
 **Note:** Baptism templates are summary-style (not full scripts) designed for quick reference in the sacristy.
+
+---
+
+### Group Baptisms
+
+**Module Path:** `src/lib/content-builders/group-baptism/`
+**Template Registry:** `GROUP_BAPTISM_TEMPLATES`
+**Builder Function:** `buildGroupBaptismLiturgy(groupBaptism, templateId)`
+**Total Templates:** 2
+
+| Template ID | Name | Description | Language | Type | File |
+|------------|------|-------------|----------|------|------|
+| `group-baptism-summary-english` | Group Baptism Summary (English) | Simple list of all baptisms in the group with child, parent, and godparent information | English | Summary | `templates/summary-english.ts` |
+| `group-baptism-summary-spanish` | Resumen de Bautismo Grupal (Español) | Lista simple de todos los bautismos del grupo con información de niños, padres y padrinos | Spanish | Summary | `templates/summary-spanish.ts` |
+
+**Default Template:** `group-baptism-summary-english`
+
+**Note:** Group Baptism templates show a summary of all children being baptized in the group ceremony with their parents and godparents. Child names include pronunciation guides when available.
+
+**Content Displayed:**
+- Section title ("Baptisms in This Group" / "Bautismos en Este Grupo")
+- For each child being baptized:
+  - Child's full name with pronunciation (if available) **with inline avatar** (40x40px circular, displayed using `info-row-with-avatar` element)
+  - Parents' names (mother and father)
+  - Godparents' names (sponsor 1 and sponsor 2)
+- Event date and time as subtitle
+
+**Avatar Display:**
+- Uses new `info-row-with-avatar` element type for inline avatar display
+- Avatars appear inline to the left of the child's name (40x40px circular images)
+- Avatars are displayed in HTML view only (not in PDF/Word exports)
+- Gracefully falls back to regular `info-row` if child has no avatar_url
 
 ---
 

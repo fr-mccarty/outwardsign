@@ -482,6 +482,16 @@ export const BAPTISM_TEMPLATE_LABELS: Record<BaptismTemplate, { en: string; es: 
   'baptism-summary-spanish': { en: 'Baptism Summary (Spanish)', es: 'Resumen del Bautismo (Español)' }
 }
 
+// Group Baptism Template Constants
+export const GROUP_BAPTISM_TEMPLATE_VALUES = ['group-baptism-summary-english', 'group-baptism-summary-spanish'] as const
+export type GroupBaptismTemplate = typeof GROUP_BAPTISM_TEMPLATE_VALUES[number]
+export const GROUP_BAPTISM_DEFAULT_TEMPLATE: GroupBaptismTemplate = 'group-baptism-summary-english'
+
+export const GROUP_BAPTISM_TEMPLATE_LABELS: Record<GroupBaptismTemplate, { en: string; es: string }> = {
+  'group-baptism-summary-english': { en: 'Group Baptism Summary (English)', es: 'Resumen de Bautismo Grupal (Inglés)' },
+  'group-baptism-summary-spanish': { en: 'Group Baptism Summary (Spanish)', es: 'Resumen de Bautismo Grupal (Español)' }
+}
+
 // Presentation Template Constants
 export const PRESENTATION_TEMPLATE_VALUES = ['presentation-english', 'presentation-spanish', 'presentation-bilingual'] as const
 export type PresentationTemplate = typeof PRESENTATION_TEMPLATE_VALUES[number]

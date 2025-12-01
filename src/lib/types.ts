@@ -581,9 +581,23 @@ export interface Baptism {
   sponsor_1_id?: string
   sponsor_2_id?: string
   presider_id?: string
+  group_baptism_id?: string | null
   status?: ModuleStatus
   baptism_template_id?: string
   note?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface GroupBaptism {
+  id: string
+  parish_id: string
+  name: string
+  group_baptism_event_id: string | null
+  presider_id: string | null
+  status: ModuleStatus
+  note: string | null
+  group_baptism_template_id: string | null
   created_at: string
   updated_at: string
 }

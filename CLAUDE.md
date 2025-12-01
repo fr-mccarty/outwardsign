@@ -48,7 +48,8 @@
 | When you are asked to... | You MUST read these files FIRST |
 |---------------------------|----------------------------------|
 | **Create or edit ANY form component** | 🔴 [FORMS.md](./docs/FORMS.md) - Form patterns, validation, styling, FormField usage |
-| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - All 8 file patterns |
+| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - All 8 file patterns<br>🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - List page pattern (server + client) |
+| **Create or modify a list page** | 🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete list view pattern with checklist |
 | **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Picker architecture and patterns |
 | **Create or modify database schema** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration procedures<br>🔴 Database section in this file - Migration workflow |
 | **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging |
@@ -92,6 +93,7 @@ When you need detailed information on forms, styling, components, modules, testi
 **Key Documentation Files:**
 - **[DEFINITIONS.md](./docs/DEFINITIONS.md)** - Liturgical and application terminology (reader, presider, sacraments vs sacramentals, event types)
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, role permissions, component communication, performance
+- **[LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md)** - 🔴 CRITICAL - Complete pattern for list pages (server + client) with SearchCard, DataTable, ContentCard, ListStatsBar
 - **[DATABASE.md](./docs/DATABASE.md)** - Database management procedures (resets, seeding, liturgical calendar imports, troubleshooting)
 - **[PERMISSIONS.md](./docs/PERMISSIONS.md)** - Permission rules for git, database, file operations, and automation guidelines
 - **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Coding standards including bilingual implementation, page title formatting, UI patterns, helper utilities

@@ -628,6 +628,192 @@ async function seedDevData() {
     }
   }
 
+  // Create sample group baptisms with individual baptisms
+  console.log('')
+  console.log('👶 Creating sample group baptisms...')
+
+  // Fetch some people to use as children, parents, godparents, and presider
+  const { data: samplePeople } = await supabase
+    .from('people')
+    .select('id, first_name, last_name')
+    .eq('parish_id', parishId)
+    .limit(15)
+
+  if (samplePeople && samplePeople.length >= 10) {
+    // Create a presider (use first person or create if needed)
+    const presider = samplePeople[0]
+
+    // Fetch or create a location
+    let locationId: string | null = null
+    const { data: existingLocation } = await supabase
+      .from('locations')
+      .select('id')
+      .eq('parish_id', parishId)
+      .limit(1)
+      .single()
+
+    if (existingLocation) {
+      locationId = existingLocation.id
+    }
+
+    // Create 2 group baptism events
+    const { data: groupBaptismEvents } = await supabase
+      .from('events')
+      .insert([
+        {
+          parish_id: parishId,
+          name: 'December Group Baptism',
+          start_date: '2025-12-15',
+          start_time: '14:00',
+          location_id: locationId,
+          related_event_type: 'BAPTISM'
+        },
+        {
+          parish_id: parishId,
+          name: 'Easter Vigil Baptisms',
+          start_date: '2025-04-20',
+          start_time: '20:00',
+          location_id: locationId,
+          related_event_type: 'BAPTISM'
+        }
+      ])
+      .select()
+
+    if (groupBaptismEvents && groupBaptismEvents.length === 2) {
+      // Create 2 group baptisms
+      const { data: groupBaptisms } = await supabase
+        .from('group_baptisms')
+        .insert([
+          {
+            parish_id: parishId,
+            name: 'December 2025 Group Baptism',
+            group_baptism_event_id: groupBaptismEvents[0].id,
+            presider_id: presider.id,
+            status: 'ACTIVE',
+            note: 'Monthly group baptism ceremony',
+            group_baptism_template_id: 'group-baptism-summary-english'
+          },
+          {
+            parish_id: parishId,
+            name: 'Easter Vigil 2025 Baptisms',
+            group_baptism_event_id: groupBaptismEvents[1].id,
+            presider_id: presider.id,
+            status: 'PLANNING',
+            note: 'Special Easter Vigil celebration',
+            group_baptism_template_id: 'group-baptism-summary-spanish'
+          }
+        ])
+        .select()
+
+      if (groupBaptisms && groupBaptisms.length === 2) {
+        console.log(`   ✅ ${groupBaptisms.length} group baptisms created`)
+
+        // Create individual baptisms for each group
+        // Group 1: December group - 3 baptisms
+        // Group 2: Easter Vigil - 5 baptisms
+
+        const baptismsToCreate = [
+          // December Group Baptism (3 children)
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[0].id,
+            child_id: samplePeople[1]?.id,
+            mother_id: samplePeople[2]?.id,
+            father_id: samplePeople[3]?.id,
+            sponsor_1_id: samplePeople[4]?.id,
+            sponsor_2_id: samplePeople[5]?.id,
+            baptism_event_id: groupBaptismEvents[0].id,
+            presider_id: presider.id,
+            status: 'ACTIVE'
+          },
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[0].id,
+            child_id: samplePeople[6]?.id,
+            mother_id: samplePeople[7]?.id,
+            father_id: samplePeople[8]?.id,
+            sponsor_1_id: samplePeople[9]?.id,
+            baptism_event_id: groupBaptismEvents[0].id,
+            presider_id: presider.id,
+            status: 'ACTIVE'
+          },
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[0].id,
+            child_id: samplePeople[10]?.id,
+            mother_id: samplePeople[11]?.id,
+            sponsor_1_id: samplePeople[12]?.id,
+            baptism_event_id: groupBaptismEvents[0].id,
+            presider_id: presider.id,
+            status: 'ACTIVE'
+          },
+          // Easter Vigil Baptisms (5 children)
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[1].id,
+            child_id: samplePeople[13]?.id,
+            mother_id: samplePeople[14]?.id,
+            baptism_event_id: groupBaptismEvents[1].id,
+            presider_id: presider.id,
+            status: 'PLANNING'
+          },
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[1].id,
+            child_id: samplePeople[1]?.id, // Reuse (different scenario)
+            father_id: samplePeople[3]?.id,
+            sponsor_1_id: samplePeople[5]?.id,
+            sponsor_2_id: samplePeople[7]?.id,
+            baptism_event_id: groupBaptismEvents[1].id,
+            presider_id: presider.id,
+            status: 'PLANNING'
+          },
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[1].id,
+            child_id: samplePeople[2]?.id,
+            mother_id: samplePeople[4]?.id,
+            baptism_event_id: groupBaptismEvents[1].id,
+            presider_id: presider.id,
+            status: 'PLANNING'
+          },
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[1].id,
+            child_id: samplePeople[6]?.id,
+            mother_id: samplePeople[8]?.id,
+            father_id: samplePeople[10]?.id,
+            baptism_event_id: groupBaptismEvents[1].id,
+            presider_id: presider.id,
+            status: 'PLANNING'
+          },
+          {
+            parish_id: parishId,
+            group_baptism_id: groupBaptisms[1].id,
+            child_id: samplePeople[12]?.id,
+            sponsor_1_id: samplePeople[14]?.id,
+            baptism_event_id: groupBaptismEvents[1].id,
+            presider_id: presider.id,
+            status: 'PLANNING'
+          }
+        ]
+
+        const { data: baptisms, error: baptismsError } = await supabase
+          .from('baptisms')
+          .insert(baptismsToCreate)
+          .select()
+
+        if (baptismsError) {
+          console.error('⚠️  Warning: Error creating baptisms:', baptismsError.message)
+        } else {
+          console.log(`   ✅ ${baptisms?.length || 0} individual baptisms created (3 in December group, 5 in Easter Vigil group)`)
+        }
+      }
+    }
+  } else {
+    console.log('   ⚠️  Not enough sample people to create group baptisms (need at least 10)')
+  }
+
   // Upload sample avatar images for people created by seed_modules.sql
   console.log('')
   console.log('🖼️  Uploading sample avatar images...')

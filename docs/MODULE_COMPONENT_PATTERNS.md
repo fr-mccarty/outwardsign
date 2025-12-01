@@ -28,8 +28,8 @@ This two-layer pattern ensures:
 ## Table of Contents
 
 - [Overview](#overview)
-- [1. List Page (Server)](#1-list-page-server)
-- [2. List Client](#2-list-client)
+- [1. List Page (Server)](#1-list-page-server) - 🔴 See [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md) for complete list view documentation
+- [2. List Client](#2-list-client) - 🔴 See [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md) for complete list view documentation
 - [3. Create Page (Server)](#3-create-page-server)
 - [4. View Page (Server)](#4-view-page-server)
 - [5. Edit Page (Server)](#5-edit-page-server)
@@ -66,21 +66,35 @@ Every module follows a consistent 8-file structure. This consistency ensures:
 
 ## 1. List Page (Server)
 
+> **🔴 For complete list view documentation with visual examples and checklist, see [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md)**
+
 **File:** `page.tsx` in `app/(main)/[entity-plural]/`
 
-**Purpose:** Server-side list page that fetches entities with filters, computes stats, and passes data to client component.
+**Purpose:** Server-side list page that fetches entities with filters, computes stats, and passes data to client component. **Must wrap in PageContainer.**
 
 ### Structure
 
 ```tsx
+import { PageContainer } from '@/components/page-container'
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
+import { ModuleCreateButton } from '@/components/module-create-button'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { [Entity]ListClient } from './[entities]-list-client'
-import { get[Entities] } from '@/lib/actions/[entities]'
+import { get[Entities], get[Entity]Stats, type [Entity]FilterParams } from '@/lib/actions/[entities]'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
+
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    sort?: string
+    page?: string
+    start_date?: string
+    end_date?: string
+  }>
 }
 
 export default async function [Entities]Page({ searchParams }: PageProps) {
@@ -91,43 +105,56 @@ export default async function [Entities]Page({ searchParams }: PageProps) {
 
   // 2. Parse search params (Next.js 15 requires await)
   const params = await searchParams
-  const filters = {
+
+  // 3. Build filters from search params
+  const filters: [Entity]FilterParams = {
     search: params.search,
-    status: params.status
+    status: params.status as [Entity]FilterParams['status'],
+    sort: params.sort as [Entity]FilterParams['sort'],
+    page: params.page ? parseInt(params.page, 10) : 1,
+    limit: LIST_VIEW_PAGE_SIZE,
+    start_date: params.start_date,
+    end_date: params.end_date
   }
 
-  // 3. Fetch entities server-side with filters
+  // 4. Fetch entities server-side with filters
   const entities = await get[Entities](filters)
 
-  // 4. Compute stats server-side (optional)
-  const stats = {
-    total: entities.length,
-    active: entities.filter(e => e.status === 'ACTIVE').length,
-    // ... other stats
-  }
+  // 5. Calculate stats server-side
+  const stats = await get[Entity]Stats(entities)
 
-  // 5. Define breadcrumbs
+  // 6. Define breadcrumbs
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: '[Entities]', href: '/[entities]' }
+    { label: 'Our [Entities]' }
   ]
 
   return (
-    <>
+    <PageContainer
+      title="Our [Entities]"
+      description="[Brief description of what this module manages]"
+      primaryAction={<ModuleCreateButton moduleName="[Entity]" href="/[entities]/create" />}
+    >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <[Entity]ListClient initialData={entities} stats={stats} />
-    </>
+    </PageContainer>
   )
 }
 ```
 
 ### Key Points
 
+- 🔴 **CRITICAL: Must wrap in PageContainer** with title, description, and primaryAction
+- ✅ Use `ModuleCreateButton` for the primary action (not a custom Button)
+- ✅ Add `export const dynamic = 'force-dynamic'` for proper Next.js caching
 - ✅ Always authenticate first
 - ✅ `searchParams` is a **Promise** in Next.js 15 - must await it
+- ✅ Include all common filter params: search, status, sort, page, start_date, end_date
+- ✅ Use `LIST_VIEW_PAGE_SIZE` constant for pagination
 - ✅ Fetch data server-side for better performance and SEO
 - ✅ Pass data via `initialData` prop to client component
-- ✅ Compute stats server-side to reduce client bundle size
+- ✅ Compute stats server-side using dedicated stats function
+- ✅ Breadcrumb label should NOT include "href" for current page (only label)
 
 **Reference:** `src/app/(main)/weddings/page.tsx`
 
@@ -135,112 +162,256 @@ export default async function [Entities]Page({ searchParams }: PageProps) {
 
 ## 2. List Client
 
+> **🔴 For complete list view documentation with visual examples and checklist, see [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md)**
+
 **File:** `[entities]-list-client.tsx` (note: PLURAL) in `app/(main)/[entity-plural]/`
 
-**Purpose:** Client component that manages URL state for search/filters and renders the entity grid.
+**Purpose:** Client component that manages URL state for search/filters and renders the DataTable. Uses SearchCard, DataTable/ContentCard, and ListStatsBar pattern.
 
 ### Structure
 
 ```tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
-import Link from 'next/link'
-import type { [Entity] } from '@/lib/actions/[entities]'
+import type { [Entity]WithNames, [Entity]Stats } from '@/lib/actions/[entities]'
+import { delete[Entity] } from '@/lib/actions/[entities]'
+import { DataTable } from '@/components/data-table/data-table'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { AdvancedSearch } from '@/components/advanced-search'
+import { SearchCard } from "@/components/search-card"
+import { ContentCard } from "@/components/content-card"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Plus, [Icon], Filter } from "lucide-react"
+import { toast } from "sonner"
+import { MODULE_STATUS_VALUES } from "@/lib/constants"
+import { toLocalDateString } from "@/lib/utils/formatters"
+import { useListFilters } from "@/hooks/use-list-filters"
+import {
+  buildWhoColumn,
+  buildWhenColumn,
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
 
 interface [Entity]ListClientProps {
-  initialData: [Entity][]
-  stats?: {
-    total: number
-    active: number
-  }
+  initialData: [Entity]WithNames[]
+  stats: [Entity]Stats
 }
 
 export function [Entity]ListClient({ initialData, stats }: [Entity]ListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [search, setSearch] = useState(searchParams.get('search') || '')
-  const [status, setStatus] = useState(searchParams.get('status') || 'all')
+  // Use list filters hook for URL state management
+  const filters = useListFilters({
+    baseUrl: '/[entities]',
+    defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
+  })
 
-  // Update URL when filters change
-  useEffect(() => {
-    const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    if (status !== 'all') params.set('status', status)
+  // Local state for search value (synced with URL)
+  const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
 
-    const queryString = params.toString()
-    router.push(`/[entities]${queryString ? `?${queryString}` : ''}`)
-  }, [search, status, router])
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: 'Total [Entities]' },
+    { value: stats.upcoming, label: 'Upcoming' },
+    { value: stats.past, label: 'Past' },
+    { value: stats.filtered, label: 'Filtered Results' }
+  ]
+
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = searchParams.get('start_date')
+  const endDateParam = searchParams.get('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [entityToDelete, setEntityToDelete] = useState<[Entity]WithNames | null>(null)
+
+  // Clear all filters (including date filters)
+  const handleClearFilters = () => {
+    setSearchValue('')
+    setStartDate(undefined)
+    setEndDate(undefined)
+    filters.clearFilters()
+  }
+
+  // Check if any filters are active
+  const hasActiveFilters = filters.hasActiveFilters || startDate !== undefined || endDate !== undefined
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!entityToDelete) return
+
+    try {
+      await delete[Entity](entityToDelete.id)
+      toast.success('[Entity] deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete [entity]:', error)
+      toast.error('Failed to delete [entity]. Please try again.')
+      throw error
+    }
+  }
+
+  // Define table columns using column builders
+  const columns = [
+    buildWhoColumn<[Entity]WithNames>({
+      header: '[Primary Field]',
+      getName: (entity) => entity.[primary_field],
+      getStatus: (entity) => entity.status || 'PLANNING',
+      sortable: true
+    }),
+    buildWhenColumn<[Entity]WithNames>({
+      getDate: (entity) => entity.[entity]_event?.start_date || null,
+      getTime: (entity) => entity.[entity]_event?.start_time || null,
+      sortable: true
+    }),
+    buildWhereColumn<[Entity]WithNames>({
+      getLocation: (entity) => entity.[entity]_event?.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<[Entity]WithNames>({
+      baseUrl: '/[entities]',
+      onDelete: (entity) => {
+        setEntityToDelete(entity)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (entity) =>
+        `Are you sure you want to delete [entity description]?`
+    })
+  ]
 
   return (
     <div className="space-y-6">
-      {/* Header with Create button */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">[Entities]</h1>
-          {stats && (
-            <p className="text-muted-foreground">
-              {stats.total} total, {stats.active} active
-            </p>
-          )}
-        </div>
-        <Button asChild>
-          <Link href="/[entities]/create">
-            <Plus className="h-4 w-4 mr-2" />
-            New [Entity]
-          </Link>
-        </Button>
-      </div>
-
       {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="flex gap-4">
-          <Input
-            placeholder="Search [entities]..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-sm"
+      <SearchCard title="Search [Entities]">
+        <div className="space-y-4">
+          {/* Main Search Row */}
+          <ClearableSearchInput
+            value={searchValue}
+            onChange={(value) => {
+              setSearchValue(value)
+              filters.updateFilter('search', value)
+            }}
+            placeholder="Search by [field]..."
+            className="w-full"
           />
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-            </SelectContent>
-          </Select>
+
+          {/* Advanced Search Collapsible */}
+          <AdvancedSearch
+            statusFilter={{
+              value: filters.getFilterValue('status'),
+              onChange: (value) => filters.updateFilter('status', value),
+              statusValues: MODULE_STATUS_VALUES
+            }}
+            dateRangeFilter={{
+              startDate: startDate,
+              endDate: endDate,
+              onStartDateChange: (date) => {
+                setStartDate(date)
+                filters.updateFilter('start_date', date ? toLocalDateString(date) : '')
+              },
+              onEndDateChange: (date) => {
+                setEndDate(date)
+                filters.updateFilter('end_date', date ? toLocalDateString(date) : '')
+              }
+            }}
+          />
         </div>
-      </Card>
+      </SearchCard>
 
-      {/* Entity Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {initialData.map((entity) => (
-          <Card key={entity.id} className="p-4">
-            <Link href={`/[entities]/${entity.id}`}>
-              {/* Entity card content */}
-            </Link>
-          </Card>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {initialData.length === 0 && (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground">No [entities] found</p>
-          <Button asChild className="mt-4">
-            <Link href="/[entities]/create">Create your first [entity]</Link>
-          </Button>
-        </Card>
+      {/* [Entities] Table */}
+      {initialData.length > 0 ? (
+        <>
+          <DataTable
+            data={initialData}
+            columns={columns}
+            keyExtractor={(entity) => entity.id}
+            onRowClick={(entity) => router.push(`/[entities]/${entity.id}`)}
+            emptyState={{
+              icon: <[Icon] className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? 'No [entities] found' : 'No [entities] yet',
+              description: hasActiveFilters
+                ? 'Try adjusting your search or filters to find more [entities].'
+                : 'Create your first [entity] to start managing [description].',
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/[entities]/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First [Entity]
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
+            stickyHeader
+          />
+          <ScrollToTopButton />
+        </>
+      ) : (
+        <ContentCard className="text-center py-12">
+          <[Icon] className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">
+            {hasActiveFilters ? 'No [entities] found' : 'No [entities] yet'}
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            {hasActiveFilters
+              ? 'Try adjusting your search or filters to find more [entities].'
+              : 'Create your first [entity] to start managing [description].'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <Link href="/[entities]/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First [Entity]
+              </Link>
+            </Button>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={handleClearFilters}>
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        </ContentCard>
       )}
+
+      {/* Quick Stats */}
+      {stats.total > 0 && (
+        <ListStatsBar title="[Entity] Overview" stats={statsList} />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete [Entity]"
+        description={
+          entityToDelete
+            ? `Are you sure you want to delete [entity description]? This action cannot be undone.`
+            : 'Are you sure you want to delete this [entity]? This action cannot be undone.'
+        }
+      />
     </div>
   )
 }
@@ -248,11 +419,28 @@ export function [Entity]ListClient({ initialData, stats }: [Entity]ListClientPro
 
 ### Key Points
 
-- ✅ Uses URL search params for shareable, linkable state
-- ✅ Updates URL via `router.push()` when filters change
-- ✅ NO client-side filtering - server handles filtering
-- ✅ Always include empty state with "Create" button
+- 🔴 **CRITICAL: NO Create button here** - It's in PageContainer's primaryAction (server page)
+- ✅ Use `SearchCard` for search and filters section
+- ✅ Use `ClearableSearchInput` for main search input
+- ✅ Use `AdvancedSearch` component for status/date filters (collapsible)
+- ✅ Use `useListFilters` hook for URL state management
+- ✅ Use `DataTable` with column builders (buildWhoColumn, buildWhenColumn, etc.)
+- ✅ DataTable has built-in emptyState for filtered results (when data exists but filters match nothing)
+- ✅ Use `ContentCard` for true empty state (when initialData.length === 0)
+- ✅ `ListStatsBar` goes at the BOTTOM, only shown when `stats.total > 0`
+- ✅ Add `stickyHeader` prop to DataTable
+- ✅ Use `ScrollToTopButton` after DataTable
 - ✅ File name is PLURAL: `weddings-list-client.tsx` not `wedding-list-client.tsx`
+- ✅ NO client-side filtering - server handles all filtering via searchParams
+
+### Pattern Summary
+
+**Order of elements:**
+1. SearchCard (search + advanced filters)
+2. DataTable (if data exists) OR ContentCard (if no data)
+3. ScrollToTopButton (only with DataTable)
+4. ListStatsBar (only if stats.total > 0)
+5. DeleteConfirmationDialog
 
 **Reference:** `src/app/(main)/weddings/weddings-list-client.tsx`
 

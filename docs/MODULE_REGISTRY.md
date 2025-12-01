@@ -69,7 +69,10 @@ The main sidebar follows a specific ordering and grouping structure. All navigat
 14. **Baptisms** (Collapsible Section) - Permission check: `canAccess('baptisms')`
     - Our Baptisms (`/baptisms`)
     - New Baptisms (`/baptisms/create`)
-15. **Quinceañeras** (Collapsible Section) - Permission check: `canAccess('quinceaneras')`
+15. **Group Baptisms** (Collapsible Section) - Permission check: `canAccess('group-baptisms')`
+    - Our Group Baptisms (`/group-baptisms`)
+    - New Group Baptism (`/group-baptisms/create`)
+16. **Quinceañeras** (Collapsible Section) - Permission check: `canAccess('quinceaneras')`
     - Our Quinceañeras (`/quinceaneras`)
     - New Quinceañera (`/quinceaneras/create`)
 
@@ -94,7 +97,7 @@ Separate from the main "Application" group, settings appear in their own group a
 ### Permission-Based Display
 
 - **Always Visible:** Dashboard, Calendar, Events, Locations, Readings, People, User Settings
-- **Permission-Gated:** Masses, Mass Scheduling, Weddings, Funerals, Presentations, Groups, Mass Intentions, Baptisms, Quinceañeras
+- **Permission-Gated:** Masses, Mass Scheduling, Weddings, Funerals, Presentations, Groups, Mass Intentions, Baptisms, Group Baptisms, Quinceañeras
 - **Admin-Only:** Parish Settings
 
 **Note:** All permission checks use the `canAccessModule(userParish, moduleName)` helper function from `@/lib/auth/permissions-client`.
@@ -109,11 +112,12 @@ Separate from the main "Application" group, settings appear in their own group a
 
 1. **Weddings** - Wedding celebrations and ceremonies
 2. **Funerals** - Funeral liturgies and services
-3. **Baptisms** - Baptism celebrations
-4. **Presentations** - Presentation of children in the temple (Latino tradition)
-5. **Quinceañeras** - Quinceañera celebrations
-6. **Masses** - Mass celebrations
-7. **Mass Intentions** - Mass intention requests and tracking *(Admin-only, not available for staff or ministry-leader roles)*
+3. **Baptisms** - Individual baptism celebrations
+4. **Group Baptisms** - Group baptism celebrations with multiple children baptized together
+5. **Presentations** - Presentation of children in the temple (Latino tradition)
+6. **Quinceañeras** - Quinceañera celebrations
+7. **Masses** - Mass celebrations
+8. **Mass Intentions** - Mass intention requests and tracking *(Admin-only, not available for staff or ministry-leader roles)*
 
 ### Planned Modules (Not Yet Implemented)
 
@@ -158,6 +162,7 @@ Each module uses specific status constants from `src/lib/constants.ts`. Modules 
 | **Weddings** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
 | **Funerals** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
 | **Baptisms** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+| **Group Baptisms** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
 | **Presentations** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
 | **Quinceañeras** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
 
@@ -213,6 +218,7 @@ All module labels are provided in **English** and **Spanish** for internationali
 | **Weddings** | Weddings | Bodas |
 | **Funerals** | Funerals | Funerales |
 | **Baptisms** | Baptisms | Bautismos |
+| **Group Baptisms** | Group Baptisms | Bautismos Grupales |
 | **Presentations** | Presentations | Presentaciones |
 | **Quinceañeras** | Quinceañeras | Quinceañeras |
 | **Masses** | Masses | Misas |

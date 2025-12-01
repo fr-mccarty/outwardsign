@@ -113,6 +113,26 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 />
               )}
 
+              {canAccess('group-baptisms') && (
+                <CollapsibleNavSection
+                  name="Group Baptisms"
+                  icon={Users}
+                  items={[
+                    {
+                      title: "Our Group Baptisms",
+                      url: "/group-baptisms",
+                      icon: Users,
+                    },
+                    {
+                      title: "New Group Baptism",
+                      url: "/group-baptisms/create",
+                      icon: Plus,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
               <CollapsibleNavSection
                 name="Events"
                 icon={CalendarDays}

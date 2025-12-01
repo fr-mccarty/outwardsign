@@ -267,11 +267,62 @@ function renderElement(element: ContentElement, index: number, isPrintMode: bool
       const labelStyle = resolveElementStyle('info-row-label')
       const valueStyle = resolveElementStyle('info-row-value')
       return containerStyle && labelStyle && valueStyle ? (
-        <div key={index} className="liturgy-info-grid" style={applyResolvedStyle(containerStyle, isPrintMode)}>
+        <div key={index} style={{
+          ...applyResolvedStyle(containerStyle, isPrintMode),
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gap: '12px',
+          alignItems: 'start'
+        }}>
           <div className={`liturgy-info-label ${getColorClassName(labelStyle.color)}`} style={applyResolvedStyle(labelStyle, isPrintMode)}>
             {element.label}
           </div>
-          <div className={getColorClassName(valueStyle.color)} style={applyResolvedStyle(valueStyle, isPrintMode)}>{element.value}</div>
+          <div
+            className={getColorClassName(valueStyle.color)}
+            style={{
+              ...applyResolvedStyle(valueStyle, isPrintMode),
+              whiteSpace: 'pre-wrap'
+            }}
+            dangerouslySetInnerHTML={{ __html: element.value }}
+          />
+        </div>
+      ) : null
+    }
+
+    case 'info-row-with-avatar': {
+      const containerStyle = resolveElementStyle('info-row')
+      const labelStyle = resolveElementStyle('info-row-label')
+      const valueStyle = resolveElementStyle('info-row-value')
+      return containerStyle && labelStyle && valueStyle ? (
+        <div key={index} style={{
+          ...applyResolvedStyle(containerStyle, isPrintMode),
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gap: '12px',
+          alignItems: 'start'
+        }}>
+          <div className={`liturgy-info-label ${getColorClassName(labelStyle.color)}`} style={applyResolvedStyle(labelStyle, isPrintMode)}>
+            {element.label}
+          </div>
+          <div className={getColorClassName(valueStyle.color)} style={{
+            ...applyResolvedStyle(valueStyle, isPrintMode),
+            whiteSpace: 'pre-wrap'
+          }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={element.avatarUrl}
+              alt="Avatar"
+              style={{
+                width: `${element.avatarSize || 40}px`,
+                height: `${element.avatarSize || 40}px`,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                marginRight: '12px',
+                float: 'left'
+              }}
+            />
+            <div dangerouslySetInnerHTML={{ __html: element.value }} />
+          </div>
         </div>
       ) : null
     }
