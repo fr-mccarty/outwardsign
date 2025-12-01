@@ -17,7 +17,7 @@ All liturgical colors are defined as CSS variables in `src/app/globals.css`:
 :root {
   --liturgy-white: oklch(1 0 0);
   --liturgy-white-foreground: oklch(0.145 0 0);
-  --liturgy-red: oklch(0.577 0.245 27.325);
+  --liturgy-red: oklch(0.50 0.25 25);
   --liturgy-red-foreground: oklch(1 0 0);
   --liturgy-purple: oklch(0.488 0.243 264.376);
   --liturgy-purple-foreground: oklch(1 0 0);
@@ -25,7 +25,7 @@ All liturgical colors are defined as CSS variables in `src/app/globals.css`:
   --liturgy-green-foreground: oklch(1 0 0);
   --liturgy-gold: oklch(0.828 0.189 84.429);
   --liturgy-gold-foreground: oklch(0.145 0 0);
-  --liturgy-rose: oklch(0.769 0.188 70.08);
+  --liturgy-rose: oklch(0.75 0.15 350);
   --liturgy-rose-foreground: oklch(1 0 0);
   --liturgy-black: oklch(0.269 0 0);
   --liturgy-black-foreground: oklch(0.985 0 0);
@@ -35,7 +35,7 @@ All liturgical colors are defined as CSS variables in `src/app/globals.css`:
 .dark {
   --liturgy-white: oklch(0.97 0 0);
   --liturgy-white-foreground: oklch(0.145 0 0);
-  --liturgy-red: oklch(0.704 0.191 22.216);
+  --liturgy-red: oklch(0.60 0.25 25);
   --liturgy-red-foreground: oklch(1 0 0);
   --liturgy-purple: oklch(0.627 0.265 303.9);
   --liturgy-purple-foreground: oklch(1 0 0);
@@ -43,7 +43,7 @@ All liturgical colors are defined as CSS variables in `src/app/globals.css`:
   --liturgy-green-foreground: oklch(1 0 0);
   --liturgy-gold: oklch(0.828 0.189 84.429);
   --liturgy-gold-foreground: oklch(0.145 0 0);
-  --liturgy-rose: oklch(0.769 0.188 70.08);
+  --liturgy-rose: oklch(0.75 0.15 350);
   --liturgy-rose-foreground: oklch(1 0 0);
   --liturgy-black: oklch(0.398 0 0);
   --liturgy-black-foreground: oklch(0.985 0 0);

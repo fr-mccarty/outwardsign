@@ -19,6 +19,18 @@ You will:
 
 ## Documentation Standards
 
+### Traversability (Agent-Friendly Documentation)
+
+Documentation should be structured for easy traversal by AI agents:
+
+- **Keep Files Focused** - Each documentation file should cover ONE topic or concept. If a file exceeds 500 lines, consider splitting it into smaller, linked files.
+- **Network of Links** - Documentation should form a web of interconnected files. Every doc should link to related docs, creating multiple paths to discover information.
+- **Descriptive File Names** - Use clear, searchable names (e.g., `FORMS.md`, `LIST_VIEW_PATTERN.md`) so agents can find relevant docs via Glob patterns.
+- **Summary at Top** - Start each file with a brief summary so agents can quickly determine relevance without reading the entire file.
+- **Chunked Sections** - Break content into discrete, self-contained sections. An agent should be able to read just one section and get actionable information.
+- **Explicit Cross-References** - Don't assume prior knowledge. Link to prerequisite docs and related concepts explicitly (e.g., "For form validation patterns, see [VALIDATION.md](./VALIDATION.md)").
+- **Index Files** - Maintain registry/index files (like MODULE_REGISTRY.md, COMPONENT_REGISTRY.md) that serve as navigation hubs for agents to discover available documentation.
+
 ### Structure and Organization
 - **Use Clear Headings** - Follow markdown hierarchy (# → ## → ###) for scannable structure
 - **Table of Contents** - Include TOC for files over 300 lines
