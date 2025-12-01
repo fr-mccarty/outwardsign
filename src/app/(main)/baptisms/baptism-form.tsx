@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { createBaptism, updateBaptism, type BaptismWithRelations } from "@/lib/actions/baptisms"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
+import Link from "next/link"
 import {
   Select,
   SelectContent,
@@ -159,8 +160,28 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
     }
   }
 
+  // Check if baptism is part of a group
+  const isPartOfGroup = baptism?.group_baptism_id != null
+
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Show group baptism link if part of a group */}
+      {isPartOfGroup && baptism && (
+        <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+          <div className="font-semibold text-lg text-primary mb-2">Part of Group Baptism</div>
+          <p className="text-sm text-muted-foreground mb-3">
+            This baptism is part of a group baptism ceremony. The event and presider are managed at the group level.
+          </p>
+          <Link
+            href={`/group-baptisms/${baptism.group_baptism_id}`}
+            className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+          >
+            View Group Baptism
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="m9 18 6-6-6-6"/></svg>
+          </Link>
+        </div>
+      )}
+
       {/* Key Information */}
       <FormSectionCard
         title="Key Information"
@@ -176,19 +197,22 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
             openToNewPerson={!child.value}
             additionalVisibleFields={['email', 'phone_number', 'sex', 'note']}
           />
-          <EventPickerField
-            label="Baptism Event"
-            value={baptismEvent.value}
-            onValueChange={baptismEvent.setValue}
-            showPicker={baptismEvent.showPicker}
-            onShowPickerChange={baptismEvent.setShowPicker}
-            placeholder="Add Baptism Event"
-            openToNewEvent={!baptismEvent.value}
-            defaultRelatedEventType="BAPTISM"
-            defaultName="Baptism"
-            disableSearch={true}
-            defaultCreateFormData={{ name: suggestedBaptismName }}
-          />
+          {/* Only show event picker if NOT part of a group */}
+          {!isPartOfGroup && (
+            <EventPickerField
+              label="Baptism Event"
+              value={baptismEvent.value}
+              onValueChange={baptismEvent.setValue}
+              showPicker={baptismEvent.showPicker}
+              onShowPickerChange={baptismEvent.setShowPicker}
+              placeholder="Add Baptism Event"
+              openToNewEvent={!baptismEvent.value}
+              defaultRelatedEventType="BAPTISM"
+              defaultName="Baptism"
+              disableSearch={true}
+              defaultCreateFormData={{ name: suggestedBaptismName }}
+            />
+          )}
       </FormSectionCard>
 
       {/* Other People */}
@@ -253,22 +277,24 @@ export function BaptismForm({ baptism, formId, onLoadingChange }: BaptismFormPro
           </div>
       </FormSectionCard>
 
-      {/* Key Liturgical Roles */}
-      <FormSectionCard
-        title="Key Liturgical Roles"
-        description="Primary liturgical ministers"
-      >
-        <PersonPickerField
-            label="Presider"
-            value={presider.value}
-            onValueChange={presider.setValue}
-            showPicker={presider.showPicker}
-            onShowPickerChange={presider.setShowPicker}
-            placeholder="Select Presider"
-            autoSetSex="MALE"
-            additionalVisibleFields={['email', 'phone_number', 'note']}
-          />
-      </FormSectionCard>
+      {/* Key Liturgical Roles - Only show if NOT part of a group */}
+      {!isPartOfGroup && (
+        <FormSectionCard
+          title="Key Liturgical Roles"
+          description="Primary liturgical ministers"
+        >
+          <PersonPickerField
+              label="Presider"
+              value={presider.value}
+              onValueChange={presider.setValue}
+              showPicker={presider.showPicker}
+              onShowPickerChange={presider.setShowPicker}
+              placeholder="Select Presider"
+              autoSetSex="MALE"
+              additionalVisibleFields={['email', 'phone_number', 'note']}
+            />
+        </FormSectionCard>
+      )}
 
       {/* Additional Details */}
       <FormSectionCard

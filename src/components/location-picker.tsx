@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
+import { useDebounce } from '@/hooks/use-debounce'
+import { SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 
 interface LocationPickerProps {
   open: boolean
@@ -54,6 +56,9 @@ export function LocationPicker({
   const [searchQuery, setSearchQuery] = useState('')
   const PAGE_SIZE = 10
 
+  // Debounce search
+  const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS)
+
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
     (fieldName: string) => checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS),
@@ -67,9 +72,9 @@ export function LocationPicker({
   // Load locations when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadLocations(currentPage, searchQuery)
+      loadLocations(currentPage, debouncedSearchQuery)
     }
-  }, [open, currentPage, searchQuery])
+  }, [open, currentPage, debouncedSearchQuery])
 
   const loadLocations = async (page: number, search: string) => {
     try {

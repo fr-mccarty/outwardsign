@@ -27,6 +27,10 @@ export interface BaptismFilterParams {
 
 export interface BaptismWithNames extends Baptism {
   child?: Person | null
+  mother?: Person | null
+  father?: Person | null
+  sponsor_1?: Person | null
+  sponsor_2?: Person | null
   presider?: Person | null
   baptism_event?: EventWithRelations | null
 }
@@ -60,6 +64,10 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
     .select(`
       *,
       child:people!child_id(*),
+      mother:people!mother_id(*),
+      father:people!father_id(*),
+      sponsor_1:people!sponsor_1_id(*),
+      sponsor_2:people!sponsor_2_id(*),
       presider:people!presider_id(*),
       baptism_event:events!baptism_event_id(*, location:locations(*))
     `)
@@ -92,10 +100,18 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
     const searchTerm = filters.search.toLowerCase()
     baptisms = baptisms.filter(baptism => {
       const childFullName = baptism.child?.full_name?.toLowerCase() || ''
+      const motherFullName = baptism.mother?.full_name?.toLowerCase() || ''
+      const fatherFullName = baptism.father?.full_name?.toLowerCase() || ''
+      const sponsor1FullName = baptism.sponsor_1?.full_name?.toLowerCase() || ''
+      const sponsor2FullName = baptism.sponsor_2?.full_name?.toLowerCase() || ''
       const notes = baptism.note?.toLowerCase() || ''
 
       return (
         childFullName.includes(searchTerm) ||
+        motherFullName.includes(searchTerm) ||
+        fatherFullName.includes(searchTerm) ||
+        sponsor1FullName.includes(searchTerm) ||
+        sponsor2FullName.includes(searchTerm) ||
         notes.includes(searchTerm)
       )
     })
@@ -202,6 +218,27 @@ export async function getBaptismWithRelations(id: string): Promise<BaptismWithRe
     throw new Error('Failed to fetch baptism')
   }
 
+  // If part of a group, fetch group baptism to get event and presider
+  let groupBaptismEventId: string | null = null
+  let groupBaptismPresiderId: string | null = null
+
+  if (baptism.group_baptism_id) {
+    const { data: groupBaptism } = await supabase
+      .from('group_baptisms')
+      .select('group_baptism_event_id, presider_id')
+      .eq('id', baptism.group_baptism_id)
+      .single()
+
+    if (groupBaptism) {
+      groupBaptismEventId = groupBaptism.group_baptism_event_id
+      groupBaptismPresiderId = groupBaptism.presider_id
+    }
+  }
+
+  // Use group baptism's event and presider if individual baptism doesn't have them
+  const effectiveEventId = baptism.baptism_event_id || groupBaptismEventId
+  const effectivePresiderId = baptism.presider_id || groupBaptismPresiderId
+
   // Fetch all related data in parallel
   const [
     childData,
@@ -217,8 +254,8 @@ export async function getBaptismWithRelations(id: string): Promise<BaptismWithRe
     baptism.father_id ? supabase.from('people').select('*').eq('id', baptism.father_id).single() : Promise.resolve({ data: null }),
     baptism.sponsor_1_id ? supabase.from('people').select('*').eq('id', baptism.sponsor_1_id).single() : Promise.resolve({ data: null }),
     baptism.sponsor_2_id ? supabase.from('people').select('*').eq('id', baptism.sponsor_2_id).single() : Promise.resolve({ data: null }),
-    baptism.presider_id ? supabase.from('people').select('*').eq('id', baptism.presider_id).single() : Promise.resolve({ data: null }),
-    baptism.baptism_event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', baptism.baptism_event_id).single() : Promise.resolve({ data: null })
+    effectivePresiderId ? supabase.from('people').select('*').eq('id', effectivePresiderId).single() : Promise.resolve({ data: null }),
+    effectiveEventId ? supabase.from('events').select('*, location:locations(*)').eq('id', effectiveEventId).single() : Promise.resolve({ data: null })
   ])
 
   return {

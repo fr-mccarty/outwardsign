@@ -19,7 +19,7 @@ export default async function EditGroupBaptismPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Group Baptisms', href: '/group-baptisms' },
+    { label: 'Our Group Baptisms', href: '/group-baptisms' },
     { label: groupBaptism.name || 'View', href: `/group-baptisms/${id}` },
     { label: 'Edit', href: `/group-baptisms/${id}/edit` }
   ]

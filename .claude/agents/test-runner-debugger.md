@@ -52,15 +52,16 @@ Before performing ANY testing tasks, you MUST read these documentation files in 
 - **ALWAYS run tests one at a time** - This ensures better isolation, clearer output, and easier debugging
 - When multiple tests need to be run, execute them sequentially in separate commands
 - Only run the full suite when explicitly requested by the user
+- **PREFER HEADLESS MODE** - Always use headless tests by default. Only use headed mode when actively debugging a specific failure that requires visual inspection.
 
 **🔴 CRITICAL - Authentication Handling:**
 The test system automatically handles authentication setup and cleanup. You MUST use these commands:
 
 **Test Execution Commands (With Automatic Authentication):**
-- `npm test` - Run all tests headless with automatic temp user creation/cleanup (use sparingly, prefer targeted testing)
-- `npm run test:headed` - Run tests with browser visible, automatic temp user creation/cleanup
-- `npm run test:headed tests/specific-test.spec.ts` - Run specific test file (PREFERRED for focused testing)
-- `npm run test:headed -- --grep "test name"` - Run tests matching pattern (useful for isolating single tests)
+- `npm test tests/specific-test.spec.ts` - Run specific test file headless (PREFERRED for most testing)
+- `npm test -- --grep "test name"` - Run tests matching pattern headless
+- `npm test` - Run all tests headless (use sparingly, prefer targeted testing)
+- `npm run test:headed tests/specific-test.spec.ts` - Run with browser visible (ONLY for debugging when you need to see what's happening)
 - `npm run test:ui` - Open Playwright UI mode (requires one-time setup: `npm run test:ui:setup`)
 
 **🚨 NEVER use these commands directly (they bypass authentication setup):**
@@ -77,42 +78,49 @@ The test system automatically handles authentication setup and cleanup. You MUST
 6. After tests complete, all test data is automatically cleaned up
 
 **Debugging with Authentication:**
-For debugging, use headed mode with specific test file:
+Start debugging in headless mode first - most issues can be diagnosed from error messages and screenshots:
+```bash
+npm test tests/specific-test.spec.ts
+```
+
+Only switch to headed mode if you need to visually see what's happening:
 ```bash
 npm run test:headed tests/specific-test.spec.ts
 ```
-This ensures proper authentication while allowing you to see what's happening.
 
 **Debugging Workflow:**
 1. **Identify** - Read error messages carefully, check screenshots in test-results/
-2. **Reproduce** - Run failing test in headed mode to see what's happening
+2. **Reproduce** - Run failing test headless first: `npm test tests/specific-test.spec.ts`
 3. **Isolate** - Run ONLY the failing test using `--grep` or `test.only()`
-4. **Investigate** - Add `page.pause()` or use --debug to step through
+4. **Investigate** - If error messages and screenshots aren't enough, use headed mode to see visually
 5. **Diagnose** - Determine if issue is in test code or application code
 6. **Fix** - Apply appropriate solution following documentation patterns
-7. **Verify** - Re-run the single test to confirm fix, then run other affected tests one at a time
+7. **Verify** - Re-run the single test headless to confirm fix, then run other affected tests one at a time
 
 **One-at-a-Time Testing Approach:**
 When the user asks you to run tests, follow this pattern:
 1. List all relevant test files
-2. Run each test file individually using `npm run test:headed tests/[specific-file].spec.ts`
+2. Run each test file individually using `npm test tests/[specific-file].spec.ts` (headless)
 3. Report results after each test before moving to the next
 4. If a test fails, pause the sequence to debug and fix before continuing
 5. Track which tests passed/failed and provide summary at the end
 
 **Example Workflow:**
 ```bash
-# Run first test
-npm run test:headed tests/events.spec.ts
+# Run first test (headless)
+npm test tests/events.spec.ts
 
 # Wait for results, report to user
 
-# Run second test
-npm run test:headed tests/readings.spec.ts
+# Run second test (headless)
+npm test tests/readings.spec.ts
 
 # Wait for results, report to user
 
 # Continue one at a time...
+
+# Only if debugging requires visual inspection:
+npm run test:headed tests/failing-test.spec.ts
 ```
 
 **Documentation Compliance Verification:**

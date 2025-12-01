@@ -9,6 +9,9 @@ export const PAGE_MAX_WIDTH_CLASS = 'max-w-6xl'
 export const LIST_VIEW_PAGE_SIZE = 50 // Number of items to load per page in list views
 export const SCROLL_TO_TOP_THRESHOLD = 300 // Pixels to scroll before showing scroll-to-top button
 
+// Search debounce delay
+export const SEARCH_DEBOUNCE_MS = 500 // Milliseconds to wait before triggering search
+
 // Standard sort options for module list views
 export const STANDARD_SORT_OPTIONS = [
   { value: 'date_asc', label: 'Date (Earliest First)' },
@@ -107,6 +110,7 @@ export const RELATED_EVENT_TYPE_VALUES = [
   // Other sacramental events
   'PRESENTATION',
   'BAPTISM',
+  'GROUP_BAPTISM',
   'MASS',
 ] as const
 export type RelatedEventType = typeof RELATED_EVENT_TYPE_VALUES[number]
@@ -159,6 +163,10 @@ export const RELATED_EVENT_TYPE_LABELS: Record<string, { en: string; es: string 
   BAPTISM: {
     en: 'Baptism',
     es: 'Bautismo'
+  },
+  GROUP_BAPTISM: {
+    en: 'Group Baptism',
+    es: 'Bautismo Grupal'
   },
   MASS: {
     en: 'Mass',
@@ -226,6 +234,13 @@ export const MODULE_RELATED_EVENT_TYPE_MAP: Record<string, {
     module: 'quinceaneras',
     column: 'quinceanera_reception_id',
     display: { en: 'Quinceañera Reception', es: 'Recepción de Quinceañera' }
+  },
+
+  // Group Baptism module events
+  GROUP_BAPTISM: {
+    module: 'group-baptisms' as any,
+    column: 'group_baptism_event_id',
+    display: { en: 'Group Baptism', es: 'Bautismo Grupal' }
   },
 
   // Mass Intentions (special case: uses liturgical_event_id)

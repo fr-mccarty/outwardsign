@@ -210,7 +210,7 @@ const translations = {
       },
       baptisms: {
         title: "Baptisms",
-        description: "Preparation classes, godparent tracking, celebration"
+        description: "Individual and group baptisms, preparation classes, godparent tracking"
       },
       quinceaneras: {
         title: "Quinceañeras",
@@ -528,7 +528,7 @@ const translations = {
       },
       baptisms: {
         title: "Bautismos",
-        description: "Clases de preparación, seguimiento de padrinos, celebración"
+        description: "Bautismos individuales y grupales, clases de preparación, seguimiento de padrinos"
       },
       quinceaneras: {
         title: "Quinceañeras",

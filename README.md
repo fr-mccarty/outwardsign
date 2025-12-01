@@ -40,7 +40,7 @@ This tool recognizes that when we prepare sacraments and sacramentals with care,
 
 ## ✨ Features
 
-- **Sacrament & Sacramental Planning:** Manage Masses, weddings, funerals, baptisms, presentations, and quinceañeras with dedicated workflows for each celebration type
+- **Sacrament & Sacramental Planning:** Manage Masses, weddings, funerals, baptisms (including group baptisms), presentations, and quinceañeras with dedicated workflows for each celebration type
 - **Weekend Summary:** Generate comprehensive at-a-glance weekend reports (Saturday-Sunday) showing all sacraments, Masses, and liturgical ministers for sacristy reference
 - **Mass Scheduling System:** Bulk scheduling wizard for creating multiple Masses over date ranges with automatic minister assignment based on preferences and availability
 - **Mass Role Management:** Dedicated system for managing liturgical roles (Lectors, EMHCs, Altar Servers, Cantors, Ushers) with templates, preferences, and blackout dates

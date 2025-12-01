@@ -93,41 +93,35 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {canAccess('baptisms') && (
+              {(canAccess('baptisms') || canAccess('group-baptisms')) && (
                 <CollapsibleNavSection
                   name="Baptisms"
                   icon={Droplet}
                   items={[
-                    {
-                      title: "Our Baptisms",
-                      url: "/baptisms",
-                      icon: Droplet,
-                    },
-                    {
-                      title: "New Baptisms",
-                      url: "/baptisms/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
-              {canAccess('group-baptisms') && (
-                <CollapsibleNavSection
-                  name="Group Baptisms"
-                  icon={Users}
-                  items={[
-                    {
-                      title: "Our Group Baptisms",
-                      url: "/group-baptisms",
-                      icon: Users,
-                    },
-                    {
-                      title: "New Group Baptism",
-                      url: "/group-baptisms/create",
-                      icon: Plus,
-                    },
+                    ...(canAccess('baptisms') ? [
+                      {
+                        title: "Our Baptisms",
+                        url: "/baptisms",
+                        icon: Droplet,
+                      },
+                      {
+                        title: "New Baptism",
+                        url: "/baptisms/create",
+                        icon: Plus,
+                      },
+                    ] : []),
+                    ...(canAccess('group-baptisms') ? [
+                      {
+                        title: "Our Group Baptisms",
+                        url: "/group-baptisms",
+                        icon: Droplet,
+                      },
+                      {
+                        title: "New Group Baptism",
+                        url: "/group-baptisms/create",
+                        icon: Plus,
+                      },
+                    ] : []),
                   ]}
                   defaultOpen={false}
                 />

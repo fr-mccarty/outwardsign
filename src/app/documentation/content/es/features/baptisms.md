@@ -297,11 +297,27 @@ Para bautismos fuera de Misa:
 
 ### Bautismos Grupales
 
-Al bautizar múltiples infantes juntos:
-1. Crea registro de bautismo separado para cada niño
-2. Coordina horarios de todas las familias
-3. Asegura ministros y asistentes adecuados
-4. Puede necesitar adaptar ceremonia para múltiples candidatos
+Al celebrar el bautismo para múltiples niños juntos en una sola ceremonia:
+
+**Usando el Módulo de Bautismos Grupales:**
+1. Navega a **Bautismos Grupales** en la barra lateral
+2. Haz clic en **Crear Bautismo Grupal** y proporciona:
+   - Nombre del grupo (p. ej., "Bautismo Grupal de Noviembre 2025")
+   - Detalles del evento de ceremonia (fecha, hora, ubicación)
+   - Presidente para el grupo
+3. Agrega bautismos al grupo:
+   - **Vincular bautismos existentes** - Selecciona registros de bautismo individual ya creados
+   - **Crear nuevos bautismos en línea** - Agrega niños directamente dentro del grupo
+4. Genera un guion de ceremonia combinado mostrando todos los niños y familias
+5. Imprime o exporta el documento de bautismo grupal para el presidente
+
+**Beneficios de los Bautismos Grupales:**
+- Guion litúrgico único que enumera todos los niños que serán bautizados
+- Detalles de evento coordinados para múltiples familias
+- Lista clara de todos los participantes para el presidente
+- Preparación simplificada para ceremonias con varios bautismos
+
+Cada niño todavía tiene su propio registro de bautismo individual para documentación sacramental, pero el bautismo grupal proporciona una experiencia de ceremonia unificada y un guion.
 
 ### Bautismo de Emergencia
 

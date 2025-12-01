@@ -16,6 +16,8 @@ import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequi
 import { SEX_VALUES, SEX_LABELS, type Sex } from '@/lib/constants'
 import { FormInput } from '@/components/form-input'
 import { ImageCropUpload } from '@/components/image-crop-upload'
+import { useDebounce } from '@/hooks/use-debounce'
+import { SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 
 interface PeoplePickerProps {
   open: boolean
@@ -65,7 +67,6 @@ export function PeoplePicker({
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [showPronunciation, setShowPronunciation] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({})
@@ -74,14 +75,8 @@ export function PeoplePicker({
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const PAGE_SIZE = 10
 
-  // Debounce search query with 1000ms delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS)
 
   // Auto-expand pronunciation section when editing a person with pronunciation data
   useEffect(() => {

@@ -59,7 +59,16 @@ interface ModuleViewPanelProps {
    * Delete function (optional)
    * If provided, shows delete button in Delete section
    */
-  onDelete?: (id: string) => Promise<void>
+  onDelete?: (id: string, options?: any) => Promise<void>
+
+  /**
+   * Optional cascade delete configuration (optional)
+   * If provided, shows checkbox in delete confirmation dialog
+   */
+  cascadeDelete?: {
+    label: string
+    description?: string
+  }
 }
 
 export function ModuleViewPanel({
@@ -71,6 +80,7 @@ export function ModuleViewPanel({
   templateSelector,
   details,
   onDelete,
+  cascadeDelete,
 }: ModuleViewPanelProps) {
   return (
     <div className="w-full md:w-80 space-y-4 print:hidden order-1 md:order-2">
@@ -131,6 +141,7 @@ export function ModuleViewPanel({
                 entityType={entityType}
                 modulePath={modulePath}
                 onDelete={onDelete}
+                cascadeDelete={cascadeDelete}
               />
             </div>
           )}

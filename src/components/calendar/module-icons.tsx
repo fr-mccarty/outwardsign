@@ -8,7 +8,7 @@ import {
   type LucideIcon
 } from 'lucide-react'
 
-type ModuleType = 'wedding' | 'funeral' | 'baptism' | 'presentation' | 'quinceanera' | 'mass'
+type ModuleType = 'wedding' | 'funeral' | 'baptism' | 'group-baptism' | 'presentation' | 'quinceanera' | 'mass'
 
 export function getModuleIcon(moduleType: ModuleType | null): LucideIcon | null {
   if (!moduleType) return null
@@ -17,6 +17,7 @@ export function getModuleIcon(moduleType: ModuleType | null): LucideIcon | null 
     wedding: VenusAndMars,
     funeral: Cross,
     baptism: Droplet,
+    'group-baptism': Droplet,
     presentation: HandHeartIcon,
     quinceanera: BookHeart,
     mass: CirclePlus,

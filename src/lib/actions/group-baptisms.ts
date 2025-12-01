@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
-import { GroupBaptism, Person, Event } from '@/lib/types'
+import { GroupBaptism, Person, Event, Baptism } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import { BaptismWithRelations } from '@/lib/actions/baptisms'
 import type { ModuleStatus } from '@/lib/constants'
@@ -16,6 +16,10 @@ import {
   type CreateGroupBaptismData,
   type UpdateGroupBaptismData
 } from '@/lib/schemas/group-baptisms'
+import {
+  createBaptismSchema,
+  type CreateBaptismData
+} from '@/lib/schemas/baptisms'
 
 export interface GroupBaptismFilterParams {
   search?: string
@@ -372,7 +376,7 @@ export async function updateGroupBaptism(id: string, data: UpdateGroupBaptismDat
   return groupBaptism
 }
 
-export async function deleteGroupBaptism(id: string): Promise<void> {
+export async function deleteGroupBaptism(id: string, options?: { deleteLinkedBaptisms?: boolean }): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -385,6 +389,20 @@ export async function deleteGroupBaptism(id: string): Promise<void> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'group-baptisms')
 
+  // If deleteLinkedBaptisms is true, delete all linked baptisms first
+  if (options?.deleteLinkedBaptisms) {
+    const { error: baptismsError } = await supabase
+      .from('baptisms')
+      .delete()
+      .eq('group_baptism_id', id)
+
+    if (baptismsError) {
+      console.error('Error deleting linked baptisms:', baptismsError)
+      throw new Error('Failed to delete linked baptisms')
+    }
+  }
+
+  // Delete the group baptism (linked baptisms will have group_baptism_id set to NULL if not deleted)
   const { error } = await supabase
     .from('group_baptisms')
     .delete()
@@ -396,10 +414,15 @@ export async function deleteGroupBaptism(id: string): Promise<void> {
   }
 
   revalidatePath('/group-baptisms')
+  revalidatePath('/baptisms')
 }
 
-// Baptism linking operations
-
+/**
+ * Add an existing baptism to a group
+ * @param groupBaptismId - ID of the group baptism
+ * @param baptismId - ID of the baptism to add
+ * @returns Updated baptism
+ */
 export async function addBaptismToGroup(groupBaptismId: string, baptismId: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -413,7 +436,7 @@ export async function addBaptismToGroup(groupBaptismId: string, baptismId: strin
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'group-baptisms')
 
-  // Check if baptism is already in a group
+  // Check that the baptism is not already in a group
   const { data: baptism } = await supabase
     .from('baptisms')
     .select('group_baptism_id')
@@ -421,10 +444,10 @@ export async function addBaptismToGroup(groupBaptismId: string, baptismId: strin
     .single()
 
   if (baptism?.group_baptism_id) {
-    throw new Error('This baptism is already part of another group')
+    throw new Error('This baptism is already part of a group')
   }
 
-  // Update baptism with group_baptism_id
+  // Update the baptism to link it to the group
   const { error } = await supabase
     .from('baptisms')
     .update({ group_baptism_id: groupBaptismId })
@@ -435,12 +458,15 @@ export async function addBaptismToGroup(groupBaptismId: string, baptismId: strin
     throw new Error('Failed to add baptism to group')
   }
 
-  revalidatePath('/group-baptisms')
   revalidatePath(`/group-baptisms/${groupBaptismId}`)
   revalidatePath(`/group-baptisms/${groupBaptismId}/edit`)
   revalidatePath(`/baptisms/${baptismId}`)
 }
 
+/**
+ * Remove a baptism from a group
+ * @param baptismId - ID of the baptism to remove
+ */
 export async function removeBaptismFromGroup(baptismId: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
@@ -454,7 +480,7 @@ export async function removeBaptismFromGroup(baptismId: string): Promise<void> {
   const userParish = await getUserParishRole(user.id, selectedParishId)
   requireModuleAccess(userParish, 'group-baptisms')
 
-  // Get the baptism to find the group it belongs to
+  // Get the group_baptism_id before removing
   const { data: baptism } = await supabase
     .from('baptisms')
     .select('group_baptism_id')
@@ -463,7 +489,7 @@ export async function removeBaptismFromGroup(baptismId: string): Promise<void> {
 
   const groupBaptismId = baptism?.group_baptism_id
 
-  // Remove baptism from group
+  // Update the baptism to unlink it from the group
   const { error } = await supabase
     .from('baptisms')
     .update({ group_baptism_id: null })
@@ -474,7 +500,6 @@ export async function removeBaptismFromGroup(baptismId: string): Promise<void> {
     throw new Error('Failed to remove baptism from group')
   }
 
-  revalidatePath('/group-baptisms')
   if (groupBaptismId) {
     revalidatePath(`/group-baptisms/${groupBaptismId}`)
     revalidatePath(`/group-baptisms/${groupBaptismId}/edit`)
@@ -482,20 +507,16 @@ export async function removeBaptismFromGroup(baptismId: string): Promise<void> {
   revalidatePath(`/baptisms/${baptismId}`)
 }
 
+/**
+ * Create a new baptism and add it to a group
+ * @param groupBaptismId - ID of the group baptism
+ * @param data - Baptism data
+ * @returns Newly created baptism
+ */
 export async function createBaptismInGroup(
   groupBaptismId: string,
-  baptismData: {
-    child_id?: string | null
-    mother_id?: string | null
-    father_id?: string | null
-    sponsor_1_id?: string | null
-    sponsor_2_id?: string | null
-    presider_id?: string | null
-    baptism_event_id?: string | null
-    status?: ModuleStatus
-    note?: string | null
-  }
-): Promise<void> {
+  data: CreateBaptismData
+): Promise<Baptism> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -506,45 +527,30 @@ export async function createBaptismInGroup(
     throw new Error('User not authenticated')
   }
   const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'baptisms')
+  requireModuleAccess(userParish, 'group-baptisms')
 
-  // Get group baptism to inherit event and presider if not provided
-  const { data: groupBaptism } = await supabase
-    .from('group_baptisms')
-    .select('*')
-    .eq('id', groupBaptismId)
-    .single()
+  // Validate the data
+  const validatedData = createBaptismSchema.parse(data)
 
-  if (!groupBaptism) {
-    throw new Error('Group baptism not found')
-  }
-
-  // Create new baptism with group_baptism_id
-  const { error } = await supabase
+  // Create the baptism with group_baptism_id
+  const { data: baptism, error } = await supabase
     .from('baptisms')
-    .insert([
-      {
-        parish_id: selectedParishId,
-        group_baptism_id: groupBaptismId,
-        child_id: baptismData.child_id || null,
-        mother_id: baptismData.mother_id || null,
-        father_id: baptismData.father_id || null,
-        sponsor_1_id: baptismData.sponsor_1_id || null,
-        sponsor_2_id: baptismData.sponsor_2_id || null,
-        presider_id: baptismData.presider_id || groupBaptism.presider_id || null,
-        baptism_event_id: baptismData.baptism_event_id || groupBaptism.group_baptism_event_id || null,
-        status: baptismData.status || groupBaptism.status || 'PLANNING',
-        note: baptismData.note || null,
-      }
-    ])
+    .insert({
+      parish_id: selectedParishId,
+      group_baptism_id: groupBaptismId,
+      ...validatedData
+    })
+    .select()
+    .single()
 
   if (error) {
     console.error('Error creating baptism in group:', error)
     throw new Error('Failed to create baptism in group')
   }
 
-  revalidatePath('/group-baptisms')
   revalidatePath(`/group-baptisms/${groupBaptismId}`)
   revalidatePath(`/group-baptisms/${groupBaptismId}/edit`)
   revalidatePath('/baptisms')
+
+  return baptism
 }

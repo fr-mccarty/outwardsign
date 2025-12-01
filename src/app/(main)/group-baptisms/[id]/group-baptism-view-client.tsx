@@ -182,6 +182,9 @@ export function GroupBaptismViewClient({ groupBaptism }: GroupBaptismViewClientP
     </>
   )
 
+  // Get baptism count for cascade delete message
+  const baptismCount = groupBaptism.baptisms?.length || 0
+
   return (
     <ModuleViewContainer
       entity={groupBaptism}
@@ -196,6 +199,10 @@ export function GroupBaptismViewClient({ groupBaptism }: GroupBaptismViewClientP
       templateSelector={templateSelector}
       details={details}
       onDelete={deleteGroupBaptism}
+      cascadeDelete={baptismCount > 0 ? {
+        label: `Also delete all ${baptismCount} linked baptism${baptismCount !== 1 ? 's' : ''}`,
+        description: 'If unchecked, baptisms will remain as individual baptisms.'
+      } : undefined}
     />
   )
 }

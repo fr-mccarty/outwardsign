@@ -20,6 +20,8 @@ interface DeleteConfirmationDialogProps {
   description?: string
   /** Button label, defaults to "Delete". Use "Remove" for membership removals. */
   actionLabel?: string
+  /** Optional additional content to display in the dialog body */
+  children?: React.ReactNode
 }
 
 export function DeleteConfirmationDialog({
@@ -30,6 +32,7 @@ export function DeleteConfirmationDialog({
   itemName,
   description,
   actionLabel = "Delete",
+  children,
 }: DeleteConfirmationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -66,6 +69,7 @@ export function DeleteConfirmationDialog({
             )}
           </DialogDescription>
         </DialogHeader>
+        {children}
         <DialogFooter>
           <Button
             variant="ghost"

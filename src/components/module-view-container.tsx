@@ -101,7 +101,16 @@ interface ModuleViewContainerProps {
    * Delete function (optional)
    * If provided, shows delete button at bottom of sidebar panel
    */
-  onDelete?: (id: string) => Promise<void>
+  onDelete?: (id: string, options?: any) => Promise<void>
+
+  /**
+   * Optional cascade delete configuration (optional)
+   * If provided, shows checkbox in delete confirmation dialog
+   */
+  cascadeDelete?: {
+    label: string
+    description?: string
+  }
 }
 
 /**
@@ -120,6 +129,7 @@ export function ModuleViewContainer({
   templateSelector,
   details,
   onDelete,
+  cascadeDelete,
 }: ModuleViewContainerProps) {
   const [liturgyContent, setLiturgyContent] = useState<React.ReactNode>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -165,6 +175,7 @@ export function ModuleViewContainer({
         templateSelector={templateSelector}
         details={details}
         onDelete={onDelete}
+        cascadeDelete={cascadeDelete}
       />
 
       {/* Main Content - appears second on mobile, first on desktop */}

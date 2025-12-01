@@ -10,7 +10,7 @@ export default async function CreateGroupBaptismPage() {
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Group Baptisms', href: '/group-baptisms' },
+    { label: 'Our Group Baptisms', href: '/group-baptisms' },
     { label: 'Create', href: '/group-baptisms/create' }
   ]
 

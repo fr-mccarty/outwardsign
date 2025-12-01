@@ -26,6 +26,7 @@ import {
   createGroupBaptismSchema,
   type CreateGroupBaptismData
 } from "@/lib/schemas/group-baptisms"
+import { BaptismsSection } from "./baptisms-section"
 
 interface GroupBaptismFormProps {
   groupBaptism?: GroupBaptismWithRelations
@@ -132,7 +133,7 @@ export function GroupBaptismForm({ groupBaptism, formId, onLoadingChange }: Grou
           onShowPickerChange={groupBaptismEvent.setShowPicker}
           placeholder="Add Group Baptism Event"
           openToNewEvent={!groupBaptismEvent.value}
-          defaultRelatedEventType="BAPTISM"
+          defaultRelatedEventType="GROUP_BAPTISM"
           defaultName={name || "Group Baptism"}
           disableSearch={true}
         />
@@ -185,17 +186,9 @@ export function GroupBaptismForm({ groupBaptism, formId, onLoadingChange }: Grou
         />
       </FormSectionCard>
 
-      {/* Baptisms in Group Section - Will be added in Phase 4 */}
+      {/* Baptisms in Group Section */}
       {isEditing && groupBaptism && (
-        <FormSectionCard
-          title={`Baptisms in This Group (${groupBaptism.baptisms?.length || 0})`}
-          description="Manage the individual baptisms that are part of this group ceremony"
-        >
-          <div className="text-sm text-muted-foreground">
-            <p>Baptism management components will be added in Phase 4.</p>
-            <p className="mt-2">Current baptisms in this group: {groupBaptism.baptisms?.length || 0}</p>
-          </div>
-        </FormSectionCard>
+        <BaptismsSection groupBaptism={groupBaptism} />
       )}
 
       {/* Bottom Actions */}

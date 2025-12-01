@@ -297,11 +297,27 @@ For baptisms outside of Mass:
 
 ### Group Baptisms
 
-When baptizing multiple infants together:
-1. Create separate baptism record for each child
-2. Coordinate all families' schedules
-3. Ensure adequate ministers and assistants
-4. May need to adapt ceremony for multiple candidates
+When celebrating baptism for multiple children together in a single ceremony:
+
+**Using the Group Baptisms Module:**
+1. Navigate to **Group Baptisms** in the sidebar
+2. Click **Create Group Baptism** and provide:
+   - Group name (e.g., "November 2025 Group Baptism")
+   - Ceremony event details (date, time, location)
+   - Presider for the group
+3. Add baptisms to the group:
+   - **Link existing baptisms** - Select individual baptism records already created
+   - **Create new baptisms inline** - Add children directly within the group
+4. Generate a combined ceremony script showing all children and families
+5. Print or export the group baptism document for the presider
+
+**Benefits of Group Baptisms:**
+- Single liturgical script listing all children being baptized
+- Coordinated event details for multiple families
+- Clear roster of all participants for the presider
+- Streamlined preparation for ceremonies with several baptisms
+
+Each child still has their own individual baptism record for sacramental documentation, but the group baptism provides a unified ceremony experience and script.
 
 ### Emergency Baptism
 

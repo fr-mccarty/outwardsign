@@ -11,6 +11,8 @@ import { CorePicker } from '@/components/core-picker'
 import { EventFormFields } from '@/components/event-form-fields'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
 import type { RelatedEventType } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
+import { SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 
 interface EventPickerProps {
   open: boolean
@@ -77,6 +79,9 @@ export function EventPicker({
   const [searchQuery, setSearchQuery] = useState('')
   const PAGE_SIZE = 10
 
+  // Debounce search
+  const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS)
+
   // Memoize helper functions to prevent unnecessary re-renders
   const isFieldVisible = useCallback(
     (fieldName: string) => checkFieldVisible(fieldName, visibleFields, DEFAULT_VISIBLE_FIELDS),
@@ -90,9 +95,9 @@ export function EventPicker({
   // Load events when dialog opens or when page/search changes
   useEffect(() => {
     if (open) {
-      loadEvents(currentPage, searchQuery)
+      loadEvents(currentPage, debouncedSearchQuery)
     }
-  }, [open, currentPage, searchQuery])
+  }, [open, currentPage, debouncedSearchQuery])
 
   const loadEvents = async (page: number, search: string) => {
     try {

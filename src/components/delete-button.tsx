@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -26,12 +28,26 @@ interface DeleteButtonProps {
   /**
    * Server action to delete the entity
    */
-  onDelete: (id: string) => Promise<void>
+  onDelete: (id: string, options?: any) => Promise<void>
 
   /**
    * Optional custom confirmation message
    */
   confirmMessage?: string
+
+  /**
+   * Optional cascade delete configuration for entities with children
+   */
+  cascadeDelete?: {
+    /**
+     * Label for the checkbox (e.g., "Also delete all linked baptisms")
+     */
+    label: string
+    /**
+     * Description shown below the checkbox
+     */
+    description?: string
+  }
 }
 
 /**
@@ -51,13 +67,20 @@ export function DeleteButton({
   modulePath,
   onDelete,
   confirmMessage,
+  cascadeDelete,
 }: DeleteButtonProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteCascade, setDeleteCascade] = useState(false)
   const router = useRouter()
 
   const handleDelete = async () => {
     try {
-      await onDelete(entityId)
+      // Pass cascade option if configured
+      if (cascadeDelete) {
+        await onDelete(entityId, { deleteLinkedBaptisms: deleteCascade })
+      } else {
+        await onDelete(entityId)
+      }
       toast.success(`${entityType} deleted successfully`)
       router.push(`/${modulePath}`)
     } catch (error) {
@@ -85,7 +108,32 @@ export function DeleteButton({
         title={`Delete ${entityType}`}
         description={confirmMessage || `Are you sure you want to delete this ${entityType.toLowerCase()}? This action cannot be undone.`}
         actionLabel="Delete"
-      />
+      >
+        {cascadeDelete && (
+          <div className="px-6 py-4 space-y-2">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="delete-cascade"
+                checked={deleteCascade}
+                onCheckedChange={(checked) => setDeleteCascade(checked as boolean)}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="delete-cascade"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {cascadeDelete.label}
+                </Label>
+                {cascadeDelete.description && (
+                  <p className="text-sm text-muted-foreground">
+                    {cascadeDelete.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </DeleteConfirmationDialog>
     </>
   )
 }
