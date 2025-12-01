@@ -11,6 +11,7 @@ import {
   buildCoverPage,
   type CoverPageSection,
 } from '@/lib/content-builders/shared/builders'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 
 /**
  * Main builder function for baptism summary template (Spanish)
@@ -84,6 +85,9 @@ export function buildSummarySpanish(baptism: BaptismWithRelations): LiturgyDocum
   }
 
   sections.push(buildCoverPage(coverSections))
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: `baptism-summary-${baptism.id}`,

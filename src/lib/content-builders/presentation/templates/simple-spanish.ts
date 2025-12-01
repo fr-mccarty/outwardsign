@@ -11,6 +11,7 @@ import { PresentationWithRelations } from '@/lib/actions/presentations'
 import { LiturgyDocument, ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 import { formatPersonWithPhone, formatPersonWithPronunciationWithPhone, formatEventDateTime, formatLocationWithAddress } from '@/lib/utils/formatters'
 import { gendered } from '@/lib/content-builders/shared/builders'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import {
   getChildNameSpanish,
   getMotherNameSpanish,
@@ -99,7 +100,6 @@ function buildCoverPage(presentation: PresentationWithRelations): ContentSection
 
   return {
     id: 'cover',
-    pageBreakAfter: true,
     elements,
   }
 }
@@ -255,6 +255,9 @@ export function buildSimpleSpanish(presentation: PresentationWithRelations): Lit
 
   // PAGE 2: Liturgy section
   sections.push(buildLiturgySection(presentation))
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   // Return complete document
   return {

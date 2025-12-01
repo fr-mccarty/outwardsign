@@ -13,6 +13,7 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import {
   getReadingPericope,
   buildTitleEnglish,
@@ -209,7 +210,6 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
 
   return {
     id: 'summary',
-    pageBreakAfter: true,
     elements,
   }
 }
@@ -232,7 +232,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     title: 'LITURGY OF THE WORD',
     reading: quinceanera.first_reading,
     reader: quinceanera.first_reader,
-    responseText: 'Thanks be to God.',
   })
   if (firstReadingSection) {
     sections.push(firstReadingSection)
@@ -252,7 +251,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     title: 'SECOND READING',
     reading: quinceanera.second_reading,
     reader: quinceanera.second_reader,
-    responseText: 'Thanks be to God.',
   })
   if (secondReadingSection) {
     sections.push(secondReadingSection)
@@ -263,7 +261,6 @@ export function buildFullScriptEnglish(quinceanera: QuinceaneraWithRelations): L
     title: 'GOSPEL',
     reading: quinceanera.gospel_reading,
     reader: quinceanera.presider,
-    includeGospelAcclamations: true,
   })
   if (gospelSection) {
     sections.push(gospelSection)
@@ -417,7 +414,6 @@ We ask this through Christ our Lord.`,
   // Presentation of Symbols
   sections.push({
     id: 'presentation-of-symbols',
-    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
@@ -486,10 +482,8 @@ We ask this through Christ our Lord.`,
   }
 
   // Add Act of Thanksgiving and Personal Commitment
-  // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
-    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
@@ -541,6 +535,9 @@ Amen.`,
   if (announcementsSection) {
     sections.push(announcementsSection)
   }
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: quinceanera.id,

@@ -30,8 +30,8 @@ export default async function PrintBaptismPage({ params }: PageProps) {
   const templateId = baptism.baptism_template_id || 'baptism-summary-english'
   const liturgyDocument = buildBaptismLiturgy(baptism, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

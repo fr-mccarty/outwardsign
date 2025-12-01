@@ -13,6 +13,7 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import {
   getReadingPericope,
   buildTitleSpanish,
@@ -209,7 +210,6 @@ function buildSummarySection(quinceanera: QuinceaneraWithRelations): ContentSect
 
   return {
     id: 'summary',
-    pageBreakAfter: true,
     elements,
   }
 }
@@ -232,7 +232,6 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
     title: 'LITURGIA DE LA PALABRA',
     reading: quinceanera.first_reading,
     reader: quinceanera.first_reader,
-    responseText: 'Te alabamos, Señor.',
   })
   if (firstReadingSection) {
     sections.push(firstReadingSection)
@@ -252,8 +251,6 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
     title: 'SEGUNDA LECTURA',
     reading: quinceanera.second_reading,
     reader: quinceanera.second_reader,
-    responseText: 'Te alabamos, Señor.',
-    pageBreakBefore: !!quinceanera.second_reading,
   })
   if (secondReadingSection) {
     sections.push(secondReadingSection)
@@ -264,8 +261,6 @@ export function buildFullScriptSpanish(quinceanera: QuinceaneraWithRelations): L
     title: 'EVANGELIO',
     reading: quinceanera.gospel_reading,
     reader: quinceanera.presider,
-    includeGospelAcclamations: true,
-    pageBreakBefore: !!quinceanera.gospel_reading,
   })
   if (gospelSection) {
     sections.push(gospelSection)
@@ -419,7 +414,6 @@ Te lo pedimos por Cristo nuestro Señor.`,
   // Presentation of Symbols
   sections.push({
     id: 'presentation-of-symbols',
-    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
@@ -488,10 +482,8 @@ Te lo pedimos por Cristo nuestro Señor.`,
   }
 
   // Add Act of Thanksgiving and Personal Commitment
-  // Note: No pageBreakBefore needed - petitions section already has pageBreakAfter
   sections.push({
     id: 'act-of-thanksgiving',
-    pageBreakAfter: true,
     elements: [
       {
         type: 'section-title',
@@ -543,6 +535,9 @@ Amén.`,
   if (announcementsSection) {
     sections.push(announcementsSection)
   }
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: quinceanera.id,

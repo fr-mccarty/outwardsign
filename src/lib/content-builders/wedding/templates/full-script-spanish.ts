@@ -15,6 +15,7 @@ import {
   buildAnnouncementsSection,
   type CoverPageSection,
 } from '@/lib/content-builders/shared/builders'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import {
   hasRehearsalEvents,
   getReadingPericope,
@@ -140,25 +141,49 @@ export function buildFullScriptSpanish(wedding: WeddingWithRelations): LiturgyDo
   sections.push(buildCoverPage(coverSections))
 
   // 2. READINGS
-  const firstReading = buildReadingSection('first-reading', 'PRIMERA LECTURA', wedding.first_reading, wedding.first_reader)
+  const firstReading = buildReadingSection({
+    id: 'first-reading',
+    title: 'PRIMERA LECTURA',
+    reading: wedding.first_reading,
+    reader: wedding.first_reader,
+  })
   if (firstReading) sections.push(firstReading)
 
-  const psalm = buildPsalmSection(wedding.psalm, wedding.psalm_reader, wedding.psalm_is_sung)
+  const psalm = buildPsalmSection({
+    psalm: wedding.psalm,
+    psalm_reader: wedding.psalm_reader,
+    psalm_is_sung: wedding.psalm_is_sung,
+  })
   if (psalm) sections.push(psalm)
 
-  const secondReading = buildReadingSection('second-reading', 'SEGUNDA LECTURA', wedding.second_reading, wedding.second_reader)
+  const secondReading = buildReadingSection({
+    id: 'second-reading',
+    title: 'SEGUNDA LECTURA',
+    reading: wedding.second_reading,
+    reader: wedding.second_reader,
+  })
   if (secondReading) sections.push(secondReading)
 
-  const gospel = buildReadingSection('gospel', 'EVANGELIO', wedding.gospel_reading)
+  const gospel = buildReadingSection({
+    id: 'gospel',
+    title: 'EVANGELIO',
+    reading: wedding.gospel_reading,
+  })
   if (gospel) sections.push(gospel)
 
   // 3. PETITIONS
-  const petitions = buildPetitionsSection(wedding.petitions, wedding.petition_reader)
+  const petitions = buildPetitionsSection({
+    petitions: wedding.petitions,
+    petition_reader: wedding.petition_reader,
+  })
   if (petitions) sections.push(petitions)
 
   // 4. ANNOUNCEMENTS
   const announcements = buildAnnouncementsSection(wedding.announcements)
   if (announcements) sections.push(announcements)
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: wedding.id,

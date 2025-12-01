@@ -255,17 +255,17 @@ export function ReadingPickerModal({
         <div className="space-y-3 border-b pb-3 px-4 pt-4 flex-shrink-0">
           {/* Language Selector */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Language</Label>
+            <Label className="text-sm font-medium">Filter</Label>
             <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
               <SelectTrigger className="w-full sm:w-1/2">
-                <SelectValue placeholder="Select language">
-                  {selectedLanguage === 'all' ? 'All Languages' : LITURGICAL_LANGUAGE_LABELS[selectedLanguage]?.en || selectedLanguage}
+                <SelectValue placeholder="All readings">
+                  {selectedLanguage === 'all' ? 'All readings' : `${LITURGICAL_LANGUAGE_LABELS[selectedLanguage]?.en || selectedLanguage} readings`}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Languages</SelectItem>
+                <SelectItem value="all">All readings</SelectItem>
                 {availableLanguages.map(lang => (
-                  <SelectItem key={lang} value={lang}>{LITURGICAL_LANGUAGE_LABELS[lang].en}</SelectItem>
+                  <SelectItem key={lang} value={lang}>{LITURGICAL_LANGUAGE_LABELS[lang].en} readings</SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -12,44 +12,28 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  *
  * Creates a responsorial psalm section.
  * Returns null if no psalm OR if psalm is sung.
- * Always has pageBreakAfter: true.
+ * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
+ * for adding page breaks BETWEEN sections (not after the last section).
  *
- * Supports two calling styles:
- * 1. Simple: buildPsalmSection(psalm, reader, isSung)
- * 2. Config: buildPsalmSection({ psalm, psalm_reader, psalm_is_sung })
- *
- * @example
- * // Simple style
- * buildPsalmSection(wedding.psalm, wedding.psalm_reader, wedding.psalm_is_sung)
+ * @param config - Configuration object with psalm, psalm_reader, and psalm_is_sung
+ * @returns ContentSection or null if no psalm or if psalm is sung
  *
  * @example
- * // Config style (backward compatible)
- * buildPsalmSection({ psalm: wedding.psalm, psalm_reader: wedding.psalm_reader, psalm_is_sung: wedding.psalm_is_sung })
+ * buildPsalmSection({
+ *   psalm: wedding.psalm,
+ *   psalm_reader: wedding.psalm_reader,
+ *   psalm_is_sung: wedding.psalm_is_sung
+ * })
  */
-export function buildPsalmSection(
-  psalmOrConfig: any | { psalm: any; psalm_reader?: any; psalm_is_sung?: boolean; [key: string]: any },
-  reader?: any,
-  isSung?: boolean
-): ContentSection | null {
-  // Handle both calling styles
-  let psalm: any
-  let actualReader: any
-  let actualIsSung: boolean
-
-  if (psalmOrConfig && typeof psalmOrConfig === 'object' && 'psalm' in psalmOrConfig) {
-    // Config style: buildPsalmSection({ psalm, psalm_reader, psalm_is_sung })
-    psalm = psalmOrConfig.psalm
-    actualReader = psalmOrConfig.psalm_reader
-    actualIsSung = psalmOrConfig.psalm_is_sung || false
-  } else {
-    // Simple style: buildPsalmSection(psalm, reader, isSung)
-    psalm = psalmOrConfig
-    actualReader = reader
-    actualIsSung = isSung || false
-  }
+export function buildPsalmSection(config: {
+  psalm: any
+  psalm_reader?: any
+  psalm_is_sung?: boolean
+}): ContentSection | null {
+  const { psalm, psalm_reader: reader, psalm_is_sung: isSung } = config
 
   // No psalm or psalm is sung - exclude section
-  if (!psalm || actualIsSung) {
+  if (!psalm || (isSung ?? false)) {
     return null
   }
 
@@ -70,10 +54,10 @@ export function buildPsalmSection(
   }
 
   // Name of reader
-  if (actualReader) {
+  if (reader) {
     elements.push({
       type: 'reader-name',
-      text: actualReader.full_name,
+      text: reader.full_name,
     })
   }
 
@@ -88,10 +72,44 @@ export function buildPsalmSection(
 
   // Psalm text (response and verses)
   if (psalm.text) {
-    elements.push({
-      type: 'reading-text',
-      text: psalm.text,
-    })
+    // Parse psalm text to extract response and verses
+    // Format: "Reader: verse People: response Reader: verse People: response..."
+    // Split by "Reader:" and "People:" markers
+    const text = psalm.text.trim()
+
+    // Find all "Reader:" and "People:" occurrences
+    const readerMatches = [...text.matchAll(/Reader:\s*([^]*?)(?=\s*People:|$)/g)]
+    const peopleMatches = [...text.matchAll(/People:\s*([^]*?)(?=\s*Reader:|$)/g)]
+
+    if (readerMatches.length > 0 && peopleMatches.length > 0) {
+      // Extract response (should be the same each time)
+      const response = peopleMatches[0][1].trim()
+
+      // Extract all verses
+      const verses = readerMatches.map(match => match[1].trim()).filter(v => v)
+
+      // Create psalm element if we have both response and verses
+      if (response && verses.length > 0) {
+        elements.push({
+          type: 'psalm',
+          response,
+          verses,
+        })
+      } else {
+        // Fallback to plain text
+        elements.push({
+          type: 'reading-text',
+          text: psalm.text,
+        })
+      }
+    } else {
+      // Fallback: If psalm doesn't have the expected "Reader:/People:" format,
+      // render it as plain reading text
+      elements.push({
+        type: 'reading-text',
+        text: psalm.text,
+      })
+    }
   }
 
   // Conclusion (if present)
@@ -104,7 +122,6 @@ export function buildPsalmSection(
 
   return {
     id: 'psalm',
-    pageBreakAfter: true,
     elements,
   }
 }

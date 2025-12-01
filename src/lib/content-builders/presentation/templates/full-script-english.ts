@@ -16,6 +16,7 @@ import {
   gendered,
   getStatusLabel,
 } from '@/lib/content-builders/shared/builders'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import {
   getChildName,
   isBaptized,
@@ -235,6 +236,9 @@ export function buildFullScriptEnglish(presentation: PresentationWithRelations):
 
   // 2. LITURGY SECTION
   sections.push(buildLiturgySection(presentation))
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: presentation.id,

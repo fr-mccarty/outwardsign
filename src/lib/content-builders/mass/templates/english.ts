@@ -11,6 +11,7 @@ import {
   buildPetitionsSection,
   buildAnnouncementsSection,
 } from '@/lib/content-builders/shared/script-sections'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import { LITURGICAL_COLOR_LABELS } from '@/lib/constants'
 
 /**
@@ -170,7 +171,7 @@ export function buildMassEnglish(mass: MassWithRelations): LiturgyDocument {
   const sections: ContentSection[] = []
 
   // Build summary section
-  const summarySection = buildSummarySection(mass)
+  sections.push(buildSummarySection(mass))
 
   // Build petitions section
   const petitionsSection = mass.petitions
@@ -182,21 +183,12 @@ export function buildMassEnglish(mass: MassWithRelations): LiturgyDocument {
   // Build announcements section using shared builder
   const announcementsSection = buildAnnouncementsSection(mass.announcements)
 
-  // Check if there are any sections after summary
-  const hasFollowingSections = !!(
-    petitionsSection ||
-    announcementsSection
-  )
-
-  // Only add page break after summary if there are following sections
-  summarySection.pageBreakAfter = hasFollowingSections
-
-  // Add summary section (now includes notes at the end)
-  sections.push(summarySection)
-
   // Add other sections (only non-null ones)
   if (petitionsSection) sections.push(petitionsSection)
   if (announcementsSection) sections.push(announcementsSection)
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: mass.id,

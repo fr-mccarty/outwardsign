@@ -30,8 +30,8 @@ export default async function PrintWeddingPage({ params }: PageProps) {
   const templateId = wedding.wedding_template_id || 'wedding-full-script-english'
   const liturgyDocument = buildWeddingLiturgy(wedding, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

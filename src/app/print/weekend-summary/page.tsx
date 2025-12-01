@@ -44,8 +44,8 @@ export default async function PrintWeekendSummaryPage({ searchParams }: PageProp
   // Build liturgy content using centralized content builder
   const liturgyDocument = buildWeekendSummary(weekendData, weekendParams)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

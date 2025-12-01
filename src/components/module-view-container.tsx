@@ -174,7 +174,7 @@ export function ModuleViewContainer({
 
         {/* Liturgy Content (only if liturgy builder is provided) */}
         {(liturgyContent || isLoading) && (
-          <Card className="bg-white">
+          <Card className="bg-card text-card-foreground border">
             <CardContent className="p-6 space-y-6">
               {isLoading ? (
                 <div className="text-center text-muted-foreground py-8">Loading content...</div>

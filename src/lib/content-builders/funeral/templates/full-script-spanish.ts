@@ -15,6 +15,7 @@ import {
   buildAnnouncementsSection,
   type CoverPageSection,
 } from '@/lib/content-builders/shared/builders'
+import { addPageBreaksBetweenSections } from '@/lib/content-builders/shared/helpers'
 import {
   buildTitleSpanish,
   getEventSubtitleSpanish,
@@ -102,25 +103,50 @@ export function buildFullScriptSpanish(funeral: FuneralWithRelations): LiturgyDo
   sections.push(buildCoverPage(coverSections))
 
   // 2. READINGS
-  const firstReading = buildReadingSection('first-reading', 'PRIMERA LECTURA', funeral.first_reading, funeral.first_reader)
+  const firstReading = buildReadingSection({
+    id: 'first-reading',
+    title: 'PRIMERA LECTURA',
+    reading: funeral.first_reading,
+    reader: funeral.first_reader,
+  })
   if (firstReading) sections.push(firstReading)
 
-  const psalm = buildPsalmSection(funeral.psalm, funeral.psalm_reader, funeral.psalm_is_sung)
+  const psalm = buildPsalmSection({
+    psalm: funeral.psalm,
+    psalm_reader: funeral.psalm_reader,
+    psalm_is_sung: funeral.psalm_is_sung,
+  })
   if (psalm) sections.push(psalm)
 
-  const secondReading = buildReadingSection('second-reading', 'SEGUNDA LECTURA', funeral.second_reading, funeral.second_reader)
+  const secondReading = buildReadingSection({
+    id: 'second-reading',
+    title: 'SEGUNDA LECTURA',
+    reading: funeral.second_reading,
+    reader: funeral.second_reader,
+  })
   if (secondReading) sections.push(secondReading)
 
-  const gospel = buildReadingSection('gospel', 'EVANGELIO', funeral.gospel_reading, funeral.presider)
+  const gospel = buildReadingSection({
+    id: 'gospel',
+    title: 'EVANGELIO',
+    reading: funeral.gospel_reading,
+    reader: funeral.presider,
+  })
   if (gospel) sections.push(gospel)
 
   // 3. PETITIONS
-  const petitions = buildPetitionsSection(funeral.petitions, funeral.petition_reader)
+  const petitions = buildPetitionsSection({
+    petitions: funeral.petitions,
+    petition_reader: funeral.petition_reader,
+  })
   if (petitions) sections.push(petitions)
 
   // 4. ANNOUNCEMENTS
   const announcements = buildAnnouncementsSection(funeral.announcements)
   if (announcements) sections.push(announcements)
+
+  // Add page breaks between sections (not after the last section)
+  addPageBreaksBetweenSections(sections)
 
   return {
     id: funeral.id,

@@ -11,7 +11,8 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  * Build a ceremony section
  *
  * Creates a ceremony section with custom elements.
- * Always has pageBreakAfter: true.
+ * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
+ * for adding page breaks BETWEEN sections (not after the last section).
  *
  * @param id - Section ID (e.g., 'marriage-consent', 'nuptial-blessing')
  * @param elements - Array of ceremony elements
@@ -31,7 +32,6 @@ export function buildCeremonySection(
 ): ContentSection {
   return {
     id,
-    pageBreakAfter: true,
     elements,
   }
 }

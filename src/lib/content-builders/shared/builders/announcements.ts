@@ -12,7 +12,8 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  *
  * Creates simple announcements section.
  * Returns null if no announcements provided.
- * Always has pageBreakAfter: true.
+ * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
+ * for adding page breaks BETWEEN sections (not after the last section).
  *
  * @param announcements - Announcement text
  * @returns ContentSection or null if no announcements
@@ -44,7 +45,6 @@ export function buildAnnouncementsSection(
 
   return {
     id: 'announcements',
-    pageBreakAfter: true,
     elements,
   }
 }

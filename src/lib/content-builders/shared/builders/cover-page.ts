@@ -27,7 +27,8 @@ export interface CoverPageSection {
  * Build cover page section
  *
  * Creates the first page with event details organized into subsections.
- * Always has pageBreakAfter: true to separate from liturgy content.
+ * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
+ * for adding page breaks BETWEEN sections (not after the last section).
  *
  * @param sections - Array of subsections, each with title and label-value rows
  * @returns ContentSection with all cover page elements
@@ -77,7 +78,6 @@ export function buildCoverPage(sections: CoverPageSection[]): ContentSection {
 
   return {
     id: 'summary',
-    pageBreakAfter: true,
     elements,
   }
 }

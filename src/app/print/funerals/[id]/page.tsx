@@ -30,8 +30,8 @@ export default async function PrintFuneralPage({ params }: PageProps) {
   const templateId = funeral.funeral_template_id || 'funeral-full-script-english'
   const liturgyDocument = buildFuneralLiturgy(funeral, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

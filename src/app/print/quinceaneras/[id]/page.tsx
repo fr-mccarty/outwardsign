@@ -30,8 +30,8 @@ export default async function PrintQuinceaneraPage({ params }: PageProps) {
   const templateId = quinceanera.quinceanera_template_id || 'quinceanera-full-script-english'
   const liturgyDocument = buildQuinceaneraLiturgy(quinceanera, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

@@ -101,6 +101,16 @@ export interface ConclusionElement extends BaseElement {
 }
 
 /**
+ * Psalm verse/response structure
+ * Represents a complete psalm with response (refrain) and verses
+ */
+export interface PsalmElement extends BaseElement {
+  type: 'psalm'
+  response: string      // The refrain/response that repeats (e.g., "I will walk in the presence of the Lord in the land of the living.")
+  verses: string[]      // Array of verses read by the reader
+}
+
+/**
  * Response dialogue (e.g., "People: Thanks be to God")
  * Label is rendered bold, text is rendered normal
  */
@@ -197,6 +207,7 @@ export type ContentElement =
   | IntroductionElement
   | ReadingTextElement
   | ConclusionElement
+  | PsalmElement
   | ResponseDialogueElement
   | PresiderDialogueElement
   | PetitionElement

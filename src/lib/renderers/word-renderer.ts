@@ -168,6 +168,28 @@ function renderElement(element: ContentElement): Paragraph | Paragraph[] {
         createStyledTextRun('conclusion', element.text),
       ])
 
+    case 'psalm': {
+      const paragraphs: Paragraph[] = []
+
+      // Verses with response after each
+      element.verses.forEach((verse) => {
+        paragraphs.push(
+          createStyledParagraph('psalm-verse', [
+            new TextRun({ text: 'Reader: ', bold: true }),
+            createStyledTextRun('psalm-verse', verse),
+          ])
+        )
+        paragraphs.push(
+          createStyledParagraph('psalm-response', [
+            new TextRun({ text: 'People: ', bold: true }),
+            createStyledTextRun('psalm-response', element.response),
+          ])
+        )
+      })
+
+      return paragraphs
+    }
+
     case 'response-dialogue':
       return createStyledParagraph('response-dialogue', [
         createStyledTextRun('response-dialogue-label', element.label || ''),

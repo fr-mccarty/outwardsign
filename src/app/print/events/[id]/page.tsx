@@ -29,8 +29,8 @@ export default async function PrintEventPage({ params }: PageProps) {
   const templateId = event.event_template_id || 'event-full-script-english'
   const liturgyDocument = buildEventLiturgy(event, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

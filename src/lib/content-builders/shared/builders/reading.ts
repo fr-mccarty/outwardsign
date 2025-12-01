@@ -12,48 +12,30 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  *
  * Creates a reading section with standard liturgical structure.
  * Returns null if no reading is provided.
- * Always has pageBreakAfter: true.
+ * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
+ * for adding page breaks BETWEEN sections (not after the last section).
  *
- * Supports two calling styles:
- * 1. Simple: buildReadingSection(id, title, reading, reader)
- * 2. Config: buildReadingSection({ id, title, reading, reader, ... })
- *
- * @example
- * // Simple style
- * buildReadingSection('first-reading', 'FIRST READING', wedding.first_reading, wedding.first_reader)
+ * @param config - Configuration object with id, title, reading, and optional reader
+ * @returns ContentSection or null if no reading provided
  *
  * @example
- * // Config style (backward compatible)
- * buildReadingSection({ id: 'first-reading', title: 'FIRST READING', reading: wedding.first_reading, reader: wedding.first_reader })
+ * buildReadingSection({
+ *   id: 'first-reading',
+ *   title: 'FIRST READING',
+ *   reading: wedding.first_reading,
+ *   reader: wedding.first_reader
+ * })
  */
-export function buildReadingSection(
-  idOrConfig: string | { id: string; title: string; reading: any; reader?: any; [key: string]: any },
-  title?: string,
-  reading?: any,
+export function buildReadingSection(config: {
+  id: string
+  title: string
+  reading: any
   reader?: any
-): ContentSection | null {
-  // Handle both calling styles
-  let id: string
-  let actualReading: any
-  let actualReader: any
-  let actualTitle: string
-
-  if (typeof idOrConfig === 'string') {
-    // Simple style: buildReadingSection(id, title, reading, reader)
-    id = idOrConfig
-    actualTitle = title!
-    actualReading = reading
-    actualReader = reader
-  } else {
-    // Config style: buildReadingSection({ id, title, reading, reader })
-    id = idOrConfig.id
-    actualTitle = idOrConfig.title
-    actualReading = idOrConfig.reading
-    actualReader = idOrConfig.reader
-  }
+}): ContentSection | null {
+  const { id, title, reading, reader } = config
 
   // No reading - exclude section
-  if (!actualReading) {
+  if (!reading) {
     return null
   }
 
@@ -62,47 +44,47 @@ export function buildReadingSection(
   // Reading title (e.g., "FIRST READING")
   elements.push({
     type: 'reading-title',
-    text: actualTitle,
+    text: title,
   })
 
   // Reading name / pericope (e.g., "Romans 12:1-2")
-  if (actualReading.pericope) {
+  if (reading.pericope) {
     elements.push({
       type: 'pericope',
-      text: actualReading.pericope,
+      text: reading.pericope,
     })
   }
 
   // Name of reader
-  if (actualReader) {
+  if (reader) {
     elements.push({
       type: 'reader-name',
-      text: actualReader.full_name,
+      text: reader.full_name,
     })
   }
 
   // Reading itself
   // Introduction (if present)
-  if (actualReading.introduction) {
+  if (reading.introduction) {
     elements.push({
       type: 'introduction',
-      text: actualReading.introduction,
+      text: reading.introduction,
     })
   }
 
   // Body text
-  if (actualReading.text) {
+  if (reading.text) {
     elements.push({
       type: 'reading-text',
-      text: actualReading.text,
+      text: reading.text,
     })
   }
 
   // Conclusion (if present)
-  if (actualReading.conclusion) {
+  if (reading.conclusion) {
     elements.push({
       type: 'conclusion',
-      text: actualReading.conclusion,
+      text: reading.conclusion,
     })
   }
 
@@ -115,7 +97,6 @@ export function buildReadingSection(
 
   return {
     id,
-    pageBreakAfter: true,
     elements,
   }
 }

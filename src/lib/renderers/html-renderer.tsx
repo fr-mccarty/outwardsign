@@ -25,13 +25,14 @@ import {
 /**
  * Apply resolved style properties to HTML CSS
  * Pure converter - no style lookups or decisions
+ * @param style - Resolved style object
+ * @param isPrintMode - If true, includes inline color for print pages; if false, excludes color for theme support
  */
-function applyResolvedStyle(style: ResolvedStyle): React.CSSProperties {
-  return {
+function applyResolvedStyle(style: ResolvedStyle, isPrintMode: boolean = false): React.CSSProperties {
+  const baseStyle: React.CSSProperties = {
     fontSize: `${convert.pointsToPx(style.fontSize)}px`,
     fontWeight: style.bold ? 'bold' : 'normal',
     fontStyle: style.italic ? 'italic' : 'normal',
-    color: style.color,
     textAlign: style.alignment,
     marginTop: `${convert.pointsToPx(style.marginTop)}px`,
     marginBottom: `${convert.pointsToPx(style.marginBottom)}px`,
@@ -39,6 +40,28 @@ function applyResolvedStyle(style: ResolvedStyle): React.CSSProperties {
     fontFamily: LITURGY_FONT,
     whiteSpace: style.preserveLineBreaks ? 'pre-wrap' : 'normal',
   }
+
+  // Include color in inline styles for print mode, exclude for view mode (uses className instead)
+  if (isPrintMode) {
+    baseStyle.color = style.color
+  }
+
+  return baseStyle
+}
+
+/**
+ * Map color values to theme-aware Tailwind classes
+ * This enables automatic dark mode support in view pages
+ * @param color - Hex color from resolved style (e.g., '#000000', '#c41e3a')
+ * @returns Tailwind color class that adapts to theme
+ */
+function getColorClassName(color: string): string {
+  // Liturgical red → destructive color (adapts to theme)
+  if (color === '#c41e3a') {
+    return 'text-destructive'
+  }
+  // Black → foreground color (adapts to theme)
+  return 'text-foreground'
 }
 
 // ============================================================================
@@ -48,12 +71,12 @@ function applyResolvedStyle(style: ResolvedStyle): React.CSSProperties {
 /**
  * Render a single content element to React JSX
  */
-function renderElement(element: ContentElement, index: number): React.ReactNode {
+function renderElement(element: ContentElement, index: number, isPrintMode: boolean = false): React.ReactNode {
   switch (element.type) {
     case 'event-title': {
       const style = resolveElementStyle('event-title')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -62,7 +85,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'event-datetime': {
       const style = resolveElementStyle('event-datetime')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -71,7 +94,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'section-title': {
       const style = resolveElementStyle('section-title')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -80,7 +103,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'reading-title': {
       const style = resolveElementStyle('reading-title')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -89,7 +112,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'pericope': {
       const style = resolveElementStyle('pericope')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -98,7 +121,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'reader-name': {
       const style = resolveElementStyle('reader-name')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -107,7 +130,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'introduction': {
       const style = resolveElementStyle('introduction')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -116,7 +139,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'reading-text': {
       const style = resolveElementStyle('reading-text')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -125,10 +148,33 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'conclusion': {
       const style = resolveElementStyle('conclusion')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
+    }
+
+    case 'psalm': {
+      const responseStyle = resolveElementStyle('psalm-response')
+      const verseStyle = resolveElementStyle('psalm-verse')
+
+      if (!responseStyle || !verseStyle) return null
+
+      return (
+        <div key={index}>
+          {/* Verses with response after each */}
+          {element.verses.map((verse, verseIndex) => (
+            <div key={verseIndex}>
+              <div className={getColorClassName(verseStyle.color)} style={applyResolvedStyle(verseStyle, isPrintMode)}>
+                <strong>Reader:</strong> {verse}
+              </div>
+              <div className={getColorClassName(responseStyle.color)} style={applyResolvedStyle(responseStyle, isPrintMode)}>
+                <strong>People:</strong> {element.response}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
     }
 
     case 'response-dialogue': {
@@ -136,10 +182,10 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       const labelStyle = resolveElementStyle('response-dialogue-label')
       const textStyle = resolveElementStyle('response-dialogue-text')
       return containerStyle && labelStyle && textStyle ? (
-        <div key={index} style={applyResolvedStyle(containerStyle)}>
-          <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
+        <div key={index} className={getColorClassName(containerStyle.color)} style={applyResolvedStyle(containerStyle, isPrintMode)}>
+          <span className={getColorClassName(labelStyle.color)} style={applyResolvedStyle(labelStyle, isPrintMode)}>{element.label}</span>
           {' '}
-          <span style={applyResolvedStyle(textStyle)}>{element.text}</span>
+          <span className={getColorClassName(textStyle.color)} style={applyResolvedStyle(textStyle, isPrintMode)}>{element.text}</span>
         </div>
       ) : null
     }
@@ -152,16 +198,16 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
         const labelStyle = resolveElementStyle('presider-dialogue-label')
         const textStyle = resolveElementStyle('presider-dialogue-text')
         return labelStyle && textStyle ? (
-          <div key={index} style={applyResolvedStyle(containerStyle)}>
-            <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
+          <div key={index} className={getColorClassName(containerStyle.color)} style={applyResolvedStyle(containerStyle, isPrintMode)}>
+            <span className={getColorClassName(labelStyle.color)} style={applyResolvedStyle(labelStyle, isPrintMode)}>{element.label}</span>
             {' '}
-            <span style={applyResolvedStyle(textStyle)}>{element.text}</span>
+            <span className={getColorClassName(textStyle.color)} style={applyResolvedStyle(textStyle, isPrintMode)}>{element.text}</span>
           </div>
         ) : null
       }
 
       return (
-        <div key={index} style={applyResolvedStyle(containerStyle)}>
+        <div key={index} className={getColorClassName(containerStyle.color)} style={applyResolvedStyle(containerStyle, isPrintMode)}>
           {element.text}
         </div>
       )
@@ -172,10 +218,10 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
       const labelStyle = resolveElementStyle('petition-label')
       const textStyle = resolveElementStyle('petition-text')
       return containerStyle && labelStyle && textStyle ? (
-        <div key={index} style={applyResolvedStyle(containerStyle)}>
-          <span style={applyResolvedStyle(labelStyle)}>{element.label}</span>
+        <div key={index} className={getColorClassName(containerStyle.color)} style={applyResolvedStyle(containerStyle, isPrintMode)}>
+          <span className={getColorClassName(labelStyle.color)} style={applyResolvedStyle(labelStyle, isPrintMode)}>{element.label}</span>
           {' '}
-          <span style={applyResolvedStyle(textStyle)}>{element.text}</span>
+          <span className={getColorClassName(textStyle.color)} style={applyResolvedStyle(textStyle, isPrintMode)}>{element.text}</span>
         </div>
       ) : null
     }
@@ -183,7 +229,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'text': {
       const style = resolveElementStyle('text')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -192,7 +238,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'rubric': {
       const style = resolveElementStyle('rubric')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -201,7 +247,7 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'prayer-text': {
       const style = resolveElementStyle('prayer-text')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
@@ -210,21 +256,22 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
     case 'priest-text': {
       const style = resolveElementStyle('priest-text')
       return style ? (
-        <div key={index} style={applyResolvedStyle(style)}>
+        <div key={index} className={getColorClassName(style.color)} style={applyResolvedStyle(style, isPrintMode)}>
           {element.text}
         </div>
       ) : null
     }
 
     case 'info-row': {
+      const containerStyle = resolveElementStyle('info-row')
       const labelStyle = resolveElementStyle('info-row-label')
       const valueStyle = resolveElementStyle('info-row-value')
-      return labelStyle && valueStyle ? (
-        <div key={index} className="liturgy-info-grid">
-          <div className="liturgy-info-label" style={applyResolvedStyle(labelStyle)}>
+      return containerStyle && labelStyle && valueStyle ? (
+        <div key={index} className="liturgy-info-grid" style={applyResolvedStyle(containerStyle, isPrintMode)}>
+          <div className={`liturgy-info-label ${getColorClassName(labelStyle.color)}`} style={applyResolvedStyle(labelStyle, isPrintMode)}>
             {element.label}
           </div>
-          <div style={applyResolvedStyle(valueStyle)}>{element.value}</div>
+          <div className={getColorClassName(valueStyle.color)} style={applyResolvedStyle(valueStyle, isPrintMode)}>{element.value}</div>
         </div>
       ) : null
     }
@@ -278,7 +325,8 @@ function renderElement(element: ContentElement, index: number): React.ReactNode 
 function renderSection(
   section: ContentSection,
   index: number,
-  isLastSection: boolean
+  isLastSection: boolean,
+  isPrintMode: boolean = false
 ): React.ReactNode {
   const classes = []
   if (section.pageBreakBefore) classes.push('print:break-before-page')
@@ -291,7 +339,7 @@ function renderSection(
         <div className="print:hidden my-8 border-t-2 border-dashed border-muted-foreground/30" />
       )}
       <div className={className}>
-        {section.elements.map((element, elemIndex) => renderElement(element, elemIndex))}
+        {section.elements.map((element, elemIndex) => renderElement(element, elemIndex, isPrintMode))}
       </div>
       {/* Only show pageBreakAfter indicator if this is not the last section */}
       {section.pageBreakAfter && !isLastSection && (
@@ -307,8 +355,10 @@ function renderSection(
 
 /**
  * Render LiturgyDocument to React JSX
+ * @param document - The liturgy document to render
+ * @param isPrintMode - If true, includes inline colors for print pages; if false, uses className for theme support
  */
-export function renderHTML(document: LiturgyDocument): React.ReactNode {
+export function renderHTML(document: LiturgyDocument, isPrintMode: boolean = false): React.ReactNode {
   // Render title at the top using event-title styling
   const titleStyle = resolveElementStyle('event-title')
 
@@ -319,14 +369,14 @@ export function renderHTML(document: LiturgyDocument): React.ReactNode {
     <>
       {/* Document title */}
       {titleStyle && (
-        <div style={applyResolvedStyle(titleStyle)}>
+        <div className={getColorClassName(titleStyle.color)} style={applyResolvedStyle(titleStyle, isPrintMode)}>
           {document.title}
         </div>
       )}
 
       {/* Document subtitle (optional) */}
       {document.subtitle && subtitleStyle && (
-        <div style={applyResolvedStyle(subtitleStyle)}>
+        <div className={getColorClassName(subtitleStyle.color)} style={applyResolvedStyle(subtitleStyle, isPrintMode)}>
           {document.subtitle}
         </div>
       )}
@@ -336,7 +386,7 @@ export function renderHTML(document: LiturgyDocument): React.ReactNode {
 
       {/* Content sections */}
       {document.sections.map((section, index) =>
-        renderSection(section, index, index === document.sections.length - 1)
+        renderSection(section, index, index === document.sections.length - 1, isPrintMode)
       )}
     </>
   )

@@ -30,8 +30,8 @@ export default async function PrintMassPage({ params }: PageProps) {
   const templateId = mass.mass_template_id || 'mass-english'
   const liturgyDocument = buildMassLiturgy(mass, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

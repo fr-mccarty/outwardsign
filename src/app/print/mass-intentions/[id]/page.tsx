@@ -29,8 +29,8 @@ export default async function PrintMassIntentionPage({ params }: PageProps) {
   const templateId = massIntention.mass_intention_template_id || 'mass-intention-summary-english'
   const liturgyDocument = buildMassIntentionLiturgy(massIntention, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>

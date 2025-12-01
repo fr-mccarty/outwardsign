@@ -13,18 +13,13 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  * Creates petitions section with standard liturgical format.
  * Each petition line gets "let us pray to the Lord" appended.
  * Returns null if no petitions provided.
- * Always has pageBreakAfter: true.
+ * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
+ * for adding page breaks BETWEEN sections (not after the last section).
  *
- * Supports two calling styles:
- * 1. Simple: buildPetitionsSection(petitions, reader)
- * 2. Config: buildPetitionsSection({ petitions, petition_reader, second_reader, petitions_read_by_second_reader })
- *
- * @example
- * // Simple style
- * buildPetitionsSection(wedding.petitions, wedding.petition_reader)
+ * @param config - Configuration object with petitions and reader information
+ * @returns ContentSection or null if no petitions provided
  *
  * @example
- * // Config style (backward compatible, supports fallback reader logic)
  * buildPetitionsSection({
  *   petitions: wedding.petitions,
  *   petition_reader: wedding.petition_reader,
@@ -32,34 +27,23 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
  *   petitions_read_by_second_reader: true
  * })
  */
-export function buildPetitionsSection(
-  petitionsOrConfig?: string | null | { petitions?: string | null; petition_reader?: any; second_reader?: any; petitions_read_by_second_reader?: boolean; [key: string]: any },
-  reader?: any
-): ContentSection | null {
-  // Handle both calling styles
-  let petitions: string | null | undefined
-  let actualReader: any
+export function buildPetitionsSection(config?: {
+  petitions?: string | null
+  petition_reader?: any
+  second_reader?: any
+  petitions_read_by_second_reader?: boolean
+}): ContentSection | null {
+  if (!config) return null
 
-  if (typeof petitionsOrConfig === 'string' || petitionsOrConfig === null || petitionsOrConfig === undefined) {
-    // Simple style: buildPetitionsSection(petitions, reader)
-    petitions = petitionsOrConfig
-    actualReader = reader
-  } else {
-    // Config style: buildPetitionsSection({ petitions, petition_reader, second_reader, petitions_read_by_second_reader })
-    petitions = petitionsOrConfig.petitions
-
-    // Determine reader (with fallback logic)
-    if (petitionsOrConfig.petitions_read_by_second_reader && petitionsOrConfig.second_reader) {
-      actualReader = petitionsOrConfig.second_reader
-    } else {
-      actualReader = petitionsOrConfig.petition_reader
-    }
-  }
+  const { petitions, petition_reader, second_reader, petitions_read_by_second_reader } = config
 
   // No petitions - exclude section
   if (!petitions) {
     return null
   }
+
+  // Determine reader (with fallback logic)
+  const reader = (petitions_read_by_second_reader && second_reader) ? second_reader : petition_reader
 
   const elements: ContentElement[] = []
 
@@ -70,10 +54,10 @@ export function buildPetitionsSection(
   })
 
   // Name of reader
-  if (actualReader) {
+  if (reader) {
     elements.push({
       type: 'reader-name',
-      text: actualReader.full_name,
+      text: reader.full_name,
     })
   }
 
@@ -114,7 +98,6 @@ export function buildPetitionsSection(
 
   return {
     id: 'petitions',
-    pageBreakAfter: true,
     elements,
   }
 }

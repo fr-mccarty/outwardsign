@@ -30,8 +30,8 @@ export default async function PrintPresentationPage({ params }: PageProps) {
   const templateId = presentation.presentation_template_id || 'presentation-spanish'
   const liturgyDocument = buildPresentationLiturgy(presentation, templateId)
 
-  // Render to HTML
-  const liturgyContent = renderHTML(liturgyDocument)
+  // Render to HTML (isPrintMode: true for inline color styles)
+  const liturgyContent = renderHTML(liturgyDocument, true)
 
   return (
     <>
