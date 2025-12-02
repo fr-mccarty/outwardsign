@@ -46,6 +46,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      // Default favicon for Google Search Console and other crawlers
+      "/favicon-dark.ico",
+      // Theme-specific favicons for browsers
       {
         url: "/favicon-dark.ico",
         media: "(prefers-color-scheme: light)",
