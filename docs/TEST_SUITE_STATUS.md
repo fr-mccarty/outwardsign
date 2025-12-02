@@ -505,6 +505,6 @@ The high number of passing tests (280+) demonstrates that the testing infrastruc
 - **Testing Guide:** `docs/TESTING_GUIDE.md`
 - **Testing Quickstart:** `docs/TESTING_QUICKSTART.md`
 - **Testing Architecture:** `docs/TESTING_ARCHITECTURE.md`
-- **Testing Registry:** `docs/TESTING_REGISTRY.md`
+- **Testing Registry:** `docs/testing/testing/TESTING_REGISTRY.md`
 - **Component Registry:** `docs/COMPONENT_REGISTRY.md` (for picker components)
 - **Pickers Documentation:** `docs/PICKERS.md`

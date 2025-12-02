@@ -2,10 +2,12 @@
 
 > **Purpose:** Standards for building testable components and writing reliable tests. Component patterns, selector strategies, and testability requirements.
 >
+> **⚠️ File Size Note:** This file is approaching the 1000-line limit (currently 884 lines). File is well-organized but monitor for growth. Consider splitting if content exceeds 950 lines.
+>
 > **See Also:**
 > - **[TESTING_QUICKSTART.md](./TESTING_QUICKSTART.md)** - Quick setup and run commands
 > - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Comprehensive guide for writing tests
-> - **[TESTING_REGISTRY.md](./TESTING_REGISTRY.md)** - Complete registry of all tests with descriptions
+> - **[testing/TESTING_REGISTRY.md](./testing/testing/TESTING_REGISTRY.md)** - Complete registry of all tests with descriptions
 
 This document defines standards for building testable components and writing reliable tests.
 

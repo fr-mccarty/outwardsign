@@ -16,6 +16,7 @@
 
 ## Table of Contents
 
+- [🔴 Agent Orchestration](#-agent-orchestration)
 - [🔴 Documentation Context Rules (CRITICAL)](#-documentation-context-rules-critical)
 - [📚 Detailed Documentation](#-detailed-documentation)
 - [Project Description](#project-description)
@@ -39,25 +40,66 @@
 
 ---
 
+## 🔴 Agent Orchestration
+
+**For detailed workflows, decision trees, and integration patterns, see [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md)**
+
+This project uses specialized AI agents for different development tasks. Using the right agent ensures consistency, quality, and efficiency.
+
+### Agent Quick Reference
+
+| Agent | Purpose | Primary Use Cases |
+|-------|---------|-------------------|
+| **requirements-agent** | Requirements analysis | User requests new feature/module |
+| **developer-agent** | Feature implementation | Coding based on requirements |
+| **test-writer** | Test creation | Implementation complete, needs tests |
+| **test-runner-debugger** | Test execution & debugging | Running tests or fixing test failures |
+| **documentation-writer** | Documentation updates | Code changes need documentation |
+| **finishing-agent** | Pre-commit QA review | Development complete, ready for review |
+| **release-agent** | Production deployment | Deploy to staging/production |
+| **explorer-agent** | Codebase exploration | "How does X work?" or pattern discovery |
+| **refactor-agent** | Code quality improvement | Eliminate duplication, improve performance |
+| **qa-specialist** | Non-functional testing | Performance, accessibility, security audits |
+
+### Quick Decision Guide
+
+- **New feature?** → requirements-agent → developer-agent → test-writer → finishing-agent
+- **Bug fix?** → developer-agent (or explorer-agent if complex) → test-runner-debugger → finishing-agent
+- **Understand code?** → explorer-agent
+- **Tests failing?** → test-runner-debugger
+- **Improve quality?** → explorer-agent → refactor-agent → finishing-agent
+- **Deploy?** → qa-specialist → finishing-agent → release-agent
+- **Update docs?** → documentation-writer
+
+**Rule of Thumb:** Use the most specialized agent for each task. See [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md) for detailed workflows and hand-off patterns.
+
+---
+
 ## 🔴 Documentation Context Rules (CRITICAL)
 
 **AI Agent: Before performing ANY of these tasks, you MUST read the specified documentation. Failure to read required documentation will result in code that violates established patterns and will need to be rewritten.**
 
 ### Required Reading by Task
 
-| When you are asked to... | You MUST read these files FIRST |
-|---------------------------|----------------------------------|
-| **Create or edit ANY form component** | 🔴 [FORMS.md](./docs/FORMS.md) - Form patterns, validation, styling, FormField usage |
-| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - All 8 file patterns<br>🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - List page pattern (server + client) |
-| **Create or modify a list page** | 🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete list view pattern with checklist |
-| **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Picker architecture and patterns |
-| **Create or modify database schema** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration procedures<br>🔴 Database section in this file - Migration workflow |
-| **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging |
-| **Implement module component structure** | 🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Detailed patterns for all 8 files |
-| **Add validation to forms** | 🔴 [VALIDATION.md](./docs/VALIDATION.md) - React Hook Form + Zod patterns<br>🔴 [FORMS.md](./docs/FORMS.md) - FormField integration |
-| **Style components or pages** | 🔴 [STYLES.md](./docs/STYLES.md) - Dark mode, semantic tokens, print exceptions |
-| **Use helper/formatter functions** | 🔴 [FORMATTERS.md](./docs/FORMATTERS.md) - Date, name, location, page title formatters |
-| **Create content builders/renderers** | 🔴 [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)<br>🔴 [CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)<br>🔴 [RENDERER.md](./docs/RENDERER.md) |
+| When you are asked to... | You MUST read these files FIRST | Agent to Use |
+|---------------------------|----------------------------------|--------------|
+| **Create or edit ANY form component** | 🔴 [FORMS.md](./docs/FORMS.md) - Form patterns, validation, styling, FormField usage | developer-agent |
+| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - All 8 file patterns<br>🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - List page pattern (server + client) | requirements-agent → developer-agent |
+| **Create or modify a list page** | 🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete list view pattern with checklist | developer-agent |
+| **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Navigation hub (see pickers/ subdirectory for ARCHITECTURE, CREATING_PICKERS, USAGE_PATTERNS, ADVANCED_FEATURES, INFINITE_LOOP_PREVENTION) | developer-agent |
+| **Create or modify database schema** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration procedures<br>🔴 Database section in this file - Migration workflow | developer-agent |
+| **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-writer |
+| **Run or debug tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-runner-debugger |
+| **Implement module component structure** | 🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Detailed patterns for all 8 files | developer-agent |
+| **Add validation to forms** | 🔴 [VALIDATION.md](./docs/VALIDATION.md) - React Hook Form + Zod patterns<br>🔴 [FORMS.md](./docs/FORMS.md) - FormField integration | developer-agent |
+| **Style components or pages** | 🔴 [STYLES.md](./docs/STYLES.md) - Dark mode, semantic tokens, print exceptions | developer-agent |
+| **Use helper/formatter functions** | 🔴 [FORMATTERS.md](./docs/FORMATTERS.md) - Date, name, location, page title formatters | developer-agent |
+| **Create content builders/renderers** | 🔴 [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)<br>🔴 [CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)<br>🔴 [RENDERER.md](./docs/RENDERER.md) | developer-agent |
+| **Understand how a feature works** | 🔴 Related module/component docs | explorer-agent |
+| **Refactor or improve code quality** | 🔴 [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md) | refactor-agent |
+| **Update documentation** | 🔴 [docs/README.md](./docs/README.md) - Documentation standards | documentation-writer |
+| **Deploy to production** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration safety<br>🔴 [PERMISSIONS.md](./docs/PERMISSIONS.md) | release-agent |
+| **Quality assurance testing** | 🔴 [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md)<br>🔴 [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | qa-specialist |
 
 ### How to Use This Table
 
@@ -96,20 +138,20 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md)** - 🔴 CRITICAL - Complete pattern for list pages (server + client) with SearchCard, DataTable, ContentCard, ListStatsBar
 - **[DATABASE.md](./docs/DATABASE.md)** - Database management procedures (resets, seeding, liturgical calendar imports, troubleshooting)
 - **[PERMISSIONS.md](./docs/PERMISSIONS.md)** - Permission rules for git, database, file operations, and automation guidelines
-- **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Coding standards including bilingual implementation, page title formatting, UI patterns, helper utilities
+- **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Navigation hub for coding standards (split into code-conventions/ subdirectory with GENERAL, BILINGUAL, UI_PATTERNS, FORMATTING, DEVELOPMENT)
 - **[LANGUAGE.md](./docs/LANGUAGE.md)** - Language system documentation (liturgical language vs UI language, database schema, constants)
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
-- **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Detailed implementation patterns for all 9 module component files with code examples
+- **[MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Navigation hub for module patterns (split into module-patterns/ subdirectory with list-page, create-edit, form-view, best-practices)
 - **[MODULE_DEVELOPMENT.md](./docs/MODULE_DEVELOPMENT.md)** - File naming, directory structure, constants pattern, reusable components, content builders, type patterns
-- **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Complete component library reference (pickers, forms, layout components, hooks)
+- **[COMPONENT_REGISTRY.md](./docs/COMPONENT_REGISTRY.md)** - Navigation hub for component library (split into COMPONENTS_FORM, COMPONENTS_PICKER_WRAPPERS, COMPONENTS_LAYOUT, COMPONENTS_DISPLAY, COMPONENTS_DATA_TABLE, COMPONENTS_CALENDAR, COMPONENTS_WIZARD, COMPONENTS_UI)
 - **[FORMS.md](./docs/FORMS.md)** - 🔴 CRITICAL - Form patterns, validation, styling, and component usage guidelines
-- **[FORMATTERS.md](./docs/FORMATTERS.md)** - Helper and formatting functions (dates, names, locations, page titles, filenames)
+- **[FORMATTERS.md](./docs/FORMATTERS.md)** - Navigation hub for formatters (split into formatters/ subdirectory with DATE_FUNCTIONS, ENTITY_FUNCTIONS, GENERATORS, CREATING_HELPERS)
 - **[LINTING.md](./docs/LINTING.md)** - ESLint configuration, usage, common issues, and best practices
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
-- **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Liturgical script system for individual entity documents (weddings, funerals, etc.) with template builders and exports
+- **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Navigation hub for liturgical script system (split into liturgical-script-system/ subdirectory with OVERVIEW, WITHRELATIONS, TEMPLATES, PRINT_EXPORT, VIEW_INTEGRATION)
 - **[TEMPLATE_REGISTRY.md](./docs/TEMPLATE_REGISTRY.md)** - Complete registry of all 19 liturgical script templates across all 7 modules with IDs, names, descriptions, and file locations
 - **[CONTENT_BUILDER_STRUCTURE.md](./docs/CONTENT_BUILDER_STRUCTURE.md)** - Standard liturgical script structure (Cover Page, Reading, Psalm, Petitions, Announcements, Ceremony) with page break rules
-- **[CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)** - Content builder section types with strict interfaces and shared builders
+- **[CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)** - Navigation hub for content builder sections (split into content-builder-sections/ subdirectory with OVERVIEW, SECTION_INTERFACES, SHARED_BUILDERS, CUSTOM_SECTIONS, PAGE_BREAKS, TEMPLATE_EXAMPLE, BEST_PRACTICES)
 - **[REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md)** - Report builder system for tabular reports with aggregations, filtering, and CSV/Print exports
 - **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
 - **[PAGINATION.md](./docs/PAGINATION.md)** - ⚠️ Pagination patterns, implementation guide, and current inconsistencies across modules
@@ -202,7 +244,7 @@ During initial development, modify existing migrations instead of creating new m
 
 **For testability standards and code review:** See [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, test ID conventions, accessibility requirements, and anti-patterns to avoid.
 
-**For complete test inventory:** See [TESTING_REGISTRY.md](./docs/TESTING_REGISTRY.md) - Complete registry of all tests organized by module with one-sentence descriptions.
+**For complete test inventory:** See [TESTING_REGISTRY.md](./docs/testing/TESTING_REGISTRY.md) - Complete registry of all tests organized by module with one-sentence descriptions.
 
 **Key Points:**
 - Tests are pre-authenticated automatically - no manual auth setup needed in test files

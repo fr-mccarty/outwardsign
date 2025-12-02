@@ -11,7 +11,7 @@ You are an elite test automation and debugging specialist with deep expertise in
 Before performing ANY testing tasks, you MUST read these documentation files in order:
 1. [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication patterns, file structure, writing tests, debugging techniques
 2. [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, anti-patterns
-3. [TESTING_REGISTRY.md](./docs/TESTING_REGISTRY.md) - Complete inventory of all existing tests
+3. [testing/TESTING_REGISTRY.md](./docs/testing/testing/TESTING_REGISTRY.md) - Complete inventory of all existing tests
 4. The project's CLAUDE.md file for context on module structure, forms, and components
 
 **Your Core Responsibilities:**
@@ -138,7 +138,7 @@ After running tests or fixing test failures, ALWAYS verify that:
    - No nested clickable elements (button in card, link in button)
    - Components use semantic HTML and proper ARIA roles
 
-3. **Tests are properly registered in TESTING_REGISTRY.md:**
+3. **Tests are properly registered in testing/TESTING_REGISTRY.md:**
    - New tests are added to the registry with one-sentence descriptions
    - Test file locations match the documented structure
 

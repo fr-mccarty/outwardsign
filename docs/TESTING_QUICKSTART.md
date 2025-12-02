@@ -5,7 +5,7 @@
 > **See Also:**
 > - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Comprehensive guide for writing tests
 > - **[TESTING_ARCHITECTURE.md](./TESTING_ARCHITECTURE.md)** - Testability standards and best practices
-> - **[TESTING_REGISTRY.md](./TESTING_REGISTRY.md)** - Complete registry of all tests with descriptions
+> - **[testing/TESTING_REGISTRY.md](./testing/testing/TESTING_REGISTRY.md)** - Complete registry of all tests with descriptions
 
 **Goal:** Get tests running in 5 minutes.
 

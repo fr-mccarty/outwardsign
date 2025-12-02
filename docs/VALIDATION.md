@@ -2,6 +2,8 @@
 
 > **🔴 Context Requirement:** When adding validation to ANY form, you MUST include this file in your context. This file contains the authoritative validation patterns using React Hook Form + Zod that ensure consistent error handling across the application.
 
+> **⚠️ File Size Note:** This file is approaching the 1000-line limit (currently 855 lines). File is critical and well-organized. Monitor for growth and consider splitting if content exceeds 950 lines.
+>
 > **See Also:** [FORMS.md](./FORMS.md) for general form patterns, styling, event handling, and FormInput usage
 
 This document explains **validation-specific patterns** in Outward Sign using React Hook Form + Zod, including:

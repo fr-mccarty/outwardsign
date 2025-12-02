@@ -280,7 +280,7 @@
    - **Fix:** Clear purposes - CHECKLIST for task-oriented steps, PATTERNS for implementation details, DEVELOPMENT for conventions
 
 4. **Testing**
-   - TESTING_GUIDE.md, TESTING_QUICKSTART.md, TESTING_ARCHITECTURE.md, TESTING_REGISTRY.md overlap
+   - TESTING_GUIDE.md, TESTING_QUICKSTART.md, TESTING_ARCHITECTURE.md, testing/TESTING_REGISTRY.md overlap
    - **Fix:** Already well-separated, but could clarify when to use each
 
 5. **Liturgical Content**
@@ -394,7 +394,7 @@ Files over 300 lines without TOC:
 3. ⚠️ USER_DOCUMENTATION.md (743 lines) - Has TOC
 4. ⚠️ MODULE_BUTTONS.md (561 lines) - Missing TOC
 5. ⚠️ GROUP_MEMBERS.md (560 lines) - Has TOC
-6. ⚠️ TESTING_REGISTRY.md (585 lines) - Doesn't need TOC (registry format)
+6. ⚠️ testing/TESTING_REGISTRY.md (585 lines) - Doesn't need TOC (registry format)
 7. ⚠️ LITURGICAL_CALENDAR.md (570 lines) - Missing TOC
 8. ⚠️ LITURGICAL_SCRIPT_REFERENCE.md (802 lines) - Has TOC
 9. ⚠️ MASS_TIMES_MODULE.md (804 lines) - Missing TOC
@@ -738,7 +738,7 @@ Files over 300 lines without TOC:
 - **Issues:** None
 - **Recommendations:** None
 
-**TESTING_REGISTRY.md (585 lines)** ⚠️
+**testing/TESTING_REGISTRY.md (585 lines)** ⚠️
 - **Status:** Over threshold
 - **Issues:** None (registry format)
 - **Recommendations:** Keep as-is (registry format doesn't need splitting)

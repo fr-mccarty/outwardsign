@@ -2,6 +2,8 @@
 
 > **Purpose:** Detailed styling patterns and implementation examples for specific contexts.
 > **General Principles:** See [CLAUDE.md](./CLAUDE.md) § Styling for high-level guidelines.
+>
+> **⚠️ File Size Note:** This file is approaching the 1000-line limit (currently 856 lines). File is well-organized with useful examples. Monitor for growth and consider splitting if content exceeds 950 lines.
 
 ---
 

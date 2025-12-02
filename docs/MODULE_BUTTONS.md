@@ -4,6 +4,26 @@
 **Created:** 2025-11-19
 **Last Updated:** 2025-11-19
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Components](#components)
+  - [ModuleCreateButton](#modulecreatebutton)
+  - [ModuleViewButton](#moduleviewbutton)
+  - [ModuleSaveButton](#modulesavebutton)
+  - [ModuleCancelButton](#modulecancelbutton)
+  - [FormBottomActions](#formbottomactions)
+- [Implementation Pattern](#implementation-pattern)
+- [Button Placement](#button-placement)
+- [Module Names Reference](#module-names-reference)
+- [Modules Implemented](#modules-implemented)
+- [Migration from Old Components](#migration-from-old-components)
+- [Benefits](#benefits)
+- [Testing Checklist](#testing-checklist)
+- [Related Documentation](#related-documentation)
+
+---
+
 ## Overview
 
 Standardized button components for all modules. These components provide consistent UX across list pages and create/edit pages with proper loading states and module-specific labeling.
