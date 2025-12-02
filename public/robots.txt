@@ -1,6 +1,9 @@
 # Allow search engines to crawl public pages
 User-agent: *
 Allow: /
+Allow: /documentation
+
+# Block authenticated/private sections
 Disallow: /login
 Disallow: /signup
 Disallow: /onboarding
