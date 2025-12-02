@@ -60,5 +60,81 @@
       "Read(.env)",
       "Read(.env.*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit(**/*form*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this edit.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(**/*Form*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this edit.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(**/page.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a page.tsx file. Before proceeding, you MUST read:\n- docs/MODULE-PATTERNS-CRITICAL.md (Next.js 15 searchParams pattern, server component pattern)\n- docs/LIST-VIEW-CRITICAL.md (if this is a list page)\n\nKey patterns:\n- searchParams MUST be awaited in Next.js 15\n- Server components must check auth and redirect\n- List pages require SearchCard, ListStatsBar, ContentCard grid, and EmptyState\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(**/*-list-client.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a list client component. Before proceeding, you MUST read docs/LIST-VIEW-CRITICAL.md.\n\nThis file contains critical patterns for list pages including:\n- SearchCard with filters (required)\n- ListStatsBar showing counts (required)\n- ContentCard grid for entities (required)\n- EmptyState for no results (required)\n\nHave you read docs/LIST-VIEW-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(**/*form*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this write.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(**/*Form*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a form-related file. Before proceeding, you MUST read docs/FORMS-CRITICAL.md.\n\nThis file contains critical rules including:\n- FormField component is REQUIRED for all inputs\n- NEVER modify font-family, borders, or backgrounds on inputs\n- Use SaveButton/CancelButton components only\n- Zod validation is REQUIRED\n\nHave you read docs/FORMS-CRITICAL.md? If not, read it now before proceeding with this write.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(**/migrations/*.sql)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a database migration. Before proceeding, you MUST read docs/DATABASE-CRITICAL.md.\n\nKey rules:\n- One table per migration file\n- Tables use plural names, columns use singular names\n- All tables need RLS policies\n- Migration timestamps must be within current date to +30 days\n- User must run 'npm run db:fresh' after migration creation\n\nHave you read docs/DATABASE-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(**/migrations/*.sql)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a database migration. Before proceeding, you MUST read docs/DATABASE-CRITICAL.md.\n\nKey rules:\n- One table per migration file\n- All tables need RLS policies\n- In early development, modify existing migrations instead of creating new ones\n- User must run 'npm run db:fresh' after migration changes\n\nHave you read docs/DATABASE-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      }
+    ]
   }
 }
