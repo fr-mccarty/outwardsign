@@ -16,6 +16,7 @@ export const AVAILABLE_MODULES = [
   'quinceaneras',
   'groups',
   'mass-intentions',
+  'ocia-sessions',
 ] as const
 
 export type ModuleName = typeof AVAILABLE_MODULES[number]
