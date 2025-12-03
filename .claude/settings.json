@@ -5,14 +5,7 @@
       "mcp__supabase__*",
       "Bash(supabase db push:*)",
       "Bash(supabase db reset:*)",
-      "Bash(npm run db:fresh:*)",
-      "Bash(npm install:*)",
-      "Bash(npm uninstall:*)",
-      "Bash(npm update:*)",
-      "Bash(pnpm add:*)",
-      "Bash(pnpm remove:*)",
-      "Bash(yarn add:*)",
-      "Bash(yarn remove:*)"
+      "Bash(npm run db:fresh:*)"
     ],
     "allow": [
       "Bash(find:*)",
