@@ -104,7 +104,7 @@ export async function getPetitions(): Promise<Petition[]> {
 
 export async function searchPetitions(params: {
   query?: string
-  page?: number
+  offset?: number
   limit?: number
   sortBy?: 'created_at' | 'title' | 'date' | 'language'
   sortOrder?: 'asc' | 'desc'
@@ -120,7 +120,7 @@ export async function searchPetitions(params: {
   
   const {
     query = '',
-    page = 1,
+    offset = 0,
     limit = 10,
     sortBy = 'created_at',
     sortOrder = 'desc'
@@ -141,8 +141,7 @@ export async function searchPetitions(params: {
   queryBuilder = queryBuilder.order(sortBy, { ascending: sortOrder === 'asc' })
 
   // Add pagination
-  const from = (page - 1) * limit
-  queryBuilder = queryBuilder.range(from, from + limit - 1)
+  queryBuilder = queryBuilder.range(offset, offset + limit - 1)
 
   const { data, error, count } = await queryBuilder
 
@@ -152,12 +151,13 @@ export async function searchPetitions(params: {
 
   const total = count || 0
   const totalPages = Math.ceil(total / limit)
+  const currentPage = Math.floor(offset / limit) + 1
 
   return {
     petitions: data || [],
     total,
     totalPages,
-    currentPage: page
+    currentPage
   }
 }
 

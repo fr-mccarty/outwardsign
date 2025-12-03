@@ -54,7 +54,7 @@ export interface GroupFilters {
   search?: string
   status?: string
   sort?: string
-  page?: number
+  offset?: number
   limit?: number
 }
 
@@ -161,8 +161,8 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
   })
 
   // Apply pagination (application-level)
-  if (filters.page !== undefined && filters.limit !== undefined) {
-    const start = (filters.page - 1) * filters.limit
+  if (filters.offset !== undefined && filters.limit !== undefined) {
+    const start = filters.offset
     const end = start + filters.limit
     groups = groups.slice(start, end)
   }
@@ -524,7 +524,7 @@ export interface PersonGroupMembership {
 export interface GroupMemberFilters {
   search?: string
   sort?: 'name_asc' | 'name_desc' | 'groups_asc' | 'groups_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
 }
 

@@ -14,7 +14,6 @@ interface PageProps {
     search?: string
     status?: string
     sort?: string
-    page?: string
     start_date?: string
     end_date?: string
   }>
@@ -32,7 +31,7 @@ export default async function GroupBaptismsPage({ searchParams }: PageProps) {
     search: params.search,
     status: (params.status as any) || 'ACTIVE',
     sort: (params.sort as any) || 'date_asc',
-    page: params.page ? parseInt(params.page) : 1,
+    offset: 0,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
     end_date: params.end_date
@@ -40,6 +39,9 @@ export default async function GroupBaptismsPage({ searchParams }: PageProps) {
 
   // 3. Fetch group baptisms server-side with filters
   const groupBaptisms = await getGroupBaptisms(filters)
+
+  // Determine if there are more results
+  const initialHasMore = groupBaptisms.length === LIST_VIEW_PAGE_SIZE
 
   // 4. Compute stats server-side
   const stats = await getGroupBaptismStats(groupBaptisms)
@@ -57,7 +59,7 @@ export default async function GroupBaptismsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Group Baptism" href="/group-baptisms/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <GroupBaptismsListClient initialData={groupBaptisms} stats={stats} />
+      <GroupBaptismsListClient initialData={groupBaptisms} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

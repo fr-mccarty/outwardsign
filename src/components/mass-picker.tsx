@@ -69,8 +69,9 @@ export function MassPicker({
   const loadMasses = async (page: number, search: string) => {
     try {
       setLoading(true)
+      const offset = (page - 1) * PAGE_SIZE
       const result = await getMassesPaginated({
-        page,
+        offset,
         limit: PAGE_SIZE,
         search,
       })

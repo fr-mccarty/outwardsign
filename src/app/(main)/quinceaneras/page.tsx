@@ -14,7 +14,6 @@ interface PageProps {
     search?: string
     status?: string
     sort?: string
-    page?: string
     start_date?: string
     end_date?: string
   }>
@@ -36,7 +35,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
     search: params.search,
     status: (params.status as QuinceaneraFilterParams['status']) || 'ACTIVE',
     sort: (params.sort as QuinceaneraFilterParams['sort']) || 'date_asc',
-    page: params.page ? parseInt(params.page, 10) : 1,
+    offset: 0,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
     end_date: params.end_date
@@ -44,6 +43,9 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
 
   // Fetch quinceaneras server-side with filters
   const quinceaneras = await getQuinceaneras(filters)
+
+  // Determine if there are more results
+  const initialHasMore = quinceaneras.length === LIST_VIEW_PAGE_SIZE
 
   // Calculate stats server-side
   const stats = await getQuinceaneraStats(quinceaneras)
@@ -60,7 +62,7 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Quinceañera" href="/quinceaneras/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <QuinceanerasListClient initialData={quinceaneras} stats={stats} />
+      <QuinceanerasListClient initialData={quinceaneras} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

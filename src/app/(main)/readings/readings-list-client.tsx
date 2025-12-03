@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Reading, ReadingStats } from '@/lib/actions/readings'
-import { deleteReading } from '@/lib/actions/readings'
+import { deleteReading, getReadings, type ReadingFilterParams } from '@/lib/actions/readings'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
@@ -13,6 +15,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -32,17 +35,10 @@ import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 interface ReadingsListClientProps {
   initialData: Reading[]
   stats: ReadingStats
+  initialHasMore: boolean
 }
 
-// Reading-specific sort options
-const READING_SORT_OPTIONS = [
-  { value: 'created_desc', label: 'Newest First' },
-  { value: 'created_asc', label: 'Oldest First' },
-  { value: 'pericope_asc', label: 'Pericope A-Z' },
-  { value: 'pericope_desc', label: 'Pericope Z-A' }
-]
-
-export function ReadingsListClient({ initialData, stats }: ReadingsListClientProps) {
+export function ReadingsListClient({ initialData, stats, initialHasMore }: ReadingsListClientProps) {
   const router = useRouter()
 
   // Use list filters hook for URL state management
@@ -51,8 +47,30 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
     defaultFilters: { sort: 'created_desc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [readings, setReadings] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setReadings(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Parse current sort from URL for DataTable
   const currentSort = parseSort(filters.getFilterValue('sort'))
@@ -61,7 +79,32 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextReadings = await getReadings({
+        search: filters.getFilterValue('search'),
+        sort: filters.getFilterValue('sort') as ReadingFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE
+      })
+
+      setReadings(prev => [...prev, ...nextReadings])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextReadings.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more readings:', error)
+      toast.error('Failed to load more readings')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -220,15 +263,17 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
       </SearchCard>
 
       {/* Readings Table */}
-      {initialData.length > 0 ? (
+      {readings.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={readings}
             columns={columns}
             keyExtractor={(reading) => reading.id}
             onRowClick={(reading) => router.push(`/readings/${reading.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No readings found' : 'No readings yet',
@@ -254,6 +299,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && readings.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

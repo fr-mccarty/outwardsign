@@ -19,7 +19,7 @@ export interface BaptismFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
   sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
   start_date?: string
   end_date?: string
@@ -59,6 +59,10 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
   await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Calculate pagination
+  const offset = filters?.offset || 0
+  const limit = filters?.limit || 50
+
   let query = supabase
     .from('baptisms')
     .select(`
@@ -71,6 +75,7 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
       presider:people!presider_id(*),
       baptism_event:events!baptism_event_id(*, location:locations(*))
     `)
+    .range(offset, offset + limit - 1)
 
   // Apply status filter at database level
   if (filters?.status && filters.status !== 'all') {

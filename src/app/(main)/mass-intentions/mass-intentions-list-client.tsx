@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassIntentionWithNames, MassIntentionStats } from '@/lib/actions/mass-intentions'
-import { deleteMassIntention } from '@/lib/actions/mass-intentions'
+import { deleteMassIntention, getMassIntentions, type MassIntentionFilterParams } from '@/lib/actions/mass-intentions'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -13,6 +15,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Heart, Filter } from "lucide-react"
@@ -29,9 +32,10 @@ import {
 interface MassIntentionsListClientProps {
   initialData: MassIntentionWithNames[]
   stats: MassIntentionStats
+  initialHasMore: boolean
 }
 
-export function MassIntentionsListClient({ initialData, stats }: MassIntentionsListClientProps) {
+export function MassIntentionsListClient({ initialData, stats, initialHasMore }: MassIntentionsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -41,8 +45,17 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
     defaultFilters: { status: 'ACTIVE', sort: 'date_desc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [massIntentions, setMassIntentions] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -66,6 +79,19 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [intentionToDelete, setIntentionToDelete] = useState<MassIntentionWithNames | null>(null)
 
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setMassIntentions(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
+
   // Sorting state
   const currentSort = parseSort(filters.getFilterValue('sort'))
 
@@ -77,7 +103,35 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
     }
     const sortValue = formatSort(columnMap[column] || column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextIntentions = await getMassIntentions({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as MassIntentionFilterParams['status'],
+        sort: filters.getFilterValue('sort') as MassIntentionFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setMassIntentions(prev => [...prev, ...nextIntentions])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextIntentions.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more mass intentions:', error)
+      toast.error('Failed to load more mass intentions')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -216,16 +270,22 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
       </SearchCard>
 
       {/* Mass Intentions Table */}
-      {initialData.length > 0 ? (
-        <DataTable
-          columns={columns}
-          data={initialData}
-          keyExtractor={(intention) => intention.id}
-          onRowClick={(intention) => router.push(`/mass-intentions/${intention.id}`)}
-          currentSort={currentSort || undefined}
-          onSortChange={handleSortChange}
-          stickyHeader
-        />
+      {massIntentions.length > 0 ? (
+        <>
+          <DataTable
+            columns={columns}
+            data={massIntentions}
+            keyExtractor={(intention) => intention.id}
+            onRowClick={(intention) => router.push(`/mass-intentions/${intention.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
+            stickyHeader
+          />
+          <EndOfListMessage show={!hasMore && massIntentions.length > 0} />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -257,9 +317,6 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
           </div>
         </ContentCard>
       )}
-
-      {/* Scroll to Top Button */}
-      <ScrollToTopButton />
 
       {/* Quick Stats */}
       {stats.total > 0 && <ListStatsBar stats={statsList} />}

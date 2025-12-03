@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Location } from '@/lib/actions/locations'
 import type { LocationStats } from '@/lib/actions/locations'
-import { deleteLocation } from '@/lib/actions/locations'
+import { deleteLocation, getLocations, type LocationFilterParams } from '@/lib/actions/locations'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
@@ -14,6 +16,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Building, Filter, MapPin, Phone } from "lucide-react"
@@ -25,16 +28,10 @@ import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 interface LocationsListClientProps {
   initialData: Location[]
   stats: LocationStats
+  initialHasMore: boolean
 }
 
-const LOCATION_SORT_OPTIONS = [
-  { value: 'name_asc', label: 'Name (A-Z)' },
-  { value: 'name_desc', label: 'Name (Z-A)' },
-  { value: 'created_asc', label: 'Oldest First' },
-  { value: 'created_desc', label: 'Newest First' }
-]
-
-export function LocationsListClient({ initialData, stats }: LocationsListClientProps) {
+export function LocationsListClient({ initialData, stats, initialHasMore }: LocationsListClientProps) {
   const router = useRouter()
 
   // Use list filters hook for URL state management
@@ -43,8 +40,30 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
     defaultFilters: { sort: 'name_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [locations, setLocations] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setLocations(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Parse current sort from URL for DataTable
   const currentSort = parseSort(filters.getFilterValue('sort'))
@@ -53,7 +72,32 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextLocations = await getLocations({
+        search: filters.getFilterValue('search'),
+        sort: filters.getFilterValue('sort') as LocationFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE
+      })
+
+      setLocations(prev => [...prev, ...nextLocations])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextLocations.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more locations:', error)
+      toast.error('Failed to load more locations')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -168,15 +212,17 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
       </SearchCard>
 
       {/* Locations Table */}
-      {initialData.length > 0 ? (
+      {locations.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={locations}
             columns={columns}
             keyExtractor={(location) => location.id}
             onRowClick={(location) => router.push(`/locations/${location.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <Building className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No locations found' : 'No locations yet',
@@ -202,6 +248,7 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && locations.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

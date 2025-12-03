@@ -72,8 +72,9 @@ export function MassIntentionPicker({
   const loadMassIntentions = async (page: number, search: string, status: string) => {
     try {
       setLoading(true)
+      const offset = (page - 1) * PAGE_SIZE
       const result = await getMassIntentionsPaginated({
-        page,
+        offset,
         limit: PAGE_SIZE,
         search,
         status: status !== 'all' ? status as any : undefined,

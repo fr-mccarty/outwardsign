@@ -79,7 +79,7 @@ export interface PersonFilterParams {
 }
 
 export interface PaginatedParams {
-  page?: number
+  offset?: number
   limit?: number
   search?: string
   massRoleId?: string // Filter by mass role membership
@@ -150,13 +150,10 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const page = params?.page || 1
+  const offset = params?.offset || 0
   const limit = params?.limit || 10
   const search = params?.search || ''
   const massRoleId = params?.massRoleId
-
-  // Calculate offset
-  const offset = (page - 1) * limit
 
   // Build base query - if filtering by mass role, join with mass_role_members
   let query
@@ -198,6 +195,7 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
 
   const totalCount = count || 0
   const totalPages = Math.ceil(totalCount / limit)
+  const page = Math.floor(offset / limit) + 1
 
   return {
     items: data || [],
@@ -373,12 +371,9 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const page = params?.page || 1
+  const offset = params?.offset || 0
   const limit = params?.limit || 10
   const search = params?.search || ''
-
-  // Calculate offset
-  const offset = (page - 1) * limit
 
   // Build base query with group_members relation
   let query = supabase
@@ -418,6 +413,7 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
 
   const totalCount = count || 0
   const totalPages = Math.ceil(totalCount / limit)
+  const page = Math.floor(offset / limit) + 1
 
   return {
     items: data || [],

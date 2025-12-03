@@ -14,7 +14,6 @@ interface PageProps {
     search?: string
     status?: string
     sort?: string
-    page?: string
     start_date?: string
     end_date?: string
   }>
@@ -36,7 +35,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
     search: params.search,
     status: (params.status as PresentationFilterParams['status']) || 'ACTIVE',
     sort: (params.sort as PresentationFilterParams['sort']) || 'date_asc',
-    page: params.page ? parseInt(params.page, 10) : 1,
+    offset: 0,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
     end_date: params.end_date
@@ -44,6 +43,9 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
 
   // Fetch presentations server-side with filters
   const presentations = await getPresentations(filters)
+
+  // Determine if there are more results
+  const initialHasMore = presentations.length === LIST_VIEW_PAGE_SIZE
 
   // Calculate stats server-side
   const stats = await getPresentationStats(presentations)
@@ -60,7 +62,7 @@ export default async function PresentationsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Presentation" href="/presentations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <PresentationsListClient initialData={presentations} stats={stats} />
+      <PresentationsListClient initialData={presentations} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

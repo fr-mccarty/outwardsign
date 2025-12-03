@@ -73,7 +73,7 @@ export function GroupRolePicker({
       setLoading(true)
       // Fetch all group roles with a large limit
       const result = await getGroupRolesPaginated({
-        page: 1,
+        offset: 0,
         limit: 1000,
         search: '',
       })

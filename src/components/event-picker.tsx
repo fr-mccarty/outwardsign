@@ -102,8 +102,9 @@ export function EventPicker({
   const loadEvents = async (page: number, search: string) => {
     try {
       setLoading(true)
+      const offset = (page - 1) * PAGE_SIZE
       const result = await getEventsPaginated({
-        page,
+        offset,
         limit: PAGE_SIZE,
         search,
       })

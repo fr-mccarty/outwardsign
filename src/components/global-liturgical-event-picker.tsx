@@ -145,7 +145,7 @@ export function GlobalLiturgicalEventPicker({
       // In calendar view, load all events without pagination
       if (viewMode === 'calendar') {
         const result = await getGlobalLiturgicalEventsPaginated(start, end, locale, {
-          page: 1,
+          offset: 0,
           limit: 1000, // Large limit to get all events for the month
           search: '',
         })
@@ -153,8 +153,9 @@ export function GlobalLiturgicalEventPicker({
         setTotalCount(result.totalCount)
       } else {
         // In list view, use pagination
+        const offset = (page - 1) * PAGE_SIZE
         const result = await getGlobalLiturgicalEventsPaginated(start, end, locale, {
-          page,
+          offset,
           limit: PAGE_SIZE,
           search: '',
         })

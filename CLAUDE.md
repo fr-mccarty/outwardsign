@@ -124,7 +124,7 @@ This matches the required pattern shown in the documentation.
 |---------------------------|----------------------------------|--------------|
 | **Create or edit ANY form component** | 🔴 [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md) - Critical form rules (auto-injected)<br>📖 [FORMS.md](./docs/FORMS.md) - Complete reference | developer-agent |
 | **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) - Critical patterns (auto-injected)<br>📖 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Complete reference | brainstorming-agent → requirements-agent → developer-agent |
-| **Create or modify a list page** | 🔴 [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md) - Critical list patterns (auto-injected)<br>📖 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete reference | developer-agent |
+| **Create or modify a list page** | 🔴 [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md) - Critical list patterns (auto-injected)<br>📖 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete reference<br>🔴 [REACT_HOOKS_PATTERNS.md](./docs/REACT_HOOKS_PATTERNS.md) - Prevent re-render loops | developer-agent |
 | **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Navigation hub (see pickers/ subdirectory) | developer-agent |
 | **Create or modify database schema** | 🔴 [DATABASE-CRITICAL.md](./docs/DATABASE-CRITICAL.md) - Critical migration rules (auto-injected)<br>📖 [DATABASE.md](./docs/DATABASE.md) - Complete reference | developer-agent |
 | **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-writer |
@@ -178,6 +178,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, component communication, performance
 - **[USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md)** - 🔴 CRITICAL - Role-based access control (Admin, Staff, Ministry-Leader, Parishioner), permission enforcement patterns, implementation guide
 - **[LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md)** - 🔴 CRITICAL - Complete pattern for list pages (server + client) with SearchCard, DataTable, ContentCard, ListStatsBar
+- **[REACT_HOOKS_PATTERNS.md](./docs/REACT_HOOKS_PATTERNS.md)** - 🔴 CRITICAL - React hook dependency array patterns to prevent infinite re-render loops (useListFilters)
 - **[DATABASE.md](./docs/DATABASE.md)** - Database management procedures (resets, seeding, liturgical calendar imports, troubleshooting)
 - **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Navigation hub for coding standards (split into code-conventions/ subdirectory with GENERAL, BILINGUAL, UI_PATTERNS, FORMATTING, DEVELOPMENT)
 - **[LANGUAGE.md](./docs/LANGUAGE.md)** - Language system documentation (liturgical language vs UI language, database schema, constants)

@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassWithNames, MassStats } from '@/lib/actions/masses'
-import { deleteMass } from '@/lib/actions/masses'
+import { deleteMass, getMasses, type MassFilterParams } from '@/lib/actions/masses'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -13,6 +15,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Church, Filter } from "lucide-react"
@@ -39,10 +42,12 @@ import {
 interface MassesListClientProps {
   initialData: MassWithNames[]
   stats: MassStats
+  initialHasMore: boolean
 }
 
-export function MassesListClient({ initialData, stats }: MassesListClientProps) {
+export function MassesListClient({ initialData, stats, initialHasMore }: MassesListClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -50,8 +55,17 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [masses, setMasses] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -75,13 +89,54 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [massToDelete, setMassToDelete] = useState<MassWithNames | null>(null)
 
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setMasses(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
+
   // Sorting state
   const currentSort = parseSort(filters.getFilterValue('sort'))
 
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextMasses = await getMasses({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as MassFilterParams['status'],
+        sort: filters.getFilterValue('sort') as MassFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setMasses(prev => [...prev, ...nextMasses])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextMasses.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more masses:', error)
+      toast.error('Failed to load more masses')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -179,10 +234,7 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
+                onChange={setSearchValue}
                 placeholder="Search by presider, homilist, or event name..."
                 className="w-full"
               />
@@ -218,15 +270,17 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
       </SearchCard>
 
       {/* Masses Table */}
-      {initialData.length > 0 ? (
+      {masses.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={masses}
             columns={columns}
             keyExtractor={(mass) => mass.id}
             onRowClick={(mass) => router.push(`/masses/${mass.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No masses found' : 'No masses yet',
@@ -252,6 +306,7 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && masses.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

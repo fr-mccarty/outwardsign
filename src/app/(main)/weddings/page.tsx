@@ -14,7 +14,6 @@ interface PageProps {
     search?: string
     status?: string
     sort?: string
-    page?: string
     start_date?: string
     end_date?: string
   }>
@@ -36,7 +35,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
     search: params.search,
     status: (params.status as WeddingFilterParams['status']) || 'ACTIVE',
     sort: (params.sort as WeddingFilterParams['sort']) || 'date_asc',
-    page: params.page ? parseInt(params.page, 10) : 1,
+    offset: 0, // Always fetch first page on server
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
     end_date: params.end_date
@@ -44,6 +43,9 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
 
   // Fetch weddings server-side with filters
   const weddings = await getWeddings(filters)
+
+  // Determine if there are more results
+  const initialHasMore = weddings.length === LIST_VIEW_PAGE_SIZE
 
   // Calculate stats server-side
   const stats = await getWeddingStats(weddings)
@@ -60,7 +62,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Wedding" href="/weddings/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <WeddingsListClient initialData={weddings} stats={stats} />
+      <WeddingsListClient initialData={weddings} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

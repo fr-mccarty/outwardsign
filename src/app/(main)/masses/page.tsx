@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
 import { CalendarClock } from 'lucide-react'
 import Link from 'next/link'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,8 +19,6 @@ interface PageProps {
     start_date?: string
     end_date?: string
     sort?: string
-    page?: string
-    limit?: string
   }>
 }
 
@@ -41,12 +40,13 @@ export default async function MassesPage({ searchParams }: PageProps) {
     start_date: params.start_date,
     end_date: params.end_date,
     sort: (params.sort as MassFilterParams['sort']) || 'date_asc', // Default to date ascending (chronological)
-    page: params.page ? parseInt(params.page) : 1,
-    limit: params.limit ? parseInt(params.limit) : 50
+    offset: 0,
+    limit: LIST_VIEW_PAGE_SIZE
   }
 
   // Fetch masses and stats server-side with filters
   const masses = await getMasses(filters)
+  const initialHasMore = masses.length === LIST_VIEW_PAGE_SIZE
   const stats = await getMassStats(filters)
 
   // Get user role for schedule button permission
@@ -78,7 +78,7 @@ export default async function MassesPage({ searchParams }: PageProps) {
       ] : undefined}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <MassesListClient initialData={masses} stats={stats} />
+      <MassesListClient initialData={masses} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

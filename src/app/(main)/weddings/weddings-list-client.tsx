@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { WeddingWithNames, WeddingStats } from '@/lib/actions/weddings'
-import { deleteWedding } from '@/lib/actions/weddings'
+import { deleteWedding, getWeddings, type WeddingFilterParams } from '@/lib/actions/weddings'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -31,9 +34,10 @@ import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 interface WeddingsListClientProps {
   initialData: WeddingWithNames[]
   stats: WeddingStats
+  initialHasMore: boolean
 }
 
-export function WeddingsListClient({ initialData, stats }: WeddingsListClientProps) {
+export function WeddingsListClient({ initialData, stats, initialHasMore }: WeddingsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -43,16 +47,66 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [weddings, setWeddings] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Parse current sort from URL for DataTable
   const currentSort = parseSort(filters.getFilterValue('sort'))
 
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setWeddings(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
+
   // Handle sort change from DataTable column headers
-  const handleSortChange = (column: string, direction: 'asc' | 'desc' | null) => {
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextWeddings = await getWeddings({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as WeddingFilterParams['status'],
+        sort: filters.getFilterValue('sort') as WeddingFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: filters.getFilterValue('start_date'),
+        end_date: filters.getFilterValue('end_date')
+      })
+
+      setWeddings(prev => [...prev, ...nextWeddings])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextWeddings.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more weddings:', error)
+      toast.error('Failed to load more weddings')
+    } finally {
+      setIsLoadingMore(false)
+    }
   }
 
   // Transform stats for ListStatsBar
@@ -166,10 +220,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
+                onChange={setSearchValue}
                 placeholder="Search by bride or groom name..."
                 className="w-full"
               />
@@ -203,15 +254,17 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
       </SearchCard>
 
       {/* Weddings Table */}
-      {initialData.length > 0 ? (
+      {weddings.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={weddings}
             columns={columns}
             keyExtractor={(wedding) => wedding.id}
             onRowClick={(wedding) => router.push(`/weddings/${wedding.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <VenusAndMars className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No weddings found' : 'No weddings yet',
@@ -237,6 +290,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && weddings.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

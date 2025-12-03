@@ -53,6 +53,7 @@
       "Bash(jq:*)",
       "Bash(tee:*)",
       "Bash(echo:*)",
+      "Bash(printf:*)",
       "Bash(for file:*)",
       "Bash(for table:*)",
       "Bash(do echo:*)",

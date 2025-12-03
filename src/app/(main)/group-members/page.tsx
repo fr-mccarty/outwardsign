@@ -4,6 +4,7 @@ import { GroupMembersListClient } from './group-members-list-client'
 import { getPeopleWithGroupMemberships, getGroups, getGroupMemberStats, type GroupMemberFilters } from '@/lib/actions/groups'
 import { getGroupRoles } from '@/lib/actions/group-roles'
 import { getPeople } from '@/lib/actions/people'
+import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{
@@ -42,6 +43,9 @@ export default async function GroupMembersPage({ searchParams }: PageProps) {
   // Fetch all people for adding new memberships
   const allPeople = await getPeople()
 
+  // Calculate if there are more items to load
+  const initialHasMore = peopleWithMemberships.length >= INFINITE_SCROLL_LOAD_MORE_SIZE
+
   return (
     <GroupMembersListClient
       peopleWithMemberships={peopleWithMemberships}
@@ -49,6 +53,7 @@ export default async function GroupMembersPage({ searchParams }: PageProps) {
       groups={groups}
       groupRoles={groupRoles}
       allPeople={allPeople}
+      initialHasMore={initialHasMore}
     />
   )
 }

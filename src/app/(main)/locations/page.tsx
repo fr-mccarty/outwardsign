@@ -5,6 +5,7 @@ import { getLocations, getLocationStats, type LocationFilterParams } from "@/lib
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LocationsListClient } from './locations-list-client'
+import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{ search?: string; sort?: string }>
@@ -38,6 +39,9 @@ export default async function LocationsPage({ searchParams }: PageProps) {
     { label: "Our Locations" }
   ]
 
+  // Calculate if there are more items to load
+  const initialHasMore = locations.length >= INFINITE_SCROLL_LOAD_MORE_SIZE
+
   return (
     <PageContainer
       title="Locations"
@@ -45,7 +49,7 @@ export default async function LocationsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Location" href="/locations/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <LocationsListClient initialData={locations} stats={stats} />
+      <LocationsListClient initialData={locations} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

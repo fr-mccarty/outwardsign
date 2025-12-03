@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { EventWithModuleLink, EventStats } from '@/lib/actions/events'
-import { deleteEvent } from '@/lib/actions/events'
+import { deleteEvent, getEvents, type EventFilterParams } from '@/lib/actions/events'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -12,6 +14,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, CalendarDays, Filter } from "lucide-react"
@@ -29,9 +32,10 @@ import {
 interface EventsListClientProps {
   initialData: EventWithModuleLink[]
   stats: EventStats
+  initialHasMore: boolean
 }
 
-export function EventsListClient({ initialData, stats }: EventsListClientProps) {
+export function EventsListClient({ initialData, stats, initialHasMore }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -41,8 +45,30 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
     defaultFilters: { sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [events, setEvents] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setEvents(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Parse current sort from URL
   const currentSort = parseSort(filters.getFilterValue('sort'))
@@ -51,7 +77,34 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextEvents = await getEvents({
+        search: filters.getFilterValue('search'),
+        sort: filters.getFilterValue('sort') as EventFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setEvents(prev => [...prev, ...nextEvents])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextEvents.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more events:', error)
+      toast.error('Failed to load more events')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -185,16 +238,22 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
       </SearchCard>
 
       {/* Events Table */}
-      {initialData.length > 0 ? (
-        <DataTable
-          columns={columns}
-          data={initialData}
-          currentSort={currentSort || undefined}
-          onSortChange={handleSortChange}
-          keyExtractor={(event) => event.id}
-          onRowClick={(event) => router.push(`/events/${event.id}`)}
-          stickyHeader
-        />
+      {events.length > 0 ? (
+        <>
+          <DataTable
+            columns={columns}
+            data={events}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
+            keyExtractor={(event) => event.id}
+            onRowClick={(event) => router.push(`/events/${event.id}`)}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
+            stickyHeader
+          />
+          <EndOfListMessage show={!hasMore && events.length > 0} />
+          <ScrollToTopButton />
+        </>
       ) : (
         <ContentCard className="text-center py-12">
           <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -226,9 +285,6 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
           </div>
         </ContentCard>
       )}
-
-      {/* Scroll to Top Button */}
-      <ScrollToTopButton />
 
       {/* Quick Stats */}
       {stats.total > 0 && <ListStatsBar stats={statsList} />}

@@ -56,7 +56,7 @@ export interface MassTimeFilterParams {
 
 // Paginated params interface
 export interface MassTimePaginatedParams {
-  page?: number
+  offset?: number
   limit?: number
   search?: string
   is_active?: boolean
@@ -141,9 +141,8 @@ export async function getMassTimesPaginated(
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const page = params?.page || 1
+  const offset = params?.offset || 0
   const limit = params?.limit || 50
-  const offset = (page - 1) * limit
 
   // Build query
   let query = supabase
@@ -169,6 +168,8 @@ export async function getMassTimesPaginated(
     console.error('Error fetching paginated mass times templates:', error)
     throw new Error('Failed to fetch mass times templates')
   }
+
+  const page = Math.floor(offset / limit) + 1
 
   return {
     items: data || [],

@@ -5,6 +5,7 @@ import { getReadings, getReadingStats, type ReadingFilterParams } from "@/lib/ac
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ReadingsListClient } from './readings-list-client'
+import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{
@@ -32,8 +33,7 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
     search: params.search,
     language: params.language as ReadingFilterParams['language'],
     category: params.category as ReadingFilterParams['category'],
-    sort: (params.sort as ReadingFilterParams['sort']) || 'created_desc',
-    page: params.page ? parseInt(params.page) : undefined
+    sort: (params.sort as ReadingFilterParams['sort']) || 'created_desc'
   }
 
   // Fetch readings server-side with filters
@@ -47,6 +47,9 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
     { label: "Our Readings" }
   ]
 
+  // Calculate if there are more items to load
+  const initialHasMore = readings.length >= INFINITE_SCROLL_LOAD_MORE_SIZE
+
   return (
     <PageContainer
       title="Our Readings"
@@ -54,7 +57,7 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Reading" href="/readings/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <ReadingsListClient initialData={readings} stats={stats} />
+      <ReadingsListClient initialData={readings} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

@@ -5,6 +5,7 @@ import { getEventsWithModuleLinks, getEventStats, type EventFilterParams, type E
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{
@@ -37,11 +38,16 @@ export default async function EventsPage({ searchParams }: PageProps) {
     language: params.language as EventFilterParams['language'],
     start_date: params.start_date,
     end_date: params.end_date,
-    sort: (params.sort as EventFilterParams['sort']) || 'date_asc'
+    sort: (params.sort as EventFilterParams['sort']) || 'date_asc',
+    offset: 0,
+    limit: LIST_VIEW_PAGE_SIZE
   }
 
   // Fetch events server-side with filters and module links
   const events = await getEventsWithModuleLinks(filters)
+
+  // Determine if there are more results
+  const initialHasMore = events.length === LIST_VIEW_PAGE_SIZE
 
   // Compute stats server-side (cast EventWithModuleLink[] to EventWithRelations[] for stats)
   const allEventsWithLinks = await getEventsWithModuleLinks()
@@ -60,7 +66,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Event" href="/events/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventsListClient initialData={events} stats={stats} />
+      <EventsListClient initialData={events} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

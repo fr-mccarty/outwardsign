@@ -373,7 +373,7 @@ export async function getAnnouncementTemplate(templateId: number) {
 
 export async function searchAnnouncements(params: {
   query?: string
-  page?: number
+  offset?: number
   limit?: number
 }) {
   const supabase = await createClient()
@@ -396,9 +396,8 @@ export async function searchAnnouncements(params: {
 
     const parishIds = userParishes.map(up => up.parish_id)
 
-    const page = params.page || 1
+    const offset = params.offset || 0
     const limit = params.limit || 10
-    const offset = (page - 1) * limit
 
     let query = supabase
       .from('announcements')
@@ -419,12 +418,13 @@ export async function searchAnnouncements(params: {
     }
 
     const totalPages = Math.ceil((count || 0) / limit)
+    const currentPage = Math.floor(offset / limit) + 1
 
     return {
       announcements: announcements || [],
       total: count || 0,
       totalPages,
-      currentPage: page
+      currentPage
     }
   } catch (error) {
     console.error('Error searching announcements:', error)

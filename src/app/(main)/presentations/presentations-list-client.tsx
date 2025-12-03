@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { PresentationWithNames, PresentationStats } from '@/lib/actions/presentations'
-import { deletePresentation } from '@/lib/actions/presentations'
+import { deletePresentation, getPresentations, type PresentationFilterParams } from '@/lib/actions/presentations'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -13,6 +15,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -40,9 +43,10 @@ import type { DataTableColumn } from '@/components/data-table/data-table'
 interface PresentationsListClientProps {
   initialData: PresentationWithNames[]
   stats: PresentationStats
+  initialHasMore: boolean
 }
 
-export function PresentationsListClient({ initialData, stats }: PresentationsListClientProps) {
+export function PresentationsListClient({ initialData, stats, initialHasMore }: PresentationsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -52,17 +56,67 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [presentations, setPresentations] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Parse current sort from URL
   const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setPresentations(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Handle sort change
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextPresentations = await getPresentations({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as PresentationFilterParams['status'],
+        sort: filters.getFilterValue('sort') as PresentationFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setPresentations(prev => [...prev, ...nextPresentations])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextPresentations.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more presentations:', error)
+      toast.error('Failed to load more presentations')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -199,10 +253,7 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
+                onChange={setSearchValue}
                 placeholder="Search by child name..."
                 className="w-full"
               />
@@ -237,15 +288,17 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
       </SearchCard>
 
       {/* Presentations Table */}
-      {initialData.length > 0 ? (
+      {presentations.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={presentations}
             columns={columns}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
             keyExtractor={(presentation) => presentation.id}
             onRowClick={(presentation) => router.push(`/presentations/${presentation.id}`)}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <HandHeartIcon className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No presentations found' : 'No presentations yet',
@@ -271,6 +324,7 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && presentations.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

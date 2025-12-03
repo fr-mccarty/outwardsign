@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { FuneralWithNames, FuneralStats } from '@/lib/actions/funerals'
-import { deleteFuneral } from '@/lib/actions/funerals'
+import { deleteFuneral, getFunerals, type FuneralFilterParams } from '@/lib/actions/funerals'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -13,6 +15,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Cross, Filter } from "lucide-react"
@@ -31,9 +34,10 @@ import {
 interface FuneralsListClientProps {
   initialData: FuneralWithNames[]
   stats: FuneralStats
+  initialHasMore: boolean
 }
 
-export function FuneralsListClient({ initialData, stats }: FuneralsListClientProps) {
+export function FuneralsListClient({ initialData, stats, initialHasMore }: FuneralsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -43,17 +47,67 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [funerals, setFunerals] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Parse current sort from URL
   const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setFunerals(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Handle sort change
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextFunerals = await getFunerals({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as FuneralFilterParams['status'],
+        sort: filters.getFilterValue('sort') as FuneralFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setFunerals(prev => [...prev, ...nextFunerals])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextFunerals.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more funerals:', error)
+      toast.error('Failed to load more funerals')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -160,10 +214,7 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
+                onChange={setSearchValue}
                 placeholder="Search by deceased or family contact name..."
                 className="w-full"
               />
@@ -197,15 +248,17 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
       </SearchCard>
 
       {/* Funerals Table */}
-      {initialData.length > 0 ? (
+      {funerals.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={funerals}
             columns={columns}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
             keyExtractor={(funeral) => funeral.id}
             onRowClick={(funeral) => router.push(`/funerals/${funeral.id}`)}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <Cross className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No funerals found' : 'No funerals yet',
@@ -231,6 +284,7 @@ export function FuneralsListClient({ initialData, stats }: FuneralsListClientPro
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && funerals.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

@@ -32,7 +32,7 @@ export interface ReadingFilterParams {
   language?: LiturgicalLanguage | 'all'
   category?: ReadingCategory | 'all'
   sort?: 'pericope_asc' | 'pericope_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
 }
 
@@ -108,9 +108,8 @@ export async function getReadings(filters?: ReadingFilterParams): Promise<Readin
   await ensureJWTClaims()
 
   // Calculate pagination
-  const page = filters?.page || 1
+  const offset = filters?.offset || 0
   const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
-  const offset = (page - 1) * limit
 
   let query = supabase
     .from('readings')

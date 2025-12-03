@@ -631,6 +631,7 @@ Use table column builders from `@/lib/utils/table-columns`:
 ## Common Mistakes to Avoid
 
 ❌ **Not applying default filters on server page** - 🔴 CRITICAL - Apply defaults using OR operator before calling server actions
+❌ **Including `filters` in dependency arrays** - 🔴 CRITICAL - Causes infinite re-renders. See [REACT_HOOKS_PATTERNS.md](./REACT_HOOKS_PATTERNS.md)
 ❌ **Adding Create button in list client** - It belongs in PageContainer (server page)
 ❌ **ListStatsBar at top** - It must go at the bottom
 ❌ **No ContentCard for empty state** - Use ContentCard, not plain div

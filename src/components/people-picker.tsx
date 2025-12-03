@@ -157,8 +157,9 @@ export function PeoplePicker({
   const loadPeople = async (page: number, search: string) => {
     try {
       setLoading(true)
+      const offset = (page - 1) * PAGE_SIZE
       const result = await getPeoplePaginated({
-        page,
+        offset,
         limit: PAGE_SIZE,
         search,
         massRoleId: filterByMassRole,

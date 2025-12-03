@@ -22,7 +22,7 @@ export interface PresentationFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
   sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
   start_date?: string
   end_date?: string

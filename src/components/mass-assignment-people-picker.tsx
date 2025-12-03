@@ -123,15 +123,16 @@ export function MassAssignmentPeoplePicker({
       setLoading(true)
 
       // Get ALL people
+      const offset = (page - 1) * PAGE_SIZE
       const result = await getPeoplePaginated({
-        page,
+        offset,
         limit: PAGE_SIZE,
         search,
       })
 
       // Get people who ARE members of this mass role
       const membersResult = await getPeoplePaginated({
-        page: 1,
+        offset: 0,
         limit: 1000,
         massRoleId: massRoleId,
       })

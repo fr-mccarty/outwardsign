@@ -5,6 +5,7 @@ import { getGroups, getGroupStats } from '@/lib/actions/groups'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { GroupsListClient } from './groups-list-client'
+import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,6 +49,9 @@ export default async function GroupsPage({ searchParams }: PageProps) {
     { label: "Groups" }
   ]
 
+  // Calculate if there are more items to load
+  const initialHasMore = groups.length >= INFINITE_SCROLL_LOAD_MORE_SIZE
+
   return (
     <PageContainer
       title="Groups"
@@ -55,7 +59,7 @@ export default async function GroupsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Group" href="/groups/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <GroupsListClient initialData={groups} stats={stats} />
+      <GroupsListClient initialData={groups} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

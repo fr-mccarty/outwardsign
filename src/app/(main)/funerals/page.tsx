@@ -14,7 +14,6 @@ interface PageProps {
     search?: string
     status?: string
     sort?: string
-    page?: string
     start_date?: string
     end_date?: string
   }>
@@ -36,7 +35,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
     search: params.search,
     status: (params.status as FuneralFilterParams['status']) || 'ACTIVE',
     sort: (params.sort as FuneralFilterParams['sort']) || 'date_asc',
-    page: params.page ? parseInt(params.page, 10) : 1,
+    offset: 0,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
     end_date: params.end_date
@@ -44,6 +43,9 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
 
   // Fetch funerals server-side with filters
   const funerals = await getFunerals(filters)
+
+  // Determine if there are more results
+  const initialHasMore = funerals.length === LIST_VIEW_PAGE_SIZE
 
   // Calculate stats server-side
   const stats = await getFuneralStats(funerals)
@@ -60,7 +62,7 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Funeral" href="/funerals/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <FuneralsListClient initialData={funerals} stats={stats} />
+      <FuneralsListClient initialData={funerals} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

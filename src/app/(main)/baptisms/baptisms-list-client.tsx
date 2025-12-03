@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { BaptismWithNames, BaptismStats } from '@/lib/actions/baptisms'
-import { deleteBaptism } from '@/lib/actions/baptisms'
+import { deleteBaptism, getBaptisms, type BaptismFilterParams } from '@/lib/actions/baptisms'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -13,6 +15,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Droplet, Filter } from "lucide-react"
@@ -31,9 +34,10 @@ import {
 interface BaptismsListClientProps {
   initialData: BaptismWithNames[]
   stats: BaptismStats
+  initialHasMore: boolean
 }
 
-export function BaptismsListClient({ initialData, stats }: BaptismsListClientProps) {
+export function BaptismsListClient({ initialData, stats, initialHasMore }: BaptismsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -43,17 +47,67 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [baptisms, setBaptisms] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Parse current sort from URL
   const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setBaptisms(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Handle sort change
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextBaptisms = await getBaptisms({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as BaptismFilterParams['status'],
+        sort: filters.getFilterValue('sort') as BaptismFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setBaptisms(prev => [...prev, ...nextBaptisms])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextBaptisms.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more baptisms:', error)
+      toast.error('Failed to load more baptisms')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -160,10 +214,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
+                onChange={setSearchValue}
                 placeholder="Search by child name..."
                 className="w-full"
               />
@@ -197,15 +248,17 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
       </SearchCard>
 
       {/* Baptisms Table */}
-      {initialData.length > 0 ? (
+      {baptisms.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={baptisms}
             columns={columns}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
             keyExtractor={(baptism) => baptism.id}
             onRowClick={(baptism) => router.push(`/baptisms/${baptism.id}`)}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <Droplet className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No baptisms found' : 'No baptisms yet',
@@ -231,6 +284,7 @@ export function BaptismsListClient({ initialData, stats }: BaptismsListClientPro
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && baptisms.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

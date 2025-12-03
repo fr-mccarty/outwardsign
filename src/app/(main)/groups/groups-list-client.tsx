@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Group } from '@/lib/actions/groups'
 import type { GroupStats } from '@/lib/actions/groups'
-import { deleteGroup } from '@/lib/actions/groups'
+import { deleteGroup, getGroups, type GroupFilters } from '@/lib/actions/groups'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
@@ -14,6 +16,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Users, Filter } from "lucide-react"
@@ -26,9 +29,10 @@ import { GROUP_STATUS_VALUES } from "@/lib/constants"
 interface GroupsListClientProps {
   initialData: Group[]
   stats: GroupStats
+  initialHasMore: boolean
 }
 
-export function GroupsListClient({ initialData, stats }: GroupsListClientProps) {
+export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsListClientProps) {
   const router = useRouter()
 
   // Use list filters hook for URL state management
@@ -37,8 +41,30 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
     defaultFilters: { status: 'ACTIVE', sort: 'name_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [groups, setGroups] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setGroups(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Parse current sort from URL for DataTable
   const currentSort = parseSort(filters.getFilterValue('sort'))
@@ -47,7 +73,33 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextGroups = await getGroups({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as GroupFilters['status'],
+        sort: filters.getFilterValue('sort') as GroupFilters['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE
+      })
+
+      setGroups(prev => [...prev, ...nextGroups])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextGroups.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more groups:', error)
+      toast.error('Failed to load more groups')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -162,15 +214,17 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
       </SearchCard>
 
       {/* Groups Table */}
-      {initialData.length > 0 ? (
+      {groups.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={groups}
             columns={columns}
             keyExtractor={(group) => group.id}
             onRowClick={(group) => router.push(`/groups/${group.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No groups found' : 'No groups yet',
@@ -196,6 +250,7 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && groups.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

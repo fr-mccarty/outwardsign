@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
@@ -11,6 +11,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from '@/components/search-card'
 import { ContentCard } from '@/components/content-card'
 import { ListStatsBar, type ListStat } from '@/components/list-stats-bar'
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { PersonAvatarGroup } from '@/components/person-avatar-group'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,22 +26,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
 import { UserPlus, Users, MoreVertical, Filter } from 'lucide-react'
-import { addGroupMember, type PersonWithMemberships, type GroupMemberStats } from '@/lib/actions/groups'
+import { addGroupMember, type PersonWithMemberships, type GroupMemberStats, getPeopleWithGroupMemberships, type GroupMemberFilters } from '@/lib/actions/groups'
 import { toast } from 'sonner'
 import { useListFilters } from '@/hooks/use-list-filters'
+import { useDebounce } from '@/hooks/use-debounce'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import type { Person } from '@/lib/types'
 import type { GroupRole } from '@/lib/actions/group-roles'
 import type { Group } from '@/lib/actions/groups'
-
-// Note: Sorting options removed - managed through useListFilters hook
-// const GROUP_MEMBER_SORT_OPTIONS = [
-//   { value: 'name_asc', label: 'Name A-Z' },
-//   { value: 'name_desc', label: 'Name Z-A' },
-//   { value: 'groups_desc', label: 'Most Groups' },
-//   { value: 'groups_asc', label: 'Fewest Groups' },
-//   { value: 'created_desc', label: 'Recently Joined' },
-//   { value: 'created_asc', label: 'Oldest Member' },
-// ] as const
 
 interface GroupMembersListClientProps {
   peopleWithMemberships: PersonWithMemberships[]
@@ -48,6 +41,7 @@ interface GroupMembersListClientProps {
   groups: Group[]
   groupRoles: GroupRole[]
   allPeople: Person[]
+  initialHasMore: boolean
 }
 
 export function GroupMembersListClient({
@@ -55,7 +49,8 @@ export function GroupMembersListClient({
   stats,
   groups,
   groupRoles,
-  allPeople
+  allPeople,
+  initialHasMore
 }: GroupMembersListClientProps) {
   const router = useRouter()
 
@@ -65,8 +60,54 @@ export function GroupMembersListClient({
     defaultFilters: { sort: 'name_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [people, setPeople] = useState(peopleWithMemberships)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setPeople(peopleWithMemberships)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [peopleWithMemberships, initialHasMore])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextPeople = await getPeopleWithGroupMemberships({
+        search: filters.getFilterValue('search'),
+        sort: filters.getFilterValue('sort') as GroupMemberFilters['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE
+      })
+
+      setPeople(prev => [...prev, ...nextPeople])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextPeople.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more group members:', error)
+      toast.error('Failed to load more group members')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Dialog state for adding membership
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -332,13 +373,15 @@ export function GroupMembersListClient({
         </SearchCard>
 
         {/* Table */}
-        {peopleWithMemberships.length > 0 ? (
+        {people.length > 0 ? (
           <>
             <DataTable
-              data={peopleWithMemberships}
+              data={people}
               columns={columns}
               keyExtractor={(row) => row.person.id}
               onRowClick={(row) => router.push(`/group-members/${row.person.id}`)}
+              onLoadMore={handleLoadMore}
+              hasMore={hasMore}
               emptyState={{
                 icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
                 title: hasActiveFilters ? 'No members found' : 'No group members yet',
@@ -354,6 +397,7 @@ export function GroupMembersListClient({
               }}
               stickyHeader
             />
+            <EndOfListMessage show={!hasMore && people.length > 0} />
             <ScrollToTopButton />
           </>
         ) : (

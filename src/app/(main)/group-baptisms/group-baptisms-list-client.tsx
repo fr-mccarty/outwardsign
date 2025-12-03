@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { GroupBaptismWithNames, GroupBaptismStats } from '@/lib/actions/group-baptisms'
-import { deleteGroupBaptism } from '@/lib/actions/group-baptisms'
+import { deleteGroupBaptism, getGroupBaptisms, type GroupBaptismFilterParams } from '@/lib/actions/group-baptisms'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -14,6 +16,7 @@ import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
 import { PersonAvatarGroup } from "@/components/person-avatar-group"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Users, Filter } from "lucide-react"
@@ -31,9 +34,10 @@ import {
 interface GroupBaptismsListClientProps {
   initialData: GroupBaptismWithNames[]
   stats: GroupBaptismStats
+  initialHasMore: boolean
 }
 
-export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsListClientProps) {
+export function GroupBaptismsListClient({ initialData, stats, initialHasMore }: GroupBaptismsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -43,8 +47,17 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [groupBaptisms, setGroupBaptisms] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -68,9 +81,23 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [groupBaptismToDelete, setGroupBaptismToDelete] = useState<GroupBaptismWithNames | null>(null)
 
-  // Sorting state
+  // Parse current sort from URL
   const currentSort = parseSort(filters.getFilterValue('sort'))
 
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setGroupBaptisms(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
+
+  // Handle sort change
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     // Map UI column names to server sort field names
     const columnMap: Record<string, string> = {
@@ -79,7 +106,35 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
     }
     const sortValue = formatSort(columnMap[column] || column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextGroupBaptisms = await getGroupBaptisms({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as GroupBaptismFilterParams['status'],
+        sort: filters.getFilterValue('sort') as GroupBaptismFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setGroupBaptisms(prev => [...prev, ...nextGroupBaptisms])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextGroupBaptisms.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more group baptisms:', error)
+      toast.error('Failed to load more group baptisms')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -169,10 +224,7 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
+                onChange={setSearchValue}
                 placeholder="Search by group name..."
                 className="w-full"
               />
@@ -207,15 +259,17 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
       </SearchCard>
 
       {/* Group Baptisms Table */}
-      {initialData.length > 0 ? (
+      {groupBaptisms.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={groupBaptisms}
             columns={columns}
             keyExtractor={(gb) => gb.id}
             onRowClick={(gb) => router.push(`/group-baptisms/${gb.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No group baptisms found' : 'No group baptisms yet',
@@ -241,6 +295,7 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && groupBaptisms.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (

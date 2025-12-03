@@ -79,8 +79,9 @@ export function LocationPicker({
   const loadLocations = async (page: number, search: string) => {
     try {
       setLoading(true)
+      const offset = (page - 1) * PAGE_SIZE
       const result = await getLocationsPaginated({
-        page,
+        offset,
         limit: PAGE_SIZE,
         search,
       })

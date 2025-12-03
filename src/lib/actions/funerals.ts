@@ -24,7 +24,7 @@ export interface FuneralFilterParams {
   search?: string
   status?: ModuleStatus | 'all'
   sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
   start_date?: string
   end_date?: string
@@ -87,9 +87,8 @@ export async function getFunerals(filters?: FuneralFilterParams): Promise<Funera
   const supabase = await createClient()
 
   // Calculate pagination
-  const page = filters?.page || 1
+  const offset = filters?.offset || 0
   const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
-  const offset = (page - 1) * limit
 
   let query = supabase
     .from('funerals')

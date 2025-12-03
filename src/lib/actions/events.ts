@@ -26,7 +26,7 @@ export interface EventFilterParams {
   start_date?: string
   end_date?: string
   sort?: 'date_asc' | 'date_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
 }
 
@@ -123,12 +123,9 @@ export async function getEventsPaginated(params?: PaginatedParams): Promise<Pagi
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  const page = params?.page || 1
+  const offset = params?.offset || 0
   const limit = params?.limit || 10
   const search = params?.search || ''
-
-  // Calculate offset
-  const offset = (page - 1) * limit
 
   // Build base query
   let query = supabase
@@ -155,6 +152,7 @@ export async function getEventsPaginated(params?: PaginatedParams): Promise<Pagi
 
   const totalCount = count || 0
   const totalPages = Math.ceil(totalCount / limit)
+  const page = Math.floor(offset / limit) + 1
 
   return {
     items: data || [],

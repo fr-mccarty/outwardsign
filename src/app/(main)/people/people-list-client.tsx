@@ -67,7 +67,8 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
   // Update URL when debounced search value changes
   useEffect(() => {
     filters.updateFilter('search', debouncedSearchValue)
-  }, [debouncedSearchValue, filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
 
   // Reset to initial data when filters change
   useEffect(() => {
@@ -80,7 +81,8 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Load more function for infinite scroll
   const handleLoadMore = async () => {

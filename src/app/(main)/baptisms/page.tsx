@@ -14,7 +14,6 @@ interface PageProps {
     search?: string
     status?: string
     sort?: string
-    page?: string
     start_date?: string
     end_date?: string
   }>
@@ -36,7 +35,7 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
     search: params.search,
     status: (params.status as BaptismFilterParams['status']) || 'ACTIVE',
     sort: (params.sort as BaptismFilterParams['sort']) || 'date_asc',
-    page: params.page ? parseInt(params.page, 10) : 1,
+    offset: 0,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
     end_date: params.end_date
@@ -44,6 +43,9 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
 
   // Fetch baptisms server-side with filters
   const baptisms = await getBaptisms(filters)
+
+  // Determine if there are more results
+  const initialHasMore = baptisms.length === LIST_VIEW_PAGE_SIZE
 
   // Calculate stats server-side
   const stats = await getBaptismStats(baptisms)
@@ -60,7 +62,7 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Baptism" href="/baptisms/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <BaptismsListClient initialData={baptisms} stats={stats} />
+      <BaptismsListClient initialData={baptisms} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { QuinceaneraWithNames, QuinceaneraStats } from '@/lib/actions/quinceaneras'
-import { deleteQuinceanera } from '@/lib/actions/quinceaneras'
+import { deleteQuinceanera, getQuinceaneras, type QuinceaneraFilterParams } from '@/lib/actions/quinceaneras'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
@@ -13,6 +15,7 @@ import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { StatusFilter } from "@/components/status-filter"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, BookHeart, Filter } from "lucide-react"
@@ -31,9 +34,10 @@ import {
 interface QuinceanerasListClientProps {
   initialData: QuinceaneraWithNames[]
   stats: QuinceaneraStats
+  initialHasMore: boolean
 }
 
-export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListClientProps) {
+export function QuinceanerasListClient({ initialData, stats, initialHasMore }: QuinceanerasListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -43,17 +47,67 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
     defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [quinceaneras, setQuinceaneras] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Parse current sort from URL
   const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchValue])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setQuinceaneras(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Handle sort change
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextQuinceaneras = await getQuinceaneras({
+        search: filters.getFilterValue('search'),
+        status: filters.getFilterValue('status') as QuinceaneraFilterParams['status'],
+        sort: filters.getFilterValue('sort') as QuinceaneraFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
+        start_date: searchParams.get('start_date') || undefined,
+        end_date: searchParams.get('end_date') || undefined
+      })
+
+      setQuinceaneras(prev => [...prev, ...nextQuinceaneras])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextQuinceaneras.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more quinceaneras:', error)
+      toast.error('Failed to load more quinceaneras')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -199,13 +253,15 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
       </SearchCard>
 
       {/* Quinceañeras Table */}
-      {initialData.length > 0 ? (
+      {quinceaneras.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={quinceaneras}
             columns={columns}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             keyExtractor={(quinceanera) => quinceanera.id}
             onRowClick={(quinceanera) => router.push(`/quinceaneras/${quinceanera.id}`)}
             emptyState={{
@@ -233,6 +289,7 @@ export function QuinceanerasListClient({ initialData, stats }: QuinceanerasListC
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && quinceaneras.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (
