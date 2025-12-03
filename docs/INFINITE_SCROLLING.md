@@ -244,7 +244,8 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
   }, [initialData, initialHasMore])
 
   // Load more function for infinite scroll
-  const handleLoadMore = async () => {
+  // 🔴 CRITICAL: Use useCallback to prevent function recreation
+  const handleLoadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return
 
     setIsLoadingMore(true)
@@ -256,7 +257,13 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE  // Load 50 items
       })
 
-      setPeople(prev => [...prev, ...nextPeople])
+      // 🔴 CRITICAL: Filter duplicates to prevent React key errors
+      setPeople(prev => {
+        const existingIds = new Set(prev.map(p => p.id))
+        const newPeople = nextPeople.filter(p => !existingIds.has(p.id))
+        return [...prev, ...newPeople]
+      })
+
       setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
       setHasMore(nextPeople.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
@@ -265,7 +272,8 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
     } finally {
       setIsLoadingMore(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingMore, hasMore, offset])
 
   return (
     <div className="space-y-6">
@@ -360,7 +368,10 @@ useEffect(() => {
 ### Load More Function
 
 ```typescript
-const handleLoadMore = async () => {
+import { useCallback } from 'react'
+
+// 🔴 CRITICAL: Use useCallback to prevent function recreation
+const handleLoadMore = useCallback(async () => {
   if (isLoadingMore || !hasMore) return  // Prevent duplicate requests
 
   setIsLoadingMore(true)
@@ -372,7 +383,13 @@ const handleLoadMore = async () => {
       limit: INFINITE_SCROLL_LOAD_MORE_SIZE  // Load 50 items
     })
 
-    setItems(prev => [...prev, ...nextItems])  // Append to existing
+    // 🔴 CRITICAL: Filter duplicates to prevent React key errors
+    setItems(prev => {
+      const existingIds = new Set(prev.map(item => item.id))
+      const newItems = nextItems.filter(item => !existingIds.has(item.id))
+      return [...prev, ...newItems]  // Append only new items
+    })
+
     setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)  // Increment offset
     setHasMore(nextItems.length === INFINITE_SCROLL_LOAD_MORE_SIZE)  // Check if more exist
   } catch (error) {
@@ -381,16 +398,19 @@ const handleLoadMore = async () => {
   } finally {
     setIsLoadingMore(false)
   }
-}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [isLoadingMore, hasMore, offset])
 ```
 
 **Key Points:**
+- **Wrap in `useCallback`** - Prevents function recreation, stable reference for IntersectionObserver
+- **Filter duplicates** - Create Set of existing IDs, only append truly new items
 - Check `isLoadingMore` and `hasMore` before fetching
 - Use `INFINITE_SCROLL_LOAD_MORE_SIZE` for `limit`
-- Append new items to existing array with spread operator
 - Increment offset by `INFINITE_SCROLL_LOAD_MORE_SIZE`
 - Update `hasMore` based on returned item count
 - Always set `isLoadingMore` to false in finally block
+- Include proper dependencies: `[isLoadingMore, hasMore, offset]`
 
 ---
 
@@ -639,6 +659,77 @@ const [offset, setOffset] = useState(0)
 // ✅ CORRECT
 const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
 ```
+
+### Issue: Duplicate key errors when loading more
+
+**Error:** `Encountered two children with the same key, [id]. Keys should be unique...`
+
+**Cause:** Multiple rapid `handleLoadMore` calls can add duplicate items before `isLoadingMore` state updates, especially when combined with client-side filtering.
+
+**Solution:** Use `useCallback` and filter duplicates when appending new items:
+
+```typescript
+import { useCallback } from 'react'
+
+// ❌ WRONG - Not using useCallback, allows duplicates
+const handleLoadMore = async () => {
+  if (isLoadingMore || !hasMore) return
+
+  setIsLoadingMore(true)
+  try {
+    const nextItems = await getItems({...})
+    setItems(prev => [...prev, ...nextItems])  // Can add duplicates!
+    setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+    setHasMore(nextItems.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+  } finally {
+    setIsLoadingMore(false)
+  }
+}
+
+// ✅ CORRECT - Using useCallback and filtering duplicates
+const handleLoadMore = useCallback(async () => {
+  if (isLoadingMore || !hasMore) return
+
+  setIsLoadingMore(true)
+  try {
+    const nextItems = await getItems({
+      search: filters.getFilterValue('search'),
+      language: filters.getFilterValue('language'),
+      sort: filters.getFilterValue('sort'),
+      offset: offset,
+      limit: INFINITE_SCROLL_LOAD_MORE_SIZE
+    })
+
+    // Prevent duplicates by checking existing IDs
+    setItems(prev => {
+      const existingIds = new Set(prev.map(item => item.id))
+      const newItems = nextItems.filter(item => !existingIds.has(item.id))
+      return [...prev, ...newItems]
+    })
+
+    setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+    setHasMore(nextItems.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+  } catch (error) {
+    console.error('Failed to load more:', error)
+    toast.error('Failed to load more items')
+  } finally {
+    setIsLoadingMore(false)
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [isLoadingMore, hasMore, offset])
+```
+
+**Why this works:**
+1. **`useCallback` prevents function recreation** - Ensures IntersectionObserver has stable reference
+2. **Duplicate filtering** - Creates Set of existing IDs, only appends truly new items
+3. **Race condition protection** - Even if multiple calls happen, duplicates are filtered out
+
+**When to use this pattern:**
+- ✅ Always when implementing infinite scroll
+- ✅ Especially when combining with client-side filtering
+- ✅ Required when same IDs could be returned from multiple API calls
+
+**Reference Implementation:** Readings module (`src/app/(main)/readings/readings-list-client.tsx`)
 
 ---
 
