@@ -88,7 +88,7 @@ export async function GET(request: Request) {
         continue
       }
 
-      const mass = assignment.mass
+      const mass = assignment.mass as unknown as { id: string; date: string; time: string; mass_type: string; location: string }
 
       const commitment = {
         role: assignment.role,

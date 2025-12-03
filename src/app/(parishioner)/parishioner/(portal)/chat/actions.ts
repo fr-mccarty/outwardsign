@@ -293,7 +293,7 @@ export async function chatWithAI(
 
       // Execute each tool
       for (const toolUse of toolUseBlocks) {
-        const toolResult = await executeTool(toolUse.name, toolUse.input, personId)
+        const toolResult = await executeTool(toolUse.name, toolUse.input as Record<string, unknown>, personId)
 
         toolResults.push({
           role: 'user',
