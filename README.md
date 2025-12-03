@@ -430,12 +430,41 @@ The sacraments are at the heart of Catholic parish life. We believe tools that s
 
 Contributions are welcome! Outward Sign is built by and for the Catholic community. Whether you're fixing bugs, adding features, improving documentation, or writing tests, your contributions help parishes worldwide.
 
+### Contribution Workflow (Fork-Based)
+
+External contributors follow a standard GitHub fork-based workflow. This ensures you have your own copy of the repository to work on without needing direct write access to the main repository.
+
+**Quick Overview:**
+```bash
+# 1. Fork the repository on GitHub (click "Fork" button)
+# 2. Clone YOUR fork to your local machine
+git clone https://github.com/YOUR-USERNAME/outwardsign.git
+cd outwardsign
+
+# 3. Create a feature branch
+git checkout -b feature/your-feature-name
+
+# 4. Make your changes and commit them
+git add .
+git commit -m "Add feature: Brief description"
+
+# 5. Push to YOUR fork
+git push origin feature/your-feature-name
+
+# 6. Open a Pull Request on GitHub from your fork to the main repository
+```
+
 ### How to Contribute
 
 #### 1. Set Up Your Development Environment
 
 Follow the [Getting Started](#-getting-started) guide above to:
-- Clone the repository
+- **Fork the repository** on GitHub (click the "Fork" button in the top-right)
+- **Clone YOUR fork** (not the main repository):
+  ```bash
+  git clone https://github.com/YOUR-USERNAME/outwardsign.git
+  cd outwardsign
+  ```
 - Install dependencies
 - Start local Supabase with Docker
 - Run the development server
@@ -443,17 +472,16 @@ Follow the [Getting Started](#-getting-started) guide above to:
 
 #### 2. Make Your Changes
 
-1. **Fork the repository** to your GitHub account
-2. **Create a feature branch** from `main`:
+1. **Create a feature branch** from `main`:
    ```bash
    git checkout -b feature/your-feature-name
    ```
-3. **Make your changes** following our development guidelines:
+2. **Make your changes** following our development guidelines:
    - Follow TypeScript patterns from existing components
    - Maintain responsive design across all new components
    - Write tests for new features (see [Testing](#testing) section)
    - Update documentation as needed
-4. **Test your changes** locally:
+3. **Test your changes** locally:
    ```bash
    npm test           # Run all tests
    npm run build      # Verify production build
@@ -467,11 +495,15 @@ Follow the [Getting Started](#-getting-started) guide above to:
    git add .
    git commit -m "Add feature: Brief description of what you did"
    ```
-2. **Push to your fork**:
+2. **Push to YOUR fork** (not the main repository):
    ```bash
    git push origin feature/your-feature-name
    ```
 3. **Open a Pull Request** on GitHub:
+   - Go to the main repository on GitHub
+   - Click "Pull Requests" → "New Pull Request"
+   - Click "compare across forks"
+   - Select your fork and branch as the source
    - Provide a clear title and description
    - Reference any related issues
    - Explain what changes you made and why
