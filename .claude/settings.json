@@ -72,6 +72,8 @@
       "Bash(lsof:*)",
       "Bash(pgreg:*)",
       "Bash(wait)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
       "WebFetch(domain:docx.js.org)",
       "WebFetch(domain:lolekproductions.org)",
       "WebFetch(domain:github.com)",
