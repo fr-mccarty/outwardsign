@@ -24,7 +24,6 @@ export default async function CreateWeddingPage() {
       <WeddingFormWrapper
         title="Create Wedding"
         description="Add a new wedding celebration to your parish."
-        saveButtonLabel="Create Wedding"
       />
     </>
   )

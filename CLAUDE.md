@@ -79,26 +79,48 @@ This project uses specialized AI agents for different development tasks. Using t
 
 **AI Agent: Before performing ANY of these tasks, you MUST read the specified documentation. Failure to read required documentation will result in code that violates established patterns and will need to be rewritten.**
 
+### 🔴 Documentation Contract (MANDATORY)
+
+**Before ANY code change, you MUST:**
+
+1. **State which documentation you consulted** - Name the specific file(s)
+2. **Quote the specific rule/pattern you're following** - Reference line numbers or section headings
+3. **Explain how your implementation matches that pattern** - Show the connection
+
+**Example of valid response:**
+```
+Per FORMS-CRITICAL.md (Rule #1 - FormField Component): "ALL form inputs must use FormField component"
+
+I'm implementing this by wrapping the Input component in FormField:
+<FormField control={form.control} name="bride_name" ... />
+
+This matches the required pattern shown in the documentation.
+```
+
+**Responses without this contract will be considered incomplete and must be revised.**
+
+---
+
 ### Required Reading by Task
 
 | When you are asked to... | You MUST read these files FIRST | Agent to Use |
 |---------------------------|----------------------------------|--------------|
-| **Create or edit ANY form component** | 🔴 [FORMS.md](./docs/FORMS.md) - Form patterns, validation, styling, FormField usage | developer-agent |
-| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - All 8 file patterns<br>🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - List page pattern (server + client) | requirements-agent → developer-agent |
-| **Create or modify a list page** | 🔴 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete list view pattern with checklist | developer-agent |
-| **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Navigation hub (see pickers/ subdirectory for ARCHITECTURE, CREATING_PICKERS, USAGE_PATTERNS, ADVANCED_FEATURES, INFINITE_LOOP_PREVENTION) | developer-agent |
-| **Create or modify database schema** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration procedures<br>🔴 Database section in this file - Migration workflow | developer-agent |
+| **Create or edit ANY form component** | 🔴 [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md) - Critical form rules (auto-injected)<br>📖 [FORMS.md](./docs/FORMS.md) - Complete reference | developer-agent |
+| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) - Critical patterns (auto-injected)<br>📖 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Complete reference | requirements-agent → developer-agent |
+| **Create or modify a list page** | 🔴 [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md) - Critical list patterns (auto-injected)<br>📖 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete reference | developer-agent |
+| **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Navigation hub (see pickers/ subdirectory) | developer-agent |
+| **Create or modify database schema** | 🔴 [DATABASE-CRITICAL.md](./docs/DATABASE-CRITICAL.md) - Critical migration rules (auto-injected)<br>📖 [DATABASE.md](./docs/DATABASE.md) - Complete reference | developer-agent |
 | **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-writer |
 | **Run or debug tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-runner-debugger |
-| **Implement module component structure** | 🔴 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Detailed patterns for all 8 files | developer-agent |
-| **Add validation to forms** | 🔴 [VALIDATION.md](./docs/VALIDATION.md) - React Hook Form + Zod patterns<br>🔴 [FORMS.md](./docs/FORMS.md) - FormField integration | developer-agent |
-| **Style components or pages** | 🔴 [STYLES.md](./docs/STYLES.md) - Dark mode, semantic tokens, print exceptions | developer-agent |
+| **Implement module component structure** | 🔴 [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) - Critical patterns (auto-injected)<br>📖 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Complete reference | developer-agent |
+| **Add validation to forms** | 🔴 [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md) - Critical form rules (auto-injected)<br>📖 [VALIDATION.md](./docs/VALIDATION.md) - React Hook Form + Zod patterns | developer-agent |
+| **Style components or pages** | 🔴 [STYLES-CRITICAL.md](./docs/STYLES-CRITICAL.md) - Critical styling rules (auto-injected)<br>📖 [STYLES.md](./docs/STYLES.md) - Complete reference | developer-agent |
 | **Use helper/formatter functions** | 🔴 [FORMATTERS.md](./docs/FORMATTERS.md) - Date, name, location, page title formatters | developer-agent |
 | **Create content builders/renderers** | 🔴 [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)<br>🔴 [CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)<br>🔴 [RENDERER.md](./docs/RENDERER.md) | developer-agent |
 | **Understand how a feature works** | 🔴 Related module/component docs | explorer-agent |
 | **Refactor or improve code quality** | 🔴 [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md) | refactor-agent |
 | **Update documentation** | 🔴 [docs/README.md](./docs/README.md) - Documentation standards | documentation-writer |
-| **Deploy to production** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration safety<br>🔴 [PERMISSIONS.md](./docs/PERMISSIONS.md) | release-agent |
+| **Deploy to production** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration safety | release-agent |
 | **Quality assurance testing** | 🔴 [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md)<br>🔴 [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | qa-specialist |
 
 ### How to Use This Table
@@ -137,7 +159,6 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, role permissions, component communication, performance
 - **[LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md)** - 🔴 CRITICAL - Complete pattern for list pages (server + client) with SearchCard, DataTable, ContentCard, ListStatsBar
 - **[DATABASE.md](./docs/DATABASE.md)** - Database management procedures (resets, seeding, liturgical calendar imports, troubleshooting)
-- **[PERMISSIONS.md](./docs/PERMISSIONS.md)** - Permission rules for git, database, file operations, and automation guidelines
 - **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Navigation hub for coding standards (split into code-conventions/ subdirectory with GENERAL, BILINGUAL, UI_PATTERNS, FORMATTING, DEVELOPMENT)
 - **[LANGUAGE.md](./docs/LANGUAGE.md)** - Language system documentation (liturgical language vs UI language, database schema, constants)
 - **[MODULE_REGISTRY.md](./docs/MODULE_REGISTRY.md)** - Complete module registry with routes, labels, and internationalization
@@ -227,8 +248,6 @@ During initial development, modify existing migrations instead of creating new m
 
 ## 🔴 Git Operations
 
-> **🔴 For complete automation permission rules, you MUST read [PERMISSIONS.md](./docs/PERMISSIONS.md)** - Comprehensive rules for git, database, file operations, and what requires user approval.
-
 **🔴 CRITICAL - Git Permissions:**
 - **NEVER use `git add` or `git commit` commands directly**
 - You do NOT have permission to stage files or create commits
@@ -284,8 +303,10 @@ During initial development, modify existing migrations instead of creating new m
 **🔴 CRITICAL - Supabase MCP:**
 During development, **DO NOT use the Supabase MCP server** for any database operations. All database changes must be made through migration files and the Supabase CLI (`supabase db push`). This ensures proper version control and reproducibility of the database schema.
 
-**Claude Code Settings:**
-Permission configuration for what operations Claude can perform automatically. See [CLAUDE_CODE_SETTINGS.md](./docs/CLAUDE_CODE_SETTINGS.md) for complete documentation on settings.json and settings.local.json.
+**🔴 CRITICAL - Claude Code Settings:**
+**IMPORTANT: All Claude Code permission settings must be configured in `.claude/settings.json` (committed to the codebase). DO NOT use or create `.claude/settings.local.json` - this project uses a single settings file that is shared across the team. This line must NEVER be removed from CLAUDE.md.**
+
+Permission configuration for what operations Claude can perform automatically. See [CLAUDE_CODE_SETTINGS.md](./docs/CLAUDE_CODE_SETTINGS.md) for complete documentation on settings.json.
 
 ## 🔴 Accessing Records
 

@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, HandHeartIcon, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { MODULE_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
+import { MODULE_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import {

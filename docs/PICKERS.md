@@ -7,6 +7,7 @@
 > **See Also:**
 > - **[PICKER_PATTERNS.md](./PICKER_PATTERNS.md)** - Critical behavioral rules (no redirect, auto-select, openToNew* pattern)
 > - **[PICKER_EDIT_MODE.md](./PICKER_EDIT_MODE.md)** - Inline editing of related entities from pickers
+> - **[pickers/PICKER_UI_PATTERNS.md](./pickers/PICKER_UI_PATTERNS.md)** - UI/UX layout patterns (inline "New" button, visual design)
 > - **[COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md)** - Quick reference for all picker components and props
 
 ---
@@ -99,7 +100,24 @@ The picker documentation is organized into category files for easy navigation:
 
 ---
 
-### 5. [INFINITE_LOOP_PREVENTION.md](./pickers/INFINITE_LOOP_PREVENTION.md) 🔴
+### 5. [PICKER_UI_PATTERNS.md](./pickers/PICKER_UI_PATTERNS.md) 🔴
+**UI/UX layout patterns and visual design**
+- Inline "New Entity" button pattern
+- Layout specifications (flexbox, spacing, alignment)
+- Responsive behavior (320px minimum width)
+- Button styling and text conventions
+- Testing checklist for UI patterns
+
+**Read this when:**
+- Implementing picker field wrappers in forms
+- Creating new picker components with inline creation
+- Ensuring consistent UI across all pickers
+- Troubleshooting layout issues with picker buttons
+- Reviewing picker implementations for UI consistency
+
+---
+
+### 6. [INFINITE_LOOP_PREVENTION.md](./pickers/INFINITE_LOOP_PREVENTION.md) 🔴
 **Critical rules for preventing infinite re-renders**
 - The problem explained
 - Correct patterns (constants outside component)
@@ -145,6 +163,7 @@ The picker documentation is organized into category files for easy navigation:
 | Add dynamic field visibility | [ADVANCED_FEATURES.md](./pickers/ADVANCED_FEATURES.md) |
 | Create a nested picker | [ADVANCED_FEATURES.md](./pickers/ADVANCED_FEATURES.md) |
 | Build a custom form component | [ADVANCED_FEATURES.md](./pickers/ADVANCED_FEATURES.md) |
+| Implement inline "New" button layout | [PICKER_UI_PATTERNS.md](./pickers/PICKER_UI_PATTERNS.md) |
 | Fix infinite re-render loop | [INFINITE_LOOP_PREVENTION.md](./pickers/INFINITE_LOOP_PREVENTION.md) |
 | Understand picker behavioral rules | [PICKER_PATTERNS.md](./PICKER_PATTERNS.md) |
 | Enable inline editing | [PICKER_EDIT_MODE.md](./PICKER_EDIT_MODE.md) |

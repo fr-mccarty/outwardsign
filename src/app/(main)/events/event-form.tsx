@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FormInput } from "@/components/form-input"
 import { DatePickerField } from "@/components/date-picker-field"
+import { TimePickerField } from "@/components/time-picker-field"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { FormSectionCard } from "@/components/form-section-card"
 import { createEvent, updateEvent, type EventWithRelations } from "@/lib/actions/events"
@@ -205,10 +206,9 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             closeOnSelect
           />
 
-          <FormInput
+          <TimePickerField
             id="start_time"
             label="Start Time"
-            inputType="time"
             value={startTime || ""}
             onChange={(value) => setValue("start_time", value)}
             error={errors.start_time?.message}
@@ -225,10 +225,9 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
             closeOnSelect
           />
 
-          <FormInput
+          <TimePickerField
             id="end_time"
             label="End Time"
-            inputType="time"
             value={endTime || ""}
             onChange={(value) => setValue("end_time", value)}
             error={errors.end_time?.message}

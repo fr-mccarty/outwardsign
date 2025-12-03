@@ -41,7 +41,7 @@ export async function getLocations(filters?: LocationFilterParams): Promise<Loca
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  let query = supabase
+  const query = supabase
     .from('locations')
     .select('*')
 

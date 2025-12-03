@@ -4,21 +4,18 @@ import React, { useState } from 'react'
 import { BaptismForm } from './baptism-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleViewButton } from '@/components/module-view-button'
 import type { Baptism } from '@/lib/types'
 
 interface BaptismFormWrapperProps {
   baptism?: Baptism
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function BaptismFormWrapper({
   baptism,
   title,
-  description,
-  saveButtonLabel
+  description
 }: BaptismFormWrapperProps) {
   const formId = 'baptism-form'
   const [isLoading, setIsLoading] = useState(false)

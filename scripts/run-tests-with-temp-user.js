@@ -4,12 +4,14 @@
  * This script handles the complete test lifecycle:
  * 1. Generates unique test credentials for this run
  * 2. Creates a temporary test user and parish
- * 3. Runs Playwright tests with authenticated state
- * 4. Automatically cleans up all test data when done
+ * 3. Clears Next.js build cache to prevent corruption
+ * 4. Runs Playwright tests with authenticated state
+ * 5. Automatically cleans up all test data when done
  *
  * Features:
  * - Dynamic credentials (unique per test run)
  * - Guaranteed test isolation
+ * - Automatic cache clearing to prevent build manifest issues
  * - Automatic cleanup on success, failure, or interruption
  *
  * Usage:
@@ -100,8 +102,17 @@ async function main() {
     if (userIdMatch) testUserId = userIdMatch[1];
     if (parishIdMatch) testParishId = parishIdMatch[1];
 
-    // Step 2: Run Playwright tests with same dynamic credentials
-    console.log('\n🎭 Running Playwright tests...\n');
+    // Step 2: Clear Next.js cache to prevent build corruption
+    console.log('\n🧹 Clearing Next.js build cache...');
+    try {
+      execSync('rm -rf .next', { encoding: 'utf-8', stdio: 'pipe' });
+      console.log('   ✅ Cache cleared successfully\n');
+    } catch (cacheError) {
+      console.log('   ⚠️  Cache may already be cleared or .next directory not found\n');
+    }
+
+    // Step 3: Run Playwright tests with same dynamic credentials
+    console.log('🎭 Running Playwright tests...\n');
 
     const testArgs = process.argv.slice(2).join(' ');
     const playwrightCommand = testArgs
@@ -125,7 +136,7 @@ async function main() {
       // Continue to cleanup even if tests fail
     }
 
-    // Step 3: Cleanup
+    // Step 4: Cleanup
     await cleanup();
 
     console.log('\n✨ Test run complete!\n');

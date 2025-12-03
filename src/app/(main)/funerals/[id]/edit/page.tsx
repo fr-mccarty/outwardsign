@@ -45,7 +45,6 @@ export default async function EditFuneralPage({ params }: PageProps) {
         funeral={funeral}
         title={title}
         description="Update funeral information."
-        saveButtonLabel="Save Funeral"
       />
     </>
   )

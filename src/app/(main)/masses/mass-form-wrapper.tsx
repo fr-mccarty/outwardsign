@@ -10,14 +10,12 @@ interface MassFormWrapperProps {
   mass?: MassWithRelations
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function MassFormWrapper({
   mass,
   title,
-  description,
-  saveButtonLabel
+  description
 }: MassFormWrapperProps) {
   const formId = 'mass-form'
   const [isLoading, setIsLoading] = useState(false)

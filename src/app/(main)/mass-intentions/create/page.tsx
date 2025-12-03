@@ -24,7 +24,6 @@ export default async function CreateMassIntentionPage() {
       <MassIntentionFormWrapper
         title="Create Mass Intention"
         description="Add a new Mass intention for your parish."
-        saveButtonLabel="Create Mass Intention"
       />
     </>
   )

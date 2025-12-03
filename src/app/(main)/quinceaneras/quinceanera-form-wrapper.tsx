@@ -11,14 +11,12 @@ interface QuinceaneraFormWrapperProps {
   quinceanera?: Quinceanera
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function QuinceaneraFormWrapper({
   quinceanera,
   title,
-  description,
-  saveButtonLabel
+  description
 }: QuinceaneraFormWrapperProps) {
   const formId = 'quinceanera-form'
   const [isLoading, setIsLoading] = useState(false)

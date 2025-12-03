@@ -1,5 +1,30 @@
 {
   "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Bash(git tag:*)",
+      "Bash(git cherry-pick:*)",
+      "mcp__supabase__*",
+      "Bash(supabase db push:*)",
+      "Bash(supabase db reset:*)",
+      "Bash(npm run db:fresh:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm update:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(yarn add:*)",
+      "Bash(yarn remove:*)"
+    ],
     "allow": [
       "Bash(find:*)",
       "Bash(mv:*)",
@@ -26,6 +51,7 @@
       "Bash(tr:*)",
       "Bash(awk:*)",
       "Bash(jq:*)",
+      "Bash(tee:*)",
       "Bash(echo:*)",
       "Bash(for file:*)",
       "Bash(for table:*)",
@@ -40,6 +66,7 @@
       "Bash(git show:*)",
       "Bash(git branch:*)",
       "Bash(git remote:*)",
+      "Bash(git diff:*)",
       "Bash(node:*)",
       "Bash(npm run build:*)",
       "Bash(npm run lint:*)",
@@ -50,15 +77,25 @@
       "Bash(npx playwright test:*)",
       "Bash(npx playwright show-report)",
       "Bash(npx playwright show-report:*)",
+      "Bash(:* | :*)",
+      "Bash(:* && :*)",
+      "Bash(:* ; :*)",
+      "Bash(npx tsc:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx eslint:*)",
+      "Bash(rm -rf node_modules)",
+      "Bash(rm -rf .next)",
+      "Bash(rm -rf playwright-report)",
+      "Bash(lsof:*)",
+      "Bash(pgreg:*)",
+      "Bash(wait)",
       "WebFetch(domain:docx.js.org)",
+      "WebFetch(domain:lolekproductions.org)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:code.claude.com)"
-    ],
-    "deny": [
-      "Read(.env)",
-      "Read(.env.*)"
+      "WebFetch(domain:code.claude.com)",
+      "WebSearch"
     ]
   },
   "hooks": {
@@ -132,6 +169,69 @@
           {
             "type": "prompt",
             "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a database migration. Before proceeding, you MUST read docs/DATABASE-CRITICAL.md.\n\nKey rules:\n- One table per migration file\n- All tables need RLS policies\n- In early development, modify existing migrations instead of creating new ones\n- User must run 'npm run db:fresh' after migration changes\n\nHave you read docs/DATABASE-CRITICAL.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(src/lib/actions/*.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a server action file. Before proceeding, you MUST read:\n- docs/ARCHITECTURE.md (auth patterns, role permissions)\n- docs/PERMISSION_ENFORCEMENT_SUMMARY.md (permission enforcement patterns)\n\nKey patterns:\n- All server actions must verify authentication\n- Check user permissions before data operations\n- Use createClient() for database access\n- Return proper error responses\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/lib/actions/*.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a server action file. Before proceeding, you MUST read:\n- docs/ARCHITECTURE.md (auth patterns, role permissions)\n- docs/PERMISSION_ENFORCEMENT_SUMMARY.md (permission enforcement patterns)\n\nKey patterns:\n- All server actions must verify authentication\n- Check user permissions before data operations\n- Use createClient() for database access\n- Return proper error responses\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(tests/*.spec.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a test file. Before proceeding, you MUST read docs/TESTING_GUIDE.md.\n\nKey patterns:\n- Tests are pre-authenticated (no manual auth setup needed)\n- Use role-based selectors first (getByRole), then labels, then test IDs\n- Follow Page Object Model for modules with multiple tests\n- Do not test for toast messages after successful form submissions\n\nHave you read docs/TESTING_GUIDE.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(tests/*.spec.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a test file. Before proceeding, you MUST read:\n- docs/TESTING_GUIDE.md (auth patterns, selectors, Page Object Model)\n- docs/testing/TESTING_REGISTRY.md (update registry after creating test)\n\nKey patterns:\n- Tests are pre-authenticated (no manual auth setup needed)\n- Use role-based selectors first (getByRole), then labels, then test IDs\n- Follow Page Object Model for modules with multiple tests\n- Update TESTING_REGISTRY.md with test description\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(src/components/pickers/*.tsx)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a picker component. Before proceeding, you MUST read:\n- docs/PICKERS.md (navigation hub)\n- docs/pickers/ subdirectory (specific picker documentation)\n\nPicker components have complex patterns for selection, filtering, and form integration.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/lib/content-builders/**/*.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a content builder. Before proceeding, you MUST read:\n- docs/LITURGICAL_SCRIPT_SYSTEM.md (overview and architecture)\n- docs/CONTENT_BUILDER_SECTIONS.md (section patterns)\n- docs/CONTENT_BUILDER_STRUCTURE.md (standard structure)\n\nContent builders generate liturgical scripts for print/export.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(src/lib/content-builders/**/*.ts)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a content builder. Before proceeding, you MUST read:\n- docs/LITURGICAL_SCRIPT_SYSTEM.md (overview and architecture)\n- docs/CONTENT_BUILDER_SECTIONS.md (section patterns)\n- docs/CONTENT_BUILDER_STRUCTURE.md (standard structure)\n\nContent builders generate liturgical scripts for print/export.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
           }
         ]
       }

@@ -4,21 +4,18 @@ import React, { useState } from 'react'
 import { EventForm } from './event-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleViewButton } from '@/components/module-view-button'
 import type { EventWithRelations } from '@/lib/actions/events'
 
 interface EventFormWrapperProps {
   event?: EventWithRelations
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function EventFormWrapper({
   event,
   title,
-  description,
-  saveButtonLabel
+  description
 }: EventFormWrapperProps) {
   const formId = 'event-form'
   const [isLoading, setIsLoading] = useState(false)

@@ -29,7 +29,7 @@ export function buildSummarySpanish(groupBaptism: GroupBaptismWithRelations): Li
         : 'Niño no asignado'
 
       // Build value with line breaks - child name is bold and larger
-      let valueLines = [`<span style="font-size: 1.1em; font-weight: 600;">${childName}</span>`]
+      const valueLines = [`<span style="font-size: 1.1em; font-weight: 600;">${childName}</span>`]
 
       // Add parents
       if (baptism.mother || baptism.father) {

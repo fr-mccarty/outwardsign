@@ -16,13 +16,11 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Heart, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { MASS_INTENTION_STATUS_VALUES, STANDARD_SORT_OPTIONS } from "@/lib/constants"
+import { MASS_INTENTION_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import {
-  buildWhoColumn,
-  buildWhenColumn,
   buildActionsColumn
 } from '@/lib/utils/table-columns'
 

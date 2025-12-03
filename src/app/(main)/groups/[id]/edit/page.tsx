@@ -40,7 +40,6 @@ export default async function EditGroupPage({ params }: PageProps) {
         group={group}
         title={title}
         description="Update group information and manage members."
-        saveButtonLabel="Save Group"
       />
     </>
   )

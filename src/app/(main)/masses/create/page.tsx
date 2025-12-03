@@ -24,7 +24,6 @@ export default async function CreateMassPage() {
       <MassFormWrapper
         title="Create Mass"
         description="Add a new Mass celebration to your parish."
-        saveButtonLabel="Create Mass"
       />
     </>
   )

@@ -13,11 +13,11 @@ export function DashboardErrorHandler() {
 
   useEffect(() => {
     const error = searchParams.get('error')
-    const module = searchParams.get('module')
+    const moduleParam = searchParams.get('module')
 
-    if (error === 'no_permission' && module) {
-      const moduleLabel = DASHBOARD_MODULE_LABELS[module]
-      const moduleName = moduleLabel ? moduleLabel[lang] : module
+    if (error === 'no_permission' && moduleParam) {
+      const moduleLabel = DASHBOARD_MODULE_LABELS[moduleParam]
+      const moduleName = moduleLabel ? moduleLabel[lang] : moduleParam
       toast.error(`You do not have permission to access ${moduleName}`)
     } else if (error === 'not_parish_member') {
       toast.error('You are not a member of this parish')

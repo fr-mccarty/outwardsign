@@ -24,7 +24,6 @@ export default async function CreatePersonPage() {
       <PersonFormWrapper
         title="Create Person"
         description="Add a new person to your parish directory."
-        saveButtonLabel="Create Person"
       />
     </>
   )

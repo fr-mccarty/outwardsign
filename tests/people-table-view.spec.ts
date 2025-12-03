@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { TEST_TIMEOUTS } from './test-config'
+import { TEST_TIMEOUTS } from './utils/test-config'
 
 /**
  * People Table View Tests

@@ -40,7 +40,6 @@ export default async function EditReadingPage({ params }: PageProps) {
         reading={reading}
         title="Edit Reading"
         description="Update the scripture reading or liturgical text details."
-        saveButtonLabel="Save Reading"
       />
     </>
   )

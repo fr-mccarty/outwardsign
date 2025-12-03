@@ -24,7 +24,6 @@ export default async function CreateFuneralPage() {
       <FuneralFormWrapper
         title="Create Funeral"
         description="Add a new funeral service to your parish."
-        saveButtonLabel="Create Funeral"
       />
     </>
   )

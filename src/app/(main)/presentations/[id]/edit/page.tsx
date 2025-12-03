@@ -45,7 +45,6 @@ export default async function EditPresentationPage({ params }: PageProps) {
         presentation={presentation}
         title={title}
         description="Update presentation information."
-        saveButtonLabel="Save Presentation"
       />
     </>
   )

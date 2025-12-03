@@ -10,14 +10,12 @@ interface LocationFormWrapperProps {
   location?: Location
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function LocationFormWrapper({
   location,
   title,
-  description,
-  saveButtonLabel
+  description
 }: LocationFormWrapperProps) {
   const formId = 'location-form'
   const [isLoading, setIsLoading] = useState(false)

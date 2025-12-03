@@ -87,9 +87,7 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
       cell: (group) => (
         <span className="text-sm font-medium">{group.name}</span>
       ),
-      className: 'min-w-[150px]',
-      sortable: true,
-      accessorFn: (group) => group.name
+      className: 'min-w-[150px]'
     },
     {
       key: 'description',
@@ -144,7 +142,13 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
           />
 
           {/* Advanced Search Collapsible */}
-          <AdvancedSearch />
+          <AdvancedSearch
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: GROUP_SORT_OPTIONS
+            }}
+          />
         </div>
       </SearchCard>
 

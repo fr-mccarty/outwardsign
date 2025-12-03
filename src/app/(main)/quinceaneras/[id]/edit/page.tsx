@@ -45,7 +45,6 @@ export default async function EditQuinceaneraPage({ params }: PageProps) {
         quinceanera={quinceanera}
         title={title}
         description="Update quinceañera information."
-        saveButtonLabel="Save Quinceañera"
       />
     </>
   )

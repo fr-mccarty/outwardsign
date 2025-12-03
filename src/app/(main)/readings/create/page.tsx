@@ -24,7 +24,6 @@ export default async function CreateReadingPage() {
       <ReadingFormWrapper
         title="Create Reading"
         description="Add a new scripture reading or liturgical text to your collection."
-        saveButtonLabel="Create Reading"
       />
     </>
   )

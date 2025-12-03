@@ -24,7 +24,6 @@ export default async function CreateGroupPage() {
       <GroupFormWrapper
         title="Create Group"
         description="Add a new group to your parish."
-        saveButtonLabel="Create Group"
       />
     </>
   )

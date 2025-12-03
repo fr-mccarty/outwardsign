@@ -11,14 +11,12 @@ interface PresentationFormWrapperProps {
   presentation?: PresentationWithRelations
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function PresentationFormWrapper({
   presentation,
   title,
-  description,
-  saveButtonLabel
+  description
 }: PresentationFormWrapperProps) {
   const formId = 'presentation-form'
   const [isLoading, setIsLoading] = useState(false)

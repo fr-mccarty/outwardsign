@@ -20,7 +20,6 @@ export default async function CreateGroupBaptismPage() {
       <GroupBaptismFormWrapper
         title="Create Group Baptism"
         description="Create a new group baptism ceremony for multiple children."
-        saveButtonLabel="Create Group Baptism"
       />
     </>
   )

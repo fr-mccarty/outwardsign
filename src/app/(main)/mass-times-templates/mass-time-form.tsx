@@ -32,9 +32,10 @@ import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialo
 import { FormBottomActions } from '@/components/form-bottom-actions'
 import { PersonPickerField } from '@/components/person-picker-field'
 import { LocationPickerField } from '@/components/location-picker-field'
+import { TimePickerField } from '@/components/time-picker-field'
 import { usePickerState } from '@/hooks/use-picker-state'
 import type { Person, Location } from '@/lib/types'
-import { Plus, Trash2, Clock, Edit } from 'lucide-react'
+import { Plus, Trash2, Edit, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { createMassTime, updateMassTime } from '@/lib/actions/mass-times-templates'
 import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
@@ -405,15 +406,12 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input
-                id="time"
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-              />
-            </div>
+            <TimePickerField
+              id="time"
+              label="Time"
+              value={newTime}
+              onChange={(value) => setNewTime(value)}
+            />
             <div className="space-y-2">
               <Label htmlFor="dayType">Day Type</Label>
               <Select value={newDayType} onValueChange={(v) => setNewDayType(v as DayType)}>
@@ -493,15 +491,12 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="editTime">Time</Label>
-              <Input
-                id="editTime"
-                type="time"
-                value={editTime}
-                onChange={(e) => setEditTime(e.target.value)}
-              />
-            </div>
+            <TimePickerField
+              id="editTime"
+              label="Time"
+              value={editTime}
+              onChange={(value) => setEditTime(value)}
+            />
             <div className="space-y-2">
               <Label htmlFor="editDayType">Day Type</Label>
               <Select value={editDayType} onValueChange={(v) => setEditDayType(v as DayType)}>

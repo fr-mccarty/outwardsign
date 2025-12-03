@@ -47,7 +47,6 @@ export default async function EditBaptismPage({ params }: PageProps) {
         baptism={baptism}
         title={title}
         description="Update baptism information."
-        saveButtonLabel="Save Baptism"
       />
     </>
   )

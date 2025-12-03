@@ -10,14 +10,12 @@ interface GroupFormWrapperProps {
   group?: GroupWithMembers
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function GroupFormWrapper({
   group,
   title,
-  description,
-  saveButtonLabel
+  description
 }: GroupFormWrapperProps) {
   const formId = 'group-form'
   const [isLoading, setIsLoading] = useState(false)

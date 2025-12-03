@@ -26,6 +26,50 @@ async function selectDateInPicker(dialogLocator: ReturnType<typeof import('@play
   // The date picker may close on select depending on closeOnSelect prop
 }
 
+/**
+ * Helper function to select a time in a TimePickerField within a specific dialog context
+ * Opens the time popover and clicks on a quick pick time button
+ */
+async function selectTimeInPicker(dialogLocator: ReturnType<typeof import('@playwright/test').Page.prototype.getByTestId>, timeButtonId: string, time: string) {
+  const page = dialogLocator.page();
+
+  // Click the time picker button to open time popover using ID
+  const timeButton = dialogLocator.locator(`#${timeButtonId}`);
+  await timeButton.click();
+
+  // Wait for the time popover to be visible
+  const timePopover = page.locator('[data-slot="popover-content"]');
+  await expect(timePopover).toBeVisible();
+
+  // Click the quick pick time button that matches our desired time
+  // Convert 14:00 → 2:00 PM, 10:30 → need custom input
+  const [hours, minutes] = time.split(':');
+  const hour24 = parseInt(hours, 10);
+  const ampm = hour24 >= 12 ? 'PM' : 'AM';
+  let hour12 = hour24 % 12;
+  if (hour12 === 0) hour12 = 12;
+  const timeLabel = `${hour12}:${minutes} ${ampm}`;
+
+  // Look for quick pick button with this label
+  const quickPickButton = timePopover.getByRole('button', { name: timeLabel, exact: true });
+  const buttonExists = await quickPickButton.count();
+
+  if (buttonExists > 0) {
+    // Use quick pick if available
+    await quickPickButton.click();
+  } else {
+    // Use manual input for custom times
+    await timePopover.getByPlaceholder('HH').fill(hour12.toString());
+    await timePopover.getByPlaceholder('MM').fill(minutes);
+    await timePopover.locator('#period-select').click();
+    await page.getByRole('option', { name: ampm }).click();
+    await timePopover.getByRole('button', { name: 'Set' }).click();
+  }
+
+  // Wait for popover to close
+  await expect(timePopover).not.toBeVisible();
+}
+
 test.describe('Event Picker Component', () => {
   test('should create event via inline form in event picker', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
@@ -49,7 +93,7 @@ test.describe('Event Picker Component', () => {
     await selectDateInPicker(eventDialog, 'start_date');
 
     // Time field
-    await eventDialog.locator('input#start_time').fill('14:00');
+    await selectTimeInPicker(eventDialog, 'start_time', '14:00');
 
     // Wait for the Save Event button to be enabled before clicking
     const saveButton = eventDialog.getByRole('button', { name: /Save Event/i });
@@ -59,7 +103,7 @@ test.describe('Event Picker Component', () => {
     await saveButton.click();
 
     // Event picker dialog should close
-    await expect(eventDialog).not.toBeVisible();
+    await expect(eventDialog).not.toBeVisible({ timeout: 10000 });
 
     // Verify the event is selected
     await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();
@@ -81,7 +125,7 @@ test.describe('Event Picker Component', () => {
     const eventName = `TestEvent${Date.now()}`;
     await eventDialog.getByLabel('Name').fill(eventName);
     await selectDateInPicker(eventDialog, 'start_date');
-    await eventDialog.locator('input#start_time').fill('10:30');
+    await selectTimeInPicker(eventDialog, 'start_time', '10:30');
 
     // Wait for the Save Event button to be enabled and save the event
     const saveButton = eventDialog.getByRole('button', { name: /Save Event/i });
@@ -144,7 +188,7 @@ test.describe('Event Picker Component', () => {
     await selectDateInPicker(eventDialog, 'start_date');
 
     // Time field
-    await eventDialog.locator('input#start_time').fill('15:00');
+    await selectTimeInPicker(eventDialog, 'start_time', '15:00');
 
     // Wait for the Save Event button to be enabled
     const saveButton = eventDialog.getByRole('button', { name: /Save Event/i });

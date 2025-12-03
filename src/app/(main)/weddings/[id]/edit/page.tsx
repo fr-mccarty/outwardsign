@@ -50,7 +50,6 @@ export default async function EditWeddingPage({ params }: PageProps) {
         wedding={wedding}
         title={title}
         description="Update wedding information."
-        saveButtonLabel="Save Wedding"
       />
     </>
   )

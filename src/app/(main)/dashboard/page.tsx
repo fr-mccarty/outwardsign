@@ -15,8 +15,7 @@ import {
   CirclePlus,
   Heart,
   Droplet,
-  CalendarCheck,
-  UserCog
+  CalendarCheck
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"

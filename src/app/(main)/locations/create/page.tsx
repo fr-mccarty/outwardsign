@@ -24,7 +24,6 @@ export default async function CreateLocationPage() {
       <LocationFormWrapper
         title="Create Location"
         description="Add a new location to your parish"
-        saveButtonLabel="Create Location"
       />
     </>
   )

@@ -24,7 +24,6 @@ export default async function CreateBaptismPage() {
       <BaptismFormWrapper
         title="Create Baptism"
         description="Add a new baptism celebration to your parish."
-        saveButtonLabel="Create Baptism"
       />
     </>
   )

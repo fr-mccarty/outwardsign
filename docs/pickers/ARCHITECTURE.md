@@ -304,6 +304,65 @@ const createFields: PickerFieldConfig[] = [
 
 ---
 
+## Save and Cancel Buttons
+
+**🔴 CRITICAL:** Picker dialogs use the same button components as the rest of the application for consistency.
+
+### Button Components
+
+**CorePicker uses:**
+- `SaveButton` from `src/components/save-button.tsx` for submit actions
+- `CancelButton` from `src/components/cancel-button.tsx` for cancel actions
+
+### SaveButton Features
+
+```typescript
+<SaveButton
+  isLoading={isCreating}
+  loadingText="Saving..."
+  disabled={isCreating}
+  className="flex-1"
+>
+  {isEditMode ? updateButtonLabel : createButtonLabel}
+</SaveButton>
+```
+
+**Features:**
+- ✅ Shows Save icon by default (can be hidden with `showIcon={false}`)
+- ✅ Shows loading spinner when `isLoading={true}`
+- ✅ Automatically replaces content with loading text during submission
+- ✅ Consistent with all form save buttons across the app
+
+### CancelButton Features
+
+```typescript
+<CancelButton
+  onClick={resetForm}
+  disabled={isCreating}
+>
+  Cancel
+</CancelButton>
+```
+
+**Features:**
+- ✅ Supports both `href` (for navigation) and `onClick` (for dialogs)
+- ✅ Shows X icon when `showIcon={true}` (default: false)
+- ✅ Uses `variant="outline"` by default
+- ✅ Consistent with all form cancel buttons across the app
+
+**Note:** The `onClick` variant is used in pickers for dialog contexts, while the `href` variant is used in forms for navigation.
+
+### Why This Matters
+
+Using `SaveButton` and `CancelButton` ensures:
+- **Visual Consistency** - All save/cancel actions look the same across the app
+- **Icon Standards** - Save icon appears in all save buttons, not just forms
+- **Loading States** - Consistent spinner and loading text behavior
+- **Accessibility** - Standardized button labels and ARIA attributes
+- **Maintainability** - Changes to button styling propagate everywhere automatically
+
+---
+
 ## Best Practices
 
 ### 1. Always Load Data When Picker Opens

@@ -31,7 +31,6 @@ export default async function EditGroupBaptismPage({ params }: PageProps) {
         groupBaptism={groupBaptism}
         title="Edit Group Baptism"
         description="Update group baptism details and manage baptisms in this group."
-        saveButtonLabel="Save Changes"
       />
     </>
   )

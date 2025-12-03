@@ -4,21 +4,18 @@ import React, { useState } from 'react'
 import { FuneralForm } from './funeral-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleViewButton } from '@/components/module-view-button'
 import type { Funeral } from '@/lib/types'
 
 interface FuneralFormWrapperProps {
   funeral?: Funeral
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function FuneralFormWrapper({
   funeral,
   title,
-  description,
-  saveButtonLabel
+  description
 }: FuneralFormWrapperProps) {
   const formId = 'funeral-form'
   const [isLoading, setIsLoading] = useState(false)

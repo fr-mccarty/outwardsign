@@ -24,7 +24,6 @@ export default async function CreateQuinceaneraPage() {
       <QuinceaneraFormWrapper
         title="Create Quinceañera"
         description="Add a new quinceañera celebration to your parish."
-        saveButtonLabel="Create Quinceañera"
       />
     </>
   )

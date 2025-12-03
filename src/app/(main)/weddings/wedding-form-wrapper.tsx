@@ -11,14 +11,12 @@ interface WeddingFormWrapperProps {
   wedding?: Wedding
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function WeddingFormWrapper({
   wedding,
   title,
-  description,
-  saveButtonLabel
+  description
 }: WeddingFormWrapperProps) {
   const formId = 'wedding-form'
   const [isLoading, setIsLoading] = useState(false)

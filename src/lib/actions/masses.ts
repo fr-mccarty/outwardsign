@@ -145,7 +145,7 @@ export async function getMassStats(filters?: MassFilterParams): Promise<MassStat
   const supabase = await createClient()
 
   // Get all masses for stats calculation (no pagination)
-  let query = supabase
+  const query = supabase
     .from('masses')
     .select(`
       *,

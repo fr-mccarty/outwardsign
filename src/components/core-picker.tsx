@@ -8,12 +8,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Search, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { CorePickerProps, PickerFieldConfig } from '@/types/core-picker'
 import { cn } from '@/lib/utils'
 import { capitalizeFirstLetter } from '@/lib/utils/formatters'
 import { FormInput } from '@/components/form-input'
+import { SaveButton } from '@/components/save-button'
+import { CancelButton } from '@/components/cancel-button'
 
 /**
  * STABLE DEFAULTS
@@ -441,17 +443,30 @@ export function CorePicker<T>({
           )}
         </DialogHeader>
 
-        {/* Search input */}
+        {/* Search input with inline "New" button */}
         {!showCreateForm && (
-          <div className="flex-shrink-0 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex-shrink-0 flex gap-2 items-center">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {/* Inline "New" button - only show if create is enabled and not in edit mode */}
+            {enableCreate && !isEditMode && (
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => setShowCreateForm(true)}
+                className="flex-shrink-0"
+              >
+                New {capitalizeFirstLetter(entityName)}
+              </Button>
+            )}
           </div>
         )}
 
@@ -470,23 +485,20 @@ export function CorePicker<T>({
                 createFields.map((field) => renderFormField(field))
               )}
 
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isCreating}
-                  className="flex-1"
-                >
-                  {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEditMode ? updateButtonLabel : createButtonLabel}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
+              <div className="flex gap-2 pt-4 justify-end">
+                <CancelButton
                   onClick={resetForm}
                   disabled={isCreating}
                 >
                   Cancel
-                </Button>
+                </CancelButton>
+                <SaveButton
+                  isLoading={isCreating}
+                  loadingText="Saving..."
+                  disabled={isCreating}
+                >
+                  {isEditMode ? updateButtonLabel : createButtonLabel}
+                </SaveButton>
               </div>
             </form>
           ) : (
@@ -564,24 +576,6 @@ export function CorePicker<T>({
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
-          </div>
-        )}
-
-        {/* Add new button (footer) - hide in edit mode */}
-        {enableCreate && !showCreateForm && !isEditMode && (
-          <div className={cn(
-            'flex-shrink-0 pt-4',
-            enablePagination ? '' : 'border-t'
-          )}>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowCreateForm(true)}
-              className="w-full"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {addNewButtonLabel}
-            </Button>
           </div>
         )}
       </DialogContent>

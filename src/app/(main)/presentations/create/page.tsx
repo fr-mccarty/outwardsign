@@ -24,7 +24,6 @@ export default async function CreatePresentationPage() {
       <PresentationFormWrapper
         title="Create Presentation"
         description="Add a new child presentation to your parish."
-        saveButtonLabel="Create Presentation"
       />
     </>
   )

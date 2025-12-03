@@ -40,7 +40,6 @@ export default async function EditPersonPage({ params }: PageProps) {
         person={person}
         title="Edit Person"
         description="Update the person details."
-        saveButtonLabel="Save Person"
       />
     </>
   )

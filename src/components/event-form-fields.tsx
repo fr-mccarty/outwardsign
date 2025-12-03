@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { UseFormReturn, FieldErrors } from 'react-hook-form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Clock, MapPin, X } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { MapPin, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LocationPicker } from '@/components/location-picker'
-import { CommonTimesModal } from '@/components/common-times-modal'
 import { FormInput } from '@/components/form-input'
 import { DatePickerField } from '@/components/date-picker-field'
+import { TimePickerField } from '@/components/time-picker-field'
 import { toLocalDateString } from '@/lib/utils/formatters'
 import type { Location } from '@/lib/types'
 
@@ -39,7 +38,6 @@ export function EventFormFields({
   const { watch, setValue } = form
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
-  const [showCommonTimesModal, setShowCommonTimesModal] = useState(false)
 
   // Watch form values
   const formData = {
@@ -110,39 +108,15 @@ export function EventFormFields({
         closeOnSelect
       />
 
-      {/* Time Field with Common Times Button - Custom layout since FormInput doesn't support adjacent buttons */}
-      <div>
-        <Label htmlFor="start_time" className="text-sm font-medium mb-1">
-          Time
-          <span className="text-destructive ml-1">*</span>
-        </Label>
-        <div className="flex gap-2">
-          <Input
-            id="start_time"
-            type="time"
-            value={formData.start_time}
-            onChange={(e) => updateField('start_time', e.target.value)}
-            className={cn('flex-1', getErrorMessage('start_time') && 'ring-2 ring-destructive-ring focus-visible:ring-destructive-ring')}
-            aria-invalid={!!getErrorMessage('start_time')}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setShowCommonTimesModal(true)
-            }}
-            title="Select common time"
-          >
-            <Clock className="h-4 w-4" />
-          </Button>
-        </div>
-        {getErrorMessage('start_time') && (
-          <p className="text-sm text-destructive mt-1">{getErrorMessage('start_time')}</p>
-        )}
-      </div>
+      {/* Time Field */}
+      <TimePickerField
+        id="start_time"
+        label="Time"
+        value={formData.start_time}
+        onChange={(value) => updateField('start_time', value)}
+        required
+        error={getErrorMessage('start_time')}
+      />
 
       {/* Timezone Field */}
       <FormInput
@@ -218,15 +192,6 @@ export function EventFormFields({
           error={getErrorMessage('note')}
         />
       )}
-
-      {/* Common Times Modal */}
-      <CommonTimesModal
-        open={showCommonTimesModal}
-        onOpenChange={setShowCommonTimesModal}
-        onSelectTime={(time) => {
-          updateField('start_time', time)
-        }}
-      />
 
       {/* Location Picker Modal */}
       <LocationPicker

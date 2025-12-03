@@ -480,7 +480,7 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
     throw new Error('Failed to fetch events')
   }
 
-  let events = data || []
+  const events = data || []
 
   // Apply sorting at application level for related fields and date sorting
   if (filters?.sort === 'date_asc') {

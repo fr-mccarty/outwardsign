@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, CalendarDays, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { STANDARD_SORT_OPTIONS } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import type { DataTableColumn } from '@/components/data-table/data-table'

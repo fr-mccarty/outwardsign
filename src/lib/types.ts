@@ -774,6 +774,7 @@ export interface CreateMassRolePreferenceData {
   active?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UpdateMassRolePreferenceData extends Partial<CreateMassRolePreferenceData> {}
 
 export interface CreateMassRoleBlackoutDateData {

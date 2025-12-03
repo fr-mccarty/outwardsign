@@ -38,7 +38,6 @@ export default async function EditLocationPage({ params }: PageProps) {
         location={location}
         title="Edit Location"
         description="Update location information"
-        saveButtonLabel="Save Changes"
       />
     </>
   )

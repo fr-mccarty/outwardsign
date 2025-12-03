@@ -40,7 +40,6 @@ export default async function EditEventPage({ params }: PageProps) {
         event={event}
         title="Edit Event"
         description="Update the event details."
-        saveButtonLabel="Save Changes"
       />
     </>
   )

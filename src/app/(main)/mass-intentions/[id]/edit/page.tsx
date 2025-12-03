@@ -44,7 +44,6 @@ export default async function EditMassIntentionPage({ params }: PageProps) {
         intention={intention}
         title={title}
         description="Update Mass intention information."
-        saveButtonLabel="Save Mass Intention"
       />
     </>
   )

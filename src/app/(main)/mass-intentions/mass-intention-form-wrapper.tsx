@@ -10,14 +10,12 @@ interface MassIntentionFormWrapperProps {
   intention?: MassIntentionWithRelations
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function MassIntentionFormWrapper({
   intention,
   title,
-  description,
-  saveButtonLabel
+  description
 }: MassIntentionFormWrapperProps) {
   const formId = 'mass-intention-form'
   const [isLoading, setIsLoading] = useState(false)

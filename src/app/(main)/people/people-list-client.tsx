@@ -109,7 +109,6 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
       getName: (person) => person.full_name,
       getStatus: () => 'ACTIVE', // People don't have status, use placeholder
       fallback: 'No name',
-      sortable: true,
       header: 'Name'
     }),
     {
@@ -176,7 +175,13 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
           />
 
           {/* Advanced Search Collapsible */}
-          <AdvancedSearch />
+          <AdvancedSearch
+            sortFilter={{
+              value: filters.getFilterValue('sort'),
+              onChange: (value) => filters.updateFilter('sort', value),
+              sortOptions: PEOPLE_SORT_OPTIONS
+            }}
+          />
         </div>
       </SearchCard>
 

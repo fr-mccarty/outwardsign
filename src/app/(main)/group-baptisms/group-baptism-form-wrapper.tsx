@@ -10,14 +10,12 @@ interface GroupBaptismFormWrapperProps {
   groupBaptism?: GroupBaptismWithRelations
   title: string
   description: string
-  saveButtonLabel?: string // Not used - kept for compatibility
 }
 
 export function GroupBaptismFormWrapper({
   groupBaptism,
   title,
-  description,
-  saveButtonLabel
+  description
 }: GroupBaptismFormWrapperProps) {
   const formId = 'group-baptism-form'
   const [isLoading, setIsLoading] = useState(false)

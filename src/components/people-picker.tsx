@@ -173,7 +173,25 @@ export function PeoplePicker({
   }
 
   const getPersonDisplayName = (person: Person) => {
-    return `${person.first_name} ${person.last_name}`.trim()
+    const firstName = person.first_name
+    const firstNamePronunciation = person.first_name_pronunciation
+    const lastName = person.last_name
+    const lastNamePronunciation = person.last_name_pronunciation
+
+    // Only show pronunciation if the person has it
+    if (!firstNamePronunciation && !lastNamePronunciation) {
+      return `${firstName} ${lastName}`.trim()
+    }
+
+    // Build name with pronunciation where it exists
+    const firstPart = firstNamePronunciation
+      ? `${firstName} (${firstNamePronunciation})`
+      : firstName
+    const lastPart = lastNamePronunciation
+      ? `${lastName} (${lastNamePronunciation})`
+      : lastName
+
+    return `${firstPart} ${lastPart}`.trim()
   }
 
   const getPersonInitials = (person: Person) => {

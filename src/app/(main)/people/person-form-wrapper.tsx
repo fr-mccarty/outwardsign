@@ -10,14 +10,12 @@ interface PersonFormWrapperProps {
   person?: Person
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function PersonFormWrapper({
   person,
   title,
-  description,
-  saveButtonLabel
+  description
 }: PersonFormWrapperProps) {
   const formId = 'person-form'
   const [isLoading, setIsLoading] = useState(false)

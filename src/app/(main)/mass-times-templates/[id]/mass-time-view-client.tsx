@@ -33,6 +33,7 @@ import {
 import { Edit, Plus, Trash2, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { ModuleViewContainer } from '@/components/module-view-container'
+import { TimePickerField } from '@/components/time-picker-field'
 import { toast } from 'sonner'
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from '@/lib/constants'
 
@@ -195,15 +196,12 @@ export function MassTimeViewClient({ massTime, items }: MassTimeViewClientProps)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
-              <Input
-                id="time"
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-              />
-            </div>
+            <TimePickerField
+              id="time"
+              label="Time"
+              value={newTime}
+              onChange={(value) => setNewTime(value)}
+            />
             <div className="space-y-2">
               <Label htmlFor="dayType">Day Type</Label>
               <Select value={newDayType} onValueChange={(v) => setNewDayType(v as DayType)}>

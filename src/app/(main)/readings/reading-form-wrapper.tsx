@@ -10,14 +10,12 @@ interface ReadingFormWrapperProps {
   reading?: Reading
   title: string
   description: string
-  saveButtonLabel: string
 }
 
 export function ReadingFormWrapper({
   reading,
   title,
-  description,
-  saveButtonLabel
+  description
 }: ReadingFormWrapperProps) {
   const formId = 'reading-form'
   const [isLoading, setIsLoading] = useState(false)

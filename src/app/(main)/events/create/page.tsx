@@ -24,7 +24,6 @@ export default async function CreateEventPage() {
       <EventFormWrapper
         title="Create Event"
         description="Add a new event to your parish calendar."
-        saveButtonLabel="Create Event"
       />
     </>
   )

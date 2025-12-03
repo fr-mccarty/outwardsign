@@ -51,7 +51,6 @@ export default async function EditMassPage({ params }: PageProps) {
         mass={mass}
         title={title}
         description="Update Mass information."
-        saveButtonLabel="Save Mass"
       />
     </>
   )

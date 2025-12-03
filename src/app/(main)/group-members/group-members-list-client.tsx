@@ -32,14 +32,15 @@ import type { Person } from '@/lib/types'
 import type { GroupRole } from '@/lib/actions/group-roles'
 import type { Group } from '@/lib/actions/groups'
 
-const GROUP_MEMBER_SORT_OPTIONS = [
-  { value: 'name_asc', label: 'Name A-Z' },
-  { value: 'name_desc', label: 'Name Z-A' },
-  { value: 'groups_desc', label: 'Most Groups' },
-  { value: 'groups_asc', label: 'Fewest Groups' },
-  { value: 'created_desc', label: 'Recently Joined' },
-  { value: 'created_asc', label: 'Oldest Member' },
-] as const
+// Note: Sorting options removed - managed through useListFilters hook
+// const GROUP_MEMBER_SORT_OPTIONS = [
+//   { value: 'name_asc', label: 'Name A-Z' },
+//   { value: 'name_desc', label: 'Name Z-A' },
+//   { value: 'groups_desc', label: 'Most Groups' },
+//   { value: 'groups_asc', label: 'Fewest Groups' },
+//   { value: 'created_desc', label: 'Recently Joined' },
+//   { value: 'created_asc', label: 'Oldest Member' },
+// ] as const
 
 interface GroupMembersListClientProps {
   peopleWithMemberships: PersonWithMemberships[]
