@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { INFINITE_SCROLL_THRESHOLD } from "@/lib/constants";
 
 interface UseInfiniteScrollOptions {
   onLoadMore: () => void | Promise<void>;
@@ -13,7 +14,7 @@ interface UseInfiniteScrollOptions {
  *
  * @param onLoadMore - Callback to fetch next page
  * @param hasMore - Whether more results exist
- * @param threshold - Distance from bottom to trigger load (default 100px)
+ * @param threshold - Distance from bottom to trigger load (default from INFINITE_SCROLL_THRESHOLD)
  * @returns sentinelRef to attach to bottom element and loading state
  *
  * @example
@@ -33,7 +34,7 @@ interface UseInfiniteScrollOptions {
 export function useInfiniteScroll({
   onLoadMore,
   hasMore,
-  threshold = 100,
+  threshold = INFINITE_SCROLL_THRESHOLD,
 }: UseInfiniteScrollOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);

@@ -422,6 +422,65 @@ const [searchValue, setSearchValue] = useState('')
 
 ---
 
+### EndOfListMessage
+**Path:** `src/components/end-of-list-message.tsx`
+
+**Purpose:** Displays a message when infinite scrolling has loaded all available items. Used in list views with infinite scroll to indicate there are no more items to load.
+
+**Key Features:**
+- Minimal padding (`py-1`) for compact display
+- Centered text with muted foreground color
+- Accessible with `role="status"` and `aria-live="polite"`
+- Conditionally renders based on `show` prop
+- Returns `null` when `show` is false (no DOM element)
+
+**Props:**
+- `show: boolean` - Whether to display the message (required)
+- `className?: string` - Optional additional CSS classes
+
+**Usage:**
+```tsx
+import { EndOfListMessage } from '@/components/end-of-list-message'
+
+<DataTable
+  data={items}
+  columns={columns}
+  onLoadMore={handleLoadMore}
+  hasMore={hasMore}
+  // ... other props
+/>
+<EndOfListMessage show={!hasMore && items.length > 0} />
+<ScrollToTopButton />
+```
+
+**Rendering Logic:**
+```typescript
+show={!hasMore && items.length > 0}
+```
+
+**When it shows:**
+- ✅ No more items to load (`!hasMore`)
+- ✅ List has at least 1 item (`items.length > 0`)
+
+**When it doesn't show:**
+- ❌ More items are available (`hasMore = true`)
+- ❌ List is empty (`items.length === 0`)
+
+**Accessibility:**
+- `role="status"` - Identifies the message as a status update
+- `aria-live="polite"` - Screen readers announce when message appears (after current speech)
+
+**Styling:**
+```tsx
+className="py-1 text-center text-sm text-muted-foreground"
+```
+
+**Related:**
+- [INFINITE_SCROLLING.md](./INFINITE_SCROLLING.md) - Complete infinite scroll pattern
+- [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md) - List page implementation
+
+---
+
 ### AdvancedSearch
 **Path:** `src/components/advanced-search.tsx`
 

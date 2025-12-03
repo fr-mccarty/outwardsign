@@ -76,6 +76,7 @@ Components for displaying data including cards, badges, avatars, and status labe
 - `PersonAvatarGroup` - Avatar display for people
 - `ClearableSearchInput` - Search input with clear button
 - `ScrollToTopButton` - Floating scroll-to-top button
+- `EndOfListMessage` - Message when infinite scroll reaches end
 - `AdvancedSearch` - Collapsible advanced search filters
 - `ModuleStatusLabel` - Status badges for modules
 - `ModuleViewPanel` - Side panel for view pages

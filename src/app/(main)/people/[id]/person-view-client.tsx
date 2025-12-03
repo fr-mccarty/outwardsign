@@ -80,6 +80,9 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
     </>
   )
 
+  // Check if pronunciation data exists
+  const hasPronunciation = person.first_name_pronunciation || person.last_name_pronunciation
+
   // Generate details section content
   const details = (
     <>
@@ -91,7 +94,7 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
         </Avatar>
       </div>
 
-      {(person.first_name_pronunciation || person.last_name_pronunciation) && (
+      {hasPronunciation && (
         <div className="border-t pt-2">
           <span className="font-medium">Pronunciation:</span>
           <div className="text-sm text-muted-foreground mt-1">
@@ -106,19 +109,19 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
       )}
 
       {person.email && (
-        <div className={person.first_name_pronunciation || person.last_name_pronunciation ? "pt-2 border-t" : ""}>
+        <div className={hasPronunciation ? "pt-2 border-t" : ""}>
           <span className="font-medium">Email:</span> {person.email}
         </div>
       )}
 
       {person.phone_number && (
-        <div className={(person.first_name_pronunciation || person.last_name_pronunciation || person.email) ? "pt-2 border-t" : ""}>
+        <div className={(hasPronunciation || person.email) ? "pt-2 border-t" : ""}>
           <span className="font-medium">Phone:</span> {person.phone_number}
         </div>
       )}
 
       {(person.street || person.city || person.state || person.zipcode) && (
-        <div className={(person.first_name_pronunciation || person.last_name_pronunciation || person.email || person.phone_number) ? "pt-2 border-t" : ""}>
+        <div className={(hasPronunciation || person.email || person.phone_number) ? "pt-2 border-t" : ""}>
           <span className="font-medium">Address:</span>
           <div className="text-sm text-muted-foreground mt-1">
             {person.street && <div>{person.street}</div>}

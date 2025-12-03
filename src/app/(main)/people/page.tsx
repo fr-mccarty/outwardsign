@@ -6,12 +6,12 @@ import { getPeople, type PersonFilterParams } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PeopleListClient } from './people-list-client'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{
     search?: string
     sort?: string
-    page?: string
   }>
 }
 
@@ -30,12 +30,15 @@ export default async function PeoplePage({ searchParams }: PageProps) {
   const filters: PersonFilterParams = {
     search: params.search,
     sort: (params.sort as PersonFilterParams['sort']) || 'name_asc',
-    page: params.page ? parseInt(params.page) : 1,
-    limit: 50
+    offset: 0, // Always fetch first page on server
+    limit: LIST_VIEW_PAGE_SIZE
   }
 
   // Fetch people server-side with filters
   const people = await getPeople(filters)
+
+  // Determine if there are more results
+  const initialHasMore = people.length === LIST_VIEW_PAGE_SIZE
 
   // Compute stats server-side
   const allPeople = await getPeople()
@@ -66,7 +69,7 @@ export default async function PeoplePage({ searchParams }: PageProps) {
       ]}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <PeopleListClient initialData={people} stats={stats} />
+      <PeopleListClient initialData={people} stats={stats} initialHasMore={initialHasMore} />
     </PageContainer>
   )
 }

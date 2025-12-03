@@ -5,7 +5,8 @@ import { z } from 'zod'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Mail, Phone, ChevronDown, ChevronRight, Sparkles, Loader2 } from 'lucide-react'
+import { Mail, Phone, Sparkles, Loader2 } from 'lucide-react'
+import { PronunciationToggle } from '@/components/pronunciation-toggle'
 import { getPeoplePaginated, createPerson, updatePerson, uploadPersonAvatar, deletePersonAvatar, getPersonAvatarSignedUrl, getPersonAvatarSignedUrls } from '@/lib/actions/people'
 import { generatePronunciation } from '@/lib/actions/generate-pronunciation'
 import type { Person } from '@/lib/types'
@@ -434,20 +435,11 @@ export function PeoplePicker({
           />
 
           {/* Pronunciation Toggle - always shown */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowPronunciation(!showPronunciation)}
-            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            {showPronunciation ? (
-              <ChevronDown className="h-3 w-3 mr-1" />
-            ) : (
-              <ChevronRight className="h-3 w-3 mr-1" />
-            )}
-            {showPronunciation ? 'Hide pronunciation' : 'Add pronunciation guide'}
-          </Button>
+          <PronunciationToggle
+            isExpanded={showPronunciation}
+            onToggle={() => setShowPronunciation(!showPronunciation)}
+            variant="compact"
+          />
 
           {/* Generate Pronunciations Button - shown when name exists */}
           {(watch('first_name') || watch('last_name')) && (

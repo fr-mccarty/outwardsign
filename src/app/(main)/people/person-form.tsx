@@ -8,6 +8,7 @@ import { FormSectionCard } from "@/components/form-section-card"
 import { FormBottomActions } from "@/components/form-bottom-actions"
 import { MassAttendanceSelector } from "@/components/mass-attendance-selector"
 import { ImageCropUpload } from "@/components/image-crop-upload"
+import { PronunciationToggle } from "@/components/pronunciation-toggle"
 import { createPerson, updatePerson, uploadPersonAvatar, deletePersonAvatar, getPersonAvatarSignedUrl } from "@/lib/actions/people"
 import { generatePronunciation } from "@/lib/actions/generate-pronunciation"
 import type { Person } from "@/lib/types"
@@ -27,6 +28,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
   const router = useRouter()
   const isEditing = !!person
   const [isGenerating, setIsGenerating] = useState(false)
+  const [showPronunciation, setShowPronunciation] = useState(false)
   const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null)
   const [pendingAvatarData, setPendingAvatarData] = useState<{ base64: string; extension: string } | null>(null)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
@@ -45,6 +47,15 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
     }
     fetchAvatarUrl()
   }, [person?.avatar_url])
+
+  // Auto-expand pronunciation section when editing a person with pronunciation data
+  useEffect(() => {
+    if (isEditing && person) {
+      const hasPronunciationData =
+        person.first_name_pronunciation || person.last_name_pronunciation
+      setShowPronunciation(!!hasPronunciationData)
+    }
+  }, [isEditing, person])
 
   const {
     handleSubmit,
@@ -262,46 +273,61 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         </div>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormInput
-              id="first_name_pronunciation"
-              label="First Name Pronunciation (Optional)"
-              value={firstNamePronunciation || ""}
-              onChange={(value) => setValue("first_name_pronunciation", value)}
-              placeholder="How to pronounce first name"
-              error={errors.first_name_pronunciation?.message}
-            />
+          {/* Pronunciation Toggle */}
+          <PronunciationToggle
+            isExpanded={showPronunciation}
+            onToggle={() => setShowPronunciation(!showPronunciation)}
+          />
 
-            <FormInput
-              id="last_name_pronunciation"
-              label="Last Name Pronunciation (Optional)"
-              value={lastNamePronunciation || ""}
-              onChange={(value) => setValue("last_name_pronunciation", value)}
-              placeholder="How to pronounce last name"
-              error={errors.last_name_pronunciation?.message}
-            />
-          </div>
+          {/* Pronunciation Fields - shown when toggle is expanded */}
+          {showPronunciation && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormInput
+                  id="first_name_pronunciation"
+                  label="First Name Pronunciation"
+                  value={firstNamePronunciation || ""}
+                  onChange={(value) => setValue("first_name_pronunciation", value)}
+                  placeholder="How to pronounce first name"
+                  error={errors.first_name_pronunciation?.message}
+                  description="How to pronounce the first name"
+                />
 
-          {(firstName || lastName) && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleGeneratePronunciations}
-              disabled={isGenerating || isSubmitting}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Generate Pronunciations with AI
-                </>
+                <FormInput
+                  id="last_name_pronunciation"
+                  label="Last Name Pronunciation"
+                  value={lastNamePronunciation || ""}
+                  onChange={(value) => setValue("last_name_pronunciation", value)}
+                  placeholder="How to pronounce last name"
+                  error={errors.last_name_pronunciation?.message}
+                  description="How to pronounce the last name"
+                />
+              </div>
+
+              {/* Generate Pronunciations Button - shown when name exists */}
+              {(firstName || lastName) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGeneratePronunciations}
+                  disabled={isGenerating || isSubmitting}
+                  className="mt-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Generate Pronunciations with AI
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
+            </>
           )}
         </div>
 

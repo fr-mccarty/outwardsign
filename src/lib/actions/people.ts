@@ -74,7 +74,7 @@ function buildPeopleSearchConditions(search: string): string[] {
 export interface PersonFilterParams {
   search?: string
   sort?: 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  page?: number
+  offset?: number
   limit?: number
 }
 
@@ -99,9 +99,8 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
   const supabase = await createClient()
 
   // Calculate pagination
-  const page = filters?.page || 1
+  const offset = filters?.offset || 0
   const limit = filters?.limit || 50
-  const offset = (page - 1) * limit
 
   let query = supabase
     .from('people')

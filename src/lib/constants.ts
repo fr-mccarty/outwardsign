@@ -5,8 +5,10 @@ export const GITHUB_URL = 'https://github.com/fr-mccarty/outwardsign'
 // Page layout
 export const PAGE_MAX_WIDTH_CLASS = 'max-w-6xl'
 
-// List view pagination
-export const LIST_VIEW_PAGE_SIZE = 50 // Number of items to load per page in list views
+// List view pagination and infinite scroll
+export const LIST_VIEW_PAGE_SIZE = 25 // Number of items to load on initial page load
+export const INFINITE_SCROLL_LOAD_MORE_SIZE = 50 // Number of items to load on each subsequent scroll
+export const INFINITE_SCROLL_THRESHOLD = 100 // Pixels from bottom to trigger load more
 export const SCROLL_TO_TOP_THRESHOLD = 300 // Pixels to scroll before showing scroll-to-top button
 
 // Search debounce delay

@@ -1,17 +1,19 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Person } from '@/lib/types'
-import { deletePerson } from '@/lib/actions/people'
+import { deletePerson, getPeople, type PersonFilterParams } from '@/lib/actions/people'
+import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
+import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, User, Filter } from "lucide-react"
@@ -34,17 +36,11 @@ interface Stats {
 interface PeopleListClientProps {
   initialData: Person[]
   stats: Stats
+  initialHasMore: boolean
 }
 
-// Define sort options specific to People module
-const PEOPLE_SORT_OPTIONS = [
-  { value: 'name_asc', label: 'Name (A-Z)' },
-  { value: 'name_desc', label: 'Name (Z-A)' },
-  { value: 'created_desc', label: 'Recently Created' },
-  { value: 'created_asc', label: 'Oldest Created' }
-] as const
 
-export function PeopleListClient({ initialData, stats }: PeopleListClientProps) {
+export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleListClientProps) {
   const router = useRouter()
 
   // Use list filters hook for URL state management
@@ -53,17 +49,62 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
     defaultFilters: { sort: 'name_asc' }
   })
 
-  // Local state for search value (synced with URL)
+  // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Debounced search value (delays URL update)
+  const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
+
+  // Infinite scroll state
+  const [people, setPeople] = useState(initialData)
+  const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Parse current sort from URL for DataTable
   const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    filters.updateFilter('search', debouncedSearchValue)
+  }, [debouncedSearchValue, filters])
+
+  // Reset to initial data when filters change
+  useEffect(() => {
+    setPeople(initialData)
+    setOffset(LIST_VIEW_PAGE_SIZE)
+    setHasMore(initialHasMore)
+  }, [initialData, initialHasMore])
 
   // Handle sort change from DataTable column headers
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
   }, [filters])
+
+  // Load more function for infinite scroll
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+
+    setIsLoadingMore(true)
+    try {
+      const nextPeople = await getPeople({
+        search: filters.getFilterValue('search'),
+        sort: filters.getFilterValue('sort') as PersonFilterParams['sort'],
+        offset: offset,
+        limit: INFINITE_SCROLL_LOAD_MORE_SIZE
+      })
+
+      setPeople(prev => [...prev, ...nextPeople])
+      setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
+      setHasMore(nextPeople.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
+    } catch (error) {
+      console.error('Failed to load more people:', error)
+      toast.error('Failed to load more people')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -174,41 +215,28 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
+      {/* Search */}
       <SearchCard title="Search People">
-        <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search people by name, email, or phone..."
-            className="w-full"
-          />
-
-          {/* Advanced Search Collapsible */}
-          <AdvancedSearch
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: PEOPLE_SORT_OPTIONS
-            }}
-          />
-        </div>
+        <ClearableSearchInput
+          value={searchValue}
+          onChange={setSearchValue}
+          placeholder="Search people by name, email, or phone..."
+          className="w-full"
+        />
       </SearchCard>
 
       {/* People Table */}
-      {initialData.length > 0 ? (
+      {people.length > 0 ? (
         <>
           <DataTable
-            data={initialData}
+            data={people}
             columns={columns}
             keyExtractor={(person) => person.id}
             onRowClick={(person) => router.push(`/people/${person.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
             emptyState={{
               icon: <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No people found' : 'No people yet',
@@ -234,6 +262,7 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
             }}
             stickyHeader
           />
+          <EndOfListMessage show={!hasMore && people.length > 0} />
           <ScrollToTopButton />
         </>
       ) : (
