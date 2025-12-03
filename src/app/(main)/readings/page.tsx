@@ -5,13 +5,13 @@ import { getReadings, getReadingStats, type ReadingFilterParams } from "@/lib/ac
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ReadingsListClient } from './readings-list-client'
-import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 interface PageProps {
   searchParams: Promise<{
     search?: string
     language?: string
-    category?: string
+    categories?: string
     sort?: string
     page?: string
   }>
@@ -29,10 +29,10 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
   const params = await searchParams
 
   // Build filters from search params with defaults
+  // Note: categories filtering is handled client-side for multi-select support
   const filters: ReadingFilterParams = {
     search: params.search,
     language: params.language as ReadingFilterParams['language'],
-    category: params.category as ReadingFilterParams['category'],
     sort: (params.sort as ReadingFilterParams['sort']) || 'created_desc'
   }
 
@@ -48,7 +48,8 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
   ]
 
   // Calculate if there are more items to load
-  const initialHasMore = readings.length >= INFINITE_SCROLL_LOAD_MORE_SIZE
+  // If we got a full page of results, there are likely more to load
+  const initialHasMore = readings.length >= LIST_VIEW_PAGE_SIZE
 
   return (
     <PageContainer

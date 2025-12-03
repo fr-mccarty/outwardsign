@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Reading, ReadingStats } from '@/lib/actions/readings'
 import { deleteReading, getReadings, type ReadingFilterParams } from '@/lib/actions/readings'
@@ -11,8 +11,13 @@ import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { ChevronDown } from "lucide-react"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
@@ -21,7 +26,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, BookOpen, Filter, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
-import { READING_CATEGORY_LABELS, LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
+import { READING_CATEGORIES, READING_CATEGORY_LABELS, LITURGICAL_LANGUAGE_VALUES, LITURGICAL_LANGUAGE_LABELS } from "@/lib/constants"
 import { useListFilters } from "@/hooks/use-list-filters"
 import {
   DropdownMenu,
@@ -31,6 +36,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface ReadingsListClientProps {
   initialData: Reading[]
@@ -50,14 +57,59 @@ export function ReadingsListClient({ initialData, stats, initialHasMore }: Readi
   // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
 
+  // State for advanced filters collapsible
+  const [filtersOpen, setFiltersOpen] = useState(false)
+
+  // State for selected categories (array for multi-select)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const categoryParam = filters.getFilterValue('categories')
+    return categoryParam ? categoryParam.split(',').filter(Boolean) : []
+  })
+
   // Debounced search value (delays URL update)
   const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
 
   // Infinite scroll state
-  const [readings, setReadings] = useState(initialData)
+  const [allReadings, setAllReadings] = useState(initialData)
   const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Filter readings by selected categories (client-side, similar to picker)
+  const readings = useMemo(() => {
+    // If no categories selected, show all readings
+    if (selectedCategories.length === 0) {
+      return allReadings
+    }
+
+    // Convert display labels to database keys
+    const selectedDatabaseKeys = selectedCategories.map(label => {
+      const entry = Object.entries(READING_CATEGORY_LABELS).find(
+        ([key, labels]) => labels.en === label
+      )
+      return entry ? entry[0] : null
+    }).filter(Boolean) as string[]
+
+    // Filter readings that have ALL selected categories (AND logic)
+    return allReadings.filter(reading => {
+      if (!reading.categories || reading.categories.length === 0) {
+        return false
+      }
+
+      // Get all categories for this reading (stored as database keys)
+      const readingDatabaseCategories = new Set<string>()
+      reading.categories.forEach(cat => {
+        if (cat) {
+          readingDatabaseCategories.add(cat.toUpperCase())
+        }
+      })
+
+      // Check if reading has ALL selected categories
+      return selectedDatabaseKeys.every(selectedKey =>
+        readingDatabaseCategories.has(selectedKey)
+      )
+    })
+  }, [allReadings, selectedCategories])
 
   // Update URL when debounced search value changes
   useEffect(() => {
@@ -65,9 +117,15 @@ export function ReadingsListClient({ initialData, stats, initialHasMore }: Readi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchValue])
 
+  // Update URL when categories change
+  useEffect(() => {
+    filters.updateFilter('categories', selectedCategories.length > 0 ? selectedCategories.join(',') : '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategories])
+
   // Reset to initial data when filters change
   useEffect(() => {
-    setReadings(initialData)
+    setAllReadings(initialData)
     setOffset(LIST_VIEW_PAGE_SIZE)
     setHasMore(initialHasMore)
   }, [initialData, initialHasMore])
@@ -83,19 +141,26 @@ export function ReadingsListClient({ initialData, stats, initialHasMore }: Readi
   }, [])
 
   // Load more function for infinite scroll
-  const handleLoadMore = async () => {
+  const handleLoadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return
 
     setIsLoadingMore(true)
     try {
       const nextReadings = await getReadings({
         search: filters.getFilterValue('search'),
+        language: filters.getFilterValue('language') as ReadingFilterParams['language'],
         sort: filters.getFilterValue('sort') as ReadingFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE
       })
 
-      setReadings(prev => [...prev, ...nextReadings])
+      // Prevent duplicates by checking existing IDs
+      setAllReadings(prev => {
+        const existingIds = new Set(prev.map(r => r.id))
+        const newReadings = nextReadings.filter(r => !existingIds.has(r.id))
+        return [...prev, ...newReadings]
+      })
+
       setOffset(prev => prev + INFINITE_SCROLL_LOAD_MORE_SIZE)
       setHasMore(nextReadings.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
@@ -104,12 +169,13 @@ export function ReadingsListClient({ initialData, stats, initialHasMore }: Readi
     } finally {
       setIsLoadingMore(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingMore, hasMore, offset])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
     { value: stats.total, label: 'Total Readings' },
-    { value: stats.filtered, label: 'Filtered Results' }
+    { value: readings.length, label: 'Filtered Results' }
   ]
 
   // Delete dialog state
@@ -119,11 +185,24 @@ export function ReadingsListClient({ initialData, stats, initialHasMore }: Readi
   // Clear all filters
   const handleClearFilters = () => {
     setSearchValue('')
+    setSelectedCategories([])
     filters.clearFilters()
   }
 
   // Check if any filters are active
   const hasActiveFilters = filters.hasActiveFilters
+
+  // Toggle category selection
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+  }
+
+  // Get category labels for display
+  const categoryLabels = READING_CATEGORIES.map(cat => READING_CATEGORY_LABELS[cat].en)
 
   // Handle delete confirmation
   const handleDeleteConfirm = async () => {
@@ -257,8 +336,82 @@ export function ReadingsListClient({ initialData, stats, initialHasMore }: Readi
             className="w-full"
           />
 
-          {/* Advanced Search Collapsible */}
-          <AdvancedSearch />
+          {/* Advanced Filters Collapsible */}
+          <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-2 w-full justify-start px-0 text-muted-foreground hover:text-foreground"
+              >
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    filtersOpen ? 'rotate-180' : ''
+                  }`}
+                />
+                <span className="text-sm font-medium">Advanced Filters</span>
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4 space-y-4">
+              {/* Language Filter */}
+              <div className="space-y-2">
+                <Label htmlFor="language-filter">Language</Label>
+                <Select
+                  value={filters.getFilterValue('language') || 'all'}
+                  onValueChange={(value) => filters.updateFilter('language', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger id="language-filter" className="w-full sm:w-1/2">
+                    <SelectValue placeholder="All languages">
+                      {filters.getFilterValue('language') && filters.getFilterValue('language') !== 'all'
+                        ? LITURGICAL_LANGUAGE_LABELS[filters.getFilterValue('language') as keyof typeof LITURGICAL_LANGUAGE_LABELS]?.en
+                        : 'All languages'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All languages</SelectItem>
+                    {LITURGICAL_LANGUAGE_VALUES.map(lang => (
+                      <SelectItem key={lang} value={lang}>
+                        {LITURGICAL_LANGUAGE_LABELS[lang].en}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Category Filter - Toggle Buttons */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Categories</Label>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {categoryLabels.map(category => (
+                    <Button
+                      key={category}
+                      variant={selectedCategories.includes(category) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleCategory(category)}
+                      className="text-xs h-7 flex-shrink-0"
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filter Count Display */}
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-sm text-muted-foreground">
+                  {selectedCategories.length > 0 && (
+                    <span className="text-primary">
+                      {selectedCategories.length} categor{selectedCategories.length > 1 ? 'ies' : 'y'} selected
+                    </span>
+                  )}
+                  {selectedCategories.length === 0 && 'No category filters applied'}
+                </span>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </SearchCard>
 
