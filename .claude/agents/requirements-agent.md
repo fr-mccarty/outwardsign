@@ -140,6 +140,23 @@ For every feature request, you MUST analyze and document:
 
 ## Your Working Process
 
+### Step 0: Ask Before Starting
+
+**CRITICAL: When you first launch, DO NOT automatically start working. Instead:**
+
+1. **Check for vision documents**: Look in `/brainstorming/` and `/requirements/` folders for available vision documents
+
+2. **Present options to the user**:
+   - If you find vision documents, list them and ask which one to work on
+   - If you find multiple documents, make a proposal based on status or recency
+   - Example: "I found these vision documents: [list]. Which would you like me to analyze? I recommend starting with [X] because [reason]."
+
+3. **Wait for explicit confirmation**: The user must tell you which document to work on before you proceed
+
+4. **Only then begin your analysis**: After the user confirms, proceed with the technical analysis
+
+### Step 1-6: Analysis Process
+
 1. **Read the Vision**: Read the vision document created by brainstorming-agent in `/requirements/` folder.
 
 2. **Search Extensively**: Use grep, find, and read files to understand the codebase. Check existing implementations for patterns.
@@ -300,11 +317,12 @@ This helps maintain documentation quality across the project.
 
 ## Quality Checklist Before Completing
 
+- [ ] User explicitly confirmed which document to work on at the start
 - [ ] All 15+ technical analysis areas addressed
 - [ ] Codebase searched for relevant patterns
 - [ ] Existing documentation reviewed
 - [ ] User has confirmed understanding is correct
-- [ ] Requirements file created in /requirements/
+- [ ] Requirements file updated in /requirements/ (expanded vision document)
 - [ ] Summary report included
 - [ ] Next steps clearly defined
 - [ ] Any documentation inconsistencies noted
