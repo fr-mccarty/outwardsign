@@ -60,11 +60,18 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
     query = query.eq('status', filters.status)
   }
 
-  // Apply sorting at database level for created_at, otherwise will sort in memory
-  const sort = filters?.sort || 'date_desc'
-  if (sort === 'created_asc') {
-    query = query.order('created_at', { ascending: true })
-  } else if (sort === 'created_desc') {
+  // Handle sorting
+  if (filters?.sort) {
+    const sortParts = filters.sort.split('_')
+    const direction = sortParts[sortParts.length - 1]
+    const ascending = direction === 'asc'
+
+    if (filters.sort.startsWith('created_')) {
+      // Database-level sorting by created_at
+      query = query.order('created_at', { ascending })
+    }
+  } else {
+    // Default sort: most recent first (by date, descending)
     query = query.order('created_at', { ascending: false })
   }
 
@@ -121,19 +128,33 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
     })
   }
 
-  // Apply date-based sorting in application layer (since we can't sort by nested relations in Supabase)
-  if (sort === 'date_asc' || sort === 'date_desc') {
-    masses.sort((a, b) => {
-      const dateA = a.event?.start_date ? new Date(a.event.start_date).getTime() : 0
-      const dateB = b.event?.start_date ? new Date(b.event.start_date).getTime() : 0
+  // Apply application-level sorting for related fields
+  if (filters?.sort) {
+    const sortParts = filters.sort.split('_')
+    const direction = sortParts[sortParts.length - 1]
+    const ascending = direction === 'asc'
 
-      // Nulls last for both ascending and descending
-      if (!a.event?.start_date && !b.event?.start_date) return 0
-      if (!a.event?.start_date) return 1
-      if (!b.event?.start_date) return 1
+    if (filters.sort.startsWith('name_')) {
+      // Application-level sorting by mass name
+      masses.sort((a, b) => {
+        const nameA = (a.name || '').toLowerCase()
+        const nameB = (b.name || '').toLowerCase()
+        return ascending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+      })
+    } else if (filters.sort.startsWith('date_')) {
+      // Application-level sorting by event date
+      masses.sort((a, b) => {
+        const dateA = a.event?.start_date ? new Date(a.event.start_date).getTime() : 0
+        const dateB = b.event?.start_date ? new Date(b.event.start_date).getTime() : 0
 
-      return sort === 'date_asc' ? dateA - dateB : dateB - dateA
-    })
+        // Nulls last for both ascending and descending
+        if (!a.event?.start_date && !b.event?.start_date) return 0
+        if (!a.event?.start_date) return 1
+        if (!b.event?.start_date) return 1
+
+        return ascending ? dateA - dateB : dateB - dateA
+      })
+    }
   }
 
   return masses

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { PresentationWithNames, PresentationStats } from '@/lib/actions/presentations'
 import { deletePresentation } from '@/lib/actions/presentations'
@@ -12,14 +12,15 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Plus, HandHeartIcon, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { MODULE_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import {
   buildAvatarColumn,
   buildWhenColumn,
@@ -53,6 +54,15 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -118,7 +128,7 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
     }),
     // Custom Who column with Baptized badge support
     {
-      key: 'who',
+      key: 'name',  // Override for server-side sorting
       header: 'Child',
       cell: (presentation: PresentationWithNames) => {
         const name = presentation.child?.full_name || ''
@@ -155,11 +165,14 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
       sortable: true,
       accessorFn: (presentation: PresentationWithNames) => presentation.child?.full_name || ''
     } as DataTableColumn<PresentationWithNames>,
-    buildWhenColumn<PresentationWithNames>({
-      getDate: (presentation) => presentation.presentation_event?.start_date || null,
-      getTime: (presentation) => presentation.presentation_event?.start_time || null,
-      sortable: true
-    }),
+    {
+      ...buildWhenColumn<PresentationWithNames>({
+        getDate: (presentation) => presentation.presentation_event?.start_date || null,
+        getTime: (presentation) => presentation.presentation_event?.start_time || null,
+        sortable: true
+      }),
+      key: 'date'  // Override for server-side sorting
+    },
     buildWhereColumn<PresentationWithNames>({
       getLocation: (presentation) => presentation.presentation_event?.location || null,
       hiddenOn: 'lg'
@@ -180,24 +193,33 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
       {/* Search and Filters */}
       <SearchCard title="Search Presentations">
         <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search by child name..."
-            className="w-full"
-          />
+          {/* Main Search and Status Row - Inline */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <ClearableSearchInput
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  filters.updateFilter('search', value)
+                }}
+                placeholder="Search by child name..."
+                className="w-full"
+              />
+            </div>
 
-          {/* Advanced Search Collapsible */}
+            {/* Status Filter - Now Inline */}
+            <div className="w-full sm:w-[200px]">
+              <StatusFilter
+                value={filters.getFilterValue('status')}
+                onChange={(value) => filters.updateFilter('status', value)}
+                hideLabel
+              />
+            </div>
+          </div>
+
+          {/* Advanced Search - Date Range Only */}
           <AdvancedSearch
-            statusFilter={{
-              value: filters.getFilterValue('status'),
-              onChange: (value) => filters.updateFilter('status', value),
-              statusValues: MODULE_STATUS_VALUES
-            }}
             dateRangeFilter={{
               startDate: startDate,
               endDate: endDate,
@@ -220,6 +242,8 @@ export function PresentationsListClient({ initialData, stats }: PresentationsLis
           <DataTable
             data={initialData}
             columns={columns}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             keyExtractor={(presentation) => presentation.id}
             onRowClick={(presentation) => router.push(`/presentations/${presentation.id}`)}
             emptyState={{

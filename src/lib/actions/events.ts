@@ -85,12 +85,28 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
     query = query.lte('start_date', filters.end_date)
   }
 
-  // Dynamic sorting based on sort parameter
-  const sortOrder = filters?.sort || 'asc'
-  const ascending = sortOrder === 'asc'
+  // Handle sorting
+  if (filters?.sort) {
+    const sortParts = filters.sort.split('_')
+    const direction = sortParts[sortParts.length - 1]
+    const ascending = direction === 'asc'
 
-  query = query.order('start_date', { ascending, nullsFirst: false })
-    .order('created_at', { ascending: false })
+    if (filters.sort.startsWith('date_')) {
+      // Database-level sorting by start_date
+      query = query.order('start_date', { ascending, nullsFirst: false })
+        .order('created_at', { ascending: false })
+    } else if (filters.sort.startsWith('created_')) {
+      // Database-level sorting by created_at
+      query = query.order('created_at', { ascending })
+    } else if (filters.sort.startsWith('name_')) {
+      // Database-level sorting by name
+      query = query.order('name', { ascending })
+    }
+  } else {
+    // Default sort: upcoming events first (date ascending)
+    query = query.order('start_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false })
+  }
 
   const { data, error } = await query
 

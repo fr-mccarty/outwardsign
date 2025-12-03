@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { MassWithNames, MassStats } from '@/lib/actions/masses'
 import { deleteMass } from '@/lib/actions/masses'
@@ -12,6 +12,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Church, Filter } from "lucide-react"
@@ -19,6 +20,7 @@ import { toast } from "sonner"
 import { MASS_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import {
   buildWhenColumn,
   buildWhereColumn,
@@ -72,6 +74,14 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [massToDelete, setMassToDelete] = useState<MassWithNames | null>(null)
+
+  // Sorting state
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -163,24 +173,34 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
       {/* Search and Filters */}
       <SearchCard title="Search Masses">
         <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search by presider, homilist, or event name..."
-            className="w-full"
-          />
+          {/* Main Search and Status Row - Inline */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <ClearableSearchInput
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  filters.updateFilter('search', value)
+                }}
+                placeholder="Search by presider, homilist, or event name..."
+                className="w-full"
+              />
+            </div>
 
-          {/* Advanced Search Collapsible */}
+            {/* Status Filter - Now Inline */}
+            <div className="w-full sm:w-[200px]">
+              <StatusFilter
+                value={filters.getFilterValue('status')}
+                onChange={(value) => filters.updateFilter('status', value)}
+                statusValues={MASS_STATUS_VALUES}
+                hideLabel
+              />
+            </div>
+          </div>
+
+          {/* Advanced Search - Date Range Only */}
           <AdvancedSearch
-            statusFilter={{
-              value: filters.getFilterValue('status'),
-              onChange: (value) => filters.updateFilter('status', value),
-              statusValues: MASS_STATUS_VALUES
-            }}
             dateRangeFilter={{
               startDate: startDate,
               endDate: endDate,
@@ -205,6 +225,8 @@ export function MassesListClient({ initialData, stats }: MassesListClientProps) 
             columns={columns}
             keyExtractor={(mass) => mass.id}
             onRowClick={(mass) => router.push(`/masses/${mass.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No masses found' : 'No masses yet',

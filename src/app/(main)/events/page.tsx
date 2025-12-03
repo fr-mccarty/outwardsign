@@ -29,7 +29,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: EventFilterParams = {
     search: params.search,
     event_type_id: params.event_type_id,
@@ -37,7 +37,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
     language: params.language as EventFilterParams['language'],
     start_date: params.start_date,
     end_date: params.end_date,
-    sort: params.sort as EventFilterParams['sort']
+    sort: (params.sort as EventFilterParams['sort']) || 'date_asc'
   }
 
   // Fetch events server-side with filters and module links

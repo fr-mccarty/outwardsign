@@ -12,11 +12,11 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, VenusAndMars, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { MODULE_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import {
@@ -26,6 +26,7 @@ import {
   buildWhereColumn,
   buildActionsColumn
 } from '@/lib/utils/table-columns'
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 
 interface WeddingsListClientProps {
   initialData: WeddingWithNames[]
@@ -44,6 +45,15 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL for DataTable
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change from DataTable column headers
+  const handleSortChange = (column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -94,6 +104,7 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
   }
 
   // Define table columns using column builders
+  // Note: Column keys map to server sort parameters ('name' for who, 'date' for when)
   const columns = [
     buildAvatarColumn<WeddingWithNames>({
       people: (wedding) => [wedding.bride, wedding.groom].filter(Boolean) as Array<{
@@ -107,23 +118,29 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
       size: 'md',
       hiddenOn: 'sm'
     }),
-    buildWhoColumn<WeddingWithNames>({
-      header: 'Couple',
-      getName: (wedding) => {
-        const brideName = wedding.bride?.full_name
-        const groomName = wedding.groom?.full_name
-        if (brideName && groomName) return `${brideName}-${groomName}`
-        return brideName || groomName || ''
-      },
-      getStatus: (wedding) => wedding.status || 'PLANNING',
-      fallback: 'No couple assigned',
-      sortable: true
-    }),
-    buildWhenColumn<WeddingWithNames>({
-      getDate: (wedding) => wedding.wedding_event?.start_date || null,
-      getTime: (wedding) => wedding.wedding_event?.start_time || null,
-      sortable: true
-    }),
+    {
+      ...buildWhoColumn<WeddingWithNames>({
+        header: 'Couple',
+        getName: (wedding) => {
+          const brideName = wedding.bride?.full_name
+          const groomName = wedding.groom?.full_name
+          if (brideName && groomName) return `${brideName}-${groomName}`
+          return brideName || groomName || ''
+        },
+        getStatus: (wedding) => wedding.status || 'PLANNING',
+        fallback: 'No couple assigned',
+        sortable: true
+      }),
+      key: 'name' // Override key to match server sort parameter
+    },
+    {
+      ...buildWhenColumn<WeddingWithNames>({
+        getDate: (wedding) => wedding.wedding_event?.start_date || null,
+        getTime: (wedding) => wedding.wedding_event?.start_time || null,
+        sortable: true
+      }),
+      key: 'date' // Override key to match server sort parameter
+    },
     buildWhereColumn<WeddingWithNames>({
       getLocation: (wedding) => wedding.wedding_event?.location || null,
       hiddenOn: 'lg'
@@ -143,25 +160,33 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard title="Search Weddings">
-        <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search by bride or groom name..."
-            className="w-full"
-          />
+        {/* Main Search and Status Row - Inline */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <ClearableSearchInput
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  filters.updateFilter('search', value)
+                }}
+                placeholder="Search by bride or groom name..."
+                className="w-full"
+              />
+            </div>
 
-          {/* Advanced Search Collapsible */}
+            {/* Status Filter - Now Inline */}
+            <div className="w-full sm:w-[200px]">
+              <StatusFilter
+                value={filters.getFilterValue('status')}
+                onChange={(value) => filters.updateFilter('status', value)}
+                hideLabel
+              />
+            </div>
+          </div>
+
+          {/* Advanced Search - Date Range Only */}
           <AdvancedSearch
-            statusFilter={{
-              value: filters.getFilterValue('status'),
-              onChange: (value) => filters.updateFilter('status', value),
-              statusValues: MODULE_STATUS_VALUES
-            }}
             dateRangeFilter={{
               startDate: startDate,
               endDate: endDate,
@@ -175,7 +200,6 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
               }
             }}
           />
-        </div>
       </SearchCard>
 
       {/* Weddings Table */}
@@ -186,6 +210,8 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
             columns={columns}
             keyExtractor={(wedding) => wedding.id}
             onRowClick={(wedding) => router.push(`/weddings/${wedding.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <VenusAndMars className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No weddings found' : 'No weddings yet',

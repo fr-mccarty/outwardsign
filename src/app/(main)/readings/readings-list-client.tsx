@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Reading, ReadingStats } from '@/lib/actions/readings'
 import { deleteReading } from '@/lib/actions/readings'
@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 
 interface ReadingsListClientProps {
   initialData: Reading[]
@@ -52,6 +53,15 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL for DataTable
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change from DataTable column headers
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -107,8 +117,7 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
         )
       },
       className: 'max-w-[200px] md:max-w-[250px]',
-      sortable: true,
-      accessorFn: (reading) => reading.pericope || ''
+      sortable: true
     },
     // Categories Column
     {
@@ -218,6 +227,8 @@ export function ReadingsListClient({ initialData, stats }: ReadingsListClientPro
             columns={columns}
             keyExtractor={(reading) => reading.id}
             onRowClick={(reading) => router.push(`/readings/${reading.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No readings found' : 'No readings yet',

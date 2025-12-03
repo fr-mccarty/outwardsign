@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Person } from '@/lib/types'
 import { deletePerson } from '@/lib/actions/people'
@@ -22,6 +22,7 @@ import {
   buildWhoColumn,
   buildActionsColumn
 } from '@/lib/utils/table-columns'
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 
 interface Stats {
   total: number
@@ -54,6 +55,15 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL for DataTable
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change from DataTable column headers
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -105,12 +115,16 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
       size: 'md',
       hiddenOn: 'sm'
     }),
-    buildWhoColumn<Person>({
-      getName: (person) => person.full_name,
-      getStatus: () => 'ACTIVE', // People don't have status, use placeholder
-      fallback: 'No name',
-      header: 'Name'
-    }),
+    {
+      ...buildWhoColumn<Person>({
+        getName: (person) => person.full_name,
+        getStatus: () => 'ACTIVE', // People don't have status, use placeholder
+        fallback: 'No name',
+        header: 'Name',
+        sortable: true
+      }),
+      key: 'name' // Override key to match server sort parameter
+    },
     {
       key: 'contact',
       header: 'Contact',
@@ -193,6 +207,8 @@ export function PeopleListClient({ initialData, stats }: PeopleListClientProps) 
             columns={columns}
             keyExtractor={(person) => person.id}
             onRowClick={(person) => router.push(`/people/${person.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No people found' : 'No people yet',

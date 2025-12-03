@@ -52,6 +52,7 @@ export type { CreateGroupData, UpdateGroupData }
 
 export interface GroupFilters {
   search?: string
+  status?: string
   sort?: string
   page?: number
   limit?: number
@@ -90,6 +91,12 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
 
   let filteredGroups = allGroups || []
 
+  // Apply status filter (application-level)
+  if (filters.status && filters.status !== 'all') {
+    const isActive = filters.status === 'ACTIVE'
+    filteredGroups = filteredGroups.filter(group => group.is_active === isActive)
+  }
+
   // Apply search filter (application-level)
   if (filters.search) {
     const searchLower = filters.search.toLowerCase()
@@ -121,6 +128,12 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
   }
 
   let groups = data || []
+
+  // Apply status filter (application-level)
+  if (filters.status && filters.status !== 'all') {
+    const isActive = filters.status === 'ACTIVE'
+    groups = groups.filter(group => group.is_active === isActive)
+  }
 
   // Apply search filter (application-level)
   if (filters.search) {

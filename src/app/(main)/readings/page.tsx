@@ -27,12 +27,12 @@ export default async function ReadingsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: ReadingFilterParams = {
     search: params.search,
     language: params.language as ReadingFilterParams['language'],
     category: params.category as ReadingFilterParams['category'],
-    sort: params.sort as ReadingFilterParams['sort'],
+    sort: (params.sort as ReadingFilterParams['sort']) || 'created_desc',
     page: params.page ? parseInt(params.page) : undefined
   }
 

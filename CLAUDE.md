@@ -48,30 +48,47 @@ This project uses specialized AI agents for different development tasks. Using t
 
 ### Agent Quick Reference
 
-| Agent | Purpose | Primary Use Cases |
-|-------|---------|-------------------|
-| **requirements-agent** | Requirements analysis | User requests new feature/module |
-| **developer-agent** | Feature implementation | Coding based on requirements |
-| **test-writer** | Test creation | Implementation complete, needs tests |
-| **test-runner-debugger** | Test execution & debugging | Running tests or fixing test failures |
-| **documentation-writer** | Documentation updates | Code changes need documentation |
-| **finishing-agent** | Pre-commit QA review | Development complete, ready for review |
-| **release-agent** | Production deployment | Deploy to staging/production |
-| **explorer-agent** | Codebase exploration | "How does X work?" or pattern discovery |
-| **refactor-agent** | Code quality improvement | Eliminate duplication, improve performance |
-| **qa-specialist** | Non-functional testing | Performance, accessibility, security audits |
+| Agent | Folder | Purpose | Primary Use Cases |
+|-------|--------|---------|-------------------|
+| **brainstorming-agent** | `/brainstorming/` | Creative vision capture | User requests new feature, explore ideas |
+| **requirements-agent** | `/requirements/` | Requirements analysis | Expand vision with technical details |
+| **developer-agent** | `/src/` | Feature implementation | Coding based on requirements |
+| **test-writer** | `/tests/` | Test creation | Implementation complete, needs tests |
+| **test-runner-debugger** | N/A (read-only) | Test execution & debugging | Running tests or fixing test failures |
+| **project-documentation-writer** | `/docs/` | Developer/AI documentation | Update technical docs after implementation |
+| **code-review-agent** | N/A (read-only) | Code review before commit | Development complete, ready for review |
+| **user-documentation-writer** | `/src/app/documentation/content/` | End-user guides | Create bilingual user documentation (optional) |
+| **release-agent** | `/releases/` | Production deployment | Deploy to staging/production |
+| **explorer-agent** | N/A | Codebase exploration | "How does X work?" or pattern discovery |
+| **refactor-agent** | N/A | Code quality improvement | Eliminate duplication, improve performance |
+| **qa-specialist** | N/A | Non-functional testing | Performance, accessibility, security audits |
 
 ### Quick Decision Guide
 
-- **New feature?** → requirements-agent → developer-agent → test-writer → finishing-agent
-- **Bug fix?** → developer-agent (or explorer-agent if complex) → test-runner-debugger → finishing-agent
+- **New feature?** → brainstorming-agent → requirements-agent → developer-agent → test-writer → test-runner-debugger → project-documentation-writer → code-review-agent → [optional: user-documentation-writer]
+- **Bug fix?** → developer-agent (or explorer-agent if complex) → test-runner-debugger → code-review-agent
 - **Understand code?** → explorer-agent
 - **Tests failing?** → test-runner-debugger
-- **Improve quality?** → explorer-agent → refactor-agent → finishing-agent
-- **Deploy?** → qa-specialist → finishing-agent → release-agent
-- **Update docs?** → documentation-writer
+- **Improve quality?** → explorer-agent → refactor-agent → code-review-agent
+- **Deploy?** → qa-specialist → code-review-agent → release-agent
+- **Update /docs/?** → project-documentation-writer
+- **Create user guides?** → user-documentation-writer
 
 **Rule of Thumb:** Use the most specialized agent for each task. See [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md) for detailed workflows and hand-off patterns.
+
+### Folder Ownership
+
+Each agent owns a specific folder where it creates and manages files:
+
+- **`/brainstorming/`** - brainstorming-agent creates initial feature visions here (files then move to `/requirements/`)
+- **`/requirements/`** - requirements-agent expands vision documents with technical specifications
+- **`/src/`** - developer-agent implements features and fixes bugs
+- **`/tests/`** - test-writer creates test files
+- **`/docs/`** - project-documentation-writer maintains technical documentation for developers/AI agents
+- **`/src/app/documentation/content/`** - user-documentation-writer creates bilingual end-user guides
+- **`/releases/`** - release-agent creates deployment logs and release notes (audit trail)
+
+**Read-only agents** (no folder ownership): test-runner-debugger, code-review-agent, explorer-agent, refactor-agent, qa-specialist
 
 ---
 
@@ -106,7 +123,7 @@ This matches the required pattern shown in the documentation.
 | When you are asked to... | You MUST read these files FIRST | Agent to Use |
 |---------------------------|----------------------------------|--------------|
 | **Create or edit ANY form component** | 🔴 [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md) - Critical form rules (auto-injected)<br>📖 [FORMS.md](./docs/FORMS.md) - Complete reference | developer-agent |
-| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) - Critical patterns (auto-injected)<br>📖 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Complete reference | requirements-agent → developer-agent |
+| **Create a new module** | 🔴 [MODULE_CHECKLIST.md](./docs/MODULE_CHECKLIST.md) - Complete step-by-step checklist<br>🔴 [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) - Critical patterns (auto-injected)<br>📖 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Complete reference | brainstorming-agent → requirements-agent → developer-agent |
 | **Create or modify a list page** | 🔴 [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md) - Critical list patterns (auto-injected)<br>📖 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete reference | developer-agent |
 | **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Navigation hub (see pickers/ subdirectory) | developer-agent |
 | **Create or modify database schema** | 🔴 [DATABASE-CRITICAL.md](./docs/DATABASE-CRITICAL.md) - Critical migration rules (auto-injected)<br>📖 [DATABASE.md](./docs/DATABASE.md) - Complete reference | developer-agent |
@@ -119,9 +136,11 @@ This matches the required pattern shown in the documentation.
 | **Create content builders/renderers** | 🔴 [LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)<br>🔴 [CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)<br>🔴 [RENDERER.md](./docs/RENDERER.md) | developer-agent |
 | **Understand how a feature works** | 🔴 Related module/component docs | explorer-agent |
 | **Refactor or improve code quality** | 🔴 [CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md) | refactor-agent |
-| **Update documentation** | 🔴 [docs/README.md](./docs/README.md) - Documentation standards | documentation-writer |
+| **Update /docs/ technical documentation** | 🔴 [docs/README.md](./docs/README.md) - Documentation standards | project-documentation-writer |
+| **Create end-user guides** | 🔴 [USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md) - User guide system | user-documentation-writer |
 | **Deploy to production** | 🔴 [DATABASE.md](./docs/DATABASE.md) - Migration safety | release-agent |
 | **Quality assurance testing** | 🔴 [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md)<br>🔴 [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | qa-specialist |
+| **Implement or modify permission checks** | 🔴 [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) - Role-based access control and permission enforcement | developer-agent |
 
 ### How to Use This Table
 
@@ -156,7 +175,8 @@ When you need detailed information on forms, styling, components, modules, testi
 
 **Key Documentation Files:**
 - **[DEFINITIONS.md](./docs/DEFINITIONS.md)** - Liturgical and application terminology (reader, presider, sacraments vs sacramentals, event types)
-- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, role permissions, component communication, performance
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Data architecture, data flow patterns, authentication, component communication, performance
+- **[USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md)** - 🔴 CRITICAL - Role-based access control (Admin, Staff, Ministry-Leader, Parishioner), permission enforcement patterns, implementation guide
 - **[LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md)** - 🔴 CRITICAL - Complete pattern for list pages (server + client) with SearchCard, DataTable, ContentCard, ListStatsBar
 - **[DATABASE.md](./docs/DATABASE.md)** - Database management procedures (resets, seeding, liturgical calendar imports, troubleshooting)
 - **[CODE_CONVENTIONS.md](./docs/CODE_CONVENTIONS.md)** - Navigation hub for coding standards (split into code-conventions/ subdirectory with GENERAL, BILINGUAL, UI_PATTERNS, FORMATTING, DEVELOPMENT)
@@ -308,11 +328,20 @@ During development, **DO NOT use the Supabase MCP server** for any database oper
 
 Permission configuration for what operations Claude can perform automatically. See [CLAUDE_CODE_SETTINGS.md](./docs/CLAUDE_CODE_SETTINGS.md) for complete documentation on settings.json.
 
-## 🔴 Accessing Records
+## 🔴 Accessing Records & Permissions
 
-> **🔴 For authentication and role permission details, you MUST read [ARCHITECTURE.md](./docs/ARCHITECTURE.md#role-permissions)** and [PERMISSION_ENFORCEMENT_SUMMARY.md](./docs/PERMISSION_ENFORCEMENT_SUMMARY.md).
+> **🔴 For role-based access control and permission enforcement, you MUST read [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md)** - Complete guide to Admin, Staff, Ministry-Leader, and Parishioner permissions with implementation patterns.
 
-The ideal way that we want to access the records is by using the RLS feature on Supabase, so that we don't have to check for a user every time we make a request to Supabase.
+**Key Points:**
+- **Row-Level Security (RLS)** enforces permissions at the database level automatically
+- **Server actions** include permission checks before operations
+- **UI elements** conditionally render based on user role
+- All records are scoped to parishes via `parish_id`
+
+**For technical implementation details, see:**
+- [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) - Permission system and enforcement patterns
+- [ARCHITECTURE.md](./docs/ARCHITECTURE.md#role-permissions) - Data flow and authentication
+- [PERMISSION_ENFORCEMENT_SUMMARY.md](./docs/PERMISSION_ENFORCEMENT_SUMMARY.md) - Implementation status
 
 ## Tech Stack
 **Frontend:** Next.js 13+ with App Router

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Location } from '@/lib/actions/locations'
 import type { LocationStats } from '@/lib/actions/locations'
@@ -20,6 +20,7 @@ import { Plus, Building, Filter, MapPin, Phone } from "lucide-react"
 import { toast } from "sonner"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { buildActionsColumn } from '@/lib/utils/table-columns'
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 
 interface LocationsListClientProps {
   initialData: Location[]
@@ -44,6 +45,15 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL for DataTable
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change from DataTable column headers
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -88,8 +98,7 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
         <span className="text-sm font-medium">{location.name}</span>
       ),
       className: 'min-w-[150px]',
-      sortable: true,
-      accessorFn: (location) => location.name
+      sortable: true
     },
     {
       key: 'address',
@@ -166,6 +175,8 @@ export function LocationsListClient({ initialData, stats }: LocationsListClientP
             columns={columns}
             keyExtractor={(location) => location.id}
             onRowClick={(location) => router.push(`/locations/${location.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <Building className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No locations found' : 'No locations yet',

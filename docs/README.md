@@ -43,7 +43,8 @@ All documentation in this directory must follow these standards:
 - [DEFINITIONS.md](./DEFINITIONS.md) - Liturgical and application terminology
 
 **Core Patterns:**
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Data architecture, authentication, permissions
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Data architecture, data flow, authentication
+- [USER_PERMISSIONS.md](./USER_PERMISSIONS.md) - 🔴 Role-based access control and permission enforcement
 - [FORMS.md](./FORMS.md) - 🔴 Form patterns, validation, styling (required reading for forms)
 - [MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md) - 🔴 The 8-file module structure
 - [LIST_VIEW_PATTERN.md](./LIST_VIEW_PATTERN.md) - 🔴 List page pattern

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassIntentionWithNames, MassIntentionStats } from '@/lib/actions/mass-intentions'
 import { deleteMassIntention } from '@/lib/actions/mass-intentions'
@@ -12,6 +12,7 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Heart, Filter } from "lucide-react"
@@ -19,6 +20,7 @@ import { toast } from "sonner"
 import { MASS_INTENTION_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import {
   buildActionsColumn
@@ -63,6 +65,19 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [intentionToDelete, setIntentionToDelete] = useState<MassIntentionWithNames | null>(null)
+
+  // Sorting state
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    // Map UI column names to server sort field names
+    const columnMap: Record<string, string> = {
+      'for': 'name',
+      'requested': 'date'
+    }
+    const sortValue = formatSort(columnMap[column] || column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -156,24 +171,34 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
       {/* Search and Filters */}
       <SearchCard title="Search Mass Intentions">
         <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search by intention or name..."
-            className="w-full"
-          />
+          {/* Main Search and Status Row - Inline */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <ClearableSearchInput
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  filters.updateFilter('search', value)
+                }}
+                placeholder="Search by intention or name..."
+                className="w-full"
+              />
+            </div>
 
-          {/* Advanced Search - Collapsible */}
+            {/* Status Filter - Now Inline */}
+            <div className="w-full sm:w-[200px]">
+              <StatusFilter
+                value={filters.getFilterValue('status')}
+                onChange={(value) => filters.updateFilter('status', value)}
+                statusValues={MASS_INTENTION_STATUS_VALUES}
+                hideLabel
+              />
+            </div>
+          </div>
+
+          {/* Advanced Search - Date Range Only */}
           <AdvancedSearch
-            statusFilter={{
-              value: filters.getFilterValue('status'),
-              onChange: (value) => filters.updateFilter('status', value),
-              statusValues: MASS_INTENTION_STATUS_VALUES
-            }}
             dateRangeFilter={{
               startDate,
               endDate,
@@ -197,6 +222,8 @@ export function MassIntentionsListClient({ initialData, stats }: MassIntentionsL
           data={initialData}
           keyExtractor={(intention) => intention.id}
           onRowClick={(intention) => router.push(`/mass-intentions/${intention.id}`)}
+          currentSort={currentSort || undefined}
+          onSortChange={handleSortChange}
           stickyHeader
         />
       ) : (

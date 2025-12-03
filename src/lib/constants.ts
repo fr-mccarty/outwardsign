@@ -53,6 +53,10 @@ export const SEX_LABELS: Record<Sex, { en: string; es: string }> = {
 export const MODULE_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'INACTIVE', 'COMPLETED', 'CANCELLED'] as const
 export type ModuleStatus = typeof MODULE_STATUS_VALUES[number]
 
+// Group status values - Groups use only ACTIVE/INACTIVE based on is_active boolean
+export const GROUP_STATUS_VALUES = ['ACTIVE', 'INACTIVE'] as const
+export type GroupStatus = typeof GROUP_STATUS_VALUES[number]
+
 // Status labels for display - shared across all modules
 export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = {
   PLANNING: { en: 'Planning', es: 'Planificación' },
@@ -68,6 +72,12 @@ export const MODULE_STATUS_LABELS: Record<string, { en: string; es: string }> = 
   REQUESTED: { en: 'Requested', es: 'Solicitado' },
   CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
   FULFILLED: { en: 'Fulfilled', es: 'Cumplido' }
+}
+
+// Group status labels for display
+export const GROUP_STATUS_LABELS: Record<GroupStatus, { en: string; es: string }> = {
+  ACTIVE: { en: 'Active', es: 'Activo' },
+  INACTIVE: { en: 'Inactive', es: 'Inactivo' }
 }
 
 // Status indicator colors - used for visual status indicators (dots, badges, etc.)

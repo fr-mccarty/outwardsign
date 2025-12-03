@@ -14,9 +14,15 @@ This document covers pagination patterns, implementation strategies, and best pr
 - [Current State](#current-state)
 - [When to Use Pagination](#when-to-use-pagination)
 - [Pagination Strategies](#pagination-strategies)
+  - [Comparison Table](#comparison-table)
+  - [Traditional Pagination](#1-traditional-pagination-server-side-with-previousnext-buttons)
+  - [Infinite Scroll](#2-infinite-scroll-server-side-with-auto-load)
+  - [Client-Side Pagination](#3-client-side-pagination)
+  - [Hybrid Approach](#4-hybrid-approach)
 - [Implementation Patterns](#implementation-patterns)
   - [Server-Side Pagination (Recommended)](#server-side-pagination-recommended)
-  - [Client-Side Pagination](#client-side-pagination)
+  - [Infinite Scroll Implementation](#infinite-scroll-implementation)
+  - [Client-Side Pagination](#client-side-pagination-1)
   - [Picker Pagination](#picker-pagination)
 - [URL State Management](#url-state-management)
 - [Code Examples](#code-examples)
@@ -59,9 +65,13 @@ Pagination is currently implemented inconsistently across the application:
 
 ### Current Implementations
 
-1. **Masses Module** - Full implementation with server actions
+1. **Masses Module** - Full traditional pagination implementation with server actions
 2. **People Actions** - Provides `getPeoplePaginated()` helper (not used in list view)
 3. **CorePicker Component** - Built-in pagination support
+4. **Infinite Scroll Infrastructure** - ✅ Fully implemented but **not currently used** by any modules
+   - Hook: `/src/hooks/use-infinite-scroll.ts` (using IntersectionObserver)
+   - DataTable integration: `/src/components/data-table/data-table.tsx` (`onLoadMore` and `hasMore` props)
+   - Ready to use when mobile-first pagination is needed
 
 ---
 
@@ -85,24 +95,71 @@ Implement pagination when:
 
 ## Pagination Strategies
 
-### 1. Server-Side Pagination (Recommended)
+### Comparison Table
+
+| Strategy | Current Usage | Infrastructure | Best For | Mobile UX |
+|----------|---------------|----------------|----------|-----------|
+| **Traditional Pagination** | ✅ Masses module | Fully implemented | Desktop, known dataset size | Requires clicking Next |
+| **Infinite Scroll** | ❌ None | ✅ Ready (unused) | Mobile, continuous browsing | Seamless, natural scrolling |
+| **No Pagination** | ✅ Most modules | N/A | Small datasets (< 50 records) | Simple, all data visible |
+
+### 1. Traditional Pagination (Server-Side with Previous/Next Buttons)
 
 **When to Use:**
 - Large datasets (> 50 records)
 - Complex filtering/sorting
 - Relations with large datasets
+- Desktop-first interfaces
+- Users need to know total page count
 
 **Benefits:**
 - Minimal data transfer
 - Fast initial page load
 - Supports large databases
+- Clear navigation with page numbers
+- Users can bookmark specific pages
 
 **Trade-offs:**
 - Requires URL param management
 - Server action modifications
 - More complex implementation
+- Less natural on mobile devices
 
-### 2. Client-Side Pagination
+**Currently Used By:** Masses module
+
+### 2. Infinite Scroll (Server-Side with Auto-Load)
+
+**When to Use:**
+- Mobile-first interfaces
+- Social media-style feeds
+- Continuous browsing experiences
+- Unknown/variable dataset sizes
+- Users don't need page numbers
+
+**Benefits:**
+- Natural mobile UX (no clicking required)
+- Seamless content discovery
+- Lower cognitive load (no pagination decisions)
+- Better for touch interfaces
+- Automatic loading reduces friction
+
+**Trade-offs:**
+- Harder to reach footer content
+- No direct page access (can't jump to page 5)
+- Difficult to bookmark specific positions
+- Can be disorienting (users lose place)
+- Performance issues if not implemented carefully
+
+**Current Status:**
+- ✅ Infrastructure exists (`useInfiniteScroll` hook + DataTable support)
+- ❌ Not currently used by any modules
+- 📋 Ready to implement when needed
+
+**Infrastructure Location:**
+- Hook: `/src/hooks/use-infinite-scroll.ts`
+- DataTable integration: `/src/components/data-table/data-table.tsx` (lines 70-78)
+
+### 3. Client-Side Pagination
 
 **When to Use:**
 - Medium datasets (20-100 records)
@@ -119,7 +176,7 @@ Implement pagination when:
 - Higher initial page load
 - Not suitable for large datasets
 
-### 3. Hybrid Approach
+### 4. Hybrid Approach
 
 **When to Use:**
 - Pickers with large datasets
@@ -326,6 +383,373 @@ export function ModuleListClient({ initialData, stats }: ModuleListClientProps) 
             </div>
           </CardContent>
         </Card>
+      )}
+    </div>
+  )
+}
+```
+
+---
+
+### Infinite Scroll Implementation
+
+**Infrastructure Status:** ✅ Fully implemented but not currently used by any modules.
+
+The application includes complete infinite scroll infrastructure through the `useInfiniteScroll` hook and DataTable component integration. This section documents how to implement infinite scroll when needed.
+
+#### 1. How Infinite Scroll Works
+
+Infinite scroll uses the IntersectionObserver API to detect when a "sentinel" element becomes visible at the bottom of the list. When the sentinel enters the viewport, it triggers a callback to fetch the next page of data.
+
+**Key Benefits:**
+- No manual "Next" button clicking required
+- Natural scrolling behavior (especially on mobile)
+- Automatic progressive loading
+- Lower cognitive load for users
+
+**Key Considerations:**
+- Users may lose their place in the list
+- Hard to access footer content
+- Can't bookmark specific positions
+- Need loading indicators
+- Must handle edge cases (end of list, errors)
+
+#### 2. Using the useInfiniteScroll Hook
+
+```typescript
+// Basic usage example
+import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
+
+function InfiniteListComponent() {
+  const [items, setItems] = useState<Item[]>([])
+  const [hasMore, setHasMore] = useState(true)
+  const [page, setPage] = useState(1)
+
+  const fetchNextPage = async () => {
+    const nextPage = page + 1
+    const newItems = await fetchItems({ page: nextPage, limit: 20 })
+
+    setItems([...items, ...newItems])
+    setPage(nextPage)
+    setHasMore(newItems.length === 20) // Has more if full page returned
+  }
+
+  const { sentinelRef, isLoading } = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore,
+    threshold: 100, // Trigger 100px before reaching bottom (optional)
+  })
+
+  return (
+    <div>
+      {items.map(item => (
+        <ItemCard key={item.id} item={item} />
+      ))}
+
+      {/* Sentinel element - must be rendered when hasMore is true */}
+      <div ref={sentinelRef} />
+
+      {/* Loading indicator */}
+      {isLoading && <Spinner />}
+
+      {/* End of list message */}
+      {!hasMore && <div>No more items</div>}
+    </div>
+  )
+}
+```
+
+**Hook Parameters:**
+- `onLoadMore` - Callback function to fetch next page (can be async)
+- `hasMore` - Boolean indicating if more data exists
+- `threshold` - Distance in pixels from bottom to trigger load (default: 100px)
+
+**Hook Returns:**
+- `sentinelRef` - Ref to attach to sentinel element
+- `isLoading` - Boolean indicating if fetch is in progress
+
+#### 3. DataTable with Infinite Scroll
+
+The DataTable component has built-in infinite scroll support via `onLoadMore` and `hasMore` props:
+
+```typescript
+// Example: Using DataTable with infinite scroll
+'use client'
+
+import { useState } from 'react'
+import { DataTable } from '@/components/data-table/data-table'
+import { type Wedding } from '@/lib/types/wedding'
+import { getWeddings } from '@/lib/actions/weddings'
+
+interface WeddingsListClientProps {
+  initialData: Wedding[]
+  initialHasMore: boolean
+}
+
+export function WeddingsListClient({
+  initialData,
+  initialHasMore
+}: WeddingsListClientProps) {
+  const [weddings, setWeddings] = useState(initialData)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+
+  const handleLoadMore = async () => {
+    const nextPage = page + 1
+    const newWeddings = await getWeddings({ page: nextPage, limit: 50 })
+
+    setWeddings([...weddings, ...newWeddings])
+    setPage(nextPage)
+    setHasMore(newWeddings.length === 50) // Full page means more data exists
+  }
+
+  return (
+    <DataTable
+      data={weddings}
+      columns={weddingColumns}
+      keyExtractor={(wedding) => wedding.id}
+      onRowClick={(wedding) => router.push(`/weddings/${wedding.id}`)}
+      // Infinite scroll props
+      onLoadMore={handleLoadMore}
+      hasMore={hasMore}
+      emptyState={{
+        title: "No weddings found",
+        description: "Create your first wedding to get started",
+      }}
+    />
+  )
+}
+```
+
+**DataTable Infinite Scroll Props:**
+- `onLoadMore?: () => void | Promise<void>` - Callback to fetch next page
+- `hasMore?: boolean` - Whether more data exists (default: false)
+
+**Implementation Notes:**
+- When `onLoadMore` and `hasMore` are provided, DataTable renders:
+  - Sentinel element in a table row at the bottom
+  - Loading indicator when fetching
+  - Uses `useInfiniteScroll` hook internally
+- The sentinel row spans all columns for proper table structure
+- Loading state shows "Loading more..." with spinner
+
+#### 4. Server Action Pattern for Infinite Scroll
+
+```typescript
+// src/lib/actions/weddings.ts
+
+export interface WeddingFilterParams {
+  search?: string
+  status?: WeddingStatus | 'all'
+  page?: number
+  limit?: number
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  page: number
+  limit: number
+  hasMore: boolean
+  total: number
+}
+
+export async function getWeddingsPaginated(
+  filters?: WeddingFilterParams
+): Promise<PaginatedResponse<WeddingWithNames>> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const page = filters?.page || 1
+  const limit = filters?.limit || 50
+  const offset = (page - 1) * limit
+
+  // Fetch one extra record to determine if more exist
+  let query = supabase
+    .from('weddings')
+    .select('*, bride:people!bride_id(*), groom:people!groom_id(*)')
+    .eq('parish_id', selectedParishId)
+    .range(offset, offset + limit) // Fetch limit + 1
+
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw new Error('Failed to fetch weddings')
+
+  const records = data || []
+
+  // Check if more records exist
+  const hasMore = records.length > limit
+  const dataToReturn = hasMore ? records.slice(0, limit) : records
+
+  return {
+    data: dataToReturn,
+    page,
+    limit,
+    hasMore,
+    total: -1, // Total count not needed for infinite scroll
+  }
+}
+```
+
+#### 5. Mobile UX Best Practices
+
+**When implementing infinite scroll, consider:**
+
+1. **Loading Indicators** - Always show clear loading state
+   ```typescript
+   {isLoading && (
+     <div className="flex items-center justify-center py-8">
+       <Loader2 className="h-6 w-6 animate-spin" />
+       <span className="ml-2">Loading more...</span>
+     </div>
+   )}
+   ```
+
+2. **End of List Indicator** - Clearly communicate when no more data exists
+   ```typescript
+   {!hasMore && data.length > 0 && (
+     <div className="text-center py-8 text-muted-foreground">
+       You've reached the end of the list
+     </div>
+   )}
+   ```
+
+3. **Error Handling** - Handle fetch failures gracefully
+   ```typescript
+   const handleLoadMore = async () => {
+     try {
+       await fetchNextPage()
+     } catch (error) {
+       toast.error('Failed to load more items')
+     }
+   }
+   ```
+
+4. **Scroll Position Restoration** - Consider saving scroll position when navigating away
+   ```typescript
+   // Save position before navigation
+   sessionStorage.setItem('scrollPosition', window.scrollY.toString())
+
+   // Restore on mount
+   useEffect(() => {
+     const savedPosition = sessionStorage.getItem('scrollPosition')
+     if (savedPosition) {
+       window.scrollTo(0, parseInt(savedPosition))
+       sessionStorage.removeItem('scrollPosition')
+     }
+   }, [])
+   ```
+
+5. **Performance** - Virtualize lists for very large datasets
+   - Consider react-virtual or react-window for 1000+ items
+   - Render only visible items plus buffer
+   - Improves memory usage and scroll performance
+
+#### 6. When to Choose Infinite Scroll vs Traditional Pagination
+
+**Choose Infinite Scroll When:**
+- ✅ Primary users are on mobile devices
+- ✅ Content is discovery-focused (browsing, exploring)
+- ✅ Page numbers aren't important
+- ✅ UX should feel seamless and continuous
+- ✅ Social media or feed-like interface
+
+**Choose Traditional Pagination When:**
+- ✅ Desktop is the primary interface
+- ✅ Users need to navigate to specific pages
+- ✅ Users need to bookmark/share specific positions
+- ✅ Footer content must be accessible
+- ✅ Total count and page numbers are important
+- ✅ Admin or management interfaces
+
+**Current Recommendation:**
+- **Masses module** - Keep traditional pagination (admin interface, specific date ranges)
+- **Future mobile-first modules** - Consider infinite scroll
+- **Evaluate per module** - Based on user personas and use cases
+
+#### 7. Complete Example: Grid View with Infinite Scroll
+
+```typescript
+// src/app/(main)/weddings/weddings-list-client.tsx
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Loader2 } from 'lucide-react'
+import { WeddingCard } from './wedding-card'
+import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
+import { getWeddingsPaginated } from '@/lib/actions/weddings'
+import { type WeddingWithNames } from '@/lib/types/wedding'
+
+interface WeddingsListClientProps {
+  initialData: WeddingWithNames[]
+  initialHasMore: boolean
+}
+
+export function WeddingsListClient({
+  initialData,
+  initialHasMore
+}: WeddingsListClientProps) {
+  const router = useRouter()
+  const [weddings, setWeddings] = useState(initialData)
+  const [page, setPage] = useState(1)
+  const [hasMoreData, setHasMoreData] = useState(initialHasMore)
+
+  const fetchNextPage = async () => {
+    const nextPage = page + 1
+    const response = await getWeddingsPaginated({ page: nextPage, limit: 50 })
+
+    setWeddings(prev => [...prev, ...response.data])
+    setPage(nextPage)
+    setHasMoreData(response.hasMore)
+  }
+
+  const { sentinelRef, isLoading } = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: hasMoreData,
+  })
+
+  if (weddings.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">No weddings found</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Grid of wedding cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {weddings.map((wedding) => (
+          <WeddingCard
+            key={wedding.id}
+            wedding={wedding}
+            onClick={() => router.push(`/weddings/${wedding.id}`)}
+          />
+        ))}
+      </div>
+
+      {/* Sentinel element for infinite scroll trigger */}
+      <div ref={sentinelRef} />
+
+      {/* Loading indicator */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-muted-foreground">Loading more weddings...</span>
+        </div>
+      )}
+
+      {/* End of list message */}
+      {!hasMoreData && weddings.length > 0 && (
+        <div className="text-center py-8 text-sm text-muted-foreground">
+          You've reached the end of the list
+        </div>
       )}
     </div>
   )
@@ -577,35 +1001,69 @@ Add pagination to all main module list views:
 - [ ] Readings
 - [ ] Groups
 
-**Pattern:** Follow Masses implementation exactly.
+**Pattern:** Follow Masses implementation (traditional pagination with Previous/Next buttons).
 
-### Phase 2: Improve Picker Pagination (Medium Priority)
+**Note:** Evaluate whether any modules should use infinite scroll instead based on user personas and mobile usage patterns.
+
+### Phase 2: Evaluate Infinite Scroll Adoption (Medium Priority)
+
+**Decision Needed:** Which pagination strategy for each module?
+
+Evaluate modules for infinite scroll vs traditional pagination:
+
+- [ ] **Assess user personas** - Which modules are primarily used on mobile?
+- [ ] **Mobile usage analytics** - Track device types per module
+- [ ] **User workflow analysis** - Discovery browsing vs specific navigation?
+- [ ] **Test with stakeholders** - Pilot infinite scroll on one module
+- [ ] **Performance testing** - Measure scroll performance with large datasets
+
+**Candidates for Infinite Scroll:**
+- Modules with mobile-first usage patterns
+- Browse-focused workflows (discovering events, exploring weddings)
+- Modules where page numbers are less important
+
+**Keep Traditional Pagination:**
+- Admin/management interfaces (masses, mass intentions)
+- Date-specific navigation (liturgical calendar views)
+- Modules where bookmarking specific pages is important
+
+### Phase 3: Improve Picker Pagination (Medium Priority)
 
 - [ ] Update PersonPicker to use pagination
 - [ ] Add pagination to EventPicker
 - [ ] Add pagination to LocationPicker
 - [ ] Test pagination with large datasets
+- [ ] Consider infinite scroll for picker dialogs (natural mobile UX)
 
-### Phase 3: Optimize Server Actions (Medium Priority)
+### Phase 4: Optimize Server Actions (Medium Priority)
 
 - [ ] Add `getTotalCount()` helper for accurate counts
 - [ ] Move more filters to database level where possible
 - [ ] Add index optimization for common query patterns
+- [ ] Implement `PaginatedResponse<T>` interface for consistency (supports both pagination types)
 
-### Phase 4: Enhanced Pagination UI (Low Priority)
+### Phase 5: Enhanced Pagination UI (Low Priority)
 
+**Traditional Pagination Enhancements:**
 - [ ] Add page number input (jump to page)
 - [ ] Add "Show X per page" selector
 - [ ] Add "View All" option (with warning for large datasets)
 - [ ] Keyboard navigation (Page Up/Down)
 - [ ] Accessibility improvements
 
-### Phase 5: Advanced Features (Future)
+**Infinite Scroll Enhancements:**
+- [ ] Scroll position restoration on back navigation
+- [ ] "Jump to top" floating button after scrolling
+- [ ] Skeleton loading states during fetch
+- [ ] Pull-to-refresh on mobile
+
+### Phase 6: Advanced Features (Future)
 
 - [ ] Cursor-based pagination (for real-time data)
-- [ ] Infinite scroll option
-- [ ] Virtual scrolling for very large lists
-- [ ] Prefetch next page on hover
+- [ ] Virtual scrolling for very large lists (react-window integration)
+- [ ] Prefetch next page on hover (traditional) or near-bottom (infinite scroll)
+- [ ] Hybrid pagination (infinite scroll + "Load more" button fallback)
+- [ ] Server-Sent Events for real-time updates during scrolling
 
 ---
 

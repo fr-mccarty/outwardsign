@@ -31,11 +31,11 @@ export default async function QuinceanerasPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: QuinceaneraFilterParams = {
     search: params.search,
-    status: params.status as QuinceaneraFilterParams['status'],
-    sort: params.sort as QuinceaneraFilterParams['sort'],
+    status: (params.status as QuinceaneraFilterParams['status']) || 'ACTIVE',
+    sort: (params.sort as QuinceaneraFilterParams['sort']) || 'date_asc',
     page: params.page ? parseInt(params.page, 10) : 1,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,

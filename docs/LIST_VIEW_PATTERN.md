@@ -60,11 +60,12 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params WITH DEFAULTS
+  // 🔴 CRITICAL: Apply defaults on server BEFORE calling server action
   const filters: WeddingFilterParams = {
     search: params.search,
-    status: params.status as WeddingFilterParams['status'],
-    sort: params.sort as WeddingFilterParams['sort'],
+    status: (params.status as WeddingFilterParams['status']) || 'ACTIVE',  // Default applied
+    sort: (params.sort as WeddingFilterParams['sort']) || 'date_asc',      // Default applied
     page: params.page ? parseInt(params.page, 10) : 1,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,
@@ -101,6 +102,7 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
   - `title` - Module title (e.g., "Our Weddings")
   - `description` - Brief description of module purpose
   - `primaryAction` - `<ModuleCreateButton>` for creating new entities
+- 🔴 **MUST apply default filters on server** BEFORE calling server actions (see Default Filter Application section below)
 - ✅ Add `export const dynamic = 'force-dynamic'`
 - ✅ Parse `searchParams` as Promise (Next.js 15)
 - ✅ Include all standard filter params: search, status, sort, page, start_date, end_date
@@ -108,6 +110,164 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
 - ✅ Fetch data server-side with filters
 - ✅ Calculate stats server-side using dedicated stats function
 - ✅ Breadcrumb for current page should only have `label` (no `href`)
+
+---
+
+## 🔴 Default Filter Application (CRITICAL)
+
+**Problem:** Default filters (status, sort, etc.) MUST be applied on the server page BEFORE calling server actions. Failure to do this causes the page to display incorrect data on initial load, even though the UI shows the correct filter selected.
+
+### Why This Is Critical
+
+**Timing Issue:**
+1. **Server executes first** - Server page runs during SSR, fetches data, sends HTML to browser
+2. **Client hydrates later** - Client-side `useListFilters` hook applies defaults AFTER server has already fetched data
+3. **Data mismatch** - Server fetches wrong data (undefined filters), client shows correct UI (default filters)
+
+**Real Example from Weddings Module:**
+- Client default: `status: 'ACTIVE'` (show only active weddings)
+- Server receives: `status: undefined` (when no URL param)
+- Server action interprets `undefined` as "no filter" and returns ALL weddings (including PLANNING, COMPLETED, CANCELLED)
+- Result: Page displays all weddings, but UI shows "Active" filter selected
+- User sees incorrect data
+
+### The Wrong Pattern (DO NOT USE)
+
+```typescript
+// ❌ INCORRECT - Defaults not applied on server
+const filters: WeddingFilterParams = {
+  search: params.search,
+  status: params.status as WeddingFilterParams['status'],  // ❌ undefined when not in URL
+  sort: params.sort as WeddingFilterParams['sort'],        // ❌ undefined when not in URL
+  page: params.page ? parseInt(params.page, 10) : 1,
+  limit: LIST_VIEW_PAGE_SIZE
+}
+
+// Server action receives undefined values
+const weddings = await getWeddings(filters)  // status: undefined, sort: undefined
+
+// Server action check FAILS when status is undefined
+if (filters?.status && filters.status !== 'all') {
+  query = query.eq('status', filters.status)  // ❌ Check skipped, shows ALL statuses
+}
+```
+
+**What happens:**
+- Page loads with no URL params
+- Server passes `{ status: undefined, sort: undefined }` to server action
+- Server action treats `undefined` as "no filter" and returns all data
+- Client-side UI shows "Active" filter selected (from `useListFilters` defaults)
+- **User sees ALL data but UI says "showing active"** - completely wrong
+
+### The Correct Pattern (ALWAYS USE THIS)
+
+```typescript
+// ✅ CORRECT - Defaults applied on server before calling action
+const filters: WeddingFilterParams = {
+  search: params.search,
+  status: (params.status as WeddingFilterParams['status']) || 'ACTIVE',    // ✅ Default applied
+  sort: (params.sort as WeddingFilterParams['sort']) || 'date_asc',        // ✅ Default applied
+  page: params.page ? parseInt(params.page, 10) : 1,
+  limit: LIST_VIEW_PAGE_SIZE
+}
+
+// Server action receives actual default values
+const weddings = await getWeddings(filters)  // status: 'ACTIVE', sort: 'date_asc'
+
+// Server action check now works correctly
+if (filters?.status && filters.status !== 'all') {
+  query = query.eq('status', filters.status)  // ✅ Applies 'ACTIVE' filter correctly
+}
+```
+
+**What happens:**
+- Page loads with no URL params
+- Server applies defaults: `{ status: 'ACTIVE', sort: 'date_asc' }`
+- Server action receives actual default values and filters correctly
+- Client-side UI shows "Active" filter selected (matches server defaults)
+- **User sees ACTIVE data and UI says "showing active"** - correct
+
+### Implementation Requirements
+
+**For ALL server pages (`page.tsx`):**
+
+1. **Apply defaults using OR operator pattern:**
+   ```typescript
+   status: (params.status as EntityFilterParams['status']) || 'ACTIVE'
+   sort: (params.sort as EntityFilterParams['sort']) || 'date_asc'
+   ```
+
+2. **Match client-side defaults:**
+   - Server defaults MUST match the `defaultFilters` in `useListFilters` hook
+   - If client says `defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }`
+   - Then server must apply same defaults
+
+3. **Apply to ALL filters with defaults:**
+   - Status filters (if module uses status filtering)
+   - Sort filters (all modules)
+   - Any other filters that have default values
+
+4. **Test initial page load:**
+   - Load page with NO URL parameters
+   - Verify correct data is displayed
+   - Verify UI filter display matches actual data shown
+
+### Common Default Filters by Module Type
+
+**Sacrament/Event Modules:**
+```typescript
+// Weddings, Funerals, Baptisms, Presentations, Quinceaneras
+status: (params.status as WeddingFilterParams['status']) || 'ACTIVE',
+sort: (params.sort as WeddingFilterParams['sort']) || 'date_asc',
+```
+
+**Entity Modules:**
+```typescript
+// Groups, People, Locations
+sort: (params.sort as GroupFilterParams['sort']) || 'name_asc',
+```
+
+**Calendar/Mass Modules:**
+```typescript
+// Events, Masses, Mass Intentions
+sort: (params.sort as EventFilterParams['sort']) || 'date_asc',
+```
+
+**Content Modules:**
+```typescript
+// Readings
+sort: (params.sort as ReadingFilterParams['sort']) || 'created_desc',
+```
+
+### Migration Checklist
+
+When implementing or updating server-side filtering for a module:
+
+- [ ] Identify all filters that have defaults in `useListFilters`
+- [ ] Apply defaults on server page using OR operator pattern
+- [ ] Verify server defaults match client `defaultFilters` exactly
+- [ ] Test initial page load with no URL parameters
+- [ ] Verify correct data is displayed (not ALL data)
+- [ ] Verify UI filter indicators match actual data shown
+- [ ] Test that changing filters updates URL and re-fetches correctly
+- [ ] Test that default filters persist across navigation
+
+### Affected Modules
+
+All modules with list views that use default filters:
+
+- Weddings (status: 'ACTIVE', sort: 'date_asc')
+- Funerals (status: 'ACTIVE', sort: 'date_asc')
+- Baptisms (status: 'ACTIVE', sort: 'date_asc')
+- Presentations (status: 'ACTIVE', sort: 'date_asc')
+- Quinceaneras (status: 'ACTIVE', sort: 'date_asc')
+- Groups (sort: 'name_asc')
+- People (sort: 'name_asc')
+- Locations (sort: 'name_asc')
+- Events (sort: 'date_asc')
+- Masses (sort: 'date_asc')
+- Mass Intentions (sort: 'date_asc')
+- Readings (sort: 'created_desc')
 
 ---
 
@@ -470,6 +630,7 @@ Use table column builders from `@/lib/utils/table-columns`:
 
 ## Common Mistakes to Avoid
 
+❌ **Not applying default filters on server page** - 🔴 CRITICAL - Apply defaults using OR operator before calling server actions
 ❌ **Adding Create button in list client** - It belongs in PageContainer (server page)
 ❌ **ListStatsBar at top** - It must go at the bottom
 ❌ **No ContentCard for empty state** - Use ContentCard, not plain div
@@ -493,6 +654,9 @@ When implementing a new list page, verify:
 - [ ] Has `export const dynamic = 'force-dynamic'`
 - [ ] Awaits `searchParams` Promise
 - [ ] Includes all standard filter params
+- [ ] 🔴 **Applies default filters on server using OR operator** (status, sort)
+- [ ] 🔴 **Server defaults match client `defaultFilters`** in `useListFilters`
+- [ ] 🔴 **Tested initial page load with no URL params** - correct data displayed
 - [ ] Uses `LIST_VIEW_PAGE_SIZE` constant
 - [ ] Calls stats function server-side
 - [ ] Breadcrumb for current page has no `href`

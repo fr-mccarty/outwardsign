@@ -31,11 +31,11 @@ export default async function FuneralsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: FuneralFilterParams = {
     search: params.search,
-    status: params.status as FuneralFilterParams['status'],
-    sort: params.sort as FuneralFilterParams['sort'],
+    status: (params.status as FuneralFilterParams['status']) || 'ACTIVE',
+    sort: (params.sort as FuneralFilterParams['sort']) || 'date_asc',
     page: params.page ? parseInt(params.page, 10) : 1,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,

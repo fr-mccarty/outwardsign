@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Group } from '@/lib/actions/groups'
 import type { GroupStats } from '@/lib/actions/groups'
@@ -10,28 +10,23 @@ import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Users, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { buildActionsColumn } from '@/lib/utils/table-columns'
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
+import { GROUP_STATUS_VALUES } from "@/lib/constants"
 
 interface GroupsListClientProps {
   initialData: Group[]
   stats: GroupStats
 }
-
-const GROUP_SORT_OPTIONS = [
-  { value: 'name_asc', label: 'Name (A-Z)' },
-  { value: 'name_desc', label: 'Name (Z-A)' },
-  { value: 'created_asc', label: 'Oldest First' },
-  { value: 'created_desc', label: 'Newest First' }
-]
 
 export function GroupsListClient({ initialData, stats }: GroupsListClientProps) {
   const router = useRouter()
@@ -39,11 +34,20 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/groups',
-    defaultFilters: { sort: 'name_asc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'name_asc' }
   })
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL for DataTable
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change from DataTable column headers
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -87,7 +91,8 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
       cell: (group) => (
         <span className="text-sm font-medium">{group.name}</span>
       ),
-      className: 'min-w-[150px]'
+      className: 'min-w-[150px]',
+      sortable: true
     },
     {
       key: 'description',
@@ -129,26 +134,30 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
     <div className="space-y-6">
       {/* Search and Filters */}
       <SearchCard title="Search Groups">
-        <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search by name or description..."
-            className="w-full"
-          />
+        {/* Main Search and Status Row - Inline */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* Search Input */}
+          <div className="flex-1">
+            <ClearableSearchInput
+              value={searchValue}
+              onChange={(value) => {
+                setSearchValue(value)
+                filters.updateFilter('search', value)
+              }}
+              placeholder="Search by name or description..."
+              className="w-full"
+            />
+          </div>
 
-          {/* Advanced Search Collapsible */}
-          <AdvancedSearch
-            sortFilter={{
-              value: filters.getFilterValue('sort'),
-              onChange: (value) => filters.updateFilter('sort', value),
-              sortOptions: GROUP_SORT_OPTIONS
-            }}
-          />
+          {/* Status Filter - Inline */}
+          <div className="w-full sm:w-[200px]">
+            <StatusFilter
+              value={filters.getFilterValue('status')}
+              onChange={(value) => filters.updateFilter('status', value)}
+              statusValues={GROUP_STATUS_VALUES}
+              hideLabel
+            />
+          </div>
         </div>
       </SearchCard>
 
@@ -160,6 +169,8 @@ export function GroupsListClient({ initialData, stats }: GroupsListClientProps) 
             columns={columns}
             keyExtractor={(group) => group.id}
             onRowClick={(group) => router.push(`/groups/${group.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No groups found' : 'No groups yet',

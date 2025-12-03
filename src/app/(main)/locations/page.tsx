@@ -21,10 +21,10 @@ export default async function LocationsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: LocationFilterParams = {
     search: params.search,
-    sort: params.sort,
+    sort: (params.sort as LocationFilterParams['sort']) || 'name_asc',
   }
 
   // Fetch locations server-side with filters

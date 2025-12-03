@@ -66,6 +66,7 @@ interface PageProps {
   searchParams: Promise<{
     search?: string
     status?: string
+    sort?: string
   }>
 }
 
@@ -78,16 +79,28 @@ export default async function WeddingsPage({ searchParams }: PageProps) {
   // Await searchParams
   const params = await searchParams
 
-  // Fetch with filters
-  const weddings = await getWeddingsWithRelations({
+  // 🔴 CRITICAL: Apply default filters BEFORE calling server action
+  // Server defaults must match client useListFilters defaults
+  const filters = {
     search: params.search,
-    status: params.status
-  })
+    status: (params.status as WeddingFilterParams['status']) || 'ACTIVE',  // ✅ Default applied
+    sort: (params.sort as WeddingFilterParams['sort']) || 'date_asc',      // ✅ Default applied
+  }
+
+  // Fetch with filters
+  const weddings = await getWeddingsWithRelations(filters)
 
   // Pass to client component
   return <WeddingsListClient weddings={weddings} />
 }
 ```
+
+**Why This Matters:**
+- Server executes BEFORE client hydration
+- Without defaults, server passes `undefined` to server actions
+- Server actions treat `undefined` as "no filter" and return ALL data
+- Client UI shows default filter selected but displays ALL data (WRONG!)
+- **Solution:** Apply defaults on server using OR operator pattern
 
 ## Client Component Pattern
 

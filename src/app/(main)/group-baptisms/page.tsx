@@ -30,8 +30,8 @@ export default async function GroupBaptismsPage({ searchParams }: PageProps) {
   const params = await searchParams
   const filters = {
     search: params.search,
-    status: params.status as any,
-    sort: params.sort as any,
+    status: (params.status as any) || 'ACTIVE',
+    sort: (params.sort as any) || 'date_asc',
     page: params.page ? parseInt(params.page) : 1,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,

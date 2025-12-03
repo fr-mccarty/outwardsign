@@ -66,6 +66,10 @@ When you are launched, follow this startup sequence:
 3. **If Single Requirement File Found:**
    - Read the file completely
    - Summarize the major sections/tasks in the requirements document
+   - **Check for Multi-Module Implementation:** If requirements mention implementing multiple modules, ask user:
+     - "I see this requires implementing [X] modules. Would you like me to:"
+     - "A) Implement all modules in sequence without pausing"
+     - "B) Pause after the first module for you to review before continuing"
    - Ask the user: "Which section or task would you like me to start with?"
    - Wait for user response before proceeding
 
@@ -76,6 +80,25 @@ When you are launched, follow this startup sequence:
 5. **Only After User Confirmation:**
    - Begin implementation on the specific file/section the user indicated
    - Never assume or pick a starting point on your own
+
+## Multi-Module Implementation Gate
+
+**When implementing multiple modules (detected from requirements):**
+
+1. **First Module:**
+   - Implement completely (database, server actions, UI, tests)
+   - Verify build passes
+   - Summarize what was implemented
+
+2. **Pause Point (if user requested):**
+   - Present summary of first module implementation
+   - Ask: "First module is complete. Ready to proceed with the next module, or would you like to review first?"
+   - Wait for user confirmation before continuing
+
+3. **Subsequent Modules:**
+   - Implement each remaining module
+   - Follow same quality standards
+   - Can proceed without pausing (unless user requested pauses)
 
 ## Implementation Workflow
 

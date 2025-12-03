@@ -234,6 +234,24 @@
             "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a content builder. Before proceeding, you MUST read:\n- docs/LITURGICAL_SCRIPT_SYSTEM.md (overview and architecture)\n- docs/CONTENT_BUILDER_SECTIONS.md (section patterns)\n- docs/CONTENT_BUILDER_STRUCTURE.md (standard structure)\n\nContent builders generate liturgical scripts for print/export.\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
           }
         ]
+      },
+      {
+        "matcher": "Edit(docs/**/*.md)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a documentation file. Before proceeding, you MUST read docs/README.md.\n\nThis file contains documentation standards including:\n- File size limit (1000 lines max)\n- Future-oriented documentation (current patterns only)\n- Scannable structure with clear headings and TOC\n- Agent-friendly linking and cross-references\n- Code examples should be commented and runnable\n\nKey rules:\n- Update cross-references when changing doc structure\n- Link related documentation throughout\n- Keep files focused on one topic\n- Remove outdated or deprecated information\n\nHave you read docs/README.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(docs/**/*.md)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a documentation file. Before proceeding, you MUST read docs/README.md.\n\nThis file contains documentation standards including:\n- File size limit (1000 lines max)\n- Future-oriented documentation (current patterns only)\n- Scannable structure with clear headings and TOC\n- Agent-friendly linking and cross-references\n- Code examples should be commented and runnable\n\nKey rules:\n- Add new docs to CLAUDE.md and relevant registry files\n- Link related documentation throughout the project\n- Keep files focused on one topic\n- Use descriptive filenames for easy discovery\n\nHave you read docs/README.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
       }
     ]
   }

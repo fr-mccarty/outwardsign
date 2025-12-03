@@ -31,11 +31,11 @@ export default async function BaptismsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: BaptismFilterParams = {
     search: params.search,
-    status: params.status as BaptismFilterParams['status'],
-    sort: params.sort as BaptismFilterParams['sort'],
+    status: (params.status as BaptismFilterParams['status']) || 'ACTIVE',
+    sort: (params.sort as BaptismFilterParams['sort']) || 'date_asc',
     page: params.page ? parseInt(params.page, 10) : 1,
     limit: LIST_VIEW_PAGE_SIZE,
     start_date: params.start_date,

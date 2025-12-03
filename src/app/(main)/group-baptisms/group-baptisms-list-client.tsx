@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { GroupBaptismWithNames, GroupBaptismStats } from '@/lib/actions/group-baptisms'
 import { deleteGroupBaptism } from '@/lib/actions/group-baptisms'
@@ -12,14 +12,15 @@ import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { PersonAvatarGroup } from "@/components/person-avatar-group"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Users, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { MODULE_STATUS_VALUES } from "@/lib/constants"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import {
   buildWhoColumn,
   buildWhenColumn,
@@ -66,6 +67,19 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [groupBaptismToDelete, setGroupBaptismToDelete] = useState<GroupBaptismWithNames | null>(null)
+
+  // Sorting state
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    // Map UI column names to server sort field names
+    const columnMap: Record<string, string> = {
+      'who': 'name',
+      'when': 'date'
+    }
+    const sortValue = formatSort(columnMap[column] || column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -149,24 +163,33 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
       {/* Search and Filters */}
       <SearchCard title="Search Group Baptisms">
         <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search by group name..."
-            className="w-full"
-          />
+          {/* Main Search and Status Row - Inline */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <ClearableSearchInput
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  filters.updateFilter('search', value)
+                }}
+                placeholder="Search by group name..."
+                className="w-full"
+              />
+            </div>
 
-          {/* Advanced Search Collapsible */}
+            {/* Status Filter - Now Inline */}
+            <div className="w-full sm:w-[200px]">
+              <StatusFilter
+                value={filters.getFilterValue('status')}
+                onChange={(value) => filters.updateFilter('status', value)}
+                hideLabel
+              />
+            </div>
+          </div>
+
+          {/* Advanced Search - Date Range Only */}
           <AdvancedSearch
-            statusFilter={{
-              value: filters.getFilterValue('status'),
-              onChange: (value) => filters.updateFilter('status', value),
-              statusValues: MODULE_STATUS_VALUES
-            }}
             dateRangeFilter={{
               startDate: startDate,
               endDate: endDate,
@@ -191,6 +214,8 @@ export function GroupBaptismsListClient({ initialData, stats }: GroupBaptismsLis
             columns={columns}
             keyExtractor={(gb) => gb.id}
             onRowClick={(gb) => router.push(`/group-baptisms/${gb.id}`)}
+            currentSort={currentSort || undefined}
+            onSortChange={handleSortChange}
             emptyState={{
               icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
               title: hasActiveFilters ? 'No group baptisms found' : 'No group baptisms yet',

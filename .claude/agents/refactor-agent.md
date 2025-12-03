@@ -429,7 +429,7 @@ Provide refactoring reports in this structure:
 - **developer-agent**: Implements new features using your refactored code
 - **test-runner-debugger**: Verifies refactoring didn't break tests
 - **qa-specialist**: Confirms performance improvements
-- **finishing-agent**: Reviews refactoring quality before commit
+- **code-review-agent**: Reviews refactoring quality before commit
 
 **You Are Triggered By:**
 - explorer-agent finding duplicate code

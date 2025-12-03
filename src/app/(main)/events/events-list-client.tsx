@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { EventWithModuleLink, EventStats } from '@/lib/actions/events'
 import { deleteEvent } from '@/lib/actions/events'
@@ -18,6 +18,7 @@ import { Plus, CalendarDays, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
+import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import {
   buildWhenColumn,
@@ -42,6 +43,15 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
 
   // Local state for search value (synced with URL)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Parse current sort from URL
+  const currentSort = parseSort(filters.getFilterValue('sort'))
+
+  // Handle sort change
+  const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
+    const sortValue = formatSort(column, direction)
+    filters.updateFilter('sort', sortValue)
+  }, [filters])
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
@@ -93,7 +103,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
 
   // Define custom "What" column (event name + type)
   const whatColumn: DataTableColumn<EventWithModuleLink> = {
-    key: 'what',
+    key: 'name',  // Override for server-side sorting
     header: 'What',
     cell: (event) => (
       <div className="flex items-center gap-2 max-w-[200px] md:max-w-[300px]">
@@ -117,11 +127,14 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
   // Define table columns (no avatar column for events)
   const columns = [
     whatColumn,
-    buildWhenColumn<EventWithModuleLink>({
-      getDate: (event) => event.start_date || null,
-      getTime: (event) => event.start_time || null,
-      sortable: true
-    }),
+    {
+      ...buildWhenColumn<EventWithModuleLink>({
+        getDate: (event) => event.start_date || null,
+        getTime: (event) => event.start_time || null,
+        sortable: true
+      }),
+      key: 'date'  // Override for server-side sorting
+    },
     buildWhereColumn<EventWithModuleLink>({
       getLocation: (event) => event.location || null,
       hiddenOn: 'lg'
@@ -176,6 +189,8 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
         <DataTable
           columns={columns}
           data={initialData}
+          currentSort={currentSort || undefined}
+          onSortChange={handleSortChange}
           keyExtractor={(event) => event.id}
           onRowClick={(event) => router.push(`/events/${event.id}`)}
           stickyHeader

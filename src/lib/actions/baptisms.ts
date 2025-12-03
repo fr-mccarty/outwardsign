@@ -77,12 +77,18 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
     query = query.eq('status', filters.status)
   }
 
-  // Apply sorting at database level for created_at
-  if (filters?.sort === 'created_asc') {
-    query = query.order('created_at', { ascending: true })
-  } else if (filters?.sort === 'created_desc') {
-    query = query.order('created_at', { ascending: false })
+  // Handle sorting
+  if (filters?.sort) {
+    const sortParts = filters.sort.split('_')
+    const direction = sortParts[sortParts.length - 1]
+    const ascending = direction === 'asc'
+
+    if (filters.sort.startsWith('created_')) {
+      // Database-level sorting by created_at
+      query = query.order('created_at', { ascending })
+    }
   } else {
+    // Default sort: most recent first
     query = query.order('created_at', { ascending: false })
   }
 
@@ -129,37 +135,30 @@ export async function getBaptisms(filters?: BaptismFilterParams): Promise<Baptis
     )
   }
 
-  // Apply sorting at application level for related fields
-  if (filters?.sort === 'date_asc') {
-    baptisms.sort((a, b) => {
-      const dateA = a.baptism_event?.start_date || ''
-      const dateB = b.baptism_event?.start_date || ''
-      if (!dateA && !dateB) return 0
-      if (!dateA) return 1
-      if (!dateB) return -1
-      return dateA.localeCompare(dateB)
-    })
-  } else if (filters?.sort === 'date_desc') {
-    baptisms.sort((a, b) => {
-      const dateA = a.baptism_event?.start_date || ''
-      const dateB = b.baptism_event?.start_date || ''
-      if (!dateA && !dateB) return 0
-      if (!dateA) return 1
-      if (!dateB) return -1
-      return dateB.localeCompare(dateA)
-    })
-  } else if (filters?.sort === 'name_asc') {
-    baptisms.sort((a, b) => {
-      const nameA = a.child?.full_name || ''
-      const nameB = b.child?.full_name || ''
-      return nameA.localeCompare(nameB)
-    })
-  } else if (filters?.sort === 'name_desc') {
-    baptisms.sort((a, b) => {
-      const nameA = a.child?.full_name || ''
-      const nameB = b.child?.full_name || ''
-      return nameB.localeCompare(nameA)
-    })
+  // Apply application-level sorting for related fields (name and date)
+  if (filters?.sort) {
+    const sortParts = filters.sort.split('_')
+    const direction = sortParts[sortParts.length - 1]
+    const ascending = direction === 'asc'
+
+    if (filters.sort.startsWith('name_')) {
+      // Application-level sorting by child's name
+      baptisms.sort((a, b) => {
+        const nameA = a.child?.full_name || ''
+        const nameB = b.child?.full_name || ''
+        return ascending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+      })
+    } else if (filters.sort.startsWith('date_')) {
+      // Application-level sorting by event date
+      baptisms.sort((a, b) => {
+        const dateA = a.baptism_event?.start_date || ''
+        const dateB = b.baptism_event?.start_date || ''
+        if (!dateA && !dateB) return 0
+        if (!dateA) return 1
+        if (!dateB) return -1
+        return ascending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
+      })
+    }
   }
 
   return baptisms

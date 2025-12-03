@@ -23,11 +23,11 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
+  // Build filters from search params with defaults
   const filters: MassIntentionFilterParams = {
     search: params.search,
     status: params.status as MassIntentionFilterParams['status'],
-    sort: params.sort as MassIntentionFilterParams['sort'],
+    sort: (params.sort as MassIntentionFilterParams['sort']) || 'date_asc',
     start_date: params.start_date,
     end_date: params.end_date
   }

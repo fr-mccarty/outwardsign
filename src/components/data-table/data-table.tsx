@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useState, useMemo } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import {
   Table,
@@ -27,8 +26,8 @@ export interface DataTableColumn<T> {
   hidden?: boolean;
   hiddenOn?: "sm" | "md" | "lg" | "xl";
   sortable?: boolean;
-  sortFn?: (a: T, b: T) => number;
-  accessorFn?: (row: T) => any;
+  sortFn?: (a: T, b: T) => number; // Deprecated for server-side sorting
+  accessorFn?: (row: T) => any; // Deprecated for server-side sorting
 }
 
 interface DataTableProps<T> {
@@ -45,10 +44,12 @@ interface DataTableProps<T> {
   className?: string;
   containerClassName?: string;
   rowClassName?: string | ((row: T) => string);
-  defaultSort?: {
-    key: string;
-    direction: SortDirection;
+  // Server-side sorting props
+  currentSort?: {
+    column: string;
+    direction: 'asc' | 'desc';
   };
+  onSortChange?: (column: string, direction: 'asc' | 'desc' | null) => void;
   // Infinite scroll props
   onLoadMore?: () => void | Promise<void>;
   hasMore?: boolean;
@@ -64,16 +65,12 @@ export function DataTable<T>({
   className,
   containerClassName,
   rowClassName,
-  defaultSort,
+  currentSort,
+  onSortChange,
   onLoadMore,
   hasMore = false,
   stickyHeader = false,
 }: DataTableProps<T>) {
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: SortDirection;
-  }>(defaultSort || { key: "", direction: null });
-
   // Infinite scroll hook
   const { sentinelRef, isLoading } = useInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
@@ -98,63 +95,39 @@ export function DataTable<T>({
   };
 
   const handleSort = (column: DataTableColumn<T>) => {
-    if (!column.sortable) return;
+    if (!column.sortable || !onSortChange) return;
 
-    setSortConfig((current) => {
-      if (current.key === column.key) {
-        if (current.direction === "asc") {
-          return { key: column.key, direction: "desc" };
-        } else if (current.direction === "desc") {
-          return { key: "", direction: null };
-        }
+    // Determine new sort direction based on current sort state
+    let newDirection: 'asc' | 'desc' | null;
+
+    if (currentSort?.column === column.key) {
+      // Clicking the same column: cycle through asc -> desc -> null
+      if (currentSort.direction === "asc") {
+        newDirection = "desc";
+      } else if (currentSort.direction === "desc") {
+        newDirection = null;
+      } else {
+        newDirection = "asc";
       }
-      return { key: column.key, direction: "asc" };
-    });
-  };
-
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key || !sortConfig.direction) {
-      return data;
+    } else {
+      // Clicking a different column: start with asc
+      newDirection = "asc";
     }
 
-    const column = columns.find((col) => col.key === sortConfig.key);
-    if (!column) return data;
-
-    return [...data].sort((a, b) => {
-      let compareValue = 0;
-
-      if (column.sortFn) {
-        compareValue = column.sortFn(a, b);
-      } else if (column.accessorFn) {
-        const aValue = column.accessorFn(a);
-        const bValue = column.accessorFn(b);
-        
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-        
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          compareValue = aValue.localeCompare(bValue);
-        } else if (typeof aValue === "number" && typeof bValue === "number") {
-          compareValue = aValue - bValue;
-        } else if (aValue instanceof Date && bValue instanceof Date) {
-          compareValue = aValue.getTime() - bValue.getTime();
-        } else {
-          compareValue = String(aValue).localeCompare(String(bValue));
-        }
-      }
-
-      return sortConfig.direction === "asc" ? compareValue : -compareValue;
-    });
-  }, [data, sortConfig, columns]);
+    // Call the callback to update URL and trigger server re-fetch
+    onSortChange(column.key, newDirection);
+  };
 
   const getSortIcon = (column: DataTableColumn<T>) => {
     if (!column.sortable) return null;
 
-    if (sortConfig.key !== column.key) {
+    // Check if this column is currently sorted
+    if (currentSort?.column !== column.key) {
       return <ArrowUpDown className="ml-2 h-4 w-4" />;
     }
 
-    if (sortConfig.direction === "asc") {
+    // Show direction based on currentSort prop
+    if (currentSort.direction === "asc") {
       return <ArrowUp className="ml-2 h-4 w-4" />;
     }
 
@@ -209,7 +182,7 @@ export function DataTable<T>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.map((row) => {
+          {data.map((row) => {
             const key = keyExtractor(row);
             const rowClassValue =
               typeof rowClassName === "function"

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { FormSectionCard } from "@/components/form-section-card"
+import { ContentCard } from "@/components/content-card"
 
 interface SearchCardProps {
   /** The title for the search card (e.g., "Search Weddings") */
@@ -10,17 +10,22 @@ interface SearchCardProps {
   className?: string
 }
 
+/**
+ * SearchCard - Compact card component for search/filter sections
+ *
+ * Uses ContentCard with a manual header for vertical compactness
+ */
 export function SearchCard({
   title,
   children,
   className
 }: SearchCardProps) {
   return (
-    <FormSectionCard
-      title={title}
-      className={className}
-    >
-      {children}
-    </FormSectionCard>
+    <ContentCard className={`!pt-5 !px-6 !pb-5 ${className || ''}`}>
+      <div className="space-y-3">
+        <h3 className="text-base font-medium">{title}</h3>
+        {children}
+      </div>
+    </ContentCard>
   )
 }

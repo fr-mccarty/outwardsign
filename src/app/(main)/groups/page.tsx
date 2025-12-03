@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic'
 interface PageProps {
   searchParams: Promise<{
     search?: string
+    status?: string
     sort?: string
     page?: string
   }>
@@ -28,10 +29,12 @@ export default async function GroupsPage({ searchParams }: PageProps) {
   // Await searchParams (Next.js 15 requirement)
   const params = await searchParams
 
-  // Build filters from URL params
+  // Build filters from URL params WITH DEFAULTS
+  // 🔴 CRITICAL: Apply defaults on server BEFORE calling server action
   const filters = {
     search: params.search,
-    sort: params.sort || 'name_asc'
+    status: params.status || 'ACTIVE',  // Default applied
+    sort: params.sort || 'name_asc'     // Default applied
   }
 
   // Fetch groups and stats server-side

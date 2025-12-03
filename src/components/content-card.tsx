@@ -19,7 +19,7 @@ interface ContentCardProps {
  */
 export function ContentCard({ children, className }: ContentCardProps) {
   return (
-    <Card>
+    <Card className="!py-0">
       <CardContent className={cn("pt-6", className)}>
         {children}
       </CardContent>

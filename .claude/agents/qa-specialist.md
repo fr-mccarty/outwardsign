@@ -351,13 +351,13 @@ Files that need updates based on findings:
 ## Integration with Other Agents
 
 **Before You Run**:
-- **finishing-agent** should have passed (don't QA code that doesn't build/test)
+- **code-review-agent** should have passed (don't QA code that doesn't build/test)
 - **test-runner-debugger** confirms all functional tests pass
 
 **After Your Report**:
 - **developer-agent** fixes critical/high issues you identified
-- **documentation-writer** updates docs based on your findings
-- **finishing-agent** verifies fixes before re-running QA
+- **project-documentation-writer** updates docs based on your findings
+- **code-review-agent** verifies fixes before re-running QA
 
 **Escalation Pattern**:
 - Critical security issues → Inform user immediately, block release

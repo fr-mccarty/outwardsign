@@ -51,7 +51,8 @@ export function useListFilters(options: {
     const defaultValue = defaultFilters[key] || 'all'
 
     // Set or delete parameter based on whether it matches default
-    if (value && value !== defaultValue && value !== 'all' && value !== '') {
+    // Keep the param if value is set AND different from default (including 'all' if it's not the default)
+    if (value && value !== defaultValue && value !== '') {
       params.set(key, value)
     } else {
       params.delete(key)
