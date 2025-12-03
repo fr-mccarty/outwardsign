@@ -2,35 +2,41 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, MessageCircle, Bell, LogOut } from 'lucide-react'
+import { Calendar, MessageCircle, Bell, LogOut, Languages } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useLanguage } from './language-context'
 
 interface ParishionerNavigationProps {
   variant: 'sidebar' | 'bottom-tabs'
+  unreadCount?: number
 }
 
-const tabs = [
-  {
-    name: 'Calendar',
-    href: '/parishioner/calendar',
-    icon: Calendar,
-  },
-  {
-    name: 'Chat',
-    href: '/parishioner/chat',
-    icon: MessageCircle,
-  },
-  {
-    name: 'Notifications',
-    href: '/parishioner/notifications',
-    icon: Bell,
-    badge: 2, // TODO: Get unread count from server
-  },
-]
-
-export function ParishionerNavigation({ variant }: ParishionerNavigationProps) {
+export function ParishionerNavigation({ variant, unreadCount = 0 }: ParishionerNavigationProps) {
+  const tabs = [
+    {
+      name: 'Calendar',
+      href: '/parishioner/calendar',
+      icon: Calendar,
+    },
+    {
+      name: 'Chat',
+      href: '/parishioner/chat',
+      icon: MessageCircle,
+    },
+    {
+      name: 'Notifications',
+      href: '/parishioner/notifications',
+      icon: Bell,
+      badge: unreadCount,
+    },
+  ]
   const pathname = usePathname()
+  const { language, setLanguage } = useLanguage()
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'es' : 'en')
+  }
 
   if (variant === 'bottom-tabs') {
     return (
@@ -100,11 +106,19 @@ export function ParishionerNavigation({ variant }: ParishionerNavigationProps) {
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t">
+      <div className="mt-auto pt-4 border-t space-y-2">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          onClick={toggleLanguage}
+        >
+          <Languages className="h-5 w-5 mr-3" />
+          {language === 'en' ? 'Español' : 'English'}
+        </Button>
         <Link href="/parishioner/logout">
           <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
             <LogOut className="h-5 w-5 mr-3" />
-            Log Out
+            {language === 'en' ? 'Log Out' : 'Cerrar sesión'}
           </Button>
         </Link>
       </div>

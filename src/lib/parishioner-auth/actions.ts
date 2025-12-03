@@ -3,6 +3,8 @@
 import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { randomBytes, createHash } from 'crypto'
+import { sendMagicLinkEmail } from '@/lib/email'
+import { sendMagicLinkSMS } from '@/lib/sms'
 
 const MAGIC_LINK_EXPIRY_DAYS = 30
 const RATE_LIMIT_MAX_REQUESTS = 3
@@ -126,17 +128,24 @@ export async function generateMagicLink(
       }
     }
 
-    // TODO: Send email or SMS with magic link
-    // For now, just log the token (in production, send via email/SMS)
+    // Send email or SMS with magic link
     const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/parishioner/auth?token=${token}`
-    console.log('Magic link for', person.full_name, ':', magicLinkUrl)
 
-    // TODO: Implement email/SMS sending
-    // if (isEmailInput) {
-    //   await sendMagicLinkEmail(person.email, person.full_name, magicLinkUrl)
-    // } else {
-    //   await sendMagicLinkSMS(person.phone_number, magicLinkUrl)
-    // }
+    // Determine language preference (default to English)
+    // TODO: Add language preference field to people table
+    const language: 'en' | 'es' = 'en'
+
+    let sent = false
+    if (isEmailInput && person.email) {
+      sent = await sendMagicLinkEmail(person.email, magicLinkUrl, language)
+    } else if (!isEmailInput && person.phone_number) {
+      sent = await sendMagicLinkSMS(person.phone_number, magicLinkUrl, language)
+    }
+
+    // Log for debugging (remove in production)
+    if (!sent) {
+      console.log('Magic link for', person.full_name, ':', magicLinkUrl)
+    }
 
     return {
       success: true,

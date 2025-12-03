@@ -105,3 +105,28 @@ export async function deleteNotification(notificationId: string): Promise<void> 
     console.error('Error deleting notification:', error)
   }
 }
+
+/**
+ * Get unread notification count for person
+ */
+export async function getUnreadNotificationCount(personId: string): Promise<number> {
+  const supabase = createAdminClient()
+
+  try {
+    const { count, error } = await supabase
+      .from('parishioner_notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('person_id', personId)
+      .eq('is_read', false)
+
+    if (error) {
+      console.error('Error fetching unread count:', error)
+      return 0
+    }
+
+    return count || 0
+  } catch (error) {
+    console.error('Error fetching unread count:', error)
+    return 0
+  }
+}

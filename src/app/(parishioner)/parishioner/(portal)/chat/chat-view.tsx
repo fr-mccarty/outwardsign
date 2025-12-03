@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Send } from 'lucide-react'
+import { Send, Mic, MicOff } from 'lucide-react'
 import { chatWithAI } from './actions'
 import type { ChatMessage } from './actions'
+import { useLanguage } from '../language-context'
 
 interface ChatViewProps {
   personId: string
@@ -14,18 +15,25 @@ interface ChatViewProps {
 }
 
 export function ChatView({ personId }: ChatViewProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content:
-        "Hi! I'm your ministry assistant. I can help you with your schedule, mark unavailable dates, and answer questions about your commitments. What would you like to know?",
-      timestamp: new Date().toISOString(),
-    },
-  ])
+  const { language } = useLanguage()
+
+  const initialMessage: ChatMessage = {
+    role: 'assistant',
+    content:
+      language === 'es'
+        ? '¡Hola! Soy tu asistente ministerial. Puedo ayudarte con tu horario, marcar fechas de no disponibilidad y responder preguntas sobre tus compromisos. ¿Qué te gustaría saber?'
+        : "Hi! I'm your ministry assistant. I can help you with your schedule, mark unavailable dates, and answer questions about your commitments. What would you like to know?",
+    timestamp: new Date().toISOString(),
+  }
+
+  const [messages, setMessages] = useState<ChatMessage[]>([initialMessage])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [voiceSupported, setVoiceSupported] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const recognitionRef = useRef<any>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -34,6 +42,50 @@ export function ChatView({ personId }: ChatViewProps) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRecognition) {
+        setVoiceSupported(true)
+        const recognition = new SpeechRecognition()
+        recognition.continuous = false
+        recognition.interimResults = false
+        recognition.lang = 'en-US'
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript
+          setInputMessage(transcript)
+          setIsListening(false)
+        }
+
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error)
+          setIsListening(false)
+        }
+
+        recognition.onend = () => {
+          setIsListening(false)
+        }
+
+        recognitionRef.current = recognition
+      }
+    }
+  }, [])
+
+  const handleVoiceInput = () => {
+    if (!recognitionRef.current) return
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      recognitionRef.current.start()
+      setIsListening(true)
+    }
+  }
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return
@@ -49,7 +101,7 @@ export function ChatView({ personId }: ChatViewProps) {
     setIsLoading(true)
 
     try {
-      const result = await chatWithAI(personId, inputMessage, conversationId)
+      const result = await chatWithAI(personId, inputMessage, conversationId, language)
 
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -63,7 +115,10 @@ export function ChatView({ personId }: ChatViewProps) {
       console.error('Error sending message:', error)
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: "I'm having trouble connecting. Please try again.",
+        content:
+          language === 'es'
+            ? 'Tengo problemas para conectarme. Por favor, inténtalo de nuevo.'
+            : "I'm having trouble connecting. Please try again.",
         timestamp: new Date().toISOString(),
       }
       setMessages((prev) => [...prev, errorMessage])
@@ -79,36 +134,44 @@ export function ChatView({ personId }: ChatViewProps) {
     }
   }
 
+  const quickActions =
+    language === 'es'
+      ? [
+          { label: 'Mi horario', message: 'Muéstrame mi próximo horario' },
+          { label: 'Mis lecturas', message: '¿Cuáles son mis lecturas este domingo?' },
+          { label: 'Marcar no disponible', message: 'Márcame como no disponible la próxima semana' },
+        ]
+      : [
+          { label: 'My Schedule', message: 'Show me my upcoming schedule' },
+          { label: 'My Readings', message: 'What are my readings this Sunday?' },
+          { label: 'Mark Unavailable', message: 'Mark me unavailable next week' },
+        ]
+
   return (
     <div className="flex flex-col h-full">
       <div className="mb-4">
-        <h1 className="text-3xl font-bold">Chat with AI Assistant</h1>
-        <p className="text-muted-foreground mt-2">Ask questions about your schedule and commitments</p>
+        <h1 className="text-3xl font-bold">
+          {language === 'es' ? 'Chat con asistente IA' : 'Chat with AI Assistant'}
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          {language === 'es'
+            ? 'Haz preguntas sobre tu horario y compromisos'
+            : 'Ask questions about your schedule and commitments'}
+        </p>
       </div>
 
       {/* Quick Action Pills */}
       <div className="flex gap-2 mb-4 flex-wrap">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setInputMessage('Show me my upcoming schedule')}
-        >
-          My Schedule
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setInputMessage('What are my readings this Sunday?')}
-        >
-          My Readings
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setInputMessage('Mark me unavailable next week')}
-        >
-          Mark Unavailable
-        </Button>
+        {quickActions.map((action) => (
+          <Button
+            key={action.label}
+            variant="outline"
+            size="sm"
+            onClick={() => setInputMessage(action.message)}
+          >
+            {action.label}
+          </Button>
+        ))}
       </div>
 
       {/* Messages Area */}
@@ -144,7 +207,9 @@ export function ChatView({ personId }: ChatViewProps) {
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-muted rounded-lg p-3">
-              <p className="text-muted-foreground">Typing...</p>
+              <p className="text-muted-foreground">
+                {language === 'es' ? 'Escribiendo...' : 'Typing...'}
+              </p>
             </div>
           </div>
         )}
@@ -157,9 +222,27 @@ export function ChatView({ personId }: ChatViewProps) {
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Type your message..."
-          disabled={isLoading}
+          placeholder={
+            isListening
+              ? language === 'es'
+                ? 'Escuchando...'
+                : 'Listening...'
+              : language === 'es'
+                ? 'Escribe tu mensaje...'
+                : 'Type your message...'
+          }
+          disabled={isLoading || isListening}
         />
+        {voiceSupported && (
+          <Button
+            variant="outline"
+            onClick={handleVoiceInput}
+            disabled={isLoading}
+            className={isListening ? 'bg-red-100 dark:bg-red-950' : ''}
+          >
+            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
+        )}
         <Button onClick={handleSendMessage} disabled={isLoading || !inputMessage.trim()}>
           <Send className="h-4 w-4" />
         </Button>
