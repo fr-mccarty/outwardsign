@@ -346,6 +346,26 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 />
               )}
 
+              {canAccess('ocia-sessions') && (
+                <CollapsibleNavSection
+                  name="OCIA Sessions"
+                  icon={Users}
+                  items={[
+                    {
+                      title: "Our OCIA Sessions",
+                      url: "/ocia-sessions",
+                      icon: Users,
+                    },
+                    {
+                      title: "New OCIA Session",
+                      url: "/ocia-sessions/create",
+                      icon: Plus,
+                    },
+                  ]}
+                  defaultOpen={false}
+                />
+              )}
+
               <CollapsibleNavSection
                 name="Readings"
                 icon={BookOpen}

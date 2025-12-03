@@ -602,6 +602,19 @@ export interface GroupBaptism {
   updated_at: string
 }
 
+export interface OciaSession {
+  id: string
+  parish_id: string
+  name: string
+  ocia_event_id: string | null
+  coordinator_id: string | null
+  status: ModuleStatus
+  note: string | null
+  ocia_template_id: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface GroupRole {
   id: string
   parish_id: string
