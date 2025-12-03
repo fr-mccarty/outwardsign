@@ -4,7 +4,6 @@ import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { randomBytes, createHash } from 'crypto'
 import { sendMagicLinkEmail } from '@/lib/email'
-import { sendMagicLinkSMS } from '@/lib/sms'
 
 const MAGIC_LINK_EXPIRY_DAYS = 30
 const RATE_LIMIT_MAX_REQUESTS = 3
@@ -30,10 +29,10 @@ function hashToken(token: string): string {
 }
 
 /**
- * Determine if input is email or phone number
+ * Validate email format
  */
-function isEmail(input: string): boolean {
-  return input.includes('@')
+function isValidEmail(input: string): boolean {
+  return input.includes('@') && input.includes('.')
 }
 
 /**
@@ -55,17 +54,25 @@ async function checkRateLimit(emailOrPhone: string): Promise<boolean> {
 }
 
 /**
- * Generate magic link and send via email or SMS
+ * Generate magic link and send via email
  */
 export async function generateMagicLink(
-  emailOrPhone: string,
+  email: string,
   parishId: string
 ): Promise<MagicLinkResult> {
   try {
     const supabase = createAdminClient()
 
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return {
+        success: false,
+        message: 'Please enter a valid email address.',
+      }
+    }
+
     // Check rate limiting
-    const withinRateLimit = await checkRateLimit(emailOrPhone)
+    const withinRateLimit = await checkRateLimit(email)
     if (!withinRateLimit) {
       return {
         success: false,
@@ -73,15 +80,11 @@ export async function generateMagicLink(
       }
     }
 
-    // Determine if email or phone
-    const isEmailInput = isEmail(emailOrPhone)
-    const field = isEmailInput ? 'email' : 'phone_number'
-
-    // Look up person
+    // Look up person by email
     const { data: person, error: personError } = await supabase
       .from('people')
-      .select('id, parish_id, full_name, email, phone_number, parishioner_portal_enabled')
-      .eq(field, emailOrPhone)
+      .select('id, parish_id, full_name, email, parishioner_portal_enabled')
+      .eq('email', email)
       .eq('parish_id', parishId)
       .single()
 
@@ -115,8 +118,8 @@ export async function generateMagicLink(
         token: hashedToken,
         person_id: person.id,
         parish_id: person.parish_id,
-        email_or_phone: emailOrPhone,
-        delivery_method: isEmailInput ? 'email' : 'sms',
+        email_or_phone: email,
+        delivery_method: 'email',
         expires_at: expiresAt.toISOString(),
       })
 
@@ -128,19 +131,14 @@ export async function generateMagicLink(
       }
     }
 
-    // Send email or SMS with magic link
+    // Send email with magic link
     const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/parishioner/auth?token=${token}`
 
     // Determine language preference (default to English)
     // TODO: Add language preference field to people table
     const language: 'en' | 'es' = 'en'
 
-    let sent = false
-    if (isEmailInput && person.email) {
-      sent = await sendMagicLinkEmail(person.email, magicLinkUrl, language)
-    } else if (!isEmailInput && person.phone_number) {
-      sent = await sendMagicLinkSMS(person.phone_number, magicLinkUrl, language)
-    }
+    const sent = await sendMagicLinkEmail(person.email, magicLinkUrl, language)
 
     // Log for debugging (remove in production)
     if (!sent) {
@@ -149,7 +147,7 @@ export async function generateMagicLink(
 
     return {
       success: true,
-      message: 'Magic link sent! Check your ' + (isEmailInput ? 'email' : 'phone') + '.',
+      message: 'Magic link sent! Check your email.',
     }
   } catch (error) {
     console.error('Error generating magic link:', error)

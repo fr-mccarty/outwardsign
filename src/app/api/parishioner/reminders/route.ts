@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendCommitmentReminderEmail } from '@/lib/email'
-import { sendCommitmentReminderSMS } from '@/lib/sms'
 
 /**
  * Send reminders for upcoming commitments (3 days ahead)
@@ -104,14 +103,10 @@ export async function GET(request: Request) {
       // Determine language preference (TODO: add to people table)
       const language: 'en' | 'es' = 'en'
 
-      // Try email first, then SMS
+      // Send email reminder
       let sent = false
       if (person.email) {
         sent = await sendCommitmentReminderEmail(person.email, commitment, language)
-      }
-
-      if (!sent && person.phone_number) {
-        sent = await sendCommitmentReminderSMS(person.phone_number, commitment, language)
       }
 
       if (sent) {

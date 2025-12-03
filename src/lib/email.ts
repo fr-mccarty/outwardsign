@@ -1,7 +1,17 @@
 /**
- * Email utility using Resend
- * Install: npm install resend
+ * Email utility using AWS SES
  */
+
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
+
+// Initialize SES client
+const sesClient = new SESClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+})
 
 interface SendEmailParams {
   to: string
@@ -10,32 +20,36 @@ interface SendEmailParams {
 }
 
 /**
- * Send email via Resend
+ * Send email via AWS SES
  */
 export async function sendEmail({ to, subject, html }: SendEmailParams): Promise<boolean> {
   try {
-    // Check if Resend is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY not configured - skipping email send')
+    // Check if SES is configured
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      console.warn('AWS SES not configured - skipping email send')
       return false
     }
 
-    // Dynamic import to avoid errors if package not installed
-    const { Resend } = await import('resend')
-    const resend = new Resend(process.env.RESEND_API_KEY)
-
-    const { error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@outwardsign.church',
-      to,
-      subject,
-      html,
+    const command = new SendEmailCommand({
+      Source: process.env.FROM_EMAIL || 'noreply@outwardsign.church',
+      Destination: {
+        ToAddresses: [to],
+      },
+      Message: {
+        Subject: {
+          Data: subject,
+          Charset: 'UTF-8',
+        },
+        Body: {
+          Html: {
+            Data: html,
+            Charset: 'UTF-8',
+          },
+        },
+      },
     })
 
-    if (error) {
-      console.error('Error sending email:', error)
-      return false
-    }
-
+    await sesClient.send(command)
     return true
   } catch (error) {
     console.error('Error sending email:', error)
@@ -64,7 +78,7 @@ export async function sendMagicLinkEmail(
           Acceder al portal
         </a>
       </p>
-      <p style="color: #666; font-size: 14px;">Este enlace expirará en 1 hora.</p>
+      <p style="color: #666; font-size: 14px;">Este enlace expirará en 30 días.</p>
       <p style="color: #666; font-size: 14px;">Si no solicitaste este enlace, puedes ignorar este correo.</p>
     </div>
   `
@@ -77,7 +91,7 @@ export async function sendMagicLinkEmail(
           Access Portal
         </a>
       </p>
-      <p style="color: #666; font-size: 14px;">This link will expire in 1 hour.</p>
+      <p style="color: #666; font-size: 14px;">This link will expire in 30 days.</p>
       <p style="color: #666; font-size: 14px;">If you didn't request this link, you can safely ignore this email.</p>
     </div>
   `
