@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Mail, Smartphone } from 'lucide-react'
+import { Mail } from 'lucide-react'
 
 export function MagicLinkLoginForm() {
-  const [emailOrPhone, setEmailOrPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -22,11 +22,11 @@ export function MagicLinkLoginForm() {
     setIsLoading(true)
     setMessage(null)
 
-    const result = await generateMagicLink(emailOrPhone.trim(), PARISH_ID)
+    const result = await generateMagicLink(email.trim(), PARISH_ID)
 
     if (result.success) {
       setMessage({ type: 'success', text: result.message })
-      setEmailOrPhone('')
+      setEmail('')
     } else {
       setMessage({ type: 'error', text: result.message })
     }
@@ -37,22 +37,18 @@ export function MagicLinkLoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="emailOrPhone">Email or Phone Number</Label>
+        <Label htmlFor="email">Email Address</Label>
         <div className="relative">
           <Input
-            id="emailOrPhone"
-            type="text"
-            placeholder="you@example.com or +1234567890"
-            value={emailOrPhone}
-            onChange={(e) => setEmailOrPhone(e.target.value)}
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             className="pl-10"
           />
-          {emailOrPhone.includes('@') ? (
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          ) : (
-            <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          )}
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
 
@@ -67,7 +63,7 @@ export function MagicLinkLoginForm() {
       </Button>
 
       <p className="text-sm text-muted-foreground text-center">
-        By continuing, you agree to receive a magic link via email or SMS to access your parishioner portal.
+        We&apos;ll send a magic link to your email to access your parishioner portal.
       </p>
     </form>
   )

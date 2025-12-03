@@ -235,10 +235,9 @@ export function ChatView({ personId }: ChatViewProps) {
         />
         {voiceSupported && (
           <Button
-            variant="outline"
+            variant={isListening ? 'destructive' : 'outline'}
             onClick={handleVoiceInput}
             disabled={isLoading}
-            className={isListening ? 'bg-red-100 dark:bg-red-950' : ''}
           >
             {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           </Button>

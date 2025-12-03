@@ -130,10 +130,10 @@ export function MonthCalendar({ events, onDateClick }: MonthCalendarProps) {
                   <span>{day}</span>
                   <div className="flex gap-0.5 mt-0.5">
                     {hasAssignment && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" title="Scheduled" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-chart-2" title="Scheduled" />
                     )}
                     {hasBlackout && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500" title="Unavailable" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-destructive" title="Unavailable" />
                     )}
                   </div>
                 </div>
@@ -145,11 +145,11 @@ export function MonthCalendar({ events, onDateClick }: MonthCalendarProps) {
         {/* Legend */}
         <div className="flex gap-4 text-xs text-muted-foreground justify-center">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <div className="w-2 h-2 rounded-full bg-chart-2" />
             <span>Scheduled</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-red-500" />
+            <div className="w-2 h-2 rounded-full bg-destructive" />
             <span>Unavailable</span>
           </div>
         </div>

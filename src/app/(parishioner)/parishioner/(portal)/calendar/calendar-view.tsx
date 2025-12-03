@@ -14,11 +14,12 @@ interface CalendarViewProps {
   events: CalendarEvent[]
 }
 
+// Using chart colors from the global theme for dark mode support
 const eventTypeColors = {
-  parish: 'bg-blue-500',
-  liturgical: 'bg-purple-500',
-  assignment: 'bg-orange-500',
-  blackout: 'bg-red-500',
+  parish: 'bg-chart-3',      // Blue-ish
+  liturgical: 'bg-chart-1',  // Orange/warm
+  assignment: 'bg-chart-2',  // Teal
+  blackout: 'bg-destructive', // Red (semantic token)
 }
 
 const eventTypeLabels = {
@@ -73,16 +74,14 @@ export function CalendarView({ events }: CalendarViewProps) {
       {upcomingCommitments.length > 0 && (
         <div className="space-y-3">
           {upcomingCommitments.map((event) => (
-            <Alert key={event.id} className="border-orange-500 bg-orange-50 dark:bg-orange-950">
-              <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <AlertTitle className="text-orange-900 dark:text-orange-100">
-                Upcoming Commitment
-              </AlertTitle>
-              <AlertDescription className="text-orange-800 dark:text-orange-200">
+            <Alert key={event.id} className="border-primary bg-accent">
+              <AlertCircle className="h-4 w-4 text-primary" />
+              <AlertTitle>Upcoming Commitment</AlertTitle>
+              <AlertDescription>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-medium">{event.title}</p>
-                    <p className="text-sm">
+                    <p className="font-medium text-foreground">{event.title}</p>
+                    <p className="text-sm text-muted-foreground">
                       {new Date(event.date + (event.time ? ` ${event.time}` : '')).toLocaleDateString(
                         'en-US',
                         {
@@ -94,13 +93,12 @@ export function CalendarView({ events }: CalendarViewProps) {
                         }
                       )}
                     </p>
-                    {event.location && <p className="text-sm">{event.location}</p>}
+                    {event.location && <p className="text-sm text-muted-foreground">{event.location}</p>}
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDismissAlert(event.id)}
-                    className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
                   >
                     <X className="h-4 w-4" />
                   </Button>
