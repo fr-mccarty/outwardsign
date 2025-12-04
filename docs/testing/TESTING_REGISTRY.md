@@ -45,6 +45,7 @@ This document provides a complete reference of all test files and individual tes
   - [Parishioner Calendar](#parishioner-calendar)
   - [Parishioner Notifications](#parishioner-notifications)
   - [Parishioner Chat](#parishioner-chat)
+  - [Parishioner Security](#parishioner-security)
 - [Test Templates](#test-templates)
 
 ---
@@ -606,6 +607,73 @@ This document provides a complete reference of all test files and individual tes
 | should maintain chat history during session | Confirms chat history persists for all messages in current session |
 | should scroll to bottom when new messages arrive | Verifies new messages automatically scroll into view |
 
+### Parishioner Security
+
+#### `tests/csrf.spec.ts` (8 tests)
+
+**Module:** CSRF Protection (Phase 2 Security)
+
+| Test | Description |
+|------|-------------|
+| should generate CSRF token via API endpoint | Verifies CSRF API endpoint returns valid hex token |
+| should set CSRF cookie when generating token | Validates CSRF cookie is set with correct security attributes (httpOnly, sameSite, path) |
+| should generate different tokens on multiple requests | Confirms token randomness by verifying different tokens on consecutive requests |
+| should update cookie with new token on subsequent requests | Verifies cookie is updated with new token value when requesting new tokens |
+| should have correct cookie security attributes in production | Validates security attributes of CSRF cookie (httpOnly, sameSite, path scoping) |
+| should have proper token expiration (24 hours) | Confirms CSRF cookie expires after 24 hours from creation |
+| should include CSRF token in parishioner login flow | Integration test verifying CSRF token is available for parishioner portal forms |
+
+#### `tests/rate-limit.spec.ts` (21 tests)
+
+**Module:** Rate Limiting (Phase 2 Security)
+
+| Test | Description |
+|------|-------------|
+| should allow requests within limit | Verifies rate limiter allows all requests when under the configured limit |
+| should block requests over limit | Validates rate limiter blocks requests that exceed the configured limit |
+| should reset after window expires | Confirms rate limit resets and allows requests after time window expires |
+| should track different keys independently | Verifies different keys (users/IPs) have independent rate limit counters |
+| should return correct remaining count | Validates remaining count decrements correctly with each request |
+| should return correct resetIn time | Confirms resetIn value accurately reflects time until limit reset |
+| should handle first request correctly | Verifies first request initializes rate limit state correctly |
+| should handle exactly maxRequests | Validates behavior when request count equals exactly the maximum allowed |
+| should handle zero remaining correctly | Confirms correct behavior when no requests remain in current window |
+| should handle concurrent requests for same key | Verifies rate limiter correctly handles multiple simultaneous requests |
+| should cleanup old entries periodically | Validates expired rate limit entries are cleaned up to prevent memory leaks |
+| should not interfere with active entries during cleanup | Confirms cleanup doesn't affect active rate limit entries |
+| should have magic link rate limit configured | Verifies magic link pre-configured limit (3 per 15 minutes) |
+| should have chat rate limit configured | Verifies chat pre-configured limit (20 per minute) |
+| should have notifications rate limit configured | Verifies notifications pre-configured limit (30 per minute) |
+| should have calendar rate limit configured | Verifies calendar pre-configured limit (60 per minute) |
+| should enforce magic link rate limit correctly | Validates magic link rate limit blocks after 3 requests |
+| should enforce chat rate limit correctly | Validates chat rate limit blocks after 20 requests |
+| should handle typical user behavior (spaced requests) | Confirms rate limiter works correctly with realistic user request patterns |
+| should handle burst traffic followed by pause | Verifies rate limiter handles burst traffic and subsequent reset correctly |
+| should handle multiple users with different IPs | Validates independent rate limiting for different users/IPs |
+
+#### `tests/cron-cleanup.spec.ts` (15 tests)
+
+**Module:** Session Cleanup Cron (Phase 2 Security)
+
+| Test | Description |
+|------|-------------|
+| should reject requests without authorization header | Verifies cron endpoint returns 401 when authorization header is missing |
+| should reject requests with invalid authorization token | Validates cron endpoint rejects requests with wrong CRON_SECRET |
+| should reject requests with malformed authorization header | Confirms cron endpoint rejects malformed authorization headers |
+| should reject requests with empty authorization header | Verifies cron endpoint rejects empty authorization headers |
+| should reject requests with Bearer but no token | Validates cron endpoint rejects "Bearer " with no token value |
+| should accept requests with valid CRON_SECRET | Confirms cron endpoint accepts requests with correct CRON_SECRET |
+| should handle cleanup when no expired sessions exist | Verifies cron endpoint succeeds even when no sessions need cleanup |
+| should return JSON response for unauthorized requests | Validates error responses are properly formatted JSON |
+| should return JSON response for successful requests | Confirms success responses are properly formatted JSON |
+| should not expose CRON_SECRET in error messages | Security test verifying secret is not leaked in error messages |
+| should only accept GET requests | Validates cron endpoint only accepts GET method (returns 405 for others) |
+| should require exact Bearer prefix match | Confirms authorization header requires exact "Bearer" prefix (case-sensitive) |
+| should call database cleanup function when authorized | Integration test verifying database cleanup function is called |
+| should log cleanup results to console | Verifies cron endpoint completes without errors (logging cannot be directly tested) |
+| README: Cron endpoint follows Vercel Cron authorization pattern | Documentation test confirming endpoint follows Vercel Cron standards |
+| README: Cron endpoint is GET method | Documentation test confirming GET method matches Vercel Cron pattern |
+
 ---
 
 ## Test Templates
@@ -626,7 +694,7 @@ This document provides a complete reference of all test files and individual tes
 
 ## Test Statistics
 
-**Total Test Files:** 24 (excluding templates and backups)
+**Total Test Files:** 27 (excluding templates and backups)
 
 **Total Tests by Category:**
 - **Authentication:** 10 tests (Signup: 3, Login: 7)
@@ -635,9 +703,10 @@ This document provides a complete reference of all test files and individual tes
 - **Supporting Modules:** 28 tests (People: 5, Locations: 5, Events: 8, Readings: 5, Groups: 18)
 - **Picker Components:** 12 tests (Person: 7, Event: 5)
 - **Application Features:** 45 tests (Dashboard: 19, Calendar: 10, Parish Settings: 16)
-- **Parishioner Portal:** 44 tests (Auth: 11, Calendar: 11, Notifications: 9, Chat: 13)
+- **Parishioner Portal:** 88 tests (Auth: 11, Calendar: 11, Notifications: 9, Chat: 13, Security: 44)
+- **Security:** 44 tests (CSRF: 8, Rate Limiting: 21, Cron Cleanup: 15)
 
-**Total Active Tests:** ~191 tests (some skipped in groups-membership)
+**Total Active Tests:** ~235 tests (some skipped in groups-membership)
 
 **Skipped Tests:** 11 tests (all in groups-membership.spec.ts)
 
