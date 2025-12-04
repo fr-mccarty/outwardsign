@@ -64,13 +64,27 @@
 - ✅ Automated test infrastructure
 - ✅ RLS policies for parish-scoped data
 
+**Parishioner Portal (Phase 1 - Web App):**
+- ✅ Responsive web application for parishioners
+- ✅ Magic link authentication (email-only, no passwords)
+- ✅ 3-tab interface: Calendar, Chat, Notifications
+- ✅ AI chat assistant powered by Claude API
+- ✅ Ministry schedule calendar view
+- ✅ Notification system for ministry coordinators
+- ✅ Progressive Web App (PWA) support
+- ✅ HTTP-only cookie session management
+- ✅ CSRF protection and rate limiting
+- ✅ Comprehensive test coverage (44 tests)
+
 ### Current Limitations
 
-**❌ Communication:**
-- No email functionality
-- No SMS/text messaging
-- No automated notifications
-- No event reminders
+**❌ Communication (Staff Application):**
+- No email functionality for staff-to-parishioner communication
+- No SMS/text messaging for ministry coordination
+- No automated notifications for event reminders
+- No event reminder system for staff-managed modules
+
+**Note:** The Parishioner Portal has email functionality (AWS SES) for magic link authentication and notification delivery, but general staff-to-parishioner communication features are not yet implemented.
 
 **❌ Ministry Scheduling:**
 - Mass roles not yet implemented (see [MASSES.md](./MASSES.md) for detailed roadmap)

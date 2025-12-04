@@ -149,6 +149,40 @@ These modules support the Mass Scheduling functionality and appear under the "Ma
 
 ---
 
+## Parishioner Portal
+
+**The Parishioner Portal is a separate web application for parishioners** (not parish staff). It provides a simple, mobile-friendly interface for parishioners to view their ministry schedules, communicate with an AI assistant, and receive notifications.
+
+**Access:** `/parishioner/*` routes (separate from main staff application)
+
+**Authentication:** Magic link via email (separate from Supabase Auth used by staff)
+
+**Key Features:**
+1. **Calendar Tab** - View ministry schedule and parish events
+2. **Chat Tab** - AI assistant powered by Claude API
+3. **Notifications Tab** - Receive and manage notifications from ministry coordinators
+
+**Purpose:**
+- Give parishioners visibility into their ministry commitments
+- Reduce "When am I scheduled?" questions to coordinators
+- Enable AI-powered assistance for schedule management
+- Provide mobile-friendly access without requiring app download
+
+**Target Users:**
+- Ministry volunteers (lectors, EMHCs, altar servers, cantors, ushers, music ministers)
+- Family members viewing shared events
+- Parishioners with limited technical expertise
+
+**Architecture:**
+- Responsive web app (works on desktop, tablet, mobile browsers)
+- Progressive Web App (PWA) - can be added to home screen
+- Separate authentication system (HTTP-only cookies, not Supabase Auth)
+- Parish-scoped access via URL parameter
+
+**For complete technical documentation, see [PARISHIONER_PORTAL.md](./PARISHIONER_PORTAL.md)**
+
+---
+
 ## Module Status Constants
 
 Each module uses specific status constants from `src/lib/constants.ts`. Modules are grouped by which status constant set they use.

@@ -259,6 +259,96 @@ export default async function Page() {
 
 ---
 
+### Parishioner Authentication Pattern
+
+**The Parishioner Portal uses a separate authentication system from the main staff application.**
+
+**Staff Auth (Supabase Auth):**
+- Email/password login
+- JWT-based authentication
+- Session stored in Supabase Auth
+- Used for: `/dashboard`, `/weddings`, `/masses`, etc.
+
+**Parishioner Auth (Custom Magic Link):**
+- Email-only magic link
+- HTTP-only cookie session
+- Custom session table (`parishioner_auth_sessions`)
+- Used for: `/parishioner/*` routes
+
+**Why Separate Systems?**
+1. **Different security requirements** - Parishioners need simpler access without passwords
+2. **Different permission models** - Parish staff have role-based access (admin/staff/ministry-leader), parishioners have person-scoped access
+3. **Simplified UX** - No password management for parishioners
+4. **Easier family sharing** - One magic link can authenticate to view family schedule
+
+**Parishioner Authentication Flow:**
+
+```typescript
+// 1. Generate magic link (server action)
+const token = generateRandomToken()  // 32-character random token
+const hashedToken = await bcrypt.hash(token, 10)  // bcrypt hash
+
+await supabase.from('parishioner_auth_sessions').insert({
+  person_id: personId,
+  parish_id: parishId,
+  token: hashedToken,  // Only hashed token stored
+  expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000)  // 48-hour expiry
+})
+
+const magicLinkUrl = `${appUrl}/parishioner/login/verify?token=${token}&person=${personId}`
+// Send via email (AWS SES)
+
+// 2. Verify magic link and create session
+const session = await verifyMagicLink(token, personId)
+// Sets HTTP-only cookie: parishioner_session_id
+
+// 3. Access protected routes
+const session = await getParishionerSession()
+if (!session || session.personId !== requiredPersonId) {
+  redirect('/parishioner/login')
+}
+```
+
+**Session Management:**
+- Session cookie: `parishioner_session_id` (HTTP-only, secure, SameSite=Lax)
+- Session duration: 30 days (can be extended)
+- Magic link expiry: 48 hours (one-time use)
+- Automatic cleanup: Daily cron job removes expired sessions
+
+**Security Features:**
+- Bcrypt token hashing (10 rounds) prevents brute force if database compromised
+- HTTP-only cookies prevent XSS attacks
+- Timing-safe token comparison prevents timing attacks
+- CSRF protection on all server actions
+- Rate limiting on magic link generation (5 requests per 15 minutes per email)
+
+**Server Actions Require Session Verification:**
+```typescript
+// All parishioner server actions check session
+const session = await getParishionerSession()
+if (!session || session.personId !== personId) {
+  console.error('Unauthorized access attempt')
+  return []
+}
+
+// Use service_role client with explicit person_id filtering
+const supabase = createServiceRoleClient()
+const { data } = await supabase
+  .from('calendar_events')
+  .select('*')
+  .eq('person_id', session.personId)  // Explicit filtering
+```
+
+**Why Service Role Instead of RLS?**
+- RLS policies assume JWT claims from Supabase Auth
+- Parishioner sessions use cookies, not JWTs
+- Service role allows bypassing RLS with explicit permission checks in code
+- More flexible for custom authentication system
+
+**For complete parishioner portal documentation, see [PARISHIONER_PORTAL.md](./PARISHIONER_PORTAL.md)**
+
+---
+
 ### Error Handling
 
 **Not Found:**
