@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getParishionerSession } from '@/lib/parishioner-auth/actions'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export interface CalendarEvent {
   id: string
@@ -26,6 +27,13 @@ export async function getCalendarEvents(
   const session = await getParishionerSession()
   if (!session || session.personId !== personId) {
     console.error('Unauthorized access attempt to calendar events')
+    return []
+  }
+
+  // Rate limiting check
+  const rateLimitResult = rateLimit(`calendar:${personId}`, RATE_LIMITS.calendar)
+  if (!rateLimitResult.success) {
+    console.warn('Rate limit exceeded for calendar events:', personId)
     return []
   }
 

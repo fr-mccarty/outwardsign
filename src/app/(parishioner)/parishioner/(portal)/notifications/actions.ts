@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getParishionerSession } from '@/lib/parishioner-auth/actions'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export interface Notification {
   id: string
@@ -26,6 +27,13 @@ export async function getNotifications(
   const session = await getParishionerSession()
   if (!session || session.personId !== personId) {
     console.error('Unauthorized access attempt to notifications')
+    return []
+  }
+
+  // Rate limiting check
+  const rateLimitResult = rateLimit(`notifications:${personId}`, RATE_LIMITS.notifications)
+  if (!rateLimitResult.success) {
+    console.warn('Rate limit exceeded for notifications:', personId)
     return []
   }
 

@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -247,6 +248,17 @@ export async function chatWithAI(
           ? 'No autorizado. Por favor, inicia sesión de nuevo.'
           : 'Unauthorized. Please log in again.',
         conversationId: conversationId || '',
+      }
+    }
+
+    // Rate limiting check
+    const rateLimitResult = rateLimit(`chat:${personId}`, RATE_LIMITS.chat)
+    if (!rateLimitResult.success) {
+      return {
+        response: language === 'es'
+          ? 'Has enviado demasiados mensajes. Por favor espera un momento.'
+          : 'You have sent too many messages. Please wait a moment.',
+        conversationId: conversationId || ''
       }
     }
 
