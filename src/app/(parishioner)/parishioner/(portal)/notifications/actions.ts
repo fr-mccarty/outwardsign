@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getParishionerSession } from '@/lib/parishioner-auth/actions'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { validateCsrfToken } from '@/lib/csrf'
 
 export interface Notification {
   id: string
@@ -73,7 +74,13 @@ export async function getNotifications(
 /**
  * Mark notification as read
  */
-export async function markNotificationRead(notificationId: string, personId: string): Promise<void> {
+export async function markNotificationRead(notificationId: string, personId: string, csrfToken?: string): Promise<void> {
+  // Validate CSRF token
+  if (!csrfToken || !(await validateCsrfToken(csrfToken))) {
+    console.error('Invalid CSRF token for mark notification read')
+    return
+  }
+
   // Verify session
   const session = await getParishionerSession()
   if (!session || session.personId !== personId) {
@@ -101,7 +108,13 @@ export async function markNotificationRead(notificationId: string, personId: str
 /**
  * Mark all notifications as read for person
  */
-export async function markAllNotificationsRead(personId: string): Promise<void> {
+export async function markAllNotificationsRead(personId: string, csrfToken?: string): Promise<void> {
+  // Validate CSRF token
+  if (!csrfToken || !(await validateCsrfToken(csrfToken))) {
+    console.error('Invalid CSRF token for mark all notifications read')
+    return
+  }
+
   // Verify session
   const session = await getParishionerSession()
   if (!session || session.personId !== personId) {
@@ -128,7 +141,13 @@ export async function markAllNotificationsRead(personId: string): Promise<void> 
 /**
  * Delete notification
  */
-export async function deleteNotification(notificationId: string, personId: string): Promise<void> {
+export async function deleteNotification(notificationId: string, personId: string, csrfToken?: string): Promise<void> {
+  // Validate CSRF token
+  if (!csrfToken || !(await validateCsrfToken(csrfToken))) {
+    console.error('Invalid CSRF token for delete notification')
+    return
+  }
+
   // Verify session
   const session = await getParishionerSession()
   if (!session || session.personId !== personId) {

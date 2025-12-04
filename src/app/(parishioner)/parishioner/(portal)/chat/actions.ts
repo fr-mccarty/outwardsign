@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { validateCsrfToken } from '@/lib/csrf'
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -232,12 +233,23 @@ export async function chatWithAI(
   personId: string,
   message: string,
   conversationId: string | null,
-  language: 'en' | 'es' = 'en'
+  language: 'en' | 'es' = 'en',
+  csrfToken?: string
 ): Promise<{
   response: string
   conversationId: string
 }> {
   try {
+    // Validate CSRF token
+    if (!csrfToken || !(await validateCsrfToken(csrfToken))) {
+      return {
+        response: language === 'es'
+          ? 'Sesión inválida. Recarga la página.'
+          : 'Invalid session. Please reload the page.',
+        conversationId: conversationId || ''
+      }
+    }
+
     // Verify session
     const { getParishionerSession } = await import('@/lib/parishioner-auth/actions')
     const session = await getParishionerSession()

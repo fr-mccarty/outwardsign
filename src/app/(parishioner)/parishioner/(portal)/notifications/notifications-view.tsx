@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCheck, Trash2 } from 'lucide-react'
 import { markNotificationRead, markAllNotificationsRead, deleteNotification } from './actions'
 import type { Notification } from './actions'
+import { useCsrfToken } from '@/components/csrf-token'
 
 interface NotificationsViewProps {
   initialNotifications: Notification[]
@@ -28,13 +29,14 @@ const notificationTypeLabels: Record<string, string> = {
 }
 
 export function NotificationsView({ initialNotifications, personId }: NotificationsViewProps) {
+  const csrfToken = useCsrfToken()
   const [notifications, setNotifications] = useState(initialNotifications)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
   const handleMarkRead = async (notificationId: string) => {
-    await markNotificationRead(notificationId, personId)
+    await markNotificationRead(notificationId, personId, csrfToken || undefined)
     setNotifications((prev) =>
       prev.map((n) => (n.id === notificationId ? { ...n, isRead: true, readAt: new Date().toISOString() } : n))
     )
@@ -42,7 +44,7 @@ export function NotificationsView({ initialNotifications, personId }: Notificati
 
   const handleMarkAllRead = async () => {
     setIsMarkingAllRead(true)
-    await markAllNotificationsRead(personId)
+    await markAllNotificationsRead(personId, csrfToken || undefined)
     setNotifications((prev) =>
       prev.map((n) => ({
         ...n,
@@ -54,7 +56,7 @@ export function NotificationsView({ initialNotifications, personId }: Notificati
   }
 
   const handleDelete = async (notificationId: string) => {
-    await deleteNotification(notificationId, personId)
+    await deleteNotification(notificationId, personId, csrfToken || undefined)
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
   }
 

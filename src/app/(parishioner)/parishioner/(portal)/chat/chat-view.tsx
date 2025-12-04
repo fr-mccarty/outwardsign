@@ -8,6 +8,7 @@ import { Send, Mic, MicOff } from 'lucide-react'
 import { chatWithAI } from './actions'
 import type { ChatMessage } from './actions'
 import { useLanguage } from '../language-context'
+import { useCsrfToken } from '@/components/csrf-token'
 
 interface ChatViewProps {
   personId: string
@@ -16,6 +17,7 @@ interface ChatViewProps {
 
 export function ChatView({ personId }: ChatViewProps) {
   const { language } = useLanguage()
+  const csrfToken = useCsrfToken()
 
   const initialMessage: ChatMessage = {
     role: 'assistant',
@@ -101,7 +103,7 @@ export function ChatView({ personId }: ChatViewProps) {
     setIsLoading(true)
 
     try {
-      const result = await chatWithAI(personId, inputMessage, conversationId, language)
+      const result = await chatWithAI(personId, inputMessage, conversationId, language, csrfToken || undefined)
 
       const assistantMessage: ChatMessage = {
         role: 'assistant',

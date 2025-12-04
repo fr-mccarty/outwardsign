@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { randomBytes } from 'crypto'
+import { randomBytes, timingSafeEqual } from 'crypto'
 
 const CSRF_COOKIE_NAME = 'parishioner_csrf'
 const CSRF_TOKEN_LENGTH = 32
@@ -21,8 +21,16 @@ export async function validateCsrfToken(token: string): Promise<boolean> {
   const cookieStore = await cookies()
   const storedToken = cookieStore.get(CSRF_COOKIE_NAME)?.value
   if (!storedToken || !token) return false
-  // Timing-safe comparison
-  return storedToken === token
+
+  // Use timing-safe comparison to prevent timing attacks
+  try {
+    const storedBuffer = Buffer.from(storedToken, 'utf-8')
+    const tokenBuffer = Buffer.from(token, 'utf-8')
+    if (storedBuffer.length !== tokenBuffer.length) return false
+    return timingSafeEqual(storedBuffer, tokenBuffer)
+  } catch {
+    return false
+  }
 }
 
 export async function getCsrfToken(): Promise<string | null> {
