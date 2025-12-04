@@ -40,6 +40,11 @@ This document provides a complete reference of all test files and individual tes
   - [Dashboard](#dashboard)
   - [Calendar](#calendar)
   - [Parish Settings](#parish-settings)
+- [Parishioner Portal](#parishioner-portal)
+  - [Parishioner Authentication](#parishioner-authentication)
+  - [Parishioner Calendar](#parishioner-calendar)
+  - [Parishioner Notifications](#parishioner-notifications)
+  - [Parishioner Chat](#parishioner-chat)
 - [Test Templates](#test-templates)
 
 ---
@@ -519,6 +524,90 @@ This document provides a complete reference of all test files and individual tes
 
 ---
 
+## Parishioner Portal
+
+### Parishioner Authentication
+
+#### `tests/parishioner-auth.spec.ts` (11 tests)
+
+**Module:** Parishioner Magic Link Authentication
+
+| Test | Description |
+|------|-------------|
+| should load login page with parish parameter | Verifies parishioner login page loads correctly with parish ID parameter |
+| should show validation error for empty email | Confirms browser validation prevents submission without email |
+| should show validation error for invalid email format | Validates browser validation prevents submission with invalid email format |
+| should show success message for magic link request | Verifies success message displays after requesting magic link (doesn't reveal if user exists) |
+| should show success message even for non-existent email (security) | Validates system doesn't reveal whether email exists in database |
+| should show rate limit error after too many requests | Confirms rate limiting prevents spam (3 requests per hour) |
+| should redirect to calendar after valid magic link | Verifies magic link token validation redirects to calendar page |
+| should show error for invalid token | Validates error handling for invalid or malformed magic link tokens |
+| should show error for missing token | Confirms error handling when token parameter is missing from URL |
+| should logout and redirect to login | Verifies logout clears session and redirects to login page |
+| should show loading state during magic link request | Validates loading state (button disabled, text changes) displays during request |
+
+### Parishioner Calendar
+
+#### `tests/parishioner-calendar.spec.ts` (11 tests)
+
+**Module:** Parishioner Calendar View
+
+| Test | Description |
+|------|-------------|
+| should require authentication and redirect if not logged in | Verifies unauthenticated users are redirected to login page |
+| should display calendar page when authenticated | Validates calendar page loads correctly for authenticated parishioners |
+| should show empty state when no events | Confirms empty state message displays when no events exist |
+| should display events grouped by month | Verifies events are organized and displayed by month headings |
+| should display event details in card | Validates event cards show all details (name, time, location, type) |
+| should show upcoming commitment alert for assignments < 48 hours away | Confirms alert banner displays for ministry assignments within 48 hours |
+| should dismiss upcoming commitment alert | Verifies dismiss button removes alert from view |
+| should open event detail modal when clicking event card | Validates clicking event card opens detail modal/dialog |
+| should display month calendar navigation | Confirms month calendar component renders with navigation |
+| should display different event type badges correctly | Verifies event type badges (Parish Event, Assignment, etc.) display correctly |
+| should handle navigation between portal tabs | Validates navigation between Calendar, Chat, and Notifications tabs |
+
+### Parishioner Notifications
+
+#### `tests/parishioner-notifications.spec.ts` (9 tests)
+
+**Module:** Parishioner Notifications
+
+| Test | Description |
+|------|-------------|
+| should require authentication and redirect if not logged in | Verifies unauthenticated users are redirected to login page |
+| should display notifications page when authenticated | Validates notifications page loads correctly for authenticated parishioners |
+| should show empty state when no notifications | Confirms empty state message displays when no notifications exist |
+| should display list of notifications | Verifies notification cards display with title, message, sender, and type |
+| should mark single notification as read | Validates marking individual notification as read updates UI state |
+| should mark all notifications as read | Confirms "Mark All Read" button marks all notifications as read |
+| should delete notification | Verifies delete button removes notification from list |
+| should display notification type badges correctly | Validates notification type badges (Schedule Update, Reminder, etc.) display correctly |
+| should show unread badge count in navigation | Confirms unread notification count displays in navigation |
+
+### Parishioner Chat
+
+#### `tests/parishioner-chat.spec.ts` (13 tests)
+
+**Module:** Parishioner AI Chat Assistant
+
+| Test | Description |
+|------|-------------|
+| should require authentication and redirect if not logged in | Verifies unauthenticated users are redirected to login page |
+| should display chat page when authenticated | Validates chat page loads correctly for authenticated parishioners |
+| should display initial welcome message | Confirms AI assistant displays welcome message on page load |
+| should display quick action buttons | Verifies quick action buttons (My Schedule, My Readings, etc.) are visible |
+| should populate input when clicking quick action button | Validates clicking quick action populates input field with message |
+| should send message and receive response | Confirms message sending works and AI response displays (mocked) |
+| should handle Enter key to send message | Verifies pressing Enter key sends message |
+| should not send empty message | Validates system prevents sending empty messages |
+| should show error message on API failure | Confirms error handling displays user-friendly message when API fails |
+| should display voice input button when supported | Verifies voice input button displays if browser supports speech recognition |
+| should toggle language and update UI text | Validates language toggle switches UI text between English and Spanish |
+| should maintain chat history during session | Confirms chat history persists for all messages in current session |
+| should scroll to bottom when new messages arrive | Verifies new messages automatically scroll into view |
+
+---
+
 ## Test Templates
 
 ### `tests/TEST_TEMPLATE.spec.ts`
@@ -537,7 +626,7 @@ This document provides a complete reference of all test files and individual tes
 
 ## Test Statistics
 
-**Total Test Files:** 20 (excluding templates and backups)
+**Total Test Files:** 24 (excluding templates and backups)
 
 **Total Tests by Category:**
 - **Authentication:** 10 tests (Signup: 3, Login: 7)
@@ -546,8 +635,9 @@ This document provides a complete reference of all test files and individual tes
 - **Supporting Modules:** 28 tests (People: 5, Locations: 5, Events: 8, Readings: 5, Groups: 18)
 - **Picker Components:** 12 tests (Person: 7, Event: 5)
 - **Application Features:** 45 tests (Dashboard: 19, Calendar: 10, Parish Settings: 16)
+- **Parishioner Portal:** 44 tests (Auth: 11, Calendar: 11, Notifications: 9, Chat: 13)
 
-**Total Active Tests:** ~147 tests (some skipped in groups-membership)
+**Total Active Tests:** ~191 tests (some skipped in groups-membership)
 
 **Skipped Tests:** 11 tests (all in groups-membership.spec.ts)
 
