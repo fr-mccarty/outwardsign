@@ -180,6 +180,15 @@ const translations = {
           "Flexible data access for parish management"
         ]
       },
+      parishionerPortal: {
+        title: "Parishioner Portal",
+        description: "Give parishioners their own portal to view ministry schedules, chat with an AI assistant, and receive parish notifications.",
+        features: [
+          "Personal ministry calendar and commitments",
+          "AI-powered chat assistant for schedule questions",
+          "In-app notifications from parish staff"
+        ]
+      },
       freeOpenSource: {
         title: "Completely Free & Open Source",
         description: "Built for the Catholic community. Every parish deserves access to excellent sacrament preparation tools, regardless of budget. No subscriptions, no hidden fees, no limitations—ever.",
@@ -301,10 +310,6 @@ const translations = {
       advancedAnalytics: {
         title: "Advanced Analytics Dashboard",
         description: "Comprehensive sacrament statistics, trends analysis, and annual summary reports for strategic parish planning"
-      },
-      parishionerPortal: {
-        title: "Parishioner Portal",
-        description: "Self-service portal for families to view and manage their sacrament information"
       }
     },
     gettingStarted: {
@@ -498,6 +503,15 @@ const translations = {
           "Acceso flexible a datos para gestión parroquial"
         ]
       },
+      parishionerPortal: {
+        title: "Portal de Feligreses",
+        description: "Ofrece a los feligreses su propio portal para ver horarios de ministerio, chatear con un asistente de IA y recibir notificaciones parroquiales.",
+        features: [
+          "Calendario personal de ministerio y compromisos",
+          "Asistente de chat con IA para preguntas sobre horarios",
+          "Notificaciones en la app del personal parroquial"
+        ]
+      },
       freeOpenSource: {
         title: "Completamente Gratis y de Código Abierto",
         description: "Construido para la comunidad católica. Cada parroquia merece acceso a excelentes herramientas de preparación sacramental, independientemente del presupuesto. Sin suscripciones, sin tarifas ocultas, sin limitaciones—nunca.",
@@ -619,10 +633,6 @@ const translations = {
       advancedAnalytics: {
         title: "Panel de Análisis Avanzado",
         description: "Estadísticas completas de sacramentos, análisis de tendencias e informes anuales resumidos para planificación estratégica parroquial"
-      },
-      parishionerPortal: {
-        title: "Portal de Feligreses",
-        description: "Portal de autoservicio para que las familias vean y gestionen su información sacramental"
       }
     },
     gettingStarted: {
@@ -1063,6 +1073,13 @@ function HomeContent() {
               description={t.features.dataExport.description}
               features={t.features.dataExport.features}
             />
+
+            <HomeFeatureCard
+              icon={User}
+              title={t.features.parishionerPortal.title}
+              description={t.features.parishionerPortal.description}
+              features={t.features.parishionerPortal.features}
+            />
           </div>
 
           {/* Free & Open Source Highlight Banner */}
@@ -1463,23 +1480,6 @@ function HomeContent() {
                   <h3 className="font-semibold text-lg mb-2">{t.comingSoon.advancedAnalytics.title}</h3>
                   <p className="text-sm text-muted-foreground">
                     {t.comingSoon.advancedAnalytics.description}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Parishioner Portal */}
-              <Card className="bg-card text-card-foreground border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all">
-                <CardContent className="pt-8 pb-8 text-center">
-                  <div className="p-3 bg-primary/10 rounded-lg w-fit mx-auto mb-4">
-                    <UserCog className="h-8 w-8 text-primary" />
-                  </div>
-                  <Badge variant="secondary" className="mb-3 gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    Coming Soon
-                  </Badge>
-                  <h3 className="font-semibold text-lg mb-2">{t.comingSoon.parishionerPortal.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t.comingSoon.parishionerPortal.description}
                   </p>
                 </CardContent>
               </Card>
