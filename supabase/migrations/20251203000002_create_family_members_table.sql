@@ -115,3 +115,18 @@ CREATE POLICY "Parishioners can read their family members"
       )
     )
   );
+
+-- Add parishioner policy for families table (now that family_members exists)
+CREATE POLICY "Parishioners can read their own families"
+  ON public.families
+  FOR SELECT
+  TO anon
+  USING (
+    id IN (
+      SELECT family_id
+      FROM public.family_members
+      WHERE person_id IN (
+        SELECT id FROM public.people WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
+      )
+    )
+  );

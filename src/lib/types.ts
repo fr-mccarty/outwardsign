@@ -353,6 +353,11 @@ export interface Person {
   note?: string
   avatar_url?: string  // Storage path to profile photo in person-avatars bucket
   mass_times_template_item_ids?: string[]
+  // Parishioner portal fields
+  preferred_communication_channel?: 'email' | 'sms'
+  parishioner_portal_enabled?: boolean
+  last_portal_access?: string
+  preferred_language?: 'en' | 'es'
   created_at: string
   updated_at: string
 }

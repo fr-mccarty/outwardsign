@@ -58,7 +58,7 @@ export function ParishionerNavigation({ variant, unreadCount = 0 }: ParishionerN
             >
               <div className="relative">
                 <Icon className="h-5 w-5" />
-                {tab.badge && tab.badge > 0 && (
+                {tab.badge !== undefined && tab.badge > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
                     {tab.badge}
                   </span>
@@ -94,8 +94,8 @@ export function ParishionerNavigation({ variant, unreadCount = 0 }: ParishionerN
                 )}
               >
                 <Icon className="h-5 w-5 mr-3" />
-                {tab.name}
-                {tab.badge && tab.badge > 0 && (
+                <span>{tab.name}</span>
+                {tab.badge !== undefined && tab.badge > 0 && (
                   <span className="ml-auto h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
                     {tab.badge}
                   </span>

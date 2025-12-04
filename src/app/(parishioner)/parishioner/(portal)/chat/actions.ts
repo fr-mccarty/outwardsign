@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Anthropic from '@anthropic-ai/sdk'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { validateCsrfToken } from '@/lib/csrf'
+import { CLAUDE_MODEL } from '@/lib/constants/ai'
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -306,7 +307,7 @@ export async function chatWithAI(
 
     // Call Claude API
     let response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: CLAUDE_MODEL,
       max_tokens: 1024,
       system: getSystemPrompt(language),
       messages,
@@ -341,7 +342,7 @@ export async function chatWithAI(
 
       // Continue conversation with tool results
       response = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: CLAUDE_MODEL,
         max_tokens: 1024,
         system: getSystemPrompt(language),
         messages: [

@@ -6,7 +6,7 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 
 // Initialize SES client
 const sesClient = new SESClient({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: process.env.AWS_DEFAULT_REGION || 'us-east-1',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
@@ -27,11 +27,24 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
     // Check if SES is configured
     if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
       console.warn('AWS SES not configured - skipping email send')
+      console.log('Missing AWS credentials:', {
+        hasAccessKeyId: !!process.env.AWS_ACCESS_KEY_ID,
+        hasSecretAccessKey: !!process.env.AWS_SECRET_ACCESS_KEY,
+      })
       return false
     }
 
+    const fromEmail = process.env.FROM_EMAIL || process.env.AWS_SES_FROM_EMAIL || 'noreply@outwardsign.church'
+
+    console.log('Attempting to send email via AWS SES:', {
+      to,
+      from: fromEmail,
+      region: process.env.AWS_DEFAULT_REGION || 'us-east-1',
+      subject,
+    })
+
     const command = new SendEmailCommand({
-      Source: process.env.FROM_EMAIL || 'noreply@outwardsign.church',
+      Source: fromEmail,
       Destination: {
         ToAddresses: [to],
       },
@@ -49,10 +62,19 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
       },
     })
 
-    await sesClient.send(command)
+    const result = await sesClient.send(command)
+    console.log('✅ Email sent successfully via AWS SES:', {
+      to,
+      messageId: result.MessageId,
+    })
     return true
   } catch (error) {
-    console.error('Error sending email:', error)
+    console.error('❌ Error sending email via AWS SES:', error)
+    console.error('Error details:', {
+      name: (error as Error).name,
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+    })
     return false
   }
 }
@@ -65,6 +87,8 @@ export async function sendMagicLinkEmail(
   magicLink: string,
   language: 'en' | 'es' = 'en'
 ): Promise<boolean> {
+  console.log('📧 Preparing magic link email:', { email, language })
+
   const subject = language === 'es' ? 'Tu enlace de acceso - Outward Sign' : 'Your Access Link - Outward Sign'
 
   const html =
@@ -96,7 +120,9 @@ export async function sendMagicLinkEmail(
     </div>
   `
 
-  return sendEmail({ to: email, subject, html })
+  const result = await sendEmail({ to: email, subject, html })
+  console.log('📧 Magic link email send result:', { success: result, email })
+  return result
 }
 
 /**

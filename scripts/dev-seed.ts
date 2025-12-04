@@ -495,6 +495,75 @@ async function seedDevData() {
     console.error('⚠️  Warning: Error creating people:', peopleError.message)
   } else {
     console.log(`   ✅ ${people?.length || 0} people created`)
+  }
+
+  // Create dev user person record with portal access enabled
+  console.log('')
+  console.log('👤 Creating dev user person record for parishioner portal...')
+  console.log(`   Email: ${devUserEmail}`)
+  console.log(`   Parish ID: ${parishId}`)
+
+  // Check if dev person already exists
+  const { data: existingDevPerson, error: lookupError } = await supabase
+    .from('people')
+    .select('id, full_name, email, parishioner_portal_enabled')
+    .eq('email', devUserEmail)
+    .eq('parish_id', parishId)
+    .maybeSingle()
+
+  if (lookupError) {
+    console.error('   ❌ Error looking up existing dev person:', lookupError)
+  }
+
+  if (existingDevPerson) {
+    console.log(`   ✅ Dev person already exists: ${existingDevPerson.full_name} (${existingDevPerson.email})`)
+
+    // Ensure portal access is enabled
+    if (!existingDevPerson.parishioner_portal_enabled) {
+      const { error: updateError } = await supabase
+        .from('people')
+        .update({ parishioner_portal_enabled: true })
+        .eq('id', existingDevPerson.id)
+
+      if (updateError) {
+        console.error('   ❌ Error enabling portal access:', updateError)
+      } else {
+        console.log(`   ✅ Parishioner portal access enabled`)
+      }
+    } else {
+      console.log(`   ✅ Parishioner portal access already enabled`)
+    }
+  } else {
+    // Create new dev person
+    console.log('   Creating new dev person...')
+    const { data: devPerson, error: devPersonError } = await supabase
+      .from('people')
+      .insert({
+        parish_id: parishId,
+        first_name: 'Outward Sign',
+        last_name: 'Developer',
+        email: devUserEmail,
+        phone_number: '(555) 555-5555',
+        sex: 'MALE',
+        parishioner_portal_enabled: true,
+        preferred_communication_channel: 'email',
+        preferred_language: 'en',
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[0 % weekendMassTimeItems.length].id] : []
+      })
+      .select()
+      .single()
+
+    if (devPersonError) {
+      console.error('   ❌ Error creating dev person:', devPersonError)
+      console.error('   Full error:', JSON.stringify(devPersonError, null, 2))
+    } else {
+      console.log(`   ✅ Dev person created: ${devPerson.full_name} (${devPerson.email})`)
+      console.log(`   ✅ Parishioner portal access enabled`)
+    }
+  }
+
+  // Continue with existing code...
+  if (people && people.length > 0) {
 
     // Add some people to groups with group roles
     if (groups && groups.length > 0 && people && people.length > 0 && groupRoles && groupRoles.length > 0) {

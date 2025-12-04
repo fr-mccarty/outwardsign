@@ -79,20 +79,8 @@ CREATE POLICY "Parish members can delete families in their parish"
     )
   );
 
--- Parishioners can read families they belong to
-CREATE POLICY "Parishioners can read their own families"
-  ON public.families
-  FOR SELECT
-  TO anon
-  USING (
-    id IN (
-      SELECT family_id
-      FROM public.family_members
-      WHERE person_id IN (
-        SELECT id FROM public.people WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
-      )
-    )
-  );
+-- Note: Parishioner policy for families is created in a later migration
+-- after family_members table exists (see 20251203000002)
 
 -- Add trigger to update updated_at timestamp
 CREATE TRIGGER update_families_updated_at

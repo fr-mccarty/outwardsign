@@ -246,8 +246,10 @@ CREATE INDEX idx_chat_conversations_person ON ai_chat_conversations(person_id);
 
 **7. people (existing table - added columns)**
 ```sql
+ALTER TABLE people ADD COLUMN preferred_communication_channel TEXT DEFAULT 'email' CHECK (preferred_communication_channel IN ('email', 'sms'));
 ALTER TABLE people ADD COLUMN parishioner_portal_enabled BOOLEAN DEFAULT false;
-ALTER TABLE people ADD COLUMN preferred_language TEXT DEFAULT 'en';
+ALTER TABLE people ADD COLUMN last_portal_access TIMESTAMPTZ;
+ALTER TABLE people ADD COLUMN preferred_language TEXT DEFAULT 'en' CHECK (preferred_language IN ('en', 'es'));
 ```
 
 ### Database Functions
