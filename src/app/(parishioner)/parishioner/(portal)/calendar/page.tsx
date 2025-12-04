@@ -3,7 +3,7 @@ import { CalendarView } from './calendar-view'
 import { getCalendarEvents } from './actions'
 
 export default async function ParishionerCalendarPage() {
-  const { personId, parishId } = await requireParishionerAuth()
+  const { personId } = await requireParishionerAuth()
 
   // Get events for next 90 days
   const startDate = new Date().toISOString().split('T')[0]

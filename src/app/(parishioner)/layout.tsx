@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Parishioner Portal - Outward Sign',
   description: 'View your ministry schedule, get AI assistance, and stay connected with your parish',
+  manifest: '/manifest.json',
 }
 
 export default function ParishionerLayout({

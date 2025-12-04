@@ -34,7 +34,7 @@ export function NotificationsView({ initialNotifications, personId }: Notificati
   const unreadCount = notifications.filter((n) => !n.isRead).length
 
   const handleMarkRead = async (notificationId: string) => {
-    await markNotificationRead(notificationId)
+    await markNotificationRead(notificationId, personId)
     setNotifications((prev) =>
       prev.map((n) => (n.id === notificationId ? { ...n, isRead: true, readAt: new Date().toISOString() } : n))
     )
@@ -54,7 +54,7 @@ export function NotificationsView({ initialNotifications, personId }: Notificati
   }
 
   const handleDelete = async (notificationId: string) => {
-    await deleteNotification(notificationId)
+    await deleteNotification(notificationId, personId)
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
   }
 

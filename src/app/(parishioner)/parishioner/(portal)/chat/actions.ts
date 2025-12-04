@@ -237,12 +237,20 @@ export async function chatWithAI(
   conversationId: string
 }> {
   try {
-    const supabase = createAdminClient()
+    // Verify session
+    const { getParishionerSession } = await import('@/lib/parishioner-auth/actions')
+    const session = await getParishionerSession()
+    if (!session || session.personId !== personId) {
+      console.error('Unauthorized access attempt to chat')
+      return {
+        response: language === 'es'
+          ? 'No autorizado. Por favor, inicia sesión de nuevo.'
+          : 'Unauthorized. Please log in again.',
+        conversationId: conversationId || '',
+      }
+    }
 
-    // Get person family data for context
-    const { data: familyData } = await supabase.rpc('get_person_family_data', {
-      p_person_id: personId,
-    })
+    const supabase = createAdminClient()
 
     // Get conversation history if exists
     let conversationHistory: ChatMessage[] = []
@@ -409,6 +417,8 @@ export async function chatWithAI(
  * Get conversation history
  */
 export async function getConversationHistory(conversationId: string): Promise<ChatMessage[]> {
+  // Note: Session verification done at page level for getConversationHistory
+  // since conversationId is already scoped to the person's session
   const supabase = createAdminClient()
 
   try {

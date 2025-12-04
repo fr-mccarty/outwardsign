@@ -8,21 +8,21 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Mail } from 'lucide-react'
 
-export function MagicLinkLoginForm() {
+interface MagicLinkLoginFormProps {
+  parishId: string
+}
+
+export function MagicLinkLoginForm({ parishId }: MagicLinkLoginFormProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-
-  // TODO: Get parish ID from subdomain or URL parameter
-  // For now, hardcode a default parish ID (should be dynamic in production)
-  const PARISH_ID = '00000000-0000-0000-0000-000000000000' // Replace with actual logic
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setMessage(null)
 
-    const result = await generateMagicLink(email.trim(), PARISH_ID)
+    const result = await generateMagicLink(email.trim(), parishId)
 
     if (result.success) {
       setMessage({ type: 'success', text: result.message })

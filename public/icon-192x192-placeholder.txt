@@ -1,0 +1,16 @@
+PLACEHOLDER ICON REQUIRED
+
+This is a placeholder for the 192x192 PWA icon.
+
+To create the actual icon:
+1. Create a 192x192 PNG image for the Parishioner Portal
+2. Save it as: public/icon-192x192.png
+3. Use the same design for consistency
+
+Temporary solution:
+You can use the icon.svg file in this directory and convert it to PNG:
+- Use an online converter or design tool
+- Or use ImageMagick: convert icon.svg -resize 192x192 icon-192x192.png
+
+The icon should represent the Outward Sign Parishioner Portal.
+Recommended design: Church-related imagery or the "OS" logo on a blue background.

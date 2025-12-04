@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getParishionerSession } from '@/lib/parishioner-auth/actions'
 
 export interface Notification {
   id: string
@@ -21,6 +22,13 @@ export async function getNotifications(
   limit: number,
   offset: number
 ): Promise<Notification[]> {
+  // Verify session
+  const session = await getParishionerSession()
+  if (!session || session.personId !== personId) {
+    console.error('Unauthorized access attempt to notifications')
+    return []
+  }
+
   const supabase = createAdminClient()
 
   try {
@@ -57,10 +65,18 @@ export async function getNotifications(
 /**
  * Mark notification as read
  */
-export async function markNotificationRead(notificationId: string): Promise<void> {
+export async function markNotificationRead(notificationId: string, personId: string): Promise<void> {
+  // Verify session
+  const session = await getParishionerSession()
+  if (!session || session.personId !== personId) {
+    console.error('Unauthorized access attempt to mark notification read')
+    return
+  }
+
   const supabase = createAdminClient()
 
   try {
+    // Extra security: verify the notification belongs to this person
     await supabase
       .from('parishioner_notifications')
       .update({
@@ -68,6 +84,7 @@ export async function markNotificationRead(notificationId: string): Promise<void
         read_at: new Date().toISOString(),
       })
       .eq('id', notificationId)
+      .eq('person_id', personId)
   } catch (error) {
     console.error('Error marking notification as read:', error)
   }
@@ -77,6 +94,13 @@ export async function markNotificationRead(notificationId: string): Promise<void
  * Mark all notifications as read for person
  */
 export async function markAllNotificationsRead(personId: string): Promise<void> {
+  // Verify session
+  const session = await getParishionerSession()
+  if (!session || session.personId !== personId) {
+    console.error('Unauthorized access attempt to mark all notifications read')
+    return
+  }
+
   const supabase = createAdminClient()
 
   try {
@@ -96,11 +120,23 @@ export async function markAllNotificationsRead(personId: string): Promise<void> 
 /**
  * Delete notification
  */
-export async function deleteNotification(notificationId: string): Promise<void> {
+export async function deleteNotification(notificationId: string, personId: string): Promise<void> {
+  // Verify session
+  const session = await getParishionerSession()
+  if (!session || session.personId !== personId) {
+    console.error('Unauthorized access attempt to delete notification')
+    return
+  }
+
   const supabase = createAdminClient()
 
   try {
-    await supabase.from('parishioner_notifications').delete().eq('id', notificationId)
+    // Extra security: verify the notification belongs to this person
+    await supabase
+      .from('parishioner_notifications')
+      .delete()
+      .eq('id', notificationId)
+      .eq('person_id', personId)
   } catch (error) {
     console.error('Error deleting notification:', error)
   }
@@ -110,6 +146,13 @@ export async function deleteNotification(notificationId: string): Promise<void> 
  * Get unread notification count for person
  */
 export async function getUnreadNotificationCount(personId: string): Promise<number> {
+  // Verify session
+  const session = await getParishionerSession()
+  if (!session || session.personId !== personId) {
+    console.error('Unauthorized access attempt to get unread count')
+    return 0
+  }
+
   const supabase = createAdminClient()
 
   try {

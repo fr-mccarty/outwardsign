@@ -2,12 +2,19 @@
 
 import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { randomBytes, createHash } from 'crypto'
+import { randomBytes } from 'crypto'
+import { hash, compare } from 'bcryptjs'
 import { sendMagicLinkEmail } from '@/lib/email'
+import { validateEnv } from '@/lib/env-validation'
 
-const MAGIC_LINK_EXPIRY_DAYS = 30
+// Validate environment variables on module load
+validateEnv()
+
+const MAGIC_LINK_EXPIRY_HOURS = 48
+const SESSION_EXPIRY_DAYS = 30
 const RATE_LIMIT_MAX_REQUESTS = 3
 const RATE_LIMIT_WINDOW_HOURS = 1
+const BCRYPT_ROUNDS = 10
 
 interface MagicLinkResult {
   success: boolean
@@ -22,10 +29,10 @@ interface ValidateMagicLinkResult {
 }
 
 /**
- * Hash a token using SHA-256
+ * Hash a token using bcrypt
  */
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex')
+async function hashToken(token: string): Promise<string> {
+  return hash(token, BCRYPT_ROUNDS)
 }
 
 /**
@@ -106,11 +113,11 @@ export async function generateMagicLink(
 
     // Generate secure token
     const token = randomBytes(32).toString('hex')
-    const hashedToken = hashToken(token)
+    const hashedToken = await hashToken(token)
 
-    // Create session
+    // Create session (magic link expires in 48 hours, session itself lasts 30 days)
     const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + MAGIC_LINK_EXPIRY_DAYS)
+    expiresAt.setHours(expiresAt.getHours() + MAGIC_LINK_EXPIRY_HOURS)
 
     const { error: sessionError } = await supabase
       .from('parishioner_auth_sessions')
@@ -131,8 +138,8 @@ export async function generateMagicLink(
       }
     }
 
-    // Send email with magic link
-    const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/parishioner/auth?token=${token}`
+    // Send email with magic link (include parish ID in URL)
+    const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/parishioner/auth?token=${token}&parish=${person.parish_id}`
 
     // Determine language preference (default to English)
     // TODO: Add language preference field to people table
@@ -164,23 +171,42 @@ export async function generateMagicLink(
 export async function validateMagicLink(token: string): Promise<ValidateMagicLinkResult> {
   try {
     const supabase = createAdminClient()
-    const hashedToken = hashToken(token)
 
-    // Look up session
-    const { data: session, error: sessionError } = await supabase
+    // Get all sessions that haven't expired yet (we'll check token hash with bcrypt compare)
+    const windowStart = new Date()
+    windowStart.setHours(windowStart.getHours() - MAGIC_LINK_EXPIRY_HOURS)
+
+    const { data: sessions, error: sessionError } = await supabase
       .from('parishioner_auth_sessions')
       .select('*')
-      .eq('token', hashedToken)
-      .single()
+      .gte('expires_at', new Date().toISOString())
+      .eq('is_revoked', false)
 
-    if (sessionError || !session) {
+    if (sessionError || !sessions || sessions.length === 0) {
       return {
         success: false,
         error: 'Invalid or expired link. Please request a new one.',
       }
     }
 
-    // Check if expired
+    // Find matching session by comparing token hashes
+    let session = null
+    for (const s of sessions) {
+      const isMatch = await compare(token, s.token)
+      if (isMatch) {
+        session = s
+        break
+      }
+    }
+
+    if (!session) {
+      return {
+        success: false,
+        error: 'Invalid or expired link. Please request a new one.',
+      }
+    }
+
+    // Check if expired (redundant but explicit)
     if (new Date(session.expires_at) < new Date()) {
       return {
         success: false,
@@ -188,18 +214,17 @@ export async function validateMagicLink(token: string): Promise<ValidateMagicLin
       }
     }
 
-    // Check if revoked
-    if (session.is_revoked) {
-      return {
-        success: false,
-        error: 'This link is no longer valid. Please request a new one.',
-      }
-    }
+    // Extend session expiry for the browser cookie (30 days from now)
+    const extendedExpiresAt = new Date()
+    extendedExpiresAt.setDate(extendedExpiresAt.getDate() + SESSION_EXPIRY_DAYS)
 
-    // Update last_accessed_at
+    // Update last_accessed_at and extend expiry
     await supabase
       .from('parishioner_auth_sessions')
-      .update({ last_accessed_at: new Date().toISOString() })
+      .update({
+        last_accessed_at: new Date().toISOString(),
+        expires_at: extendedExpiresAt.toISOString()
+      })
       .eq('id', session.id)
 
     // Update last_portal_access for person
@@ -208,13 +233,13 @@ export async function validateMagicLink(token: string): Promise<ValidateMagicLin
       .update({ last_portal_access: new Date().toISOString() })
       .eq('id', session.person_id)
 
-    // Create browser session cookie
+    // Create browser session cookie (30 days)
     const cookieStore = await cookies()
     cookieStore.set('parishioner_session_id', session.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * MAGIC_LINK_EXPIRY_DAYS, // 30 days
+      maxAge: 60 * 60 * 24 * SESSION_EXPIRY_DAYS, // 30 days
       path: '/',
     })
 

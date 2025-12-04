@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getParishionerSession } from '@/lib/parishioner-auth/actions'
 
 export interface CalendarEvent {
   id: string
@@ -21,6 +22,13 @@ export async function getCalendarEvents(
   startDate: string,
   endDate: string
 ): Promise<CalendarEvent[]> {
+  // Verify session
+  const session = await getParishionerSession()
+  if (!session || session.personId !== personId) {
+    console.error('Unauthorized access attempt to calendar events')
+    return []
+  }
+
   const supabase = createAdminClient()
   const events: CalendarEvent[] = []
 
