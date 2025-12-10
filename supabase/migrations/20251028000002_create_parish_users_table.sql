@@ -5,6 +5,7 @@ CREATE TABLE parish_users (
   roles TEXT[] NOT NULL DEFAULT ARRAY['parishioner']::TEXT[],
   enabled_modules TEXT[] DEFAULT ARRAY[]::TEXT[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
   PRIMARY KEY (user_id, parish_id)
 );
 
@@ -25,13 +26,37 @@ CREATE INDEX idx_parish_users_enabled_modules ON parish_users USING GIN(enabled_
 -- Column comments
 COMMENT ON COLUMN parish_users.enabled_modules IS 'Array of module names that ministry-leader role can access. Possible values: masses, weddings, funerals, baptisms, presentations, quinceaneras, groups. Empty array means no module access for ministry-leaders.';
 
+-- Create a security definer function to check if user is admin of a parish
+-- This bypasses RLS to avoid infinite recursion
+CREATE OR REPLACE FUNCTION is_parish_admin(check_parish_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM parish_users
+    WHERE user_id = auth.uid()
+    AND parish_id = check_parish_id
+    AND 'admin' = ANY(roles)
+  );
+$$;
+
 -- RLS Policies for parish_users
--- Users can read their own parish_users record
-CREATE POLICY "Users can read their own parish memberships"
+-- Users can read their own record OR all records if they're admin of that parish
+CREATE POLICY "Users can read parish memberships"
   ON parish_users
   FOR SELECT
   TO anon, authenticated
-  USING (user_id = auth.uid());
+  USING (
+    user_id = auth.uid()
+    OR is_parish_admin(parish_id)
+  );
+
+-- Add comment explaining the policy
+COMMENT ON POLICY "Users can read parish memberships" ON parish_users IS
+  'Allows users to read their own record, or all members if they are admin of that parish.';
 
 -- Users can insert parish_users for themselves (during signup or when creating a parish)
 CREATE POLICY "Users can create parish memberships"

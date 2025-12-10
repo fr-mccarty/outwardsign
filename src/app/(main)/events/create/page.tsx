@@ -2,14 +2,33 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventFormWrapper } from '../event-form-wrapper'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
 
-export default async function CreateEventPage() {
+interface PageProps {
+  searchParams: Promise<{
+    type?: string  // Event type slug for pre-fill
+  }>
+}
+
+export default async function CreateEventPage({ searchParams }: PageProps) {
   const supabase = await createClient()
 
   // Check authentication server-side
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
+  }
+
+  const params = await searchParams
+
+  // Look up event type by slug if provided
+  let prefilledEventTypeId: string | undefined
+
+  if (params.type) {
+    const eventType = await getEventTypeBySlug(params.type)
+    if (eventType) {
+      prefilledEventTypeId = eventType.id
+    }
   }
 
   const breadcrumbs = [
@@ -24,6 +43,8 @@ export default async function CreateEventPage() {
       <EventFormWrapper
         title="Create Event"
         description="Add a new event to your parish calendar."
+        prefilledEventTypeId={prefilledEventTypeId}
+        minimalMode
       />
     </>
   )

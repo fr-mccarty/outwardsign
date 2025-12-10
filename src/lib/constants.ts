@@ -122,7 +122,6 @@ export const RELATED_EVENT_TYPE_VALUES = [
   // Other sacramental events
   'PRESENTATION',
   'BAPTISM',
-  'GROUP_BAPTISM',
   'MASS',
 ] as const
 export type RelatedEventType = typeof RELATED_EVENT_TYPE_VALUES[number]
@@ -175,10 +174,6 @@ export const RELATED_EVENT_TYPE_LABELS: Record<string, { en: string; es: string 
   BAPTISM: {
     en: 'Baptism',
     es: 'Bautismo'
-  },
-  GROUP_BAPTISM: {
-    en: 'Group Baptism',
-    es: 'Bautismo Grupal'
   },
   MASS: {
     en: 'Mass',
@@ -248,60 +243,11 @@ export const MODULE_RELATED_EVENT_TYPE_MAP: Record<string, {
     display: { en: 'Quinceañera Reception', es: 'Recepción de Quinceañera' }
   },
 
-  // Group Baptism module events
-  GROUP_BAPTISM: {
-    module: 'group-baptisms' as any,
-    column: 'group_baptism_event_id',
-    display: { en: 'Group Baptism', es: 'Bautismo Grupal' }
-  },
-
   // Mass Intentions (special case: uses liturgical_event_id)
   MASS: {
     module: 'mass-intentions',
     column: 'liturgical_event_id',
     display: { en: 'Mass Intention', es: 'Intención de Misa' }
-  }
-}
-
-// Reading Categories
-// Store uppercase keys (WEDDING, FUNERAL, BAPTISM) in the database
-// Display localized labels using READING_CATEGORY_LABELS[category][lang]
-// TODO: When implementing language selection, use: READING_CATEGORY_LABELS[category][selectedLanguage]
-export const READING_CATEGORIES = ['WEDDING', 'FUNERAL', 'BAPTISM', 'QUINCEANERA', 'FIRST_READING', 'SECOND_READING', 'PSALM', 'GOSPEL'] as const
-export type ReadingCategory = typeof READING_CATEGORIES[number]
-
-export const READING_CATEGORY_LABELS: Record<string, { en: string; es: string }> = {
-  WEDDING: {
-    en: 'Wedding',
-    es: 'Boda'
-  },
-  FUNERAL: {
-    en: 'Funeral',
-    es: 'Funeral'
-  },
-  BAPTISM: {
-    en: 'Baptism',
-    es: 'Bautismo'
-  },
-  QUINCEANERA: {
-    en: 'Quinceañera',
-    es: 'Quinceañera'
-  },
-  FIRST_READING: {
-    en: 'First Reading',
-    es: 'Primera Lectura'
-  },
-  SECOND_READING: {
-    en: 'Second Reading',
-    es: 'Segunda Lectura'
-  },
-  PSALM: {
-    en: 'Psalm',
-    es: 'Salmo'
-  },
-  GOSPEL: {
-    en: 'Gospel',
-    es: 'Evangelio'
   }
 }
 
@@ -507,16 +453,6 @@ export const BAPTISM_DEFAULT_TEMPLATE: BaptismTemplate = 'baptism-summary-englis
 export const BAPTISM_TEMPLATE_LABELS: Record<BaptismTemplate, { en: string; es: string }> = {
   'baptism-summary-english': { en: 'Baptism Summary (English)', es: 'Resumen del Bautismo (Inglés)' },
   'baptism-summary-spanish': { en: 'Baptism Summary (Spanish)', es: 'Resumen del Bautismo (Español)' }
-}
-
-// Group Baptism Template Constants
-export const GROUP_BAPTISM_TEMPLATE_VALUES = ['group-baptism-summary-english', 'group-baptism-summary-spanish'] as const
-export type GroupBaptismTemplate = typeof GROUP_BAPTISM_TEMPLATE_VALUES[number]
-export const GROUP_BAPTISM_DEFAULT_TEMPLATE: GroupBaptismTemplate = 'group-baptism-summary-english'
-
-export const GROUP_BAPTISM_TEMPLATE_LABELS: Record<GroupBaptismTemplate, { en: string; es: string }> = {
-  'group-baptism-summary-english': { en: 'Group Baptism Summary (English)', es: 'Resumen de Bautismo Grupal (Inglés)' },
-  'group-baptism-summary-spanish': { en: 'Group Baptism Summary (Spanish)', es: 'Resumen de Bautismo Grupal (Español)' }
 }
 
 // Presentation Template Constants

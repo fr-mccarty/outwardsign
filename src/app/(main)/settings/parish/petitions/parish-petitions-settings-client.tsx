@@ -23,9 +23,11 @@ interface ParishPetitionsSettingsClientProps {
 }
 
 export function ParishPetitionsSettingsClient({
-  parish,
+  parish: _parish,
   initialPetitionTemplates
 }: ParishPetitionsSettingsClientProps) {
+  // parish available for future parish-specific filtering
+  void _parish
   const router = useRouter()
   const [petitionTemplates, setPetitionTemplates] = useState<PetitionContextTemplate[]>(initialPetitionTemplates)
   const [petitionSearchTerm, setPetitionSearchTerm] = useState('')

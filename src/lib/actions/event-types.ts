@@ -2,145 +2,330 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { EventType } from '@/lib/types'
-import {
-  createEventTypeSchema,
-  updateEventTypeSchema,
-  type CreateEventTypeData,
-  type UpdateEventTypeData,
-} from '@/lib/schemas/event-types'
+import { requireSelectedParish } from '@/lib/auth/parish'
+import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { requireManageParishSettings } from '@/lib/auth/permissions'
+import type {
+  DynamicEventType,
+  DynamicEventTypeWithRelations,
+  CreateDynamicEventTypeData,
+  UpdateDynamicEventTypeData,
+  InputFieldDefinition,
+  Script
+} from '@/lib/types'
+
+export interface EventTypeFilterParams {
+  search?: string
+  sort?: 'order_asc' | 'order_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+}
 
 /**
- * Get all event types for the current parish
+ * Generate a URL-safe slug from a string
+ * Example: "Wedding Ceremony" -> "wedding-ceremony"
  */
-export async function getEventTypes(): Promise<EventType[]> {
+function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')      // Replace spaces with hyphens
+    .replace(/-+/g, '-')       // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, '')   // Trim hyphens from start/end
+}
+
+/**
+ * Get active (non-deleted) event types for the selected parish
+ * Used by picker components
+ */
+export async function getActiveEventTypes(): Promise<DynamicEventType[]> {
+  return getEventTypes({ sort: 'order_asc' })
+}
+
+/**
+ * Get all event types for the selected parish
+ */
+export async function getEventTypes(filters?: EventTypeFilterParams): Promise<DynamicEventType[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const { data: parishUser } = await supabase
-    .from('parish_users')
-    .select('parish_id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!parishUser) {
-    throw new Error('No parish found for user')
-  }
-
-  const { data, error } = await supabase
+  let query = supabase
     .from('event_types')
     .select('*')
-    .eq('parish_id', parishUser.parish_id)
-    .order('display_order', { ascending: true, nullsFirst: false })
-    .order('name', { ascending: true })
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+
+  // Apply sorting
+  if (filters?.sort === 'order_asc' || !filters?.sort) {
+    // Default to order ascending
+    query = query.order('order', { ascending: true })
+  } else if (filters?.sort === 'order_desc') {
+    query = query.order('order', { ascending: false })
+  } else if (filters?.sort === 'name_asc') {
+    query = query.order('name', { ascending: true })
+  } else if (filters?.sort === 'name_desc') {
+    query = query.order('name', { ascending: false })
+  } else if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching event types:', error)
     throw new Error('Failed to fetch event types')
   }
 
-  return data || []
-}
+  let eventTypes = data || []
 
-/**
- * Get active event types for the current parish (for dropdowns)
- */
-export async function getActiveEventTypes(): Promise<EventType[]> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
+  // Apply search filter (if provided)
+  if (filters?.search) {
+    const searchTerm = filters.search.toLowerCase()
+    eventTypes = eventTypes.filter(et =>
+      et.name.toLowerCase().includes(searchTerm)
+    )
   }
 
-  const { data: parishUser } = await supabase
-    .from('parish_users')
-    .select('parish_id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!parishUser) {
-    throw new Error('No parish found for user')
-  }
-
-  const { data, error } = await supabase
-    .from('event_types')
-    .select('*')
-    .eq('parish_id', parishUser.parish_id)
-    .eq('is_active', true)
-    .order('display_order', { ascending: true, nullsFirst: false })
-    .order('name', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching active event types:', error)
-    throw new Error('Failed to fetch active event types')
-  }
-
-  return data || []
+  return eventTypes
 }
 
 /**
  * Get a single event type by ID
  */
-export async function getEventType(id: string): Promise<EventType | null> {
+export async function getEventType(id: string): Promise<DynamicEventType | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
   const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
 
   const { data, error } = await supabase
     .from('event_types')
     .select('*')
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
     .single()
 
   if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
     console.error('Error fetching event type:', error)
-    return null
+    throw new Error('Failed to fetch event type')
   }
 
   return data
 }
 
 /**
- * Create a new event type
+ * Get a single event type by slug
  */
-export async function createEventType(eventTypeData: CreateEventTypeData): Promise<EventType> {
+export async function getEventTypeBySlug(slug: string): Promise<DynamicEventType | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
   const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const { data: parishUser } = await supabase
-    .from('parish_users')
-    .select('parish_id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!parishUser) {
-    throw new Error('No parish found for user')
-  }
-
-  // Validate input data
-  createEventTypeSchema.parse(eventTypeData)
 
   const { data, error } = await supabase
     .from('event_types')
-    .insert({
-      parish_id: parishUser.parish_id,
-      name: eventTypeData.name,
-      description: eventTypeData.description,
-      is_active: eventTypeData.is_active ?? true,
-      display_order: eventTypeData.display_order
-    })
+    .select('*')
+    .eq('slug', slug)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching event type by slug:', error)
+    throw new Error('Failed to fetch event type by slug')
+  }
+
+  return data
+}
+
+/**
+ * Get event type with all related data (input field definitions and scripts)
+ */
+export async function getEventTypeWithRelations(id: string): Promise<DynamicEventTypeWithRelations | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the event type
+  const { data: eventType, error } = await supabase
+    .from('event_types')
+    .select('*')
+    .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching event type:', error)
+    throw new Error('Failed to fetch event type')
+  }
+
+  // Fetch related data in parallel
+  const [inputFieldsData, scriptsData] = await Promise.all([
+    supabase
+      .from('input_field_definitions')
+      .select('*')
+      .eq('event_type_id', id)
+      .is('deleted_at', null)
+      .order('order', { ascending: true }),
+    supabase
+      .from('scripts')
+      .select('*')
+      .eq('event_type_id', id)
+      .is('deleted_at', null)
+      .order('order', { ascending: true })
+  ])
+
+  if (inputFieldsData.error) {
+    console.error('Error fetching input field definitions:', inputFieldsData.error)
+    throw new Error('Failed to fetch input field definitions')
+  }
+
+  if (scriptsData.error) {
+    console.error('Error fetching scripts:', scriptsData.error)
+    throw new Error('Failed to fetch scripts')
+  }
+
+  return {
+    ...eventType,
+    input_field_definitions: inputFieldsData.data as InputFieldDefinition[] || [],
+    scripts: scriptsData.data as Script[] || []
+  }
+}
+
+/**
+ * Get event type with all related data by slug
+ */
+export async function getEventTypeWithRelationsBySlug(slug: string): Promise<DynamicEventTypeWithRelations | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the event type by slug
+  const { data: eventType, error } = await supabase
+    .from('event_types')
+    .select('*')
+    .eq('slug', slug)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching event type by slug:', error)
+    throw new Error('Failed to fetch event type by slug')
+  }
+
+  // Fetch related data in parallel
+  const [inputFieldsData, scriptsData] = await Promise.all([
+    supabase
+      .from('input_field_definitions')
+      .select('*')
+      .eq('event_type_id', eventType.id)
+      .is('deleted_at', null)
+      .order('order', { ascending: true }),
+    supabase
+      .from('scripts')
+      .select('*')
+      .eq('event_type_id', eventType.id)
+      .is('deleted_at', null)
+      .order('order', { ascending: true })
+  ])
+
+  if (inputFieldsData.error) {
+    console.error('Error fetching input field definitions:', inputFieldsData.error)
+    throw new Error('Failed to fetch input field definitions')
+  }
+
+  if (scriptsData.error) {
+    console.error('Error fetching scripts:', scriptsData.error)
+    throw new Error('Failed to fetch scripts')
+  }
+
+  return {
+    ...eventType,
+    input_field_definitions: inputFieldsData.data as InputFieldDefinition[] || [],
+    scripts: scriptsData.data as Script[] || []
+  }
+}
+
+/**
+ * Create a new event type
+ */
+export async function createEventType(data: CreateDynamicEventTypeData): Promise<DynamicEventType> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check permissions (admin only)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  await requireManageParishSettings(user.id, selectedParishId)
+
+  // Get max order to assign next order
+  const { data: existingEventTypes } = await supabase
+    .from('event_types')
+    .select('order')
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .order('order', { ascending: false })
+    .limit(1)
+
+  const maxOrder = existingEventTypes?.[0]?.order ?? -1
+  const newOrder = maxOrder + 1
+
+  // Generate slug from name (or use provided slug)
+  const slug = data.slug || generateSlug(data.name)
+
+  // Check slug uniqueness and append number if needed
+  let slugCounter = 1
+  let isUnique = false
+  let finalSlug = slug
+
+  while (!isUnique) {
+    const { data: existingWithSlug } = await supabase
+      .from('event_types')
+      .select('id')
+      .eq('parish_id', selectedParishId)
+      .eq('slug', finalSlug)
+      .is('deleted_at', null)
+      .limit(1)
+
+    if (!existingWithSlug || existingWithSlug.length === 0) {
+      isUnique = true
+    } else {
+      slugCounter++
+      finalSlug = `${slug}-${slugCounter}`
+    }
+  }
+
+  // Insert event type
+  const { data: eventType, error } = await supabase
+    .from('event_types')
+    .insert([
+      {
+        parish_id: selectedParishId,
+        name: data.name,
+        description: data.description || null,
+        icon: data.icon,
+        slug: finalSlug,
+        order: newOrder
+      }
+    ])
     .select()
     .single()
 
@@ -149,36 +334,54 @@ export async function createEventType(eventTypeData: CreateEventTypeData): Promi
     throw new Error('Failed to create event type')
   }
 
-  revalidatePath('/events')
-  revalidatePath('/settings')
-
-  return data
+  revalidatePath('/settings/event-types')
+  revalidatePath('/dashboard')
+  return eventType
 }
 
 /**
  * Update an existing event type
  */
-export async function updateEventType(id: string, eventTypeData: UpdateEventTypeData): Promise<EventType> {
+export async function updateEventType(id: string, data: UpdateDynamicEventTypeData): Promise<DynamicEventType> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    throw new Error('Not authenticated')
+    throw new Error('User not authenticated')
+  }
+  await requireManageParishSettings(user.id, selectedParishId)
+
+  // If slug is being updated, validate uniqueness
+  if (data.slug !== undefined && data.slug !== null) {
+    const { data: existingWithSlug } = await supabase
+      .from('event_types')
+      .select('id')
+      .eq('parish_id', selectedParishId)
+      .eq('slug', data.slug)
+      .neq('id', id) // Exclude current event type
+      .is('deleted_at', null)
+      .limit(1)
+
+    if (existingWithSlug && existingWithSlug.length > 0) {
+      throw new Error('This slug already exists. Please choose a different slug.')
+    }
   }
 
-  // Validate input data
-  updateEventTypeSchema.parse(eventTypeData)
+  // Build update object from only defined values
+  const updateData = Object.fromEntries(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
+  )
 
-  const { data, error } = await supabase
+  const { data: eventType, error } = await supabase
     .from('event_types')
-    .update({
-      name: eventTypeData.name,
-      description: eventTypeData.description,
-      is_active: eventTypeData.is_active,
-      display_order: eventTypeData.display_order,
-      updated_at: new Date().toISOString()
-    })
+    .update(updateData)
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
     .select()
     .single()
 
@@ -187,65 +390,82 @@ export async function updateEventType(id: string, eventTypeData: UpdateEventType
     throw new Error('Failed to update event type')
   }
 
-  revalidatePath('/events')
-  revalidatePath('/settings')
-
-  return data
+  revalidatePath('/settings/event-types')
+  revalidatePath(`/settings/event-types/${id}`)
+  return eventType
 }
 
 /**
  * Delete an event type
- * Note: This will fail if there are events referencing this event type (due to FK constraint)
+ * Checks if there are existing events using this type first
  */
 export async function deleteEventType(id: string): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    throw new Error('Not authenticated')
+    throw new Error('User not authenticated')
+  }
+  await requireManageParishSettings(user.id, selectedParishId)
+
+  // Check for existing events using this event type
+  const { data: events } = await supabase
+    .from('events')
+    .select('id')
+    .eq('event_type_id', id)
+    .is('deleted_at', null)
+    .limit(1)
+
+  if (events && events.length > 0) {
+    throw new Error('Cannot delete event type with existing events. Delete events first.')
   }
 
+  // Hard delete (will cascade to input_field_definitions, scripts, sections)
   const { error } = await supabase
     .from('event_types')
     .delete()
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
 
   if (error) {
     console.error('Error deleting event type:', error)
-    throw new Error('Failed to delete event type. It may be in use by existing events.')
+    throw new Error('Failed to delete event type')
   }
 
-  revalidatePath('/events')
-  revalidatePath('/settings')
+  revalidatePath('/settings/event-types')
+  revalidatePath('/dashboard')
 }
 
 /**
  * Reorder event types
+ * Updates the order field for all provided event types
  */
-export async function reorderEventTypes(eventTypeIds: string[]): Promise<void> {
+export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
   const supabase = await createClient()
 
+  // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    throw new Error('Not authenticated')
+    throw new Error('User not authenticated')
   }
+  await requireManageParishSettings(user.id, selectedParishId)
 
-  // Update display_order for each event type
-  const updates = eventTypeIds.map((id, index) =>
+  // Update each event type's order
+  const updates = orderedIds.map((id, index) =>
     supabase
       .from('event_types')
-      .update({ display_order: index + 1 })
+      .update({ order: index })
       .eq('id', id)
+      .eq('parish_id', selectedParishId)
   )
 
-  const results = await Promise.all(updates)
+  await Promise.all(updates)
 
-  const errors = results.filter(result => result.error)
-  if (errors.length > 0) {
-    console.error('Error reordering event types:', errors)
-    throw new Error('Failed to reorder event types')
-  }
-
-  revalidatePath('/events')
-  revalidatePath('/settings')
+  revalidatePath('/settings/event-types')
+  revalidatePath('/dashboard')
 }

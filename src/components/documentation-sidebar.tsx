@@ -18,7 +18,6 @@ import {
   ChevronRight,
   FileQuestion,
   Code,
-  Heart,
   Mail,
   HandHeart
 } from 'lucide-react'

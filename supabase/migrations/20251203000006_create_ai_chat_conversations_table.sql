@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS public.ai_chat_conversations (
   session_id UUID NOT NULL REFERENCES public.parishioner_auth_sessions(id) ON DELETE CASCADE,
   conversation_history JSONB NOT NULL DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add indexes

@@ -32,7 +32,6 @@ export function PickerField<T>({
   label,
   value,
   onValueChange,
-  showPicker,
   onShowPickerChange,
   description,
   placeholder = 'Select',

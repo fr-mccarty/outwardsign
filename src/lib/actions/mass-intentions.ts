@@ -56,7 +56,7 @@ export interface PaginatedResult<T> {
 }
 
 export async function getMassIntentions(filters?: MassIntentionFilterParams): Promise<MassIntentionWithNames[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -160,7 +160,7 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
 }
 
 export async function getMassIntentionsPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassIntentionWithNames>> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -229,7 +229,7 @@ export async function getMassIntentionsPaginated(params?: PaginatedParams): Prom
 }
 
 export async function getMassIntention(id: string): Promise<MassIntention | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -257,7 +257,7 @@ export interface MassIntentionWithRelations extends MassIntention {
 }
 
 export async function getMassIntentionWithRelations(id: string): Promise<MassIntentionWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -354,7 +354,8 @@ export async function updateMassIntention(id: string, data: UpdateMassIntentionD
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: intention, error } = await supabase
@@ -420,7 +421,7 @@ export interface MassIntentionReportResult {
 export async function getMassIntentionsReport(
   params?: MassIntentionReportParams
 ): Promise<MassIntentionReportResult> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

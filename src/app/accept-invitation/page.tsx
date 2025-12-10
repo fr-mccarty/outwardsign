@@ -26,7 +26,7 @@ function AcceptInvitationForm() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [accepting, setAccepting] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [, setIsAuthenticated] = useState(false)
   const [acceptSuccess, setAcceptSuccess] = useState(false)
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
   const [emailMismatch, setEmailMismatch] = useState(false)
@@ -186,7 +186,7 @@ function AcceptInvitationForm() {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                You've successfully joined <strong>{invitation.parish_name}</strong>.
+                You&apos;ve successfully joined <strong>{invitation.parish_name}</strong>.
                 Redirecting to your dashboard...
               </AlertDescription>
             </Alert>
@@ -293,7 +293,7 @@ function AcceptInvitationForm() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
-            You're Invited!
+            You&apos;re Invited!
           </CardTitle>
           <CardDescription>
             Join {invitation.parish_name} on {APP_NAME}
@@ -303,7 +303,7 @@ function AcceptInvitationForm() {
           <div className="space-y-4">
             <div className="bg-muted p-4 rounded-lg">
               <p className="text-sm text-muted-foreground mb-2">
-                You've been invited to join:
+                You&apos;ve been invited to join:
               </p>
               <p className="font-semibold text-lg">{invitation.parish_name}</p>
               <p className="text-sm text-muted-foreground mt-2">
@@ -316,7 +316,7 @@ function AcceptInvitationForm() {
 
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground text-center">
-                Choose how you'd like to continue:
+                Choose how you&apos;d like to continue:
               </p>
 
               <Button
@@ -342,7 +342,7 @@ function AcceptInvitationForm() {
             </div>
 
             <p className="text-xs text-muted-foreground text-center pt-2">
-              After signing in or creating an account, you'll be automatically added to {invitation.parish_name}.
+              After signing in or creating an account, you&apos;ll be automatically added to {invitation.parish_name}.
             </p>
           </div>
         </CardContent>

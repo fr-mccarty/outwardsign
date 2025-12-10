@@ -16,12 +16,11 @@ import {
 import {
   Home,
   FileText,
-  BookOpen,
   Calendar,
   Settings,
   Church,
-  Heart, ClipboardList, User, Users, Flame, Waves, CirclePlus, Plus, HandHeartIcon, VenusAndMars, List, Droplet, Cross,
-  BookHeart, CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle
+  User, Users, CirclePlus, Plus, List,
+  CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -29,12 +28,15 @@ import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
 import { Logo } from "@/components/logo"
 import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
 import { canAccessModule, canManageParishSettings, type UserParishRole, type ModuleName } from "@/lib/auth/permissions-client"
+import { getLucideIcon } from "@/lib/utils/lucide-icons"
+import type { DynamicEventType } from "@/lib/types"
 
 interface MainSidebarProps {
   userParish: UserParishRole | null
+  eventTypes: DynamicEventType[]
 }
 
-export function MainSidebar({ userParish }: MainSidebarProps) {
+export function MainSidebar({ userParish, eventTypes }: MainSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar()
 
   const handleLinkClick = () => {
@@ -93,40 +95,6 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {(canAccess('baptisms') || canAccess('group-baptisms')) && (
-                <CollapsibleNavSection
-                  name="Baptisms"
-                  icon={Droplet}
-                  items={[
-                    ...(canAccess('baptisms') ? [
-                      {
-                        title: "Our Baptisms",
-                        url: "/baptisms",
-                        icon: Droplet,
-                      },
-                      {
-                        title: "New Baptism",
-                        url: "/baptisms/create",
-                        icon: Plus,
-                      },
-                    ] : []),
-                    ...(canAccess('group-baptisms') ? [
-                      {
-                        title: "Our Group Baptisms",
-                        url: "/group-baptisms",
-                        icon: Droplet,
-                      },
-                      {
-                        title: "New Group Baptism",
-                        url: "/group-baptisms/create",
-                        icon: Plus,
-                      },
-                    ] : []),
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
               <CollapsibleNavSection
                 name="Events"
                 icon={CalendarDays}
@@ -145,25 +113,6 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-              {canAccess('funerals') && (
-                <CollapsibleNavSection
-                  name="Funerals"
-                  icon={Cross}
-                  items={[
-                    {
-                      title: "Our Funerals",
-                      url: "/funerals",
-                      icon: Cross,
-                    },
-                    {
-                      title: "New Funeral",
-                      url: "/funerals/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
 
               {canAccess('groups') && (
                 <CollapsibleNavSection
@@ -306,83 +255,7 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-              {canAccess('presentations') && (
-                <CollapsibleNavSection
-                  name="Presentations"
-                  icon={HandHeartIcon}
-                  items={[
-                    {
-                      title: "Our Presentations",
-                      url: "/presentations",
-                      icon: HandHeartIcon,
-                    },
-                    {
-                      title: "New Presentation",
-                      url: "/presentations/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
 
-              {canAccess('quinceaneras') && (
-                <CollapsibleNavSection
-                  name="Quinceañeras"
-                  icon={BookHeart}
-                  items={[
-                    {
-                      title: "Our Quinceañeras",
-                      url: "/quinceaneras",
-                      icon: BookHeart,
-                    },
-                    {
-                      title: "New Quinceañera",
-                      url: "/quinceaneras/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
-
-              <CollapsibleNavSection
-                name="Readings"
-                icon={BookOpen}
-                items={[
-                  {
-                    title: "Our Readings",
-                    url: "/readings",
-                    icon: BookOpen,
-                  },
-                  {
-                    title: "Create Reading",
-                    url: "/readings/create",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              {canAccess('weddings') && (
-                <CollapsibleNavSection
-                  name="Weddings"
-                  icon={VenusAndMars}
-                  items={[
-                    {
-                      title: "Our Weddings",
-                      url: "/weddings",
-                      icon: VenusAndMars,
-                    },
-                    {
-                      title: "New Wedding",
-                      url: "/weddings/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
 
               <SidebarMenuItem key="WeekendSummary">
                 <SidebarMenuButton asChild>
@@ -395,9 +268,42 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
 
             </SidebarMenu>
           </SidebarGroupContent>
-
-
         </SidebarGroup>
+
+        {/* Dynamic Event Types Section */}
+        {eventTypes.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Event Types</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {eventTypes.map((eventType) => {
+                  const Icon = getLucideIcon(eventType.icon)
+                  const slug = eventType.slug || eventType.id // Fallback to ID if slug missing
+                  return (
+                    <CollapsibleNavSection
+                      key={eventType.id}
+                      name={eventType.name}
+                      icon={Icon}
+                      items={[
+                        {
+                          title: `Our ${eventType.name}s`,
+                          url: `/events?type=${slug}`,
+                          icon: Icon,
+                        },
+                        {
+                          title: `New ${eventType.name}`,
+                          url: `/events/create?type=${slug}`,
+                          icon: Plus,
+                        },
+                      ]}
+                      defaultOpen={false}
+                    />
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Settings section at the bottom */}
         <SidebarGroup>
@@ -414,6 +320,16 @@ export function MainSidebar({ userParish }: MainSidebarProps) {
                       title: "General",
                       url: "/settings/parish/general",
                       icon: Settings,
+                    },
+                    {
+                      title: "Event Types",
+                      url: "/settings/event-types",
+                      icon: CalendarDays,
+                    },
+                    {
+                      title: "Custom Lists",
+                      url: "/settings/custom-lists",
+                      icon: List,
                     },
                     {
                       title: "Mass Intentions",

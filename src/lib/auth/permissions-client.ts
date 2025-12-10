@@ -8,12 +8,6 @@
 // Available modules that can be enabled/disabled for ministry-leaders
 export const AVAILABLE_MODULES = [
   'masses',
-  'weddings',
-  'funerals',
-  'baptisms',
-  'group-baptisms',
-  'presentations',
-  'quinceaneras',
   'groups',
   'mass-intentions',
 ] as const

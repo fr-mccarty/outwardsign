@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { useForm, UseFormReturn } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -121,6 +121,7 @@ export function CorePicker<T>({
   createFields = EMPTY_CREATE_FIELDS,
   onCreateSubmit,
   createButtonLabel = 'Create',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addNewButtonLabel = 'Add New',
   autoOpenCreateForm = false,
   defaultCreateFormData = EMPTY_FORM_DATA,

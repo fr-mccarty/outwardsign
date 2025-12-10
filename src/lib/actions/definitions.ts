@@ -2,7 +2,8 @@
 
 import { getDefaultPromptTemplate } from '@/lib/template-utils'
 
-export async function savePromptTemplate(template: string) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function savePromptTemplate(_template: string) {
   // Custom templates are not supported - this function is deprecated
   throw new Error('Custom prompt templates are not supported')
 }

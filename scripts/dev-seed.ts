@@ -15,6 +15,41 @@ import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
 
+// =====================================================
+// Sample People Data - used for both insert and avatar assignment
+// =====================================================
+interface SamplePerson {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  sex: 'MALE' | 'FEMALE'
+  avatarFile?: string
+}
+
+const SAMPLE_PEOPLE: SamplePerson[] = [
+  { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '(555) 123-4567', sex: 'MALE', avatarFile: 'fr-josh.webp' },
+  { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '(555) 987-6543', sex: 'FEMALE' },
+  { firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@example.com', phone: '(555) 246-8101', sex: 'MALE' },
+  { firstName: 'Maria', lastName: 'Garcia', email: 'maria.garcia@example.com', phone: '(555) 369-1214', sex: 'FEMALE' },
+  { firstName: 'Michael', lastName: 'Chen', email: 'michael.chen@example.com', phone: '(555) 482-1357', sex: 'MALE' },
+  { firstName: 'Sarah', lastName: 'Williams', email: 'sarah.williams@example.com', phone: '(555) 159-2634', sex: 'FEMALE' },
+  { firstName: 'David', lastName: 'Martinez', email: 'david.martinez@example.com', phone: '(555) 753-9514', sex: 'MALE' },
+  { firstName: 'Emily', lastName: 'Taylor', email: 'emily.taylor@example.com', phone: '(555) 951-7532', sex: 'FEMALE' },
+  { firstName: 'James', lastName: 'Anderson', email: 'james.anderson@example.com', phone: '(555) 357-1593', sex: 'MALE', avatarFile: 'joe.webp' },
+  { firstName: 'Lisa', lastName: 'Brown', email: 'lisa.brown@example.com', phone: '(555) 753-8642', sex: 'FEMALE' },
+  { firstName: 'Robert', lastName: 'Wilson', email: 'robert.wilson@example.com', phone: '(555) 951-3578', sex: 'MALE' },
+  { firstName: 'Patricia', lastName: 'Moore', email: 'patricia.moore@example.com', phone: '(555) 159-7534', sex: 'FEMALE' },
+  { firstName: 'Thomas', lastName: 'Lee', email: 'thomas.lee@example.com', phone: '(555) 357-9512', sex: 'MALE' },
+  { firstName: 'Jennifer', lastName: 'White', email: 'jennifer.white@example.com', phone: '(555) 753-1596', sex: 'FEMALE' },
+  { firstName: 'Christopher', lastName: 'Harris', email: 'christopher.harris@example.com', phone: '(555) 951-7538', sex: 'MALE' },
+  { firstName: 'Linda', lastName: 'Clark', email: 'linda.clark@example.com', phone: '(555) 159-3574', sex: 'FEMALE' },
+  { firstName: 'Daniel', lastName: 'Rodriguez', email: 'daniel.rodriguez@example.com', phone: '(555) 357-7539', sex: 'MALE' },
+  { firstName: 'Barbara', lastName: 'Lewis', email: 'barbara.lewis@example.com', phone: '(555) 753-9516', sex: 'FEMALE' },
+  { firstName: 'Matthew', lastName: 'Walker', email: 'matthew.walker@example.com', phone: '(555) 951-1597', sex: 'MALE' },
+  { firstName: 'Nancy', lastName: 'Hall', email: 'nancy.hall@example.com', phone: '(555) 159-7535', sex: 'FEMALE' },
+]
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const devUserEmail = process.env.DEV_USER_EMAIL
@@ -194,23 +229,23 @@ async function seedDevData() {
   console.log('')
 
   // Seed standard onboarding data using shared function
-  console.log('📖 Seeding standard parish data (readings, roles, templates)...')
+  console.log('📖 Seeding standard parish data (roles, templates, event types)...')
 
-  const { data: existingReadings } = await supabase
-    .from('readings')
+  const { data: existingPetitionTemplates } = await supabase
+    .from('petition_templates')
     .select('id')
     .eq('parish_id', parishId)
     .limit(1)
 
-  if (!existingReadings || existingReadings.length === 0) {
+  if (!existingPetitionTemplates || existingPetitionTemplates.length === 0) {
     const { seedParishData } = await import('../src/lib/seeding/parish-seed-data')
 
     try {
       const result = await seedParishData(supabase, parishId)
-      console.log(`   ✅ Readings: ${result.readings.length}`)
       console.log(`   ✅ Petition templates: ${result.petitionTemplates.length}`)
       console.log(`   ✅ Group roles: ${result.groupRoles.length}`)
       console.log(`   ✅ Mass roles: ${result.massRoles.length}`)
+      console.log(`   ✅ Event types: ${result.eventTypes.length}`)
       console.log(`   ✅ Mass types, role templates, and time templates created`)
     } catch (error) {
       console.error('❌ Error seeding parish data:', error)
@@ -307,188 +342,17 @@ async function seedDevData() {
   console.log('👤 Creating sample people...')
   const { data: people, error: peopleError } = await supabase
     .from('people')
-    .insert([
-      {
+    .insert(
+      SAMPLE_PEOPLE.map((person, index) => ({
         parish_id: parishId,
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john.doe@example.com',
-        phone_number: '(555) 123-4567',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[0 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Jane',
-        last_name: 'Smith',
-        email: 'jane.smith@example.com',
-        phone_number: '(555) 987-6543',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[1 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Bob',
-        last_name: 'Johnson',
-        email: 'bob.johnson@example.com',
-        phone_number: '(555) 246-8101',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[2 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Maria',
-        last_name: 'Garcia',
-        email: 'maria.garcia@example.com',
-        phone_number: '(555) 369-1214',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[3 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Michael',
-        last_name: 'Chen',
-        email: 'michael.chen@example.com',
-        phone_number: '(555) 482-1357',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[4 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Sarah',
-        last_name: 'Williams',
-        email: 'sarah.williams@example.com',
-        phone_number: '(555) 159-2634',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[5 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'David',
-        last_name: 'Martinez',
-        email: 'david.martinez@example.com',
-        phone_number: '(555) 753-9514',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[6 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Emily',
-        last_name: 'Taylor',
-        email: 'emily.taylor@example.com',
-        phone_number: '(555) 951-7532',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[7 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'James',
-        last_name: 'Anderson',
-        email: 'james.anderson@example.com',
-        phone_number: '(555) 357-1593',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[8 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Lisa',
-        last_name: 'Brown',
-        email: 'lisa.brown@example.com',
-        phone_number: '(555) 753-8642',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[9 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Robert',
-        last_name: 'Wilson',
-        email: 'robert.wilson@example.com',
-        phone_number: '(555) 951-3578',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[10 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Patricia',
-        last_name: 'Moore',
-        email: 'patricia.moore@example.com',
-        phone_number: '(555) 159-7534',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[11 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Thomas',
-        last_name: 'Lee',
-        email: 'thomas.lee@example.com',
-        phone_number: '(555) 357-9512',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[12 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Jennifer',
-        last_name: 'White',
-        email: 'jennifer.white@example.com',
-        phone_number: '(555) 753-1596',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[13 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Christopher',
-        last_name: 'Harris',
-        email: 'christopher.harris@example.com',
-        phone_number: '(555) 951-7538',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[14 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Linda',
-        last_name: 'Clark',
-        email: 'linda.clark@example.com',
-        phone_number: '(555) 159-3574',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[15 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Daniel',
-        last_name: 'Rodriguez',
-        email: 'daniel.rodriguez@example.com',
-        phone_number: '(555) 357-7539',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[16 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Barbara',
-        last_name: 'Lewis',
-        email: 'barbara.lewis@example.com',
-        phone_number: '(555) 753-9516',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[17 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Matthew',
-        last_name: 'Walker',
-        email: 'matthew.walker@example.com',
-        phone_number: '(555) 951-1597',
-        sex: 'MALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[18 % weekendMassTimeItems.length].id] : []
-      },
-      {
-        parish_id: parishId,
-        first_name: 'Nancy',
-        last_name: 'Hall',
-        email: 'nancy.hall@example.com',
-        phone_number: '(555) 159-7535',
-        sex: 'FEMALE',
-        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[19 % weekendMassTimeItems.length].id] : []
-      },
-    ])
+        first_name: person.firstName,
+        last_name: person.lastName,
+        email: person.email,
+        phone_number: person.phone,
+        sex: person.sex,
+        mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[index % weekendMassTimeItems.length].id] : []
+      }))
+    )
     .select()
 
   if (peopleError) {
@@ -697,219 +561,30 @@ async function seedDevData() {
     }
   }
 
-  // Create sample group baptisms with individual baptisms
-  console.log('')
-  console.log('👶 Creating sample group baptisms...')
-
-  // Fetch some people to use as children, parents, godparents, and presider
-  const { data: samplePeople } = await supabase
-    .from('people')
-    .select('id, first_name, last_name')
-    .eq('parish_id', parishId)
-    .limit(15)
-
-  if (samplePeople && samplePeople.length >= 10) {
-    // Create a presider (use first person or create if needed)
-    const presider = samplePeople[0]
-
-    // Fetch or create a location
-    let locationId: string | null = null
-    const { data: existingLocation } = await supabase
-      .from('locations')
-      .select('id')
-      .eq('parish_id', parishId)
-      .limit(1)
-      .single()
-
-    if (existingLocation) {
-      locationId = existingLocation.id
-    }
-
-    // Create 2 group baptism events
-    const { data: groupBaptismEvents } = await supabase
-      .from('events')
-      .insert([
-        {
-          parish_id: parishId,
-          name: 'December Group Baptism',
-          start_date: '2025-12-15',
-          start_time: '14:00',
-          location_id: locationId,
-          related_event_type: 'BAPTISM'
-        },
-        {
-          parish_id: parishId,
-          name: 'Easter Vigil Baptisms',
-          start_date: '2025-04-20',
-          start_time: '20:00',
-          location_id: locationId,
-          related_event_type: 'BAPTISM'
-        }
-      ])
-      .select()
-
-    if (groupBaptismEvents && groupBaptismEvents.length === 2) {
-      // Create 2 group baptisms
-      const { data: groupBaptisms } = await supabase
-        .from('group_baptisms')
-        .insert([
-          {
-            parish_id: parishId,
-            name: 'December 2025 Group Baptism',
-            group_baptism_event_id: groupBaptismEvents[0].id,
-            presider_id: presider.id,
-            status: 'ACTIVE',
-            note: 'Monthly group baptism ceremony',
-            group_baptism_template_id: 'group-baptism-summary-english'
-          },
-          {
-            parish_id: parishId,
-            name: 'Easter Vigil 2025 Baptisms',
-            group_baptism_event_id: groupBaptismEvents[1].id,
-            presider_id: presider.id,
-            status: 'PLANNING',
-            note: 'Special Easter Vigil celebration',
-            group_baptism_template_id: 'group-baptism-summary-spanish'
-          }
-        ])
-        .select()
-
-      if (groupBaptisms && groupBaptisms.length === 2) {
-        console.log(`   ✅ ${groupBaptisms.length} group baptisms created`)
-
-        // Create individual baptisms for each group
-        // Group 1: December group - 3 baptisms
-        // Group 2: Easter Vigil - 5 baptisms
-
-        const baptismsToCreate = [
-          // December Group Baptism (3 children)
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[0].id,
-            child_id: samplePeople[1]?.id,
-            mother_id: samplePeople[2]?.id,
-            father_id: samplePeople[3]?.id,
-            sponsor_1_id: samplePeople[4]?.id,
-            sponsor_2_id: samplePeople[5]?.id,
-            baptism_event_id: groupBaptismEvents[0].id,
-            presider_id: presider.id,
-            status: 'ACTIVE'
-          },
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[0].id,
-            child_id: samplePeople[6]?.id,
-            mother_id: samplePeople[7]?.id,
-            father_id: samplePeople[8]?.id,
-            sponsor_1_id: samplePeople[9]?.id,
-            baptism_event_id: groupBaptismEvents[0].id,
-            presider_id: presider.id,
-            status: 'ACTIVE'
-          },
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[0].id,
-            child_id: samplePeople[10]?.id,
-            mother_id: samplePeople[11]?.id,
-            sponsor_1_id: samplePeople[12]?.id,
-            baptism_event_id: groupBaptismEvents[0].id,
-            presider_id: presider.id,
-            status: 'ACTIVE'
-          },
-          // Easter Vigil Baptisms (5 children)
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[1].id,
-            child_id: samplePeople[13]?.id,
-            mother_id: samplePeople[14]?.id,
-            baptism_event_id: groupBaptismEvents[1].id,
-            presider_id: presider.id,
-            status: 'PLANNING'
-          },
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[1].id,
-            child_id: samplePeople[1]?.id, // Reuse (different scenario)
-            father_id: samplePeople[3]?.id,
-            sponsor_1_id: samplePeople[5]?.id,
-            sponsor_2_id: samplePeople[7]?.id,
-            baptism_event_id: groupBaptismEvents[1].id,
-            presider_id: presider.id,
-            status: 'PLANNING'
-          },
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[1].id,
-            child_id: samplePeople[2]?.id,
-            mother_id: samplePeople[4]?.id,
-            baptism_event_id: groupBaptismEvents[1].id,
-            presider_id: presider.id,
-            status: 'PLANNING'
-          },
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[1].id,
-            child_id: samplePeople[6]?.id,
-            mother_id: samplePeople[8]?.id,
-            father_id: samplePeople[10]?.id,
-            baptism_event_id: groupBaptismEvents[1].id,
-            presider_id: presider.id,
-            status: 'PLANNING'
-          },
-          {
-            parish_id: parishId,
-            group_baptism_id: groupBaptisms[1].id,
-            child_id: samplePeople[12]?.id,
-            sponsor_1_id: samplePeople[14]?.id,
-            baptism_event_id: groupBaptismEvents[1].id,
-            presider_id: presider.id,
-            status: 'PLANNING'
-          }
-        ]
-
-        const { data: baptisms, error: baptismsError } = await supabase
-          .from('baptisms')
-          .insert(baptismsToCreate)
-          .select()
-
-        if (baptismsError) {
-          console.error('⚠️  Warning: Error creating baptisms:', baptismsError.message)
-        } else {
-          console.log(`   ✅ ${baptisms?.length || 0} individual baptisms created (3 in December group, 5 in Easter Vigil group)`)
-        }
-      }
-    }
-  } else {
-    console.log('   ⚠️  Not enough sample people to create group baptisms (need at least 10)')
-  }
-
-  // Upload sample avatar images for people created by seed_modules.sql
+  // Upload sample avatar images for people with avatarFile defined in SAMPLE_PEOPLE
   console.log('')
   console.log('🖼️  Uploading sample avatar images...')
 
-  // Define which people should get avatars (from seed_modules.sql)
-  const avatarAssignments = [
-    { firstName: 'Father John', lastName: "O'Brien", imageFile: 'fr-josh.webp' },
-    { firstName: 'James', lastName: 'Smith', imageFile: 'joe.webp' }
-  ]
+  // Filter to people who have an avatar file defined
+  const peopleWithAvatars = SAMPLE_PEOPLE.filter(p => p.avatarFile)
 
-  for (const assignment of avatarAssignments) {
+  for (const samplePerson of peopleWithAvatars) {
     // Find the person
     const { data: person, error: personError } = await supabase
       .from('people')
       .select('id')
       .eq('parish_id', parishId)
-      .eq('first_name', assignment.firstName)
-      .eq('last_name', assignment.lastName)
+      .eq('first_name', samplePerson.firstName)
+      .eq('last_name', samplePerson.lastName)
       .single()
 
     if (personError || !person) {
-      console.log(`   ⚠️  Could not find ${assignment.firstName} ${assignment.lastName}`)
+      console.log(`   ⚠️  Could not find ${samplePerson.firstName} ${samplePerson.lastName}`)
       continue
     }
 
     // Read the image file from public/team/
-    const imagePath = path.join(process.cwd(), 'public', 'team', assignment.imageFile)
+    const imagePath = path.join(process.cwd(), 'public', 'team', samplePerson.avatarFile!)
 
     if (!fs.existsSync(imagePath)) {
       console.log(`   ⚠️  Image file not found: ${imagePath}`)
@@ -917,7 +592,7 @@ async function seedDevData() {
     }
 
     const imageBuffer = fs.readFileSync(imagePath)
-    const fileExtension = path.extname(assignment.imageFile)
+    const fileExtension = path.extname(samplePerson.avatarFile!)
     const storagePath = `${parishId}/${person.id}${fileExtension}`
 
     // Upload to storage bucket
@@ -929,7 +604,7 @@ async function seedDevData() {
       })
 
     if (uploadError) {
-      console.error(`   ❌ Error uploading avatar for ${assignment.firstName} ${assignment.lastName}:`, uploadError)
+      console.error(`   ❌ Error uploading avatar for ${samplePerson.firstName} ${samplePerson.lastName}:`, uploadError)
       continue
     }
 
@@ -940,11 +615,11 @@ async function seedDevData() {
       .eq('id', person.id)
 
     if (updateError) {
-      console.error(`   ❌ Error updating avatar_url for ${assignment.firstName} ${assignment.lastName}:`, updateError)
+      console.error(`   ❌ Error updating avatar_url for ${samplePerson.firstName} ${samplePerson.lastName}:`, updateError)
       continue
     }
 
-    console.log(`   ✅ Uploaded avatar for ${assignment.firstName} ${assignment.lastName}`)
+    console.log(`   ✅ Uploaded avatar for ${samplePerson.firstName} ${samplePerson.lastName}`)
   }
 
   console.log('')

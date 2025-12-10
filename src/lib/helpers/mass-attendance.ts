@@ -1,4 +1,4 @@
-import { getMassTimesWithItems, type MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
+import { getMassTimesWithItems } from '@/lib/actions/mass-times-templates'
 import { formatTime } from '@/lib/utils/formatters'
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek } from '@/lib/constants'
 

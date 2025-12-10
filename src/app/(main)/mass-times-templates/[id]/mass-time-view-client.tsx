@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+// Input is available for future time editing enhancements
 import { Label } from '@/components/ui/label'
 import {
   Select,

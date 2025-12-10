@@ -17,32 +17,13 @@ interface PersonWithAvatar {
  * 2. Fetches signed URLs for those avatars using useAvatarUrls
  * 3. Returns a copy of the entity with avatar_url fields replaced with signed URLs
  *
- * @param entity - The entity to enrich (e.g., wedding, funeral, group baptism)
+ * @param entity - The entity to enrich (e.g., wedding, funeral, baptism)
  * @param getPeopleFromEntity - Function to extract array of people with avatars from entity
  * @param enrichEntity - Function to create enriched copy of entity with signed URLs
  * @returns Enriched entity with signed avatar URLs
  *
  * @example
- * // For Group Baptisms
- * const enrichedGroupBaptism = useEnrichedEntityWithAvatars(
- *   groupBaptism,
- *   (gb) => gb.baptisms?.filter(b => b.child).map(b => b.child!) || [],
- *   (gb, avatarUrls) => ({
- *     ...gb,
- *     baptisms: gb.baptisms?.map(baptism => ({
- *       ...baptism,
- *       child: baptism.child ? {
- *         ...baptism.child,
- *         avatar_url: baptism.child.id && avatarUrls[baptism.child.id]
- *           ? avatarUrls[baptism.child.id]
- *           : baptism.child.avatar_url
- *       } : baptism.child
- *     }))
- *   })
- * )
- *
- * @example
- * // For Weddings (future use)
+ * // For Weddings
  * const enrichedWedding = useEnrichedEntityWithAvatars(
  *   wedding,
  *   (w) => [w.bride, w.groom].filter(Boolean) as PersonWithAvatar[],

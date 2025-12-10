@@ -12,7 +12,7 @@ import type { PaginatedParams, PaginatedResult } from './people'
 import type { MassStatus } from '@/lib/constants'
 import { createMassSchema, updateMassSchema, type CreateMassData, type UpdateMassData } from '@/lib/schemas/masses'
 
-export type { CreateMassData, UpdateMassData }
+// Note: Import CreateMassData and UpdateMassData from '@/lib/schemas/masses' instead
 
 export interface MassFilterParams {
   search?: string
@@ -38,7 +38,7 @@ export interface MassWithNames extends Mass {
 }
 
 export async function getMasses(filters?: MassFilterParams): Promise<MassWithNames[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -160,7 +160,7 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
 }
 
 export async function getMassStats(filters?: MassFilterParams): Promise<MassStats> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -211,7 +211,7 @@ export async function getMassStats(filters?: MassFilterParams): Promise<MassStat
 }
 
 export async function getMassesPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassWithNames>> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -277,7 +277,7 @@ export async function getMassesPaginated(params?: PaginatedParams): Promise<Pagi
 }
 
 export async function getMass(id: string): Promise<Mass | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -318,7 +318,7 @@ export interface MassWithRelations extends Mass {
 }
 
 export async function getMassWithRelations(id: string): Promise<MassWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -503,7 +503,7 @@ export interface MassRoleInstanceWithRelations extends MassRoleInstance {
 }
 
 export async function getMassRoles(massId: string): Promise<MassRoleInstanceWithRelations[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -579,7 +579,8 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: massRoleInstance, error } = await supabase
@@ -705,12 +706,13 @@ export interface ApplyTemplateData {
  * We don't create placeholder records because person_id is NOT NULL in the schema.
  */
 export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRoleInstanceWithRelations[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   // 1. Fetch template with mass role requirements
-  const { data: template, error: templateError } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: _template, error: templateError } = await supabase
     .from('mass_roles_templates')
     .select('*')
     .eq('id', data.template_id)
@@ -750,7 +752,7 @@ export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRo
 
 // Link a mass intention to a mass
 export async function linkMassIntention(massId: string, massIntentionId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -774,7 +776,7 @@ export async function linkMassIntention(massId: string, massIntentionId: string)
 
 // Unlink a mass intention from a mass
 export async function unlinkMassIntention(massIntentionId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

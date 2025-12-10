@@ -142,3 +142,28 @@ export async function requireEditSharedResources(userId: string, parishId: strin
   // Parishioners cannot edit
   throw new Error('You do not have permission to edit shared resources')
 }
+
+/**
+ * Check if user can manage parish settings (event types, custom lists, scripts)
+ * Only admin role can manage parish settings.
+ *
+ * @param userId - User ID
+ * @param parishId - Parish ID
+ * @throws Error if user doesn't have permission
+ */
+export async function requireManageParishSettings(userId: string, parishId: string): Promise<void> {
+  const userParish = await getUserParishRole(userId, parishId)
+
+  if (!userParish) {
+    throw new Error('User is not a member of this parish')
+  }
+
+  const { roles } = userParish
+
+  // Only admin can manage parish settings
+  if (roles.includes('admin')) {
+    return
+  }
+
+  throw new Error('You do not have permission to manage parish settings')
+}

@@ -19,14 +19,19 @@ import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
 import { EventTypePickerField } from "@/components/event-type-picker-field"
 import { usePickerState } from "@/hooks/use-picker-state"
+import { getEventType } from "@/lib/actions/event-types"
 
 interface EventFormProps {
   event?: EventWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
+  /** When true, only show minimal fields (name, description, event type) - used for create mode */
+  minimalMode?: boolean
+  /** Pre-fill event type ID from URL query parameter */
+  prefilledEventTypeId?: string
 }
 
-export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
+export function EventForm({ event, formId, onLoadingChange, minimalMode = false, prefilledEventTypeId }: EventFormProps) {
   const router = useRouter()
   const isEditing = !!event
 
@@ -87,6 +92,22 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event])
 
+  // Pre-fill event type from URL query parameter
+  useEffect(() => {
+    if (prefilledEventTypeId && !event && !eventType.value) {
+      getEventType(prefilledEventTypeId)
+        .then((type) => {
+          if (type) {
+            eventType.setValue(type)
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to load pre-filled event type:', error)
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefilledEventTypeId])
+
   // Sync picker values to form state
   useEffect(() => {
     setValue("responsible_party_id", responsibleParty.value?.id || undefined)
@@ -120,7 +141,7 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
       } else {
         const newEvent = await createEvent(data)
         toast.success('Event created successfully!')
-        router.push(`/events/${newEvent.id}/edit`)
+        router.push(`/events/${newEvent.event_type_id}/${newEvent.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} event:`, error)
@@ -132,8 +153,8 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} id={formId} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
-        title="Basic Information"
-        description="General event details"
+        title={minimalMode ? "New Event" : "Basic Information"}
+        description={minimalMode ? "Start by selecting an event type" : "General event details"}
       >
         <FormInput
           id="name"
@@ -179,115 +200,123 @@ export function EventForm({ event, formId, onLoadingChange }: EventFormProps) {
           />
         )}
 
-        <PersonPickerField
-          label="Responsible Party"
-          value={responsibleParty.value}
-          onValueChange={responsibleParty.setValue}
-          showPicker={responsibleParty.showPicker}
-          onShowPickerChange={responsibleParty.setShowPicker}
-          description="Person responsible for organizing this event"
-          placeholder="Select Responsible Party"
-          additionalVisibleFields={['email', 'phone_number', 'note']}
-        />
+        {/* Only show responsible party in full mode */}
+        {!minimalMode && (
+          <PersonPickerField
+            label="Responsible Party"
+            value={responsibleParty.value}
+            onValueChange={responsibleParty.setValue}
+            showPicker={responsibleParty.showPicker}
+            onShowPickerChange={responsibleParty.setShowPicker}
+            description="Person responsible for organizing this event"
+            placeholder="Select Responsible Party"
+            additionalVisibleFields={['email', 'phone_number', 'note']}
+          />
+        )}
       </FormSectionCard>
 
-      {/* Date & Time */}
-      <FormSectionCard
-        title="Date & Time"
-        description="When the event takes place"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DatePickerField
-            id="start_date"
-            label="Start Date"
-            value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
-            onValueChange={(date) => setValue("start_date", date ? toLocalDateString(date) : "")}
-            error={errors.start_date?.message}
-            closeOnSelect
-          />
+      {/* Only show additional sections in full mode (edit mode) */}
+      {!minimalMode && (
+        <>
+          {/* Date & Time */}
+          <FormSectionCard
+            title="Date & Time"
+            description="When the event takes place"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DatePickerField
+                id="start_date"
+                label="Start Date"
+                value={startDate ? new Date(startDate + 'T12:00:00') : undefined}
+                onValueChange={(date) => setValue("start_date", date ? toLocalDateString(date) : "")}
+                error={errors.start_date?.message}
+                closeOnSelect
+              />
 
-          <TimePickerField
-            id="start_time"
-            label="Start Time"
-            value={startTime || ""}
-            onChange={(value) => setValue("start_time", value)}
-            error={errors.start_time?.message}
-          />
-        </div>
+              <TimePickerField
+                id="start_time"
+                label="Start Time"
+                value={startTime || ""}
+                onChange={(value) => setValue("start_time", value)}
+                error={errors.start_time?.message}
+              />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DatePickerField
-            id="end_date"
-            label="End Date"
-            value={endDate ? new Date(endDate + 'T12:00:00') : undefined}
-            onValueChange={(date) => setValue("end_date", date ? toLocalDateString(date) : "")}
-            error={errors.end_date?.message}
-            closeOnSelect
-          />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DatePickerField
+                id="end_date"
+                label="End Date"
+                value={endDate ? new Date(endDate + 'T12:00:00') : undefined}
+                onValueChange={(date) => setValue("end_date", date ? toLocalDateString(date) : "")}
+                error={errors.end_date?.message}
+                closeOnSelect
+              />
 
-          <TimePickerField
-            id="end_time"
-            label="End Time"
-            value={endTime || ""}
-            onChange={(value) => setValue("end_time", value)}
-            error={errors.end_time?.message}
-          />
-        </div>
-      </FormSectionCard>
+              <TimePickerField
+                id="end_time"
+                label="End Time"
+                value={endTime || ""}
+                onChange={(value) => setValue("end_time", value)}
+                error={errors.end_time?.message}
+              />
+            </div>
+          </FormSectionCard>
 
-      {/* Details */}
-      <FormSectionCard
-        title="Details"
-        description="Location and language information"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <LocationPickerField
-            label="Location"
-            value={location.value}
-            onValueChange={location.setValue}
-            showPicker={location.showPicker}
-            onShowPickerChange={location.setShowPicker}
-            description="Where the event will take place"
-            placeholder="Select Location"
-            openToNewLocation={!isEditing}
-          />
+          {/* Details */}
+          <FormSectionCard
+            title="Details"
+            description="Location and language information"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <LocationPickerField
+                label="Location"
+                value={location.value}
+                onValueChange={location.setValue}
+                showPicker={location.showPicker}
+                onShowPickerChange={location.setShowPicker}
+                description="Where the event will take place"
+                placeholder="Select Location"
+                openToNewLocation={!isEditing}
+              />
 
-          <FormInput
-            id="language"
-            label="Language"
-            inputType="select"
-            value={language || "en"}
-            onChange={(value) => setValue("language", value as LiturgicalLanguage)}
-            options={LITURGICAL_LANGUAGE_VALUES.map((lang) => ({
-              value: lang,
-              label: LITURGICAL_LANGUAGE_LABELS[lang].en
-            }))}
-            error={errors.language?.message}
-          />
-        </div>
-      </FormSectionCard>
+              <FormInput
+                id="language"
+                label="Language"
+                inputType="select"
+                value={language || "en"}
+                onChange={(value) => setValue("language", value as LiturgicalLanguage)}
+                options={LITURGICAL_LANGUAGE_VALUES.map((lang) => ({
+                  value: lang,
+                  label: LITURGICAL_LANGUAGE_LABELS[lang].en
+                }))}
+                error={errors.language?.message}
+              />
+            </div>
+          </FormSectionCard>
 
-      {/* Additional Information */}
-      <FormSectionCard
-        title="Additional Information"
-        description="Notes and other details"
-      >
-        <FormInput
-          id="notes"
-          label="Notes"
-          inputType="textarea"
-          value={notes || ""}
-          onChange={(value) => setValue("note", value)}
-          placeholder="Enter any additional notes..."
-          rows={4}
-          error={errors.note?.message}
-        />
-      </FormSectionCard>
+          {/* Additional Information */}
+          <FormSectionCard
+            title="Additional Information"
+            description="Notes and other details"
+          >
+            <FormInput
+              id="notes"
+              label="Notes"
+              inputType="textarea"
+              value={notes || ""}
+              onChange={(value) => setValue("note", value)}
+              placeholder="Enter any additional notes..."
+              rows={4}
+              error={errors.note?.message}
+            />
+          </FormSectionCard>
+        </>
+      )}
 
       <FormBottomActions
         isEditing={isEditing}
         isLoading={isSubmitting}
-        cancelHref={isEditing ? `/events/${event.id}` : "/events"}
+        cancelHref={isEditing ? `/events/${event.event_type_id}/${event.id}` : "/events"}
         moduleName="Event"
       />
     </form>

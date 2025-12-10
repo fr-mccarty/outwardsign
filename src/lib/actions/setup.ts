@@ -271,7 +271,8 @@ export async function updateParishSettings(parishId: string, data: {
         donations_quick_amount: data.donations_quick_amount,
         liturgical_locale: data.liturgical_locale,
         updated_at: new Date().toISOString()
-      }).filter(([_, value]) => value !== undefined)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      }).filter(([_key, value]) => value !== undefined)
     )
 
     // Update parish settings

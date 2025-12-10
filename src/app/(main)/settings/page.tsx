@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageContainer } from '@/components/page-container'
-import { User, FileText, ChevronRight, BookOpen, Church } from 'lucide-react'
+import { User, FileText, ChevronRight, Church, Calendar } from 'lucide-react'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import Link from 'next/link'
 
@@ -47,6 +47,46 @@ export default function SettingsPage() {
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
+              <Calendar className="h-5 w-5 text-primary" />
+              Event Types
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Manage custom event types for your parish. Drag to reorder.
+            </p>
+            <Button asChild variant="outline" className="w-full justify-between">
+              <Link href="/settings/event-types">
+                Manage Event Types
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <FileText className="h-5 w-5 text-primary" />
+              Custom Lists
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Manage custom lists for event field options like songs, readings, or locations.
+            </p>
+            <Button asChild variant="outline" className="w-full justify-between">
+              <Link href="/settings/custom-lists">
+                Manage Custom Lists
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
               Petition Settings
             </CardTitle>
@@ -58,26 +98,6 @@ export default function SettingsPage() {
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/petitions">
                 Manage Petitions
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <BookOpen className="h-5 w-5 text-primary" />
-              Reading Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Import liturgical readings and manage your reading collections.
-            </p>
-            <Button asChild variant="outline" className="w-full justify-between">
-              <Link href="/settings/readings">
-                Manage Readings
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>

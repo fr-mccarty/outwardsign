@@ -15,12 +15,14 @@ interface ActiveInactiveBadgeProps {
 
 export function ActiveInactiveBadge({
   isActive,
-  variant,
+  variant: _variant,
   className,
   language = 'en',
   showLabel = false,
   size = 'md'
 }: ActiveInactiveBadgeProps) {
+  // variant available for Badge styling variants
+  void _variant
   const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'
   const label = isActive ? ACTIVE_STATUS_LABELS[language] : INACTIVE_STATUS_LABELS[language]
 

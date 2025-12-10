@@ -48,6 +48,12 @@ NEVER nest clickable elements inside other clickable elements. This causes user 
 
 **See:** [UI_PATTERNS.md - Click Hierarchy](./code-conventions/UI_PATTERNS.md#-click-hierarchy-critical)
 
+### 🔴 No Horizontal Tabs
+
+NEVER use horizontal tabs at the top of pages. They are not mobile-friendly. Use separate pages, collapsible sections, or stacked FormSectionCards instead.
+
+**See:** [UI_PATTERNS.md - No Horizontal Tabs](./code-conventions/UI_PATTERNS.md#-no-horizontal-tabs-critical)
+
 ### 🔴 Page Title Formatting
 
 All module view and edit pages must follow the format: `[Dynamic Content]-[Module Name]`

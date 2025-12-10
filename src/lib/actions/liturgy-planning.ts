@@ -35,7 +35,7 @@ export async function createLiturgyPlan(data: CreateLiturgyPlanData) {
 }
 
 export async function getLiturgyPlans(): Promise<LiturgyPlan[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -57,7 +57,7 @@ export async function getLiturgyPlans(): Promise<LiturgyPlan[]> {
 }
 
 export async function getLiturgyPlan(id: string): Promise<LiturgyPlan | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -75,7 +75,7 @@ export async function getLiturgyPlan(id: string): Promise<LiturgyPlan | null> {
 }
 
 export async function updateLiturgyPlan(id: string, data: CreateLiturgyPlanData) {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -103,7 +103,7 @@ export async function updateLiturgyPlan(id: string, data: CreateLiturgyPlanData)
 }
 
 export async function deleteLiturgyPlan(id: string) {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

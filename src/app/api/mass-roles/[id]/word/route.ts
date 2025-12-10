@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMassRoleWithRelations } from '@/lib/actions/mass-roles'
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, TextRun, BorderStyle, ShadingType } from 'docx'
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, TextRun, ShadingType } from 'docx'
 import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 
 export async function GET(

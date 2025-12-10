@@ -17,9 +17,9 @@ import {
 } from '@/components/ui/select'
 import { DatePickerField } from '@/components/date-picker-field'
 import { ChevronDown } from 'lucide-react'
-import { MODULE_STATUS_VALUES } from '@/lib/constants'
+// MODULE_STATUS_VALUES available for status filtering
 import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
-import { toLocalDateString } from '@/lib/utils/formatters'
+// toLocalDateString available for date formatting
 
 /**
  * Advanced Search Component

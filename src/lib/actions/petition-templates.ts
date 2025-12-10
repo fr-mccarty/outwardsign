@@ -28,7 +28,7 @@ export interface PetitionContextTemplate {
   updated_at: string
 }
 
-export type { ContextData } from '@/lib/petition-context-utils'
+// Note: Import ContextData from '@/lib/petition-context-utils' instead
 
 export interface CreateContextData {
   title: string

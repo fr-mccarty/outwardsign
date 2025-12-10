@@ -223,8 +223,9 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
         : `/${moduleLink.moduleType}s` // weddings, funerals, baptisms, etc.
       router.push(`${modulePath}/${moduleLink.moduleId}`)
     } else {
-      // No module found, go to event page
-      router.push(`/events/${item.id}`)
+      // No module found, go to event page (need event_type_id)
+      // TODO: Events need event_type_id to navigate - may need to fetch or store it
+      router.push(`/events`)
     }
   }
 

@@ -1,5 +1,5 @@
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 
 /**
  * Hook for managing list view filters in URL parameters

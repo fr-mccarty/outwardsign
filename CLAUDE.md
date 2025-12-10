@@ -127,8 +127,8 @@ This matches the required pattern shown in the documentation.
 | **Create or modify a list page** | 🔴 [LIST-VIEW-CRITICAL.md](./docs/LIST-VIEW-CRITICAL.md) - Critical list patterns (auto-injected)<br>📖 [LIST_VIEW_PATTERN.md](./docs/LIST_VIEW_PATTERN.md) - Complete reference<br>🔴 [REACT_HOOKS_PATTERNS.md](./docs/REACT_HOOKS_PATTERNS.md) - Prevent re-render loops | developer-agent |
 | **Work with any picker component** | 🔴 [PICKERS.md](./docs/PICKERS.md) - Navigation hub (see pickers/ subdirectory) | developer-agent |
 | **Create or modify database schema** | 🔴 [DATABASE-CRITICAL.md](./docs/DATABASE-CRITICAL.md) - Critical migration rules (auto-injected)<br>📖 [DATABASE.md](./docs/DATABASE.md) - Complete reference | developer-agent |
-| **Write or update tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-writer |
-| **Run or debug tests** | 🔴 [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Authentication, patterns, debugging | test-runner-debugger |
+| **Write or update tests** | 🔴 [testing/TESTING.md](./docs/testing/TESTING.md) - Limits, patterns, anti-patterns | test-writer |
+| **Run or debug tests** | 🔴 [testing/TESTING.md](./docs/testing/TESTING.md) - Commands, debugging | test-runner-debugger |
 | **Implement module component structure** | 🔴 [MODULE-PATTERNS-CRITICAL.md](./docs/MODULE-PATTERNS-CRITICAL.md) - Critical patterns (auto-injected)<br>📖 [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md) - Complete reference | developer-agent |
 | **Add validation to forms** | 🔴 [FORMS-CRITICAL.md](./docs/FORMS-CRITICAL.md) - Critical form rules (auto-injected)<br>📖 [VALIDATION.md](./docs/VALIDATION.md) - React Hook Form + Zod patterns | developer-agent |
 | **Style components or pages** | 🔴 [STYLES-CRITICAL.md](./docs/STYLES-CRITICAL.md) - Critical styling rules (auto-injected)<br>📖 [STYLES.md](./docs/STYLES.md) - Complete reference | developer-agent |
@@ -278,21 +278,23 @@ During initial development, modify existing migrations instead of creating new m
 
 ## Testing
 
-**For quick setup and running tests:** See [TESTING_QUICKSTART.md](./docs/TESTING_QUICKSTART.md)
+**🔴 All testing documentation:** See [testing/TESTING.md](./docs/testing/TESTING.md)
 
-**For AI agents writing tests:** See [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) - Comprehensive guide including authentication patterns, file structure, writing tests, Page Object Model, debugging techniques, and command reference.
+```bash
+npm run test                              # Run all tests
+npm run test -- tests/events.spec.ts      # Run specific file
+npm run test:ui                           # Interactive debugger
+```
 
-**For testability standards and code review:** See [TESTING_ARCHITECTURE.md](./docs/TESTING_ARCHITECTURE.md) - Component testability patterns, selector strategies, test ID conventions, accessibility requirements, and anti-patterns to avoid.
+**Key Limits:**
+- **150 lines max** per test file
+- **5 tests max** per file
+- **30 lines max** per test
+- **2-3 tests** per module is usually sufficient
 
-**For complete test inventory:** See [TESTING_REGISTRY.md](./docs/testing/TESTING_REGISTRY.md) - Complete registry of all tests organized by module with one-sentence descriptions.
+**DO NOT test:** Third-party libs, toast messages, loading states, obvious behaviors
 
-**Key Points:**
-- Tests are pre-authenticated automatically - no manual auth setup needed in test files
-- Use role-based selectors first (`getByRole`), then labels (`getByLabel`), then test IDs (`getByTestId`)
-- All form inputs must have proper `<Label>` with `htmlFor` for testability
-- Add `data-testid` to complex components (pickers, dynamic lists, cards with entity IDs)
-- Follow Page Object Model for modules with multiple tests
-- Do not test for toast messages after successful form submissions - test navigation instead
+**Selector priority:** `getByRole` → `getByLabel` → `getByTestId`
 
 ## Linting
 
@@ -338,6 +340,10 @@ Permission configuration for what operations Claude can perform automatically. S
 - **Server actions** include permission checks before operations
 - **UI elements** conditionally render based on user role
 - All records are scoped to parishes via `parish_id`
+
+**🔴 `requireSelectedParish()` Pattern:**
+- **Need the ID?** → `const selectedParishId = await requireSelectedParish()`
+- **Just validating?** → `await requireSelectedParish()` (no variable assignment)
 
 **For technical implementation details, see:**
 - [USER_PERMISSIONS.md](./docs/USER_PERMISSIONS.md) - Permission system and enforcement patterns

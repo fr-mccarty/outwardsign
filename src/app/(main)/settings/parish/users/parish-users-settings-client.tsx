@@ -21,9 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { DialogButton } from "@/components/dialog-button"
+// DialogButton available for dialog actions
 import { Checkbox } from "@/components/ui/checkbox"
-import { MoreVertical, Trash2, Edit, Plus, Send } from "lucide-react"
+import { MoreVertical, Trash2, Edit, Send } from "lucide-react"
 import { getParishMembers, removeParishMember, updateMemberRole } from '@/lib/actions/setup'
 import { createParishInvitation, revokeParishInvitation, resendParishInvitation, getParishInvitations, type ParishInvitation } from '@/lib/actions/invitations'
 import { Parish } from '@/lib/types'
@@ -55,10 +55,13 @@ export function ParishUsersSettingsClient({
   initialInvitations,
   currentUserId
 }: ParishUsersSettingsClientProps) {
-  const router = useRouter()
+  // router available for future navigation
+  void useRouter()
   const [users, setUsers] = useState<ParishUser[]>(initialUsers)
   const [invitations, setInvitations] = useState<ParishInvitation[]>(initialInvitations)
   const [saving, setSaving] = useState(false)
+  // loadingUsers available for loading spinner
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [userToRemove, setUserToRemove] = useState<{ userId: string; email: string } | null>(null)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)

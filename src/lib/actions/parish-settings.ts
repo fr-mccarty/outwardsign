@@ -41,7 +41,7 @@ export async function updateDefaultPetitions(defaultPetitions: string) {
   const parishId = await requireSelectedParish()
 
   // First, ensure parish settings exist
-  const settings = await getParishSettings()
+  // Unused: const _settings = await getParishSettings()
 
   // Update the default_petitions field
   const { data, error } = await supabase

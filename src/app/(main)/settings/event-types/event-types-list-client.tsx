@@ -20,14 +20,15 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react'
-import { EventTypeFormDialog } from './event-type-form-dialog'
+// Badge available for status indicators
+import { Plus, Trash2, GripVertical, type LucideIcon } from 'lucide-react'
+import * as Icons from 'lucide-react'
 import type { EventType } from '@/lib/types'
 import { deleteEventType, reorderEventTypes } from '@/lib/actions/event-types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import Link from 'next/link'
 
 interface EventTypesListClientProps {
   initialData: EventType[]
@@ -36,11 +37,9 @@ interface EventTypesListClientProps {
 // Sortable event type item component
 function SortableEventTypeItem({
   eventType,
-  onEdit,
   onDelete,
 }: {
   eventType: EventType
-  onEdit: (eventType: EventType) => void
   onDelete: (eventType: EventType) => void
 }) {
   const {
@@ -58,11 +57,14 @@ function SortableEventTypeItem({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // Get the icon component from Lucide
+  const IconComponent = (Icons[eventType.icon as keyof typeof Icons] as LucideIcon) || Icons.Calendar
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 py-2 px-3 border rounded-md bg-card"
+      className="flex items-center gap-3 py-2 px-3 border rounded-md bg-card hover:bg-accent/50 transition-colors"
     >
       <button
         className="cursor-grab active:cursor-grabbing touch-none"
@@ -72,32 +74,24 @@ function SortableEventTypeItem({
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </button>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sm truncate">{eventType.name}</span>
-          {!eventType.is_active && (
-            <Badge variant="outline" className="text-xs py-0">Inactive</Badge>
-          )}
-        </div>
-        {eventType.description && (
-          <p className="text-xs text-muted-foreground truncate">{eventType.description}</p>
-        )}
-      </div>
+      <Link
+        href={`/settings/event-types/${eventType.id}`}
+        className="flex-1 min-w-0 flex items-center gap-2"
+      >
+        <IconComponent className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <span className="font-medium text-sm truncate">{eventType.name}</span>
+      </Link>
 
       <div className="flex gap-1">
         <Button
           variant="ghost"
           size="icon"
           className="h-7 w-7"
-          onClick={() => onEdit(eventType)}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => onDelete(eventType)}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onDelete(eventType)
+          }}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -109,8 +103,6 @@ function SortableEventTypeItem({
 export function EventTypesListClient({ initialData }: EventTypesListClientProps) {
   const router = useRouter()
   const [items, setItems] = useState<EventType[]>(initialData)
-  const [selectedEventType, setSelectedEventType] = useState<EventType | undefined>()
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [eventTypeToDelete, setEventTypeToDelete] = useState<EventType | null>(null)
 
@@ -153,16 +145,6 @@ export function EventTypesListClient({ initialData }: EventTypesListClientProps)
     }
   }
 
-  const handleCreate = () => {
-    setSelectedEventType(undefined)
-    setIsFormDialogOpen(true)
-  }
-
-  const handleEdit = (eventType: EventType) => {
-    setSelectedEventType(eventType)
-    setIsFormDialogOpen(true)
-  }
-
   const handleDelete = async () => {
     if (!eventTypeToDelete) return
 
@@ -184,38 +166,19 @@ export function EventTypesListClient({ initialData }: EventTypesListClientProps)
     setDeleteDialogOpen(true)
   }
 
-  const handleFormSuccess = () => {
-    setIsFormDialogOpen(false)
-    router.refresh()
-  }
-
-  const stats = {
-    total: items.length,
-    active: items.filter((et) => et.is_active).length,
-  }
-
   return (
     <PageContainer
       title="Event Types"
       description="Manage custom event types for your parish. Drag to reorder."
       primaryAction={
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Event Type
+        <Button asChild>
+          <Link href="/settings/event-types/create">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Event Type
+          </Link>
         </Button>
       }
     >
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="border rounded-lg p-4">
-          <div className="text-2xl font-bold">{stats.total}</div>
-          <div className="text-sm text-muted-foreground">Total Event Types</div>
-        </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-2xl font-bold">{stats.active}</div>
-          <div className="text-sm text-muted-foreground">Active</div>
-        </div>
-      </div>
 
       {/* Sortable List */}
       <div className="border rounded-lg p-4 bg-muted/30">
@@ -233,27 +196,26 @@ export function EventTypesListClient({ initialData }: EventTypesListClientProps)
                 <SortableEventTypeItem
                   key={eventType.id}
                   eventType={eventType}
-                  onEdit={handleEdit}
                   onDelete={confirmDelete}
                 />
               ))}
               {items.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No event types yet. Create one to get started.
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">
+                    No event types yet. Create one to get started.
+                  </p>
+                  <Button asChild>
+                    <Link href="/settings/event-types/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Event Type
+                    </Link>
+                  </Button>
                 </div>
               )}
             </div>
           </SortableContext>
         </DndContext>
       </div>
-
-      {/* Form Dialog */}
-      <EventTypeFormDialog
-        open={isFormDialogOpen}
-        onOpenChange={setIsFormDialogOpen}
-        eventType={selectedEventType}
-        onSuccess={handleFormSuccess}
-      />
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog

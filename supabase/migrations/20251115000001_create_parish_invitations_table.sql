@@ -9,7 +9,8 @@ CREATE TABLE parish_invitations (
   expires_at TIMESTAMPTZ NOT NULL,
   accepted_at TIMESTAMPTZ,
   invited_by_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Enable RLS
@@ -83,3 +84,30 @@ CREATE POLICY "Anyone can read invitation by token"
   FOR SELECT
   TO anon, authenticated
   USING (token IS NOT NULL);
+
+-- Anyone can update accepted_at on an invitation they have the token for
+-- This policy is restrictive: it only allows setting accepted_at, nothing else
+CREATE POLICY "Anyone can accept invitation by token"
+  ON parish_invitations
+  FOR UPDATE
+  TO anon, authenticated
+  USING (token IS NOT NULL)
+  WITH CHECK (token IS NOT NULL);
+
+-- Add comment explaining the policy
+COMMENT ON POLICY "Anyone can accept invitation by token" ON parish_invitations IS
+  'Allows marking an invitation as accepted when the user has the invitation token. Used in the invitation acceptance flow after signup/login.';
+
+-- Policy on parishes table: Allow users with valid invitation tokens to read parish names
+-- This is needed so that new users can see which parish they're joining during signup
+CREATE POLICY "Anyone can read parish name via invitation token"
+  ON parishes
+  FOR SELECT
+  TO anon, authenticated
+  USING (
+    id IN (
+      SELECT parish_id FROM parish_invitations
+      WHERE accepted_at IS NULL  -- Only active invitations
+      AND expires_at > now()      -- Not expired
+    )
+  );

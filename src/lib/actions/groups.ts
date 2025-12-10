@@ -47,8 +47,7 @@ export interface GroupWithMembers extends Group {
   members: GroupMember[]
 }
 
-// Re-export types for backward compatibility
-export type { CreateGroupData, UpdateGroupData }
+// Note: Import CreateGroupData and UpdateGroupData from '@/lib/schemas/groups' instead
 
 export interface GroupFilters {
   search?: string
@@ -64,7 +63,7 @@ export interface GroupStats {
 }
 
 export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupStats> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
@@ -113,7 +112,7 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
 }
 
 export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
@@ -171,7 +170,7 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
 }
 
 export async function getGroup(id: string): Promise<GroupWithMembers | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   
   const supabase = await createClient()
@@ -465,7 +464,7 @@ export async function updateGroupMemberRole(groupId: string, personId: string, g
 }
 
 export async function getActiveGroups(): Promise<Group[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
@@ -567,7 +566,7 @@ export async function getGroupMemberStats(filters: GroupMemberFilters = {}): Pro
 }
 
 export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters = {}): Promise<PersonWithMemberships[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -675,7 +674,7 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
 }
 
 export async function getPersonGroupMemberships(personId: string): Promise<PersonGroupMembership[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

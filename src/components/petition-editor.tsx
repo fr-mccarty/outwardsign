@@ -102,7 +102,7 @@ export function PetitionEditor({
                 <p className="text-sm font-medium">Example Format:</p>
                 <div className="bg-background p-3 rounded border space-y-2">
                   <p className="text-sm">
-                    <span className="font-semibold">Reader:</span> The response is "Lord, hear our prayer." <span className="text-destructive font-semibold">[Pause]</span>
+                    <span className="font-semibold">Reader:</span> The response is &quot;Lord, hear our prayer.&quot; <span className="text-destructive font-semibold">[Pause]</span>
                   </p>
                   <div className="border-t pt-2 space-y-2">
                     <p className="text-sm">
@@ -126,8 +126,8 @@ export function PetitionEditor({
                 <p className="font-medium">Instructions:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                   <li>Enter each petition on a new line</li>
-                  <li>Do NOT include "Reader:" prefix</li>
-                  <li>Do NOT include "let us pray to the Lord"</li>
+                  <li>Do NOT include &quot;Reader:&quot; prefix</li>
+                  <li>Do NOT include &quot;let us pray to the Lord&quot;</li>
                   <li>Do NOT include the response</li>
                   <li>These will be added automatically when printed</li>
                 </ul>

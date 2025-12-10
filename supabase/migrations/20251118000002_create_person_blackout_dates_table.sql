@@ -6,6 +6,7 @@ CREATE TABLE person_blackout_dates (
   end_date DATE NOT NULL,
   reason TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
 
   -- Ensure end date is not before start date
   CHECK (end_date >= start_date)

@@ -95,11 +95,7 @@ export function Step3TemplateSelection({
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                No Mass Role Templates found. Please create a template first in the{' '}
-                <a href="/mass-role-templates" className="underline">
-                  Mass Role Templates
-                </a>{' '}
-                module.
+                No Mass Role Templates found. Please create a template first in the Mass Role Templates module.
               </AlertDescription>
             </Alert>
           ) : (

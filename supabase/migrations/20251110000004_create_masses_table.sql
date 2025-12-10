@@ -17,7 +17,8 @@ CREATE TABLE masses (
   petitions TEXT,
   liturgical_color TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add comments documenting mass scheduling fields

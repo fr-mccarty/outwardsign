@@ -1,14 +1,21 @@
--- Create event_types table for user-configurable event types
+-- Create event_types table for user-defined event types
+-- Purpose: User-defined event categories (Wedding, Funeral, Baptism, etc.)
+-- Related: input_field_definitions, scripts
+
 CREATE TABLE event_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
-  name TEXT NOT NULL, -- User-entered name
+  name TEXT NOT NULL,
   description TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  display_order INTEGER, -- For custom sorting
+  icon TEXT NOT NULL DEFAULT 'FileText',
+  "order" INTEGER NOT NULL DEFAULT 0,
+  slug TEXT,
+  deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT unique_event_type_name_per_parish UNIQUE(parish_id, name)
+  CONSTRAINT unique_event_type_name_per_parish UNIQUE (parish_id, name),
+  CONSTRAINT unique_event_type_slug_per_parish UNIQUE (parish_id, slug),
+  CONSTRAINT check_event_type_order_non_negative CHECK ("order" >= 0)
 );
 
 -- Enable RLS
@@ -19,62 +26,65 @@ GRANT ALL ON event_types TO anon;
 GRANT ALL ON event_types TO authenticated;
 GRANT ALL ON event_types TO service_role;
 
--- Add indexes
+-- Indexes
 CREATE INDEX idx_event_types_parish_id ON event_types(parish_id);
-CREATE INDEX idx_event_types_is_active ON event_types(is_active);
-CREATE INDEX idx_event_types_display_order ON event_types(display_order);
+CREATE INDEX idx_event_types_order ON event_types(parish_id, "order") WHERE deleted_at IS NULL;
+CREATE INDEX idx_event_types_slug ON event_types(parish_id, slug) WHERE deleted_at IS NULL;
 
--- RLS Policies for event_types
--- Parish members can read event types from their parish
-CREATE POLICY "Parish members can read their parish event types"
-  ON event_types
+-- Column comments
+COMMENT ON COLUMN event_types.slug IS 'URL-safe identifier for event type (e.g., "weddings", "funerals"). Auto-generated from name but can be edited by admins. Must be unique per parish.';
+
+-- RLS Policies
+-- Parish members can read event types for their parish
+CREATE POLICY event_types_select_policy ON event_types
   FOR SELECT
-  TO anon, authenticated
   USING (
-    auth.uid() IS NOT NULL AND
     parish_id IN (
-      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      SELECT parish_id
+      FROM parish_users
+      WHERE user_id = auth.uid()
     )
+    AND deleted_at IS NULL
   );
 
--- Parish members can insert event types for their parish
-CREATE POLICY "Parish members can create event types for their parish"
-  ON event_types
+-- Admin role can create event types
+CREATE POLICY event_types_insert_policy ON event_types
   FOR INSERT
-  TO anon, authenticated
   WITH CHECK (
-    auth.uid() IS NOT NULL AND
     parish_id IN (
-      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      SELECT pu.parish_id
+      FROM parish_users pu
+      WHERE pu.user_id = auth.uid()
+        AND ('admin' = ANY(pu.roles))
     )
   );
 
--- Parish members can update event types from their parish
-CREATE POLICY "Parish members can update their parish event types"
-  ON event_types
+-- Admin role can update event types
+CREATE POLICY event_types_update_policy ON event_types
   FOR UPDATE
-  TO anon, authenticated
   USING (
-    auth.uid() IS NOT NULL AND
     parish_id IN (
-      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      SELECT pu.parish_id
+      FROM parish_users pu
+      WHERE pu.user_id = auth.uid()
+        AND ('admin' = ANY(pu.roles))
     )
   );
 
--- Parish members can delete event types from their parish
-CREATE POLICY "Parish members can delete their parish event types"
-  ON event_types
+-- Admin role can delete event types
+CREATE POLICY event_types_delete_policy ON event_types
   FOR DELETE
-  TO anon, authenticated
   USING (
-    auth.uid() IS NOT NULL AND
     parish_id IN (
-      SELECT parish_id FROM parish_users WHERE user_id = auth.uid()
+      SELECT pu.parish_id
+      FROM parish_users pu
+      WHERE pu.user_id = auth.uid()
+        AND ('admin' = ANY(pu.roles))
     )
   );
 
--- Add trigger to update updated_at timestamp
-CREATE TRIGGER update_event_types_updated_at
+-- Trigger to update updated_at timestamp
+CREATE TRIGGER event_types_updated_at
   BEFORE UPDATE ON event_types
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();

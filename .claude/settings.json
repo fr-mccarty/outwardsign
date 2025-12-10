@@ -32,6 +32,7 @@
       "Bash(cut:*)",
       "Bash(tr:*)",
       "Bash(awk:*)",
+      "Bash(paste:*)",
       "Bash(jq:*)",
       "Bash(tee:*)",
       "Bash(echo:*)",
@@ -53,14 +54,8 @@
       "Bash(node:*)",
       "Bash(npm run build:*)",
       "Bash(npm run lint:*)",
-      "Bash(npm test:*)",
-      "Bash(npm run test:setup:*)",
-      "Bash(npm run test:headed:*)",
-      "Bash(test:*)",
-      "Bash(npx playwright test:*)",
-      "Bash(npx playwright show-report)",
-      "Bash(npx playwright show-report:*)",
-      "Bash(:* | :*)",
+      "Bash(npm run test:*)",
+            "Bash(:* | :*)",
       "Bash(:* && :*)",
       "Bash(:* ; :*)",
       "Bash(npx tsc:*)",
@@ -70,10 +65,10 @@
       "Bash(rm -rf .next)",
       "Bash(rm -rf playwright-report)",
       "Bash(lsof:*)",
-      "Bash(pgreg:*)",
+      "Bash(pgrep:*)",
       "Bash(wait)",
       "Bash(npm install)",
-      "Bash(npm install:*)",
+      "Bash(npm install :*)",
       "WebFetch(domain:docx.js.org)",
       "WebFetch(domain:lolekproductions.org)",
       "WebFetch(domain:github.com)",
@@ -85,6 +80,15 @@
   },
   "hooks": {
     "PreToolUse": [
+      {
+        "matcher": "Bash(npm run test:*)",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to run tests. Before proceeding, you MUST read docs/testing/TESTING.md.\n\nKey rules:\n- Tests are pre-authenticated (no login code needed)\n- Max 150 lines per file, 5 tests per file, 30 lines per test\n- Test workflows, not implementation details\n- DO NOT test: third-party libs, toast messages, loading states, obvious behaviors\n- Use role-based selectors first, then labels, then test IDs\n- No console.log, no waitForTimeout\n\nHave you read docs/TESTING.md? If not, read it now.\n\nTool being used: $ARGUMENTS"
+          }
+        ]
+      },
       {
         "matcher": "Edit(**/*form*.tsx)",
         "hooks": [
@@ -180,7 +184,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a test file. Before proceeding, you MUST read docs/TESTING_GUIDE.md.\n\nKey patterns:\n- Tests are pre-authenticated (no manual auth setup needed)\n- Use role-based selectors first (getByRole), then labels, then test IDs\n- Follow Page Object Model for modules with multiple tests\n- Do not test for toast messages after successful form submissions\n\nHave you read docs/TESTING_GUIDE.md? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to edit a test file. Before proceeding, you MUST read docs/testing/TESTING.md.\n\nKey rules:\n- Max 150 lines per file, 5 tests per file, 30 lines per test\n- Test workflows, not implementation details\n- DO NOT test: third-party libs, toast messages, loading states\n- Use role-based selectors (getByRole), then labels, then test IDs\n- No console.log, no waitForTimeout, no over-commenting\n\nHave you read docs/TESTING.md? If not, read it now.\n\nTool being used: $ARGUMENTS"
           }
         ]
       },
@@ -189,7 +193,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a test file. Before proceeding, you MUST read:\n- docs/TESTING_GUIDE.md (auth patterns, selectors, Page Object Model)\n- docs/testing/TESTING_REGISTRY.md (update registry after creating test)\n\nKey patterns:\n- Tests are pre-authenticated (no manual auth setup needed)\n- Use role-based selectors first (getByRole), then labels, then test IDs\n- Follow Page Object Model for modules with multiple tests\n- Update TESTING_REGISTRY.md with test description\n\nHave you read the required documentation? If not, read it now before proceeding.\n\nTool being used: $ARGUMENTS"
+            "prompt": "CRITICAL DOCUMENTATION REMINDER:\n\nYou are about to create a test file. Before proceeding, you MUST read docs/testing/TESTING.md.\n\nKey rules:\n- Max 150 lines per file, 5 tests per file, 30 lines per test\n- 2-3 tests per module is usually sufficient (happy path + edge cases)\n- Test workflows, not implementation details\n- DO NOT test: third-party libs, toast messages, loading states\n- Use role-based selectors (getByRole), then labels, then test IDs\n- No console.log, no waitForTimeout, no over-commenting\n\nHave you read docs/TESTING.md? If not, read it now.\n\nTool being used: $ARGUMENTS"
           }
         ]
       },

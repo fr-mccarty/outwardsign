@@ -33,7 +33,7 @@ export interface MassRoleTemplateWithItems extends MassRoleTemplate {
   }>
 }
 
-export type { CreateMassRoleTemplateData, UpdateMassRoleTemplateData }
+// Note: Import CreateMassRoleTemplateData and UpdateMassRoleTemplateData from '@/lib/schemas/mass-role-templates' instead
 
 // Get all mass role templates for the current parish
 export async function getMassRoleTemplates(): Promise<MassRoleTemplate[]> {
@@ -151,7 +151,8 @@ export async function updateMassRoleTemplate(id: string, data: UpdateMassRoleTem
 
   // Build update object from only defined values (filters out undefined)
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: template, error } = await supabase

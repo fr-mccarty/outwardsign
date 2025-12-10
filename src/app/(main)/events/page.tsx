@@ -2,6 +2,7 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
 import { getEventsWithModuleLinks, getEventStats, type EventFilterParams, type EventWithRelations } from "@/lib/actions/events"
+import { getEventTypeBySlug, getActiveEventTypes } from '@/lib/actions/event-types'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
@@ -10,6 +11,7 @@ import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 interface PageProps {
   searchParams: Promise<{
     search?: string
+    type?: string  // Event type slug
     event_type_id?: string
     related_event_type?: string
     language?: string
@@ -30,10 +32,20 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
+  // If type param exists (slug), look up event_type_id
+  let eventTypeId: string | undefined = params.event_type_id
+
+  if (params.type) {
+    const eventType = await getEventTypeBySlug(params.type)
+    if (eventType) {
+      eventTypeId = eventType.id
+    }
+  }
+
   // Build filters from search params with defaults
   const filters: EventFilterParams = {
     search: params.search,
-    event_type_id: params.event_type_id,
+    event_type_id: eventTypeId,
     related_event_type: params.related_event_type as EventFilterParams['related_event_type'],
     language: params.language as EventFilterParams['language'],
     start_date: params.start_date,
@@ -54,6 +66,9 @@ export default async function EventsPage({ searchParams }: PageProps) {
   const allEvents = allEventsWithLinks as EventWithRelations[]
   const stats = await getEventStats(allEvents)
 
+  // Fetch event types for filter dropdown
+  const eventTypes = await getActiveEventTypes()
+
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Our Events" }
@@ -66,7 +81,12 @@ export default async function EventsPage({ searchParams }: PageProps) {
       primaryAction={<ModuleCreateButton moduleName="Event" href="/events/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventsListClient initialData={events} stats={stats} initialHasMore={initialHasMore} />
+      <EventsListClient
+        initialData={events}
+        stats={stats}
+        initialHasMore={initialHasMore}
+        eventTypes={eventTypes}
+      />
     </PageContainer>
   )
 }

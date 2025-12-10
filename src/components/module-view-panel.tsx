@@ -1,14 +1,7 @@
 "use client"
 
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileText, Edit, Download, Printer } from 'lucide-react'
-import Link from 'next/link'
-import { ModuleStatusLabel } from '@/components/module-status-label'
-import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { DeleteButton } from '@/components/delete-button'
-import type { Event, Location } from '@/lib/types'
-import type { LiturgyTemplate } from '@/lib/types/liturgy-content'
 
 interface ModuleViewPanelProps {
   /**

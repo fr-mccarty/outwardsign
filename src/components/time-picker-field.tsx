@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -70,7 +70,6 @@ export function TimePickerField({
   required = false,
   disabled = false,
   description,
-  className,
   placeholder = 'Select a time',
 }: TimePickerFieldProps) {
   const [open, setOpen] = useState(false)

@@ -160,7 +160,8 @@ export async function updateGroupRole(id: string, data: UpdateGroupRoleData): Pr
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: role, error } = await supabase

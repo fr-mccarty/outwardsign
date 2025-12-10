@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS public.parishioner_auth_sessions (
   expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '30 days'),
   last_accessed_at TIMESTAMPTZ,
   is_revoked BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add indexes

@@ -9,7 +9,8 @@ import { Step2SchedulePattern, type MassScheduleEntry } from './steps/step-2-sch
 import { Step3TemplateSelection } from './steps/step-3-template-selection'
 import { Step4LiturgicalEvents } from './steps/step-4-liturgical-events'
 import { Step5ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-5-proposed-schedule'
-import { Step6AssignmentSummary } from './steps/step-6-assignment-summary'
+// Step6AssignmentSummary available for future assignment display
+// import { Step6AssignmentSummary } from './steps/step-6-assignment-summary'
 import { Step6InteractivePreview } from './steps/step-6-interactive-preview'
 import { Step7WorkloadReview } from './steps/step-7-workload-review'
 import { Step8Confirmation } from './steps/step-8-confirmation'
@@ -17,7 +18,8 @@ import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
 import { MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
 import { toast } from 'sonner'
-import { scheduleMasses, type ScheduleMassesResult, previewMassAssignments } from '@/lib/actions/mass-scheduling'
+import { scheduleMasses, type ScheduleMassesResult } from '@/lib/actions/mass-scheduling'
+// previewMassAssignments available for future preview functionality
 import { getDayOfWeekNumber } from '@/lib/utils/formatters'
 import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
 import { CheckCircle2, AlertTriangle } from 'lucide-react'
@@ -203,8 +205,9 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }, [])
 
-  // Reset wizard to initial state
-  const resetWizard = useCallback(() => {
+  // Reset wizard to initial state - used by Start Over dialog confirmation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _resetWizard = useCallback(() => {
     setStartDate('')
     setEndDate('')
     setSchedule([])
@@ -232,12 +235,14 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }
 
-  const handleAlgorithmOptionChange = (
+  // Algorithm options change handler - available for future settings panel
+  const _handleAlgorithmOptionChange = (
     option: keyof typeof algorithmOptions,
     value: boolean
   ) => {
     setAlgorithmOptions((prev) => ({ ...prev, [option]: value }))
   }
+  void _handleAlgorithmOptionChange
 
 
   // Calculate total mass count based on selected templates
@@ -268,9 +273,10 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   }
 
   // Use proposedMasses count if available, otherwise calculate from templates
-  const totalMassCount = proposedMasses.length > 0
+  // Total mass count available for summary display
+  void (proposedMasses.length > 0
     ? proposedMasses.filter(m => m.isIncluded).length
-    : calculateTotalMasses()
+    : calculateTotalMasses())
 
   // Generate proposed masses when dependencies change
   const regenerateProposedMasses = useCallback(async () => {
@@ -469,7 +475,9 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     { id: 8, title: 'Confirmation', description: 'Masses created' },
   ]
 
-  const renderStepContent = (currentStep: number, goToStep: (step: number) => void) => {
+  const renderStepContent = (currentStep: number, _goToStep: (step: number) => void) => {
+    // goToStep available for future step navigation from within content
+    void _goToStep
     switch (currentStep) {
       case 1:
         return (

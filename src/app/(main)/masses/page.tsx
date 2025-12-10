@@ -1,13 +1,13 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { Button } from '@/components/ui/button'
+// Button available for inline actions
 import { getMasses, getMassStats, type MassFilterParams } from "@/lib/actions/masses"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
 import { CalendarClock } from 'lucide-react'
-import Link from 'next/link'
+// Link available for additional navigation
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'

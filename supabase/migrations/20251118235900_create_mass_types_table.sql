@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS mass_types (
   is_system BOOLEAN NOT NULL DEFAULT false, -- System types cannot be deleted
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Create indexes

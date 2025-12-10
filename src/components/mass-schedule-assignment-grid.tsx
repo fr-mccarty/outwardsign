@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { User, UserPlus, Calendar, Clock } from 'lucide-react'
+import { UserPlus, Calendar, Clock } from 'lucide-react'
 import { PeoplePicker } from '@/components/people-picker'
 import { assignMinisterToRole } from '@/lib/actions/mass-scheduling'
 import { toast } from 'sonner'

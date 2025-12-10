@@ -686,58 +686,6 @@ export function formatEventSubtitleSpanish(event?: { start_date?: string | null;
 }
 
 // ============================================================================
-// READING FORMATTING FUNCTIONS
-// ============================================================================
-
-/**
- * Get reading pericope with empty string fallback
- *
- * @example
- * getReadingPericope(reading) // "Genesis 1:1-5"
- * getReadingPericope(null) // ""
- */
-export function getReadingPericope(reading?: { pericope?: string | null } | null): string {
-  return reading?.pericope || ''
-}
-
-/**
- * Get reading title with empty string fallback
- *
- * @example
- * getReadingTitle(reading) // "First Reading"
- * getReadingTitle(null) // ""
- */
-export function getReadingTitle(reading?: { title?: string | null } | null): string {
-  return reading?.title || ''
-}
-
-/**
- * Format reading with lector name
- * Uses database-generated full_name field
- *
- * @param reading - Reading object with pericope
- * @param lector - Person object for lector
- * @returns Formatted reading with lector
- *
- * @example
- * formatReadingWithLector(reading, lector) // "Genesis 1:1-5 (John Smith)"
- * formatReadingWithLector(reading, null) // "Genesis 1:1-5"
- */
-export function formatReadingWithLector(
-  reading?: { pericope?: string | null } | null,
-  lector?: { full_name: string } | null
-): string {
-  const pericope = getReadingPericope(reading)
-  if (!pericope) return ''
-
-  if (lector) {
-    return `${pericope} (${lector.full_name})`
-  }
-
-  return pericope
-}
-
-// ============================================================================
 // PAGE TITLE GENERATOR FUNCTIONS
 // ============================================================================
 

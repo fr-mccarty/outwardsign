@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Mail, Phone, UserPlus, CheckCircle2, Settings, X } from 'lucide-react'
+import { UserPlus, CheckCircle2, Settings } from 'lucide-react'
 import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
 import {
   createMassRoleMember,
@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
-import { SEX_VALUES, SEX_LABELS, type Sex } from '@/lib/constants'
+import { SEX_VALUES, SEX_LABELS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import {
   Dialog,
@@ -497,14 +497,6 @@ export function MassAssignmentPeoplePicker({
       isPreferredTime: existingPerson?.isPreferredTime ?? false,
       isMassRoleMember: existingPerson?.isMassRoleMember ?? false,
     }
-  }
-
-  // Get person's mass roles
-  const getPersonMassRoles = (personId: string): Array<{ id: string; name: string }> => {
-    const memberships = personRoleMemberships.filter(m => m.person_id === personId)
-    return memberships
-      .map(m => m.mass_role ? { id: m.mass_role.id, name: m.mass_role.name } : null)
-      .filter(Boolean) as Array<{ id: string; name: string }>
   }
 
   // Custom render for person list items

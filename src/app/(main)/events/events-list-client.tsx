@@ -17,7 +17,7 @@ import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, CalendarDays, Filter } from "lucide-react"
+import { Plus, CalendarDays, Filter, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
 import { toLocalDateString } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
@@ -25,17 +25,26 @@ import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import {
   buildWhenColumn,
-  buildWhereColumn,
-  buildActionsColumn
+  buildWhereColumn
 } from '@/lib/utils/table-columns'
+import type { DynamicEventType } from '@/lib/types'
+import { FormInput } from '@/components/form-input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface EventsListClientProps {
   initialData: EventWithModuleLink[]
   stats: EventStats
   initialHasMore: boolean
+  eventTypes: DynamicEventType[]
 }
 
-export function EventsListClient({ initialData, stats, initialHasMore }: EventsListClientProps) {
+export function EventsListClient({ initialData, stats, initialHasMore, eventTypes }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -47,6 +56,9 @@ export function EventsListClient({ initialData, stats, initialHasMore }: EventsL
 
   // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
+
+  // Event type filter from URL (using 'type' param for slug)
+  const selectedEventTypeSlug = filters.getFilterValue('type')
 
   // Debounced search value (delays URL update)
   const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
@@ -192,15 +204,44 @@ export function EventsListClient({ initialData, stats, initialHasMore }: EventsL
       getLocation: (event) => event.location || null,
       hiddenOn: 'lg'
     }),
-    buildActionsColumn<EventWithModuleLink>({
-      baseUrl: '/events',
-      onDelete: (event) => {
-        setEventToDelete(event)
-        setDeleteDialogOpen(true)
+    // Custom actions column for events (uses slug in URLs)
+    {
+      key: 'actions',
+      header: '',
+      cell: (event: EventWithModuleLink) => {
+        const typeSlug = event.event_type?.slug || event.event_type_id
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/events/${typeSlug}/${event.id}`}>View</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/events/${typeSlug}/${event.id}/edit`}>Edit</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setEventToDelete(event)
+                  setDeleteDialogOpen(true)
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
       },
-      getDeleteMessage: (event) =>
-        `Are you sure you want to delete the event "${event.name || 'this event'}"?`
-    })
+      className: 'w-[50px]'
+    }
   ]
 
   return (
@@ -208,16 +249,40 @@ export function EventsListClient({ initialData, stats, initialHasMore }: EventsL
       {/* Search and Filters */}
       <SearchCard title="Search Events">
         <div className="space-y-4">
-          {/* Main Search Row */}
-          <ClearableSearchInput
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value)
-              filters.updateFilter('search', value)
-            }}
-            placeholder="Search events by name or description..."
-            className="w-full"
-          />
+          {/* Main Search Row with Event Type Filter */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex-1">
+              <ClearableSearchInput
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  filters.updateFilter('search', value)
+                }}
+                placeholder="Search events by name or description..."
+                className="w-full"
+              />
+            </div>
+            {/* Event Type Filter */}
+            <div className="w-full sm:w-[200px]">
+              <FormInput
+                id="event-type-filter"
+                label="Event Type"
+                hideLabel
+                inputType="select"
+                value={selectedEventTypeSlug || 'all'}
+                onChange={(value) => {
+                  filters.updateFilter('type', value === 'all' ? '' : value)
+                }}
+                options={[
+                  { value: 'all', label: 'All Event Types' },
+                  ...eventTypes.map((eventType) => ({
+                    value: eventType.slug || eventType.id,
+                    label: eventType.name
+                  }))
+                ]}
+              />
+            </div>
+          </div>
 
           {/* Advanced Search Collapsible */}
           <AdvancedSearch
@@ -246,7 +311,7 @@ export function EventsListClient({ initialData, stats, initialHasMore }: EventsL
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
             keyExtractor={(event) => event.id}
-            onRowClick={(event) => router.push(`/events/${event.id}`)}
+            onRowClick={(event) => router.push(`/events/${event.event_type?.slug || event.event_type_id}/${event.id}`)}
             onLoadMore={handleLoadMore}
             hasMore={hasMore}
             stickyHeader

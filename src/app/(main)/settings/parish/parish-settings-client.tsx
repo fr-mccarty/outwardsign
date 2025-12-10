@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormSectionCard } from '@/components/form-section-card'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+// Input available for future inline editing
 import { Label } from "@/components/ui/label"
 import { FormInput } from '@/components/form-input'
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// Select available for dropdown menus
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,7 @@ import {
   DataTableRowActions,
 } from '@/components/data-table'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+// Alert available for error displays
 
 interface ParishMember {
   user_id: string

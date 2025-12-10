@@ -5,9 +5,7 @@
  */
 
 export * from './types'
-export * from './wedding-petitions'
 
-// Future builders can be added here:
-// export * from './funeral-petitions'
-// export * from './baptism-petitions'
-// export * from './presentation-petitions'
+// Note: Module-specific petition builders (wedding, funeral, etc.) were removed
+// as part of the migration to dynamic event types.
+// Future petition builders will use the dynamic events system.

@@ -6,6 +6,8 @@ import { TestingBanner } from "@/components/testing-banner";
 import { createClient } from "@/lib/supabase/server";
 import { getUserParishRole, type UserParishRole } from "@/lib/auth/permissions";
 import { getSelectedParishId } from "@/lib/auth/parish";
+import { getActiveEventTypes } from "@/lib/actions/event-types";
+import type { DynamicEventType } from "@/lib/types";
 
 export default async function MainLayout({
   children,
@@ -14,6 +16,7 @@ export default async function MainLayout({
 }) {
   // Fetch user permissions for sidebar filtering
   let userParish: UserParishRole | null = null
+  let eventTypes: DynamicEventType[] = []
 
   try {
     const supabase = await createClient()
@@ -23,6 +26,13 @@ export default async function MainLayout({
       const parishId = await getSelectedParishId()
       if (parishId) {
         userParish = await getUserParishRole(user.id, parishId)
+        // Fetch event types for the selected parish
+        try {
+          eventTypes = await getActiveEventTypes()
+        } catch (error) {
+          // If we can't get event types, just show empty array
+          console.error('Error fetching event types for sidebar:', error)
+        }
       }
     }
   } catch (error) {
@@ -33,7 +43,7 @@ export default async function MainLayout({
   return (
     <SidebarProvider>
       <BreadcrumbProvider>
-        <MainSidebar userParish={userParish} />
+        <MainSidebar userParish={userParish} eventTypes={eventTypes} />
         <div className="flex-1">
           <MainHeader />
           <TestingBanner />

@@ -19,6 +19,7 @@ CREATE TABLE events (
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
   CONSTRAINT check_all_day_no_times CHECK (
     (is_all_day = false) OR
     (is_all_day = true AND start_time IS NULL AND end_time IS NULL)

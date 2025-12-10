@@ -1,5 +1,7 @@
 # Definitions
 
+> **Note:** This document is narrative-only. It provides conceptual definitions and explanations without code snippets. For implementation details and code examples, see the referenced documentation files.
+
 This document provides definitions for liturgical terminology and application-specific concepts used throughout Outward Sign. These terms are essential for understanding the Catholic liturgical context and the application's domain model.
 
 ---
@@ -9,7 +11,7 @@ This document provides definitions for liturgical terminology and application-sp
 - [Liturgical Roles](#liturgical-roles)
 - [Sacraments vs Sacramentals](#sacraments-vs-sacramentals)
 - [Liturgical Elements](#liturgical-elements)
-- [Event Types](#event-types)
+- [User-Defined Event System](#user-defined-event-system)
 - [Application Concepts](#application-concepts)
 - [Quick Reference Glossary](#quick-reference-glossary)
 
@@ -18,50 +20,26 @@ This document provides definitions for liturgical terminology and application-sp
 ## Liturgical Roles
 
 ### Presider
-The priest or deacon who leads the liturgical celebration. The presider is the primary celebrant of the sacrament or sacramental.
 
-**Examples:**
-- Priest celebrating a Wedding Mass
-- Deacon leading a Funeral Service
-- Priest presiding at a Baptism
-
-**Database field:** `presider_id` (references `people` table)
+The priest or deacon who leads the liturgical celebration. The presider is the primary celebrant of the sacrament or sacramental. A priest celebrates a Wedding Mass, a deacon might lead a Funeral Service, and a priest presides at a Baptism. In the user-defined event system, a presider would typically be captured through a Person-type input field named "Presider" or "Celebrant."
 
 ### Reader (Lector)
-A person who proclaims the Word of God during the liturgy. Readers proclaim the readings from Scripture, excluding the Gospel (which is read by the deacon or priest).
 
-**What readers proclaim:**
-- First Reading (Old Testament or Acts of the Apostles)
-- Second Reading (New Testament letters)
-- Responsorial Psalm (or lead the response)
-- Petitions (Prayers of the Faithful / General Intercessions)
+A person who proclaims the Word of God during the liturgy. Readers proclaim the readings from Scripture, excluding the Gospel (which is always read by a deacon or priest). Readers may proclaim the First Reading (from the Old Testament or Acts of the Apostles), the Second Reading (from New Testament letters), lead the Responsorial Psalm, or read the Petitions (Prayers of the Faithful).
 
-**Database field:** Varies by module
-- Masses: `reader_id` (general reader)
-- Weddings: `first_reading_reader_id`, `second_reading_reader_id`, `psalm_reader_id`, `petitions_reader_id`
-- Funerals: Similar pattern with specific reader fields
-
-**Note:** The Gospel is NOT read by a reader - it is proclaimed by a deacon or priest.
+In the user-defined event system, readers can be captured through Person-type input fields. An event type might have separate fields for "First Reading Reader," "Second Reading Reader," "Psalm Reader," and "Petitions Reader," or a simpler setup with just a "Reader" field.
 
 ### Minister
-A broad term for anyone who serves in a liturgical capacity. Can include:
-- **Extraordinary Ministers of Holy Communion** - Assist with distributing communion
-- **Altar Servers** - Assist the priest at the altar
-- **Music Ministers** - Lead music and singing
-- **Ushers/Greeters** - Welcome people and assist with seating
-- **Sacristans** - Prepare the church and liturgical items
 
-**Database field:** Varies by module, often stored in pivot tables or as separate relationships
+A broad term for anyone who serves in a liturgical capacity. Ministers include Extraordinary Ministers of Holy Communion (who assist with distributing communion), Altar Servers (who assist the priest at the altar), Music Ministers (who lead music and singing), Ushers and Greeters (who welcome people and assist with seating), and Sacristans (who prepare the church and liturgical items).
+
+In the user-defined event system, ministers can be captured through Person-type or Group-type input fields depending on how the parish wants to track them.
 
 ### Godparent / Sponsor
-A person who presents someone for a sacrament and commits to supporting their faith journey.
 
-**Examples:**
-- Godparents at a Baptism
-- Sponsors at a Confirmation
-- Padrinos/Madrinas at a Quinceañera or Presentation
+A person who presents someone for a sacrament and commits to supporting their faith journey. Godparents present infants for Baptism, Sponsors present candidates for Confirmation, and Padrinos and Madrinas (the Spanish terms for godparents) serve similar roles at Quinceañeras and Presentations.
 
-**Database field:** `godparent_id`, `sponsor_id`, or module-specific fields
+In the user-defined event system, godparents and sponsors are captured through Person-type input fields with names like "Godmother," "Godfather," "Sponsor," "Padrino," or "Madrina."
 
 ---
 
@@ -105,178 +83,124 @@ Sacred signs and practices that prepare people to receive grace. Not sacraments 
 ## Liturgical Elements
 
 ### Gospel
-The proclamation of Jesus Christ's life, ministry, death, and resurrection. Read from one of the four Gospels: Matthew, Mark, Luke, or John.
 
-**Who reads it:** Always a deacon or priest (never a lay reader)
-
-**Database field:** `gospel_id` or `gospel_text`
+The proclamation of Jesus Christ's life, ministry, death, and resurrection, read from one of the four Gospels: Matthew, Mark, Luke, or John. The Gospel is always proclaimed by a deacon or priest, never by a lay reader. In the user-defined event system, the Gospel reading can be captured through a Text-type input field or by referencing a Custom List of Gospel passages.
 
 ### First Reading
-The first Scripture reading in the Liturgy of the Word, typically from the Old Testament or Acts of the Apostles.
 
-**Who reads it:** Reader (lay person)
-
-**Database field:** `first_reading_id` or `first_reading_text`
+The first Scripture reading in the Liturgy of the Word, typically from the Old Testament or Acts of the Apostles. The First Reading is proclaimed by a lay reader. Parishes can capture this through a Text-type input field for free-form entry or a List Item field that references a Custom List of approved readings.
 
 ### Second Reading
-The second Scripture reading in the Liturgy of the Word, from the New Testament letters (epistles).
 
-**Who reads it:** Reader (lay person)
-
-**Database field:** `second_reading_id` or `second_reading_text`
+The second Scripture reading in the Liturgy of the Word, from the New Testament letters (epistles). Like the First Reading, this is proclaimed by a lay reader. It can be captured through Text or List Item fields in the user-defined event system.
 
 ### Responsorial Psalm
-A psalm sung or recited between the First and Second Readings, typically with a response that the assembly repeats.
 
-**Who leads it:** Reader, cantor, or music minister
-
-**Database field:** `psalm_id` or `psalm_text`
+A psalm sung or recited between the First and Second Readings, typically with a response that the assembly repeats. The Responsorial Psalm may be led by a reader, cantor, or music minister. Parishes often maintain a Custom List of common psalm responses for selection.
 
 ### Petitions (Prayers of the Faithful / General Intercessions)
-Prayers of intercession for the Church, world, those in need, and the local community. The assembly responds to each petition (e.g., "Lord, hear our prayer").
 
-**Who reads them:** Reader (lay person)
-
-**Database field:** Related through `petitions` table with `petition_text` field
+Prayers of intercession for the Church, world, those in need, and the local community. The assembly responds to each petition (commonly "Lord, hear our prayer"). Petitions are read by a lay reader. In the user-defined event system, petitions can be captured through Rich Text fields or multiple Text fields depending on how the parish wants to manage them.
 
 ### Homily
-The priest or deacon's reflection on the Scripture readings, applying them to the lives of the faithful.
 
-**Who gives it:** Presider (priest or deacon)
-
-**Database field:** Typically not stored (prepared by presider)
+The priest or deacon's reflection on the Scripture readings, applying them to the lives of the faithful. The homily is given by the presider and is typically not stored in the system since it is prepared by the celebrant rather than planned by parish staff.
 
 ---
 
-## Event Types
+## User-Defined Event System
 
-Outward Sign has two types of event categorization: **user-configurable event types** (`event_types` table) and **system-defined related event types** (constants for module linkage).
+Outward Sign uses a fully flexible, user-defined event system. Rather than hardcoded modules for specific sacraments, parish administrators define their own event types with custom fields, scripts, and templates. This approach allows parishes to manage any type of liturgical or parish event while maintaining the ability to generate professional documents and programs.
 
-### User-Configurable Event Types (`event_types` table)
+### Event Type
 
-Parish staff can create and manage their own custom event types in **Settings > Event Types**. These are stored in the `event_types` table and provide flexible categorization for parish events.
+An Event Type is a user-defined category that represents a kind of parish event or sacrament. Each parish can create and customize their own event types through the Settings area.
 
-**Database table:** `event_types`
-**Fields:**
-- `id` - UUID primary key
-- `parish_id` - References the parish
-- `name` - User-entered name (e.g., "Parish Festival", "Staff Meeting", "Youth Group")
-- `description` - Optional description
-- `is_active` - Whether the event type is currently in use
-- `display_order` - For custom sorting in UI
+Event types serve as templates that define what information should be collected for events of that type. For example, a "Wedding" event type would define fields for the bride, groom, ceremony date, location, and other wedding-specific information. A "Funeral" event type would define different fields appropriate for funeral planning.
 
-**Examples of custom event types:**
-- "Parish Festival"
-- "Staff Meeting"
-- "Youth Group Gathering"
-- "Bible Study"
-- "Choir Practice"
+Each event type has a name chosen by the parish (such as "Wedding," "Funeral," "Baptism," or "Youth Retreat"), an icon for display in the navigation sidebar, and an order that determines where it appears in the menu. Parishes can create event types for any purpose—not just sacraments, but also staff meetings, parish festivals, or any recurring event that benefits from structured data collection and document generation.
 
-**Usage in events table:** The `event_type_id` field on the `events` table references a user-created event type.
+Event types are managed by parish administrators and appear dynamically in the application's sidebar navigation. When an administrator creates a new event type, it immediately becomes available for staff to create events of that type.
 
-### System-Defined Related Event Types (Constants)
+### Input Field
 
-When an event is linked to a sacrament or sacramental module record (wedding, funeral, baptism, etc.), the `related_event_type` field stores a **system-defined constant** that indicates which module the event belongs to.
+An Input Field is a data field definition that belongs to an event type. Input fields define what information can be collected when creating an event of that type. Each field has a name (like "Bride" or "Ceremony Date"), a type that determines how the field is displayed and validated, and whether the field is required.
 
-**Database field:** `related_event_type` (TEXT, nullable) on `events` table
+The available field types include Person (references a person in the parish database), Group (references a group), Location (references a location), Date, Time, Text, Rich Text, Number, Yes/No toggle, and List Item (allows selection from a custom list of options).
 
-**System constants for liturgical events:**
-- **WEDDING** - Wedding ceremony linked to wedding module
-- **FUNERAL** - Funeral service linked to funeral module
-- **BAPTISM** - Baptism ceremony linked to baptism module
-- **QUINCEANERA** - Quinceañera linked to quinceanera module
-- **PRESENTATION** - Presentation linked to presentation module
-- **MASS** - Mass linked to mass module
-- **MASS_INTENTION** - Mass with specific intention linked to mass intention module
+For Person-type fields, there is a special "Key Person" designation. Fields marked as key persons are used for searching and display in event lists. For example, in a Wedding event type, both "Bride" and "Groom" would be marked as key persons so that searching for "Smith" would find weddings where either the bride or groom has that name.
 
-**System constants for related events:**
-- **WEDDING_RECEPTION** - Reception linked to wedding module
-- **WEDDING_REHEARSAL** - Rehearsal linked to wedding module
-- **FUNERAL_VISITATION** - Visitation/viewing linked to funeral module
-- **FUNERAL_COMMITTAL** - Graveside service linked to funeral module
+Input fields are ordered, and this order determines how they appear on the event creation and edit forms. Administrators can drag fields to reorder them as needed.
 
-**Purpose:** The `related_event_type` field allows the system to:
-1. Link calendar events back to their source module records
-2. Filter events by module (e.g., show all wedding-related events)
-3. Display module-specific icons and styling
-4. Navigate from calendar to the related module record
+### Custom List
 
-### Key Differences
+A Custom List is a parish-defined set of options that can be used in List Item fields. Custom lists allow parishes to maintain their own sets of choices for things like songs, readings, or any other selectable options.
 
-| Feature | User Event Types (`event_type_id`) | System Related Types (`related_event_type`) |
-|---------|-----------------------------------|-------------------------------------------|
-| **Who creates** | Parish staff via Settings | System/application code |
-| **Storage** | Database table (`event_types`) | Constants in code |
-| **Purpose** | Flexible categorization | Module linkage |
-| **Required** | Optional | Set when event linked to module |
-| **Editable** | Yes (by parish staff) | No (system-defined) |
-| **Example** | "Staff Meeting", "Parish Festival" | "WEDDING", "FUNERAL", "BAPTISM" |
+For example, a parish might create a "Wedding Songs" custom list containing titles of songs commonly used at weddings. When defining an "Opening Song" field on the Wedding event type, the administrator would select "List Item" as the field type and choose the "Wedding Songs" custom list. When staff create a wedding event, they would see a dropdown with all the songs from that list.
 
-**See:**
-- `src/app/(main)/settings/event-types/` - User event type management UI
-- `src/lib/actions/event-types.ts` - Server actions for event types
-- Constants for related event types (implementation in progress)
+Custom lists are shared across event types within a parish, so a "Responsorial Psalms" list could be used by Wedding, Funeral, and Baptism event types. Each list contains ordered items that can be added, removed, or reordered by parish staff.
+
+### Script
+
+A Script is an ordered collection of sections that together form a printable document for an event. Scripts are attached to event types, and each event type can have multiple scripts. For example, a Wedding event type might have an "English Wedding Program" script and a "Spanish Wedding Program" script.
+
+Scripts serve as templates for generating documents like worship aids, programs, bulletins, or any printed material needed for the celebration of an event. When staff view an individual event, they can preview and export any of the scripts defined for that event's type, with all the placeholder fields replaced with the actual event data.
+
+Scripts can be exported in multiple formats: PDF for high-quality printing, Word document for further editing, a print-optimized HTML view, or plain text. This flexibility allows parishes to use the generated documents however works best for their workflow.
+
+### Section
+
+A Section is a block of content within a script. Each section has a name (like "Welcome" or "Order of Service"), content written in markdown format, and an optional page break indicator.
+
+Section content can include placeholder syntax to insert event data dynamically. When the script is rendered for a specific event, these placeholders are replaced with the actual values. For example, a section might contain "Please join us in celebrating the wedding of {{Bride}} and {{Groom}}" and when rendered for a specific wedding, the names would be inserted automatically.
+
+Sections support rich text formatting through markdown, including bold, italic, headings, and lists. A special syntax allows text to be displayed in red, which is commonly used in liturgical documents to indicate rubrics (instructions for the celebrant).
+
+Sections are ordered within their script and can be reordered by dragging. Each section can optionally have a page break after it, which is useful for creating multi-page documents like wedding programs.
+
+### Occasion
+
+An Occasion is a date, time, and location entry attached to an event. Events do not have their own date or time fields—instead, they have one or more occasions that specify when and where things happen.
+
+This design accommodates events that involve multiple gatherings. A wedding, for example, might have occasions for the rehearsal, the ceremony, and the reception, each with different dates, times, and locations. A funeral might have occasions for the visitation, the funeral Mass, and the committal service.
+
+Each occasion has a label (like "Rehearsal" or "Ceremony"), an optional date, an optional time, and an optional location reference. One occasion on each event must be marked as the "primary" occasion, which is the one displayed in event lists and used for calendar integration. For a wedding, this would typically be the ceremony; for a funeral, the funeral Mass.
+
+### Event
+
+An Event is a specific instance of an event type. When staff create a "Wedding" event, they are creating an instance of the Wedding event type with specific data filled in for all the defined fields.
+
+Events store their field values in a flexible format that matches whatever fields are defined on their event type. This means that when an administrator adds a new field to an event type, existing events of that type can have that field filled in through editing, while new events will have the field available during creation.
+
+Events are parish-scoped, meaning each event belongs to a specific parish and is only visible to users of that parish. Events can be searched by their key person names, filtered by date range (based on the primary occasion), and organized by event type.
+
+### Document
+
+A Document is an uploaded file attached to an event through a Document-type input field. Documents are stored in secure cloud storage and can only be accessed by authenticated users of the parish.
+
+Documents are used for reference materials that should be attached to an event but not included in the script output. For example, a wedding event might have a field for uploading the marriage license or a photo for the bulletin announcement. These files are available for download from the event view but are not rendered into the scripts.
 
 ---
 
 ## Application Concepts
 
 ### Parish
-The local Catholic faith community. In Outward Sign, data is scoped to parishes - each record belongs to a specific parish.
 
-**Database field:** `parish_id` (on all main tables)
+The local Catholic faith community. In Outward Sign, all data is scoped to parishes—each record belongs to a specific parish and users can only access data for parishes they belong to. This multi-tenancy design ensures that each parish's data is completely separated and secure.
 
-**Multi-tenancy:** Users can only access data for parishes they belong to.
+### Reference Data
 
-### Module
-A section of the application focused on a specific sacrament or sacramental. Each module follows the standard 9-file pattern.
-
-**Available modules:**
-- Masses
-- Weddings
-- Funerals
-- Baptisms
-- Quinceaneras
-- Presentations
-- Mass Intentions
-- Groups
-
-**See:** [MODULE_REGISTRY.md](./MODULE_REGISTRY.md)
-
-### Content Builder
-A system for generating liturgical documents (scripts) for individual sacraments/sacramentals. Content builders create structured documents that can be exported to PDF and Word.
-
-**See:** [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)
+While events are managed through the user-defined event system, certain types of data exist as shared reference data that events can reference. People, Groups, and Locations are managed as separate entities that can be linked to events through Person, Group, and Location type input fields. This allows the same person, group, or location to be associated with many different events without duplicating information.
 
 ### Report Builder
-A system for generating tabular reports with aggregations and filtering. Used for administrative reports (e.g., Mass Intentions Report).
 
-**See:** [REPORT_BUILDER_SYSTEM.md](./REPORT_BUILDER_SYSTEM.md)
+A system for generating tabular reports with aggregations and filtering. Report builders are used for administrative reports that present data in table format with summary statistics, such as Mass Intentions reports. Unlike scripts which are document-oriented, report builders focus on data presentation and analysis.
 
-### Template
-A pre-configured structure for a liturgy that can be reused. Templates store common readings, prayers, and liturgical elements that can be applied to new events.
+### WithRelations Pattern
 
-**Examples:**
-- Sunday Mass template with standard readings
-- Wedding ceremony template with common prayers
-- Funeral liturgy template
+A pattern for working with entities that have related data. When fetching an entity like an event, you often need not just the event itself but also its related data—the event type, the people referenced in fields, the locations, and so on. The WithRelations pattern describes how an entity is fetched along with all its related entities, making the data immediately available for display without additional queries.
 
-**Database table:** `templates`
-
-### WithRelations
-An interface pattern that extends the base entity type to include all related data (foreign keys expanded to full objects).
-
-**Example:**
-```typescript
-interface WeddingWithRelations extends Wedding {
-  bride?: Person | null
-  groom?: Person | null
-  wedding_event?: Event | null
-  presider?: Person | null
-}
-```
-
-**See:** [ARCHITECTURE.md](./ARCHITECTURE.md) - Type Patterns section
+For implementation details, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
@@ -285,104 +209,38 @@ interface WeddingWithRelations extends Wedding {
 **Alphabetical list of key terms:**
 
 - **Baptism** - Sacrament of initiation into Christian faith
-- **Content Builder** - System for generating liturgical documents
-- **Event** - A scheduled occurrence (Mass, wedding, funeral, etc.)
+- **Custom List** - Parish-defined set of selectable options for List Item fields
+- **Document** - Uploaded file attached to an event through a Document-type field
+- **Event** - Specific instance of an event type with filled-in field values
+- **Event Type** - User-defined category that defines fields, scripts, and structure for a kind of event
 - **First Reading** - Scripture reading from Old Testament or Acts
 - **Funeral** - Sacramental celebration of Christian death
 - **Godparent** - Person who presents someone for Baptism
 - **Gospel** - Scripture reading from Matthew, Mark, Luke, or John
 - **Homily** - Priest/deacon's reflection on Scripture readings
+- **Input Field** - Data field definition belonging to an event type
+- **Key Person** - Designation for Person-type fields used in searching and list display
 - **Lector** - See Reader
 - **Mass** - Celebration of the Eucharist (sacrament)
 - **Mass Intention** - Prayer intention offered at a specific Mass
 - **Minister** - Anyone serving in a liturgical capacity
-- **Module** - Section of app focused on specific sacrament/sacramental
+- **Occasion** - Date, time, and location entry attached to an event
 - **Parish** - Local Catholic faith community
 - **Petitions** - Prayers of the Faithful / General Intercessions
+- **Placeholder** - Syntax in section content that gets replaced with event data
 - **Presider** - Priest or deacon leading the liturgical celebration
 - **Presentation** - Latino tradition of presenting child to Mary (sacramental)
+- **Primary Occasion** - The main occasion for an event, used in lists and calendars
 - **Psalm** - Responsorial psalm between readings
 - **Quinceañera** - Celebration of young woman's 15th birthday and faith (sacramental)
 - **Reader** - Person who proclaims Scripture (except Gospel)
-- **Report Builder** - System for generating administrative reports
 - **Sacrament** - Outward sign instituted by Christ conferring grace
 - **Sacramental** - Sacred sign instituted by Church preparing for grace
+- **Script** - Ordered collection of sections forming a printable document
 - **Second Reading** - Scripture reading from New Testament letters
+- **Section** - Block of content within a script with name, markdown content, and optional page break
 - **Sponsor** - See Godparent
-- **Template** - Pre-configured liturgy structure for reuse
 - **Wedding** - Sacrament of Matrimony
-- **WithRelations** - Interface pattern including all related data
-
----
-
-## Usage in Code
-
-### Referring to Readers
-
-```typescript
-// ✅ CORRECT - Use specific reader fields
-interface Wedding {
-  first_reading_reader_id: string | null
-  second_reading_reader_id: string | null
-  psalm_reader_id: string | null
-  petitions_reader_id: string | null
-}
-
-// ✅ CORRECT - WithRelations interface expands to Person
-interface WeddingWithRelations extends Wedding {
-  first_reading_reader?: Person | null
-  second_reading_reader?: Person | null
-  psalm_reader?: Person | null
-  petitions_reader?: Person | null
-}
-
-// ✅ CORRECT - Display in UI (using database-generated full_name)
-<p>First Reading: {wedding.first_reading_reader.full_name}</p>
-<p>Petitions: {wedding.petitions_reader.full_name}</p>
-```
-
-### Referring to Presiders
-
-```typescript
-// ✅ CORRECT - Presider field
-interface Mass {
-  presider_id: string | null
-}
-
-interface MassWithRelations extends Mass {
-  presider?: Person | null
-}
-
-// Display (using database-generated full_name)
-<p>Presider: {mass.presider.full_name}</p>
-```
-
-### Working with Event Types
-
-```typescript
-// Event interface
-interface Event {
-  id: string
-  parish_id: string
-  name: string
-  event_type_id?: string | null        // User-configured event type
-  related_event_type?: string | null   // System-defined module link
-  // ... other fields
-}
-
-// ✅ CORRECT - Display user-configured event type
-// Fetch the EventType record and display its name
-const eventType = await getEventType(event.event_type_id)
-<p>Type: {eventType?.name}</p>  // Shows "Staff Meeting", "Parish Festival", etc.
-
-// ✅ CORRECT - Check system-defined related event type
-if (event.related_event_type === 'WEDDING') {
-  // This event is linked to a wedding module record
-}
-
-// ✅ CORRECT - Filter events by related type
-const weddingEvents = events.filter(e => e.related_event_type === 'WEDDING')
-```
 
 ---
 
@@ -390,15 +248,13 @@ const weddingEvents = events.filter(e => e.related_event_type === 'WEDDING')
 
 This document defines the liturgical and application-specific terminology used throughout Outward Sign. Understanding these terms is essential for:
 
-- **Implementing features** correctly according to Catholic liturgical practices
-- **Naming database fields** and TypeScript interfaces appropriately
-- **Creating user interfaces** that use proper liturgical terminology
-- **Communicating** with parish staff and users effectively
+- Understanding the Catholic liturgical context in which the application operates
+- Communicating effectively with parish staff and users
+- Grasping how the user-defined event system allows flexible management of any parish event
 
-**Key Principle:** Outward Sign respects and accurately represents Catholic liturgical traditions while providing modern software tools for parish management.
+Outward Sign respects and accurately represents Catholic liturgical traditions while providing modern, flexible software tools for parish management. The user-defined event system allows each parish to customize the application for their specific needs while maintaining professional document generation capabilities.
 
-For implementation patterns using these concepts, see:
-- [MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md) - How to build modules
+For implementation details and technical patterns, see:
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Data architecture and patterns
 - [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md) - Document generation
-- [CONSTANTS_PATTERN.md](./CONSTANTS_PATTERN.md) - Using constants and labels
+- [requirements/user-defined-event-types.md](../requirements/user-defined-event-types.md) - Technical requirements

@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS mass_times_templates (
 
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add comments documenting the purpose

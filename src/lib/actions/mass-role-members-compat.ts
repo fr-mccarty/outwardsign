@@ -169,10 +169,12 @@ export async function getPeopleWithRole(roleId: string): Promise<Person[]> {
 /**
  * Get assignment statistics for a person
  */
-export async function getPersonRoleStats(personId: string): Promise<PersonRoleStats> {
-  const selectedParishId = await requireSelectedParish()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getPersonRoleStats(_personId: string): Promise<PersonRoleStats> {
+  await requireSelectedParish()
   await ensureJWTClaims()
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _supabase = await createClient()
 
   try {
     // Query mass_assignment table (renamed from mass_role_instances)

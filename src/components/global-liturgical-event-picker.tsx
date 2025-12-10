@@ -12,7 +12,7 @@ import { Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-r
 import { getGlobalLiturgicalEventsPaginated, type GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { getLiturgicalBgClass, getLiturgicalTextClass, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
+import { getLiturgicalBgClass, getLiturgicalTextClass } from '@/lib/utils/liturgical-colors'
 
 interface GlobalLiturgicalEventPickerProps {
   open: boolean

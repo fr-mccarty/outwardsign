@@ -6,7 +6,8 @@ CREATE TABLE parish_settings (
   donations_quick_amount JSONB NOT NULL DEFAULT '[]'::JSONB,
   liturgical_locale TEXT NOT NULL DEFAULT 'en_US',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Enable RLS

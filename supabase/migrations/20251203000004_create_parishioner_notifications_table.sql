@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS public.parishioner_notifications (
   related_entity_id UUID,
   is_read BOOLEAN NOT NULL DEFAULT false,
   read_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add indexes

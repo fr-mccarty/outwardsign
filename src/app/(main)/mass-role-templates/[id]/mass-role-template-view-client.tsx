@@ -21,6 +21,7 @@ export function MassRoleTemplateViewClient({ template }: MassRoleTemplateViewCli
 
   useEffect(() => {
     loadItems()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [template.id])
 
   const loadItems = async () => {
@@ -108,7 +109,7 @@ ${template.description ? `Description: ${template.description}\n` : ''}${templat
             <p className="text-sm text-muted-foreground">Loading mass roles...</p>
           ) : items.length === 0 ? (
             <p className="text-sm text-muted-foreground italic">
-              No mass roles defined yet. Click "Add Roles" to add mass role requirements.
+              No mass roles defined yet. Click &quot;Add Roles&quot; to add mass role requirements.
             </p>
           ) : (
             <div className="space-y-3">

@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS public.families (
   parish_id UUID NOT NULL REFERENCES public.parishes(id) ON DELETE CASCADE,
   family_name TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add indexes

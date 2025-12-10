@@ -9,7 +9,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { readingsData } from '@/lib/data/readings'
+import { seedEventTypesForParish } from './event-types-seed'
 
 // Import petition templates
 import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
@@ -33,30 +33,7 @@ import presentationSpanish from '@/lib/default-petition-templates/presentation-s
  */
 export async function seedParishData(supabase: SupabaseClient, parishId: string) {
   // =====================================================
-  // 1. Seed Readings
-  // =====================================================
-  const readingsToInsert = readingsData.map((reading) => ({
-    parish_id: parishId,
-    pericope: reading.pericope,
-    text: reading.text,
-    categories: reading.categories,
-    language: reading.language,
-    introduction: reading.introduction ?? null,
-    conclusion: reading.conclusion ?? null
-  }))
-
-  const { data: readings, error: readingsError } = await supabase
-    .from('readings')
-    .insert(readingsToInsert)
-    .select()
-
-  if (readingsError) {
-    console.error('Error creating readings:', readingsError)
-    throw new Error(`Failed to create readings: ${readingsError.message}`)
-  }
-
-  // =====================================================
-  // 2. Seed Petition Templates
+  // 1. Seed Petition Templates
   // =====================================================
   const defaultPetitionTemplates = [
     sundayEnglish,
@@ -352,48 +329,20 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
-  // 8. Seed Event Types
+  // 8. Seed User-Defined Event Types (Sacraments/Sacramentals)
   // =====================================================
-  const defaultEventTypes = [
-    { name: 'Parish Meeting', description: 'Regular parish meetings and gatherings', display_order: 1 },
-    { name: 'Parish Event', description: 'General parish events and activities', display_order: 2 },
-    { name: 'Reception', description: 'Receptions and social gatherings', display_order: 3 },
-    { name: 'Meal', description: 'Parish meals and potlucks', display_order: 4 },
-    { name: 'Fundraiser', description: 'Fundraising events and activities', display_order: 5 },
-    { name: 'Ministry Meeting', description: 'Ministry-specific meetings and planning sessions', display_order: 6 },
-    { name: 'Community Service', description: 'Service projects and outreach activities', display_order: 7 },
-    { name: 'Youth Event', description: 'Youth group activities and events', display_order: 8 },
-    { name: 'Adult Formation', description: 'Adult faith formation and education', display_order: 9 },
-    { name: 'Retreat', description: 'Parish retreats and days of reflection', display_order: 10 },
-    { name: 'Concert', description: 'Musical performances and concerts', display_order: 11 },
-    { name: 'Festival', description: 'Parish festivals and celebrations', display_order: 12 },
-    { name: 'Other', description: 'Other parish events', display_order: 99 },
-  ]
+  const userDefinedEventTypesResult = await seedEventTypesForParish(supabase, parishId)
 
-  const { data: eventTypes, error: eventTypesError } = await supabase
-    .from('event_types')
-    .insert(
-      defaultEventTypes.map((et) => ({
-        parish_id: parishId,
-        name: et.name,
-        description: et.description,
-        display_order: et.display_order,
-        is_active: true,
-      }))
-    )
-    .select()
-
-  if (eventTypesError) {
-    console.error('Error creating default event types:', eventTypesError)
-    throw new Error(`Failed to create default event types: ${eventTypesError.message}`)
+  if (!userDefinedEventTypesResult.success) {
+    console.error('Error seeding user-defined event types')
+    throw new Error('Failed to seed user-defined event types')
   }
 
   return {
     success: true,
-    readings: readings || [],
     petitionTemplates: petitionTemplates || [],
     groupRoles: groupRoles || [],
     massRoles: massRoles || [],
-    eventTypes: eventTypes || []
+    eventTypes: userDefinedEventTypesResult.eventTypes
   }
 }

@@ -48,7 +48,7 @@ export interface UpdateTemplateData {
 }
 
 export async function getTemplates(): Promise<LiturgicalEventTemplate[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -66,7 +66,7 @@ export async function getTemplates(): Promise<LiturgicalEventTemplate[]> {
 }
 
 export async function getTemplate(id: string): Promise<LiturgicalEventTemplate | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -116,7 +116,7 @@ export async function createTemplate(data: CreateTemplateData): Promise<Liturgic
 }
 
 export async function updateTemplate(id: string, data: UpdateTemplateData): Promise<LiturgicalEventTemplate> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -143,7 +143,7 @@ export async function updateTemplate(id: string, data: UpdateTemplateData): Prom
 }
 
 export async function deleteTemplate(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -161,7 +161,7 @@ export async function deleteTemplate(id: string): Promise<void> {
 }
 
 export async function getActiveTemplates(): Promise<LiturgicalEventTemplate[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

@@ -43,97 +43,9 @@ export function buildSummaryEnglish(
     })
   }
 
-  // Collect Weddings
-  if (params.includeSacraments && data.weddings.length > 0) {
-    data.weddings.forEach(wedding => {
-      const bride = wedding.bride?.full_name || 'Bride not set'
-      const groom = wedding.groom?.full_name || 'Groom not set'
-      const date = wedding.wedding_event?.start_date || ''
-      const time = wedding.wedding_event?.start_time || ''
-      const name = `${bride} & ${groom}`
-      const presider = wedding.presider?.full_name || 'Presider not assigned'
-
-      allEvents.push({
-        date,
-        time,
-        sortKey: `${date} ${time}`,
-        type: 'Weddings',
-        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${presider}`,
-      })
-    })
-  }
-
-  // Collect Baptisms
-  if (params.includeSacraments && data.baptisms.length > 0) {
-    data.baptisms.forEach(baptism => {
-      const date = baptism.baptism_event?.start_date || ''
-      const time = baptism.baptism_event?.start_time || ''
-      const name = baptism.child?.full_name || 'Child not set'
-      const presider = baptism.presider?.full_name || 'Presider not assigned'
-
-      allEvents.push({
-        date,
-        time,
-        sortKey: `${date} ${time}`,
-        type: 'Baptisms',
-        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${presider}`,
-      })
-    })
-  }
-
-  // Collect Funerals
-  if (params.includeSacraments && data.funerals.length > 0) {
-    data.funerals.forEach(funeral => {
-      const date = funeral.funeral_event?.start_date || ''
-      const time = funeral.funeral_event?.start_time || ''
-      const name = funeral.deceased?.full_name || 'Deceased not set'
-      const presider = funeral.presider?.full_name || 'Presider not assigned'
-
-      allEvents.push({
-        date,
-        time,
-        sortKey: `${date} ${time}`,
-        type: 'Funerals',
-        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${presider}`,
-      })
-    })
-  }
-
-  // Collect Presentations
-  if (params.includeSacraments && data.presentations.length > 0) {
-    data.presentations.forEach(presentation => {
-      const date = presentation.presentation_event?.start_date || ''
-      const time = presentation.presentation_event?.start_time || ''
-      const name = presentation.child?.full_name || 'Child not set'
-      const coordinator = presentation.coordinator?.full_name || 'Presider not assigned'
-
-      allEvents.push({
-        date,
-        time,
-        sortKey: `${date} ${time}`,
-        type: 'Presentations',
-        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${coordinator}`,
-      })
-    })
-  }
-
-  // Collect Quinceañeras
-  if (params.includeSacraments && data.quinceaneras.length > 0) {
-    data.quinceaneras.forEach(quince => {
-      const date = quince.quinceanera_event?.start_date || ''
-      const time = quince.quinceanera_event?.start_time || ''
-      const name = quince.quinceanera?.full_name || 'Quinceañera not set'
-      const presider = quince.presider?.full_name || 'Presider not assigned'
-
-      allEvents.push({
-        date,
-        time,
-        sortKey: `${date} ${time}`,
-        type: 'Quinceañeras',
-        text: `${formatDatePretty(date)} ${formatTime(time)} — ${name} — ${presider}`,
-      })
-    })
-  }
+  // TODO: Add dynamic events (sacraments) when integrated
+  // Sacraments have been migrated to a dynamic events system
+  // This template will be updated to pull from dynamic events
 
   // Sort all events by date and time
   allEvents.sort((a, b) => a.sortKey.localeCompare(b.sortKey))
@@ -147,8 +59,8 @@ export function buildSummaryEnglish(
     eventsByType[event.type].push(event)
   })
 
-  // Build sections in order: Masses, Weddings, Baptisms, Funerals, Presentations, Quinceañeras
-  const typeOrder = ['Masses', 'Weddings', 'Baptisms', 'Funerals', 'Presentations', 'Quinceañeras']
+  // Build sections in order
+  const typeOrder = ['Masses']
 
   typeOrder.forEach(type => {
     if (eventsByType[type] && eventsByType[type].length > 0) {

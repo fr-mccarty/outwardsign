@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import {
   CheckCircle2,
-  Calendar,
   Users,
   CalendarDays,
   Sparkles

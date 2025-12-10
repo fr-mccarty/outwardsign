@@ -28,7 +28,7 @@ interface AdditionalActionSeparator {
 }
 
 interface PageContainerProps {
-  title: string
+  title: React.ReactNode
   description?: string
   primaryAction?: React.ReactNode
   additionalActions?: AdditionalActionItem[]

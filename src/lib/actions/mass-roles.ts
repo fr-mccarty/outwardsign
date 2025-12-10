@@ -78,7 +78,7 @@ export async function getMassRolesPaginated(params?: PaginatedParams): Promise<P
 }
 
 export async function getMassRole(id: string): Promise<MassRole | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -240,7 +240,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
 }
 
 export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRole> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -249,7 +249,8 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(validatedData).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(validatedData).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: role, error } = await supabase
@@ -269,7 +270,7 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
 }
 
 export async function deleteMassRole(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -367,7 +368,7 @@ export interface MassRoleInstanceWithRelations extends MassRoleInstance {
 }
 
 export async function getMassRoleInstances(massId: string): Promise<MassRoleInstanceWithRelations[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -393,7 +394,7 @@ export async function getMassRoleInstances(massId: string): Promise<MassRoleInst
 }
 
 export async function getMassRoleInstance(id: string): Promise<MassRoleInstance | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -415,7 +416,7 @@ export async function getMassRoleInstance(id: string): Promise<MassRoleInstance 
 }
 
 export async function createMassRoleInstance(data: CreateMassRoleInstanceData): Promise<MassRoleInstance> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -442,13 +443,14 @@ export async function createMassRoleInstance(data: CreateMassRoleInstanceData): 
 }
 
 export async function updateMassRoleInstance(id: string, data: UpdateMassRoleInstanceData): Promise<MassRoleInstance> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: massRoleInstance, error } = await supabase
@@ -479,7 +481,7 @@ export async function updateMassRoleInstance(id: string, data: UpdateMassRoleIns
 }
 
 export async function deleteMassRoleInstance(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

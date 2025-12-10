@@ -106,7 +106,8 @@ export async function updateTemplateItem(id: string, data: UpdateTemplateItemDat
   const supabase = await createClient()
 
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: item, error } = await supabase

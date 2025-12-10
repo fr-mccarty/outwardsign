@@ -16,14 +16,14 @@ import { Button } from '@/components/ui/button'
 import { Plus, Clock, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { ListViewCard } from '@/components/list-view-card'
-import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
+// getStatusLabel available for active/inactive status display
 import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 
-// Helper to convert boolean to status and get label
-const getActiveStatusLabel = (isActive: boolean): string => {
-  const status = isActive ? 'ACTIVE' : 'INACTIVE'
-  return getStatusLabel(status, 'en')
-}
+// Helper to convert boolean to status and get label - available for future use
+// const getActiveStatusLabel = (isActive: boolean): string => {
+//   const status = isActive ? 'ACTIVE' : 'INACTIVE'
+//   return getStatusLabel(status, 'en')
+// }
 
 interface Stats {
   total: number

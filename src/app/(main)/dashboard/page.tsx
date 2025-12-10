@@ -3,10 +3,6 @@ import { MetricCard } from "@/components/metric-card"
 import { FormSectionCard } from "@/components/form-section-card"
 import Link from "next/link"
 import {
-  VenusAndMars,
-  Cross,
-  HandHeartIcon,
-  BookHeart,
   Users,
   MapPin,
   CalendarDays,
@@ -14,21 +10,17 @@ import {
   Sparkles,
   CirclePlus,
   Heart,
-  Droplet,
   CalendarCheck
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { getWeddings } from "@/lib/actions/weddings"
-import { getFunerals } from "@/lib/actions/funerals"
-import { getPresentations } from "@/lib/actions/presentations"
-import { getQuinceaneras } from "@/lib/actions/quinceaneras"
 import { getPeople } from "@/lib/actions/people"
 import { getLocations } from "@/lib/actions/locations"
 import { getEvents } from "@/lib/actions/events"
-import { formatDistance, format } from "date-fns"
+import { format } from "date-fns"
 import { MiniCalendar } from "@/components/mini-calendar"
 import { DashboardErrorHandler } from "./dashboard-error-handler"
+import { getDynamicEvents } from "@/lib/actions/dynamic-events"
 
 export const dynamic = 'force-dynamic'
 
@@ -42,38 +34,21 @@ export default async function DashboardPage() {
 
   // Fetch all data in parallel
   const [
-    weddings,
-    funerals,
-    presentations,
-    quinceaneras,
     people,
     locations,
-    events
+    events,
+    dynamicEvents
   ] = await Promise.all([
-    getWeddings(),
-    getFunerals(),
-    getPresentations(),
-    getQuinceaneras(),
     getPeople(),
     getLocations(),
-    getEvents()
+    getEvents(),
+    getDynamicEvents()
   ])
 
   // Calculate statistics
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-
-  // Total sacraments (for empty state check)
-  const totalSacraments = weddings.length + funerals.length + presentations.length + quinceaneras.length
-
-  // Active sacraments (status = 'ACTIVE')
-  const activeSacraments = [
-    ...weddings.filter(w => w.status === 'ACTIVE'),
-    ...funerals.filter(f => f.status === 'ACTIVE'),
-    ...presentations.filter(p => p.status === 'ACTIVE'),
-    ...quinceaneras.filter(q => q.status === 'ACTIVE')
-  ].length
 
   // Scheduled this month (events with start_date in current month)
   const scheduledThisMonth = events.filter(e => {
@@ -90,50 +65,6 @@ export default async function DashboardPage() {
     const eventDate = new Date(e.start_date)
     return eventDate >= now && eventDate <= sevenDaysFromNow
   })
-
-  // Sacrament breakdown
-  const sacramentBreakdown = [
-    { name: 'Weddings', count: weddings.length, icon: VenusAndMars, href: '/weddings' },
-    { name: 'Funerals', count: funerals.length, icon: Cross, href: '/funerals' },
-    { name: 'Presentations', count: presentations.length, icon: HandHeartIcon, href: '/presentations' },
-    { name: 'Quinceañeras', count: quinceaneras.length, icon: BookHeart, href: '/quinceaneras' }
-  ]
-
-  // Recent activity - most recently created sacraments (last 5)
-  const allSacraments = [
-    ...weddings.map(w => ({
-      id: w.id,
-      type: 'Wedding',
-      created_at: w.created_at,
-      href: `/weddings/${w.id}`,
-      icon: VenusAndMars
-    })),
-    ...funerals.map(f => ({
-      id: f.id,
-      type: 'Funeral',
-      created_at: f.created_at,
-      href: `/funerals/${f.id}`,
-      icon: Cross
-    })),
-    ...presentations.map(p => ({
-      id: p.id,
-      type: 'Presentation',
-      created_at: p.created_at,
-      href: `/presentations/${p.id}`,
-      icon: HandHeartIcon
-    })),
-    ...quinceaneras.map(q => ({
-      id: q.id,
-      type: 'Quinceañera',
-      created_at: q.created_at,
-      href: `/quinceaneras/${q.id}`,
-      icon: BookHeart
-    }))
-  ]
-
-  const recentSacraments = allSacraments
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5)
 
   // Upcoming events (next 30 days)
   const upcomingEvents30Days = events
@@ -158,9 +89,9 @@ export default async function DashboardPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <MetricCard
-          title="Active Sacraments"
-          value={activeSacraments}
-          description="In preparation now"
+          title="Dynamic Events"
+          value={dynamicEvents.length}
+          description="Total events created"
           icon={Sparkles}
         />
 
@@ -202,39 +133,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Main Content Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-        {/* Sacrament Breakdown */}
-        <FormSectionCard title="Sacraments by Type">
-          <div className="space-y-4">
-            {sacramentBreakdown.map((sacrament) => {
-              const Icon = sacrament.icon
-              return (
-                <Link
-                  key={sacrament.name}
-                  href={sacrament.href}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
-                    <span className="font-medium">{sacrament.name}</span>
-                  </div>
-                  <span className="text-2xl font-bold text-muted-foreground">
-                    {sacrament.count}
-                  </span>
-                </Link>
-              )
-            })}
-            {totalSacraments === 0 && (
-              <div className="text-center py-6">
-                <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  No sacraments yet. Start by creating your first celebration.
-                </p>
-              </div>
-            )}
-          </div>
-        </FormSectionCard>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
         {/* Upcoming Events */}
         <FormSectionCard title="Upcoming Events">
           {upcomingEvents30Days.length > 0 ? (
@@ -242,7 +141,7 @@ export default async function DashboardPage() {
               {upcomingEvents30Days.map((event) => (
                 <Link
                   key={event.id}
-                  href={`/events/${event.id}`}
+                  href={`/events/${event.event_type_id}/${event.id}`}
                   className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
                 >
                   <div className="flex-1 min-w-0">
@@ -275,39 +174,34 @@ export default async function DashboardPage() {
           )}
         </FormSectionCard>
 
-        {/* Recent Activity */}
-        <FormSectionCard title="Recent Activity">
-          {recentSacraments.length > 0 ? (
+        {/* Dynamic Events Summary */}
+        <FormSectionCard title="Recent Dynamic Events">
+          {dynamicEvents.length > 0 ? (
             <div className="space-y-3">
-              {recentSacraments.map((sacrament) => {
-                const Icon = sacrament.icon
-                return (
-                  <Link
-                    key={`${sacrament.type}-${sacrament.id}`}
-                    href={sacrament.href}
-                    className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm">{sacrament.type}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDistance(new Date(sacrament.created_at), new Date(), { addSuffix: true })}
-                        </p>
-                      </div>
+              {dynamicEvents.slice(0, 5).map((dynEvent) => (
+                <div
+                  key={dynEvent.id}
+                  className="p-3 border rounded-lg"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-medium text-sm">{dynEvent.event_type?.name || 'Event'}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Created {new Date(dynEvent.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                  </Link>
-                )
-              })}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8">
               <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground mb-3">
-                No recent activity
+                No dynamic events yet
               </p>
               <p className="text-xs text-muted-foreground">
-                Create your first sacrament to get started
+                Create your first event type in Settings
               </p>
             </div>
           )}
@@ -321,7 +215,7 @@ export default async function DashboardPage() {
 
       {/* Quick Access Links */}
       <FormSectionCard title="Quick Access">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <Link
             href="/masses/create"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
@@ -337,39 +231,11 @@ export default async function DashboardPage() {
             <span className="text-sm font-medium text-center">Schedule Masses</span>
           </Link>
           <Link
-            href="/weddings/create"
+            href="/events/create"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
-            <VenusAndMars className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Wedding</span>
-          </Link>
-          <Link
-            href="/funerals/create"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-          >
-            <Cross className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Funeral</span>
-          </Link>
-          <Link
-            href="/baptisms/create"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-          >
-            <Droplet className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Baptism</span>
-          </Link>
-          <Link
-            href="/presentations/create"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-          >
-            <HandHeartIcon className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Presentation</span>
-          </Link>
-          <Link
-            href="/quinceaneras/create"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
-          >
-            <BookHeart className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Quinceañera</span>
+            <CalendarDays className="h-6 w-6" />
+            <span className="text-sm font-medium text-center">New Event</span>
           </Link>
           <Link
             href="/mass-intentions/create"

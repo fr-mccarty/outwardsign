@@ -96,15 +96,7 @@ export function WeekendSummaryViewClient({
       <div className="pt-2 border-t">
         <span className="font-medium">Summary Counts:</span>
         <div className="text-sm text-muted-foreground mt-1 space-y-1">
-          {params.includeSacraments && (
-            <>
-              <div>Weddings: {weekendData.weddings.length}</div>
-              <div>Baptisms: {weekendData.baptisms.length}</div>
-              <div>Funerals: {weekendData.funerals.length}</div>
-              <div>Presentations: {weekendData.presentations.length}</div>
-              <div>Quinceañeras: {weekendData.quinceaneras.length}</div>
-            </>
-          )}
+          {/* TODO: Sacrament counts will be added when dynamic events are integrated */}
           {params.includeMasses && (
             <div>Masses: {weekendData.masses.length}</div>
           )}

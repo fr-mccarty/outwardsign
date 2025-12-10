@@ -21,7 +21,8 @@ export default async function MassRoleMembersPage({ searchParams }: PageProps) {
     redirect('/login')
   }
 
-  const params = await searchParams
+  // params available for future filtering
+  void await searchParams
 
   // Fetch people who have mass role preferences (serve in mass roles)
   const peopleInDirectory = await getPeopleWithMassRolePreferences()
@@ -32,12 +33,12 @@ export default async function MassRoleMembersPage({ searchParams }: PageProps) {
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Mass Role Directory" }
+    { label: "Mass Role Members" }
   ]
 
   return (
     <PageContainer
-      title="Mass Role Directory"
+      title="Mass Role Members"
       description="View and manage people serving in liturgical roles."
       primaryAction={<MassRoleMembersActions massRoles={massRoles} allPeople={allPeople} />}
     >

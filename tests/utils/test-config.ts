@@ -19,6 +19,9 @@ export const TEST_TIMEOUTS = {
   /** Timeout for data to load in lists/tables */
   DATA_LOAD: 5000,
 
+  /** Timeout for elements to render */
+  RENDER: 5000,
+
   /** Timeout for modal/dialog animations */
   DIALOG: 3000,
 

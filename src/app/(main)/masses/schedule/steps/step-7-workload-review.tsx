@@ -21,17 +21,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  CheckCircle2,
   Calendar,
   Users,
   CalendarClock,
   BookTemplate,
   AlertTriangle,
   Sparkles,
-  BarChart3,
   ChevronRight,
   ArrowUpDown,
-  UserCheck,
   UserX,
   UserPlus
 } from "lucide-react"
@@ -118,7 +115,8 @@ export function Step7WorkloadReview({
   }, [includedMasses])
 
   // Calculate minister summaries
-  const { ministerSummaries, unassignedRoles } = useMemo(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { ministerSummaries, unassignedRoles: _unassignedRoles } = useMemo(() => {
     const summaryMap = new Map<string, MinisterSummary>()
     const unassigned: Array<{ massId: string; massName: string; date: string; roleName: string }> = []
 
@@ -198,8 +196,10 @@ export function Step7WorkloadReview({
   }
 
   // Get workload color based on relative assignment count
-  const getWorkloadColor = (count: number) => {
-    const maxAssignments = ministerSummaries.length > 0
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _getWorkloadColor = (count: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _maxAssignments = ministerSummaries.length > 0
       ? Math.max(...ministerSummaries.map(m => m.totalAssignments))
       : 0
     const minAssignments = ministerSummaries.length > 0

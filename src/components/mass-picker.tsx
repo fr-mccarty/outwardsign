@@ -121,7 +121,7 @@ export function MassPicker({
       label: 'Event (Date/Time)',
       type: 'custom',
       required: false,
-      render: ({ value, onChange, error }) => {
+      render: ({ onChange, error }) => {
         // Store the onChange callback
         if (onChange !== eventOnChange) {
           setEventOnChange(() => onChange)
@@ -173,7 +173,7 @@ export function MassPicker({
       label: 'Presider',
       type: 'custom',
       required: false,
-      render: ({ value, onChange, error }) => {
+      render: ({ onChange, error }) => {
         // Store the onChange callback
         if (onChange !== presiderOnChange) {
           setPresiderOnChange(() => onChange)

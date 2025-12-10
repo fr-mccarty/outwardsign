@@ -4,7 +4,8 @@ CREATE TABLE parishes (
   name TEXT NOT NULL,
   city TEXT NOT NULL,
   state TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Enable RLS (policies will be added in a later migration)

@@ -25,7 +25,8 @@ const getDefaultStatus = (statusType: StatusType): string => {
 }
 
 // Get display label for a status based on its type
-const getStatusLabel = (status: string, statusType: StatusType): string => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getStatusLabel = (status: string, _statusType: StatusType): string => {
   // All status labels are now in MODULE_STATUS_LABELS
   return MODULE_STATUS_LABELS[status]?.en || status
 }

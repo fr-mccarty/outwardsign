@@ -16,7 +16,7 @@ export interface EventWithRelations extends Event {
   event_type?: EventType | null
 }
 
-export type { CreateEventData, UpdateEventData }
+// Note: Import CreateEventData and UpdateEventData from '@/lib/schemas/events' instead
 
 export interface EventFilterParams {
   search?: string
@@ -345,7 +345,7 @@ export async function deleteEvent(id: string): Promise<void> {
 }
 
 export interface EventModuleLink {
-  moduleType: 'wedding' | 'funeral' | 'baptism' | 'group-baptism' | 'presentation' | 'quinceanera' | 'mass' | null
+  moduleType: 'wedding' | 'funeral' | 'baptism' | 'presentation' | 'quinceanera' | 'mass' | null
   moduleId: string | null
 }
 
@@ -385,17 +385,6 @@ export async function getEventModuleLink(eventId: string): Promise<EventModuleLi
 
   if (baptism) {
     return { moduleType: 'baptism', moduleId: baptism.id }
-  }
-
-  // Check group baptisms
-  const { data: groupBaptism } = await supabase
-    .from('group_baptisms')
-    .select('id')
-    .eq('group_baptism_event_id', eventId)
-    .maybeSingle()
-
-  if (groupBaptism) {
-    return { moduleType: 'group-baptism', moduleId: groupBaptism.id }
   }
 
   // Check presentations

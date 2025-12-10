@@ -1,4 +1,6 @@
-import type { LiturgicalLanguage, ModuleStatus, ReadingCategory, MassStatus, MassIntentionStatus, Sex } from './constants'
+import type { LiturgicalLanguage, ModuleStatus, MassStatus, MassIntentionStatus, Sex } from './constants'
+// Note: Event type definitions are now in this file directly (not re-exported from ./types/event-types)
+// to avoid duplicate export conflicts and ensure type consistency across the codebase.
 
 export interface Petition {
   id: string
@@ -94,91 +96,6 @@ export interface CreateLiturgyPlanData {
   special_notes?: string
 }
 
-export interface ReadingCollection {
-  id: string
-  parish_id: string
-  name: string
-  description?: string
-  occasion_type: string
-  is_template: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface CreateReadingCollectionData {
-  name: string
-  description?: string
-  occasion_type: string
-  is_template?: boolean
-}
-
-export interface IndividualReading {
-  id: string
-  parish_id?: string
-  pericope: string
-  title: string
-  category: ReadingCategory
-  translation_id: number
-  sort_order: number
-  introduction?: string
-  text: string
-  conclusion?: string
-  is_template: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface CreateIndividualReadingData {
-  pericope: string
-  title: string
-  category: ReadingCategory
-  translation_id?: number
-  sort_order?: number
-  introduction?: string
-  reading_text: string
-  conclusion?: string
-  is_template?: boolean
-}
-
-export interface ReadingCollectionItem {
-  id: string
-  collection_id: string
-  reading_id: string
-  position: number
-  lector_name?: string
-  do_not_print: boolean
-  notes?: string
-  created_at: string
-}
-
-export interface CreateReadingCollectionItemData {
-  collection_id: string
-  reading_id: string
-  position?: number
-  lector_name?: string
-  do_not_print?: boolean
-  notes?: string
-}
-
-export interface ReadingCollectionWithItems {
-  id: string
-  parish_id?: string
-  name: string
-  description?: string
-  occasion_type: string
-  is_template: boolean
-  created_at: string
-  updated_at: string
-  items: Array<{
-    id: string
-    position: number
-    lector_name?: string
-    do_not_print: boolean
-    notes?: string
-    reading: IndividualReading
-  }>
-}
-
 // Parish-related interfaces
 export interface Parish {
   id: string
@@ -258,40 +175,6 @@ export const LITURGICAL_CATEGORIES: Record<string, LiturgicalCategory[]> = {
   'baptism': ['baptism-1', 'baptism-psalm', 'baptism-2', 'baptism-gospel'],
   'confirmation': ['confirmation-1', 'confirmation-psalm', 'confirmation-2', 'confirmation-gospel'],
   'mass': ['mass-1', 'mass-psalm', 'mass-2', 'mass-gospel'],
-}
-
-// Liturgical Reading types
-export interface LiturgicalReading {
-  id: string
-  parish_id: string
-  title: string
-  description?: string
-  date?: string
-  first_reading_id?: string
-  first_reading_lector?: string
-  psalm_id?: string
-  psalm_lector?: string
-  second_reading_id?: string
-  second_reading_lector?: string
-  gospel_reading_id?: string
-  gospel_lector?: string
-  sung_petitions?: boolean
-  created_at: string
-}
-
-export interface CreateLiturgicalReadingData {
-  title: string
-  description?: string
-  date?: string
-  first_reading_id?: string
-  first_reading_lector?: string
-  psalm_id?: string
-  psalm_lector?: string
-  second_reading_id?: string
-  second_reading_lector?: string
-  gospel_reading_id?: string
-  gospel_lector?: string
-  sung_petitions?: boolean
 }
 
 // Additional parish-based interfaces
@@ -400,42 +283,17 @@ export interface LiturgicalEvent {
   updated_at: string
 }
 
-export interface Reading {
-  id: string
-  parish_id: string
-  pericope: string
-  text: string
-  introduction?: string
-  conclusion?: string
-  language?: LiturgicalLanguage
-  categories?: string[]
-  created_at: string
-  updated_at: string
-}
-
-export interface Presentation {
-  id: string
-  parish_id: string
-  presentation_event_id?: string
-  child_id?: string
-  mother_id?: string
-  father_id?: string
-  coordinator_id?: string
-  is_baptized: boolean
-  status?: ModuleStatus
-  note?: string
-  presentation_template_id?: string
-  created_at: string
-  updated_at: string
-}
-
+// EventType is now unified with DynamicEventType - they represent the same thing
+// The old hardcoded modules (Wedding, Funeral, etc.) have been replaced with dynamic event types
 export interface EventType {
   id: string
   parish_id: string
   name: string
-  description?: string
-  is_active: boolean
-  display_order?: number
+  description: string | null
+  icon: string // Lucide icon name
+  slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
+  order: number
+  deleted_at: string | null
   created_at: string
   updated_at: string
 }
@@ -472,137 +330,6 @@ export interface Location {
   state?: string | null
   country?: string | null
   phone_number?: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface Wedding {
-  id: string
-  parish_id: string
-  wedding_event_id?: string
-  bride_id?: string
-  groom_id?: string
-  coordinator_id?: string
-  presider_id?: string
-  homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
-  reception_event_id?: string
-  rehearsal_event_id?: string
-  rehearsal_dinner_event_id?: string
-  witness_1_id?: string
-  witness_2_id?: string
-  status?: ModuleStatus
-  first_reading_id?: string
-  psalm_id?: string
-  psalm_reader_id?: string
-  psalm_is_sung?: boolean
-  second_reading_id?: string
-  gospel_reading_id?: string
-  gospel_reader_id?: string
-  first_reader_id?: string
-  second_reader_id?: string
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string
-  petitions?: string
-  announcements?: string
-  notes?: string
-  wedding_template_id?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Funeral {
-  id: string
-  parish_id: string
-  funeral_event_id?: string
-  funeral_meal_event_id?: string
-  deceased_id?: string
-  family_contact_id?: string
-  coordinator_id?: string
-  presider_id?: string
-  homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
-  status?: ModuleStatus
-  first_reading_id?: string
-  psalm_id?: string
-  psalm_reader_id?: string
-  psalm_is_sung?: boolean
-  second_reading_id?: string
-  gospel_reading_id?: string
-  gospel_reader_id?: string
-  first_reader_id?: string
-  second_reader_id?: string
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string
-  petitions?: string
-  announcements?: string
-  note?: string
-  funeral_template_id?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Quinceanera {
-  id: string
-  parish_id: string
-  quinceanera_event_id?: string
-  quinceanera_reception_id?: string
-  quinceanera_id?: string
-  family_contact_id?: string
-  coordinator_id?: string
-  presider_id?: string
-  homilist_id?: string
-  lead_musician_id?: string
-  cantor_id?: string
-  status?: ModuleStatus
-  first_reading_id?: string
-  psalm_id?: string
-  psalm_reader_id?: string
-  psalm_is_sung?: boolean
-  second_reading_id?: string
-  gospel_reading_id?: string
-  gospel_reader_id?: string
-  first_reader_id?: string
-  second_reader_id?: string
-  petitions_read_by_second_reader?: boolean
-  petition_reader_id?: string
-  petitions?: string
-  announcements?: string
-  note?: string
-  quinceanera_template_id?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Baptism {
-  id: string
-  parish_id: string
-  baptism_event_id?: string
-  child_id?: string
-  mother_id?: string
-  father_id?: string
-  sponsor_1_id?: string
-  sponsor_2_id?: string
-  presider_id?: string
-  group_baptism_id?: string | null
-  status?: ModuleStatus
-  baptism_template_id?: string
-  note?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface GroupBaptism {
-  id: string
-  parish_id: string
-  name: string
-  group_baptism_event_id: string | null
-  presider_id: string | null
-  status: ModuleStatus
-  note: string | null
-  group_baptism_template_id: string | null
   created_at: string
   updated_at: string
 }
@@ -818,4 +545,251 @@ export interface MassIntention {
   note?: string
   created_at: string
   updated_at: string
+}
+
+// User-Defined Event Types System
+
+// Input field types for dynamic event forms
+export type InputFieldType =
+  | 'person'
+  | 'group'
+  | 'location'
+  | 'event_link'
+  | 'list_item'
+  | 'document'
+  | 'text'
+  | 'rich_text'
+  | 'date'
+  | 'time'
+  | 'datetime'
+  | 'number'
+  | 'yes_no'
+
+// DynamicEventType is an alias for EventType for backward compatibility
+// Both represent the same database table (event_types)
+export type DynamicEventType = EventType
+
+export interface DynamicEventTypeWithRelations extends EventType {
+  input_field_definitions: InputFieldDefinition[]
+  scripts: Script[]
+}
+
+export interface CreateDynamicEventTypeData {
+  name: string
+  description?: string | null
+  icon: string
+  slug?: string | null
+}
+
+export interface UpdateDynamicEventTypeData {
+  name?: string
+  description?: string | null
+  icon?: string
+  slug?: string | null
+}
+
+// Input Field Definitions (fields for event types)
+export interface InputFieldDefinition {
+  id: string
+  event_type_id: string
+  name: string
+  type: InputFieldType
+  required: boolean
+  list_id: string | null
+  event_type_filter_id: string | null
+  is_key_person: boolean
+  order: number
+  deleted_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface InputFieldDefinitionWithRelations extends InputFieldDefinition {
+  custom_list?: CustomList | null
+  event_type_filter?: DynamicEventType | null
+}
+
+export interface CreateInputFieldDefinitionData {
+  event_type_id: string
+  name: string
+  type: InputFieldType
+  required: boolean
+  list_id?: string | null
+  event_type_filter_id?: string | null
+  is_key_person?: boolean
+}
+
+export interface UpdateInputFieldDefinitionData {
+  name?: string
+  type?: InputFieldType
+  required?: boolean
+  list_id?: string | null
+  event_type_filter_id?: string | null
+  is_key_person?: boolean
+}
+
+// Custom Lists (parish-defined option sets)
+export interface CustomList {
+  id: string
+  parish_id: string
+  name: string
+  deleted_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CustomListWithItems extends CustomList {
+  items: CustomListItem[]
+}
+
+export interface CreateCustomListData {
+  name: string
+}
+
+export interface UpdateCustomListData {
+  name?: string
+}
+
+// Custom List Items
+export interface CustomListItem {
+  id: string
+  list_id: string
+  value: string
+  order: number
+  deleted_at: string | null
+  created_at: string
+}
+
+export interface CreateCustomListItemData {
+  value: string
+}
+
+export interface UpdateCustomListItemData {
+  value?: string
+}
+
+// Scripts (exportable documents for event types)
+export interface Script {
+  id: string
+  event_type_id: string
+  name: string
+  order: number
+  deleted_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ScriptWithSections extends Script {
+  sections: Section[]
+}
+
+export interface CreateScriptData {
+  event_type_id: string
+  name: string
+}
+
+export interface UpdateScriptData {
+  name?: string
+}
+
+// Sections (rich text blocks within scripts)
+export interface Section {
+  id: string
+  script_id: string
+  name: string
+  content: string // Markdown with custom syntax
+  page_break_after: boolean
+  order: number
+  deleted_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateSectionData {
+  name: string
+  content: string
+  page_break_after?: boolean
+}
+
+export interface UpdateSectionData {
+  name?: string
+  content?: string
+  page_break_after?: boolean
+}
+
+// Dynamic Events (replaces Wedding, Funeral, etc.)
+export interface DynamicEvent {
+  id: string
+  parish_id: string
+  event_type_id: string
+  field_values: Record<string, any> // JSON object
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export interface ResolvedFieldValue {
+  field_name: string
+  field_type: InputFieldType
+  raw_value: any
+  resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | null
+}
+
+export interface DynamicEventWithRelations extends DynamicEvent {
+  event_type: DynamicEventType
+  occasions: Occasion[]
+  resolved_fields: Record<string, ResolvedFieldValue>
+}
+
+export interface CreateDynamicEventData {
+  field_values: Record<string, any>
+  occasions?: CreateOccasionData[]
+}
+
+export interface UpdateDynamicEventData {
+  field_values?: Record<string, any>
+  occasions?: (CreateOccasionData | UpdateOccasionData)[]
+}
+
+// Occasions (date/time/location entries for events)
+export interface Occasion {
+  id: string
+  event_id: string
+  label: string
+  date: string | null
+  time: string | null
+  location_id: string | null
+  is_primary: boolean
+  deleted_at: string | null
+  created_at: string
+  location?: Location | null
+}
+
+export interface CreateOccasionData {
+  label: string
+  date?: string | null
+  time?: string | null
+  location_id?: string | null
+  is_primary?: boolean
+}
+
+export interface UpdateOccasionData {
+  id?: string
+  label?: string
+  date?: string | null
+  time?: string | null
+  location_id?: string | null
+  is_primary?: boolean
+}
+
+// Documents (file uploads)
+export interface Document {
+  id: string
+  parish_id: string
+  file_path: string
+  file_name: string
+  file_type: string
+  file_size: number
+  uploaded_at: string
+  deleted_at: string | null
 }

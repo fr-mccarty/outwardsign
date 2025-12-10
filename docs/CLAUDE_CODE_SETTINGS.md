@@ -74,10 +74,9 @@
 **Build/Test commands:**
 - `npm run build`
 - `npm run lint`
-- `npm test`
-- `npx playwright test`
-- `npx playwright show-report`
-- Test setup scripts
+- `npm run test` (and `npm run test:ui` for interactive debugging)
+
+**Note:** Use `npm run test:*` commands instead of `npx playwright` directly.
 
 ---
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -11,19 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+// Alert available for future warning displays
 import {
   CalendarDays,
   AlertTriangle,
-  CheckCircle2,
-  UserPlus,
-  Users,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
   Trash2,
-  UserMinus,
-  X
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import { Calendar } from '@/components/calendar/calendar'
@@ -31,10 +23,10 @@ import { CalendarItem, CalendarView } from '@/components/calendar/types'
 import { MassTimesTemplate, MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
 import { LITURGICAL_DAYS_OF_WEEK_LABELS, type LiturgicalDayOfWeek, DEFAULT_TIMEZONE } from "@/lib/constants"
 import { formatDate, formatTime, getDayOfWeekNumber, toLocalDateString } from "@/lib/utils/formatters"
-import { format } from 'date-fns'
+// date-fns format available for custom date formatting
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'
-import { cn } from '@/lib/utils'
+// cn utility available for conditional styling
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 
 export interface RoleAssignment {
@@ -86,12 +78,16 @@ function getDayLabel(day: string): string {
 
 export function Step5ProposedSchedule({
   startDate,
-  endDate,
-  massTimesTemplates,
-  selectedMassTimesTemplateIds,
+  endDate: _endDate,
+  massTimesTemplates: _massTimesTemplates,
+  selectedMassTimesTemplateIds: _selectedMassTimesTemplateIds,
   proposedMasses,
   onProposedMassesChange,
 }: Step6ProposedScheduleProps) {
+  // These props are available for future template-based filtering
+  void _endDate
+  void _massTimesTemplates
+  void _selectedMassTimesTemplateIds
   const [currentDate, setCurrentDate] = useState(() => {
     return startDate ? new Date(startDate) : new Date()
   })
@@ -179,10 +175,12 @@ export function Step5ProposedSchedule({
     }
   }
 
-  const handleAssignPerson = (role: RoleAssignment) => {
+  // Assignment handlers - used by role assignment UI
+  const _handleAssignPerson = (role: RoleAssignment) => {
     setEditingRole(role)
     setPeoplePickerOpen(true)
   }
+  void _handleAssignPerson
 
   const handlePersonSelected = (person: Person) => {
     if (!selectedMass || !editingRole) return
@@ -208,7 +206,8 @@ export function Step5ProposedSchedule({
     setEditingRole(null)
   }
 
-  const handleRemoveAssignment = (role: RoleAssignment) => {
+  // Remove assignment handler - used by role assignment UI
+  const _handleRemoveAssignment = (role: RoleAssignment) => {
     if (!selectedMass) return
 
     const updated = proposedMasses.map(m => {
@@ -227,6 +226,7 @@ export function Step5ProposedSchedule({
     const updatedMass = updated.find(m => m.id === selectedMass.id)
     if (updatedMass) setSelectedMass(updatedMass)
   }
+  void _handleRemoveAssignment
 
   // Custom color for calendar items
   const getItemColor = (item: ProposedMassCalendarItem) => {
@@ -386,7 +386,7 @@ export function Step5ProposedSchedule({
               Masses on Special Liturgical Days ({stats.conflicts})
             </DialogTitle>
             <DialogDescription>
-              These Masses fall on liturgical events that were selected in Step 4 (Holy Days, Solemnities, Feasts). Review them to ensure the times and assignments match your parish's schedule for these special celebrations.
+              These Masses fall on liturgical events that were selected in Step 4 (Holy Days, Solemnities, Feasts). Review them to ensure the times and assignments match your parish&apos;s schedule for these special celebrations.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

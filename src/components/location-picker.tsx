@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge'
 import { MapPin, Phone } from 'lucide-react'
 import { getLocationsPaginated, createLocation, updateLocation, type Location } from '@/lib/actions/locations'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
 import { isFieldVisible as checkFieldVisible, isFieldRequired as checkFieldRequired } from '@/types/picker'
@@ -49,6 +48,8 @@ export function LocationPicker({
   editMode = false,
   locationToEdit = null,
 }: LocationPickerProps) {
+  // Note: className prop available for future customization
+  void className
   const [locations, setLocations] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)

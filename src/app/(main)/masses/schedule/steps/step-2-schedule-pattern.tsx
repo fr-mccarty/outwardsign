@@ -33,20 +33,23 @@ interface Step2SchedulePatternProps {
   onTemplateSelectionChange: (templateIds: string[]) => void
 }
 
-const DAYS_OF_WEEK = [
-  { value: 0, key: 'SUNDAY' },
-  { value: 1, key: 'MONDAY' },
-  { value: 2, key: 'TUESDAY' },
-  { value: 3, key: 'WEDNESDAY' },
-  { value: 4, key: 'THURSDAY' },
-  { value: 5, key: 'FRIDAY' },
-  { value: 6, key: 'SATURDAY' },
-]
+// Days of week mapping - available for custom schedule UI
+// const DAYS_OF_WEEK = [
+//   { value: 0, key: 'SUNDAY' },
+//   { value: 1, key: 'MONDAY' },
+//   { value: 2, key: 'TUESDAY' },
+//   { value: 3, key: 'WEDNESDAY' },
+//   { value: 4, key: 'THURSDAY' },
+//   { value: 5, key: 'FRIDAY' },
+//   { value: 6, key: 'SATURDAY' },
+// ]
 
 
 export function Step2SchedulePattern({
-  schedule,
-  onChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  schedule: _schedule,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onChange: _onChange,
   startDate,
   endDate,
   massTimesTemplates,
@@ -133,7 +136,8 @@ export function Step2SchedulePattern({
     return count
   }
 
-  const totalMasses = calculateMassCount()
+  // Total masses count - available for display in summary
+  void calculateMassCount()
 
   // Get day label
   const getDayLabel = (day: string) => {

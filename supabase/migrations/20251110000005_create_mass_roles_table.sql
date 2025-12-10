@@ -9,6 +9,7 @@ CREATE TABLE mass_roles (
   display_order INTEGER,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ,
   UNIQUE(parish_id, name)
 );
 

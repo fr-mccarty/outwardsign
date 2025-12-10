@@ -17,7 +17,6 @@ import Link from "next/link"
 import Image from "next/image"
 import {
   Church,
-  Flower,
   Heart,
   User,
   Users,
@@ -977,7 +976,7 @@ function HomeContent() {
             <Card className="border-2 border-primary/20 bg-primary/5">
               <CardContent className="p-8">
                 <p className="text-xl md:text-2xl font-semibold italic text-foreground leading-relaxed text-center">
-                  "{t.hero.catechismQuote}"
+                  &quot;{t.hero.catechismQuote}&quot;
                 </p>
                 <p className="text-sm text-muted-foreground text-center mt-4">
                   {t.hero.catechismReference}
@@ -1489,7 +1488,7 @@ function HomeContent() {
             <div className="text-center pt-6">
               <p className="text-sm text-muted-foreground mb-4">
                 <AlertCircle className="h-4 w-4 inline mr-1" />
-                Have a feature request or suggestion? We'd love to hear from you!
+                Have a feature request or suggestion? We&apos;d love to hear from you!
               </p>
               <Button asChild variant="outline">
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">

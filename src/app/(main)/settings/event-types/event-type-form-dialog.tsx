@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -13,15 +13,14 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form-input'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+import { IconPicker } from '@/components/icon-picker'
 import { createEventType, updateEventType } from '@/lib/actions/event-types'
 import {
   createEventTypeSchema,
   type CreateEventTypeData,
 } from '@/lib/schemas/event-types'
 import { toast } from 'sonner'
-import type { EventType } from '@/lib/types'
+import type { EventType } from '@/lib/types/event-types'
 
 interface EventTypeFormDialogProps {
   open: boolean
@@ -37,6 +36,7 @@ export function EventTypeFormDialog({
   onSuccess,
 }: EventTypeFormDialogProps) {
   const isEditing = !!eventType
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
   const {
     handleSubmit,
@@ -48,14 +48,25 @@ export function EventTypeFormDialog({
     resolver: zodResolver(createEventTypeSchema),
     defaultValues: {
       name: '',
-      description: '',
-      is_active: true,
+      icon: 'FileText',
+      slug: '',
     },
   })
 
   const name = watch('name')
-  const description = watch('description')
-  const isActive = watch('is_active')
+  const icon = watch('icon')
+  const slug = watch('slug')
+
+  // Slug generation utility
+  const generateSlug = (text: string): string => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
 
   // Initialize form when dialog opens or eventType changes
   useEffect(() => {
@@ -63,33 +74,42 @@ export function EventTypeFormDialog({
       if (eventType) {
         reset({
           name: eventType.name,
-          description: eventType.description || '',
-          is_active: eventType.is_active,
+          icon: eventType.icon || 'FileText',
+          slug: eventType.slug || '',
         })
+        setSlugManuallyEdited(false)
       } else {
         reset({
           name: '',
-          description: '',
-          is_active: true,
+          icon: 'FileText',
+          slug: '',
         })
+        setSlugManuallyEdited(false)
       }
     }
   }, [eventType, open, reset])
+
+  // Auto-generate slug from name (unless manually edited)
+  useEffect(() => {
+    if (!slugManuallyEdited && name) {
+      setValue('slug', generateSlug(name))
+    }
+  }, [name, slugManuallyEdited, setValue])
 
   const onSubmit = async (data: CreateEventTypeData) => {
     try {
       if (isEditing) {
         await updateEventType(eventType.id, {
           name: data.name,
-          description: data.description || undefined,
-          is_active: data.is_active,
+          icon: data.icon,
+          slug: data.slug,
         })
         toast.success('Event type updated successfully')
       } else {
         await createEventType({
           name: data.name,
-          description: data.description || undefined,
-          is_active: data.is_active,
+          icon: data.icon,
+          slug: data.slug,
         })
         toast.success('Event type created successfully')
       }
@@ -121,33 +141,29 @@ export function EventTypeFormDialog({
               onChange={(value) => setValue('name', value)}
               error={errors.name?.message}
               required
-              placeholder="e.g., Parish Meeting, Fundraiser, etc."
+              placeholder="e.g., Wedding, Funeral, Baptism, etc."
             />
 
             <FormInput
-              id="description"
-              label="Description"
-              inputType="textarea"
-              value={description || ''}
-              onChange={(value) => setValue('description', value)}
-              error={errors.description?.message}
-              placeholder="Optional description of this event type..."
-              rows={3}
+              id="slug"
+              label="Slug"
+              value={slug || ''}
+              onChange={(value) => {
+                setValue('slug', value)
+                setSlugManuallyEdited(true)
+              }}
+              error={errors.slug?.message}
+              placeholder="e.g., weddings, funerals, baptisms, etc."
+              description="URL-friendly identifier. Auto-generated from name, but you can customize it."
             />
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="is-active">Active</Label>
-                <div className="text-sm text-muted-foreground">
-                  Inactive types will not appear in event creation forms
-                </div>
-              </div>
-              <Switch
-                id="is-active"
-                checked={isActive ?? true}
-                onCheckedChange={(checked) => setValue('is_active', checked)}
-              />
-            </div>
+            <IconPicker
+              value={icon}
+              onChange={(value) => setValue('icon', value)}
+              label="Icon"
+              required
+              error={errors.icon?.message}
+            />
           </div>
 
           <DialogFooter>

@@ -84,7 +84,7 @@ export function EventPickerField({
 
   const confirmNavigate = () => {
     if (value?.id) {
-      router.push(`/events/${value.id}`)
+      router.push(`/events/${value.event_type_id}/${value.id}`)
     }
     setShowNavigateConfirm(false)
   }

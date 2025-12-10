@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Input } from "@/components/ui/input"
-import { GripVertical } from "lucide-react"
 import { updateTemplateItem, type MassRoleTemplateItemWithRole } from '@/lib/actions/mass-role-template-items'
 import { toast } from 'sonner'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -24,8 +23,6 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
   const debouncedCount = useDebounce(count, 500)
 
   const {
-    attributes,
-    listeners,
     setNodeRef,
     transform,
     transition,

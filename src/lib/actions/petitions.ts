@@ -262,7 +262,8 @@ export async function updatePetition(id: string, data: CreatePetitionData) {
   const generatedContent = await generatePetitionContent(data)
 
   // Get the existing petition to preserve the details structure
-  const { data: existingPetition, error: fetchError } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: _existingPetition, error: fetchError } = await supabase
     .from('petitions')
     .select('details, template')
     .eq('id', id)
@@ -319,7 +320,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
 
   // Get the user's custom prompt template
   const template = await getPromptTemplate()
-  
+
   // Replace template variables with actual values (now includes template content)
   const variables = getTemplateVariables(data, templateContent)
   const prompt = replaceTemplateVariables(template, variables)

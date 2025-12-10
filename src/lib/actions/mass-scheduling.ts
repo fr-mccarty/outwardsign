@@ -751,7 +751,7 @@ export async function getPersonSchedulingConflicts(
   startDate: string,
   endDate: string
 ): Promise<Array<{ date: string; reason: string }>> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -827,6 +827,7 @@ async function hasConflict(
 /**
  * Get assignment count for a person in a given month
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getMonthlyAssignmentCount(
   supabase: Awaited<ReturnType<typeof createClient>>,
   personId: string,

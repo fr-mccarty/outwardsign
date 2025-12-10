@@ -103,7 +103,7 @@ export function ParishUserMenu() {
 
         setParishes(parishesWithDetails)
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to load user data')
     } finally {
       setLoading(false)
@@ -123,7 +123,7 @@ export function ParishUserMenu() {
       
       // Refresh the page to update all data
       window.location.reload()
-    } catch (error) {
+    } catch {
       toast.error('Failed to switch parish')
     } finally {
       setSwitching(null)

@@ -302,6 +302,72 @@ Row-Level Security (RLS) policies in the database automatically enforce permissi
 
 ## Implementation Guide
 
+### The `requireSelectedParish()` Pattern
+
+**🔴 CRITICAL: This pattern is frequently misused. Follow these rules exactly.**
+
+The `requireSelectedParish()` function serves two purposes:
+1. **Validates** that the user has a parish selected (throws error if not)
+2. **Returns** the selected parish ID for use in queries
+
+**Use the correct pattern based on whether you need the parish ID:**
+
+**Pattern 1: When you NEED the parish ID** (for queries or permission checks):
+```typescript
+export async function createWedding(data: CreateWeddingData): Promise<Wedding> {
+  const selectedParishId = await requireSelectedParish()  // ✅ Capture the return value
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Using selectedParishId in query
+  const { data: wedding } = await supabase
+    .from('weddings')
+    .insert({ ...data, parish_id: selectedParishId })  // ✅ Used here
+    .select()
+    .single()
+
+  // Or using selectedParishId in permission check
+  const userParish = await getUserParishRole(user.id, selectedParishId)  // ✅ Used here
+  // ...
+}
+```
+
+**Pattern 2: When you DON'T need the parish ID** (just validating parish selection):
+```typescript
+export async function getScripts(eventTypeId: string): Promise<Script[]> {
+  await requireSelectedParish()  // ✅ Just call it, don't capture
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Query doesn't use parish_id because scripts are filtered by event_type_id
+  const { data } = await supabase
+    .from('scripts')
+    .select('*')
+    .eq('event_type_id', eventTypeId)  // Filtering by event_type_id, not parish_id
+    // ...
+}
+```
+
+**🚫 WRONG - Causes ESLint "unused variable" error:**
+```typescript
+export async function getScripts(eventTypeId: string): Promise<Script[]> {
+  const selectedParishId = await requireSelectedParish()  // ❌ BAD: assigned but never used
+  // ... selectedParishId is never used in this function
+}
+```
+
+**When to use each pattern:**
+
+| Scenario | Pattern |
+|----------|---------|
+| Query filters by `parish_id` | Capture: `const selectedParishId = await requireSelectedParish()` |
+| Insert includes `parish_id` | Capture: `const selectedParishId = await requireSelectedParish()` |
+| Permission check needs parish ID | Capture: `const selectedParishId = await requireSelectedParish()` |
+| Query filters by other ID (event_type_id, script_id, etc.) | Just call: `await requireSelectedParish()` |
+| Only need to validate user has parish selected | Just call: `await requireSelectedParish()` |
+
+---
+
 ### Permission Helper Functions
 
 **Server-side functions** (`src/lib/auth/permissions.ts`):

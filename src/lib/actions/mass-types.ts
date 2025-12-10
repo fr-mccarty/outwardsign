@@ -25,8 +25,7 @@ export interface MassType {
   updated_at: string
 }
 
-// Re-export types from schema
-export type { CreateMassTypeData, UpdateMassTypeData }
+// Note: Import CreateMassTypeData and UpdateMassTypeData from '@/lib/schemas/mass-types' instead
 
 /**
  * Get all mass types for the selected parish

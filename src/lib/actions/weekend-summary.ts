@@ -3,11 +3,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getWeddings, WeddingWithRelations } from './weddings'
-import { getBaptisms, BaptismWithRelations } from './baptisms'
-import { getFunerals, FuneralWithRelations } from './funerals'
-import { getPresentations, PresentationWithRelations } from './presentations'
-import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
+// Temporarily disabled - old modules removed in favor of dynamic events
+// import { getWeddings, WeddingWithRelations } from './weddings'
+// import { getBaptisms, BaptismWithRelations } from './baptisms'
+// import { getFunerals, FuneralWithRelations } from './funerals'
+// import { getPresentations, PresentationWithRelations } from './presentations'
+// import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
 import { getMasses, MassWithNames } from './masses'
 import { getMassRoleInstances, MassRoleInstanceWithRelations } from './mass-roles'
 import { toLocalDateString } from '@/lib/utils/formatters'
@@ -23,12 +24,12 @@ export interface WeekendSummaryData {
   sundayDate: string
   saturdayDate: string
 
-  // Sacraments
-  weddings: WeddingWithRelations[]
-  baptisms: BaptismWithRelations[]
-  funerals: FuneralWithRelations[]
-  presentations: PresentationWithRelations[]
-  quinceaneras: QuinceaneraWithRelations[]
+  // Sacraments - temporarily empty until migrated to dynamic events
+  // weddings: WeddingWithRelations[]
+  // baptisms: BaptismWithRelations[]
+  // funerals: FuneralWithRelations[]
+  // presentations: PresentationWithRelations[]
+  // quinceaneras: QuinceaneraWithRelations[]
 
   // Masses
   masses: MassWithNames[]
@@ -47,9 +48,10 @@ export interface WeekendSummaryData {
 export async function getWeekendSummaryData(
   params: WeekendSummaryParams
 ): Promise<WeekendSummaryData> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _supabase = await createClient()
 
   // Calculate Saturday (day before Sunday)
   const sunday = new Date(params.sundayDate + 'T00:00:00')
@@ -63,52 +65,31 @@ export async function getWeekendSummaryData(
   const result: WeekendSummaryData = {
     sundayDate,
     saturdayDate,
-    weddings: [],
-    baptisms: [],
-    funerals: [],
-    presentations: [],
-    quinceaneras: [],
+    // Sacraments temporarily disabled - will be replaced with dynamic events
+    // weddings: [],
+    // baptisms: [],
+    // funerals: [],
+    // presentations: [],
+    // quinceaneras: [],
     masses: [],
     massRoles: []
   }
 
-  // Fetch sacraments if requested
-  if (params.includeSacraments) {
-    // Fetch all sacraments that have events during the weekend
-    const [weddings, baptisms, funerals, presentations, quinceaneras] = await Promise.all([
-      getWeddings(),
-      getBaptisms(),
-      getFunerals(),
-      getPresentations(),
-      getQuinceaneras()
-    ])
+  // Sacraments temporarily disabled - will be replaced with dynamic events
+  // if (params.includeSacraments) {
+  //   // Fetch all sacraments that have events during the weekend
+  //   const [weddings, baptisms, funerals, presentations, quinceaneras] = await Promise.all([
+  //     getWeddings(),
+  //     getBaptisms(),
+  //     getFunerals(),
+  //     getPresentations(),
+  //     getQuinceaneras()
+  //   ])
+  //   ...
+  // }
 
-    // Filter sacraments to only include those with events on Saturday or Sunday
-    result.weddings = weddings.filter(w => {
-      const eventDate = w.wedding_event?.start_date
-      return eventDate && (eventDate === saturdayDate || eventDate === sundayDate)
-    })
-
-    result.baptisms = baptisms.filter(b => {
-      const eventDate = b.baptism_event?.start_date
-      return eventDate && (eventDate === saturdayDate || eventDate === sundayDate)
-    })
-
-    result.funerals = funerals.filter(f => {
-      const eventDate = f.funeral_event?.start_date
-      return eventDate && (eventDate === saturdayDate || eventDate === sundayDate)
-    })
-
-    result.presentations = presentations.filter(p => {
-      const eventDate = p.presentation_event?.start_date
-      return eventDate && (eventDate === saturdayDate || eventDate === sundayDate)
-    })
-
-    result.quinceaneras = quinceaneras.filter(q => {
-      const eventDate = q.quinceanera_event?.start_date
-      return eventDate && (eventDate === saturdayDate || eventDate === sundayDate)
-    })
-  }
+  // Suppress unused variable warning
+  void params.includeSacraments
 
   // Fetch masses if requested
   if (params.includeMasses) {

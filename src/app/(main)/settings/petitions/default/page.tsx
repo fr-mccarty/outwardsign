@@ -99,7 +99,7 @@ export default function DefaultPetitionsPage() {
               <ul className="space-y-1 text-muted-foreground">
                 <li>• These petitions will be used as a fallback when no template-specific petitions are defined</li>
                 <li>• Enter each petition on a new line</li>
-                <li>• You can customize these to match your parish's common needs</li>
+                <li>• You can customize these to match your parish&apos;s common needs</li>
                 <li>• These serve as a starting point and can be edited during petition creation</li>
               </ul>
             </div>

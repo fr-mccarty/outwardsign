@@ -13,8 +13,6 @@ interface WizardLoadingStateProps {
 }
 
 export function WizardLoadingState({
-  title,
-  description,
   loading,
   error,
   onRetry,

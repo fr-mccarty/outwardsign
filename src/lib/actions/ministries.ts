@@ -35,7 +35,7 @@ export interface UpdateMinistryData {
 }
 
 export async function getMinistries(): Promise<Ministry[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -54,7 +54,7 @@ export async function getMinistries(): Promise<Ministry[]> {
 }
 
 export async function getMinistry(id: string): Promise<Ministry | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -115,7 +115,7 @@ export async function createMinistry(data: CreateMinistryData): Promise<Ministry
 }
 
 export async function updateMinistry(id: string, data: UpdateMinistryData): Promise<Ministry> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -143,7 +143,7 @@ export async function updateMinistry(id: string, data: UpdateMinistryData): Prom
 }
 
 export async function deleteMinistry(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -161,7 +161,7 @@ export async function deleteMinistry(id: string): Promise<void> {
 }
 
 export async function reorderMinistries(ministryIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -185,7 +185,7 @@ export async function reorderMinistries(ministryIds: string[]): Promise<void> {
 }
 
 export async function getActiveMinistries(): Promise<Ministry[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 

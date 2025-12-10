@@ -6,6 +6,7 @@ This document covers UI component patterns including dialogs, empty states, tabl
 
 ## Table of Contents
 
+- [🔴 No Horizontal Tabs (CRITICAL)](#-no-horizontal-tabs-critical)
 - [Dialog and Modal Standards](#dialog-and-modal-standards)
 - [🔴 DialogButton Component (CRITICAL)](#-dialogbutton-component-critical)
 - [Empty States](#empty-states)
@@ -14,6 +15,70 @@ This document covers UI component patterns including dialogs, empty states, tabl
 - [🔴 Click Hierarchy (CRITICAL)](#-click-hierarchy-critical)
 - [Component Usage Hierarchy](#component-usage-hierarchy)
 - [Responsive Design](#responsive-design)
+
+---
+
+## 🔴 No Horizontal Tabs (CRITICAL)
+
+**NEVER use horizontal tabs at the top of pages for navigation or content organization.**
+
+Horizontal tabs are not mobile-friendly and create poor UX on smaller screens:
+- Tabs overflow and become hidden on mobile devices
+- Users cannot see all available options at a glance
+- Tab text often gets truncated or requires horizontal scrolling
+- Touch targets become too small on mobile
+
+### Alternative Patterns
+
+**For multi-section pages (like Event Type Detail):**
+
+```typescript
+// ❌ BAD - Horizontal tabs
+<Tabs defaultValue="settings">
+  <TabsList>
+    <TabsTrigger value="settings">Settings</TabsTrigger>
+    <TabsTrigger value="fields">Input Fields</TabsTrigger>
+    <TabsTrigger value="scripts">Scripts</TabsTrigger>
+  </TabsList>
+  <TabsContent value="settings">...</TabsContent>
+  <TabsContent value="fields">...</TabsContent>
+  <TabsContent value="scripts">...</TabsContent>
+</Tabs>
+
+// ✅ GOOD - Separate pages with navigation
+// /settings/event-types/[id]/page.tsx (Settings)
+// /settings/event-types/[id]/fields/page.tsx (Input Fields)
+// /settings/event-types/[id]/scripts/page.tsx (Scripts)
+
+// ✅ GOOD - Collapsible sections on single page
+<Collapsible>
+  <CollapsibleTrigger>Settings</CollapsibleTrigger>
+  <CollapsibleContent>...</CollapsibleContent>
+</Collapsible>
+<Collapsible>
+  <CollapsibleTrigger>Input Fields</CollapsibleTrigger>
+  <CollapsibleContent>...</CollapsibleContent>
+</Collapsible>
+
+// ✅ GOOD - Stacked sections with clear headings
+<FormSectionCard title="Settings">...</FormSectionCard>
+<FormSectionCard title="Input Fields">...</FormSectionCard>
+<FormSectionCard title="Scripts">...</FormSectionCard>
+```
+
+### Recommended Approaches
+
+1. **Separate pages** - Best for distinct content areas with their own URL (enables deep linking, back button support)
+2. **Collapsible sections** - Good for related content that users may want to expand/collapse
+3. **Stacked sections** - Best for content that should be visible together (forms, detail views)
+4. **Sidebar navigation** - For admin areas with many sections
+
+### Why This Matters
+
+- **Mobile-first design** - Stacked content works on all screen sizes
+- **Accessibility** - Clearer content hierarchy for screen readers
+- **Usability** - Users can see and scroll through all content
+- **Bookmarkability** - Separate pages can be linked directly
 
 ---
 

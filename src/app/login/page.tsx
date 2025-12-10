@@ -91,7 +91,7 @@ function LoginForm() {
         if (acceptData.warning) {
           console.warn('Invitation acceptance warning:', acceptData.warning)
         }
-      } catch (err) {
+      } catch {
         setError('Signed in but failed to join parish. Please try accepting the invitation again.')
         setLoading(false)
         return
@@ -118,7 +118,7 @@ function LoginForm() {
           <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>
-              You're joining <strong>{parishName}</strong>! Sign in below to accept the invitation.
+              You&apos;re joining <strong>{parishName}</strong>! Sign in below to accept the invitation.
             </AlertDescription>
           </Alert>
         )}

@@ -16,7 +16,10 @@ interface MassRoleMembersActionsProps {
   allPeople: Person[]
 }
 
-export function MassRoleMembersActions({ massRoles, allPeople }: MassRoleMembersActionsProps) {
+export function MassRoleMembersActions({ massRoles: _massRoles, allPeople: _allPeople }: MassRoleMembersActionsProps) {
+  // Note: massRoles and allPeople are available for future filtering enhancements
+  void _massRoles
+  void _allPeople
   const router = useRouter()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedRole, setSelectedRole] = useState<MassRole | null>(null)

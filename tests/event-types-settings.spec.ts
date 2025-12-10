@@ -43,12 +43,12 @@ test.describe('Event Types Settings Page', () => {
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
     await expect(page.getByRole('heading', { name: 'Create Event Type' })).toBeVisible();
 
-    // Verify form fields
+    // Verify form fields - Name and Icon picker
     await expect(page.getByLabel('Name')).toBeVisible();
-    await expect(page.getByLabel('Description')).toBeVisible();
+    await expect(page.getByLabel('Icon')).toBeVisible();
   });
 
-  test('should create a new event type', async ({ page }) => {
+  test('should create a new event type with icon', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json
 
     await page.goto('/settings/event-types');
@@ -62,7 +62,11 @@ test.describe('Event Types Settings Page', () => {
     // Fill in the form
     const uniqueName = `Test Event Type ${Date.now()}`;
     await page.getByLabel('Name').fill(uniqueName);
-    await page.getByLabel('Description').fill('A test event type for automated testing');
+
+    // Select an icon (click the icon picker button, then select an icon)
+    await page.getByLabel('Icon').click();
+    // Click on Heart icon (first icon in Sacraments & Liturgy category)
+    await page.getByRole('button', { name: 'Heart' }).click();
 
     // Submit the form (button text is just "Create" in the dialog)
     await page.getByRole('button', { name: 'Create' }).click();
@@ -88,7 +92,6 @@ test.describe('Event Types Settings Page', () => {
 
     const originalName = `Edit Test ${Date.now()}`;
     await page.getByLabel('Name').fill(originalName);
-    await page.getByLabel('Description').fill('Original description');
     await page.getByRole('button', { name: 'Create' }).click();
     await expect(page.getByRole('dialog')).toBeHidden({ timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
@@ -109,8 +112,9 @@ test.describe('Event Types Settings Page', () => {
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
     await expect(page.getByRole('heading', { name: 'Edit Event Type' })).toBeVisible();
 
-    // Update the description
-    await page.getByLabel('Description').fill('Updated description for testing');
+    // Update the name
+    const updatedName = `${originalName} - Updated`;
+    await page.getByLabel('Name').fill(updatedName);
 
     // Save changes (button text is just "Update" in the dialog)
     await page.getByRole('button', { name: 'Update' }).click();
@@ -122,7 +126,7 @@ test.describe('Event Types Settings Page', () => {
     await page.reload();
 
     // Verify the update appears
-    await expect(page.getByText('Updated description for testing')).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+    await expect(page.getByText(updatedName)).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
   });
 
   test('should delete an event type', async ({ page }) => {
@@ -254,5 +258,35 @@ test.describe('Event Types Settings Page', () => {
     // Verify Active count is shown
     const activeStatElement = page.locator('div').filter({ hasText: /^Active$/ }).locator('..').locator('div.text-2xl');
     await expect(activeStatElement.first()).toBeVisible();
+  });
+
+  test('should show icon in event type list', async ({ page }) => {
+    // Test is pre-authenticated via playwright/.auth/staff.json
+
+    await page.goto('/settings/event-types');
+
+    // Create an event type with a specific icon
+    await page.getByRole('button', { name: /Add Event Type/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
+
+    const eventTypeName = `Icon Test ${Date.now()}`;
+    await page.getByLabel('Name').fill(eventTypeName);
+
+    // Select the Star icon
+    await page.getByLabel('Icon').click();
+    await page.getByRole('button', { name: 'Star' }).click();
+
+    await page.getByRole('button', { name: 'Create' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden({ timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+
+    // Reload to see the new event type
+    await page.reload();
+
+    // Verify the event type appears with the icon
+    await expect(page.getByText(eventTypeName)).toBeVisible({ timeout: TEST_TIMEOUTS.DATA_LOAD });
+
+    // The icon should be visible in the list item
+    const eventTypeItem = page.locator('.border.rounded-md.bg-card').filter({ hasText: eventTypeName });
+    await expect(eventTypeItem).toBeVisible();
   });
 });

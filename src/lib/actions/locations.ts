@@ -22,7 +22,7 @@ export interface Location {
   updated_at: string
 }
 
-export type { CreateLocationData, UpdateLocationData }
+// Note: Import CreateLocationData and UpdateLocationData from '@/lib/schemas/locations' instead
 
 export interface LocationFilterParams {
   search?: string
@@ -37,7 +37,7 @@ export interface LocationStats {
 }
 
 export async function getLocations(filters?: LocationFilterParams): Promise<Location[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -87,7 +87,7 @@ export async function getLocations(filters?: LocationFilterParams): Promise<Loca
 }
 
 export async function getLocationStats(filters?: LocationFilterParams): Promise<LocationStats> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   // Get all locations for total count
@@ -105,7 +105,7 @@ export async function getLocationStats(filters?: LocationFilterParams): Promise<
 }
 
 export async function getLocationsPaginated(params?: PaginatedParams): Promise<PaginatedResult<Location>> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -149,7 +149,7 @@ export async function getLocationsPaginated(params?: PaginatedParams): Promise<P
 }
 
 export async function getLocation(id: string): Promise<Location | null> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -228,7 +228,8 @@ export async function updateLocation(id: string, data: UpdateLocationData): Prom
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
 
   const { data: location, error } = await supabase

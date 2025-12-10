@@ -29,7 +29,7 @@ export function EndOfListMessage({ show, className = "" }: EndOfListMessageProps
       role="status"
       aria-live="polite"
     >
-      You've reached the end of the list
+      You&apos;ve reached the end of the list
     </div>
   );
 }

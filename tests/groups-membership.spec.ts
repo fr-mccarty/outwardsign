@@ -610,7 +610,7 @@ test.describe('Group Membership - Edit Roles Tests', () => {
 
   test.skip('TC-006: Edit roles - add additional roles', async ({ page }) => {
     // Edit the member's roles to add more
-    await groupPage.editMemberRoles(testPersonName, ['LECTOR', 'CANTOR', 'USHER']);
+    await groupPage.editMemberRole(testPersonName, 'USHER');
 
     // Verify all roles are now displayed
     await groupPage.expectMemberHasRole(testPersonName, ['Lector', 'Cantor', 'Usher']);
@@ -622,11 +622,11 @@ test.describe('Group Membership - Edit Roles Tests', () => {
 
   test.skip('TC-007: Edit roles - remove roles', async ({ page }) => {
     // First add multiple roles
-    await groupPage.editMemberRoles(testPersonName, ['LECTOR', 'CANTOR', 'EMHC']);
+    await groupPage.editMemberRole(testPersonName, 'EMHC');
     await groupPage.expectMemberHasRole(testPersonName, ['Lector', 'Cantor', 'Extraordinary Minister of Holy Communion']);
 
     // Now remove some roles
-    await groupPage.editMemberRoles(testPersonName, ['LECTOR']);
+    await groupPage.editMemberRole(testPersonName, 'LECTOR');
 
     // Verify only Lector remains
     await groupPage.expectMemberHasRole(testPersonName, ['Lector']);
@@ -640,7 +640,7 @@ test.describe('Group Membership - Edit Roles Tests', () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test.skip('TC-008: Edit roles - remove all roles', async ({ page }) => {
     // Remove all roles
-    await groupPage.editMemberRoles(testPersonName, []);
+    await groupPage.editMemberRole(testPersonName, null);
 
     // Verify "No group role assigned" is displayed
     await groupPage.expectMemberHasNoRole(testPersonName);
@@ -661,7 +661,7 @@ test.describe('Group Membership - Edit Roles Tests', () => {
     await cantorCheckbox.click();
 
     // Cancel the edit
-    await groupPage.cancelEditMemberRoles(testPersonName);
+    await groupPage.cancelEditMemberRole(testPersonName);
 
     // Verify original roles are still displayed (only Lector)
     await groupPage.expectMemberHasRole(testPersonName, ['Lector']);

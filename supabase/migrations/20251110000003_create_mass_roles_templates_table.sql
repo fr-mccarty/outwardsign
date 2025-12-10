@@ -9,7 +9,8 @@ CREATE TABLE mass_roles_templates (
   parameters JSONB,
   liturgical_contexts TEXT[] NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Add comments documenting the purpose

@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Locator } from '@playwright/test';
 import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * Helper function to select a date in a DatePickerField within a specific dialog context
  * Opens the calendar popover and clicks on an available date
  */
-async function selectDateInPicker(dialogLocator: ReturnType<typeof import('@playwright/test').Page.prototype.getByTestId>, dateButtonId: string) {
+async function selectDateInPicker(dialogLocator: Locator, dateButtonId: string) {
   const page = dialogLocator.page();
 
   // Click the date picker button to open calendar
@@ -30,7 +30,7 @@ async function selectDateInPicker(dialogLocator: ReturnType<typeof import('@play
  * Helper function to select a time in a TimePickerField within a specific dialog context
  * Opens the time popover and clicks on a quick pick time button
  */
-async function selectTimeInPicker(dialogLocator: ReturnType<typeof import('@playwright/test').Page.prototype.getByTestId>, timeButtonId: string, time: string) {
+async function selectTimeInPicker(dialogLocator: Locator, timeButtonId: string, time: string) {
   const page = dialogLocator.page();
 
   // Click the time picker button to open time popover using ID
