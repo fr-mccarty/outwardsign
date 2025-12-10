@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { getCustomListWithItems } from '@/lib/actions/custom-lists'
+import { getCustomListWithItemsBySlug } from '@/lib/actions/custom-lists'
 import { CustomListDetailClient } from './custom-list-detail-client'
 
 interface CustomListDetailPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function CustomListDetailPage({ params }: CustomListDetailPageProps) {
@@ -22,7 +22,7 @@ export default async function CustomListDetailPage({ params }: CustomListDetailP
   await requireSelectedParish()
 
   const resolvedParams = await params
-  const customList = await getCustomListWithItems(resolvedParams.id)
+  const customList = await getCustomListWithItemsBySlug(resolvedParams.slug)
 
   if (!customList) {
     notFound()

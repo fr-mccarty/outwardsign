@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 
 // Types
 export interface MassRoleMember {
@@ -308,13 +307,6 @@ export async function createMassRoleMember(
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions - only Admin and Staff can manage role members
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const { data: member, error } = await supabase
     .from('mass_role_members')
@@ -352,13 +344,6 @@ export async function updateMassRoleMember(
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions - only Admin and Staff can manage role members
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const updateData: Record<string, unknown> = {}
 
@@ -394,13 +379,6 @@ export async function deleteMassRoleMember(id: string): Promise<void> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions - only Admin and Staff can manage role members
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Get the member first to revalidate paths
   const { data: member } = await supabase

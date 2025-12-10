@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 
 // Day type enum
 export type DayType = 'IS_DAY' | 'DAY_BEFORE'
@@ -71,20 +70,9 @@ export async function getTemplateItems(templateId: string): Promise<MassTimesTem
  * Create a new template item
  */
 export async function createTemplateItem(data: CreateTemplateItemData): Promise<MassTimesTemplateItem> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const { data: item, error } = await supabase
     .from('mass_times_template_items')
@@ -117,20 +105,9 @@ export async function updateTemplateItem(
   templateId: string,
   data: UpdateTemplateItemData
 ): Promise<MassTimesTemplateItem> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const updateData: Record<string, unknown> = {}
   if (data.time !== undefined) updateData.time = data.time
@@ -160,20 +137,9 @@ export async function updateTemplateItem(
  * Delete a template item
  */
 export async function deleteTemplateItem(id: string, templateId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const { error } = await supabase
     .from('mass_times_template_items')

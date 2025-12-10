@@ -150,7 +150,8 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     if (isEditing && mass?.id) {
       loadMassRoles()
     }
-  }, [isEditing, mass?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing, mass?.id]) // loadMassRoles is stable, only re-run when mass changes
 
   const loadMassRoles = async () => {
     if (!mass?.id) return

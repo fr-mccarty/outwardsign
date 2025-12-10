@@ -80,7 +80,8 @@ export function Step4LiturgicalEvents({
     }
 
     fetchEvents()
-  }, [startDate, endDate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate, endDate]) // onSelectionChange is stable, selectedEventIds.length intentionally omitted to only run on date range change
 
   const handleEventToggle = (eventId: string, checked: boolean) => {
     if (checked) {

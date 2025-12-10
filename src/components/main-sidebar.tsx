@@ -20,23 +20,21 @@ import {
   Settings,
   Church,
   User, Users, CirclePlus, Plus, List,
-  CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle
+  CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
 import { Logo } from "@/components/logo"
 import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
-import { canAccessModule, canManageParishSettings, type UserParishRole, type ModuleName } from "@/lib/auth/permissions-client"
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
 import type { DynamicEventType } from "@/lib/types"
 
 interface MainSidebarProps {
-  userParish: UserParishRole | null
   eventTypes: DynamicEventType[]
 }
 
-export function MainSidebar({ userParish, eventTypes }: MainSidebarProps) {
+export function MainSidebar({ eventTypes }: MainSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar()
 
   const handleLinkClick = () => {
@@ -44,15 +42,6 @@ export function MainSidebar({ userParish, eventTypes }: MainSidebarProps) {
       setOpenMobile(false)
     }
   }
-
-  // Helper to check if user can access a module
-  const canAccess = (moduleName: ModuleName): boolean => {
-    if (!userParish) return false
-    return canAccessModule(userParish, moduleName)
-  }
-
-  // Check if user can manage parish settings
-  const canManageParish = userParish ? canManageParishSettings(userParish) : false
 
   return (
     <Sidebar>
@@ -114,25 +103,23 @@ export function MainSidebar({ userParish, eventTypes }: MainSidebarProps) {
               />
 
 
-              {canAccess('groups') && (
-                <CollapsibleNavSection
-                  name="Groups"
-                  icon={Users}
-                  items={[
-                    {
-                      title: "Our Groups",
-                      url: "/groups",
-                      icon: Users,
-                    },
-                    {
-                      title: "New Group",
-                      url: "/groups",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
+              <CollapsibleNavSection
+                name="Groups"
+                icon={Users}
+                items={[
+                  {
+                    title: "Our Groups",
+                    url: "/groups",
+                    icon: Users,
+                  },
+                  {
+                    title: "New Group",
+                    url: "/groups",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
               <CollapsibleNavSection
                 name="Locations"
@@ -152,90 +139,84 @@ export function MainSidebar({ userParish, eventTypes }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-              {canAccess('mass-intentions') && (
-                <CollapsibleNavSection
-                  name="Mass Intentions"
-                  icon={List}
-                  items={[
-                    {
-                      title: "Our Mass Intentions",
-                      url: "/mass-intentions",
-                      icon: List,
-                    },
-                    {
-                      title: "Create Mass Intention",
-                      url: "/mass-intentions/create",
-                      icon: Plus,
-                    },
-                    {
-                      title: "Report",
-                      url: "/mass-intentions/report",
-                      icon: FileText,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
+              <CollapsibleNavSection
+                name="Mass Intentions"
+                icon={ScrollText}
+                items={[
+                  {
+                    title: "Our Mass Intentions",
+                    url: "/mass-intentions",
+                    icon: ScrollText,
+                  },
+                  {
+                    title: "Create Mass Intention",
+                    url: "/mass-intentions/create",
+                    icon: Plus,
+                  },
+                  {
+                    title: "Report",
+                    url: "/mass-intentions/report",
+                    icon: FileText,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
-              {canAccess('masses') && (
-                <CollapsibleNavSection
-                  name="Mass Scheduling"
-                  icon={Clock}
-                  items={[
-                    {
-                      title: "Schedule Masses",
-                      url: "/masses/schedule",
-                      icon: CalendarDays,
-                    },
-                    {
-                      title: "Mass Times Templates",
-                      url: "/mass-times-templates",
-                      icon: Clock,
-                    },
-                    {
-                      title: "Mass Types",
-                      url: "/mass-types",
-                      icon: List,
-                    },
-                    {
-                      title: "Mass Role Templates",
-                      url: "/mass-role-templates",
-                      icon: LayoutTemplate,
-                    },
-                    {
-                      title: "Mass Roles",
-                      url: "/mass-roles",
-                      icon: UserCog,
-                    },
-                    {
-                      title: "Role Members",
-                      url: "/mass-role-members",
-                      icon: UsersIcon,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
+              <CollapsibleNavSection
+                name="Mass Scheduling"
+                icon={Clock}
+                items={[
+                  {
+                    title: "Schedule Masses",
+                    url: "/masses/schedule",
+                    icon: CalendarDays,
+                  },
+                  {
+                    title: "Mass Times Templates",
+                    url: "/mass-times-templates",
+                    icon: Clock,
+                  },
+                  {
+                    title: "Mass Types",
+                    url: "/mass-types",
+                    icon: List,
+                  },
+                  {
+                    title: "Mass Role Templates",
+                    url: "/mass-role-templates",
+                    icon: LayoutTemplate,
+                  },
+                  {
+                    title: "Mass Roles",
+                    url: "/mass-roles",
+                    icon: UserCog,
+                  },
+                  {
+                    title: "Role Members",
+                    url: "/mass-role-members",
+                    icon: UsersIcon,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
-              {canAccess('masses') && (
-                <CollapsibleNavSection
-                  name="Masses"
-                  icon={CirclePlus}
-                  items={[
-                    {
-                      title: "Our Masses",
-                      url: "/masses",
-                      icon: CirclePlus,
-                    },
-                    {
-                      title: "New Mass",
-                      url: "/masses/create",
-                      icon: Plus,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
+              <CollapsibleNavSection
+                name="Masses"
+                icon={CirclePlus}
+                items={[
+                  {
+                    title: "Our Masses",
+                    url: "/masses",
+                    icon: CirclePlus,
+                  },
+                  {
+                    title: "New Mass",
+                    url: "/masses/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
               <CollapsibleNavSection
                 name="People"
@@ -311,45 +292,43 @@ export function MainSidebar({ userParish, eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
 
-              {canManageParish && (
-                <CollapsibleNavSection
-                  name="Parish Settings"
-                  icon={Church}
-                  items={[
-                    {
-                      title: "General",
-                      url: "/settings/parish/general",
-                      icon: Settings,
-                    },
-                    {
-                      title: "Event Types",
-                      url: "/settings/event-types",
-                      icon: CalendarDays,
-                    },
-                    {
-                      title: "Custom Lists",
-                      url: "/settings/custom-lists",
-                      icon: List,
-                    },
-                    {
-                      title: "Mass Intentions",
-                      url: "/settings/parish/mass-intentions",
-                      icon: List,
-                    },
-                    {
-                      title: "Petitions",
-                      url: "/settings/parish/petitions",
-                      icon: FileText,
-                    },
-                    {
-                      title: "Users",
-                      url: "/settings/parish/users",
-                      icon: Users,
-                    },
-                  ]}
-                  defaultOpen={false}
-                />
-              )}
+              <CollapsibleNavSection
+                name="Parish Settings"
+                icon={Church}
+                items={[
+                  {
+                    title: "General",
+                    url: "/settings/parish/general",
+                    icon: Settings,
+                  },
+                  {
+                    title: "Event Types",
+                    url: "/settings/event-types",
+                    icon: CalendarDays,
+                  },
+                  {
+                    title: "Custom Lists",
+                    url: "/settings/custom-lists",
+                    icon: List,
+                  },
+                  {
+                    title: "Mass Intentions",
+                    url: "/settings/parish/mass-intentions",
+                    icon: ScrollText,
+                  },
+                  {
+                    title: "Petitions",
+                    url: "/settings/parish/petitions",
+                    icon: FileText,
+                  },
+                  {
+                    title: "Users",
+                    url: "/settings/parish/users",
+                    icon: Users,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
               <CollapsibleNavSection
                 name="User Settings"

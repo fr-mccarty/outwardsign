@@ -9,8 +9,7 @@ import { FormSectionCard } from '@/components/form-section-card'
 import { FormInput } from '@/components/form-input'
 import { IconSelector } from '@/components/icon-selector'
 import { SaveButton } from '@/components/save-button'
-import { Button } from '@/components/ui/button'
-import { Trash2 } from 'lucide-react'
+import { Trash2, FileText, Settings } from 'lucide-react'
 import { updateEventType, deleteEventType } from '@/lib/actions/event-types'
 import {
   updateEventTypeSchema,
@@ -75,23 +74,31 @@ export function EventTypeSettingsClient({
     <PageContainer
       title={eventType.name}
       description="Update event type settings."
+      primaryAction={<SaveButton isLoading={isSubmitting} form="event-type-form" />}
+      additionalActions={[
+        {
+          type: 'action',
+          label: 'Manage Input Fields',
+          icon: <Settings className="h-4 w-4" />,
+          href: `/settings/event-types/${eventType.slug}/fields`,
+        },
+        {
+          type: 'action',
+          label: 'Manage Scripts',
+          icon: <FileText className="h-4 w-4" />,
+          href: `/settings/event-types/${eventType.slug}/scripts`,
+        },
+        { type: 'separator' },
+        {
+          type: 'action',
+          label: 'Delete Event Type',
+          icon: <Trash2 className="h-4 w-4" />,
+          onClick: () => setDeleteDialogOpen(true),
+          variant: 'destructive',
+        },
+      ]}
     >
-      <div className="mb-6 flex gap-2">
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/settings/event-types/${eventType.id}/fields`)}
-        >
-          Manage Input Fields
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/settings/event-types/${eventType.id}/scripts`)}
-        >
-          Manage Scripts
-        </Button>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form id="event-type-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <FormSectionCard title="Basic Information">
           <div className="space-y-4">
             <FormInput
@@ -112,19 +119,6 @@ export function EventTypeSettingsClient({
             />
           </div>
         </FormSectionCard>
-
-        <div className="flex justify-between items-center">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Event Type
-          </Button>
-
-          <SaveButton isLoading={isSubmitting} />
-        </div>
       </form>
 
       <DeleteConfirmationDialog

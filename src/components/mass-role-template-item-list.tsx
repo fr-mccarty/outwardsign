@@ -27,7 +27,8 @@ export function MassRoleTemplateItemList({ templateId }: MassRoleTemplateItemLis
   // Load items on mount
   useEffect(() => {
     loadItems()
-  }, [templateId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId]) // loadItems is stable
 
   const loadItems = async () => {
     try {

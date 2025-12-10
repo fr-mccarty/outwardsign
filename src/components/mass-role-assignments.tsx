@@ -34,7 +34,8 @@ export function MassRoleAssignments({ massId, templateId, readOnly = false }: Ma
   // Load data on mount
   useEffect(() => {
     loadData()
-  }, [massId, templateId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [massId, templateId]) // loadData is stable
 
   const loadData = async () => {
     try {

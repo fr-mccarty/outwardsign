@@ -11,6 +11,31 @@ import { DEFAULT_TIMEZONE } from '@/lib/constants'
 // ============================================================================
 
 /**
+ * Generate a URL-safe slug from a string
+ *
+ * Converts text to lowercase, removes special characters, replaces spaces
+ * with hyphens, and cleans up multiple/trailing hyphens.
+ *
+ * @param text - The text to convert to a slug
+ * @returns URL-safe slug string
+ *
+ * @example
+ * generateSlug('Wedding Songs') // "wedding-songs"
+ * generateSlug('Wedding Ceremony') // "wedding-ceremony"
+ * generateSlug('   Multiple   Spaces   ') // "multiple-spaces"
+ * generateSlug('Special @#$ Characters!') // "special-characters"
+ */
+export function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')      // Replace spaces with hyphens
+    .replace(/-+/g, '-')       // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, '')   // Trim hyphens from start/end
+}
+
+/**
  * Capitalize first letter of a string
  *
  * @example
@@ -1147,4 +1172,55 @@ export function getGroupFilename(
 ): string {
   const groupName = group.name?.replace(/[^a-z0-9]/gi, '-') || 'Group'
   return `${groupName}.${extension}`
+}
+
+/**
+ * Generate filename for dynamic event script exports
+ *
+ * Format: "LastName-ScriptName.ext"
+ * Uses key person field from event type to determine last name.
+ * Falls back to "Event" if no key person field or no person assigned.
+ *
+ * @param event - Event with relations (must include event_type with input_field_definitions and resolved_fields)
+ * @param scriptName - Name of the script being exported
+ * @param extension - File extension (pdf, docx, txt)
+ * @returns Filename string
+ *
+ * @example
+ * generateDynamicEventScriptFilename(event, 'English Program', 'pdf')
+ * // "Garcia-English-Program.pdf"
+ *
+ * generateDynamicEventScriptFilename(event, 'Ceremony Script', 'docx')
+ * // "Smith-Ceremony-Script.docx"
+ *
+ * generateDynamicEventScriptFilename(eventWithoutKeyPerson, 'Program', 'txt')
+ * // "Event-Program.txt"
+ */
+export function generateDynamicEventScriptFilename(
+  event: any,  // Using any for flexibility with different event type structures
+  scriptName: string,
+  extension: string
+): string {
+  // Find key person field from event type definition (if available)
+  const keyPersonField = event.event_type?.input_field_definitions?.find(
+    (field: any) => field.is_key_person === true && field.type === 'person'
+  )
+
+  let lastName = 'Event'
+
+  if (keyPersonField && event.resolved_fields) {
+    const personFieldValue = event.resolved_fields[keyPersonField.name]
+    if (personFieldValue?.resolved_value?.last_name) {
+      lastName = personFieldValue.resolved_value.last_name
+    }
+  }
+
+  // Clean script name (remove special characters, replace spaces with hyphens)
+  const cleanScriptName = scriptName
+    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  return `${lastName}-${cleanScriptName}.${extension}`
 }

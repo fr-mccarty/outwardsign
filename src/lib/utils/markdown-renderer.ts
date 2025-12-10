@@ -100,9 +100,9 @@ export function replacePlaceholders(
     // Get the raw value from fieldValues
     const rawValue = fieldValues[cleanFieldName]
 
-    if (rawValue === null || rawValue === undefined) {
-      // No value provided - return empty string
-      return ''
+    if (rawValue === null || rawValue === undefined || rawValue === '') {
+      // No value provided - return "empty" per requirements
+      return 'empty'
     }
 
     // Convert value to display string based on field type

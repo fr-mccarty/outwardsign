@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { EventWithModuleLink, EventStats } from '@/lib/actions/events'
-import { deleteEvent, getEvents, type EventFilterParams } from '@/lib/actions/events'
+import { getAllDynamicEvents, deleteEvent, type DynamicEventFilterParams, type DynamicEventWithTypeAndOccasion } from '@/lib/actions/dynamic-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
@@ -13,20 +12,15 @@ import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialo
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { ContentCard } from "@/components/content-card"
-import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, CalendarDays, Filter, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
-import { toLocalDateString } from "@/lib/utils/formatters"
+import { toLocalDateString, formatDatePretty } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import type { DataTableColumn } from '@/components/data-table/data-table'
-import {
-  buildWhenColumn,
-  buildWhereColumn
-} from '@/lib/utils/table-columns'
 import type { DynamicEventType } from '@/lib/types'
 import { FormInput } from '@/components/form-input'
 import {
@@ -38,20 +32,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 interface EventsListClientProps {
-  initialData: EventWithModuleLink[]
-  stats: EventStats
+  initialData: DynamicEventWithTypeAndOccasion[]
   initialHasMore: boolean
   eventTypes: DynamicEventType[]
 }
 
-export function EventsListClient({ initialData, stats, initialHasMore, eventTypes }: EventsListClientProps) {
+export function EventsListClient({ initialData, initialHasMore, eventTypes }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/events',
-    defaultFilters: { sort: 'date_asc' }
+    defaultFilters: { sort: 'date_desc' }
   })
 
   // Local state for search value (immediate visual feedback)
@@ -92,19 +85,26 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Get event type ID from slug for API calls
+  const getEventTypeIdFromSlug = (slug: string): string | undefined => {
+    const eventType = eventTypes.find(et => et.slug === slug)
+    return eventType?.id
+  }
+
   // Load more function for infinite scroll
   const handleLoadMore = async () => {
     if (isLoadingMore || !hasMore) return
 
     setIsLoadingMore(true)
     try {
-      const nextEvents = await getEvents({
+      const nextEvents = await getAllDynamicEvents({
         search: filters.getFilterValue('search'),
-        sort: filters.getFilterValue('sort') as EventFilterParams['sort'],
+        eventTypeId: selectedEventTypeSlug ? getEventTypeIdFromSlug(selectedEventTypeSlug) : undefined,
+        sort: filters.getFilterValue('sort') as DynamicEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
-        start_date: searchParams.get('start_date') || undefined,
-        end_date: searchParams.get('end_date') || undefined
+        startDate: searchParams.get('start_date') || undefined,
+        endDate: searchParams.get('end_date') || undefined
       })
 
       setEvents(prev => [...prev, ...nextEvents])
@@ -118,14 +118,6 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
     }
   }
 
-  // Transform stats for ListStatsBar
-  const statsList: ListStat[] = [
-    { value: stats.total, label: 'Total Events' },
-    { value: stats.upcoming, label: 'Upcoming' },
-    { value: stats.past, label: 'Past' },
-    { value: stats.filtered, label: 'Filtered Results' }
-  ]
-
   // Date filters - convert string params to Date objects for DatePickerField
   const startDateParam = searchParams.get('start_date')
   const endDateParam = searchParams.get('end_date')
@@ -138,7 +130,7 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventToDelete, setEventToDelete] = useState<EventWithModuleLink | null>(null)
+  const [eventToDelete, setEventToDelete] = useState<DynamicEventWithTypeAndOccasion | null>(null)
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -166,49 +158,71 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
     }
   }
 
-  // Define custom "What" column (event name + type)
-  const whatColumn: DataTableColumn<EventWithModuleLink> = {
-    key: 'name',  // Override for server-side sorting
+  // Define custom "What" column (event type name)
+  const whatColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
+    key: 'name',
     header: 'What',
     cell: (event) => (
       <div className="flex items-center gap-2 max-w-[200px] md:max-w-[300px]">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium truncate">
-              {event.name || 'Unnamed Event'}
-            </span>
+          <div className="font-medium truncate">
+            {event.event_type?.name || 'Event'}
           </div>
-          {event.event_type?.name && (
-            <div className="text-sm text-muted-foreground truncate">
-              {event.event_type.name}
-            </div>
-          )}
         </div>
       </div>
     ),
+    sortable: false
+  }
+
+  // Define "When" column
+  const whenColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
+    key: 'date',
+    header: 'When',
+    cell: (event) => {
+      const occasion = event.primary_occasion
+      if (!occasion?.date) {
+        return <span className="text-muted-foreground">No date set</span>
+      }
+      return (
+        <div>
+          <div className="font-medium">{formatDatePretty(occasion.date)}</div>
+          {occasion.time && (
+            <div className="text-sm text-muted-foreground">{occasion.time}</div>
+          )}
+        </div>
+      )
+    },
     sortable: true
   }
 
-  // Define table columns (no avatar column for events)
-  const columns = [
-    whatColumn,
-    {
-      ...buildWhenColumn<EventWithModuleLink>({
-        getDate: (event) => event.start_date || null,
-        getTime: (event) => event.start_time || null,
-        sortable: true
-      }),
-      key: 'date'  // Override for server-side sorting
+  // Define "Where" column
+  const whereColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
+    key: 'location',
+    header: 'Where',
+    cell: (event) => {
+      const location = event.primary_occasion?.location
+      if (!location) {
+        return <span className="text-muted-foreground">-</span>
+      }
+      return (
+        <div className="truncate max-w-[150px]">
+          {location.name}
+        </div>
+      )
     },
-    buildWhereColumn<EventWithModuleLink>({
-      getLocation: (event) => event.location || null,
-      hiddenOn: 'lg'
-    }),
+    hiddenOn: 'lg'
+  }
+
+  // Define table columns
+  const columns: DataTableColumn<DynamicEventWithTypeAndOccasion>[] = [
+    whatColumn,
+    whenColumn,
+    whereColumn,
     // Custom actions column for events (uses slug in URLs)
     {
       key: 'actions',
       header: '',
-      cell: (event: EventWithModuleLink) => {
+      cell: (event) => {
         const typeSlug = event.event_type?.slug || event.event_type_id
         return (
           <DropdownMenu>
@@ -258,7 +272,7 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
                   setSearchValue(value)
                   filters.updateFilter('search', value)
                 }}
-                placeholder="Search events by name or description..."
+                placeholder="Search events..."
                 className="w-full"
               />
             </div>
@@ -351,9 +365,6 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
         </ContentCard>
       )}
 
-      {/* Quick Stats */}
-      {stats.total > 0 && <ListStatsBar stats={statsList} />}
-
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
@@ -362,7 +373,7 @@ export function EventsListClient({ initialData, stats, initialHasMore, eventType
         title="Delete Event"
         description={
           eventToDelete
-            ? `Are you sure you want to delete the event "${eventToDelete.name || 'this event'}"?`
+            ? `Are you sure you want to delete this ${eventToDelete.event_type?.name?.toLowerCase() || 'event'}?`
             : 'Are you sure you want to delete this event?'
         }
       />

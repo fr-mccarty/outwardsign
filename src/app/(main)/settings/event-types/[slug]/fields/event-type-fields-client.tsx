@@ -222,14 +222,14 @@ export function EventTypeFieldsClient({
       <div className="mb-6 flex gap-2">
         <Button
           variant="outline"
-          onClick={() => router.push(`/settings/event-types/${eventType.id}`)}
+          onClick={() => router.push(`/settings/event-types/${eventType.slug}`)}
         >
           Back to Settings
         </Button>
         <Button
           variant="outline"
           onClick={() =>
-            router.push(`/settings/event-types/${eventType.id}/scripts`)
+            router.push(`/settings/event-types/${eventType.slug}/scripts`)
           }
         >
           Manage Scripts

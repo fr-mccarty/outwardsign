@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { getEventType } from '@/lib/actions/event-types'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
 import { ScriptBuilderClient } from './script-builder-client'
 
 interface ScriptBuilderPageProps {
-  params: Promise<{ id: string; script_id: string }>
+  params: Promise<{ slug: string; script_id: string }>
 }
 
 export default async function ScriptBuilderPage({
@@ -24,10 +24,10 @@ export default async function ScriptBuilderPage({
   }
 
   // Await params (Next.js 15 requirement)
-  const { id, script_id } = await params
+  const { slug, script_id } = await params
 
-  // Fetch event type, script with sections, and input field definitions
-  const eventType = await getEventType(id)
+  // Fetch event type by slug
+  const eventType = await getEventTypeBySlug(slug)
   if (!eventType) {
     notFound()
   }
@@ -38,21 +38,21 @@ export default async function ScriptBuilderPage({
   }
 
   // Verify script belongs to this event type
-  if (script.event_type_id !== id) {
+  if (script.event_type_id !== eventType.id) {
     notFound()
   }
 
-  const inputFields = await getInputFieldDefinitions(id)
+  const inputFields = await getInputFieldDefinitions(eventType.id)
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Settings', href: '/settings' },
     { label: 'Event Types', href: '/settings/event-types' },
-    { label: eventType.name, href: `/settings/event-types/${id}` },
-    { label: 'Scripts', href: `/settings/event-types/${id}/scripts` },
+    { label: eventType.name, href: `/settings/event-types/${eventType.slug}` },
+    { label: 'Scripts', href: `/settings/event-types/${eventType.slug}/scripts` },
     {
       label: script.name,
-      href: `/settings/event-types/${id}/scripts/${script_id}`,
+      href: `/settings/event-types/${eventType.slug}/scripts/${script_id}`,
     },
   ]
 

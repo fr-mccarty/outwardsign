@@ -33,6 +33,10 @@ import {
   Shield,
   Bell,
   Cake,
+  BookHeart,
+  HandHeart,
+  CalendarDays,
+  VenusAndMars,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -59,6 +63,10 @@ const ICON_OPTIONS: Record<string, LucideIcon> = {
   Shield,
   Bell,
   Cake,
+  BookHeart,
+  HandHeart,
+  CalendarDays,
+  VenusAndMars,
 }
 
 interface IconSelectorProps {

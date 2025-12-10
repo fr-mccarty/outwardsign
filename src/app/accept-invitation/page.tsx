@@ -39,7 +39,8 @@ function AcceptInvitationForm() {
     }
 
     checkAuthAndFetchInvitation()
-  }, [token])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]) // checkAuthAndFetchInvitation is stable, only re-run when token changes
 
   const checkAuthAndFetchInvitation = async () => {
     try {

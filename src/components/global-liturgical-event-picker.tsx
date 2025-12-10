@@ -137,7 +137,8 @@ export function GlobalLiturgicalEventPicker({
     if (open) {
       loadEvents(currentPage, dateRange.start, dateRange.end, selectedLocale)
     }
-  }, [open, currentPage, dateRange, selectedLocale, viewMode])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, currentPage, dateRange, selectedLocale, viewMode]) // loadEvents is stable
 
   const loadEvents = async (page: number, start: string, end: string, locale: string) => {
     try {

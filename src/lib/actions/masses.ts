@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance, MassIntention } from '@/lib/types'
 import { EventWithRelations } from '@/lib/actions/events'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
@@ -373,13 +372,6 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Validate data with Zod schema
   const validatedData = createMassSchema.parse(data)
@@ -415,17 +407,10 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
 }
 
 export async function updateMass(id: string, data: UpdateMassData): Promise<Mass> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Validate data with Zod schema
   const validatedData = updateMassSchema.parse(data)
@@ -454,17 +439,10 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mass
 }
 
 export async function deleteMass(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const { error } = await supabase
     .from('masses')
@@ -529,17 +507,10 @@ export async function getMassRoles(massId: string): Promise<MassRoleInstanceWith
 }
 
 export async function createMassRole(data: CreateMassRoleData): Promise<MassRoleInstance> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const { data: massRoleInstance, error } = await supabase
     .from('mass_assignment')
@@ -565,17 +536,10 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
 }
 
 export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRoleInstance> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
@@ -612,17 +576,10 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
 }
 
 export async function deleteMassRole(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Get the mass_id before deleting for revalidation
   const { data: instanceData } = await supabase
@@ -649,17 +606,10 @@ export async function deleteMassRole(id: string): Promise<void> {
 }
 
 export async function bulkCreateMassRoles(massId: string, assignments: CreateMassRoleData[]): Promise<MassRoleInstance[]> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const instancesToInsert = assignments.map(assignment => ({
     mass_id: massId,

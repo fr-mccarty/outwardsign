@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import {
   createGroupSchema,
   updateGroupSchema,
@@ -231,14 +230,6 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
 
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'groups')
-
   // REQUIRED: Server-side validation (security boundary)
   const validatedData = createGroupSchema.parse(data)
 
@@ -265,18 +256,10 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
 }
 
 export async function updateGroup(id: string, data: UpdateGroupData): Promise<Group> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'groups')
 
   // REQUIRED: Server-side validation (security boundary)
   const validatedData = updateGroupSchema.parse(data)
@@ -304,18 +287,10 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
 }
 
 export async function deleteGroup(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'groups')
 
   const { error } = await supabase
     .from('groups')
@@ -331,18 +306,10 @@ export async function deleteGroup(id: string): Promise<void> {
 }
 
 export async function addGroupMember(groupId: string, personId: string, groupRoleId?: string): Promise<GroupMember> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'groups')
 
   // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
@@ -381,18 +348,10 @@ export async function addGroupMember(groupId: string, personId: string, groupRol
 }
 
 export async function removeGroupMember(groupId: string, personId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'groups')
 
   // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
@@ -421,18 +380,10 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
 }
 
 export async function updateGroupMemberRole(groupId: string, personId: string, groupRoleId?: string | null): Promise<GroupMember> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
 
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'groups')
 
   // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase

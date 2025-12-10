@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import { MassIntention, Person, Mass } from '@/lib/types'
 import type { MassIntentionStatus } from '@/lib/constants'
 import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIntentionData, type UpdateMassIntentionData } from '@/lib/schemas/mass-intentions'
@@ -297,13 +296,6 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'mass-intentions')
 
   // Validate data with schema
   createMassIntentionSchema.parse(data)
@@ -337,17 +329,10 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
 }
 
 export async function updateMassIntention(id: string, data: UpdateMassIntentionData): Promise<MassIntention> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'mass-intentions')
 
   // Validate data with schema
   updateMassIntentionSchema.parse(data)
@@ -377,17 +362,10 @@ export async function updateMassIntention(id: string, data: UpdateMassIntentionD
 }
 
 export async function deleteMassIntention(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'mass-intentions')
 
   const { error } = await supabase
     .from('mass_intentions')

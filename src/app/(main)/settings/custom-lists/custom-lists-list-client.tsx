@@ -87,8 +87,8 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {lists.map((list) => (
-            <Card key={list.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
+            <Card key={list.id} className="hover:shadow-lg transition-shadow !py-0">
+              <CardContent className="py-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg mb-1 truncate">{list.name}</h3>
@@ -100,7 +100,7 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
 
                 <div className="flex gap-2">
                   <Button asChild variant="outline" className="flex-1">
-                    <Link href={`/settings/custom-lists/${list.id}`}>
+                    <Link href={`/settings/custom-lists/${list.slug}`}>
                       Manage Items
                       <ChevronRight className="h-4 w-4 ml-2" />
                     </Link>

@@ -7,9 +7,6 @@ import { hash, compare } from 'bcryptjs'
 import { sendMagicLinkEmail } from '@/lib/email'
 import { validateEnv } from '@/lib/env-validation'
 
-// Validate environment variables on module load
-validateEnv()
-
 const MAGIC_LINK_EXPIRY_HOURS = 48
 const SESSION_EXPIRY_DAYS = 30
 const RATE_LIMIT_MAX_REQUESTS = 3
@@ -67,6 +64,9 @@ export async function generateMagicLink(
   email: string,
   parishId: string
 ): Promise<MagicLinkResult> {
+  // Validate environment variables at runtime
+  validateEnv()
+
   try {
     const supabase = createAdminClient()
 

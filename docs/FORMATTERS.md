@@ -189,6 +189,16 @@ Export filename generators for PDF and Word documents.
 - `getBaptismFilename()` - "Martinez-Baptism-20251225.pdf"
 - Plus: Mass, Quinceañera, Presentation, Mass Intention, Event
 
+### 6. String Formatters
+
+**File:** [formatters/STRING_FORMATTERS.md](./formatters/STRING_FORMATTERS.md)
+
+General string manipulation and transformation utilities.
+
+**Available functions:**
+- `generateSlug()` - Convert text to URL-safe slugs ("Wedding Songs" → "wedding-songs")
+- `capitalizeFirstLetter()` - Capitalize first letter ("person" → "Person")
+
 ---
 
 ## Quick Reference Table
@@ -240,6 +250,9 @@ Export filename generators for PDF and Word documents.
 | Baptism filename | `getBaptismFilename()` | [Filename](./formatters/FILENAME_FORMATTERS.md) | "Martinez-Baptism-20251225.pdf" |
 | Mass filename | `getMassFilename()` | [Filename](./formatters/FILENAME_FORMATTERS.md) | "Mass-John-Smith-20251225.pdf" |
 | Other modules | See category file | [Filename](./formatters/FILENAME_FORMATTERS.md) | Various |
+| **Strings** |
+| URL-safe slug | `generateSlug()` | [String](./formatters/STRING_FORMATTERS.md) | "wedding-songs" |
+| Capitalize first | `capitalizeFirstLetter()` | [String](./formatters/STRING_FORMATTERS.md) | "Person" |
 
 ---
 

@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { getEventType } from '@/lib/actions/event-types'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { EventTypeSettingsClient } from './event-type-settings-client'
 
 interface EventTypeDetailPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function EventTypeDetailPage({
@@ -22,10 +22,10 @@ export default async function EventTypeDetailPage({
   }
 
   // Await params (Next.js 15 requirement)
-  const { id } = await params
+  const { slug } = await params
 
-  // Fetch event type
-  const eventType = await getEventType(id)
+  // Fetch event type by slug
+  const eventType = await getEventTypeBySlug(slug)
   if (!eventType) {
     notFound()
   }
@@ -34,7 +34,7 @@ export default async function EventTypeDetailPage({
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Settings', href: '/settings' },
     { label: 'Event Types', href: '/settings/event-types' },
-    { label: eventType.name, href: `/settings/event-types/${id}` },
+    { label: eventType.name, href: `/settings/event-types/${eventType.slug}` },
   ]
 
   return (

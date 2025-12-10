@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import type { PaginatedResult } from './people'
 
 // MassTimesTemplate interface (matches mass_times_templates table)
@@ -234,17 +233,6 @@ export async function createMassTime(data: CreateMassTimeData): Promise<MassTime
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
-
   const { data: massTimesTemplate, error } = await supabase
     .from('mass_times_templates')
     .insert([
@@ -275,17 +263,6 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
@@ -319,17 +296,6 @@ export async function deleteMassTime(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   const { error } = await supabase
     .from('mass_times_templates')

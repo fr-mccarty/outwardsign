@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole } from '@/lib/auth/permissions'
 import type {
   DynamicEvent,
   DynamicEventWithRelations,
@@ -24,11 +23,17 @@ import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export interface DynamicEventFilterParams {
   search?: string
+  eventTypeId?: string
   startDate?: string
   endDate?: string
   sort?: 'date_asc' | 'date_desc' | 'created_asc' | 'created_desc'
   offset?: number
   limit?: number
+}
+
+export interface DynamicEventWithTypeAndOccasion extends DynamicEvent {
+  event_type?: DynamicEventType
+  primary_occasion?: Occasion
 }
 
 /**
@@ -53,6 +58,104 @@ export async function getDynamicEvents(): Promise<(DynamicEvent & { event_type?:
   }
 
   return data || []
+}
+
+/**
+ * Get all dynamic events across all event types for the main events list
+ */
+export async function getAllDynamicEvents(
+  filters?: DynamicEventFilterParams
+): Promise<DynamicEventWithTypeAndOccasion[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const offset = filters?.offset || 0
+  const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
+
+  // Build query
+  let query = supabase
+    .from('dynamic_events')
+    .select('*, event_type:event_types(*)')
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+
+  // Filter by event type if provided
+  if (filters?.eventTypeId) {
+    query = query.eq('event_type_id', filters.eventTypeId)
+  }
+
+  // Apply sorting (default to created_at for now, date sorting requires join)
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
+  } else {
+    // Default to most recent first
+    query = query.order('created_at', { ascending: false })
+  }
+
+  // Apply pagination
+  query = query.range(offset, offset + limit - 1)
+
+  const { data: events, error } = await query
+
+  if (error) {
+    console.error('Error fetching all dynamic events:', error)
+    throw new Error('Failed to fetch events')
+  }
+
+  if (!events || events.length === 0) {
+    return []
+  }
+
+  // Fetch primary occasions for all events
+  const eventIds = events.map(e => e.id)
+  const { data: occasions } = await supabase
+    .from('occasions')
+    .select('*, location:locations(*)')
+    .in('event_id', eventIds)
+    .eq('is_primary', true)
+    .is('deleted_at', null)
+
+  // Create a map of event_id to primary occasion
+  const occasionMap = new Map(occasions?.map(o => [o.event_id, o]) || [])
+
+  // Combine events with their primary occasions
+  const eventsWithOccasions: DynamicEventWithTypeAndOccasion[] = events.map(event => ({
+    ...event,
+    primary_occasion: occasionMap.get(event.id) || undefined
+  }))
+
+  // Apply date filters if provided (post-fetch since occasions are separate)
+  let filteredEvents = eventsWithOccasions
+  if (filters?.startDate) {
+    filteredEvents = filteredEvents.filter(e =>
+      e.primary_occasion?.date && e.primary_occasion.date >= filters.startDate!
+    )
+  }
+  if (filters?.endDate) {
+    filteredEvents = filteredEvents.filter(e =>
+      e.primary_occasion?.date && e.primary_occasion.date <= filters.endDate!
+    )
+  }
+
+  // Apply date sorting if requested
+  if (filters?.sort === 'date_asc') {
+    filteredEvents.sort((a, b) => {
+      const dateA = a.primary_occasion?.date || ''
+      const dateB = b.primary_occasion?.date || ''
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    filteredEvents.sort((a, b) => {
+      const dateA = a.primary_occasion?.date || ''
+      const dateB = b.primary_occasion?.date || ''
+      return dateB.localeCompare(dateA)
+    })
+  }
+
+  return filteredEvents
 }
 
 /**
@@ -104,7 +207,7 @@ export async function getEvents(
     // Get event type to find key person fields
     const { data: eventType } = await supabase
       .from('event_types')
-      .select('*, input_field_definitions(*)')
+      .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
       .eq('id', eventTypeId)
       .is('deleted_at', null)
       .single()
@@ -271,8 +374,9 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
   const [eventTypeData, occasionsData] = await Promise.all([
     supabase
       .from('event_types')
-      .select('*, input_field_definitions(*)')
+      .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
       .eq('id', event.event_type_id)
+      .eq('parish_id', selectedParishId)
       .is('deleted_at', null)
       .single(),
     supabase
@@ -285,7 +389,7 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
   ])
 
   if (eventTypeData.error) {
-    console.error('Error fetching event type:', eventTypeData.error)
+    console.error('Error fetching event type:', eventTypeData.error, { eventTypeId: event.event_type_id, selectedParishId })
     throw new Error('Failed to fetch event type')
   }
 
@@ -403,26 +507,17 @@ export async function createEvent(
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-
-  const userRole = await getUserParishRole(user.id, selectedParishId)
-  if (!userRole || !userRole.roles.some(role => ['Admin', 'Staff', 'Ministry-Leader'].includes(role))) {
-    throw new Error('Insufficient permissions to create events')
-  }
-
   // Validate required fields against input field definitions
-  const { data: eventType } = await supabase
+  const { data: eventType, error: eventTypeError } = await supabase
     .from('event_types')
-    .select('*, input_field_definitions(*)')
+    .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
     .eq('id', eventTypeId)
+    .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
     .single()
 
-  if (!eventType) {
+  if (eventTypeError || !eventType) {
+    console.error('Error fetching event type:', eventTypeError, { eventTypeId, selectedParishId })
     throw new Error('Event type not found')
   }
 
@@ -497,17 +592,6 @@ export async function updateEvent(
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-
-  const userRole = await getUserParishRole(user.id, selectedParishId)
-  if (!userRole || !userRole.roles.some(role => ['Admin', 'Staff', 'Ministry-Leader'].includes(role))) {
-    throw new Error('Insufficient permissions to update events')
-  }
-
   // Get existing event
   const { data: existingEvent } = await supabase
     .from('dynamic_events')
@@ -555,17 +639,6 @@ export async function deleteEvent(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-
-  const userRole = await getUserParishRole(user.id, selectedParishId)
-  if (!userRole || !userRole.roles.some(role => ['Admin', 'Staff', 'Ministry-Leader'].includes(role))) {
-    throw new Error('Insufficient permissions to delete events')
-  }
 
   // Get event to find event_type_id for revalidation
   const { data: event } = await supabase

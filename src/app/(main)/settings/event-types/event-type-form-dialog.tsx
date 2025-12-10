@@ -21,6 +21,7 @@ import {
 } from '@/lib/schemas/event-types'
 import { toast } from 'sonner'
 import type { EventType } from '@/lib/types/event-types'
+import { generateSlug } from '@/lib/utils/formatters'
 
 interface EventTypeFormDialogProps {
   open: boolean
@@ -56,17 +57,6 @@ export function EventTypeFormDialog({
   const name = watch('name')
   const icon = watch('icon')
   const slug = watch('slug')
-
-  // Slug generation utility
-  const generateSlug = (text: string): string => {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }
 
   // Initialize form when dialog opens or eventType changes
   useEffect(() => {

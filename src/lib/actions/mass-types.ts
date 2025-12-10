@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole, requireModuleAccess } from '@/lib/auth/permissions'
 import {
   createMassTypeSchema,
   updateMassTypeSchema,
@@ -105,17 +104,6 @@ export async function createMassType(data: CreateMassTypeData): Promise<MassType
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
-
   // Validate data
   const validatedData = createMassTypeSchema.parse(data)
 
@@ -152,17 +140,6 @@ export async function updateMassType(id: string, data: UpdateMassTypeData): Prom
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
-
   // Validate data
   const validatedData = updateMassTypeSchema.parse(data)
 
@@ -198,17 +175,6 @@ export async function deleteMassType(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Check if mass type is system type
   const { data: massType } = await supabase
@@ -256,17 +222,6 @@ export async function reorderMassTypes(orderedIds: string[]): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const userParish = await getUserParishRole(user.id, selectedParishId)
-  requireModuleAccess(userParish, 'masses')
 
   // Update each mass type's display_order
   const updates = orderedIds.map((id, index) =>

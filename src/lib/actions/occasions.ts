@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { getUserParishRole } from '@/lib/auth/permissions'
 import type {
   Occasion,
   CreateOccasionData,
@@ -57,17 +56,6 @@ export async function createOccasion(
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-
-  const userRole = await getUserParishRole(user.id, selectedParishId)
-  if (!userRole || !userRole.roles.some(r => ['Admin', 'Staff', 'Ministry-Leader'].includes(r))) {
-    throw new Error('Insufficient permissions to create occasions')
-  }
 
   // Verify event belongs to user's parish and get event_type_id
   const { data: event } = await supabase
@@ -125,17 +113,6 @@ export async function updateOccasion(
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-
-  const userRole = await getUserParishRole(user.id, selectedParishId)
-  if (!userRole || !userRole.roles.some(r => ['Admin', 'Staff', 'Ministry-Leader'].includes(r))) {
-    throw new Error('Insufficient permissions to update occasions')
-  }
 
   // Get occasion to verify access and get event_id
   const { data: occasion } = await supabase
@@ -202,17 +179,6 @@ export async function deleteOccasion(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('User not authenticated')
-  }
-
-  const userRole = await getUserParishRole(user.id, selectedParishId)
-  if (!userRole || !userRole.roles.some(r => ['Admin', 'Staff', 'Ministry-Leader'].includes(r))) {
-    throw new Error('Insufficient permissions to delete occasions')
-  }
 
   // Get occasion to check if it's primary and get event_id
   const { data: occasion } = await supabase

@@ -109,7 +109,8 @@ export function MassAssignmentPeoplePicker({
     if (open) {
       loadPeople(currentPage, debouncedSearchQuery)
     }
-  }, [open, currentPage, debouncedSearchQuery])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, currentPage, debouncedSearchQuery]) // loadPeople is stable
 
   // Load mass times templates when settings dialog opens
   useEffect(() => {

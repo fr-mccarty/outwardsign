@@ -50,7 +50,8 @@ export function RoleAvailabilityModal({
     if (open && role) {
       fetchAvailability()
     }
-  }, [open, role])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, role]) // fetchAvailability is stable, only re-run when modal opens or role changes
 
   const fetchAvailability = async () => {
     if (!role) return

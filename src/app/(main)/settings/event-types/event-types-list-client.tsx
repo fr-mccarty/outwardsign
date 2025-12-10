@@ -75,7 +75,7 @@ function SortableEventTypeItem({
       </button>
 
       <Link
-        href={`/settings/event-types/${eventType.id}`}
+        href={`/settings/event-types/${eventType.slug}`}
         className="flex-1 min-w-0 flex items-center gap-2"
       >
         <IconComponent className="h-4 w-4 text-muted-foreground flex-shrink-0" />

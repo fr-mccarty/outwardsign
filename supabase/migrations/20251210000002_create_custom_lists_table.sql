@@ -6,10 +6,12 @@ CREATE TABLE custom_lists (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+  slug TEXT NOT NULL,
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT unique_custom_list_name_per_parish UNIQUE (parish_id, name)
+  CONSTRAINT unique_custom_list_name_per_parish UNIQUE (parish_id, name),
+  CONSTRAINT unique_custom_list_slug_per_parish UNIQUE (parish_id, slug)
 );
 
 -- Enable RLS

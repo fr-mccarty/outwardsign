@@ -13,24 +13,11 @@ import type {
   InputFieldDefinition,
   Script
 } from '@/lib/types'
+import { generateSlug } from '@/lib/utils/formatters'
 
 export interface EventTypeFilterParams {
   search?: string
   sort?: 'order_asc' | 'order_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-}
-
-/**
- * Generate a URL-safe slug from a string
- * Example: "Wedding Ceremony" -> "wedding-ceremony"
- */
-function generateSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')      // Replace spaces with hyphens
-    .replace(/-+/g, '-')       // Replace multiple hyphens with single
-    .replace(/^-+|-+$/g, '')   // Trim hyphens from start/end
 }
 
 /**

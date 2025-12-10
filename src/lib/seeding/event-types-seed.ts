@@ -11,6 +11,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { generateSlug } from '@/lib/utils/formatters'
 
 /**
  * Seeds event types for a new parish with starter templates
@@ -41,11 +42,13 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
   }
 
   // Create Wedding Songs custom list
+  const weddingSongsName = 'Wedding Songs'
   const { data: weddingSongsList, error: weddingSongsListError } = await supabase
     .from('custom_lists')
     .insert({
       parish_id: parishId,
-      name: 'Wedding Songs'
+      name: weddingSongsName,
+      slug: generateSlug(weddingSongsName)
     })
     .select()
     .single()
@@ -305,11 +308,13 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
   }
 
   // Create Funeral Songs custom list
+  const funeralSongsName = 'Funeral Songs'
   const { data: funeralSongsList, error: funeralSongsListError } = await supabase
     .from('custom_lists')
     .insert({
       parish_id: parishId,
-      name: 'Funeral Songs'
+      name: funeralSongsName,
+      slug: generateSlug(funeralSongsName)
     })
     .select()
     .single()

@@ -11,6 +11,7 @@ import type {
   UpdateCustomListData,
   CustomListItem
 } from '@/lib/types'
+import { generateSlug } from '@/lib/utils/formatters'
 
 export interface CustomListFilterParams {
   search?: string
@@ -117,6 +118,77 @@ export async function getCustomList(id: string): Promise<CustomList | null> {
 }
 
 /**
+ * Get a single custom list by slug
+ */
+export async function getCustomListBySlug(slug: string): Promise<CustomList | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('custom_lists')
+    .select('*')
+    .eq('slug', slug)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching custom list by slug:', error)
+    throw new Error('Failed to fetch custom list')
+  }
+
+  return data
+}
+
+/**
+ * Get custom list with all items by slug
+ */
+export async function getCustomListWithItemsBySlug(slug: string): Promise<CustomListWithItems | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the custom list by slug
+  const { data: customList, error } = await supabase
+    .from('custom_lists')
+    .select('*')
+    .eq('slug', slug)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching custom list by slug:', error)
+    throw new Error('Failed to fetch custom list')
+  }
+
+  // Fetch items for this list
+  const { data: items, error: itemsError } = await supabase
+    .from('custom_list_items')
+    .select('*')
+    .eq('list_id', customList.id)
+    .is('deleted_at', null)
+    .order('order', { ascending: true })
+
+  if (itemsError) {
+    console.error('Error fetching custom list items:', itemsError)
+    throw new Error('Failed to fetch custom list items')
+  }
+
+  return {
+    ...customList,
+    items: items as CustomListItem[] || []
+  }
+}
+
+/**
  * Get custom list with all items
  */
 export async function getCustomListWithItems(id: string): Promise<CustomListWithItems | null> {
@@ -175,13 +247,39 @@ export async function createCustomList(data: CreateCustomListData): Promise<Cust
   }
   await requireEditSharedResources(user.id, selectedParishId)
 
+  // Generate slug from name
+  const baseSlug = generateSlug(data.name)
+
+  // Check slug uniqueness and append number if needed
+  let slugCounter = 1
+  let isUnique = false
+  let finalSlug = baseSlug
+
+  while (!isUnique) {
+    const { data: existingWithSlug } = await supabase
+      .from('custom_lists')
+      .select('id')
+      .eq('parish_id', selectedParishId)
+      .eq('slug', finalSlug)
+      .is('deleted_at', null)
+      .limit(1)
+
+    if (!existingWithSlug || existingWithSlug.length === 0) {
+      isUnique = true
+    } else {
+      finalSlug = `${baseSlug}-${slugCounter}`
+      slugCounter++
+    }
+  }
+
   // Insert custom list
   const { data: customList, error } = await supabase
     .from('custom_lists')
     .insert([
       {
         parish_id: selectedParishId,
-        name: data.name
+        name: data.name,
+        slug: finalSlug
       }
     ])
     .select()
@@ -212,10 +310,37 @@ export async function updateCustomList(id: string, data: UpdateCustomListData): 
   await requireEditSharedResources(user.id, selectedParishId)
 
   // Build update object from only defined values
-  const updateData = Object.fromEntries(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Object.entries(data).filter(([_, value]) => value !== undefined)
-  )
+  const updateData: Record<string, unknown> = {}
+
+  if (data.name !== undefined) {
+    updateData.name = data.name
+
+    // Regenerate slug when name changes
+    const baseSlug = generateSlug(data.name)
+    let slugCounter = 1
+    let isUnique = false
+    let finalSlug = baseSlug
+
+    while (!isUnique) {
+      const { data: existingWithSlug } = await supabase
+        .from('custom_lists')
+        .select('id')
+        .eq('parish_id', selectedParishId)
+        .eq('slug', finalSlug)
+        .neq('id', id) // Exclude current record
+        .is('deleted_at', null)
+        .limit(1)
+
+      if (!existingWithSlug || existingWithSlug.length === 0) {
+        isUnique = true
+      } else {
+        finalSlug = `${baseSlug}-${slugCounter}`
+        slugCounter++
+      }
+    }
+
+    updateData.slug = finalSlug
+  }
 
   const { data: customList, error } = await supabase
     .from('custom_lists')
@@ -232,7 +357,7 @@ export async function updateCustomList(id: string, data: UpdateCustomListData): 
   }
 
   revalidatePath('/settings/custom-lists')
-  revalidatePath(`/settings/custom-lists/${id}`)
+  revalidatePath(`/settings/custom-lists/${customList.slug}`)
   return customList
 }
 

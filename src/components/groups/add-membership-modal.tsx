@@ -46,7 +46,8 @@ export function AddMembershipModal({
         groupRole.setValue(memberToEdit.group_role as GroupRole)
       }
     }
-  }, [editMode, memberToEdit, open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editMode, memberToEdit, open]) // person and groupRole are picker state hooks with stable setters
 
   const handleSubmit = async () => {
     if (!person.value) {

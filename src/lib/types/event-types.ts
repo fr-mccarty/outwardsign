@@ -83,6 +83,7 @@ export interface CustomList {
   id: string
   parish_id: string
   name: string
+  slug: string
   deleted_at: string | null
   created_at: string
   updated_at: string

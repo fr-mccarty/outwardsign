@@ -70,6 +70,7 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
         : `/calendar?view=${initialView}`
       router.replace(newUrl, { scroll: false })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run on mount
 
   // Sync state with URL parameters when they change
@@ -90,7 +91,8 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
         setCurrentDate(newDate)
       }
     }
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]) // Only sync when URL params change, not when local state changes
 
   // Load toggle state from localStorage
   useEffect(() => {

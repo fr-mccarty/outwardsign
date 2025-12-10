@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/dynamic-events'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getScripts } from '@/lib/actions/scripts'
 import { DynamicEventViewClient } from './dynamic-event-view-client'
 
 interface PageProps {
@@ -38,6 +39,9 @@ export default async function ViewDynamicEventPage({ params }: PageProps) {
     notFound()
   }
 
+  // Fetch scripts for this event type
+  const scripts = await getScripts(event.event_type_id)
+
   // TODO: Build dynamic title from key person names once field resolution is implemented
   const title = eventType.name
 
@@ -53,7 +57,12 @@ export default async function ViewDynamicEventPage({ params }: PageProps) {
       description={`View ${eventType.name.toLowerCase()} details.`}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <DynamicEventViewClient event={event} eventType={eventType} />
+      <DynamicEventViewClient
+        event={event}
+        eventType={eventType}
+        scripts={scripts}
+        eventTypeSlug={typeSlug}
+      />
     </PageContainer>
   )
 }

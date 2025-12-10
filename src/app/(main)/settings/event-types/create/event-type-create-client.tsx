@@ -45,7 +45,7 @@ export function EventTypeCreateClient() {
         icon: data.icon,
       })
       toast.success('Event type created successfully')
-      router.push(`/settings/event-types/${eventType.id}`)
+      router.push(`/settings/event-types/${eventType.slug}`)
     } catch (error) {
       console.error('Failed to create event type:', error)
       toast.error('Failed to create event type')

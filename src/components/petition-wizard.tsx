@@ -49,7 +49,8 @@ export function PetitionWizard({
     if (open) {
       loadTemplates()
     }
-  }, [open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]) // loadTemplates is stable
 
   const loadTemplates = async () => {
     try {

@@ -35,7 +35,7 @@ export function useWizardNavigation({
   // Initialize step from URL params on mount
   useEffect(() => {
     if (!enableUrlSync) return
-    
+
     const params = new URLSearchParams(window.location.search)
     const stepParam = params.get('step')
     if (stepParam) {
@@ -48,7 +48,8 @@ export function useWizardNavigation({
       // Only set URL if we're on initial step and there's no step param
       updateStepInUrl(initialStep)
     }
-  }, []) // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount - all dependencies are intentionally omitted for initialization
 
   const goToStep = (step: number) => {
     if (step >= 1 && step <= totalSteps) {

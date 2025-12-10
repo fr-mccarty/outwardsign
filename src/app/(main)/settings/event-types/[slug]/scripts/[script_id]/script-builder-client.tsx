@@ -245,7 +245,7 @@ export function ScriptBuilderClient({
         <Button
           variant="outline"
           onClick={() =>
-            router.push(`/settings/event-types/${eventType.id}/scripts`)
+            router.push(`/settings/event-types/${eventType.slug}/scripts`)
           }
         >
           Back to Scripts

@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { getEventType } from '@/lib/actions/event-types'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
 import { EventTypeFieldsClient } from './event-type-fields-client'
 
 interface EventTypeFieldsPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function EventTypeFieldsPage({
@@ -23,22 +23,23 @@ export default async function EventTypeFieldsPage({
   }
 
   // Await params (Next.js 15 requirement)
-  const { id } = await params
+  const { slug } = await params
 
-  // Fetch event type and input fields
-  const eventType = await getEventType(id)
+  // Fetch event type by slug
+  const eventType = await getEventTypeBySlug(slug)
   if (!eventType) {
     notFound()
   }
 
-  const inputFields = await getInputFieldDefinitions(id)
+  // Fetch input fields using the event type ID
+  const inputFields = await getInputFieldDefinitions(eventType.id)
 
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Settings', href: '/settings' },
     { label: 'Event Types', href: '/settings/event-types' },
-    { label: eventType.name, href: `/settings/event-types/${id}` },
-    { label: 'Input Fields', href: `/settings/event-types/${id}/fields` },
+    { label: eventType.name, href: `/settings/event-types/${eventType.slug}` },
+    { label: 'Input Fields', href: `/settings/event-types/${eventType.slug}/fields` },
   ]
 
   return (

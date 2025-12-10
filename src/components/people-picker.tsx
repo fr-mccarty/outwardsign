@@ -152,7 +152,8 @@ export function PeoplePicker({
     if (open) {
       loadPeople(currentPage, debouncedSearchQuery)
     }
-  }, [open, currentPage, debouncedSearchQuery])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, currentPage, debouncedSearchQuery]) // loadPeople is stable
 
   const loadPeople = async (page: number, search: string) => {
     try {

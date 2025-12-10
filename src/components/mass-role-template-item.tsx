@@ -40,7 +40,8 @@ export function MassRoleTemplateItem({ item, onDelete, onUpdate }: MassRoleTempl
     if (debouncedCount !== item.count && debouncedCount > 0) {
       handleCountUpdate(debouncedCount)
     }
-  }, [debouncedCount])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedCount]) // handleCountUpdate is stable, item.count intentionally omitted to only trigger on debounced changes
 
   const handleCountUpdate = async (newCount: number) => {
     try {

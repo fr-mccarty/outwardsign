@@ -1,12 +1,12 @@
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { EventFormWrapper } from '../event-form-wrapper'
-import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getEventTypeBySlug, getEventTypes } from '@/lib/actions/event-types'
+import { EventTypeSelector } from './event-type-selector'
 
 interface PageProps {
   searchParams: Promise<{
-    type?: string  // Event type slug for pre-fill
+    type?: string  // Event type slug - if provided, redirect directly to that create page
   }>
 }
 
@@ -21,15 +21,16 @@ export default async function CreateEventPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Look up event type by slug if provided
-  let prefilledEventTypeId: string | undefined
-
+  // If type is provided in URL, redirect directly to the dynamic create page
   if (params.type) {
     const eventType = await getEventTypeBySlug(params.type)
     if (eventType) {
-      prefilledEventTypeId = eventType.id
+      redirect(`/events/${params.type}/create`)
     }
   }
+
+  // Fetch all event types to display as options
+  const eventTypes = await getEventTypes()
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
@@ -40,12 +41,7 @@ export default async function CreateEventPage({ searchParams }: PageProps) {
   return (
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventFormWrapper
-        title="Create Event"
-        description="Add a new event to your parish calendar."
-        prefilledEventTypeId={prefilledEventTypeId}
-        minimalMode
-      />
+      <EventTypeSelector eventTypes={eventTypes} />
     </>
   )
 }

@@ -247,7 +247,7 @@ export function EventTypeScriptsClient({
       router.refresh()
       // Navigate to script builder
       router.push(
-        `/settings/event-types/${eventType.id}/scripts/${newScript.id}`
+        `/settings/event-types/${eventType.slug}/scripts/${newScript.id}`
       )
     } catch (error) {
       console.error('Failed to create script:', error)
@@ -257,7 +257,7 @@ export function EventTypeScriptsClient({
   }
 
   const handleEditScript = (script: Script) => {
-    router.push(`/settings/event-types/${eventType.id}/scripts/${script.id}`)
+    router.push(`/settings/event-types/${eventType.slug}/scripts/${script.id}`)
   }
 
   const handleDeleteClick = (script: Script) => {
@@ -287,14 +287,14 @@ export function EventTypeScriptsClient({
       <div className="mb-6 flex gap-2">
         <Button
           variant="outline"
-          onClick={() => router.push(`/settings/event-types/${eventType.id}`)}
+          onClick={() => router.push(`/settings/event-types/${eventType.slug}`)}
         >
           Back to Settings
         </Button>
         <Button
           variant="outline"
           onClick={() =>
-            router.push(`/settings/event-types/${eventType.id}/fields`)
+            router.push(`/settings/event-types/${eventType.slug}/fields`)
           }
         >
           Manage Input Fields
