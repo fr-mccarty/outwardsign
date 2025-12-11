@@ -63,8 +63,7 @@ BEGIN
       'role', ma.role,
       'date', m.date,
       'time', m.time,
-      'mass_type', m.mass_type,
-      'location', m.location
+      'name', m.name
     )
   )
   INTO mass_assignments_data

@@ -368,6 +368,8 @@ export interface Mass {
   liturgical_event_id?: string
   mass_roles_template_id?: string
   mass_time_template_item_id?: string
+  event_type_id?: string | null
+  field_values?: Record<string, any>
   status?: MassStatus
   mass_template_id?: string
   name?: string
@@ -680,6 +682,7 @@ export interface Script {
   id: string
   event_type_id: string
   name: string
+  description: string | null
   order: number
   deleted_at: string | null
   created_at: string
@@ -693,10 +696,12 @@ export interface ScriptWithSections extends Script {
 export interface CreateScriptData {
   event_type_id: string
   name: string
+  description?: string | null
 }
 
 export interface UpdateScriptData {
   name?: string
+  description?: string | null
 }
 
 // Section types

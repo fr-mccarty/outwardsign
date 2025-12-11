@@ -304,6 +304,8 @@ export interface MassWithRelations extends Mass {
   homilist?: Person | null
   liturgical_event?: GlobalLiturgicalEvent | null
   mass_roles_template?: MassRolesTemplate | null
+  event_type?: import('@/lib/types/event-types').EventType | null
+  resolved_fields?: Record<string, import('@/lib/types/event-types').ResolvedFieldValue>
   mass_intention?: (MassIntention & {
     requested_by?: Person | null
   }) | null
@@ -343,6 +345,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     homilistData,
     liturgicalEventData,
     massRolesTemplateData,
+    eventTypeData,
     massIntentionData,
     massRolesData
   ] = await Promise.all([
@@ -351,9 +354,110 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     mass.homilist_id ? supabase.from('people').select('*').eq('id', mass.homilist_id).single() : Promise.resolve({ data: null }),
     mass.liturgical_event_id ? supabase.from('global_liturgical_events').select('*').eq('id', mass.liturgical_event_id).single() : Promise.resolve({ data: null }),
     mass.mass_roles_template_id ? supabase.from('mass_roles_templates').select('*').eq('id', mass.mass_roles_template_id).single() : Promise.resolve({ data: null }),
+    mass.event_type_id ? supabase.from('event_types').select('*, input_field_definitions(*)').eq('id', mass.event_type_id).single() : Promise.resolve({ data: null }),
     supabase.from('mass_intentions').select('*, requested_by:people!requested_by_id(*)').eq('mass_id', id).maybeSingle(),
     supabase.from('mass_assignment').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
   ])
+
+  // Resolve field values if event type exists
+  const resolvedFields: Record<string, import('@/lib/types/event-types').ResolvedFieldValue> = {}
+  if (eventTypeData.data && mass.field_values) {
+    const inputFieldDefinitions = eventTypeData.data.input_field_definitions as import('@/lib/types/event-types').InputFieldDefinition[]
+
+    for (const fieldDef of inputFieldDefinitions) {
+      const rawValue = mass.field_values[fieldDef.name]
+
+      const resolvedField: import('@/lib/types/event-types').ResolvedFieldValue = {
+        field_name: fieldDef.name,
+        field_type: fieldDef.type,
+        raw_value: rawValue
+      }
+
+      // Resolve references based on field type
+      if (rawValue) {
+        try {
+          switch (fieldDef.type) {
+            case 'person': {
+              const { data: person } = await supabase
+                .from('people')
+                .select('*')
+                .eq('id', rawValue)
+                .single()
+              resolvedField.resolved_value = person
+              break
+            }
+            case 'group': {
+              const { data: group } = await supabase
+                .from('groups')
+                .select('*')
+                .eq('id', rawValue)
+                .single()
+              resolvedField.resolved_value = group
+              break
+            }
+            case 'location': {
+              const { data: location } = await supabase
+                .from('locations')
+                .select('*')
+                .eq('id', rawValue)
+                .single()
+              resolvedField.resolved_value = location
+              break
+            }
+            case 'list_item': {
+              const { data: listItem } = await supabase
+                .from('custom_list_items')
+                .select('*')
+                .eq('id', rawValue)
+                .is('deleted_at', null)
+                .single()
+              resolvedField.resolved_value = listItem
+              break
+            }
+            case 'document': {
+              const { data: document } = await supabase
+                .from('documents')
+                .select('*')
+                .eq('id', rawValue)
+                .is('deleted_at', null)
+                .single()
+              resolvedField.resolved_value = document
+              break
+            }
+            case 'content': {
+              const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+              const isUUID = typeof rawValue === 'string' && UUID_REGEX.test(rawValue)
+              if (isUUID) {
+                const { data: content } = await supabase
+                  .from('contents')
+                  .select('*')
+                  .eq('id', rawValue)
+                  .single()
+                resolvedField.resolved_value = content
+              }
+              break
+            }
+            case 'petition': {
+              const { data: petition } = await supabase
+                .from('petitions')
+                .select('*')
+                .eq('id', rawValue)
+                .single()
+              resolvedField.resolved_value = petition
+              break
+            }
+            // For non-reference types (text, rich_text, mass-intention, date, time, number, yes_no, spacer), raw_value is sufficient
+            default:
+              break
+          }
+        } catch (err) {
+          console.error(`Error resolving field ${fieldDef.name}:`, err)
+        }
+      }
+
+      resolvedFields[fieldDef.name] = resolvedField
+    }
+  }
 
   return {
     ...mass,
@@ -362,6 +466,8 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     homilist: homilistData.data,
     liturgical_event: liturgicalEventData.data,
     mass_roles_template: massRolesTemplateData.data,
+    event_type: eventTypeData.data,
+    resolved_fields: resolvedFields,
     mass_intention: massIntentionData.data,
     mass_roles: massRolesData.data || []
   }
@@ -386,6 +492,8 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
         homilist_id: validatedData.homilist_id || null,
         liturgical_event_id: validatedData.liturgical_event_id || null,
         mass_roles_template_id: validatedData.mass_roles_template_id || null,
+        event_type_id: validatedData.event_type_id || null,
+        field_values: validatedData.field_values || {},
         status: validatedData.status || 'PLANNING',
         mass_template_id: validatedData.mass_template_id || null,
         announcements: validatedData.announcements || null,

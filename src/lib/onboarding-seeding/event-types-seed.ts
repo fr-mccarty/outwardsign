@@ -288,6 +288,135 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     throw new Error(`Failed to create Wedding Spanish sections: ${weddingSpanishSectionsError.message}`)
   }
 
+  // Create Wedding Worship Aid script (congregation-facing)
+  const { data: weddingWorshipAidScript, error: weddingWorshipAidScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: weddingType.id,
+      name: 'Worship Aid',
+      order: 2
+    })
+    .select()
+    .single()
+
+  if (weddingWorshipAidScriptError) {
+    console.error('Error creating Wedding Worship Aid script:', weddingWorshipAidScriptError)
+    throw new Error(`Failed to create Wedding Worship Aid script: ${weddingWorshipAidScriptError.message}`)
+  }
+
+  // Create sections for Wedding Worship Aid
+  const weddingWorshipAidSections = [
+    {
+      name: 'Cover',
+      content: `# The Celebration of Marriage
+
+**{{Bride}}**
+&
+**{{Groom}}**
+
+{{Wedding Date}}
+
+{{Ceremony Location}}
+
+{{parish.name}}`,
+      page_break_after: true,
+      order: 0
+    },
+    {
+      name: 'Order of Celebration',
+      content: `## Order of Celebration
+
+**Entrance Procession**
+{{Opening Song}}
+
+**Greeting**
+
+**Collect (Opening Prayer)**
+
+---
+
+### Liturgy of the Word
+
+**First Reading**
+
+**Responsorial Psalm**
+
+**Gospel**
+
+**Homily**
+
+---
+
+### Celebration of Matrimony
+
+**Questions Before Consent**
+
+**Exchange of Consent**
+
+**Blessing and Exchange of Rings**
+
+---
+
+### Universal Prayer (Prayer of the Faithful)
+
+{{Prayers of the Faithful}}
+
+---
+
+### Nuptial Blessing
+
+---
+
+### Conclusion
+
+**Final Blessing**
+
+**Recessional**`,
+      page_break_after: true,
+      order: 1
+    },
+    {
+      name: 'Readings',
+      content: `## Readings
+
+### First Reading
+{{First Reading}}
+
+---
+
+### Gospel
+{{Gospel Reading}}`,
+      page_break_after: true,
+      order: 2
+    },
+    {
+      name: 'Music',
+      content: `## Music for the Celebration
+
+**Entrance Procession:** {{Opening Song}}
+
+---
+
+*Please join in singing the hymns as able.*`,
+      page_break_after: false,
+      order: 3
+    }
+  ]
+
+  const { error: weddingWorshipAidSectionsError } = await supabase
+    .from('sections')
+    .insert(
+      weddingWorshipAidSections.map(section => ({
+        script_id: weddingWorshipAidScript.id,
+        ...section
+      }))
+    )
+
+  if (weddingWorshipAidSectionsError) {
+    console.error('Error creating Wedding Worship Aid sections:', weddingWorshipAidSectionsError)
+    throw new Error(`Failed to create Wedding Worship Aid sections: ${weddingWorshipAidSectionsError.message}`)
+  }
+
   // =====================================================
   // 2. Create Funeral Event Type
   // =====================================================
@@ -526,6 +655,204 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
   if (funeralBulletinSectionsError) {
     console.error('Error creating Funeral Bulletin sections:', funeralBulletinSectionsError)
     throw new Error(`Failed to create Funeral Bulletin sections: ${funeralBulletinSectionsError.message}`)
+  }
+
+  // Create Funeral Worship Aid script (congregation-facing)
+  const { data: funeralWorshipAidScript, error: funeralWorshipAidScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: funeralType.id,
+      name: 'Worship Aid',
+      order: 2
+    })
+    .select()
+    .single()
+
+  if (funeralWorshipAidScriptError) {
+    console.error('Error creating Funeral Worship Aid script:', funeralWorshipAidScriptError)
+    throw new Error(`Failed to create Funeral Worship Aid script: ${funeralWorshipAidScriptError.message}`)
+  }
+
+  // Create sections for Funeral Worship Aid
+  const funeralWorshipAidSections = [
+    {
+      name: 'Cover',
+      content: `# Funeral Mass
+
+**{{Deceased}}**
+
+{{Funeral Date}}
+
+{{Funeral Location}}
+
+{{parish.name}}`,
+      page_break_after: true,
+      order: 0
+    },
+    {
+      name: 'Order of Mass',
+      content: `## Order of Mass
+
+### Introductory Rites
+
+**Greeting of the Body**
+
+**Entrance Procession**
+{{Opening Song}}
+
+**Sprinkling with Holy Water**
+
+**Placing of the Pall**
+
+**Entrance into the Church**
+
+**Collect (Opening Prayer)**
+
+---
+
+### Liturgy of the Word
+
+**First Reading**
+
+**Responsorial Psalm**
+
+**Gospel**
+
+**Homily**
+
+---
+
+### Universal Prayer (Prayer of the Faithful)
+
+{{Prayers of the Faithful}}
+
+---
+
+### Liturgy of the Eucharist
+
+**Preparation of the Gifts**
+
+**Eucharistic Prayer**
+
+**Lord's Prayer**
+
+**Sign of Peace**
+
+**Communion**
+
+---
+
+### Final Commendation
+
+**Invitation to Prayer**
+
+**Silence**
+
+**Signs of Farewell**
+
+**Song of Farewell**
+
+**Prayer of Commendation**
+
+**Procession to the Place of Committal**`,
+      page_break_after: true,
+      order: 1
+    },
+    {
+      name: 'Readings',
+      content: `## Readings
+
+### First Reading
+{{First Reading}}
+
+---
+
+### Responsorial Psalm
+{{Psalm}}
+
+---
+
+### Gospel
+{{Gospel Reading}}`,
+      page_break_after: true,
+      order: 2
+    },
+    {
+      name: 'Responses',
+      content: `## Responses
+
+### Responsorial Psalm Response
+*The Lord is my shepherd; there is nothing I shall want.*
+
+---
+
+### Gospel Acclamation
+*Alleluia, alleluia.*
+*I am the resurrection and the life, says the Lord;*
+*whoever believes in me, even if he dies, will live.*
+*Alleluia.*
+
+---
+
+### Memorial Acclamation
+*We proclaim your Death, O Lord,*
+*and profess your Resurrection*
+*until you come again.*
+
+---
+
+### The Lord's Prayer
+*Our Father, who art in heaven,*
+*hallowed be thy name;*
+*thy kingdom come,*
+*thy will be done*
+*on earth as it is in heaven.*
+*Give us this day our daily bread,*
+*and forgive us our trespasses,*
+*as we forgive those who trespass against us;*
+*and lead us not into temptation,*
+*but deliver us from evil.*
+
+*For thine is the kingdom,*
+*and the power, and the glory,*
+*for ever and ever. Amen.*`,
+      page_break_after: true,
+      order: 3
+    },
+    {
+      name: 'Music',
+      content: `## Music for the Liturgy
+
+**Entrance Hymn:** {{Opening Song}}
+
+---
+
+*Please join in singing the hymns as able.*
+
+---
+
+### Committal
+
+Burial will take place at:
+
+{{Burial Location}}`,
+      page_break_after: false,
+      order: 4
+    }
+  ]
+
+  const { error: funeralWorshipAidSectionsError } = await supabase
+    .from('sections')
+    .insert(
+      funeralWorshipAidSections.map(section => ({
+        script_id: funeralWorshipAidScript.id,
+        ...section
+      }))
+    )
+
+  if (funeralWorshipAidSectionsError) {
+    console.error('Error creating Funeral Worship Aid sections:', funeralWorshipAidSectionsError)
+    throw new Error(`Failed to create Funeral Worship Aid sections: ${funeralWorshipAidSectionsError.message}`)
   }
 
   // =====================================================

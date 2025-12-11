@@ -10,14 +10,26 @@ import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
 import { getMassRoleTemplates, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { getTemplateItems, type MassRoleTemplateItemWithRole } from "@/lib/actions/mass-role-template-items"
-import type { Person, Event } from "@/lib/types"
+import type { Person, Event, Location, ContentWithTags, Petition } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import type { MassIntentionWithNames } from "@/lib/actions/mass-intentions"
+import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/event-types"
+import { getEventTypeWithRelations } from "@/lib/actions/event-types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { PersonPickerField } from "@/components/person-picker-field"
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
+import { LocationPickerField } from "@/components/location-picker-field"
+import { ContentPickerField } from "@/components/content-picker-field"
+import { PetitionPickerField } from "@/components/petition-picker-field"
+import { DatePickerField } from "@/components/date-picker-field"
+import { TimePickerField } from "@/components/time-picker-field"
+import { EventTypeSelectField } from "@/components/event-type-select-field"
+import { MassIntentionTextarea } from "@/components/mass-intention-textarea"
+import { FormSpacer } from "@/components/form-spacer"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { MASS_STATUS_VALUES, MASS_TEMPLATE_VALUES, MASS_TEMPLATE_LABELS, MASS_DEFAULT_TEMPLATE, LITURGICAL_COLOR_VALUES, LITURGICAL_COLOR_LABELS, type MassStatus, type MassTemplate, type LiturgicalColor } from "@/lib/constants"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
 import { FormBottomActions } from "@/components/form-bottom-actions"
@@ -29,6 +41,7 @@ import { RoleFulfillmentBadge } from "@/components/role-fulfillment-badge"
 import { Plus, X, Heart } from "lucide-react"
 import { createMassSchema, type CreateMassData } from "@/lib/schemas/masses"
 import { useState } from "react"
+import { toLocalDateString } from "@/lib/utils/formatters"
 
 interface MassFormProps {
   mass?: MassWithRelations
@@ -82,6 +95,28 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
   const [massRolesTemplateId, setMassRolesTemplateId] = useState<string>(mass?.mass_roles_template_id || "")
   const [allTemplates, setAllTemplates] = useState<MassRoleTemplate[]>([])
   const [templateItems, setTemplateItems] = useState<MassRoleTemplateItemWithRole[]>([])
+
+  // Event type templating state
+  const [eventTypeId, setEventTypeId] = useState<string | null>(mass?.event_type_id || null)
+  const [eventType, setEventType] = useState<EventTypeWithRelations | null>(null)
+  const [inputFieldDefinitions, setInputFieldDefinitions] = useState<InputFieldDefinition[]>([])
+  const [fieldValues, setFieldValues] = useState<Record<string, any>>(() => {
+    // Initialize from existing mass or empty
+    return mass?.field_values || {}
+  })
+  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | null>>(() => {
+    const initial: Record<string, Person | Location | ContentWithTags | Petition | null> = {}
+    // Initialize from resolved fields if editing
+    if (mass?.resolved_fields) {
+      Object.entries(mass.resolved_fields).forEach(([fieldName, resolved]) => {
+        if (resolved.resolved_value) {
+          initial[fieldName] = resolved.resolved_value as Person | Location | ContentWithTags | Petition
+        }
+      })
+    }
+    return initial
+  })
+  const [pickerOpen, setPickerOpen] = useState<Record<string, boolean>>({})
 
   // Track if we've initialized to prevent infinite loops
   const initializedMassIdRef = useRef<string | null>(null)
@@ -152,6 +187,29 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing, mass?.id]) // loadMassRoles is stable, only re-run when mass changes
+
+  // Load event type when selected
+  useEffect(() => {
+    if (eventTypeId) {
+      loadEventType(eventTypeId)
+    } else {
+      setEventType(null)
+      setInputFieldDefinitions([])
+    }
+  }, [eventTypeId])
+
+  const loadEventType = async (typeId: string) => {
+    try {
+      const type = await getEventTypeWithRelations(typeId)
+      if (type) {
+        setEventType(type)
+        setInputFieldDefinitions(type.input_field_definitions || [])
+      }
+    } catch (error) {
+      console.error('Error loading event type:', error)
+      toast.error('Failed to load event type template')
+    }
+  }
 
   const loadMassRoles = async () => {
     if (!mass?.id) return
@@ -320,14 +378,47 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     }
   }
 
+  // Update field value (for text, rich_text, mass-intention, date, time, number, yes_no fields)
+  const updateFieldValue = (fieldName: string, value: string | boolean | null) => {
+    setFieldValues(prev => ({ ...prev, [fieldName]: value }))
+  }
+
+  // Update picker value (stores the ID in fieldValues for person, location, content, petition fields)
+  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | null) => {
+    setPickerValues(prev => ({ ...prev, [fieldName]: value }))
+    setFieldValues(prev => ({ ...prev, [fieldName]: value?.id || null }))
+  }
+
   const onSubmit = async (data: CreateMassData) => {
+    // Validate required custom fields if event type is selected
+    if (eventTypeId && inputFieldDefinitions.length > 0) {
+      const missingRequired: string[] = []
+      inputFieldDefinitions.forEach((field) => {
+        if (field.required && !fieldValues[field.name]) {
+          missingRequired.push(field.name)
+        }
+      })
+
+      if (missingRequired.length > 0) {
+        toast.error(`Please fill in required fields: ${missingRequired.join(', ')}`)
+        return
+      }
+    }
+
     try {
+      // Include event_type_id and field_values in submission data
+      const submitData: CreateMassData = {
+        ...data,
+        event_type_id: eventTypeId,
+        field_values: eventTypeId ? fieldValues : undefined
+      }
+
       if (isEditing) {
-        await updateMass(mass.id, data)
+        await updateMass(mass.id, submitData)
         toast.success('Mass updated successfully')
         router.refresh() // Stay on edit page to show updated data
       } else {
-        const newMass = await createMass(data)
+        const newMass = await createMass(submitData)
         toast.success('Mass created successfully')
         router.push(`/masses/${newMass.id}/edit`)
       }
@@ -336,6 +427,166 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       toast.error(isEditing ? 'Failed to update mass' : 'Failed to create mass')
     }
   }
+
+  // Render dynamic field based on type
+  const renderField = (field: InputFieldDefinition) => {
+    const value = fieldValues[field.name]
+
+    switch (field.type) {
+      case 'person':
+        return (
+          <PersonPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as Person | null}
+            onValueChange={(person) => updatePickerValue(field.name, person)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            placeholder={`Select ${field.name}`}
+          />
+        )
+
+      case 'location':
+        return (
+          <LocationPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as Location | null}
+            onValueChange={(location) => updatePickerValue(field.name, location)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            placeholder={`Select ${field.name}`}
+          />
+        )
+
+      case 'content':
+        return (
+          <ContentPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as ContentWithTags | null}
+            onValueChange={(content) => updatePickerValue(field.name, content)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            placeholder={`Select ${field.name}`}
+            defaultFilterTags={field.filter_tags || []}
+          />
+        )
+
+      case 'petition':
+        return (
+          <PetitionPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as Petition | null}
+            onValueChange={(petition) => updatePickerValue(field.name, petition)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            placeholder={`Select or create ${field.name}`}
+            eventContext={{
+              eventTypeName: 'Mass',
+              occasionDate: event.value?.start_date || new Date().toISOString().split('T')[0],
+              language: 'en',
+            }}
+          />
+        )
+
+      case 'date':
+        return (
+          <DatePickerField
+            key={field.id}
+            id={field.name}
+            label={field.name}
+            value={value ? new Date(value + 'T12:00:00') : undefined}
+            onValueChange={(date) => updateFieldValue(field.name, date ? toLocalDateString(date) : '')}
+            closeOnSelect
+          />
+        )
+
+      case 'time':
+        return (
+          <TimePickerField
+            key={field.id}
+            id={field.name}
+            label={field.name}
+            value={typeof value === 'string' ? value : ''}
+            onChange={(time) => updateFieldValue(field.name, time)}
+          />
+        )
+
+      case 'yes_no':
+        return (
+          <div key={field.id} className="flex items-center justify-between py-2">
+            <Label htmlFor={field.name} className="text-sm font-medium">
+              {field.name}
+              {field.required && <span className="text-destructive ml-1">*</span>}
+            </Label>
+            <Switch
+              id={field.name}
+              checked={!!value}
+              onCheckedChange={(checked) => updateFieldValue(field.name, checked)}
+            />
+          </div>
+        )
+
+      case 'mass-intention':
+        return (
+          <MassIntentionTextarea
+            key={field.id}
+            fieldName={field.name}
+            value={typeof value === 'string' ? value : ''}
+            onChange={(val) => updateFieldValue(field.name, val)}
+            required={field.required}
+          />
+        )
+
+      case 'spacer':
+        return <FormSpacer key={field.id} label={field.name} />
+
+      case 'rich_text':
+        return (
+          <FormInput
+            key={field.id}
+            id={field.name}
+            label={field.name}
+            inputType="textarea"
+            value={typeof value === 'string' ? value : ''}
+            onChange={(val) => updateFieldValue(field.name, val)}
+            rows={4}
+            placeholder={`Enter ${field.name.toLowerCase()}...`}
+          />
+        )
+
+      case 'number':
+        return (
+          <FormInput
+            key={field.id}
+            id={field.name}
+            label={field.name}
+            inputType="text"
+            value={typeof value === 'string' ? value : ''}
+            onChange={(val) => updateFieldValue(field.name, val)}
+            placeholder={`Enter ${field.name.toLowerCase()}`}
+          />
+        )
+
+      case 'text':
+      default:
+        return (
+          <FormInput
+            key={field.id}
+            id={field.name}
+            label={field.name}
+            value={typeof value === 'string' ? value : ''}
+            onChange={(val) => updateFieldValue(field.name, val)}
+            placeholder={`Enter ${field.name.toLowerCase()}`}
+          />
+        )
+    }
+  }
+
+  // Sort fields by order
+  const sortedFields = [...inputFieldDefinitions].sort((a, b) => a.order - b.order)
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -407,7 +658,24 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
             }))}
             error={errors.mass_template_id?.message}
           />
+
+          <EventTypeSelectField
+            value={eventTypeId}
+            onChange={setEventTypeId}
+          />
       </FormSectionCard>
+
+      {/* Custom Fields from Event Type */}
+      {eventTypeId && sortedFields.length > 0 && (
+        <FormSectionCard
+          title="Custom Fields"
+          description={`Additional fields from ${eventType?.name || 'event type'} template`}
+        >
+          <div className="space-y-4">
+            {sortedFields.map(renderField)}
+          </div>
+        </FormSectionCard>
+      )}
 
       {/* Ministers and Mass Roles */}
       <FormSectionCard

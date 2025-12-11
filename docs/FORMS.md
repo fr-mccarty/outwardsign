@@ -309,6 +309,90 @@ the selection and show the placeholder.
 
 ---
 
+## Mass-Specific Input Field Types
+
+Two new input field types were added specifically for the Masses module's event type templating feature:
+
+### 1. `mass-intention` Input Type
+
+**Purpose:** Free text entry for Mass intentions (memorial intentions, prayer requests, etc.)
+
+**Component:** `MassIntentionTextarea` (`src/components/mass-intention-textarea.tsx`)
+
+**Rendering:**
+- Standard textarea component (4-6 rows)
+- Placeholder text: "Enter Mass intentions..."
+- Label from field definition's `name` property
+- Required indicator if field is marked as required
+- Follows standard form input styling (no custom fonts or borders)
+
+**Usage in Dynamic Forms:**
+```tsx
+case 'mass-intention':
+  return (
+    <MassIntentionTextarea
+      key={field.id}
+      field={field}
+      value={fieldValues[field.name] || ''}
+      onChange={(value) => handleFieldChange(field.name, value)}
+    />
+  )
+```
+
+**Example:**
+```
+Field Name: "Mass Intentions"
+Field Type: mass-intention
+User Input: "For the repose of John Doe. For the health of Jane Smith."
+```
+
+### 2. `spacer` Input Type
+
+**Purpose:** Visual section divider with heading text (non-data field for organizing long forms)
+
+**Component:** `FormSpacer` (`src/components/form-spacer.tsx`)
+
+**Rendering:**
+- Visual section heading with top border
+- Field definition's `name` becomes heading text
+- No input element (non-data field)
+- Provides visual organization for complex forms
+- Styling: border-top divider with muted text heading
+
+**Usage in Dynamic Forms:**
+```tsx
+case 'spacer':
+  return (
+    <FormSpacer
+      key={field.id}
+      field={field}
+    />
+  )
+```
+
+**Example:**
+```
+Field Name: "Music"
+Field Type: spacer
+Renders as: Section heading "Music" with top border separator
+```
+
+**Use Case:** Organizing Mass forms with sections like "Liturgical Details", "Music", "Intentions & Announcements", etc.
+
+### Integration with Event Type Templates
+
+Both input types are used in Mass forms when an event type template is selected:
+
+1. Admin creates Mass event type in Settings → Event Types
+2. Admin adds input fields including `mass-intention` and `spacer` types
+3. Staff creates Mass and selects event type template
+4. Form dynamically renders fields including Mass intentions and section spacers
+5. Field values stored in `masses.field_values` JSONB column
+
+**See [MODULE_REGISTRY.md](./MODULE_REGISTRY.md#mass-event-type-integration) for complete Mass templating documentation.**
+
+---
+
 ## Form Event Handling
 
 ### Nested Forms (Critical)

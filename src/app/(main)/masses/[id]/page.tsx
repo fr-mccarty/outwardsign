@@ -3,6 +3,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getMassWithRelations } from '@/lib/actions/masses'
+import { getScripts } from '@/lib/actions/scripts'
 import { MassViewClient } from './mass-view-client'
 import { getMassPageTitle } from '@/lib/utils/formatters'
 
@@ -26,6 +27,9 @@ export default async function ViewMassPage({ params }: PageProps) {
     notFound()
   }
 
+  // Fetch scripts if Mass has an event type
+  const scripts = mass.event_type_id ? await getScripts(mass.event_type_id) : []
+
   // Build dynamic title from presider name and date
   const title = getMassPageTitle(mass)
 
@@ -41,7 +45,7 @@ export default async function ViewMassPage({ params }: PageProps) {
       description="Preview and download Mass liturgy documents."
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <MassViewClient mass={mass} />
+      <MassViewClient mass={mass} scripts={scripts} />
     </PageContainer>
   )
 }

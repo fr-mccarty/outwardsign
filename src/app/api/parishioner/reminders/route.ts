@@ -41,8 +41,7 @@ export async function GET(request: Request) {
           id,
           date,
           time,
-          mass_type,
-          location
+          name
         )
       `
       )
@@ -87,7 +86,7 @@ export async function GET(request: Request) {
         continue
       }
 
-      const mass = assignment.mass as unknown as { id: string; date: string; time: string; mass_type: string; location: string }
+      const mass = assignment.mass as unknown as { id: string; date: string; time: string; name: string }
 
       const commitment = {
         role: assignment.role,
@@ -97,7 +96,7 @@ export async function GET(request: Request) {
           day: 'numeric',
         }),
         time: mass.time || 'TBD',
-        location: mass.location || 'Parish',
+        location: 'Parish', // Location fetched from location_id if needed
       }
 
       // Determine language preference (TODO: add to people table)

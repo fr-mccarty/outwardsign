@@ -84,8 +84,7 @@ export async function getCalendarEvents(
           id,
           date,
           time,
-          mass_type,
-          location
+          name
         )
       `)
       .in('person_id', allPersonIds)
@@ -97,10 +96,9 @@ export async function getCalendarEvents(
           events.push({
             id: assignment.id,
             type: 'assignment' as const,
-            title: `${mass.mass_type || 'Mass'} - ${assignment.role}`,
+            title: `${mass.name || 'Mass'} - ${assignment.role}`,
             date: mass.date,
             time: mass.time,
-            location: mass.location,
             role: assignment.role,
           })
         }

@@ -139,6 +139,7 @@ export async function createScript(data: CreateScriptData): Promise<Script> {
       {
         event_type_id: data.event_type_id,
         name: data.name,
+        description: data.description ?? null,
         order: newOrder
       }
     ])

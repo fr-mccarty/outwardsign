@@ -95,7 +95,7 @@ function SortableScriptItem({
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground">
-          Click to manage sections
+          {script.description || 'Click to manage sections'}
         </p>
       </div>
 
@@ -129,9 +129,10 @@ function CreateScriptDialog({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (name: string) => Promise<void>
+  onSubmit: (name: string, description: string) => Promise<void>
 }) {
   const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async () => {
@@ -142,8 +143,9 @@ function CreateScriptDialog({
 
     setIsSubmitting(true)
     try {
-      await onSubmit(name)
+      await onSubmit(name, description)
       setName('')
+      setDescription('')
       onOpenChange(false)
     } catch (_error) {
       // Error is handled in parent via toast
@@ -159,7 +161,7 @@ function CreateScriptDialog({
         <DialogHeader>
           <DialogTitle>Create Script</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-4 space-y-4">
           <FormInput
             id="script-name"
             label="Script Name"
@@ -167,6 +169,13 @@ function CreateScriptDialog({
             onChange={setName}
             required
             placeholder="e.g., English Program, Spanish Program"
+          />
+          <FormInput
+            id="script-description"
+            label="Description"
+            value={description}
+            onChange={setDescription}
+            placeholder="Brief description of this script's purpose"
           />
         </div>
         <DialogFooter>
@@ -237,11 +246,12 @@ export function EventTypeScriptsClient({
     }
   }
 
-  const handleCreateScript = async (name: string) => {
+  const handleCreateScript = async (name: string, description: string) => {
     try {
       const newScript = await createScript({
         event_type_id: eventType.id,
         name,
+        description: description || null,
       })
       toast.success('Script created successfully')
       router.refresh()

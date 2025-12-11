@@ -178,11 +178,6 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     icon: Clock,
                   },
                   {
-                    title: "Mass Types",
-                    url: "/mass-types",
-                    icon: List,
-                  },
-                  {
                     title: "Mass Role Templates",
                     url: "/mass-role-templates",
                     icon: LayoutTemplate,

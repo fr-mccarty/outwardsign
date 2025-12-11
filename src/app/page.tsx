@@ -206,28 +206,29 @@ const translations = {
       }
     },
     sacraments: {
-      sectionTitle: "Manage Every Sacrament & Sacramental",
-      sectionSubtitle: "Dedicated workflows for each type of sacrament and sacramental your parish celebrates.",
+      sectionTitle: "Create Any Event Type Your Parish Needs",
+      sectionSubtitle: "Define custom event types with tailored forms, scripts, and workflows. Here are some examples of what parishes create:",
       weddings: {
         title: "Weddings",
-        description: "Bride, groom, ceremony planning, and celebration details"
+        description: "Track bride, groom, witnesses, and all ceremony details"
       },
       funerals: {
         title: "Funerals",
-        description: "Memorial planning, family support, and liturgy preparation"
+        description: "Coordinate family, liturgy, and memorial services"
       },
       baptisms: {
         title: "Baptisms",
-        description: "Individual and group baptisms, preparation classes, godparent tracking"
+        description: "Manage individuals or groups with godparent tracking"
       },
       quinceaneras: {
         title: "Quinceañeras",
-        description: "Cultural celebration planning and liturgical preparation"
+        description: "Cultural celebrations with custom liturgical elements"
       },
       presentations: {
         title: "Presentations",
-        description: "Latino tradition celebrations and family coordination"
-      }
+        description: "Latino traditions with family coordination"
+      },
+      andMore: "...and any other sacrament or sacramental your parish celebrates"
     },
     howItWorks: {
       sectionTitle: "From Planning to Celebration",
@@ -529,28 +530,29 @@ const translations = {
       }
     },
     sacraments: {
-      sectionTitle: "Gestiona Cada Sacramento y Sacramental",
-      sectionSubtitle: "Flujos de trabajo dedicados para cada tipo de sacramento y sacramental que tu parroquia celebra.",
+      sectionTitle: "Crea Cualquier Tipo de Evento que Tu Parroquia Necesite",
+      sectionSubtitle: "Define tipos de eventos personalizados con formularios, guiones y flujos de trabajo adaptados. Estos son algunos ejemplos de lo que las parroquias crean:",
       weddings: {
         title: "Bodas",
-        description: "Novia, novio, planificación de ceremonia y detalles de celebración"
+        description: "Seguimiento de novia, novio, testigos y todos los detalles de la ceremonia"
       },
       funerals: {
         title: "Funerales",
-        description: "Planificación de memorial, apoyo familiar y preparación litúrgica"
+        description: "Coordina familia, liturgia y servicios conmemorativos"
       },
       baptisms: {
         title: "Bautismos",
-        description: "Bautismos individuales y grupales, clases de preparación, seguimiento de padrinos"
+        description: "Gestiona individuos o grupos con seguimiento de padrinos"
       },
       quinceaneras: {
         title: "Quinceañeras",
-        description: "Planificación de celebración cultural y preparación litúrgica"
+        description: "Celebraciones culturales con elementos litúrgicos personalizados"
       },
       presentations: {
         title: "Presentaciones",
-        description: "Celebraciones de tradición latina y coordinación familiar"
-      }
+        description: "Tradiciones latinas con coordinación familiar"
+      },
+      andMore: "...y cualquier otro sacramento o sacramental que tu parroquia celebre"
     },
     howItWorks: {
       sectionTitle: "Desde la Planificación hasta la Celebración",
@@ -1176,6 +1178,10 @@ function HomeContent() {
               </CardContent>
             </Card>
           </div>
+
+          <p className="text-center text-lg text-muted-foreground italic pt-4">
+            {t.sacraments.andMore}
+          </p>
             </div>
           </div>
         </div>

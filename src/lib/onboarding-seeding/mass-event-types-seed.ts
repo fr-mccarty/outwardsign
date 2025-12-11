@@ -1,0 +1,240 @@
+/**
+ * Mass Event Types Seed Data - Onboarding data for Mass templating
+ *
+ * This module creates starter Mass event types for new parishes with:
+ * - Sunday Mass event type (with hymns, announcements, intentions)
+ * - Daily Mass event type (minimal fields)
+ * - Input field definitions for each type
+ * - Default scripts with sections
+ *
+ * These event types enable the Mass templating feature where Masses
+ * can be linked to event types for custom fields and script generation.
+ */
+
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+/**
+ * Seeds Mass event types for a new parish with starter templates
+ *
+ * @param supabase - Any Supabase client (server, service role, etc.)
+ * @param parishId - The parish ID to seed data for
+ */
+export async function seedMassEventTypesForParish(supabase: SupabaseClient, parishId: string) {
+  const createdEventTypes: { id: string; name: string }[] = []
+
+  // =====================================================
+  // 1. Create Sunday Mass Event Type
+  // =====================================================
+  const { data: sundayMassType, error: sundayMassTypeError } = await supabase
+    .from('event_types')
+    .insert({
+      parish_id: parishId,
+      name: 'Sunday Mass',
+      description: 'Sunday celebration with full music and announcements',
+      icon: 'Church',
+      slug: 'sunday-mass',
+      order: 100 // After other event types
+    })
+    .select()
+    .single()
+
+  if (sundayMassTypeError) {
+    console.error('Error creating Sunday Mass event type:', sundayMassTypeError)
+    throw new Error(`Failed to create Sunday Mass event type: ${sundayMassTypeError.message}`)
+  }
+
+  createdEventTypes.push({ id: sundayMassType.id, name: 'Sunday Mass' })
+
+  // Create input field definitions for Sunday Mass
+  const sundayMassFields = [
+    { name: 'Announcements', type: 'rich_text', required: false, order: 1 },
+    { name: 'Entrance Hymn', type: 'text', required: false, order: 2 },
+    { name: 'Offertory Hymn', type: 'text', required: false, order: 3 },
+    { name: 'Communion Hymn', type: 'text', required: false, order: 4 },
+    { name: 'Recessional Hymn', type: 'text', required: false, order: 5 },
+    { name: 'Mass Intentions', type: 'mass-intention', required: false, order: 6 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 7 }
+  ]
+
+  const { error: sundayFieldsError } = await supabase
+    .from('input_field_definitions')
+    .insert(
+      sundayMassFields.map(field => ({
+        event_type_id: sundayMassType.id,
+        name: field.name,
+        type: field.type,
+        required: field.required,
+        order: field.order
+      }))
+    )
+
+  if (sundayFieldsError) {
+    console.error('Error creating Sunday Mass input fields:', sundayFieldsError)
+    throw new Error(`Failed to create Sunday Mass input fields: ${sundayFieldsError.message}`)
+  }
+
+  // Create Presider Script for Sunday Mass
+  const { data: sundayScript, error: sundayScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: sundayMassType.id,
+      name: 'Presider Script',
+      description: 'Complete script for the presider with all Mass details',
+      order: 1
+    })
+    .select()
+    .single()
+
+  if (sundayScriptError) {
+    console.error('Error creating Sunday Mass script:', sundayScriptError)
+    throw new Error(`Failed to create Sunday Mass script: ${sundayScriptError.message}`)
+  }
+
+  // Create sections for Sunday Mass Presider Script
+  const sundayScriptSections = [
+    {
+      name: 'Mass Information',
+      order: 1,
+      content: {
+        en: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{Mass Intentions}}',
+        es: '# Información de la Misa\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n\n## Intenciones de la Misa\n{{Mass Intentions}}'
+      }
+    },
+    {
+      name: 'Music',
+      order: 2,
+      content: {
+        en: '# Music\n\n**Entrance:** {{Entrance Hymn}}\n**Offertory:** {{Offertory Hymn}}\n**Communion:** {{Communion Hymn}}\n**Recessional:** {{Recessional Hymn}}',
+        es: '# Música\n\n**Entrada:** {{Entrance Hymn}}\n**Ofertorio:** {{Offertory Hymn}}\n**Comunión:** {{Communion Hymn}}\n**Salida:** {{Recessional Hymn}}'
+      }
+    },
+    {
+      name: 'Announcements',
+      order: 3,
+      content: {
+        en: '# Announcements\n\n{{Announcements}}',
+        es: '# Anuncios\n\n{{Announcements}}'
+      }
+    },
+    {
+      name: 'Special Instructions',
+      order: 4,
+      content: {
+        en: '# Special Instructions\n\n{{Special Instructions}}',
+        es: '# Instrucciones Especiales\n\n{{Special Instructions}}'
+      }
+    }
+  ]
+
+  const { error: sundaySectionsError } = await supabase
+    .from('sections')
+    .insert(
+      sundayScriptSections.map(section => ({
+        script_id: sundayScript.id,
+        name: section.name,
+        order: section.order,
+        content: section.content
+      }))
+    )
+
+  if (sundaySectionsError) {
+    console.error('Error creating Sunday Mass script sections:', sundaySectionsError)
+    throw new Error(`Failed to create Sunday Mass script sections: ${sundaySectionsError.message}`)
+  }
+
+  // =====================================================
+  // 2. Create Daily Mass Event Type
+  // =====================================================
+  const { data: dailyMassType, error: dailyMassTypeError } = await supabase
+    .from('event_types')
+    .insert({
+      parish_id: parishId,
+      name: 'Daily Mass',
+      description: 'Weekday celebration with minimal music',
+      icon: 'CalendarDays',
+      slug: 'daily-mass',
+      order: 101
+    })
+    .select()
+    .single()
+
+  if (dailyMassTypeError) {
+    console.error('Error creating Daily Mass event type:', dailyMassTypeError)
+    throw new Error(`Failed to create Daily Mass event type: ${dailyMassTypeError.message}`)
+  }
+
+  createdEventTypes.push({ id: dailyMassType.id, name: 'Daily Mass' })
+
+  // Create input field definitions for Daily Mass (minimal)
+  const dailyMassFields = [
+    { name: 'Mass Intentions', type: 'mass-intention', required: false, order: 1 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 2 }
+  ]
+
+  const { error: dailyFieldsError } = await supabase
+    .from('input_field_definitions')
+    .insert(
+      dailyMassFields.map(field => ({
+        event_type_id: dailyMassType.id,
+        name: field.name,
+        type: field.type,
+        required: field.required,
+        order: field.order
+      }))
+    )
+
+  if (dailyFieldsError) {
+    console.error('Error creating Daily Mass input fields:', dailyFieldsError)
+    throw new Error(`Failed to create Daily Mass input fields: ${dailyFieldsError.message}`)
+  }
+
+  // Create Presider Script for Daily Mass
+  const { data: dailyScript, error: dailyScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: dailyMassType.id,
+      name: 'Presider Script',
+      description: 'Simple script for weekday Mass',
+      order: 1
+    })
+    .select()
+    .single()
+
+  if (dailyScriptError) {
+    console.error('Error creating Daily Mass script:', dailyScriptError)
+    throw new Error(`Failed to create Daily Mass script: ${dailyScriptError.message}`)
+  }
+
+  // Create sections for Daily Mass Presider Script
+  const dailyScriptSections = [
+    {
+      name: 'Mass Information',
+      order: 1,
+      content: {
+        en: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{Mass Intentions}}\n\n## Special Instructions\n{{Special Instructions}}',
+        es: '# Información de la Misa\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n\n## Intenciones de la Misa\n{{Mass Intentions}}\n\n## Instrucciones Especiales\n{{Special Instructions}}'
+      }
+    }
+  ]
+
+  const { error: dailySectionsError } = await supabase
+    .from('sections')
+    .insert(
+      dailyScriptSections.map(section => ({
+        script_id: dailyScript.id,
+        name: section.name,
+        order: section.order,
+        content: section.content
+      }))
+    )
+
+  if (dailySectionsError) {
+    console.error('Error creating Daily Mass script sections:', dailySectionsError)
+    throw new Error(`Failed to create Daily Mass script sections: ${dailySectionsError.message}`)
+  }
+
+  return {
+    success: true,
+    eventTypes: createdEventTypes
+  }
+}

@@ -139,6 +139,7 @@ export function ScriptBuilderClient({
 }: ScriptBuilderClientProps) {
   const router = useRouter()
   const [scriptName, setScriptName] = useState(script.name)
+  const [scriptDescription, setScriptDescription] = useState(script.description || '')
   const [sections, setSections] = useState<Section[]>(script.sections)
   const [isSaving, setIsSaving] = useState(false)
   const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false)
@@ -184,7 +185,7 @@ export function ScriptBuilderClient({
     }
   }
 
-  const handleSaveScriptName = async () => {
+  const handleSaveScriptSettings = async () => {
     if (!scriptName.trim()) {
       toast.error('Script name is required')
       return
@@ -192,16 +193,21 @@ export function ScriptBuilderClient({
 
     setIsSaving(true)
     try {
-      await updateScript(script.id, { name: scriptName })
-      toast.success('Script name updated successfully')
+      await updateScript(script.id, {
+        name: scriptName,
+        description: scriptDescription || null
+      })
+      toast.success('Script settings updated successfully')
       router.refresh()
     } catch (error) {
-      console.error('Failed to update script name:', error)
-      toast.error('Failed to update script name')
+      console.error('Failed to update script settings:', error)
+      toast.error('Failed to update script settings')
     } finally {
       setIsSaving(false)
     }
   }
+
+  const hasSettingsChanged = scriptName !== script.name || scriptDescription !== (script.description || '')
 
   const handleAddSection = () => {
     setSelectedSection(undefined)
@@ -253,24 +259,31 @@ export function ScriptBuilderClient({
       </div>
 
       <div className="space-y-6">
-        {/* Script Name Section */}
+        {/* Script Settings Section */}
         <FormSectionCard title="Script Settings">
-          <div className="flex gap-3 items-end">
-            <div className="flex-1">
-              <FormInput
-                id="script-name"
-                label="Script Name"
-                value={scriptName}
-                onChange={setScriptName}
-                required
-                placeholder="e.g., English Program, Spanish Program"
+          <div className="space-y-4">
+            <FormInput
+              id="script-name"
+              label="Script Name"
+              value={scriptName}
+              onChange={setScriptName}
+              required
+              placeholder="e.g., English Program, Spanish Program"
+            />
+            <FormInput
+              id="script-description"
+              label="Description"
+              value={scriptDescription}
+              onChange={setScriptDescription}
+              placeholder="Brief description of this script's purpose"
+            />
+            <div className="flex justify-end">
+              <SaveButton
+                isLoading={isSaving}
+                onClick={handleSaveScriptSettings}
+                disabled={!hasSettingsChanged}
               />
             </div>
-            <SaveButton
-              isLoading={isSaving}
-              onClick={handleSaveScriptName}
-              disabled={scriptName === script.name}
-            />
           </div>
         </FormSectionCard>
 

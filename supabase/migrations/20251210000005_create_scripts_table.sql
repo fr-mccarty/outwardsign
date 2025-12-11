@@ -6,6 +6,7 @@ CREATE TABLE scripts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_type_id UUID NOT NULL REFERENCES event_types(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+  description TEXT,
   "order" INTEGER NOT NULL,
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

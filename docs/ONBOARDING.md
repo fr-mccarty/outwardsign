@@ -112,7 +112,7 @@ populateInitialParishData()
   ├── INSERT petition_templates
   ├── INSERT group_roles
   ├── INSERT mass_roles
-  ├── INSERT mass_types
+  ├── INSERT event_types (including Mass event types)
   ├── INSERT mass_roles_templates + mass_roles_template_items
   └── INSERT mass_times_templates + mass_times_template_items
         │
@@ -124,7 +124,7 @@ Redirect to /dashboard
 
 - `src/app/onboarding/page.tsx` - New user onboarding UI
 - `src/app/select-parish/create-parish-form.tsx` - Additional parish creation UI
-- `src/lib/seeding/parish-seed-data.ts` - **Shared seed data logic** (used by both onboarding and dev scripts)
+- `src/lib/onboarding-seeding/parish-seed-data.ts` - **Shared seed data logic** (used by both onboarding and dev scripts)
 - `src/lib/actions/setup.ts` - Server actions including `populateInitialParishData()` wrapper
 - `src/lib/auth/parish.ts` - Parish authentication utilities
 - `scripts/dev-seed.ts` - Development seeding script (uses shared seeding logic)

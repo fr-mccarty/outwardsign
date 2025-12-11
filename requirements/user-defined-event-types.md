@@ -567,7 +567,6 @@ All existing tables need a `deleted_at TIMESTAMPTZ` column for soft delete suppo
 - user_settings
 - readings
 - masses
-- mass_types
 - mass_roles
 - mass_role_members
 - mass_role_templates

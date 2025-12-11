@@ -116,7 +116,7 @@ Separate from the main "Application" group, settings appear in their own group a
 4. **Group Baptisms** - Group baptism celebrations with multiple children baptized together
 5. **Presentations** - Presentation of children in the temple (Latino tradition)
 6. **Quinceañeras** - Quinceañera celebrations
-7. **Masses** - Mass celebrations
+7. **Masses** - Mass celebrations with optional event type templating for custom fields and scripts
 8. **Mass Intentions** - Mass intention requests and tracking *(Admin-only, not available for staff or ministry-leader roles)*
 
 ### Planned Modules (Not Yet Implemented)
@@ -238,6 +238,63 @@ Each module uses specific status constants from `src/lib/constants.ts`. Modules 
 - **Contains:** All status labels from all three sets (MODULE, MASS, MASS_INTENTION)
 
 **Important:** Database entity interfaces should use module-specific status types (`MassStatus`, `MassIntentionStatus`), not the combined constant. See [🔴 Data Model Interfaces vs. Filter Interfaces](./CODE_CONVENTIONS.md#-data-model-interfaces-vs-filter-interfaces) for details.
+
+---
+
+## Mass Event Type Integration
+
+**The Masses module supports optional event type templating** for custom fields and scripts, allowing parishes to customize Mass data collection and document generation.
+
+### Key Features
+
+- **Optional Integration**: Masses can link to an event type template via `event_type_id` (nullable)
+- **Custom Fields**: Event types define custom input fields (announcements, hymns, intentions, special instructions, etc.)
+- **Scripts & Export**: Event types define scripts (presider script, music director sheet, bulletin insert) with PDF, Word, Print, and Text export
+- **Backward Compatible**: Masses without event types continue to work with base fields only
+
+### Architecture
+
+**Hybrid Model:**
+- Masses remain a **separate module** with their own table (`masses`) and Mass-specific features
+- Masses **share the event_types templating system** with dynamic events for custom fields and scripts
+- Mass-specific features (scheduling wizard, role assignment, liturgical calendar integration) continue to work unchanged
+
+### Database Schema
+
+**New Columns in `masses` table:**
+- `event_type_id` (UUID, nullable) - Foreign key to `event_types.id`
+- `field_values` (JSONB) - Stores custom field data from event type template
+
+### New Input Field Types
+
+Two new input field types were added specifically for Masses:
+
+1. **`mass-intention`** - Textarea component for Mass intentions (free text, 4-6 rows)
+2. **`spacer`** - Visual section divider with heading (non-data field for form organization)
+
+See [FORMS.md](./FORMS.md#mass-specific-input-field-types) for rendering details.
+
+### User Workflow
+
+1. **Admin creates Mass event type** in Settings → Event Types (e.g., "Sunday Mass", "Daily Mass", "Funeral Mass")
+2. **Admin adds custom fields** to event type (hymns, intentions, announcements, etc.)
+3. **Admin creates scripts** with sections and placeholders for the event type
+4. **Staff creates Mass** and optionally selects an event type template
+5. **Staff fills in custom fields** defined by the event type
+6. **Staff exports scripts** to PDF, Word, or Print for presider/music director/bulletin
+
+### Export Integration
+
+Mass scripts use the existing event_types export infrastructure:
+- **API Routes**: `/api/masses/[id]/pdf`, `/api/masses/[id]/word`, `/api/masses/[id]/text`
+- **Print View**: `/print/masses/[id]`
+- **Placeholder Resolution**: Placeholders like `{{Presider}}`, `{{Opening Hymn}}`, `{{Mass Intentions}}` are replaced with actual Mass data
+
+### References
+
+- **Requirements**: `/requirements/2025-12-11-mass-templating-via-event-types.md`
+- **Forms Documentation**: [FORMS.md](./FORMS.md#mass-specific-input-field-types)
+- **Liturgical Script System**: [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)
 
 ---
 
@@ -411,7 +468,6 @@ All primary modules follow the **standard 9-file architecture** with these route
 | Module | Database Table | Singular Form |
 |--------|---------------|---------------|
 | **Mass Times Templates** | `mass_times_templates` | `mass_times_template` |
-| **Mass Types** | `mass_types` | `mass_type` |
 | **Mass Role Templates** | `mass_role_templates` | `mass_role_template` |
 | **Mass Roles** | `mass_roles` | `mass_role` |
 | **Mass Role Members** | `mass_role_members` | `mass_role_member` |

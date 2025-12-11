@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { seedParishData } from '@/lib/seeding/parish-seed-data'
+import { seedParishData } from '@/lib/onboarding-seeding/parish-seed-data'
 import { createParishSchema, updateParishSchema, type CreateParishData, type UpdateParishData } from '@/lib/schemas/parishes'
 
 /**

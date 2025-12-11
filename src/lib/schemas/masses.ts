@@ -10,6 +10,8 @@ export const createMassSchema = z.object({
   liturgical_event_id: z.string().uuid().optional().nullable(),
   mass_roles_template_id: z.string().uuid().optional().nullable(),
   mass_template_id: z.string().optional().nullable(),
+  event_type_id: z.string().uuid().optional().nullable(),
+  field_values: z.record(z.string(), z.any()).optional().nullable(),
   liturgical_color: z.enum(LITURGICAL_COLOR_VALUES).optional().nullable(),
   petitions: z.string().optional().nullable(),
   announcements: z.string().optional().nullable(),

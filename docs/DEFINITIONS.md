@@ -144,6 +144,8 @@ Custom lists are shared across event types within a parish, so a "Responsorial P
 
 A Script is an ordered collection of sections that together form a printable document for an event. Scripts are attached to event types, and each event type can have multiple scripts. For example, a Wedding event type might have an "English Wedding Program" script and a "Spanish Wedding Program" script.
 
+Each script has a name (e.g., "Presider Script", "English Program") and an optional description that explains its purpose. The description helps staff understand what each script is for, especially when an event type has multiple scripts.
+
 Scripts serve as templates for generating documents like worship aids, programs, bulletins, or any printed material needed for the celebration of an event. When staff view an individual event, they can preview and export any of the scripts defined for that event's type, with all the placeholder fields replaced with the actual event data.
 
 Scripts can be exported in multiple formats: PDF for high-quality printing, Word document for further editing, a print-optimized HTML view, or plain text. This flexibility allows parishes to use the generated documents however works best for their workflow.

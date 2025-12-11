@@ -24,6 +24,8 @@ export type InputFieldType =
   | 'datetime'        // JSON datetime string (ISO 8601)
   | 'number'          // JSON number
   | 'yes_no'          // JSON boolean
+  | 'mass-intention'  // JSON string (Mass intentions textarea)
+  | 'spacer'          // Non-data field (visual section divider)
 
 /**
  * Event Type
@@ -120,6 +122,7 @@ export interface Script {
   id: string
   event_type_id: string
   name: string                    // e.g., "English Program", "Spanish Program"
+  description: string | null      // Optional description of the script
   order: number                   // Display order in UI
   deleted_at: string | null
   created_at: string
@@ -288,11 +291,13 @@ export interface UpdateCustomListItemData {
 export interface CreateScriptData {
   event_type_id: string
   name: string
+  description?: string | null
   // order calculated automatically
 }
 
 export interface UpdateScriptData {
   name?: string
+  description?: string | null
 }
 
 export interface CreateSectionData {

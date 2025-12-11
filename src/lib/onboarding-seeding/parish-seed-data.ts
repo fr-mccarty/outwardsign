@@ -10,6 +10,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { seedEventTypesForParish } from './event-types-seed'
+import { seedMassEventTypesForParish } from './mass-event-types-seed'
 import { seedContentTagsForParish } from './content-tags-seed'
 
 // Import petition templates
@@ -120,33 +121,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
-  // 5. Seed Mass Types
-  // =====================================================
-  const defaultMassTypes = [
-    { name: 'Sunday Day', display_order: 1 },
-    { name: 'Sunday Vigil', display_order: 2 },
-    { name: 'Sunday Vigil - Spanish', display_order: 3 },
-  ]
-
-  const { error: massTypesError } = await supabase
-    .from('mass_types')
-    .insert(
-      defaultMassTypes.map((mt) => ({
-        parish_id: parishId,
-        name: mt.name,
-        display_order: mt.display_order,
-        is_system: false,
-        active: true,
-      }))
-    )
-
-  if (massTypesError) {
-    console.error('Error creating default mass types:', massTypesError)
-    throw new Error(`Failed to create default mass types: ${massTypesError.message}`)
-  }
-
-  // =====================================================
-  // 6. Seed Mass Role Template
+  // 5. Seed Mass Role Template
   // =====================================================
   const roleMap = new Map((massRoles || []).map((r) => [r.name, r.id]))
 
@@ -340,6 +315,16 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
+  // 8b. Seed Mass Event Types (Sunday Mass, Daily Mass)
+  // =====================================================
+  const massEventTypesResult = await seedMassEventTypesForParish(supabase, parishId)
+
+  if (!massEventTypesResult.success) {
+    console.error('Error seeding Mass event types')
+    throw new Error('Failed to seed Mass event types')
+  }
+
+  // =====================================================
   // 9. Seed Content Tags
   // =====================================================
   await seedContentTagsForParish(supabase, parishId)
@@ -400,6 +385,6 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     petitionTemplates: petitionTemplates || [],
     groupRoles: groupRoles || [],
     massRoles: massRoles || [],
-    eventTypes: userDefinedEventTypesResult.eventTypes
+    eventTypes: [...userDefinedEventTypesResult.eventTypes, ...massEventTypesResult.eventTypes]
   }
 }

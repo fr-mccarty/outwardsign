@@ -102,8 +102,7 @@ async function executeTool(
             id,
             date,
             time,
-            mass_type,
-            location
+            name
           )
         `
         )
@@ -117,9 +116,8 @@ async function executeTool(
         .map((a: any) => ({
           date: a.mass.date,
           time: a.mass.time,
-          type: a.mass.mass_type,
+          name: a.mass.name,
           role: a.role,
-          location: a.mass.location,
         }))
 
       if (!filteredAssignments || filteredAssignments.length === 0) {
@@ -166,7 +164,7 @@ async function executeTool(
       // Get the mass for that date
       const { data: mass } = await supabase
         .from('masses')
-        .select('id, date, time, mass_type, first_reading, responsorial_psalm, second_reading, gospel')
+        .select('id, date, time, name, first_reading, responsorial_psalm, second_reading, gospel')
         .eq('date', date)
         .order('time', { ascending: true })
         .limit(1)
@@ -183,7 +181,7 @@ async function executeTool(
         message: `Readings for ${date}`,
         date: mass.date,
         time: mass.time,
-        type: mass.mass_type,
+        name: mass.name,
         readings: {
           first_reading: mass.first_reading,
           psalm: mass.responsorial_psalm,

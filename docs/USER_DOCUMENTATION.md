@@ -48,9 +48,11 @@ src/app/documentation/
 │       └── page.tsx           # Dynamic markdown page renderer
 └── content/                    # Markdown content files
     ├── en/                    # English documentation
-    │   ├── faq.md
-    │   ├── for-developers.md
-    │   ├── sponsor.md
+    │   ├── contact.md         # Contact information
+    │   ├── faq.md             # Frequently asked questions
+    │   ├── for-developers.md  # Developer contribution guide
+    │   ├── sponsor.md         # Sponsorship information
+    │   ├── support.md         # Support the project
     │   ├── getting-started/
     │   │   ├── introduction.md
     │   │   ├── quick-start.md
@@ -61,12 +63,22 @@ src/app/documentation/
     │   │   ├── people.md
     │   │   └── events.md
     │   └── features/
+    │       ├── baptisms.md
+    │       ├── groups.md
+    │       ├── mass-intentions.md
+    │       ├── mass-scheduling.md
+    │       ├── masses.md
+    │       ├── parishioner-portal.md
+    │       ├── presentations.md
+    │       ├── quinceaneras.md
     │       ├── weddings.md
-    │       └── masses.md
+    │       └── weekend-summary.md
     └── es/                    # Spanish documentation (mirrors en/)
+        ├── contact.md
         ├── faq.md
         ├── for-developers.md
         ├── sponsor.md
+        ├── support.md
         ├── getting-started/
         │   ├── introduction.md
         │   ├── quick-start.md
@@ -77,8 +89,16 @@ src/app/documentation/
         │   ├── people.md
         │   └── events.md
         └── features/
+            ├── baptisms.md
+            ├── groups.md
+            ├── mass-intentions.md
+            ├── mass-scheduling.md
+            ├── masses.md
+            ├── parishioner-portal.md
+            ├── presentations.md
+            ├── quinceaneras.md
             ├── weddings.md
-            └── masses.md
+            └── weekend-summary.md
 ```
 
 **Components:**
@@ -118,8 +138,12 @@ Organize documentation into logical categories:
 
 1. **getting-started/** - Onboarding, setup, initial configuration
 2. **user-guides/** - Role-based guides, workflows, common tasks
-3. **features/** - Specific feature documentation (weddings, masses, etc.)
-4. **Top-level files** - FAQ, developer guides, sponsorship info
+3. **features/** - Specific feature documentation:
+   - Sacraments: baptisms, weddings, masses
+   - Sacramentals: presentations, quinceaneras
+   - Organization: groups, mass-scheduling, mass-intentions, weekend-summary
+   - Portals: parishioner-portal
+4. **Top-level files** - FAQ, contact, support, developer guides, sponsorship info
 
 ---
 
@@ -244,6 +268,23 @@ interface NavItem {
   items?: NavItem[]  // Sub-items (creates collapsible section)
 }
 ```
+
+### Current Navigation Structure
+
+The sidebar currently includes these sections:
+
+| Section | Icon | Type | Description |
+|---------|------|------|-------------|
+| Home | `Home` | Direct link | Documentation landing page |
+| Getting Started | `RocketIcon` | Expandable | Introduction, Quick Start, Parish Setup |
+| User Guides | `Users` | Expandable | Staff Guide, Inviting Staff, People, Events |
+| Features | `Sparkles` | Expandable | Weddings, Mass Intentions (expandable for more) |
+| FAQ | `FileQuestion` | Direct link | Frequently asked questions |
+| Contact Us | `Mail` | Direct link | Contact information |
+| Support the Project | `HandHeart` | Direct link | Support/donation page |
+| For Developers | `Code` | Direct link | Developer contribution guide |
+
+**Note:** The Features section in the sidebar may not include all available feature documentation. Additional features (baptisms, presentations, quinceaneras, groups, mass-scheduling, parishioner-portal, weekend-summary) exist in the content directory but may need to be added to the sidebar navigation.
 
 ### Adding a New Category
 
@@ -739,5 +780,5 @@ Pages are statically generated at build time using `generateStaticParams()`.
 
 ---
 
-**Last Updated:** 2025-11-15
+**Last Updated:** 2025-12-11
 **Maintained By:** Outward Sign Development Team
