@@ -18,6 +18,7 @@ export default function OnboardingPage() {
   const [parishName, setParishName] = useState('')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
+  const [country, setCountry] = useState('')
   const [loading, setLoading] = useState(false)
   const [preparing, setPreparing] = useState(false)
   const [error, setError] = useState('')
@@ -66,7 +67,8 @@ export default function OnboardingPage() {
       const result = await createParishWithSuperAdmin({
         name: parishName,
         city,
-        state
+        state: state || undefined,
+        country
       })
 
       if (!result.success || !result.parishId) {
@@ -181,10 +183,15 @@ export default function OnboardingPage() {
                 label="State"
                 value={state}
                 onChange={setState}
+                placeholder="e.g., Massachusetts"
+              />
+              <FormInput
+                id="country"
+                label="Country"
+                value={country}
+                onChange={setCountry}
                 required
-                placeholder="e.g., MA"
-                maxLength={2}
-                description="Two-letter state code"
+                placeholder="e.g., United States"
               />
 
               {error && (

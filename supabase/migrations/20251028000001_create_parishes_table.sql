@@ -3,7 +3,8 @@ CREATE TABLE parishes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   city TEXT NOT NULL,
-  state TEXT NOT NULL,
+  state TEXT,
+  country TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ
 );

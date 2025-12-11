@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import {
   Bold,
   Italic,
@@ -17,13 +18,24 @@ import {
   ListOrdered,
   Type,
   ChevronDown,
+  Users,
+  Church,
 } from 'lucide-react'
+import { PARISH_PLACEHOLDERS } from '@/lib/utils/markdown-processor'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import type { InputFieldDefinition } from '@/lib/types'
 
@@ -45,6 +57,15 @@ export function MarkdownEditor({
   required,
 }: MarkdownEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Gendered text dialog state
+  const [genderedDialogOpen, setGenderedDialogOpen] = useState(false)
+  const [selectedPersonField, setSelectedPersonField] = useState<string | null>(null)
+  const [maleText, setMaleText] = useState('')
+  const [femaleText, setFemaleText] = useState('')
+
+  // Filter to only person-type fields for gendered text
+  const personFields = availableFields.filter(field => field.type === 'person')
 
   // Get current selection or cursor position
   const getSelection = () => {
@@ -139,6 +160,25 @@ export function MarkdownEditor({
   // Insert field placeholder
   const insertField = (fieldName: string) => {
     insertText(`{{${fieldName}}}`)
+  }
+
+  // Open gendered text dialog for a person field
+  const openGenderedDialog = (fieldName: string) => {
+    setSelectedPersonField(fieldName)
+    setMaleText('')
+    setFemaleText('')
+    setGenderedDialogOpen(true)
+  }
+
+  // Insert gendered text placeholder
+  const insertGenderedText = () => {
+    if (!selectedPersonField || !maleText.trim() || !femaleText.trim()) return
+
+    insertText(`{{${selectedPersonField} | ${maleText.trim()} | ${femaleText.trim()}}}`)
+    setGenderedDialogOpen(false)
+    setSelectedPersonField(null)
+    setMaleText('')
+    setFemaleText('')
   }
 
   return (
@@ -324,6 +364,67 @@ export function MarkdownEditor({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Insert Gendered Text dropdown - only show if there are person fields */}
+        {personFields.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                title="Insert Gendered Text"
+              >
+                <Users className="h-4 w-4 mr-1" />
+                Gendered Text
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto">
+              {personFields.map((field) => (
+                <DropdownMenuItem
+                  key={field.id}
+                  onClick={() => openGenderedDialog(field.name)}
+                >
+                  {field.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Insert Parish Info dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2"
+              title="Insert Parish Info"
+            >
+              <Church className="h-4 w-4 mr-1" />
+              Parish Info
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {PARISH_PLACEHOLDERS.map((placeholder) => (
+              <DropdownMenuItem
+                key={placeholder.key}
+                onClick={() => insertText(`{{${placeholder.key}}}`)}
+              >
+                <div className="flex flex-col">
+                  <span>{placeholder.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    e.g., {placeholder.example}
+                  </span>
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Textarea */}
@@ -347,10 +448,69 @@ export function MarkdownEditor({
           &quot;Insert Field&quot;
         </p>
         <p>
+          <strong>Parish Info:</strong> Use {"{{parish.name}}"}, {"{{parish.city}}"}, {"{{parish.state}}"}, or {"{{parish.city_state}}"} for parish details
+        </p>
+        <p>
+          <strong>Gendered Text:</strong> Use {"{{Person Field | male text | female text}}"} for gender-specific text
+        </p>
+        <p>
           <strong>Red Text:</strong> {"{red}"}text{"{/red}"} for liturgical
           instructions
         </p>
       </div>
+
+      {/* Gendered Text Dialog */}
+      <Dialog open={genderedDialogOpen} onOpenChange={setGenderedDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Insert Gendered Text</DialogTitle>
+            <DialogDescription>
+              Enter text variants based on the gender of &quot;{selectedPersonField}&quot;.
+              If gender is unknown, both options will be shown as &quot;male/female&quot;.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="male-text">Male Text</Label>
+              <Input
+                id="male-text"
+                value={maleText}
+                onChange={(e) => setMaleText(e.target.value)}
+                placeholder="e.g., él, his, him, el novio"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="female-text">Female Text</Label>
+              <Input
+                id="female-text"
+                value={femaleText}
+                onChange={(e) => setFemaleText(e.target.value)}
+                placeholder="e.g., ella, her, her, la novia"
+              />
+            </div>
+            <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
+              <strong>Preview:</strong>{' '}
+              {selectedPersonField && maleText && femaleText
+                ? `{{${selectedPersonField} | ${maleText} | ${femaleText}}}`
+                : '...'}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setGenderedDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={insertGenderedText}
+              disabled={!maleText.trim() || !femaleText.trim()}
+            >
+              Insert
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -197,7 +197,8 @@ async function seedDevData() {
       .insert({
         name: 'Development Parish',
         city: 'Dev City',
-        state: 'CA'
+        state: 'California',
+        country: 'United States'
       })
       .select()
       .single()
@@ -620,6 +621,377 @@ async function seedDevData() {
     }
 
     console.log(`   ✅ Uploaded avatar for ${samplePerson.firstName} ${samplePerson.lastName}`)
+  }
+
+  // =====================================================
+  // Create Sample Dynamic Events (2 per event type)
+  // =====================================================
+  console.log('')
+  console.log('📅 Creating sample events for each event type...')
+
+  // First, create or fetch locations for events
+  let churchLocation: { id: string } | null = null
+  let hallLocation: { id: string } | null = null
+  let funeralHomeLocation: { id: string } | null = null
+
+  // Check for existing locations
+  const { data: existingLocations } = await supabase
+    .from('locations')
+    .select('id, name')
+    .eq('parish_id', parishId)
+
+  if (existingLocations && existingLocations.length >= 3) {
+    churchLocation = existingLocations.find(l => l.name.includes('Church')) || existingLocations[0]
+    hallLocation = existingLocations.find(l => l.name.includes('Hall')) || existingLocations[1]
+    funeralHomeLocation = existingLocations.find(l => l.name.includes('Funeral')) || existingLocations[2]
+    console.log(`   ✅ Using ${existingLocations.length} existing locations`)
+  } else {
+    // Create locations if they don't exist
+    const locationsToCreate = [
+      {
+        parish_id: parishId,
+        name: "St. Mary's Catholic Church",
+        description: 'Main parish church and worship space',
+        street: '100 Church Street',
+        city: 'Springfield',
+        state: 'IL',
+        country: 'USA'
+      },
+      {
+        parish_id: parishId,
+        name: 'Parish Hall',
+        description: 'Parish event center and reception hall',
+        street: '102 Church Street',
+        city: 'Springfield',
+        state: 'IL',
+        country: 'USA'
+      },
+      {
+        parish_id: parishId,
+        name: 'Springfield Funeral Home',
+        description: 'Local funeral home for vigil services',
+        street: '500 Memorial Drive',
+        city: 'Springfield',
+        state: 'IL',
+        country: 'USA'
+      }
+    ]
+
+    const { data: newLocations, error: locationsError } = await supabase
+      .from('locations')
+      .insert(locationsToCreate)
+      .select()
+
+    if (locationsError) {
+      console.error('⚠️  Warning: Error creating locations:', locationsError.message)
+    } else if (newLocations && newLocations.length === 3) {
+      churchLocation = newLocations[0]
+      hallLocation = newLocations[1]
+      funeralHomeLocation = newLocations[2]
+      console.log(`   ✅ Created 3 sample locations`)
+    }
+  }
+
+  // Fetch all event types with their input field definitions
+  const { data: eventTypes } = await supabase
+    .from('event_types')
+    .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
+    .eq('parish_id', parishId)
+    .is('deleted_at', null)
+    .order('order')
+
+  if (!eventTypes || eventTypes.length === 0) {
+    console.log('   ⚠️  No event types found, skipping event creation')
+  } else if (!people || people.length < 10) {
+    console.log('   ⚠️  Not enough people to create events, skipping event creation')
+  } else {
+    // Helper to get future date
+    const getFutureDate = (daysFromNow: number) => {
+      const date = new Date()
+      date.setDate(date.getDate() + daysFromNow)
+      return date.toISOString().split('T')[0]
+    }
+
+    // Helper to get past date
+    const getPastDate = (daysAgo: number) => {
+      const date = new Date()
+      date.setDate(date.getDate() - daysAgo)
+      return date.toISOString().split('T')[0]
+    }
+
+    let totalEventsCreated = 0
+
+    for (const eventType of eventTypes) {
+      // Skip "Other" event type - it has no specific fields
+      if (eventType.slug === 'other') {
+        console.log(`   ⏭️  Skipping "${eventType.name}" (generic type)`)
+        continue
+      }
+
+      // Create 2 sample events based on event type
+      const eventsData: Array<{
+        field_values: Record<string, string | boolean>
+        occasion: { label: string; date: string; time: string; location_id: string | null }
+      }> = []
+
+      switch (eventType.slug) {
+        case 'weddings':
+          // Wedding 1: John Doe & Jane Smith
+          eventsData.push({
+            field_values: {
+              'Bride': people[1].id, // Jane Smith
+              'Groom': people[0].id, // John Doe
+              'Wedding Date': getFutureDate(45),
+              'Ceremony Location': churchLocation?.id || '',
+              'Presider': people[8].id, // James Anderson
+              'Reception Location': hallLocation?.id || '',
+              'First Reading': 'Genesis 2:18-24',
+              'Gospel Reading': 'John 2:1-11',
+              'Unity Candle': true,
+              'Special Instructions': 'Traditional ceremony with bilingual readings'
+            },
+            occasion: {
+              label: 'Wedding Ceremony',
+              date: getFutureDate(45),
+              time: '14:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          // Wedding 2: Maria Garcia & Bob Johnson
+          eventsData.push({
+            field_values: {
+              'Bride': people[3].id, // Maria Garcia
+              'Groom': people[2].id, // Bob Johnson
+              'Wedding Date': getFutureDate(90),
+              'Ceremony Location': churchLocation?.id || '',
+              'Presider': people[8].id,
+              'Reception Location': hallLocation?.id || '',
+              'First Reading': '1 Corinthians 13:1-13',
+              'Gospel Reading': 'Matthew 19:3-6',
+              'Unity Candle': false
+            },
+            occasion: {
+              label: 'Wedding Ceremony',
+              date: getFutureDate(90),
+              time: '11:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          break
+
+        case 'funerals':
+          // Funeral 1
+          eventsData.push({
+            field_values: {
+              'Deceased': people[10].id, // Robert Wilson
+              'Date of Death': getPastDate(3),
+              'Funeral Date': getFutureDate(2),
+              'Funeral Location': churchLocation?.id || '',
+              'Presider': people[8].id,
+              'Burial Location': funeralHomeLocation?.id || '',
+              'First Reading': 'Wisdom 3:1-9',
+              'Psalm': 'Psalm 23',
+              'Gospel Reading': 'John 14:1-6',
+              'Eulogy Speaker': people[11].id // Patricia Moore
+            },
+            occasion: {
+              label: 'Funeral Mass',
+              date: getFutureDate(2),
+              time: '10:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          // Funeral 2
+          eventsData.push({
+            field_values: {
+              'Deceased': people[12].id, // Thomas Lee
+              'Date of Death': getPastDate(1),
+              'Funeral Date': getFutureDate(5),
+              'Funeral Location': churchLocation?.id || '',
+              'Presider': people[8].id,
+              'First Reading': 'Romans 8:31-39',
+              'Psalm': 'Psalm 116',
+              'Gospel Reading': 'John 11:17-27'
+            },
+            occasion: {
+              label: 'Funeral Mass',
+              date: getFutureDate(5),
+              time: '11:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          break
+
+        case 'baptisms':
+          // Baptism 1
+          eventsData.push({
+            field_values: {
+              'Child': people[4].id, // Michael Chen (used as placeholder)
+              'Mother': people[5].id, // Sarah Williams
+              'Father': people[6].id, // David Martinez
+              'Godmother': people[7].id, // Emily Taylor
+              'Godfather': people[8].id, // James Anderson
+              'Baptism Date': getFutureDate(14),
+              'Baptism Location': churchLocation?.id || '',
+              'Presider': people[0].id
+            },
+            occasion: {
+              label: 'Baptism',
+              date: getFutureDate(14),
+              time: '13:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          // Baptism 2
+          eventsData.push({
+            field_values: {
+              'Child': people[9].id, // Lisa Brown (placeholder)
+              'Mother': people[13].id, // Jennifer White
+              'Father': people[14].id, // Christopher Harris
+              'Godmother': people[15].id, // Linda Clark
+              'Godfather': people[16].id, // Daniel Rodriguez
+              'Baptism Date': getFutureDate(21),
+              'Baptism Location': churchLocation?.id || '',
+              'Presider': people[0].id
+            },
+            occasion: {
+              label: 'Baptism',
+              date: getFutureDate(21),
+              time: '14:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          break
+
+        case 'quinceaneras':
+          // Quinceañera 1
+          eventsData.push({
+            field_values: {
+              'Quinceañera': people[5].id, // Sarah Williams
+              'Mother': people[3].id, // Maria Garcia
+              'Father': people[6].id, // David Martinez
+              'Ceremony Date': getFutureDate(60),
+              'Ceremony Location': churchLocation?.id || '',
+              'Presider': people[0].id,
+              'Reception Location': hallLocation?.id || ''
+            },
+            occasion: {
+              label: 'Quinceañera Mass',
+              date: getFutureDate(60),
+              time: '15:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          // Quinceañera 2
+          eventsData.push({
+            field_values: {
+              'Quinceañera': people[7].id, // Emily Taylor
+              'Mother': people[11].id, // Patricia Moore
+              'Father': people[10].id, // Robert Wilson
+              'Ceremony Date': getFutureDate(75),
+              'Ceremony Location': churchLocation?.id || '',
+              'Presider': people[8].id,
+              'Reception Location': hallLocation?.id || ''
+            },
+            occasion: {
+              label: 'Quinceañera Mass',
+              date: getFutureDate(75),
+              time: '16:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          break
+
+        case 'presentations':
+          // Presentation 1
+          eventsData.push({
+            field_values: {
+              'Child': people[4].id, // Michael Chen (placeholder)
+              'Mother': people[1].id, // Jane Smith
+              'Father': people[0].id, // John Doe
+              'Godmother': people[3].id, // Maria Garcia
+              'Godfather': people[2].id, // Bob Johnson
+              'Presentation Date': getFutureDate(30),
+              'Presentation Location': churchLocation?.id || '',
+              'Presider': people[8].id
+            },
+            occasion: {
+              label: 'Presentation',
+              date: getFutureDate(30),
+              time: '12:00:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          // Presentation 2
+          eventsData.push({
+            field_values: {
+              'Child': people[9].id, // Lisa Brown (placeholder)
+              'Mother': people[15].id, // Linda Clark
+              'Father': people[16].id, // Daniel Rodriguez
+              'Godmother': people[17].id, // Barbara Lewis
+              'Godfather': people[18].id, // Matthew Walker
+              'Presentation Date': getFutureDate(35),
+              'Presentation Location': churchLocation?.id || '',
+              'Presider': people[0].id
+            },
+            occasion: {
+              label: 'Presentation',
+              date: getFutureDate(35),
+              time: '11:30:00',
+              location_id: churchLocation?.id || null
+            }
+          })
+          break
+
+        default:
+          console.log(`   ⏭️  Unknown event type slug: ${eventType.slug}`)
+          continue
+      }
+
+      // Insert events and occasions
+      for (const eventData of eventsData) {
+        // Create the event
+        const { data: newEvent, error: eventError } = await supabase
+          .from('dynamic_events')
+          .insert({
+            parish_id: parishId,
+            event_type_id: eventType.id,
+            field_values: eventData.field_values
+          })
+          .select()
+          .single()
+
+        if (eventError) {
+          console.error(`   ❌ Error creating ${eventType.name} event:`, eventError.message)
+          continue
+        }
+
+        // Create the primary occasion
+        const { error: occasionError } = await supabase
+          .from('occasions')
+          .insert({
+            event_id: newEvent.id,
+            label: eventData.occasion.label,
+            date: eventData.occasion.date,
+            time: eventData.occasion.time,
+            location_id: eventData.occasion.location_id,
+            is_primary: true
+          })
+
+        if (occasionError) {
+          console.error(`   ❌ Error creating occasion for ${eventType.name}:`, occasionError.message)
+          // Clean up the event
+          await supabase.from('dynamic_events').delete().eq('id', newEvent.id)
+          continue
+        }
+
+        totalEventsCreated++
+      }
+
+      console.log(`   ✅ Created 2 ${eventType.name} events`)
+    }
+
+    console.log(`   📊 Total events created: ${totalEventsCreated}`)
   }
 
   console.log('')

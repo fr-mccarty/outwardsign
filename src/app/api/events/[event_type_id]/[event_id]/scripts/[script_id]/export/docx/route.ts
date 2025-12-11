@@ -5,15 +5,17 @@
  * {{Field Name}} placeholders with actual event data.
  *
  * Route: /api/events/[event_type_id]/[event_id]/scripts/[script_id]/export/docx
+ * Note: event_type_id can be either a UUID or a slug
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, PageBreak } from 'docx'
-import { replacePlaceholders, extractTextSegments } from '@/lib/utils/markdown-renderer'
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, PageBreak, AlignmentType } from 'docx'
+import { replacePlaceholders } from '@/lib/utils/markdown-renderer'
 import type { RenderMarkdownOptions } from '@/lib/utils/markdown-renderer'
-import { resolveFieldEntities } from '@/lib/utils/resolve-field-entities'
+import { getEventWithRelations } from '@/lib/actions/dynamic-events'
+import { getScriptWithSections } from '@/lib/actions/scripts'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
 import { marked } from 'marked'
 
 // Liturgical red color (without # prefix for Word)
@@ -45,13 +47,14 @@ async function markdownToWordParagraphs(
   const paragraphs: Paragraph[] = []
 
   for (const line of lines) {
-    // Handle headings
+    // Handle headings - all centered to match HTML view
     if (line.startsWith('<h1>')) {
       const text = line.replace(/<\/?h1>/g, '')
       paragraphs.push(
         new Paragraph({
           children: createStyledTextRuns(text, 18),
           heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
           spacing: {
             before: 12 * POINT_TO_TWIP,
             after: 6 * POINT_TO_TWIP
@@ -64,6 +67,7 @@ async function markdownToWordParagraphs(
         new Paragraph({
           children: createStyledTextRuns(text, 16),
           heading: HeadingLevel.HEADING_2,
+          alignment: AlignmentType.CENTER,
           spacing: {
             before: 10 * POINT_TO_TWIP,
             after: 5 * POINT_TO_TWIP
@@ -76,6 +80,7 @@ async function markdownToWordParagraphs(
         new Paragraph({
           children: createStyledTextRuns(text, 14),
           heading: HeadingLevel.HEADING_3,
+          alignment: AlignmentType.CENTER,
           spacing: {
             before: 8 * POINT_TO_TWIP,
             after: 4 * POINT_TO_TWIP
@@ -87,13 +92,14 @@ async function markdownToWordParagraphs(
       paragraphs.push(
         new Paragraph({
           children: createStyledTextRuns(text, 11),
+          alignment: AlignmentType.JUSTIFIED,
           spacing: {
             after: 6 * POINT_TO_TWIP
           }
         })
       )
-    } else if (line.startsWith('<ul>') || line.startsWith('<ol>')) {
-      // Handle lists - simplified for now
+    } else if (line.startsWith('<ul>') || line.startsWith('<ol>') || line.startsWith('</ul>') || line.startsWith('</ol>')) {
+      // Skip list container tags
       continue
     } else if (line.startsWith('<li>')) {
       const text = line.replace(/<\/?li>/g, '')
@@ -115,6 +121,22 @@ async function markdownToWordParagraphs(
           }
         })
       )
+    } else if (line.startsWith('</')) {
+      // Skip any other closing tags
+      continue
+    } else if (line.startsWith('<')) {
+      // Handle any other HTML tag by stripping it and keeping content
+      const strippedText = line.replace(/<[^>]*>/g, '').trim()
+      if (strippedText) {
+        paragraphs.push(
+          new Paragraph({
+            children: createStyledTextRuns(strippedText, 11),
+            spacing: {
+              after: 3 * POINT_TO_TWIP
+            }
+          })
+        )
+      }
     } else if (line.trim()) {
       // Plain text line
       paragraphs.push(
@@ -132,19 +154,110 @@ async function markdownToWordParagraphs(
 }
 
 /**
- * Creates styled text runs from content with {red}text{/red} syntax
+ * Creates styled text runs from content with inline formatting
+ * Handles: <strong>, <b>, <em>, <i>, {red}...{/red}
+ * Also strips: <a> tags (converting to plain text)
  */
 function createStyledTextRuns(text: string, fontSize: number): TextRun[] {
-  const segments = extractTextSegments(text)
+  // First, strip <a> tags but keep their text content
+  const cleanedText = text.replace(/<a[^>]*>(.*?)<\/a>/g, '$1')
 
-  return segments.map(segment =>
+  // If no formatting, return simple text run
+  if (!/<\/?(?:strong|b|em|i)>/.test(cleanedText) && !/{red}/.test(cleanedText)) {
+    return [
+      new TextRun({
+        text: cleanedText,
+        font: FONT_FAMILY,
+        size: fontSize * POINT_TO_HALF_POINT
+      })
+    ]
+  }
+
+  const runs: TextRun[] = []
+
+  // Regex to match formatting tags
+  const tagPattern = /<(strong|b|em|i)>(.*?)<\/\1>|\{red\}(.*?)\{\/red\}/g
+  let lastIndex = 0
+  let match
+
+  // Reset regex
+  tagPattern.lastIndex = 0
+
+  while ((match = tagPattern.exec(cleanedText)) !== null) {
+    // Add text before this match
+    if (match.index > lastIndex) {
+      const beforeText = cleanedText.slice(lastIndex, match.index)
+      if (beforeText) {
+        runs.push(
+          new TextRun({
+            text: beforeText,
+            font: FONT_FAMILY,
+            size: fontSize * POINT_TO_HALF_POINT
+          })
+        )
+      }
+    }
+
+    if (match[1]) {
+      // HTML tag match: match[1] is tag name, match[2] is content
+      const tagName = match[1].toLowerCase()
+      const content = match[2]
+
+      if (tagName === 'strong' || tagName === 'b') {
+        runs.push(
+          new TextRun({
+            text: content,
+            font: FONT_FAMILY,
+            size: fontSize * POINT_TO_HALF_POINT,
+            bold: true
+          })
+        )
+      } else if (tagName === 'em' || tagName === 'i') {
+        runs.push(
+          new TextRun({
+            text: content,
+            font: FONT_FAMILY,
+            size: fontSize * POINT_TO_HALF_POINT,
+            italics: true
+          })
+        )
+      }
+    } else if (match[3] !== undefined) {
+      // Red tag match: match[3] is content
+      runs.push(
+        new TextRun({
+          text: match[3],
+          font: FONT_FAMILY,
+          size: fontSize * POINT_TO_HALF_POINT,
+          color: RED_COLOR
+        })
+      )
+    }
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after last match
+  if (lastIndex < cleanedText.length) {
+    const afterText = cleanedText.slice(lastIndex)
+    if (afterText) {
+      runs.push(
+        new TextRun({
+          text: afterText,
+          font: FONT_FAMILY,
+          size: fontSize * POINT_TO_HALF_POINT
+        })
+      )
+    }
+  }
+
+  return runs.length > 0 ? runs : [
     new TextRun({
-      text: segment.text,
+      text: cleanedText,
       font: FONT_FAMILY,
-      size: fontSize * POINT_TO_HALF_POINT,
-      color: segment.isRed ? RED_COLOR : undefined
+      size: fontSize * POINT_TO_HALF_POINT
     })
-  )
+  ]
 }
 
 /**
@@ -158,79 +271,74 @@ export async function GET(
     const params = await context.params
     const { event_type_id, event_id, script_id } = params
 
-    // Authenticate user
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      redirect('/login')
+    // Fetch event type by slug (server action handles auth)
+    const eventType = await getEventTypeBySlug(event_type_id)
+    if (!eventType) {
+      return NextResponse.json(
+        { error: 'Event type not found' },
+        { status: 404 }
+      )
     }
 
-    // Fetch event with related data
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select(`
-        *,
-        event_type:event_types (
-          id,
-          name,
-          icon
-        )
-      `)
-      .eq('id', event_id)
-      .single()
-
-    if (eventError || !event) {
+    // Fetch event with relations (server action handles auth)
+    const event = await getEventWithRelations(event_id)
+    if (!event) {
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
       )
     }
 
-    // Fetch script with sections
-    const { data: script, error: scriptError } = await supabase
-      .from('scripts')
-      .select(`
-        *,
-        sections (
-          id,
-          name,
-          content,
-          page_break_after,
-          order
-        )
-      `)
-      .eq('id', script_id)
-      .eq('event_type_id', event_type_id)
-      .single()
+    // Verify event belongs to correct event type
+    if (event.event_type_id !== eventType.id) {
+      return NextResponse.json(
+        { error: 'Event type mismatch' },
+        { status: 400 }
+      )
+    }
 
-    if (scriptError || !script) {
+    // Fetch script with sections (server action handles auth)
+    const script = await getScriptWithSections(script_id)
+    if (!script) {
       return NextResponse.json(
         { error: 'Script not found' },
         { status: 404 }
       )
     }
 
-    // Fetch input field definitions for the event type
-    const { data: inputFieldDefinitions, error: fieldsError } = await supabase
-      .from('input_field_definitions')
-      .select('*')
-      .eq('event_type_id', event_type_id)
-      .order('order', { ascending: true })
-
-    if (fieldsError) {
+    // Verify script belongs to event's event type
+    if (script.event_type_id !== eventType.id) {
       return NextResponse.json(
-        { error: 'Failed to fetch field definitions' },
-        { status: 500 }
+        { error: 'Script does not belong to this event type' },
+        { status: 400 }
       )
     }
 
-    // Resolve entities referenced in field_values (people, locations, groups, etc.)
-    const resolvedEntities = await resolveFieldEntities(
-      supabase,
-      event.field_values || {},
-      inputFieldDefinitions || []
-    )
+    // Fetch input field definitions (server action handles auth)
+    const inputFieldDefinitions = await getInputFieldDefinitions(eventType.id)
+
+    // Build resolved entities from event.resolved_fields
+    const resolvedEntities = {
+      people: {} as Record<string, any>,
+      locations: {} as Record<string, any>,
+      groups: {} as Record<string, any>,
+      listItems: {} as Record<string, any>,
+      documents: {} as Record<string, any>
+    }
+
+    // Populate resolvedEntities from event.resolved_fields
+    if (event.resolved_fields) {
+      for (const [, fieldData] of Object.entries(event.resolved_fields)) {
+        const typedFieldData = fieldData as { field_type: string; resolved_value: any; raw_value: any }
+        if (typedFieldData.field_type === 'person' && typedFieldData.resolved_value) {
+          resolvedEntities.people[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'location' && typedFieldData.resolved_value) {
+          resolvedEntities.locations[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'group' && typedFieldData.resolved_value) {
+          resolvedEntities.groups[typedFieldData.raw_value] = typedFieldData.resolved_value
+        }
+      }
+    }
 
     // Build Word paragraphs from sections
     const wordParagraphs: Paragraph[] = []
@@ -239,7 +347,7 @@ export async function GET(
     const sortedSections = (script.sections || []).sort((a: any, b: any) => a.order - b.order)
 
     for (const section of sortedSections) {
-      // Add section title
+      // Add section title - centered to match HTML view
       if (section.name) {
         wordParagraphs.push(
           new Paragraph({
@@ -251,6 +359,7 @@ export async function GET(
                 bold: true
               })
             ],
+            alignment: AlignmentType.CENTER,
             spacing: {
               before: 12 * POINT_TO_TWIP,
               after: 6 * POINT_TO_TWIP
@@ -264,6 +373,7 @@ export async function GET(
         fieldValues: event.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,
+        parish: event.parish,
         format: 'word'
       })
 

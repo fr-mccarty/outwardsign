@@ -13,7 +13,8 @@ export interface Parish {
   id: string
   name: string
   city: string
-  state: string
+  state?: string | null
+  country: string
   created_at: string
 }
 
@@ -189,7 +190,8 @@ export async function requireSelectedParish(): Promise<string> {
 export async function createParishWithSuperAdmin(parishData: {
   name: string
   city: string
-  state: string
+  state?: string
+  country: string
 }): Promise<{ success: boolean; parishId?: string; error?: string }> {
   const supabase = await createClient()
 
@@ -207,7 +209,8 @@ export async function createParishWithSuperAdmin(parishData: {
       p_user_id: user.id,
       p_name: parishData.name,
       p_city: parishData.city,
-      p_state: parishData.state
+      p_state: parishData.state || null,
+      p_country: parishData.country || null
     })
 
     if (error) {

@@ -4,7 +4,8 @@ CREATE OR REPLACE FUNCTION create_parish_with_admin(
   p_user_id UUID,
   p_name TEXT,
   p_city TEXT,
-  p_state TEXT
+  p_state TEXT DEFAULT NULL,
+  p_country TEXT DEFAULT NULL
 )
 RETURNS TABLE(parish_id UUID, success BOOLEAN, error_message TEXT)
 LANGUAGE plpgsql
@@ -27,8 +28,8 @@ BEGIN
   END IF;
 
   -- Create the parish
-  INSERT INTO parishes (name, city, state)
-  VALUES (p_name, p_city, p_state)
+  INSERT INTO parishes (name, city, state, country)
+  VALUES (p_name, p_city, p_state, p_country)
   RETURNING id INTO v_parish_id;
 
   -- Create the parish_users record with admin role

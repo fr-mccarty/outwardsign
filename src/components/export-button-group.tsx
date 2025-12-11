@@ -26,7 +26,9 @@ export function ExportButtonGroup({ eventTypeSlug, eventId, scriptId }: ExportBu
     try {
       const response = await fetch(`/api/events/${eventTypeSlug}/${eventId}/scripts/${scriptId}/export/pdf`)
       if (!response.ok) {
-        throw new Error('Failed to generate PDF')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('PDF export error:', response.status, errorData)
+        throw new Error(errorData.error || 'Failed to generate PDF')
       }
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -67,7 +69,7 @@ export function ExportButtonGroup({ eventTypeSlug, eventId, scriptId }: ExportBu
   }
 
   const handlePrint = () => {
-    window.open(`/print/events/${eventTypeSlug}/${eventId}/scripts/${scriptId}`, '_blank')
+    window.location.href = `/print/events/${eventTypeSlug}/${eventId}/scripts/${scriptId}`
   }
 
   const handleTextExport = async () => {

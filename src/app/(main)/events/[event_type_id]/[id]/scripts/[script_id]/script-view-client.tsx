@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
@@ -32,16 +32,30 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
     router.push(`/events/${eventTypeSlug}/${event.id}`)
   }
 
+  const handleEditScript = () => {
+    router.push(`/settings/event-types/${eventTypeSlug}/scripts/${script.id}`)
+  }
+
   // Action buttons for the sidebar
   const actionButtons = (
-    <Button
-      onClick={handleBackToEvent}
-      variant="outline"
-      className="w-full"
-    >
-      <ArrowLeft className="h-4 w-4 mr-2" />
-      Back to Event
-    </Button>
+    <div className="space-y-2">
+      <Button
+        onClick={handleEditScript}
+        variant="outline"
+        className="w-full"
+      >
+        <Pencil className="h-4 w-4 mr-2" />
+        Edit Script
+      </Button>
+      <Button
+        onClick={handleBackToEvent}
+        variant="outline"
+        className="w-full"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Event
+      </Button>
+    </div>
   )
 
   // Export buttons for the sidebar

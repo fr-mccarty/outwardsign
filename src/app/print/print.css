@@ -146,6 +146,34 @@ html {
     font-family: inherit;
   }
 
+  .script-print-content {
+    max-width: 21cm;
+    margin: 0 auto;
+    background: white !important;
+    color: black !important;
+    padding: 2.5cm 2cm;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    font-family: inherit;
+  }
+
+  .reading-section {
+    margin-bottom: 2rem;
+  }
+
+  .reading-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .reading-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: justify;
+  }
+
   .petitions-print-content {
     font-family: inherit;
   }

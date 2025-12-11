@@ -161,12 +161,22 @@ export interface Event {
 }
 
 /**
+ * Parish info for script placeholders
+ */
+export interface ParishInfo {
+  name: string
+  city: string
+  state: string
+}
+
+/**
  * Event with related data and resolved field values
  */
 export interface EventWithRelations extends Event {
   event_type: EventType
   occasions: Occasion[]
   resolved_fields: Record<string, ResolvedFieldValue>
+  parish?: ParishInfo
 }
 
 /**

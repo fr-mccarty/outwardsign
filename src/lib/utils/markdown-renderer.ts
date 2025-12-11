@@ -6,6 +6,13 @@
  *
  * Custom Syntax:
  * - {{Field Name}} - Placeholder for dynamic field values
+ * - {{Field Name | male_text | female_text}} - Gendered text based on person's gender
+ * - {{Field.property | male_text | female_text}} - Gendered text with property access
+ *   - If person is male → outputs male_text
+ *   - If person is female → outputs female_text
+ *   - If gender unknown → outputs "male_text/female_text"
+ *   - Only works for person-type fields
+ *   - Examples: {{Bride | él | ella}}, {{Deceased.first_name | his | her}}
  * - {red}text{/red} - Red text (liturgical color #c41e3a)
  *
  * This uses marked.js for markdown parsing.
@@ -25,6 +32,15 @@ export interface ResolvedFieldValue {
 }
 
 /**
+ * Parish info for placeholders
+ */
+export interface ParishInfo {
+  name: string
+  city: string
+  state: string
+}
+
+/**
  * Options for rendering markdown
  */
 export interface RenderMarkdownOptions {
@@ -40,6 +56,8 @@ export interface RenderMarkdownOptions {
     listItems?: Record<string, any>
     documents?: Record<string, any>
   }
+  /** Parish info for parish placeholders */
+  parish?: ParishInfo
   /** Output format - affects how custom syntax is converted */
   format?: 'html' | 'pdf' | 'word' | 'text'
 }
@@ -72,20 +90,62 @@ function parseRedText(content: string, format: 'html' | 'pdf' | 'word' | 'text')
 }
 
 /**
- * Replaces {{Field Name}} placeholders with actual values
+ * Resolves parish placeholder to display string
+ */
+function resolveParishPlaceholder(
+  placeholder: string,
+  parish?: ParishInfo
+): string {
+  if (!parish) {
+    return 'empty'
+  }
+
+  switch (placeholder) {
+    case 'parish.name':
+      return parish.name || 'empty'
+    case 'parish.city':
+      return parish.city || 'empty'
+    case 'parish.state':
+      return parish.state || 'empty'
+    case 'parish.city_state':
+      if (parish.city && parish.state) {
+        return `${parish.city}, ${parish.state}`
+      }
+      return parish.city || parish.state || 'empty'
+    default:
+      return 'empty'
+  }
+}
+
+/**
+ * Replaces {{Field Name}}, {{Field Name | male | female}}, and {{parish.*}} placeholders with actual values
  */
 export function replacePlaceholders(
   content: string,
   options: RenderMarkdownOptions
 ): string {
-  const { fieldValues, inputFieldDefinitions, resolvedEntities } = options
+  const { fieldValues, inputFieldDefinitions, resolvedEntities, parish } = options
 
-  // Find all {{Field Name}} placeholders
+  // Find all {{...}} placeholders (supports both simple and gendered syntax)
   const placeholderRegex = /\{\{([^}]+)\}\}/g
 
-  return content.replace(placeholderRegex, (match, fieldName) => {
-    // Trim whitespace from field name
-    const cleanFieldName = fieldName.trim()
+  return content.replace(placeholderRegex, (match, innerContent) => {
+    // Check if this is a gendered placeholder: {{Field Name | male_text | female_text}}
+    const parts = innerContent.split('|').map((p: string) => p.trim())
+
+    if (parts.length === 3) {
+      // Gendered syntax: {{Field Name | male_text | female_text}}
+      const [fieldName, maleText, femaleText] = parts
+      return resolveGenderedText(fieldName, maleText, femaleText, fieldValues, inputFieldDefinitions, resolvedEntities)
+    }
+
+    // Simple syntax: {{Field Name}} or {{parish.*}}
+    const cleanFieldName = parts[0]
+
+    // Check for parish placeholders
+    if (cleanFieldName.startsWith('parish.')) {
+      return resolveParishPlaceholder(cleanFieldName, parish)
+    }
 
     // Find the field definition
     const fieldDef = inputFieldDefinitions.find(
@@ -108,6 +168,70 @@ export function replacePlaceholders(
     // Convert value to display string based on field type
     return getDisplayValue(rawValue, fieldDef, resolvedEntities)
   })
+}
+
+/**
+ * Resolves gendered text based on a person field's gender
+ *
+ * Supports two formats:
+ * - {{FieldName | male | female}} - Uses the field's person for gender lookup
+ * - {{FieldName.property | male | female}} - Uses the field's person for gender, ignores property
+ *
+ * @param fieldRef - The field reference (e.g., "Bride" or "Bride.first_name")
+ * @param maleText - Text to use if person is male
+ * @param femaleText - Text to use if person is female
+ * @returns The appropriate text based on gender, or "maleText/femaleText" if unknown
+ */
+function resolveGenderedText(
+  fieldRef: string,
+  maleText: string,
+  femaleText: string,
+  fieldValues: Record<string, any>,
+  inputFieldDefinitions: InputFieldDefinition[],
+  resolvedEntities?: RenderMarkdownOptions['resolvedEntities']
+): string {
+  // Extract the base field name (before any dot notation)
+  const fieldName = fieldRef.split('.')[0]
+
+  // Find the field definition
+  const fieldDef = inputFieldDefinitions.find(def => def.name === fieldName)
+
+  if (!fieldDef) {
+    // Field not found - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // This only works for person-type fields
+  if (fieldDef.type !== 'person') {
+    // Not a person field - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // Get the person ID from field values
+  const personId = fieldValues[fieldName]
+
+  if (!personId) {
+    // No person selected - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // Look up the person to get their sex
+  const person = resolvedEntities?.people?.[personId]
+
+  if (!person || !person.sex) {
+    // Person not found or sex not set - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // Return text based on sex (uppercase in database)
+  if (person.sex === 'MALE') {
+    return maleText
+  } else if (person.sex === 'FEMALE') {
+    return femaleText
+  }
+
+  // Unknown sex value - return both options
+  return `${maleText}/${femaleText}`
 }
 
 /**

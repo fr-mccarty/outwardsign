@@ -5,16 +5,18 @@
  * {{Field Name}} placeholders with actual event data.
  *
  * Route: /api/events/[event_type_id]/[event_id]/scripts/[script_id]/export/pdf
+ * Note: event_type_id can be either a UUID or a slug
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import PdfPrinter from 'pdfmake'
 import { TDocumentDefinitions, Content } from 'pdfmake/interfaces'
-import { replacePlaceholders, extractTextSegments } from '@/lib/utils/markdown-renderer'
+import { replacePlaceholders } from '@/lib/utils/markdown-renderer'
 import type { RenderMarkdownOptions } from '@/lib/utils/markdown-renderer'
-import { resolveFieldEntities } from '@/lib/utils/resolve-field-entities'
+import { getEventWithRelations } from '@/lib/actions/dynamic-events'
+import { getScriptWithSections } from '@/lib/actions/scripts'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
 import { marked } from 'marked'
 
 // Define fonts for pdfmake
@@ -54,52 +56,69 @@ async function markdownToPdfContent(
   const pdfContent: Content[] = []
 
   for (const line of lines) {
-    // Handle headings
+    // Handle headings - all centered to match HTML view
     if (line.startsWith('<h1>')) {
       const text = line.replace(/<\/?h1>/g, '')
       pdfContent.push({
-        text: extractAndApplyRedText(text),
+        text: parseInlineFormatting(text),
         fontSize: 18,
         bold: true,
+        alignment: 'center' as const,
         margin: [0, 12, 0, 6] as [number, number, number, number]
       })
     } else if (line.startsWith('<h2>')) {
       const text = line.replace(/<\/?h2>/g, '')
       pdfContent.push({
-        text: extractAndApplyRedText(text),
+        text: parseInlineFormatting(text),
         fontSize: 16,
         bold: true,
+        alignment: 'center' as const,
         margin: [0, 10, 0, 5] as [number, number, number, number]
       })
     } else if (line.startsWith('<h3>')) {
       const text = line.replace(/<\/?h3>/g, '')
       pdfContent.push({
-        text: extractAndApplyRedText(text),
+        text: parseInlineFormatting(text),
         fontSize: 14,
         bold: true,
+        alignment: 'center' as const,
         margin: [0, 8, 0, 4] as [number, number, number, number]
       })
     } else if (line.startsWith('<p>')) {
       const text = line.replace(/<\/?p>/g, '')
       pdfContent.push({
-        text: extractAndApplyRedText(text),
+        text: parseInlineFormatting(text),
         fontSize: 11,
+        alignment: 'justify' as const,
         margin: [0, 0, 0, 6] as [number, number, number, number]
       })
-    } else if (line.startsWith('<ul>') || line.startsWith('<ol>')) {
-      // Handle lists - simplified for now
+    } else if (line.startsWith('<ul>') || line.startsWith('<ol>') || line.startsWith('</ul>') || line.startsWith('</ol>')) {
+      // Skip list container tags
       continue
     } else if (line.startsWith('<li>')) {
       const text = line.replace(/<\/?li>/g, '')
       pdfContent.push({
-        text: ['• ', extractAndApplyRedText(text)],
+        text: ['• ', parseInlineFormatting(text)],
         fontSize: 11,
         margin: [20, 0, 0, 3] as [number, number, number, number]
       })
+    } else if (line.startsWith('</')) {
+      // Skip any other closing tags
+      continue
+    } else if (line.startsWith('<')) {
+      // Handle any other HTML tag by stripping it and keeping content
+      const strippedText = line.replace(/<[^>]*>/g, '').trim()
+      if (strippedText) {
+        pdfContent.push({
+          text: parseInlineFormatting(strippedText),
+          fontSize: 11,
+          margin: [0, 0, 0, 3] as [number, number, number, number]
+        })
+      }
     } else if (line.trim()) {
       // Plain text line
       pdfContent.push({
-        text: extractAndApplyRedText(line),
+        text: parseInlineFormatting(line),
         fontSize: 11,
         margin: [0, 0, 0, 3] as [number, number, number, number]
       })
@@ -110,21 +129,71 @@ async function markdownToPdfContent(
 }
 
 /**
- * Extracts {red}text{/red} and converts to pdfmake inline styles
+ * Parses inline HTML/formatting and converts to pdfmake text runs
+ * Handles: <strong>, <b>, <em>, <i>, {red}...{/red}
+ * Also strips: <a> tags (converting to plain text)
  */
-function extractAndApplyRedText(text: string): any {
-  const segments = extractTextSegments(text)
+function parseInlineFormatting(text: string): any {
+  // First, strip <a> tags but keep their text content
+  let cleanedText = text.replace(/<a[^>]*>(.*?)<\/a>/g, '$1')
 
-  if (segments.length === 1 && !segments[0].isRed) {
-    // No red text, return as plain string
-    return text
+  // If no formatting, return plain text
+  if (!/<\/?(?:strong|b|em|i)>/.test(cleanedText) && !/{red}/.test(cleanedText)) {
+    return cleanedText
   }
 
-  // Multiple segments or has red text, return as array
-  return segments.map(segment => ({
-    text: segment.text,
-    color: segment.isRed ? RED_COLOR : undefined
-  }))
+  const segments: Array<{ text: string; bold?: boolean; italics?: boolean; color?: string }> = []
+
+  // Regex to match formatting tags
+  const tagPattern = /<(strong|b|em|i)>(.*?)<\/\1>|\{red\}(.*?)\{\/red\}/g
+  let lastIndex = 0
+  let match
+
+  // Reset regex
+  tagPattern.lastIndex = 0
+
+  while ((match = tagPattern.exec(cleanedText)) !== null) {
+    // Add text before this match
+    if (match.index > lastIndex) {
+      const beforeText = cleanedText.slice(lastIndex, match.index)
+      if (beforeText) {
+        segments.push({ text: beforeText })
+      }
+    }
+
+    if (match[1]) {
+      // HTML tag match: match[1] is tag name, match[2] is content
+      const tagName = match[1].toLowerCase()
+      const content = match[2]
+
+      if (tagName === 'strong' || tagName === 'b') {
+        segments.push({ text: content, bold: true })
+      } else if (tagName === 'em' || tagName === 'i') {
+        segments.push({ text: content, italics: true })
+      }
+    } else if (match[3] !== undefined) {
+      // Red tag match: match[3] is content
+      segments.push({ text: match[3], color: RED_COLOR })
+    }
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after last match
+  if (lastIndex < cleanedText.length) {
+    const afterText = cleanedText.slice(lastIndex)
+    if (afterText) {
+      segments.push({ text: afterText })
+    }
+  }
+
+  // If only one segment with no special formatting, return as string
+  if (segments.length === 1 && !segments[0].bold && !segments[0].italics && !segments[0].color) {
+    return segments[0].text
+  }
+
+  // Return array of text runs for pdfmake
+  return segments.length > 0 ? segments : cleanedText
 }
 
 /**
@@ -138,79 +207,74 @@ export async function GET(
     const params = await context.params
     const { event_type_id, event_id, script_id } = params
 
-    // Authenticate user
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      redirect('/login')
+    // Fetch event type by slug (server action handles auth)
+    const eventType = await getEventTypeBySlug(event_type_id)
+    if (!eventType) {
+      return NextResponse.json(
+        { error: 'Event type not found' },
+        { status: 404 }
+      )
     }
 
-    // Fetch event with related data
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select(`
-        *,
-        event_type:event_types (
-          id,
-          name,
-          icon
-        )
-      `)
-      .eq('id', event_id)
-      .single()
-
-    if (eventError || !event) {
+    // Fetch event with relations (server action handles auth)
+    const event = await getEventWithRelations(event_id)
+    if (!event) {
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
       )
     }
 
-    // Fetch script with sections
-    const { data: script, error: scriptError } = await supabase
-      .from('scripts')
-      .select(`
-        *,
-        sections (
-          id,
-          name,
-          content,
-          page_break_after,
-          order
-        )
-      `)
-      .eq('id', script_id)
-      .eq('event_type_id', event_type_id)
-      .single()
+    // Verify event belongs to correct event type
+    if (event.event_type_id !== eventType.id) {
+      return NextResponse.json(
+        { error: 'Event type mismatch' },
+        { status: 400 }
+      )
+    }
 
-    if (scriptError || !script) {
+    // Fetch script with sections (server action handles auth)
+    const script = await getScriptWithSections(script_id)
+    if (!script) {
       return NextResponse.json(
         { error: 'Script not found' },
         { status: 404 }
       )
     }
 
-    // Fetch input field definitions for the event type
-    const { data: inputFieldDefinitions, error: fieldsError } = await supabase
-      .from('input_field_definitions')
-      .select('*')
-      .eq('event_type_id', event_type_id)
-      .order('order', { ascending: true })
-
-    if (fieldsError) {
+    // Verify script belongs to event's event type
+    if (script.event_type_id !== eventType.id) {
       return NextResponse.json(
-        { error: 'Failed to fetch field definitions' },
-        { status: 500 }
+        { error: 'Script does not belong to this event type' },
+        { status: 400 }
       )
     }
 
-    // Resolve entities referenced in field_values (people, locations, groups, etc.)
-    const resolvedEntities = await resolveFieldEntities(
-      supabase,
-      event.field_values || {},
-      inputFieldDefinitions || []
-    )
+    // Fetch input field definitions (server action handles auth)
+    const inputFieldDefinitions = await getInputFieldDefinitions(eventType.id)
+
+    // Build resolved entities from event.resolved_fields
+    const resolvedEntities = {
+      people: {} as Record<string, any>,
+      locations: {} as Record<string, any>,
+      groups: {} as Record<string, any>,
+      listItems: {} as Record<string, any>,
+      documents: {} as Record<string, any>
+    }
+
+    // Populate resolvedEntities from event.resolved_fields
+    if (event.resolved_fields) {
+      for (const [, fieldData] of Object.entries(event.resolved_fields)) {
+        const typedFieldData = fieldData as { field_type: string; resolved_value: any; raw_value: any }
+        if (typedFieldData.field_type === 'person' && typedFieldData.resolved_value) {
+          resolvedEntities.people[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'location' && typedFieldData.resolved_value) {
+          resolvedEntities.locations[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'group' && typedFieldData.resolved_value) {
+          resolvedEntities.groups[typedFieldData.raw_value] = typedFieldData.resolved_value
+        }
+      }
+    }
 
     // Build PDF content from sections
     const pdfContent: Content[] = []
@@ -219,12 +283,13 @@ export async function GET(
     const sortedSections = (script.sections || []).sort((a: any, b: any) => a.order - b.order)
 
     for (const section of sortedSections) {
-      // Add section title
+      // Add section title - centered to match HTML view
       if (section.name) {
         pdfContent.push({
           text: section.name,
           fontSize: 14,
           bold: true,
+          alignment: 'center' as const,
           margin: [0, 12, 0, 6] as [number, number, number, number]
         })
       }
@@ -234,6 +299,7 @@ export async function GET(
         fieldValues: event.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,
+        parish: event.parish,
         format: 'pdf'
       })
 
@@ -274,7 +340,7 @@ export async function GET(
     const pdfBuffer = Buffer.concat(chunks)
 
     // Generate filename
-    const filename = `${event.event_type?.name || 'Event'}-${script.name}-${event_id.substring(0, 8)}.pdf`
+    const filename = `${event.event_type.name}-${script.name}-${event_id.substring(0, 8)}.pdf`
 
     // Return PDF
     return new NextResponse(pdfBuffer as any, {

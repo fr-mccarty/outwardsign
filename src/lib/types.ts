@@ -736,10 +736,20 @@ export interface ResolvedFieldValue {
   resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | null
 }
 
+/**
+ * Parish info for script placeholders
+ */
+export interface ParishInfo {
+  name: string
+  city: string
+  state: string
+}
+
 export interface DynamicEventWithRelations extends DynamicEvent {
   event_type: DynamicEventType
   occasions: Occasion[]
   resolved_fields: Record<string, ResolvedFieldValue>
+  parish?: ParishInfo
 }
 
 export interface CreateDynamicEventData {

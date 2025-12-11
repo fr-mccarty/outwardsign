@@ -9,12 +9,13 @@
 -- IMPORTANT: This is for development only. In production, users/parishes are created through the application.
 
 -- Create a default test parish
-INSERT INTO parishes (id, name, city, state, created_at)
+INSERT INTO parishes (id, name, city, state, country, created_at)
 VALUES (
   '00000000-0000-0000-0000-000000000001'::UUID,
   'St. Mary''s Catholic Church',
   'Springfield',
   'Illinois',
+  'United States',
   now()
 )
 ON CONFLICT (id) DO NOTHING;

@@ -10,9 +10,27 @@ import type { EventWithRelations, ResolvedFieldValue } from '@/lib/types/event-t
 import { formatDatePretty } from '@/lib/utils/formatters'
 
 /**
- * Replace {{Field Name}} placeholders in content with actual values from event data
+ * Parish placeholder fields available in templates
+ */
+export const PARISH_PLACEHOLDERS = [
+  { key: 'parish.name', label: 'Parish Name', example: 'St. Mary Catholic Church' },
+  { key: 'parish.city', label: 'Parish City', example: 'Austin' },
+  { key: 'parish.state', label: 'Parish State', example: 'TX' },
+  { key: 'parish.city_state', label: 'City, State', example: 'Austin, TX' },
+] as const
+
+/**
+ * Replace {{Field Name}} and {{Field Name | male | female}} placeholders in content
  *
- * @param content - Markdown content with {{Field Name}} placeholders
+ * Supports three syntaxes:
+ * - {{Field Name}} - Simple field value replacement
+ * - {{Field Name | male_text | female_text}} - Gendered text based on person's gender
+ *   - If male → outputs male_text
+ *   - If female → outputs female_text
+ *   - If unknown → outputs "male_text/female_text"
+ * - {{parish.name}}, {{parish.city}}, {{parish.state}}, {{parish.city_state}} - Parish info
+ *
+ * @param content - Markdown content with placeholders
  * @param event - Event with resolved field values
  * @returns Content with all placeholders replaced
  */
@@ -20,67 +38,178 @@ export function replaceFieldPlaceholders(
   content: string,
   event: EventWithRelations
 ): string {
-  // Regex to find all {{Field Name}} patterns
+  // Regex to find all {{...}} patterns
   const placeholderRegex = /\{\{([^}]+)\}\}/g
 
-  return content.replace(placeholderRegex, (match, fieldName) => {
-    // Trim whitespace from field name
-    const trimmedFieldName = fieldName.trim()
+  return content.replace(placeholderRegex, (match, innerContent) => {
+    // Check for gendered syntax: {{Field Name | male_text | female_text}}
+    const parts = innerContent.split('|').map((p: string) => p.trim())
+
+    if (parts.length === 3) {
+      // Gendered syntax
+      const [fieldName, maleText, femaleText] = parts
+      return resolveGenderedText(fieldName, maleText, femaleText, event)
+    }
+
+    // Simple syntax: {{Field Name}} or {{parish.*}}
+    const trimmedFieldName = parts[0]
+
+    // Check for parish placeholders
+    if (trimmedFieldName.startsWith('parish.')) {
+      return resolveParishPlaceholder(trimmedFieldName, event)
+    }
 
     // Look up field in resolved_fields
-    const resolvedField: ResolvedFieldValue | undefined = event.resolved_fields[trimmedFieldName]
+    const resolvedField: ResolvedFieldValue | undefined = event.resolved_fields?.[trimmedFieldName]
 
     if (!resolvedField) {
       return 'empty'
     }
 
-    const { field_type, raw_value, resolved_value } = resolvedField
-
-    // Handle different field types
-    switch (field_type) {
-      case 'person':
-        // Use full_name from resolved person
-        return resolved_value?.full_name || 'empty'
-
-      case 'date':
-        // Format date using helper
-        return raw_value ? formatDatePretty(raw_value) : 'empty'
-
-      case 'location':
-        // Use location name
-        return resolved_value?.name || 'empty'
-
-      case 'group':
-        // Use group name
-        return resolved_value?.name || 'empty'
-
-      case 'event_link':
-        // For linked events, we might want to show a title or reference
-        // For now, just show 'empty' if no resolved value
-        return resolved_value ? String(resolved_value) : 'empty'
-
-      case 'list_item':
-        // Use the value from the custom list item
-        return resolved_value?.value || 'empty'
-
-      case 'document':
-        // Use the filename
-        return resolved_value?.file_name || 'empty'
-
-      case 'text':
-      case 'rich_text':
-      case 'number':
-      case 'yes_no':
-      case 'time':
-      case 'datetime':
-      default:
-        // For all other types, convert raw_value to string
-        if (raw_value === null || raw_value === undefined || raw_value === '') {
-          return 'empty'
-        }
-        return String(raw_value)
-    }
+    return resolveFieldValue(resolvedField)
   })
+}
+
+/**
+ * Resolve parish placeholder to display string
+ *
+ * @param placeholder - The parish placeholder (e.g., "parish.name")
+ * @param event - Event with parish info
+ * @returns The resolved parish value or 'empty'
+ */
+function resolveParishPlaceholder(
+  placeholder: string,
+  event: EventWithRelations
+): string {
+  const parish = event.parish
+
+  if (!parish) {
+    return 'empty'
+  }
+
+  switch (placeholder) {
+    case 'parish.name':
+      return parish.name || 'empty'
+    case 'parish.city':
+      return parish.city || 'empty'
+    case 'parish.state':
+      return parish.state || 'empty'
+    case 'parish.city_state':
+      if (parish.city && parish.state) {
+        return `${parish.city}, ${parish.state}`
+      }
+      return parish.city || parish.state || 'empty'
+    default:
+      return 'empty'
+  }
+}
+
+/**
+ * Resolve a single field value to display string
+ */
+function resolveFieldValue(resolvedField: ResolvedFieldValue): string {
+  const { field_type, raw_value, resolved_value } = resolvedField
+
+  // Handle different field types
+  switch (field_type) {
+    case 'person':
+      // Use full_name from resolved person
+      return resolved_value?.full_name || 'empty'
+
+    case 'date':
+      // Format date using helper
+      return raw_value ? formatDatePretty(raw_value) : 'empty'
+
+    case 'location':
+      // Use location name
+      return resolved_value?.name || 'empty'
+
+    case 'group':
+      // Use group name
+      return resolved_value?.name || 'empty'
+
+    case 'event_link':
+      // For linked events, we might want to show a title or reference
+      // For now, just show 'empty' if no resolved value
+      return resolved_value ? String(resolved_value) : 'empty'
+
+    case 'list_item':
+      // Use the value from the custom list item
+      return resolved_value?.value || 'empty'
+
+    case 'document':
+      // Use the filename
+      return resolved_value?.file_name || 'empty'
+
+    case 'text':
+    case 'rich_text':
+    case 'number':
+    case 'yes_no':
+    case 'time':
+    case 'datetime':
+    default:
+      // For all other types, convert raw_value to string
+      if (raw_value === null || raw_value === undefined || raw_value === '') {
+        return 'empty'
+      }
+      return String(raw_value)
+  }
+}
+
+/**
+ * Resolve gendered text based on a person field's gender
+ *
+ * Supports two formats:
+ * - {{FieldName | male | female}} - Uses the field's person for gender lookup
+ * - {{FieldName.property | male | female}} - Uses the field's person for gender, ignores property
+ *
+ * @param fieldRef - The field reference (e.g., "Bride" or "Bride.first_name")
+ * @param maleText - Text to use if person is male
+ * @param femaleText - Text to use if person is female
+ * @param event - Event with resolved field values
+ * @returns The appropriate text based on gender, or "maleText/femaleText" if unknown
+ */
+function resolveGenderedText(
+  fieldRef: string,
+  maleText: string,
+  femaleText: string,
+  event: EventWithRelations
+): string {
+  // Extract the base field name (before any dot notation)
+  const fieldName = fieldRef.split('.')[0]
+
+  // Look up the field in resolved_fields
+  const resolvedField: ResolvedFieldValue | undefined = event.resolved_fields?.[fieldName]
+
+  if (!resolvedField) {
+    // Field not found - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // This only works for person-type fields
+  if (resolvedField.field_type !== 'person') {
+    // Not a person field - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // Get the person's gender from resolved_value
+  const person = resolvedField.resolved_value
+  const gender = person?.gender
+
+  if (!gender) {
+    // Gender not set - return both options
+    return `${maleText}/${femaleText}`
+  }
+
+  // Return text based on gender
+  if (gender === 'male') {
+    return maleText
+  } else if (gender === 'female') {
+    return femaleText
+  }
+
+  // Unknown gender value - return both options
+  return `${maleText}/${femaleText}`
 }
 
 /**

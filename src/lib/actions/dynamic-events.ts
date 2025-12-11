@@ -346,7 +346,7 @@ export async function getEvent(id: string): Promise<DynamicEvent | null> {
 }
 
 /**
- * Get event with all related data (event type, occasions, resolved field values)
+ * Get event with all related data (event type, occasions, resolved field values, parish)
  */
 export async function getEventWithRelations(id: string): Promise<DynamicEventWithRelations | null> {
   const selectedParishId = await requireSelectedParish()
@@ -370,8 +370,8 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
     throw new Error('Failed to fetch event')
   }
 
-  // Fetch event type with input field definitions in parallel with occasions
-  const [eventTypeData, occasionsData] = await Promise.all([
+  // Fetch event type, occasions, and parish in parallel
+  const [eventTypeData, occasionsData, parishData] = await Promise.all([
     supabase
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -385,7 +385,12 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
       .eq('event_id', id)
       .is('deleted_at', null)
       .order('date', { ascending: true })
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('parishes')
+      .select('name, city, state')
+      .eq('id', selectedParishId)
+      .single()
   ])
 
   if (eventTypeData.error) {
@@ -492,7 +497,12 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
     ...event,
     event_type: eventType,
     occasions,
-    resolved_fields: resolvedFields
+    resolved_fields: resolvedFields,
+    parish: parishData.data ? {
+      name: parishData.data.name,
+      city: parishData.data.city,
+      state: parishData.data.state
+    } : undefined
   }
 }
 

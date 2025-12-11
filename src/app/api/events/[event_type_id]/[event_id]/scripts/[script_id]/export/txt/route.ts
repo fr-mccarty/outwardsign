@@ -6,13 +6,15 @@
  * as-is, and {red} tags are removed.
  *
  * Route: /api/events/[event_type_id]/[event_id]/scripts/[script_id]/export/txt
+ * Note: event_type_id can be either a UUID or a slug
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { renderMarkdownToText } from '@/lib/utils/markdown-renderer'
-import { resolveFieldEntities } from '@/lib/utils/resolve-field-entities'
+import { getEventWithRelations } from '@/lib/actions/dynamic-events'
+import { getScriptWithSections } from '@/lib/actions/scripts'
+import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getInputFieldDefinitions } from '@/lib/actions/input-field-definitions'
 
 /**
  * GET handler for plain text export
@@ -25,79 +27,74 @@ export async function GET(
     const params = await context.params
     const { event_type_id, event_id, script_id } = params
 
-    // Authenticate user
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      redirect('/login')
+    // Fetch event type by slug (server action handles auth)
+    const eventType = await getEventTypeBySlug(event_type_id)
+    if (!eventType) {
+      return NextResponse.json(
+        { error: 'Event type not found' },
+        { status: 404 }
+      )
     }
 
-    // Fetch event with related data
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select(`
-        *,
-        event_type:event_types (
-          id,
-          name,
-          icon
-        )
-      `)
-      .eq('id', event_id)
-      .single()
-
-    if (eventError || !event) {
+    // Fetch event with relations (server action handles auth)
+    const event = await getEventWithRelations(event_id)
+    if (!event) {
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
       )
     }
 
-    // Fetch script with sections
-    const { data: script, error: scriptError } = await supabase
-      .from('scripts')
-      .select(`
-        *,
-        sections (
-          id,
-          name,
-          content,
-          page_break_after,
-          order
-        )
-      `)
-      .eq('id', script_id)
-      .eq('event_type_id', event_type_id)
-      .single()
+    // Verify event belongs to correct event type
+    if (event.event_type_id !== eventType.id) {
+      return NextResponse.json(
+        { error: 'Event type mismatch' },
+        { status: 400 }
+      )
+    }
 
-    if (scriptError || !script) {
+    // Fetch script with sections (server action handles auth)
+    const script = await getScriptWithSections(script_id)
+    if (!script) {
       return NextResponse.json(
         { error: 'Script not found' },
         { status: 404 }
       )
     }
 
-    // Fetch input field definitions for the event type
-    const { data: inputFieldDefinitions, error: fieldsError } = await supabase
-      .from('input_field_definitions')
-      .select('*')
-      .eq('event_type_id', event_type_id)
-      .order('order', { ascending: true })
-
-    if (fieldsError) {
+    // Verify script belongs to event's event type
+    if (script.event_type_id !== eventType.id) {
       return NextResponse.json(
-        { error: 'Failed to fetch field definitions' },
-        { status: 500 }
+        { error: 'Script does not belong to this event type' },
+        { status: 400 }
       )
     }
 
-    // Resolve entities referenced in field_values (people, locations, groups, etc.)
-    const resolvedEntities = await resolveFieldEntities(
-      supabase,
-      event.field_values || {},
-      inputFieldDefinitions || []
-    )
+    // Fetch input field definitions (server action handles auth)
+    const inputFieldDefinitions = await getInputFieldDefinitions(eventType.id)
+
+    // Build resolved entities from event.resolved_fields
+    const resolvedEntities = {
+      people: {} as Record<string, any>,
+      locations: {} as Record<string, any>,
+      groups: {} as Record<string, any>,
+      listItems: {} as Record<string, any>,
+      documents: {} as Record<string, any>
+    }
+
+    // Populate resolvedEntities from event.resolved_fields
+    if (event.resolved_fields) {
+      for (const [, fieldData] of Object.entries(event.resolved_fields)) {
+        const typedFieldData = fieldData as { field_type: string; resolved_value: any; raw_value: any }
+        if (typedFieldData.field_type === 'person' && typedFieldData.resolved_value) {
+          resolvedEntities.people[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'location' && typedFieldData.resolved_value) {
+          resolvedEntities.locations[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'group' && typedFieldData.resolved_value) {
+          resolvedEntities.groups[typedFieldData.raw_value] = typedFieldData.resolved_value
+        }
+      }
+    }
 
     // Build plain text output from sections
     let textOutput = ''
@@ -108,10 +105,15 @@ export async function GET(
     for (let i = 0; i < sortedSections.length; i++) {
       const section = sortedSections[i]
 
-      // Add section title
+      // Add section title - centered with underline
       if (section.name) {
-        textOutput += `${section.name}\n`
-        textOutput += '='.repeat(section.name.length) + '\n\n'
+        // Center the title (assuming ~70 char width for text files)
+        const lineWidth = 70
+        const padding = Math.max(0, Math.floor((lineWidth - section.name.length) / 2))
+        const centeredTitle = ' '.repeat(padding) + section.name
+        const centeredUnderline = ' '.repeat(padding) + '='.repeat(section.name.length)
+        textOutput += `${centeredTitle}\n`
+        textOutput += `${centeredUnderline}\n\n`
       }
 
       // Convert section content (markdown) to plain text
@@ -119,6 +121,7 @@ export async function GET(
         fieldValues: event.field_values || {},
         inputFieldDefinitions: inputFieldDefinitions || [],
         resolvedEntities,
+        parish: event.parish,
         format: 'text'
       })
 
