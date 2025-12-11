@@ -7,7 +7,8 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import type {
   ContentWithTags,
   CreateContentData,
-  UpdateContentData
+  UpdateContentData,
+  ContentTag
 } from '@/lib/types'
 
 export interface GetContentsFilters {
@@ -52,6 +53,66 @@ async function requireAdminOrStaffRole(supabase: Awaited<ReturnType<typeof creat
 }
 
 /**
+ * Fetch tags for a content item using polymorphic tag_assignments
+ */
+async function fetchTagsForContent(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  contentId: string
+): Promise<ContentTag[]> {
+  const { data, error } = await supabase
+    .from('tag_assignments')
+    .select(`
+      tag:category_tags(*)
+    `)
+    .eq('entity_type', 'content')
+    .eq('entity_id', contentId)
+
+  if (error) {
+    console.error('Error fetching tags for content:', error)
+    return []
+  }
+
+  return (data || []).map((d: any) => d.tag).filter(Boolean)
+}
+
+/**
+ * Fetch tags for multiple content items using polymorphic tag_assignments
+ */
+async function fetchTagsForContents(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  contentIds: string[]
+): Promise<Map<string, ContentTag[]>> {
+  if (contentIds.length === 0) {
+    return new Map()
+  }
+
+  const { data, error } = await supabase
+    .from('tag_assignments')
+    .select(`
+      entity_id,
+      tag:category_tags(*)
+    `)
+    .eq('entity_type', 'content')
+    .in('entity_id', contentIds)
+
+  if (error) {
+    console.error('Error fetching tags for contents:', error)
+    return new Map()
+  }
+
+  // Group tags by content ID
+  const tagMap = new Map<string, ContentTag[]>()
+  for (const item of (data || []) as any[]) {
+    if (!item.tag) continue
+    const existing = tagMap.get(item.entity_id) || []
+    existing.push(item.tag as ContentTag)
+    tagMap.set(item.entity_id, existing)
+  }
+
+  return tagMap
+}
+
+/**
  * Get contents with optional filtering
  * Supports search, tag filtering (AND logic), language filtering, and pagination
  */
@@ -72,15 +133,10 @@ export async function getContents(filters: GetContentsFilters = {}): Promise<Get
   // Validate limit (max 100)
   const safeLimit = Math.min(limit, 100)
 
-  // Build query for contents with tags
+  // Build query for contents
   let query = supabase
     .from('contents')
-    .select(`
-      *,
-      tags:content_tag_assignments(
-        tag:content_tags(*)
-      )
-    `, { count: 'exact' })
+    .select('*', { count: 'exact' })
     .eq('parish_id', parishId)
 
   // Apply language filter
@@ -103,15 +159,20 @@ export async function getContents(filters: GetContentsFilters = {}): Promise<Get
     throw new Error('Failed to fetch contents')
   }
 
+  // Fetch tags for all contents
+  const contentIds = (data || []).map(c => c.id)
+  const tagMap = await fetchTagsForContents(supabase, contentIds)
+
   // Transform data to ContentWithTags format
   let contents: ContentWithTags[] = (data || []).map((item: any) => ({
     ...item,
-    tags: item.tags?.map((t: any) => t.tag).filter(Boolean) || []
+    tags: tagMap.get(item.id) || []
   }))
 
   // Apply tag filtering (AND logic) - must match all tag_slugs
   if (tag_slugs && tag_slugs.length > 0) {
     contents = contents.filter(content => {
+      if (!content.tags || content.tags.length === 0) return false
       const contentTagSlugs = content.tags.map(tag => tag.slug)
       return tag_slugs.every(slug => contentTagSlugs.includes(slug))
     })
@@ -137,12 +198,7 @@ export async function getContentById(contentId: string): Promise<ContentWithTags
 
   const { data, error } = await supabase
     .from('contents')
-    .select(`
-      *,
-      tags:content_tag_assignments(
-        tag:content_tags(*)
-      )
-    `)
+    .select('*')
     .eq('id', contentId)
     .eq('parish_id', parishId)
     .single()
@@ -155,10 +211,13 @@ export async function getContentById(contentId: string): Promise<ContentWithTags
     throw new Error('Failed to fetch content')
   }
 
+  // Fetch tags separately using polymorphic tag_assignments
+  const tags = await fetchTagsForContent(supabase, contentId)
+
   // Transform to ContentWithTags format
   return {
     ...data,
-    tags: data.tags?.map((t: any) => t.tag).filter(Boolean) || []
+    tags
   }
 }
 
@@ -198,15 +257,16 @@ export async function createContent(input: CreateContentData): Promise<ContentWi
     throw new Error('Failed to create content')
   }
 
-  // Insert tag assignments if provided
+  // Insert tag assignments if provided using polymorphic tag_assignments
   if (tag_ids && tag_ids.length > 0) {
     const assignments = tag_ids.map(tagId => ({
-      content_id: content.id,
-      tag_id: tagId
+      tag_id: tagId,
+      entity_type: 'content',
+      entity_id: content.id
     }))
 
     const { error: assignmentError } = await supabase
-      .from('content_tag_assignments')
+      .from('tag_assignments')
       .insert(assignments)
 
     if (assignmentError) {
@@ -265,13 +325,14 @@ export async function updateContent(
     }
   }
 
-  // Update tag assignments if provided
+  // Update tag assignments if provided using polymorphic tag_assignments
   if (tag_ids !== undefined) {
-    // Delete existing assignments
+    // Delete existing assignments for this content
     const { error: deleteError } = await supabase
-      .from('content_tag_assignments')
+      .from('tag_assignments')
       .delete()
-      .eq('content_id', contentId)
+      .eq('entity_type', 'content')
+      .eq('entity_id', contentId)
 
     if (deleteError) {
       console.error('Error deleting tag assignments:', deleteError)
@@ -281,12 +342,13 @@ export async function updateContent(
     // Insert new assignments
     if (tag_ids.length > 0) {
       const assignments = tag_ids.map(tagId => ({
-        content_id: contentId,
-        tag_id: tagId
+        tag_id: tagId,
+        entity_type: 'content',
+        entity_id: contentId
       }))
 
       const { error: insertError } = await supabase
-        .from('content_tag_assignments')
+        .from('tag_assignments')
         .insert(assignments)
 
       if (insertError) {
@@ -328,7 +390,14 @@ export async function deleteContent(contentId: string): Promise<{ success: boole
     throw new Error('Content not found')
   }
 
-  // Delete content (CASCADE will delete tag assignments)
+  // Delete tag assignments first (polymorphic table doesn't cascade)
+  await supabase
+    .from('tag_assignments')
+    .delete()
+    .eq('entity_type', 'content')
+    .eq('entity_id', contentId)
+
+  // Delete content
   const { error } = await supabase
     .from('contents')
     .delete()
@@ -363,12 +432,7 @@ export async function searchContentByText(
 
   let query = supabase
     .from('contents')
-    .select(`
-      *,
-      tags:content_tag_assignments(
-        tag:content_tags(*)
-      )
-    `)
+    .select('*')
     .eq('parish_id', parishId)
     .or(`title.ilike.%${searchTerm}%,body.ilike.%${searchTerm}%`)
 
@@ -386,9 +450,13 @@ export async function searchContentByText(
     throw new Error('Failed to search content')
   }
 
+  // Fetch tags for all contents
+  const contentIds = (data || []).map(c => c.id)
+  const tagMap = await fetchTagsForContents(supabase, contentIds)
+
   // Transform to ContentWithTags format
   return (data || []).map((item: any) => ({
     ...item,
-    tags: item.tags?.map((t: any) => t.tag).filter(Boolean) || []
+    tags: tagMap.get(item.id) || []
   }))
 }

@@ -12,10 +12,11 @@ CREATE TABLE input_field_definitions (
   event_type_filter_id UUID REFERENCES event_types(id) ON DELETE SET NULL,
   is_key_person BOOLEAN NOT NULL DEFAULT false,
   "order" INTEGER NOT NULL,
+  filter_tags TEXT[] DEFAULT ARRAY[]::TEXT[],
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT check_input_field_type CHECK (type IN ('person', 'group', 'location', 'event_link', 'list_item', 'document', 'text', 'rich_text', 'date', 'time', 'datetime', 'number', 'yes_no')),
+  CONSTRAINT check_input_field_type CHECK (type IN ('person', 'group', 'location', 'event_link', 'list_item', 'document', 'text', 'rich_text', 'content', 'petition', 'date', 'time', 'datetime', 'number', 'yes_no')),
   CONSTRAINT check_input_field_order_non_negative CHECK ("order" >= 0),
   CONSTRAINT check_is_key_person_only_for_person CHECK (is_key_person = false OR type = 'person')
 );

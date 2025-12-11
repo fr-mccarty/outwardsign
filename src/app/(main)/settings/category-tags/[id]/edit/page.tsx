@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { getContentTagById } from '@/lib/actions/content-tags'
-import { ContentTagFormWrapper } from '../../content-tag-form-wrapper'
+import { getCategoryTagById } from '@/lib/actions/category-tags'
+import { CategoryTagFormWrapper } from '../../category-tag-form-wrapper'
 
 interface PageProps {
   params: Promise<{
@@ -10,7 +10,7 @@ interface PageProps {
   }>
 }
 
-export default async function EditContentTagPage({ params }: PageProps) {
+export default async function EditCategoryTagPage({ params }: PageProps) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -23,11 +23,11 @@ export default async function EditContentTagPage({ params }: PageProps) {
   await requireSelectedParish()
 
   const { id } = await params
-  const tag = await getContentTagById(id)
+  const tag = await getCategoryTagById(id)
 
   if (!tag) {
     notFound()
   }
 
-  return <ContentTagFormWrapper tag={tag} />
+  return <CategoryTagFormWrapper tag={tag} />
 }

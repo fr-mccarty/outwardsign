@@ -643,19 +643,19 @@ export async function seedContentForParish(
 ): Promise<void> {
   console.log('📝 Seeding content library...')
 
-  // First, fetch all content tags for this parish to get tag IDs
+  // First, fetch all category tags for this parish to get tag IDs
   const { data: tags, error: tagsError } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .select('id, slug')
     .eq('parish_id', parishId)
 
   if (tagsError) {
-    console.error('Error fetching content tags:', tagsError)
-    throw new Error(`Failed to fetch content tags: ${tagsError.message}`)
+    console.error('Error fetching category tags:', tagsError)
+    throw new Error(`Failed to fetch category tags: ${tagsError.message}`)
   }
 
   if (!tags || tags.length === 0) {
-    console.log('   ⚠️  No content tags found - skipping content seeding')
+    console.log('   ⚠️  No category tags found - skipping content seeding')
     return
   }
 
@@ -687,18 +687,19 @@ export async function seedContentForParish(
 
     contentCount++
 
-    // Create tag assignments
+    // Create tag assignments using polymorphic tag_assignments table
     const validTagIds = content.tags
       .map(slug => tagMap.get(slug))
       .filter((id): id is string => id !== undefined)
 
     if (validTagIds.length > 0) {
       const { error: assignmentError } = await supabase
-        .from('content_tag_assignments')
+        .from('tag_assignments')
         .insert(
           validTagIds.map(tagId => ({
-            content_id: newContent.id,
-            tag_id: tagId
+            tag_id: tagId,
+            entity_type: 'content',
+            entity_id: newContent.id
           }))
         )
 

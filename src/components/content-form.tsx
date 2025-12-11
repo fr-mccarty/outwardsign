@@ -53,7 +53,7 @@ export function ContentForm({
       body: content?.body || '',
       language: content?.language || defaultLanguage,
       description: content?.description || '',
-      tag_ids: content?.tags.map((tag) => tag.id) || defaultTags,
+      tag_ids: content?.tags?.map((tag) => tag.id) || defaultTags,
     },
   })
 

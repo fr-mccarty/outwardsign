@@ -70,6 +70,12 @@ Components for page structure, navigation, breadcrumbs, and context providers.
 
 Components for displaying data including cards, badges, avatars, and status labels.
 
+**Card Components:**
+- `ContentCard` - Simple card wrapper with p-6 padding
+- `EmptyState` - Empty list state display (use instead of custom empty states)
+- `FormSectionCard` - Card with title/description header for forms
+- `SearchCard` - Compact card for search/filter sections
+
 **Key Components:**
 - `ListViewCard` - Entity display card for list views (being deprecated)
 - `ListStatsBar` - Stats/metrics bar for list views

@@ -9,8 +9,9 @@ import { TimePickerField } from "@/components/time-picker-field"
 import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
 import { ContentPickerField } from "@/components/content-picker-field"
+import { PetitionPickerField } from "@/components/petition-picker-field"
 import { createEvent, updateEvent } from "@/lib/actions/dynamic-events"
-import type { DynamicEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags } from "@/lib/types"
+import type { DynamicEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
@@ -51,16 +52,16 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
     return initial
   })
 
-  // State for picker values (person, location, content references)
-  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | null>>(() => {
-    const initial: Record<string, Person | Location | ContentWithTags | null> = {}
+  // State for picker values (person, location, content, petition references)
+  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | null>>(() => {
+    const initial: Record<string, Person | Location | ContentWithTags | Petition | null> = {}
     // Initialize from resolved fields if editing
     if (event?.resolved_fields) {
       eventType.input_field_definitions?.forEach((field) => {
-        if (field.type === 'person' || field.type === 'location' || field.type === 'content') {
+        if (field.type === 'person' || field.type === 'location' || field.type === 'content' || field.type === 'petition') {
           const resolved = event.resolved_fields?.[field.name]
           if (resolved?.resolved_value) {
-            initial[field.name] = resolved.resolved_value as Person | Location | ContentWithTags
+            initial[field.name] = resolved.resolved_value as Person | Location | ContentWithTags | Petition
           }
         }
       })
@@ -104,7 +105,7 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
   }
 
   // Update picker value (stores the ID in fieldValues)
-  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | null) => {
+  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | null) => {
     setPickerValues(prev => ({ ...prev, [fieldName]: value }))
     setFieldValues(prev => ({ ...prev, [fieldName]: value?.id || null }))
   }
@@ -203,6 +204,25 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
             required={field.required}
             placeholder={`Select ${field.name}`}
             defaultFilterTags={field.filter_tags || []}
+          />
+        )
+
+      case 'petition':
+        return (
+          <PetitionPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as Petition | null}
+            onValueChange={(petition) => updatePickerValue(field.name, petition)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            required={field.required}
+            placeholder={`Select or create ${field.name}`}
+            eventContext={{
+              eventTypeName: eventType.name,
+              occasionDate: occasion.date || new Date().toISOString().split('T')[0],
+              language: 'en', // TODO: Detect from event or use parish default
+            }}
           />
         )
 

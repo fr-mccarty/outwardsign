@@ -48,6 +48,7 @@ async function requireAdminRole(supabase: Awaited<ReturnType<typeof createClient
 
 /**
  * Get all content tags for the parish
+ * Note: Uses category_tags table (shared across content and petitions)
  */
 export async function getContentTags(
   sortBy: 'sort_order' | 'name' = 'sort_order'
@@ -58,7 +59,7 @@ export async function getContentTags(
   const supabase = await createClient()
 
   let query = supabase
-    .from('content_tags')
+    .from('category_tags')
     .select('*')
     .eq('parish_id', parishId)
 
@@ -81,6 +82,7 @@ export async function getContentTags(
 
 /**
  * Get content tags with usage count
+ * Note: Uses category_tags and tag_assignments tables
  */
 export async function getContentTagsWithUsageCount(): Promise<ContentTagWithUsageCount[]> {
   const parishId = await requireSelectedParish()
@@ -90,10 +92,10 @@ export async function getContentTagsWithUsageCount(): Promise<ContentTagWithUsag
 
   // Fetch tags with COUNT of assignments
   const { data, error } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .select(`
       *,
-      assignments:content_tag_assignments(count)
+      assignments:tag_assignments(count)
     `)
     .eq('parish_id', parishId)
     .order('sort_order', { ascending: true })
@@ -121,7 +123,7 @@ export async function getContentTagById(tagId: string): Promise<ContentTag | nul
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .select('*')
     .eq('id', tagId)
     .eq('parish_id', parishId)
@@ -163,7 +165,7 @@ export async function createContentTag(input: CreateContentTagData): Promise<Con
   let sortOrder = input.sort_order
   if (sortOrder === undefined) {
     const { data: maxTag } = await supabase
-      .from('content_tags')
+      .from('category_tags')
       .select('sort_order')
       .eq('parish_id', parishId)
       .order('sort_order', { ascending: false })
@@ -175,7 +177,7 @@ export async function createContentTag(input: CreateContentTagData): Promise<Con
 
   // Insert tag
   const { data, error } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .insert({
       parish_id: parishId,
       name: input.name,
@@ -225,7 +227,7 @@ export async function updateContentTag(
 
   // Update tag fields (only provided fields)
   const { data, error } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .update(input)
     .eq('id', tagId)
     .eq('parish_id', parishId)
@@ -269,7 +271,7 @@ export async function deleteContentTag(tagId: string): Promise<{ success: boolea
 
   // Check if tag is in use
   const { count, error: countError } = await supabase
-    .from('content_tag_assignments')
+    .from('tag_assignments')
     .select('*', { count: 'exact', head: true })
     .eq('tag_id', tagId)
 
@@ -284,7 +286,7 @@ export async function deleteContentTag(tagId: string): Promise<{ success: boolea
 
   // Delete tag
   const { error } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .delete()
     .eq('id', tagId)
     .eq('parish_id', parishId)
@@ -315,7 +317,7 @@ export async function reorderContentTags(tagIdsInOrder: string[]): Promise<Conte
 
   // Verify all tags belong to parish
   const { data: tags, error: fetchError } = await supabase
-    .from('content_tags')
+    .from('category_tags')
     .select('id')
     .eq('parish_id', parishId)
     .in('id', tagIdsInOrder)
@@ -332,7 +334,7 @@ export async function reorderContentTags(tagIdsInOrder: string[]): Promise<Conte
   // Update sort_order for each tag
   const updates = tagIdsInOrder.map((tagId, index) =>
     supabase
-      .from('content_tags')
+      .from('category_tags')
       .update({ sort_order: index + 1 })
       .eq('id', tagId)
       .eq('parish_id', parishId)

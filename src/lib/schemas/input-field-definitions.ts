@@ -9,6 +9,7 @@ export const inputFieldTypeSchema = z.enum([
   'list_item',
   'document',
   'content',
+  'petition',
   'text',
   'rich_text',
   'date',

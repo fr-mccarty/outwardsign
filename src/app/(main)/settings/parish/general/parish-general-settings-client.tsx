@@ -148,7 +148,7 @@ export function ParishGeneralSettingsClient({
         </div>
       </FormSectionCard>
 
-      <ContentCard className="pb-6">
+      <ContentCard>
         <div>
           <h3 className="font-semibold mb-4">Parish Details</h3>
           <div>

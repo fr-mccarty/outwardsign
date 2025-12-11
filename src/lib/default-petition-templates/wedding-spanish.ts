@@ -1,23 +1,23 @@
 const weddingSpanish = {
-  title: 'Wedding (Spanish)',
-  description: 'Wedding ceremony petitions in Spanish',
+  title: 'Boda (Español)',
+  description: 'Peticiones para la ceremonia de matrimonio en español',
   module: 'wedding',
   language: 'es',
   is_default: true,
-  content: `Por sus familiares y amigos
-y por todos los que les han ayudado a Hegar a este dia.
-Roguemos al Senor.
-Por todos los jovenes
-que se preparan para el Matrimonio, y por
-todos aquellos
-a quienes Dios ha llamado a otra vocacidn.
-Roguemos al Senor.
-Por todas las familias del mundo,
-y por la paz entre todos los seres humanos.
-Roguemos al Senor.
-Por nuestros parientes y amigos difuntos,
-y por todos los fieles que han muerto.
-Roguemos al Senor.`
+  tags: ['wedding', 'prayers-of-the-faithful'],
+  content: `Por los recién casados, que Dios bendiga su alianza de amor y les conceda una vida larga y feliz juntos, roguemos al Señor.
+
+Por [Novia] y [Novio], que su amor sea un signo del amor de Cristo por su Iglesia, y que siempre se apoyen y se cuiden mutuamente, roguemos al Señor.
+
+Por las familias y amigos aquí reunidos, que continúen rodeando a esta pareja con amor, aliento y apoyo durante toda su vida matrimonial, roguemos al Señor.
+
+Por todos los matrimonios, que la gracia de este Sacramento se renueve en sus corazones y fortalezca sus lazos de amor, roguemos al Señor.
+
+Por los que se preparan para el matrimonio, que crezcan en comprensión, paciencia y amor desinteresado, roguemos al Señor.
+
+Por los miembros difuntos de ambas familias, que participen en el banquete nupcial eterno del cielo, roguemos al Señor.
+
+Por todos los aquí reunidos, que seamos testigos del amor fiel y comprometido en nuestras propias vidas, roguemos al Señor.`
 }
 
 export default weddingSpanish

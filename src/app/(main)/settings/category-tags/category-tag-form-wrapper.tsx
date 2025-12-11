@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,33 +11,42 @@ import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { ContentCard } from '@/components/content-card'
-import { createContentTag, updateContentTag } from '@/lib/actions/content-tags'
-import type { ContentTag, CreateContentTagData, UpdateContentTagData } from '@/lib/types'
+import { createCategoryTag, updateCategoryTag } from '@/lib/actions/category-tags'
+import type { CategoryTag, CreateCategoryTagData, UpdateCategoryTagData } from '@/lib/types'
 import { toast } from 'sonner'
+import { useBreadcrumbs } from '@/components/breadcrumb-context'
 
 const tagSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   slug: z.string().max(100).optional(),
-  sort_order: z.number().int().min(0).optional(),
 })
 
 type TagFormData = z.infer<typeof tagSchema>
 
-interface ContentTagFormWrapperProps {
-  tag?: ContentTag
+interface CategoryTagFormWrapperProps {
+  tag?: CategoryTag
 }
 
-export function ContentTagFormWrapper({ tag }: ContentTagFormWrapperProps) {
+export function CategoryTagFormWrapper({ tag }: CategoryTagFormWrapperProps) {
   const router = useRouter()
+  const { setBreadcrumbs } = useBreadcrumbs()
   const [saving, setSaving] = useState(false)
   const isEditing = !!tag
+
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Settings', href: '/settings' },
+      { label: 'Category Tags', href: '/settings/category-tags' },
+      { label: isEditing ? 'Edit' : 'Create' }
+    ])
+  }, [setBreadcrumbs, isEditing])
 
   const form = useForm<TagFormData>({
     resolver: zodResolver(tagSchema),
     defaultValues: {
       name: tag?.name || '',
       slug: tag?.slug || '',
-      sort_order: tag?.sort_order,
     },
   })
 
@@ -45,13 +54,13 @@ export function ContentTagFormWrapper({ tag }: ContentTagFormWrapperProps) {
     try {
       setSaving(true)
       if (isEditing) {
-        await updateContentTag(tag.id, data as UpdateContentTagData)
+        await updateCategoryTag(tag.id, data as UpdateCategoryTagData)
         toast.success('Tag updated successfully')
       } else {
-        await createContentTag(data as CreateContentTagData)
+        await createCategoryTag(data as CreateCategoryTagData)
         toast.success('Tag created successfully')
       }
-      router.push('/settings/content-tags')
+      router.push('/settings/category-tags')
     } catch (error: any) {
       console.error('Error saving tag:', error)
       toast.error(error.message || 'Failed to save tag')
@@ -61,13 +70,13 @@ export function ContentTagFormWrapper({ tag }: ContentTagFormWrapperProps) {
   }
 
   const handleCancel = () => {
-    router.push('/settings/content-tags')
+    router.push('/settings/category-tags')
   }
 
   return (
     <PageContainer
       title={isEditing ? 'Edit Tag' : 'Create Tag'}
-      description={isEditing ? 'Update content tag' : 'Add new tag for categorizing content'}
+      description={isEditing ? 'Update category tag' : 'Add new tag for categorizing content'}
     >
       <ContentCard>
         <Form {...form}>
@@ -107,30 +116,6 @@ export function ContentTagFormWrapper({ tag }: ContentTagFormWrapperProps) {
                   </FormControl>
                   <FormDescription>
                     URL-safe identifier. Auto-generated from name if not provided.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Sort Order (optional) */}
-            <FormField
-              control={form.control}
-              name="sort_order"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sort Order (optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="e.g., 1, 11, 31, 51"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Determines display order. Categories: 1-10 (Sacrament), 11-30 (Section), 31-50 (Theme), 51-60 (Testament). Auto-calculated if not provided.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

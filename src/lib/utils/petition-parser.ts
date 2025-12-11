@@ -2,9 +2,7 @@
  * Utilities for parsing and formatting petition text
  *
  * Petitions are stored as simple text, one per line.
- * When displayed/edited, they include:
- * - "Reader: " prefix
- * - "People: Lord, hear our prayer." response after each
+ * Text is displayed exactly as entered - no automatic formatting.
  */
 
 export interface Petition {
@@ -14,7 +12,7 @@ export interface Petition {
 
 /**
  * Parse petition text from database into structured array
- * Handles both formatted text (with "Reader:" and responses) and plain text
+ * Each non-empty line becomes a petition
  */
 export function parsePetitions(petitionsText: string | null | undefined): Petition[] {
   if (!petitionsText || !petitionsText.trim()) {
@@ -30,27 +28,10 @@ export function parsePetitions(petitionsText: string | null | undefined): Petiti
     // Skip empty lines
     if (!trimmed) continue
 
-    // Skip response lines
-    if (trimmed.startsWith('People:') || trimmed.startsWith('People :')) continue
-
-    // Extract petition text, removing "Reader:" prefix if present
-    let petitionText = trimmed
-    if (trimmed.startsWith('Reader:') || trimmed.startsWith('Reader :')) {
-      petitionText = trimmed.replace(/^Reader\s*:\s*/, '').trim()
-    }
-
-    // Remove common suffixes that may have been stored
-    petitionText = petitionText
-      .replace(/,?\s*let us pray to the Lord\.?$/i, '')
-      .replace(/,?\s*we pray to the Lord\.?$/i, '')
-      .trim()
-
-    if (petitionText) {
-      petitions.push({
-        id: crypto.randomUUID(),
-        text: petitionText,
-      })
-    }
+    petitions.push({
+      id: crypto.randomUUID(),
+      text: trimmed,
+    })
   }
 
   return petitions
@@ -65,17 +46,4 @@ export function formatPetitionsForStorage(petitions: Petition[]): string {
     .map(p => p.text.trim())
     .filter(text => text.length > 0)
     .join('\n')
-}
-
-/**
- * Format a single petition for display with proper formatting
- */
-export function formatPetitionForDisplay(petitionText: string): {
-  readerLine: string
-  responseLine: string
-} {
-  return {
-    readerLine: `Reader: ${petitionText}`,
-    responseLine: 'People: Lord, hear our prayer.',
-  }
 }

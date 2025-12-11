@@ -1,23 +1,25 @@
 const funeralSpanish = {
-  title: 'Funeral (Spanish)',
-  description: 'Funeral Mass petitions in Spanish',
+  title: 'Funeral (Español)',
+  description: 'Peticiones para la Misa de funeral en español',
   module: 'funeral',
   language: 'es',
   is_default: true,
-  content: `Por [Nombre del Difunto], para que descanse en paz eterna.
-Roguemos al Señor.
-Por la familia y amigos que lloran, para que encuentren consuelo en el amor de Dios.
-Roguemos al Señor.
-Por todos los fieles difuntos, especialmente por aquellos que no tienen quien rece por ellos.
-Roguemos al Señor.
-Por aquellos que ministran a los afligidos y moribundos.
-Roguemos al Señor.
-Por nuestra comunidad, para que nos apoyemos unos a otros en tiempos de pérdida.
-Roguemos al Señor.
-Por todos los que están enfermos y se acercan a la muerte.
-Roguemos al Señor.
-Por nosotros mismos, para que estemos preparados para nuestro propio viaje a la vida eterna.
-Roguemos al Señor.`
+  tags: ['funeral', 'prayers-of-the-faithful'],
+  content: `Por [Nombre], que Dios le acoja en el gozo de su reino celestial y le conceda el descanso eterno, roguemos al Señor.
+
+Por la familia y amigos que lloran, que encuentren consuelo en las promesas de Cristo y en el apoyo de esta comunidad, roguemos al Señor.
+
+Por todos los que cuidaron de [Nombre] durante su enfermedad, que Dios los bendiga por su bondad y compasión, roguemos al Señor.
+
+Por todos los fieles difuntos, especialmente los miembros de nuestra parroquia y aquellos que no tienen quien rece por ellos, roguemos al Señor.
+
+Por aquellos que ministran a los enfermos, los moribundos y los afligidos, que sean fortalecidos en su servicio, roguemos al Señor.
+
+Por todos los que están enfermos y sufriendo, que encuentren sanación y paz en el cuidado amoroso de Dios, roguemos al Señor.
+
+Por nosotros mismos, que a través de esta celebración recordemos nuestra propia mortalidad y vivamos cada día en preparación para la vida eterna, roguemos al Señor.
+
+Por la gracia de una muerte santa para todos nosotros, que cuando llegue nuestra hora, estemos preparados para encontrarnos con el Señor, roguemos al Señor.`
 }
 
 export default funeralSpanish

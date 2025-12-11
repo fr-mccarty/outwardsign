@@ -137,7 +137,7 @@ export interface PresiderDialogueElement extends BaseElement {
 export interface PetitionElement extends BaseElement {
   type: 'petition'
   label: string  // e.g., "Reader:"
-  text: string   // e.g., "For the Church, let us pray to the Lord"
+  text: string   // Full petition text as entered, e.g., "For the Church, we pray to the Lord."
 }
 
 /**

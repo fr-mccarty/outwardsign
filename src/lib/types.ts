@@ -559,6 +559,7 @@ export type InputFieldType =
   | 'list_item'
   | 'document'
   | 'content'
+  | 'petition'
   | 'text'
   | 'rich_text'
   | 'date'
@@ -698,12 +699,16 @@ export interface UpdateScriptData {
   name?: string
 }
 
+// Section types
+export type SectionType = 'text' | 'petition'
+
 // Sections (rich text blocks within scripts)
 export interface Section {
   id: string
   script_id: string
   name: string
-  content: string // Markdown with custom syntax
+  section_type: SectionType
+  content: string // Markdown with custom syntax (for text type) or empty (for petition type)
   page_break_after: boolean
   order: number
   deleted_at: string | null
@@ -713,12 +718,14 @@ export interface Section {
 
 export interface CreateSectionData {
   name: string
-  content: string
+  section_type?: SectionType
+  content?: string
   page_break_after?: boolean
 }
 
 export interface UpdateSectionData {
   name?: string
+  section_type?: SectionType
   content?: string
   page_break_after?: boolean
 }
@@ -739,7 +746,7 @@ export interface ResolvedFieldValue {
   field_type: InputFieldType
   raw_value: any
   // Content is defined later in file - TypeScript handles forward references within the same file
-  resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | Content | null
+  resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | Content | Petition | null
 }
 
 /**
@@ -825,7 +832,8 @@ export interface Content {
   created_by: string | null
 }
 
-export interface ContentTag {
+// Category Tags (shared tagging system - replaces ContentTag)
+export interface CategoryTag {
   id: string
   parish_id: string
   name: string
@@ -837,6 +845,44 @@ export interface ContentTag {
   created_by: string | null
 }
 
+export interface CategoryTagWithUsageCount extends CategoryTag {
+  usage_count: number // Count of entities with this tag
+}
+
+export interface CreateCategoryTagData {
+  name: string
+  slug?: string
+  sort_order?: number
+  color?: string | null
+}
+
+export interface UpdateCategoryTagData {
+  name?: string
+  slug?: string
+  sort_order?: number
+  color?: string | null
+}
+
+// Tag Assignments (polymorphic)
+export type TagEntityType = 'content' | 'petition' | 'petition_template'
+
+export interface TagAssignment {
+  id: string
+  tag_id: string
+  entity_type: TagEntityType
+  entity_id: string
+  created_at: string
+}
+
+export interface CreateTagAssignmentData {
+  tag_id: string
+  entity_type: TagEntityType
+  entity_id: string
+}
+
+// Deprecated type alias - kept for backward compatibility during migration
+export type ContentTag = CategoryTag
+
 export interface ContentTagAssignment {
   id: string
   content_id: string
@@ -847,10 +893,30 @@ export interface ContentTagAssignment {
 // WithRelations types
 
 export interface ContentWithTags extends Content {
-  tags: ContentTag[] // Joined via content_tag_assignments
+  tags?: CategoryTag[] // Changed from ContentTag to CategoryTag
 }
 
-export interface ContentTagWithUsageCount extends ContentTag {
+export interface PetitionWithTags extends Petition {
+  tags?: CategoryTag[]
+}
+
+// Petition Template with tags
+// Note: Base PetitionContextTemplate is defined in petition-templates.ts
+export interface PetitionTemplateWithTags {
+  id: string
+  title: string
+  description?: string
+  context: string
+  parish_id: string
+  module?: string
+  language?: string
+  is_default?: boolean
+  created_at: string
+  updated_at: string
+  tags?: CategoryTag[]
+}
+
+export interface ContentTagWithUsageCount extends CategoryTag {
   usage_count: number // Count of content items with this tag
 }
 

@@ -141,6 +141,21 @@ function resolveFieldValue(resolvedField: ResolvedFieldValue): string {
       // Use the filename
       return resolved_value?.file_name || 'empty'
 
+    case 'content':
+      // Use body from resolved content, or raw_value for legacy text
+      if (resolved_value && resolved_value.body) {
+        return resolved_value.body
+      }
+      // Legacy text value or missing content
+      return raw_value ? String(raw_value) : 'empty'
+
+    case 'petition':
+      // Use text from resolved petition
+      if (resolved_value && resolved_value.text) {
+        return resolved_value.text
+      }
+      return 'empty'
+
     case 'text':
     case 'rich_text':
     case 'number':
@@ -273,17 +288,69 @@ export interface ProcessedSection {
   htmlContent: string
   pageBreakAfter: boolean
   order: number
+  sectionType: 'text' | 'petition'
+}
+
+interface ScriptSection {
+  id: string
+  name: string
+  section_type?: 'text' | 'petition'
+  content: string
+  page_break_after: boolean
+  order: number
+}
+
+/**
+ * Get petition content from event's resolved fields
+ */
+function getPetitionContent(event: EventWithRelations): string {
+  // Find the petition field in resolved_fields
+  if (!event.resolved_fields) {
+    return '<p><em>No petitions configured for this event.</em></p>'
+  }
+
+  // Look for any petition-type field
+  for (const fieldName in event.resolved_fields) {
+    const field = event.resolved_fields[fieldName]
+    if (field.field_type === 'petition' && field.resolved_value) {
+      const petitionText = field.resolved_value.text
+      if (petitionText) {
+        // Parse the petition text as markdown to HTML
+        return parseMarkdownToHTML(petitionText)
+      }
+    }
+  }
+
+  return '<p><em>No petitions have been added to this event.</em></p>'
 }
 
 export function processScriptForRendering(
-  script: { sections: Array<{ id: string; name: string; content: string; page_break_after: boolean; order: number }> },
+  script: { sections: ScriptSection[] },
   event: EventWithRelations
 ): ProcessedSection[] {
-  return script.sections.map(section => ({
-    id: section.id,
-    name: section.name,
-    htmlContent: processScriptSection(section.content, event),
-    pageBreakAfter: section.page_break_after,
-    order: section.order,
-  }))
+  return script.sections.map(section => {
+    const sectionType = section.section_type || 'text'
+
+    // Handle petition-type sections differently
+    if (sectionType === 'petition') {
+      return {
+        id: section.id,
+        name: section.name,
+        htmlContent: getPetitionContent(event),
+        pageBreakAfter: section.page_break_after,
+        order: section.order,
+        sectionType: 'petition',
+      }
+    }
+
+    // Standard text section processing
+    return {
+      id: section.id,
+      name: section.name,
+      htmlContent: processScriptSection(section.content, event),
+      pageBreakAfter: section.page_break_after,
+      order: section.order,
+      sectionType: 'text',
+    }
+  })
 }

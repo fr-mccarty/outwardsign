@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { getContentTagsWithUsageCount } from '@/lib/actions/content-tags'
-import { ContentTagsList } from './content-tags-list'
+import { getCategoryTagsWithUsageCount } from '@/lib/actions/category-tags'
+import { CategoryTagsList } from './category-tags-list'
 
-export default async function ContentTagsPage() {
+export default async function CategoryTagsPage() {
   const supabase = await createClient()
   const {
     data: { user },
@@ -17,7 +17,7 @@ export default async function ContentTagsPage() {
   await requireSelectedParish()
 
   // Fetch tags with usage count
-  const tags = await getContentTagsWithUsageCount()
+  const tags = await getCategoryTagsWithUsageCount()
 
-  return <ContentTagsList initialTags={tags} />
+  return <CategoryTagsList initialTags={tags} />
 }

@@ -352,31 +352,29 @@ export function [Entity]ListClient({ initialData, stats }: [Entity]ListClientPro
           <ScrollToTopButton />
         </>
       ) : (
-        <ContentCard className="text-center py-12">
-          <[Icon] className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters ? 'No [entities] found' : 'No [entities] yet'}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {hasActiveFilters
-              ? 'Try adjusting your search or filters to find more [entities].'
-              : 'Create your first [entity] to start managing [description].'}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href="/[entities]/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First [Entity]
-              </Link>
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+        <EmptyState
+          icon={<[Icon] className="h-16 w-16" />}
+          title={hasActiveFilters ? 'No [entities] found' : 'No [entities] yet'}
+          description={hasActiveFilters
+            ? 'Try adjusting your search or filters to find more [entities].'
+            : 'Create your first [entity] to start managing [description].'}
+          action={
+            <>
+              <Button asChild>
+                <Link href="/[entities]/create">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First [Entity]
+                </Link>
               </Button>
-            )}
-          </div>
-        </ContentCard>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
 
       {/* Quick Stats */}

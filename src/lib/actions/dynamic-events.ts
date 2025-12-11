@@ -18,6 +18,7 @@ import type {
   CustomListItem,
   Document,
   Content,
+  Petition,
   ResolvedFieldValue
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
@@ -498,6 +499,16 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
               // Legacy text value - raw_value is the content itself
               // No need to set resolved_value, raw_value is sufficient
             }
+            break
+          }
+          case 'petition': {
+            // Petition reference - fetch from database
+            const { data: petition } = await supabase
+              .from('petitions')
+              .select('*')
+              .eq('id', rawValue)
+              .single()
+            resolvedField.resolved_value = petition as Petition | null
             break
           }
           // For non-reference types, raw_value is sufficient

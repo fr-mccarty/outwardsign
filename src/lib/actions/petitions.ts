@@ -611,3 +611,50 @@ export async function deletePetition(id: string) {
   }
 }
 
+/**
+ * Create a petition from event context
+ * Used when creating petitions from within event forms
+ */
+export async function createPetitionFromEvent(data: {
+  eventTypeName: string
+  occasionDate: string
+  language: LiturgicalLanguage
+  templateId?: string
+  details?: string
+}): Promise<Petition> {
+  const supabase = await createClient()
+  const selectedParishId = await requireSelectedParish()
+
+  // Auto-generate title from event context
+  const title = `${data.eventTypeName} - ${data.occasionDate}`
+
+  // If template provided, fetch it
+  let templateContent = null
+  if (data.templateId) {
+    const template = await getPetitionTemplate(data.templateId)
+    templateContent = template?.context
+  }
+
+  // Create petition with auto-populated metadata
+  const { data: petition, error } = await supabase
+    .from('petitions')
+    .insert({
+      parish_id: selectedParishId,
+      title,
+      date: data.occasionDate,
+      language: data.language,
+      text: '', // Empty initially, will be filled by editor
+      details: data.details || null,
+      template: templateContent
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to create petition from event:', error)
+    throw new Error('Failed to create petition')
+  }
+
+  return petition
+}
+

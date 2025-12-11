@@ -14,7 +14,7 @@ import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
-import { ContentCard } from "@/components/content-card"
+import { EmptyState } from "@/components/empty-state"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
@@ -252,31 +252,29 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
           <ScrollToTopButton />
         </>
       ) : (
-        <ContentCard className="text-center py-12">
-          <Building className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters ? 'No locations found' : 'No locations yet'}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {hasActiveFilters
-              ? 'Try adjusting your search to find more locations.'
-              : 'Create your first location to start managing parish venues.'}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href="/locations/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Location
-              </Link>
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+        <EmptyState
+          icon={<Building className="h-16 w-16" />}
+          title={hasActiveFilters ? 'No locations found' : 'No locations yet'}
+          description={hasActiveFilters
+            ? 'Try adjusting your search to find more locations.'
+            : 'Create your first location to start managing parish venues.'}
+          action={
+            <>
+              <Button asChild>
+                <Link href="/locations/create">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Location
+                </Link>
               </Button>
-            )}
-          </div>
-        </ContentCard>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
 
       {/* Quick Stats */}

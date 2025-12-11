@@ -323,7 +323,8 @@ export async function GET(
       locations: {} as Record<string, any>,
       groups: {} as Record<string, any>,
       listItems: {} as Record<string, any>,
-      documents: {} as Record<string, any>
+      documents: {} as Record<string, any>,
+      contents: {} as Record<string, any>
     }
 
     // Populate resolvedEntities from event.resolved_fields
@@ -336,6 +337,8 @@ export async function GET(
           resolvedEntities.locations[typedFieldData.raw_value] = typedFieldData.resolved_value
         } else if (typedFieldData.field_type === 'group' && typedFieldData.resolved_value) {
           resolvedEntities.groups[typedFieldData.raw_value] = typedFieldData.resolved_value
+        } else if (typedFieldData.field_type === 'content' && typedFieldData.resolved_value) {
+          resolvedEntities.contents[typedFieldData.raw_value] = typedFieldData.resolved_value
         }
       }
     }

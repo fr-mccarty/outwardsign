@@ -2,7 +2,9 @@
  * Petitions Builder
  *
  * Builds petitions (Prayer of the Faithful) section
- * Structure: Petition Title > Reader Name > Introduction > Individual Petitions
+ * Structure: Petition Title > Reader Name > Individual Petitions
+ *
+ * Petitions are displayed exactly as entered - no automatic formatting or appending.
  */
 
 import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
@@ -10,8 +12,7 @@ import { ContentSection, ContentElement } from '@/lib/types/liturgy-content'
 /**
  * Build a petitions section
  *
- * Creates petitions section with standard liturgical format.
- * Each petition line gets "let us pray to the Lord" appended.
+ * Creates petitions section displaying petition text exactly as entered.
  * Returns null if no petitions provided.
  * Note: Does NOT include pageBreakAfter - the parent template builder is responsible
  * for adding page breaks BETWEEN sections (not after the last section).
@@ -67,32 +68,14 @@ export function buildPetitionsSection(config?: {
     size: 'medium',
   })
 
-  // Petition introduction (instruction for response)
-  elements.push({
-    type: 'petition',
-    label: 'Reader:',
-    text: 'The response is "Lord, hear our prayer." [Pause]',
-  })
-
-  // Individual petitions
+  // Individual petitions - displayed exactly as entered
   const petitionLines = petitions.split('\n').filter((p) => p.trim())
 
   petitionLines.forEach((petition) => {
-    // Remove trailing period if present
-    const petitionText = petition.trim().replace(/\.$/, '')
-
-    // Petition with "let us pray to the Lord"
     elements.push({
       type: 'petition',
       label: 'Reader:',
-      text: `${petitionText}, let us pray to the Lord.`,
-    })
-
-    // Response after each petition
-    elements.push({
-      type: 'response-dialogue',
-      label: 'People:',
-      text: 'Lord, hear our prayer.',
+      text: petition.trim(),
     })
   })
 

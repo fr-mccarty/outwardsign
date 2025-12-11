@@ -148,16 +148,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Tag className="h-5 w-5 text-primary" />
-              Content Tags
+              Category Tags
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Manage tags for organizing and categorizing liturgical content (Admin only).
+              Manage tags for organizing and categorizing content and petitions (Admin only).
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
-              <Link href="/settings/content-tags">
-                Manage Content Tags
+              <Link href="/settings/category-tags">
+                Manage Category Tags
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>

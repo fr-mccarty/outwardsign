@@ -6,13 +6,15 @@ CREATE TABLE sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   script_id UUID NOT NULL REFERENCES scripts(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  content TEXT NOT NULL,
+  section_type TEXT NOT NULL DEFAULT 'text', -- 'text' | 'petition'
+  content TEXT NOT NULL DEFAULT '', -- Markdown with placeholders (for text type)
   page_break_after BOOLEAN NOT NULL DEFAULT false,
   "order" INTEGER NOT NULL,
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT check_section_order_non_negative CHECK ("order" >= 0)
+  CONSTRAINT check_section_order_non_negative CHECK ("order" >= 0),
+  CONSTRAINT check_section_type_valid CHECK (section_type IN ('text', 'petition'))
 );
 
 -- Enable RLS

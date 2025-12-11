@@ -33,11 +33,10 @@ export async function generatePetitions(
   let prompt = `You are helping to write petitions (universal prayers) for a Catholic liturgy.
 
 IMPORTANT FORMATTING RULES:
-- Each petition should be ONE sentence
+- Each petition should be ONE complete sentence
 - Do NOT include "Reader:" prefix
-- Do NOT include the response "Lord, hear our prayer" or "let us pray to the Lord"
-- Just write the petition text itself
-- Each petition should end with a period
+- Each petition should END with the response phrase "we pray to the Lord." or "let us pray to the Lord."
+- Write the complete petition text as it should be read aloud
 
 `
 
@@ -55,10 +54,10 @@ IMPORTANT FORMATTING RULES:
 
   prompt += `\nHere is a template to use as inspiration:\n${templateText}\n\n`
   prompt += `Please generate ${count} petitions inspired by this template.`
-  prompt += `\nReturn ONLY the petitions, one per line, with no numbering, no "Reader:", and no responses.`
+  prompt += `\nReturn ONLY the petitions, one per line, with no numbering and no "Reader:" prefix.`
   prompt += `\nExample format:\n`
-  prompt += `For the bride and groom, that their love may grow stronger each day.\n`
-  prompt += `For all married couples, that they may find joy in their commitment.\n`
+  prompt += `For the bride and groom, that their love may grow stronger each day, we pray to the Lord.\n`
+  prompt += `For all married couples, that they may find joy in their commitment, we pray to the Lord.\n`
 
   try {
     const message = await anthropic.messages.create({
@@ -80,14 +79,12 @@ IMPORTANT FORMATTING RULES:
       .split('\n')
       .map(line => line.trim())
       .filter(line => {
-        // Filter out empty lines, numbered lines, and lines with "Reader:" or responses
+        // Filter out empty lines, numbered lines, and lines with "Reader:" prefix
         return (
           line.length > 0 &&
           !line.match(/^\d+\.?\s/) && // No numbering
           !line.toLowerCase().includes('reader:') &&
-          !line.toLowerCase().includes('people:') &&
-          !line.toLowerCase().includes('lord, hear our prayer') &&
-          !line.toLowerCase().includes('let us pray to the lord')
+          !line.toLowerCase().includes('people:')
         )
       })
       .map(text => ({ text }))

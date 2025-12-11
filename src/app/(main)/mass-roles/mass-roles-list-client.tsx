@@ -23,7 +23,7 @@ import { PageContainer } from "@/components/page-container"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SearchCard } from "@/components/search-card"
-import { ContentCard } from "@/components/content-card"
+import { EmptyState } from "@/components/empty-state"
 import { Plus, Search } from "lucide-react"
 import { canAccessModule, type UserParishRole } from "@/lib/auth/permissions-client"
 import { DraggableListItem } from "@/components/draggable-list-item"
@@ -135,23 +135,17 @@ export function MassRolesListClient({ massRoles: initialData, userParish }: Mass
 
       {/* Mass Roles List */}
       {filteredItems.length === 0 ? (
-        <ContentCard className="text-center py-12 flex flex-col items-center gap-4">
-          <div className="text-muted-foreground">
-            {searchQuery ? (
-              <>No mass roles found matching &quot;{searchQuery}&quot;</>
-            ) : (
-              <>No mass roles defined yet</>
-            )}
-          </div>
-          {!searchQuery && canManageRoles && (
+        <EmptyState
+          title={searchQuery ? `No mass roles found matching "${searchQuery}"` : 'No mass roles defined yet'}
+          action={!searchQuery && canManageRoles ? (
             <Link href="/mass-roles/create">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Create First Mass Role
               </Button>
             </Link>
-          )}
-        </ContentCard>
+          ) : undefined}
+        />
       ) : !isMounted ? (
         // Render static list during SSR to avoid hydration mismatch
         <div className="flex flex-col gap-2 overflow-hidden">

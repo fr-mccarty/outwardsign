@@ -1,0 +1,264 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { requireSelectedParish } from '@/lib/auth/parish'
+import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import type {
+  TagAssignment,
+  CategoryTag,
+  CreateTagAssignmentData,
+  TagEntityType
+} from '@/lib/types'
+
+/**
+ * Helper to check if user has staff or admin role
+ */
+async function requireStaffOrAdminRole(supabase: Awaited<ReturnType<typeof createClient>>, parishId: string): Promise<string> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user) {
+    throw new Error('Authentication required')
+  }
+
+  const { data: userParish, error: userParishError } = await supabase
+    .from('parish_users')
+    .select('roles')
+    .eq('user_id', user.id)
+    .eq('parish_id', parishId)
+    .single()
+
+  if (userParishError || !userParish || (!userParish.roles.includes('admin') && !userParish.roles.includes('staff'))) {
+    throw new Error('Permission denied: Staff or Admin role required')
+  }
+
+  return user.id
+}
+
+/**
+ * Get all tag assignments for a specific entity
+ */
+export async function getTagAssignments(
+  entityType: TagEntityType,
+  entityId: string
+): Promise<TagAssignment[]> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('tag_assignments')
+    .select('*')
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
+
+  if (error) {
+    console.error('Error fetching tag assignments:', error)
+    throw new Error('Failed to fetch tag assignments')
+  }
+
+  return data || []
+}
+
+/**
+ * Get resolved tags for a specific entity
+ * Returns full CategoryTag objects instead of just assignments
+ */
+export async function getTagsForEntity(
+  entityType: TagEntityType,
+  entityId: string
+): Promise<CategoryTag[]> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const supabase = await createClient()
+
+  // Join tag_assignments with category_tags to get full tag objects
+  const { data, error } = await supabase
+    .from('tag_assignments')
+    .select(`
+      tag_id,
+      category_tags (*)
+    `)
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
+
+  if (error) {
+    console.error('Error fetching tags for entity:', error)
+    throw new Error('Failed to fetch tags for entity')
+  }
+
+  // Extract category_tags from join results
+  return (data || [])
+    .map((assignment: any) => assignment.category_tags)
+    .filter(Boolean) as CategoryTag[]
+}
+
+/**
+ * Assign a tag to an entity
+ * Creates a new tag assignment
+ */
+export async function assignTag(data: CreateTagAssignmentData): Promise<TagAssignment> {
+  const parishId = await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const supabase = await createClient()
+
+  // Check user has staff or admin role
+  await requireStaffOrAdminRole(supabase, parishId)
+
+  // Verify tag exists and belongs to parish
+  const { data: tag, error: tagError } = await supabase
+    .from('category_tags')
+    .select('id')
+    .eq('id', data.tag_id)
+    .eq('parish_id', parishId)
+    .single()
+
+  if (tagError || !tag) {
+    throw new Error('Tag not found or does not belong to parish')
+  }
+
+  // Create assignment
+  const { data: assignment, error } = await supabase
+    .from('tag_assignments')
+    .insert({
+      tag_id: data.tag_id,
+      entity_type: data.entity_type,
+      entity_id: data.entity_id
+    })
+    .select()
+    .single()
+
+  if (error) {
+    // Check for unique constraint violation
+    if (error.code === '23505') {
+      throw new Error('Tag is already assigned to this entity')
+    }
+    console.error('Error assigning tag:', error)
+    throw new Error('Failed to assign tag')
+  }
+
+  // Revalidate relevant paths based on entity type
+  revalidatePathsForEntity(data.entity_type, data.entity_id)
+
+  return assignment
+}
+
+/**
+ * Unassign a tag from an entity
+ * Deletes the tag assignment
+ */
+export async function unassignTag(
+  tagId: string,
+  entityType: TagEntityType,
+  entityId: string
+): Promise<void> {
+  const parishId = await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const supabase = await createClient()
+
+  // Check user has staff or admin role
+  await requireStaffOrAdminRole(supabase, parishId)
+
+  // Delete assignment
+  const { error } = await supabase
+    .from('tag_assignments')
+    .delete()
+    .eq('tag_id', tagId)
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
+
+  if (error) {
+    console.error('Error unassigning tag:', error)
+    throw new Error('Failed to unassign tag')
+  }
+
+  // Revalidate relevant paths
+  revalidatePathsForEntity(entityType, entityId)
+}
+
+/**
+ * Bulk assign tags to an entity
+ * Replaces all existing tags with the provided tag IDs
+ */
+export async function bulkAssignTags(
+  entityType: TagEntityType,
+  entityId: string,
+  tagIds: string[]
+): Promise<void> {
+  const parishId = await requireSelectedParish()
+  await ensureJWTClaims()
+
+  const supabase = await createClient()
+
+  // Check user has staff or admin role
+  await requireStaffOrAdminRole(supabase, parishId)
+
+  // Verify all tags exist and belong to parish
+  if (tagIds.length > 0) {
+    const { data: tags, error: tagError } = await supabase
+      .from('category_tags')
+      .select('id')
+      .eq('parish_id', parishId)
+      .in('id', tagIds)
+
+    if (tagError || !tags || tags.length !== tagIds.length) {
+      throw new Error('Some tags do not exist or do not belong to parish')
+    }
+  }
+
+  // Delete all existing assignments for this entity
+  const { error: deleteError } = await supabase
+    .from('tag_assignments')
+    .delete()
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
+
+  if (deleteError) {
+    console.error('Error deleting existing tag assignments:', deleteError)
+    throw new Error('Failed to delete existing tag assignments')
+  }
+
+  // Insert new assignments (if any tags provided)
+  if (tagIds.length > 0) {
+    const assignments = tagIds.map(tagId => ({
+      tag_id: tagId,
+      entity_type: entityType,
+      entity_id: entityId
+    }))
+
+    const { error: insertError } = await supabase
+      .from('tag_assignments')
+      .insert(assignments)
+
+    if (insertError) {
+      console.error('Error inserting tag assignments:', insertError)
+      throw new Error('Failed to insert tag assignments')
+    }
+  }
+
+  // Revalidate relevant paths
+  revalidatePathsForEntity(entityType, entityId)
+}
+
+/**
+ * Helper to revalidate paths based on entity type
+ */
+function revalidatePathsForEntity(entityType: TagEntityType, entityId: string): void {
+  switch (entityType) {
+    case 'content':
+      revalidatePath('/settings/content-library')
+      revalidatePath(`/settings/content-library/${entityId}`)
+      break
+    case 'petition':
+      revalidatePath('/settings/petitions')
+      revalidatePath(`/settings/petitions/${entityId}`)
+      break
+    case 'petition_template':
+      revalidatePath('/settings/petition-templates')
+      revalidatePath(`/settings/petition-templates/${entityId}`)
+      break
+  }
+}

@@ -11,7 +11,7 @@ import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
-import { ContentCard } from "@/components/content-card"
+import { EmptyState } from "@/components/empty-state"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -334,35 +334,29 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
           <ScrollToTopButton />
         </>
       ) : (
-        <ContentCard className="text-center py-12">
-          <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? 'No events found'
-              : 'No events yet'
-            }
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {hasActiveFilters
-              ? 'Try adjusting your search or filters to find more events.'
-              : 'Create your first event to start managing parish activities.'
-            }
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href="/events/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Event
-              </Link>
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+        <EmptyState
+          icon={<CalendarDays className="h-16 w-16" />}
+          title={hasActiveFilters ? 'No events found' : 'No events yet'}
+          description={hasActiveFilters
+            ? 'Try adjusting your search or filters to find more events.'
+            : 'Create your first event to start managing parish activities.'}
+          action={
+            <>
+              <Button asChild>
+                <Link href="/events/create">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Event
+                </Link>
               </Button>
-            )}
-          </div>
-        </ContentCard>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
 
       {/* Delete Confirmation Dialog */}

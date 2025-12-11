@@ -40,7 +40,7 @@ INSTRUCTIONS:
 - Incorporate the Community Details thoughtfully into petitions WITHOUT making assumptions about individuals' personal circumstances
 - When mentioning specific people by name, pray for their general wellbeing or stated intentions only
 - Generate in {{LANGUAGE}} language
-- Each petition should end with "let us pray to the Lord" (or {{LANGUAGE}} equivalent)
+- Each petition should be a complete sentence ending with "we pray to the Lord" or "let us pray to the Lord" (or {{LANGUAGE}} equivalent)
 - Separate each petition with a blank line
 
 REQUIRED ORDER OF PETITIONS:

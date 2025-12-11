@@ -13,6 +13,161 @@ This document covers UI components for displaying data, including cards, badges,
 
 ---
 
+## Card Components
+
+### ContentCard
+**Path:** `src/components/content-card.tsx`
+
+**Purpose:** Simple card wrapper without header. Provides consistent p-6 padding.
+
+**Key Features:**
+- Standard `p-6` padding (24px) built-in
+- No header section
+- Pass `className` to customize padding when needed
+
+**Props:**
+- `children`: Card content (required)
+- `className`: Additional CSS classes (merges with default `py-6`)
+
+**Usage:**
+```tsx
+// Standard usage - gets p-6 padding automatically
+<ContentCard>
+  <Form>...</Form>
+</ContentCard>
+
+// Custom padding override
+<ContentCard className="py-8">
+  <p>Content with taller vertical padding</p>
+</ContentCard>
+```
+
+**Related Components:**
+- Use `EmptyState` for empty list states
+- Use `FormSectionCard` for cards with title/description header
+- Use `SearchCard` for compact search/filter sections
+
+---
+
+### EmptyState
+**Path:** `src/components/empty-state.tsx`
+
+**Purpose:** Consistent empty state display in a card with centered content. Use for empty list states, no-data states.
+
+**Key Features:**
+- Combines `ContentCard` with centered styling and `py-12` padding
+- Icon, title, description, and action slot
+- Consistent typography and spacing
+
+**Props:**
+- `icon`: Icon to display (typically a Lucide icon, optional)
+- `title`: Main heading text (required)
+- `description`: Description text below title (optional)
+- `action`: Action button or link (optional)
+- `className`: Additional CSS classes (optional)
+
+**Usage:**
+```tsx
+<EmptyState
+  icon={<Users className="h-16 w-16" />}
+  title="No users yet"
+  description="Get started by adding your first user"
+  action={<Button>Add User</Button>}
+/>
+
+// Minimal usage
+<EmptyState title="No results found" />
+
+// With filtered state logic
+<EmptyState
+  icon={<Calendar className="h-16 w-16" />}
+  title={hasFilters ? "No events match your filters" : "No events yet"}
+  description={hasFilters ? "Try adjusting your filters" : "Create your first event"}
+  action={!hasFilters && <Button>Create Event</Button>}
+/>
+```
+
+**Use EmptyState Instead Of:**
+```tsx
+// ❌ Don't do this
+<ContentCard className="text-center py-12">
+  <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+  <h3 className="text-lg font-medium mb-2">No users yet</h3>
+  <p className="text-muted-foreground">Create your first user</p>
+  <Button className="mt-4">Add User</Button>
+</ContentCard>
+
+// ✅ Do this
+<EmptyState
+  icon={<Users className="h-16 w-16" />}
+  title="No users yet"
+  description="Create your first user"
+  action={<Button>Add User</Button>}
+/>
+```
+
+---
+
+### FormSectionCard
+**Path:** `src/components/form-section-card.tsx`
+
+**Purpose:** Card for form sections with title and description header.
+
+**Key Features:**
+- CardHeader with title and optional description
+- CardContent with `space-y-4` for form field spacing
+- Standard card padding
+
+**Props:**
+- `title`: Section title (required)
+- `description`: Optional description below title
+- `children`: Card content (required)
+- `className`: CSS classes for Card
+- `contentClassName`: CSS classes for CardContent
+
+**Usage:**
+```tsx
+<FormSectionCard
+  title="Personal Information"
+  description="Enter the participant's details"
+>
+  <FormField name="first_name" ... />
+  <FormField name="last_name" ... />
+</FormSectionCard>
+```
+
+---
+
+### SearchCard
+**Path:** `src/components/search-card.tsx`
+
+**Purpose:** Compact card for search/filter sections with tighter padding.
+
+**Key Features:**
+- Uses ContentCard as base
+- Tighter vertical padding (`pt-5 pb-5`) than standard cards
+- Built-in title (h3) element
+- `space-y-3` gap between title and content
+
+**Props:**
+- `title`: Section title (required)
+- `children`: Card content (required)
+- `className`: Additional CSS classes (optional)
+
+**Usage:**
+```tsx
+<SearchCard title="Search Weddings">
+  <ClearableSearchInput
+    value={searchValue}
+    onChange={setSearchValue}
+    placeholder="Search by name..."
+  />
+  <AdvancedSearch ... />
+</SearchCard>
+```
+
+---
+
 ## Display Components
 
 ### ListViewCard

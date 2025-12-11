@@ -70,7 +70,7 @@ export function ContentViewClient({ content }: ContentViewClientProps) {
               </div>
             )}
 
-            {content.tags.length > 0 && (
+            {content.tags && content.tags.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground">Tags</h3>
                 <div className="mt-1 flex flex-wrap gap-1">

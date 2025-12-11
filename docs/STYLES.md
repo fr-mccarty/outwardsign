@@ -820,6 +820,22 @@ These work on any background:
 </Button>
 ```
 
+### 7. Dialog Width Without Responsive Prefix
+
+**Problem:** Custom max-width doesn't override DialogContent's default `sm:max-w-lg`.
+
+The `DialogContent` component has a default class of `sm:max-w-lg`. To override this, you must use the same responsive breakpoint prefix.
+
+```tsx
+// ❌ WRONG - max-w-4xl is overridden by sm:max-w-lg at sm+ breakpoints
+<DialogContent className="max-w-4xl">
+
+// ✅ CORRECT - sm:max-w-4xl overrides sm:max-w-lg
+<DialogContent className="sm:max-w-4xl">
+```
+
+**Why:** Tailwind responsive prefixes (`sm:`, `md:`, etc.) have higher specificity than base classes at that breakpoint. Since DialogContent defaults to `sm:max-w-lg`, your override must also use `sm:` to win in the CSS cascade.
+
 ---
 
 ## Quick Checklist

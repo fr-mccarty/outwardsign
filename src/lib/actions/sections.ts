@@ -94,7 +94,8 @@ export async function createSection(scriptId: string, data: CreateSectionData): 
       {
         script_id: scriptId,
         name: data.name,
-        content: data.content,
+        section_type: data.section_type ?? 'text',
+        content: data.content ?? '',
         page_break_after: data.page_break_after ?? false,
         order: newOrder
       }

@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Loader2, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight, FileText, ChevronDown, ChevronUp } from 'lucide-react'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { getContents, type GetContentsResult } from '@/lib/actions/contents'
 import { getContentTags } from '@/lib/actions/content-tags'
 import type { ContentWithTags, ContentTag } from '@/lib/types'
@@ -41,6 +41,7 @@ export function ContentPicker({
   const [activeTags, setActiveTags] = useState<string[]>(defaultFilterTags)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedContent, setSelectedContent] = useState<ContentWithTags | null>(null)
+  const [showMoreFilters, setShowMoreFilters] = useState(false)
 
   // Define loadContents with useCallback BEFORE it's used in useEffect
   const loadContents = useCallback(async (
@@ -130,20 +131,20 @@ export function ContentPicker({
     }
   }
 
-  // Group tags by category based on sort_order ranges
-  const tagsByCategory = useMemo(() => {
-    const categories = {
-      sacrament: allTags.filter((tag) => tag.sort_order >= 1 && tag.sort_order <= 10),
-      section: allTags.filter((tag) => tag.sort_order >= 11 && tag.sort_order <= 30),
-      theme: allTags.filter((tag) => tag.sort_order >= 31 && tag.sort_order <= 50),
-      testament: allTags.filter((tag) => tag.sort_order >= 51 && tag.sort_order <= 60),
+  // Progressive disclosure: show limited tags initially
+  const INITIAL_TAG_LIMIT = 10
+  const visibleTags = useMemo(() => {
+    if (showMoreFilters) {
+      return allTags
     }
-    return categories
-  }, [allTags])
+    return allTags.slice(0, INITIAL_TAG_LIMIT)
+  }, [allTags, showMoreFilters])
+
+  const hasMoreTags = allTags.length > INITIAL_TAG_LIMIT
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col max-w-3xl max-h-[80vh]">
+      <DialogContent className="flex flex-col sm:max-w-4xl max-h-[80vh]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Choose Content</DialogTitle>
         </DialogHeader>
@@ -151,101 +152,54 @@ export function ContentPicker({
         {/* Filter controls */}
         <div className="flex-shrink-0 space-y-3">
           {/* Search */}
-          <div>
-            <Input
-              type="text"
-              placeholder="Search by title or body text..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+          <ClearableSearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search by title or body text..."
+          />
 
-          {/* Tag filters - grouped by category */}
-          <div className="space-y-2">
-            {/* Sacrament Tags */}
-            {tagsByCategory.sacrament.length > 0 && (
-              <div className="space-y-1">
-                <div className="text-xs font-semibold text-muted-foreground">Sacrament</div>
-                <div className="flex flex-wrap gap-1">
-                  {tagsByCategory.sacrament.map((tag) => (
-                    <Button
-                      key={tag.id}
-                      type="button"
-                      variant={activeTags.includes(tag.slug) ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleToggleTag(tag.slug)}
-                      className="h-7 text-xs"
-                    >
-                      {tag.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Tag filters - flat list with progressive disclosure */}
+          {allTags.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1">
+                {visibleTags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    type="button"
+                    variant={activeTags.includes(tag.slug) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleToggleTag(tag.slug)}
+                    className="h-7 text-xs"
+                  >
+                    {tag.name}
+                  </Button>
+                ))}
 
-            {/* Section Tags */}
-            {tagsByCategory.section.length > 0 && (
-              <div className="space-y-1">
-                <div className="text-xs font-semibold text-muted-foreground">Section</div>
-                <div className="flex flex-wrap gap-1">
-                  {tagsByCategory.section.map((tag) => (
-                    <Button
-                      key={tag.id}
-                      type="button"
-                      variant={activeTags.includes(tag.slug) ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleToggleTag(tag.slug)}
-                      className="h-7 text-xs"
-                    >
-                      {tag.name}
-                    </Button>
-                  ))}
-                </div>
+                {/* Show more/less toggle inline with tags */}
+                {hasMoreTags && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowMoreFilters(!showMoreFilters)}
+                    className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    {showMoreFilters ? (
+                      <>
+                        <ChevronUp className="h-3 w-3 mr-1" />
+                        Less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-3 w-3 mr-1" />
+                        +{allTags.length - INITIAL_TAG_LIMIT} more
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
-            )}
-
-            {/* Theme Tags */}
-            {tagsByCategory.theme.length > 0 && (
-              <div className="space-y-1">
-                <div className="text-xs font-semibold text-muted-foreground">Theme</div>
-                <div className="flex flex-wrap gap-1">
-                  {tagsByCategory.theme.map((tag) => (
-                    <Button
-                      key={tag.id}
-                      type="button"
-                      variant={activeTags.includes(tag.slug) ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleToggleTag(tag.slug)}
-                      className="h-7 text-xs"
-                    >
-                      {tag.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Testament Tags */}
-            {tagsByCategory.testament.length > 0 && (
-              <div className="space-y-1">
-                <div className="text-xs font-semibold text-muted-foreground">Testament</div>
-                <div className="flex flex-wrap gap-1">
-                  {tagsByCategory.testament.map((tag) => (
-                    <Button
-                      key={tag.id}
-                      type="button"
-                      variant={activeTags.includes(tag.slug) ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleToggleTag(tag.slug)}
-                      className="h-7 text-xs"
-                    >
-                      {tag.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Content list */}
@@ -296,7 +250,7 @@ export function ContentPicker({
                           </div>
                         )}
 
-                        {content.tags.length > 0 && (
+                        {content.tags && content.tags.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {content.tags.map((tag) => (
                               <Badge key={tag.id} variant="secondary" className="text-xs">

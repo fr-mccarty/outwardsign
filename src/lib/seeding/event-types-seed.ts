@@ -96,10 +96,12 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: 'Presider', type: 'person', required: false, order: 4 },
     { name: 'Reception Location', type: 'location', required: false, order: 5 },
     { name: 'Opening Song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 6 },
-    { name: 'First Reading', type: 'text', required: false, order: 7 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 8 },
-    { name: 'Unity Candle', type: 'yes_no', required: false, order: 9 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 10 }
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 7 },
+    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 8 },
+    { name: 'First Reading', type: 'text', required: false, order: 9 },
+    { name: 'Gospel Reading', type: 'text', required: false, order: 10 },
+    { name: 'Unity Candle', type: 'yes_no', required: false, order: 11 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 12 }
   ]
 
   const { error: weddingFieldsError } = await supabase
@@ -363,11 +365,13 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     { name: 'Burial Location', type: 'location', required: false, order: 5 },
     { name: 'Visitation Location', type: 'location', required: false, order: 6 },
     { name: 'Opening Song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
-    { name: 'First Reading', type: 'text', required: false, order: 8 },
-    { name: 'Psalm', type: 'text', required: false, order: 9 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 10 },
-    { name: 'Eulogy Speaker', type: 'person', required: false, order: 11 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 12 }
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
+    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
+    { name: 'First Reading', type: 'text', required: false, order: 10 },
+    { name: 'Psalm', type: 'text', required: false, order: 11 },
+    { name: 'Gospel Reading', type: 'text', required: false, order: 12 },
+    { name: 'Eulogy Speaker', type: 'person', required: false, order: 13 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 14 }
   ]
 
   const { error: funeralFieldsError } = await supabase
@@ -555,7 +559,8 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
     { name: 'Baptism Date', type: 'date', required: true, order: 5 },
     { name: 'Baptism Location', type: 'location', required: true, order: 6 },
     { name: 'Presider', type: 'person', required: false, order: 7 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 8 }
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['baptism', 'opening-prayer'], order: 8 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
   const { error: baptismFieldsError } = await supabase
@@ -682,7 +687,8 @@ Please join us in celebrating the Baptism of
     { name: 'Presider', type: 'person', required: false, order: 5 },
     { name: 'Reception Location', type: 'location', required: false, order: 6 },
     { name: 'Court of Honor', type: 'group', required: false, order: 7 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 8 }
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['quinceanera', 'opening-prayer'], order: 8 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
   const { error: quinceaneraFieldsError } = await supabase
@@ -811,7 +817,8 @@ Please join us for a reception following the ceremony at:
     { name: 'Presentation Date', type: 'date', required: true, order: 5 },
     { name: 'Presentation Location', type: 'location', required: true, order: 6 },
     { name: 'Presider', type: 'person', required: false, order: 7 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 8 }
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['presentation', 'opening-prayer'], order: 8 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
   const { error: presentationFieldsError } = await supabase

@@ -525,31 +525,29 @@ export function WeddingsListClient({ initialData, stats }: WeddingsListClientPro
           <ScrollToTopButton />
         </>
       ) : (
-        <ContentCard className="text-center py-12">
-          <VenusAndMars className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters ? 'No weddings found' : 'No weddings yet'}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {hasActiveFilters
-              ? 'Try adjusting your search or filters to find more weddings.'
-              : 'Create your first wedding to start managing wedding celebrations in your parish.'}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href="/weddings/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Wedding
-              </Link>
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+        <EmptyState
+          icon={<VenusAndMars className="h-16 w-16" />}
+          title={hasActiveFilters ? 'No weddings found' : 'No weddings yet'}
+          description={hasActiveFilters
+            ? 'Try adjusting your search or filters to find more weddings.'
+            : 'Create your first wedding to start managing wedding celebrations in your parish.'}
+          action={
+            <>
+              <Button asChild>
+                <Link href="/weddings/create">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Wedding
+                </Link>
               </Button>
-            )}
-          </div>
-        </ContentCard>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
 
       {/* Quick Stats */}

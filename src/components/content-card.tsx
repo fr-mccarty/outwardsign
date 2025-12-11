@@ -10,17 +10,21 @@ interface ContentCardProps {
 /**
  * ContentCard - Simple card wrapper without header
  *
+ * Provides consistent p-6 padding by default (24px on all sides).
+ * Use className to customize padding when needed.
+ *
  * Usage:
  * <ContentCard>
- *   <p>Any content here</p>
+ *   <p>Content with standard p-6 padding</p>
  * </ContentCard>
  *
+ * For empty states, use the EmptyState component instead.
  * For cards with title/description, use FormSectionCard instead.
  */
 export function ContentCard({ children, className }: ContentCardProps) {
   return (
     <Card className="!py-0">
-      <CardContent className={cn("pt-6", className)}>
+      <CardContent className={cn("py-6", className)}>
         {children}
       </CardContent>
     </Card>

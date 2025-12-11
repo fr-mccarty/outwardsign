@@ -1,7 +1,8 @@
 /**
- * Content Tags Seeding
- * Seeds default content tags during parish onboarding
+ * Category Tags Seeding
+ * Seeds default category tags during parish onboarding
  * Tags are organized by category with distinct sort_order ranges
+ * These tags are shared across content library and petitions
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -46,8 +47,6 @@ const THEME_TAGS = [
 const TESTAMENT_TAGS = [
   { name: 'Old Testament', slug: 'old-testament', sort_order: 51 },
   { name: 'New Testament', slug: 'new-testament', sort_order: 52 },
-  { name: 'Psalms', slug: 'psalms', sort_order: 53 },
-  { name: 'Gospels', slug: 'gospels', sort_order: 54 },
 ]
 
 // Combined tags list
@@ -59,7 +58,7 @@ const ALL_TAGS = [
 ]
 
 /**
- * Seed default content tags for a parish
+ * Seed default category tags for a parish
  * Called during parish onboarding
  */
 export async function seedContentTagsForParish(
@@ -76,17 +75,17 @@ export async function seedContentTagsForParish(
       color: null // NULL for MVP
     }))
 
-    // Insert all tags
+    // Insert all tags into category_tags table (shared across content and petitions)
     const { error } = await supabase
-      .from('content_tags')
+      .from('category_tags')
       .insert(tagsToInsert)
 
     if (error) {
-      console.error('Error seeding content tags:', error)
-      throw new Error(`Failed to seed content tags: ${error.message}`)
+      console.error('Error seeding category tags:', error)
+      throw new Error(`Failed to seed category tags: ${error.message}`)
     }
 
-    console.log(`✅ Seeded ${ALL_TAGS.length} content tags for parish ${parishId}`)
+    console.log(`✅ Seeded ${ALL_TAGS.length} category tags for parish ${parishId}`)
   } catch (error) {
     console.error('Error in seedContentTagsForParish:', error)
     throw error

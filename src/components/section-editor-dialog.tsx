@@ -12,10 +12,17 @@ import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form-input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { MarkdownEditor } from '@/components/markdown-editor'
 import { createSection, updateSection } from '@/lib/actions/sections'
 import { toast } from 'sonner'
-import type { Section, InputFieldDefinition } from '@/lib/types'
+import type { Section, InputFieldDefinition, SectionType } from '@/lib/types'
 
 interface SectionEditorDialogProps {
   open: boolean
@@ -26,6 +33,11 @@ interface SectionEditorDialogProps {
   onSaved: () => void
 }
 
+const SECTION_TYPE_OPTIONS: { value: SectionType; label: string; description: string }[] = [
+  { value: 'text', label: 'Text', description: 'Rich text with field placeholders' },
+  { value: 'petition', label: 'Petition', description: 'Prayer of the Faithful / Petitions' },
+]
+
 export function SectionEditorDialog({
   open,
   onOpenChange,
@@ -35,6 +47,7 @@ export function SectionEditorDialog({
   onSaved,
 }: SectionEditorDialogProps) {
   const [name, setName] = useState('')
+  const [sectionType, setSectionType] = useState<SectionType>('text')
   const [content, setContent] = useState('')
   const [pageBreakAfter, setPageBreakAfter] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -43,10 +56,12 @@ export function SectionEditorDialog({
   useEffect(() => {
     if (section) {
       setName(section.name)
+      setSectionType(section.section_type || 'text')
       setContent(section.content)
       setPageBreakAfter(section.page_break_after)
     } else {
       setName('')
+      setSectionType('text')
       setContent('')
       setPageBreakAfter(false)
     }
@@ -58,7 +73,8 @@ export function SectionEditorDialog({
       return
     }
 
-    if (!content.trim()) {
+    // Content is only required for text type
+    if (sectionType === 'text' && !content.trim()) {
       toast.error('Section content is required')
       return
     }
@@ -69,7 +85,8 @@ export function SectionEditorDialog({
         // Update existing section
         await updateSection(section.id, {
           name: name.trim(),
-          content: content.trim(),
+          section_type: sectionType,
+          content: sectionType === 'text' ? content.trim() : '',
           page_break_after: pageBreakAfter,
         })
         toast.success('Section updated successfully')
@@ -77,7 +94,8 @@ export function SectionEditorDialog({
         // Create new section
         await createSection(scriptId, {
           name: name.trim(),
-          content: content.trim(),
+          section_type: sectionType,
+          content: sectionType === 'text' ? content.trim() : '',
           page_break_after: pageBreakAfter,
         })
         toast.success('Section created successfully')
@@ -113,15 +131,56 @@ export function SectionEditorDialog({
             placeholder="e.g., Opening Prayer, Readings, Closing"
           />
 
-          {/* Markdown Editor */}
-          <MarkdownEditor
-            value={content}
-            onChange={setContent}
-            availableFields={inputFields}
-            label="Content"
-            required
-            placeholder="Enter the section content using markdown and field placeholders..."
-          />
+          {/* Section Type Selector */}
+          <div className="space-y-2">
+            <Label htmlFor="section-type">Section Type</Label>
+            <Select
+              value={sectionType}
+              onValueChange={(value) => setSectionType(value as SectionType)}
+            >
+              <SelectTrigger id="section-type">
+                <SelectValue placeholder="Select section type" />
+              </SelectTrigger>
+              <SelectContent>
+                {SECTION_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div className="flex flex-col">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {option.description}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Content - only show for text type */}
+          {sectionType === 'text' && (
+            <MarkdownEditor
+              value={content}
+              onChange={setContent}
+              availableFields={inputFields}
+              label="Content"
+              required
+              placeholder="Enter the section content using markdown and field placeholders..."
+            />
+          )}
+
+          {/* Petition message - show for petition type */}
+          {sectionType === 'petition' && (
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <p className="text-sm text-muted-foreground">
+                This section will display the event&apos;s petitions (Prayer of the Faithful).
+                Petitions are created and edited when filling out the event details, using the
+                petition input field.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Make sure the event type has a <strong>petition</strong> input field configured.
+              </p>
+            </div>
+          )}
 
           {/* Page Break After */}
           <div className="flex items-center space-x-2">

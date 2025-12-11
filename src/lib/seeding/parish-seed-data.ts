@@ -71,7 +71,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
-  // 3. Seed Group Roles
+  // 2. Seed Group Roles
   // =====================================================
   const defaultGroupRoles = [
     { parish_id: parishId, name: 'Leader', description: 'Leads and coordinates the group', is_active: true, display_order: 1 },
@@ -343,6 +343,57 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   // 9. Seed Content Tags
   // =====================================================
   await seedContentTagsForParish(supabase, parishId)
+
+  // =====================================================
+  // 10. Assign Tags to Petition Templates
+  // =====================================================
+  // Now that category tags are created, we can assign them to petition templates
+  const { data: categoryTags, error: categoryTagsError } = await supabase
+    .from('category_tags')
+    .select('id, slug')
+    .eq('parish_id', parishId)
+
+  if (categoryTagsError) {
+    console.error('Error fetching category tags:', categoryTagsError)
+    // Don't throw - templates are created, just log the error
+  }
+
+  if (categoryTags && petitionTemplates) {
+    // Create a map of slug -> tag id for quick lookup
+    const tagSlugToId = new Map(categoryTags.map(t => [t.slug, t.id]))
+
+    // Build tag assignments for petition templates
+    const tagAssignments: { tag_id: string; entity_type: string; entity_id: string }[] = []
+
+    for (let i = 0; i < petitionTemplates.length; i++) {
+      const template = petitionTemplates[i]
+      const templateDef = defaultPetitionTemplates[i]
+
+      if (templateDef.tags && templateDef.tags.length > 0) {
+        for (const tagSlug of templateDef.tags) {
+          const tagId = tagSlugToId.get(tagSlug)
+          if (tagId) {
+            tagAssignments.push({
+              tag_id: tagId,
+              entity_type: 'petition_template',
+              entity_id: template.id
+            })
+          }
+        }
+      }
+    }
+
+    if (tagAssignments.length > 0) {
+      const { error: tagAssignmentsError } = await supabase
+        .from('tag_assignments')
+        .insert(tagAssignments)
+
+      if (tagAssignmentsError) {
+        console.error('Error creating petition template tag assignments:', tagAssignmentsError)
+        // Don't throw - templates are created, just log the error
+      }
+    }
+  }
 
   return {
     success: true,

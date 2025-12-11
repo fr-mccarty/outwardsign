@@ -9,7 +9,7 @@ import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from '@/components/search-card'
-import { ContentCard } from '@/components/content-card'
+import { EmptyState } from '@/components/empty-state'
 import { ListStatsBar, type ListStat } from '@/components/list-stats-bar'
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { PersonAvatarGroup } from '@/components/person-avatar-group'
@@ -401,23 +401,19 @@ export function GroupMembersListClient({
             <ScrollToTopButton />
           </>
         ) : (
-          <ContentCard className="text-center py-12">
-            <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">
-              {hasActiveFilters ? 'No members found' : 'No group members yet'}
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {hasActiveFilters
-                ? 'Try adjusting your search to find more members.'
-                : 'Add people to groups to see them here.'}
-            </p>
-            {hasActiveFilters && (
+          <EmptyState
+            icon={<Users className="h-16 w-16" />}
+            title={hasActiveFilters ? 'No members found' : 'No group members yet'}
+            description={hasActiveFilters
+              ? 'Try adjusting your search to find more members.'
+              : 'Add people to groups to see them here.'}
+            action={hasActiveFilters ? (
               <Button variant="outline" onClick={handleClearFilters}>
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
               </Button>
-            )}
-          </ContentCard>
+            ) : undefined}
+          />
         )}
 
         {/* Stats */}

@@ -31,7 +31,7 @@ export function EventTypeSelector({ eventTypes }: EventTypeSelectorProps) {
               href={`/events/${eventType.slug}/create`}
               className="block"
             >
-              <ContentCard className="h-full hover:border-primary/50 hover:bg-accent/50 transition-colors cursor-pointer pb-6">
+              <ContentCard className="h-full hover:border-primary/50 hover:bg-accent/50 transition-colors cursor-pointer">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Icon className="w-5 h-5 text-primary" />

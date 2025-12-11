@@ -422,7 +422,7 @@ export function CorePicker<T>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col max-w-2xl max-h-[80vh]" data-testid={testId}>
+      <DialogContent className="flex flex-col sm:max-w-4xl max-h-[80vh]" data-testid={testId}>
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{title}</DialogTitle>
           {showCreateForm && isEditMode && (

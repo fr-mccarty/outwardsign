@@ -12,7 +12,7 @@ import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
-import { ContentCard } from "@/components/content-card"
+import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, CalendarDays, Filter } from "lucide-react"
@@ -190,35 +190,31 @@ export function EventsListClient({ eventType, initialData, initialHasMore }: Eve
           <ScrollToTopButton />
         </>
       ) : (
-        <ContentCard className="text-center py-12">
-          <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters
-              ? `No ${eventType.name.toLowerCase()}s found`
-              : `No ${eventType.name.toLowerCase()}s yet`
-            }
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {hasActiveFilters
-              ? 'Try adjusting your search or filters to find more events.'
-              : `Create your first ${eventType.name.toLowerCase()} to get started.`
-            }
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href={`/events/${eventType.id}/create`}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First {eventType.name}
-              </Link>
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+        <EmptyState
+          icon={<CalendarDays className="h-16 w-16" />}
+          title={hasActiveFilters
+            ? `No ${eventType.name.toLowerCase()}s found`
+            : `No ${eventType.name.toLowerCase()}s yet`}
+          description={hasActiveFilters
+            ? 'Try adjusting your search or filters to find more events.'
+            : `Create your first ${eventType.name.toLowerCase()} to get started.`}
+          action={
+            <>
+              <Button asChild>
+                <Link href={`/events/${eventType.id}/create`}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First {eventType.name}
+                </Link>
               </Button>
-            )}
-          </div>
-        </ContentCard>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
     </div>
   )

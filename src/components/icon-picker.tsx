@@ -7,11 +7,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { LUCIDE_ICON_MAP, getLucideIcon } from '@/lib/utils/lucide-icons'
-import { Search } from 'lucide-react'
+import { ClearableSearchInput } from '@/components/clearable-search-input'
 
 // Icons organized by category for better UX
 const ICON_CATEGORIES = {
@@ -117,16 +116,12 @@ export function IconPicker({
         </PopoverTrigger>
         <PopoverContent className="w-[340px] p-0" align="start">
           {/* Search input */}
-          <div className="p-3 border-b">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search icons..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
+          <div className="border-b">
+            <ClearableSearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="Search icons..."
+            />
           </div>
 
           {/* Icon grid */}

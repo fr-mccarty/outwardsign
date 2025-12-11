@@ -11,7 +11,7 @@ import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { SearchCard } from "@/components/search-card"
-import { ContentCard } from "@/components/content-card"
+import { EmptyState } from "@/components/empty-state"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
@@ -268,31 +268,29 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
           <ScrollToTopButton />
         </>
       ) : (
-        <ContentCard className="text-center py-12">
-          <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">
-            {hasActiveFilters ? 'No people found' : 'No people yet'}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {hasActiveFilters
-              ? 'Try adjusting your search to find more people.'
-              : 'Create your first person to start managing your parish directory.'}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <Link href="/people/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Person
-              </Link>
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={handleClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
+        <EmptyState
+          icon={<User className="h-16 w-16" />}
+          title={hasActiveFilters ? 'No people found' : 'No people yet'}
+          description={hasActiveFilters
+            ? 'Try adjusting your search to find more people.'
+            : 'Create your first person to start managing your parish directory.'}
+          action={
+            <>
+              <Button asChild>
+                <Link href="/people/create">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Person
+                </Link>
               </Button>
-            )}
-          </div>
-        </ContentCard>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={handleClearFilters}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
 
       {/* Quick Stats */}

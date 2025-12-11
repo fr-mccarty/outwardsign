@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SearchCard } from "@/components/search-card"
-import { ContentCard } from "@/components/content-card"
+import { EmptyState } from "@/components/empty-state"
 import { Button } from '@/components/ui/button'
 import { Plus, Clock, Search, X } from 'lucide-react'
 import Link from 'next/link'
@@ -120,21 +120,21 @@ export function MassTimesListClient({ initialData, stats }: MassTimesListClientP
 
       {/* Mass Times Templates Grid */}
       {initialData.length === 0 ? (
-        <ContentCard className="flex flex-col items-center justify-center py-12">
-          <Clock className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Templates Found</h3>
-          <p className="text-muted-foreground mb-4 text-center">
-            {hasActiveFilters
-              ? 'Try adjusting your search filters or create a new template.'
-              : 'Get started by creating your first mass times template.'}
-          </p>
-          <Button asChild>
-            <Link href="/mass-times-templates/create">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Template
-            </Link>
-          </Button>
-        </ContentCard>
+        <EmptyState
+          icon={<Clock className="h-12 w-12" />}
+          title="No Templates Found"
+          description={hasActiveFilters
+            ? 'Try adjusting your search filters or create a new template.'
+            : 'Get started by creating your first mass times template.'}
+          action={
+            <Button asChild>
+              <Link href="/mass-times-templates/create">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Template
+              </Link>
+            </Button>
+          }
+        />
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

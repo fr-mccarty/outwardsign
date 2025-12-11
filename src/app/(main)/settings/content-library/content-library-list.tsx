@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, FileText, Trash2, Edit } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { ContentCard } from '@/components/content-card'
+import { EmptyState } from '@/components/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { deleteContent } from '@/lib/actions/contents'
@@ -131,23 +132,19 @@ export function ContentLibraryList({
 
       {/* Content List */}
       {initialContents.length === 0 ? (
-        <ContentCard>
-          <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">No content found</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {search || language !== 'all'
-                ? 'Try adjusting your filters'
-                : 'Get started by creating your first content'}
-            </p>
-            {!search && language === 'all' && (
-              <Button onClick={handleCreateClick} className="mt-4">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Content
-              </Button>
-            )}
-          </div>
-        </ContentCard>
+        <EmptyState
+          icon={<FileText className="h-12 w-12" />}
+          title="No content found"
+          description={search || language !== 'all'
+            ? 'Try adjusting your filters'
+            : 'Get started by creating your first content'}
+          action={!search && language === 'all' ? (
+            <Button onClick={handleCreateClick}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Content
+            </Button>
+          ) : undefined}
+        />
       ) : (
         <>
           <div className="grid gap-4 pb-6">
@@ -173,7 +170,7 @@ export function ContentLibraryList({
                       </p>
                     )}
 
-                    {content.tags.length > 0 && (
+                    {content.tags && content.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {content.tags.map((tag) => (
                           <Badge key={tag.id} variant="secondary" className="text-xs">

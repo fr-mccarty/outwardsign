@@ -18,6 +18,7 @@ export type InputFieldType =
   | 'text'            // JSON string
   | 'rich_text'       // JSON string (multiline)
   | 'content'         // References contents table (content library)
+  | 'petition'        // References petitions table
   | 'date'            // JSON date string (YYYY-MM-DD)
   | 'time'            // JSON time string (HH:MM:SS)
   | 'datetime'        // JSON datetime string (ISO 8601)

@@ -313,8 +313,8 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     icon: Library,
                   },
                   {
-                    title: "Content Tags",
-                    url: "/settings/content-tags",
+                    title: "Category Tags",
+                    url: "/settings/category-tags",
                     icon: Tag,
                   },
                   {

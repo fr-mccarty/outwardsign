@@ -94,42 +94,27 @@ export function PetitionEditor({
             <DialogHeader>
               <DialogTitle>Petition Format</DialogTitle>
               <DialogDescription>
-                How petitions will appear when displayed or printed
+                Petitions display exactly as you enter them
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="bg-muted p-4 rounded-md space-y-3">
-                <p className="text-sm font-medium">Example Format:</p>
+                <p className="text-sm font-medium">Example:</p>
                 <div className="bg-background p-3 rounded border space-y-2">
-                  <p className="text-sm">
-                    <span className="font-semibold">Reader:</span> The response is &quot;Lord, hear our prayer.&quot; <span className="text-destructive font-semibold">[Pause]</span>
+                  <p className="text-sm italic">
+                    For the bride and groom, that their love may grow stronger each day, we pray to the Lord.
                   </p>
-                  <div className="border-t pt-2 space-y-2">
-                    <p className="text-sm">
-                      <span className="font-semibold">You enter:</span> <span className="italic">For the bride and groom, that their love may grow stronger each day.</span>
-                    </p>
-                  </div>
-                  <div className="border-t pt-2 space-y-2">
-                    <p className="text-sm">
-                      <span className="font-semibold">It displays as:</span>
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Reader:</span> <span className="italic">For the bride and groom, that their love may grow stronger each day</span>, let us pray to the Lord.
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold">People:</span> <span className="italic">Lord, hear our prayer.</span>
-                    </p>
-                  </div>
+                  <p className="text-sm italic">
+                    For all married couples, that they may find joy in their commitment, we pray to the Lord.
+                  </p>
                 </div>
               </div>
               <div className="text-sm space-y-2">
                 <p className="font-medium">Instructions:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                   <li>Enter each petition on a new line</li>
-                  <li>Do NOT include &quot;Reader:&quot; prefix</li>
-                  <li>Do NOT include &quot;let us pray to the Lord&quot;</li>
-                  <li>Do NOT include the response</li>
-                  <li>These will be added automatically when printed</li>
+                  <li>Include the full text as you want it to appear</li>
+                  <li>Include the response ending (e.g., &quot;we pray to the Lord&quot;)</li>
                 </ul>
               </div>
             </div>
@@ -144,7 +129,7 @@ export function PetitionEditor({
             inputType="textarea"
             value={value}
             onChange={onChange}
-            placeholder="Enter petitions, one per line...&#10;&#10;Example:&#10;For the bride and groom, that their love may grow stronger each day.&#10;For all married couples, that they may find joy in their commitment.&#10;For those who are sick or suffering, that they may know God's healing presence."
+            placeholder="Enter petitions, one per line...&#10;&#10;Example:&#10;For the bride and groom, that their love may grow stronger each day, we pray to the Lord.&#10;For all married couples, that they may find joy in their commitment, we pray to the Lord.&#10;For those who are sick or suffering, that they may know God's healing presence, we pray to the Lord."
             className="min-h-[300px]"
             disabled={readOnly}
             hideLabel
