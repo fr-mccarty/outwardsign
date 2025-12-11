@@ -101,7 +101,8 @@ export interface Parish {
   id: string
   name: string
   city: string
-  state: string
+  state?: string | null
+  country?: string
   created_at: string
 }
 
@@ -557,6 +558,7 @@ export type InputFieldType =
   | 'event_link'
   | 'list_item'
   | 'document'
+  | 'content'
   | 'text'
   | 'rich_text'
   | 'date'
@@ -597,6 +599,7 @@ export interface InputFieldDefinition {
   required: boolean
   list_id: string | null
   event_type_filter_id: string | null
+  filter_tags: string[] | null
   is_key_person: boolean
   order: number
   deleted_at: string | null
@@ -616,6 +619,7 @@ export interface CreateInputFieldDefinitionData {
   required: boolean
   list_id?: string | null
   event_type_filter_id?: string | null
+  filter_tags?: string[] | null
   is_key_person?: boolean
 }
 
@@ -625,6 +629,7 @@ export interface UpdateInputFieldDefinitionData {
   required?: boolean
   list_id?: string | null
   event_type_filter_id?: string | null
+  filter_tags?: string[] | null
   is_key_person?: boolean
 }
 
@@ -733,7 +738,8 @@ export interface ResolvedFieldValue {
   field_name: string
   field_type: InputFieldType
   raw_value: any
-  resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | null
+  // Content is defined later in file - TypeScript handles forward references within the same file
+  resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | Content | null
 }
 
 /**
@@ -803,4 +809,79 @@ export interface Document {
   file_size: number
   uploaded_at: string
   deleted_at: string | null
+}
+
+// Content Library Types
+
+export interface Content {
+  id: string
+  parish_id: string
+  title: string
+  body: string // Markdown
+  language: 'en' | 'es'
+  description: string | null
+  created_at: string
+  updated_at: string
+  created_by: string | null
+}
+
+export interface ContentTag {
+  id: string
+  parish_id: string
+  name: string
+  slug: string
+  sort_order: number
+  color: string | null
+  created_at: string
+  updated_at: string
+  created_by: string | null
+}
+
+export interface ContentTagAssignment {
+  id: string
+  content_id: string
+  tag_id: string
+  created_at: string
+}
+
+// WithRelations types
+
+export interface ContentWithTags extends Content {
+  tags: ContentTag[] // Joined via content_tag_assignments
+}
+
+export interface ContentTagWithUsageCount extends ContentTag {
+  usage_count: number // Count of content items with this tag
+}
+
+// Create/Update data types
+
+export interface CreateContentData {
+  title: string
+  body: string
+  language: 'en' | 'es'
+  description?: string | null
+  tag_ids?: string[] // Array of tag IDs to assign
+}
+
+export interface UpdateContentData {
+  title?: string
+  body?: string
+  language?: 'en' | 'es'
+  description?: string | null
+  tag_ids?: string[] // Replaces all existing tag assignments
+}
+
+export interface CreateContentTagData {
+  name: string
+  slug?: string // Auto-generated from name if not provided
+  sort_order?: number // Auto-calculated if not provided
+  color?: string | null
+}
+
+export interface UpdateContentTagData {
+  name?: string
+  slug?: string
+  sort_order?: number
+  color?: string | null
 }

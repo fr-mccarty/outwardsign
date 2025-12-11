@@ -72,7 +72,8 @@ export function ParishSettingsClient({
   const [formData, setFormData] = useState({
     name: parish.name,
     city: parish.city,
-    state: parish.state
+    state: parish.state ?? '',
+    country: parish.country ?? ''
   })
   const [liturgicalLocale, setLiturgicalLocale] = useState(parishSettings?.liturgical_locale || 'en_US')
   const [quickAmountsData, setQuickAmountsData] = useState(
@@ -391,6 +392,16 @@ export function ParishSettingsClient({
               onChange={(value) => handleChange('state', value)}
               placeholder="NY"
               required
+            />
+          </div>
+
+          <div>
+            <FormInput
+              id="country"
+              label="Country"
+              value={formData.country}
+              onChange={(value) => handleChange('country', value)}
+              placeholder="United States"
             />
           </div>
         </div>

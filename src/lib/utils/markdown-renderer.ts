@@ -20,7 +20,7 @@
 
 import { marked } from 'marked'
 import type { InputFieldDefinition, InputFieldType } from '@/lib/types/event-types'
-import type { Person } from '@/lib/types'
+import type { Person, Content } from '@/lib/types'
 
 /**
  * Resolved field value with type information
@@ -55,11 +55,24 @@ export interface RenderMarkdownOptions {
     groups?: Record<string, any>
     listItems?: Record<string, any>
     documents?: Record<string, any>
+    contents?: Record<string, Content>
   }
   /** Parish info for parish placeholders */
   parish?: ParishInfo
   /** Output format - affects how custom syntax is converted */
   format?: 'html' | 'pdf' | 'word' | 'text'
+}
+
+/**
+ * UUID validation regex (PostgreSQL standard)
+ */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Check if a value is a UUID
+ */
+function isUUID(value: any): boolean {
+  return typeof value === 'string' && UUID_REGEX.test(value)
 }
 
 /**
@@ -278,6 +291,18 @@ function getDisplayValue(
       // rawValue is document_id (UUID)
       const document = resolvedEntities?.documents?.[rawValue]
       return document?.file_name || ''
+    }
+
+    case 'content': {
+      // Hybrid renderer: rawValue could be UUID (new content reference) or text (legacy)
+      if (isUUID(rawValue)) {
+        // New content reference - fetch from resolvedEntities
+        const content = resolvedEntities?.contents?.[rawValue]
+        return content?.body || ''
+      } else {
+        // Legacy text value - use as-is
+        return String(rawValue || '')
+      }
     }
 
     case 'text':

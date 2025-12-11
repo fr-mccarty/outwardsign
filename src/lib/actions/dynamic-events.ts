@@ -17,6 +17,7 @@ import type {
   Location,
   CustomListItem,
   Document,
+  Content,
   ResolvedFieldValue
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
@@ -478,6 +479,25 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
               .is('deleted_at', null)
               .single()
             resolvedField.resolved_value = document as Document | null
+            break
+          }
+          case 'content': {
+            // Hybrid support: Check if rawValue is a UUID (new content reference) or text (legacy)
+            const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            const isUUID = typeof rawValue === 'string' && UUID_REGEX.test(rawValue)
+
+            if (isUUID) {
+              // New content reference - fetch from database
+              const { data: content } = await supabase
+                .from('contents')
+                .select('*')
+                .eq('id', rawValue)
+                .single()
+              resolvedField.resolved_value = content as Content | null
+            } else {
+              // Legacy text value - raw_value is the content itself
+              // No need to set resolved_value, raw_value is sufficient
+            }
             break
           }
           // For non-reference types, raw_value is sufficient

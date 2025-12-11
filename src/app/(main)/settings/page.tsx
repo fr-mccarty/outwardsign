@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageContainer } from '@/components/page-container'
-import { User, FileText, ChevronRight, Church, Calendar } from 'lucide-react'
+import { User, FileText, ChevronRight, Church, Calendar, Tag } from 'lucide-react'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import Link from 'next/link'
 
@@ -118,6 +118,46 @@ export default function SettingsPage() {
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/parish">
                 Manage Parish
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <FileText className="h-5 w-5 text-primary" />
+              Content Library
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Manage reusable liturgical content like readings, prayers, and ceremony text.
+            </p>
+            <Button asChild variant="outline" className="w-full justify-between">
+              <Link href="/settings/content-library">
+                Manage Content Library
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <Tag className="h-5 w-5 text-primary" />
+              Content Tags
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Manage tags for organizing and categorizing liturgical content (Admin only).
+            </p>
+            <Button asChild variant="outline" className="w-full justify-between">
+              <Link href="/settings/content-tags">
+                Manage Content Tags
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>

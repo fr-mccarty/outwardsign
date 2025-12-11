@@ -1,0 +1,259 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Plus, FileText, Trash2, Edit } from 'lucide-react'
+import { PageContainer } from '@/components/page-container'
+import { ContentCard } from '@/components/content-card'
+import { Badge } from '@/components/ui/badge'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { deleteContent } from '@/lib/actions/contents'
+import type { ContentWithTags } from '@/lib/types'
+import { toast } from 'sonner'
+
+interface ContentLibraryListProps {
+  initialContents: ContentWithTags[]
+  initialTotalCount: number
+  initialPage: number
+}
+
+export function ContentLibraryList({
+  initialContents,
+  initialTotalCount,
+  initialPage,
+}: ContentLibraryListProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('search') || '')
+  const [language, setLanguage] = useState(searchParams.get('language') || 'all')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [contentToDelete, setContentToDelete] = useState<ContentWithTags | null>(null)
+
+  const updateSearchParams = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value && value !== 'all') {
+      params.set(key, value)
+    } else {
+      params.delete(key)
+    }
+    params.delete('page') // Reset to page 1 when filters change
+    router.push(`/settings/content-library?${params.toString()}`)
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    updateSearchParams('search', value)
+  }
+
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value)
+    updateSearchParams('language', value)
+  }
+
+  const handleCreateClick = () => {
+    router.push('/settings/content-library/create')
+  }
+
+  const handleEditClick = (id: string) => {
+    router.push(`/settings/content-library/${id}/edit`)
+  }
+
+  const handleViewClick = (id: string) => {
+    router.push(`/settings/content-library/${id}`)
+  }
+
+  const handleDeleteClick = (content: ContentWithTags) => {
+    setContentToDelete(content)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!contentToDelete) return
+
+    try {
+      await deleteContent(contentToDelete.id)
+      toast.success('Content deleted successfully')
+      setDeleteDialogOpen(false)
+      router.refresh()
+    } catch (error) {
+      console.error('Error deleting content:', error)
+      toast.error('Failed to delete content')
+    }
+  }
+
+  const totalPages = Math.ceil(initialTotalCount / 20)
+  const currentPage = initialPage
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', page.toString())
+    router.push(`/settings/content-library?${params.toString()}`)
+  }
+
+  return (
+    <PageContainer
+      title="Content Library"
+      description="Manage reusable liturgical content (readings, prayers, ceremony text)"
+      actions={
+        <Button onClick={handleCreateClick}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Content
+        </Button>
+      }
+    >
+      {/* Search and Filter */}
+      <ContentCard className="mb-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Input
+              placeholder="Search by title or body text..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+          </div>
+          <div>
+            <Select value={language} onValueChange={handleLanguageChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Languages</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="es">Spanish</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </ContentCard>
+
+      {/* Content List */}
+      {initialContents.length === 0 ? (
+        <ContentCard>
+          <div className="text-center py-12">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold">No content found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {search || language !== 'all'
+                ? 'Try adjusting your filters'
+                : 'Get started by creating your first content'}
+            </p>
+            {!search && language === 'all' && (
+              <Button onClick={handleCreateClick} className="mt-4">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Content
+              </Button>
+            )}
+          </div>
+        </ContentCard>
+      ) : (
+        <>
+          <div className="grid gap-4 pb-6">
+            {initialContents.map((content) => (
+              <div
+                key={content.id}
+                className="hover:bg-accent/50 cursor-pointer transition-colors rounded-lg"
+                onClick={() => handleViewClick(content.id)}
+              >
+                <ContentCard>
+                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-lg">{content.title}</h3>
+                      <Badge variant="outline" className="capitalize">
+                        {content.language === 'en' ? 'English' : 'Spanish'}
+                      </Badge>
+                    </div>
+
+                    {content.description && (
+                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                        {content.description}
+                      </p>
+                    )}
+
+                    {content.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {content.tags.map((tag) => (
+                          <Badge key={tag.id} variant="secondary" className="text-xs">
+                            {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditClick(content.id)
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteClick(content)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  </div>
+                </ContentCard>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center px-4 text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Content?"
+        description={
+          contentToDelete
+            ? `Are you sure you want to delete "${contentToDelete.title}"? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="destructive"
+      />
+    </PageContainer>
+  )
+}

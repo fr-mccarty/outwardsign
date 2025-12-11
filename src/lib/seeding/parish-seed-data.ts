@@ -10,6 +10,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { seedEventTypesForParish } from './event-types-seed'
+import { seedContentTagsForParish } from './content-tags-seed'
 
 // Import petition templates
 import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
@@ -337,6 +338,11 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     console.error('Error seeding user-defined event types')
     throw new Error('Failed to seed user-defined event types')
   }
+
+  // =====================================================
+  // 9. Seed Content Tags
+  // =====================================================
+  await seedContentTagsForParish(supabase, parishId)
 
   return {
     success: true,

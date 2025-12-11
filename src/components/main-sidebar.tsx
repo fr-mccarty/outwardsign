@@ -20,7 +20,8 @@ import {
   Settings,
   Church,
   User, Users, CirclePlus, Plus, List,
-  CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText
+  CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText,
+  Library, Tag
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -305,6 +306,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     title: "Event Types",
                     url: "/settings/event-types",
                     icon: CalendarDays,
+                  },
+                  {
+                    title: "Content Library",
+                    url: "/settings/content-library",
+                    icon: Library,
+                  },
+                  {
+                    title: "Content Tags",
+                    url: "/settings/content-tags",
+                    icon: Tag,
                   },
                   {
                     title: "Custom Lists",

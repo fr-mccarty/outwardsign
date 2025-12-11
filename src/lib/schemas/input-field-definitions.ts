@@ -8,6 +8,7 @@ export const inputFieldTypeSchema = z.enum([
   'event_link',
   'list_item',
   'document',
+  'content',
   'text',
   'rich_text',
   'date',
@@ -26,6 +27,7 @@ export const createInputFieldDefinitionSchema = z
     required: z.boolean(),
     list_id: z.string().uuid().nullable().optional(),
     event_type_filter_id: z.string().uuid().nullable().optional(),
+    filter_tags: z.array(z.string()).nullable().optional(),
     is_key_person: z.boolean().optional(),
   })
   .refine(
@@ -49,6 +51,7 @@ export const updateInputFieldDefinitionSchema = z.object({
   required: z.boolean().optional(),
   list_id: z.string().uuid().nullable().optional(),
   event_type_filter_id: z.string().uuid().nullable().optional(),
+  filter_tags: z.array(z.string()).nullable().optional(),
   is_key_person: z.boolean().optional(),
 })
 

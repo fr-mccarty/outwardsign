@@ -37,6 +37,7 @@ const FIELD_TYPE_OPTIONS: { value: InputFieldType; label: string }[] = [
   { value: 'event_link', label: 'Event Link' },
   { value: 'list_item', label: 'List Item' },
   { value: 'document', label: 'Document' },
+  { value: 'content', label: 'Content' },
   { value: 'text', label: 'Text' },
   { value: 'rich_text', label: 'Rich Text' },
   { value: 'date', label: 'Date' },

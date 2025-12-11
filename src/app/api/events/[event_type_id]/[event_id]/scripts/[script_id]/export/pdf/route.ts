@@ -135,7 +135,7 @@ async function markdownToPdfContent(
  */
 function parseInlineFormatting(text: string): any {
   // First, strip <a> tags but keep their text content
-  let cleanedText = text.replace(/<a[^>]*>(.*?)<\/a>/g, '$1')
+  const cleanedText = text.replace(/<a[^>]*>(.*?)<\/a>/g, '$1')
 
   // If no formatting, return plain text
   if (!/<\/?(?:strong|b|em|i)>/.test(cleanedText) && !/{red}/.test(cleanedText)) {

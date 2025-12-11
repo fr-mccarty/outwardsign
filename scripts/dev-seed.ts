@@ -257,6 +257,29 @@ async function seedDevData() {
   }
   console.log('')
 
+  // Seed content library (prayers, ceremony instructions, announcements)
+  console.log('📝 Seeding content library...')
+
+  const { data: existingContent } = await supabase
+    .from('contents')
+    .select('id')
+    .eq('parish_id', parishId)
+    .limit(1)
+
+  if (!existingContent || existingContent.length === 0) {
+    const { seedContentForParish } = await import('../src/lib/seeding/content-seed')
+
+    try {
+      await seedContentForParish(supabase, parishId)
+    } catch (error) {
+      console.error('❌ Error seeding content library:', error)
+      // Non-fatal - continue with rest of seeding
+    }
+  } else {
+    console.log(`   ✅ Content library already exists, skipping`)
+  }
+  console.log('')
+
   // Fetch existing group roles for dev data below
   const { data: groupRoles } = await supabase
     .from('group_roles')

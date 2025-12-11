@@ -17,6 +17,7 @@ export type InputFieldType =
   | 'document'        // References documents table
   | 'text'            // JSON string
   | 'rich_text'       // JSON string (multiline)
+  | 'content'         // References contents table (content library)
   | 'date'            // JSON date string (YYYY-MM-DD)
   | 'time'            // JSON time string (HH:MM:SS)
   | 'datetime'        // JSON datetime string (ISO 8601)
@@ -61,6 +62,7 @@ export interface InputFieldDefinition {
   list_id: string | null          // For list_item type
   event_type_filter_id: string | null  // For event_link type
   is_key_person: boolean          // Only for person type, marks as searchable
+  filter_tags?: string[] | null   // For content type - array of tag slugs for default filtering
   order: number                   // Display order in form
   deleted_at: string | null
   created_at: string
