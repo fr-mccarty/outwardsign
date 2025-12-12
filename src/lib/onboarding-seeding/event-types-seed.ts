@@ -944,11 +944,9 @@ Please join us in celebrating the Baptism of
       name: 'Family',
       content: `## Family
 
-**Parents:**
-{{Mother}} and {{Father}}
+**Parents:** {{Mother}} and {{Father}}
 
-**Godparents:**
-{{Godmother}} and {{Godfather}}`,
+**Godparents:** {{Godmother}} and {{Godfather}}`,
       page_break_after: false,
       order: 1
     },
@@ -1204,11 +1202,9 @@ Please join us in celebrating the Presentation of
       name: 'Family',
       content: `## Family
 
-**Parents:**
-{{Mother}} and {{Father}}
+**Parents:** {{Mother}} and {{Father}}
 
-**Godparents:**
-{{Godmother}} and {{Godfather}}`,
+**Godparents:** {{Godmother}} and {{Godfather}}`,
       page_break_after: false,
       order: 1
     },

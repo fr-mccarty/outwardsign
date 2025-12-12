@@ -120,7 +120,7 @@ export default function PrintScriptPage({ params }: PrintScriptPageProps) {
   const processedSections = processScriptForRendering(script, event)
 
   return (
-    <div className="bg-white text-black min-h-screen">
+    <>
       {/* Print Actions - Hidden on Print */}
       <div className="print-actions hide-on-print">
         <Button variant="outline" onClick={handleClose}>
@@ -134,7 +134,7 @@ export default function PrintScriptPage({ params }: PrintScriptPageProps) {
       </div>
 
       {/* Script Content */}
-      <div className="script-print-content bg-white text-black">
+      <div>
         {/* Script Title */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-black">{script.name}</h1>
@@ -156,6 +156,6 @@ export default function PrintScriptPage({ params }: PrintScriptPageProps) {
           </div>
         ))}
       </div>
-    </div>
+    </>
   )
 }
