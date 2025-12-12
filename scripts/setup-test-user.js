@@ -29,6 +29,7 @@ const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'TestPassword123!';
 const PARISH_NAME = process.env.TEST_PARISH_NAME || 'Playwright Test Parish';
 const PARISH_CITY = process.env.TEST_PARISH_CITY || 'Test City';
 const PARISH_STATE = process.env.TEST_PARISH_STATE || 'TS';
+const PARISH_COUNTRY = process.env.TEST_PARISH_COUNTRY || 'United States';
 
 async function setupTestUser() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -102,6 +103,7 @@ async function setupTestUser() {
           name: PARISH_NAME,
           city: PARISH_CITY,
           state: PARISH_STATE,
+          country: PARISH_COUNTRY,
         })
         .select()
         .single();

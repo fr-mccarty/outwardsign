@@ -1,12 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, Pencil, Printer, FileText, FileDown, File } from 'lucide-react'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
-import { ExportButtonGroup } from '@/components/export-button-group'
+import Link from 'next/link'
 import type { ScriptWithSections, EventWithRelations } from '@/lib/types/event-types'
 
 interface ScriptViewClientProps {
@@ -38,14 +38,20 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
 
   // Action buttons for the sidebar
   const actionButtons = (
-    <div className="space-y-2">
+    <>
       <Button
         onClick={handleEditScript}
-        variant="outline"
+        variant="default"
         className="w-full"
       >
         <Pencil className="h-4 w-4 mr-2" />
         Edit Script
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/print/events/${eventTypeSlug}/${event.id}/scripts/${script.id}`} target="_blank">
+          <Printer className="h-4 w-4 mr-2" />
+          Print View
+        </Link>
       </Button>
       <Button
         onClick={handleBackToEvent}
@@ -55,12 +61,31 @@ export function ScriptViewClient({ event, script, eventTypeSlug }: ScriptViewCli
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Event
       </Button>
-    </div>
+    </>
   )
 
   // Export buttons for the sidebar
   const exportButtons = (
-    <ExportButtonGroup eventTypeSlug={eventTypeSlug} eventId={event.id} scriptId={script.id} />
+    <>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/pdf`} target="_blank">
+          <FileText className="h-4 w-4 mr-2" />
+          Download PDF
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/docx`}>
+          <FileDown className="h-4 w-4 mr-2" />
+          Download Word
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/events/${eventTypeSlug}/${event.id}/scripts/${script.id}/export/txt`}>
+          <File className="h-4 w-4 mr-2" />
+          Download Text
+        </Link>
+      </Button>
+    </>
   )
 
   return (

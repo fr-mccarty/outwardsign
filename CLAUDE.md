@@ -196,6 +196,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[CONTENT_BUILDER_SECTIONS.md](./docs/CONTENT_BUILDER_SECTIONS.md)** - Navigation hub for content builder sections (split into content-builder-sections/ subdirectory with OVERVIEW, SECTION_INTERFACES, SHARED_BUILDERS, CUSTOM_SECTIONS, PAGE_BREAKS, TEMPLATE_EXAMPLE, BEST_PRACTICES)
 - **[REPORT_BUILDER_SYSTEM.md](./docs/REPORT_BUILDER_SYSTEM.md)** - Report builder system for tabular reports with aggregations, filtering, and CSV/Print exports
 - **[RENDERER.md](./docs/RENDERER.md)** - Complete renderer system documentation (HTML, PDF, Word) with style resolution and conversion patterns
+- **[EXPORT_BUTTONS.md](./docs/EXPORT_BUTTONS.md)** - Standard pattern for export buttons (PDF, Word, Text) in module view pages
 - **[PAGINATION.md](./docs/PAGINATION.md)** - ⚠️ Pagination patterns, implementation guide, and current inconsistencies across modules
 - **[DRAG_AND_DROP.md](./docs/DRAG_AND_DROP.md)** - Drag-and-drop implementation with @dnd-kit, unique constraint handling, and reorder patterns
 - **[USER_DOCUMENTATION.md](./docs/USER_DOCUMENTATION.md)** - User documentation system structure, adding pages, sidebar navigation, breadcrumbs, and multi-language support

@@ -28,8 +28,8 @@ export default async function PrintGroupPage({ params }: PageProps) {
   // Build members report using centralized content builder
   const reportDocument = buildGroupMembersReport(group)
 
-  // Render to HTML
-  const content = renderHTML(reportDocument)
+  // Render to HTML (isPrintMode: true for inline colors on white background)
+  const content = renderHTML(reportDocument, true)
 
   return (
     <>

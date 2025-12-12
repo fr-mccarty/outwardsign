@@ -1,11 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Printer, FileText, FileDown, File } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
-import { MassExportButtonGroup } from '@/components/mass-export-button-group'
+import Link from 'next/link'
 import type { MassWithRelations } from '@/lib/actions/masses'
 import type { ScriptWithSections, EventWithRelations } from '@/lib/types/event-types'
 
@@ -50,7 +50,13 @@ export function MassScriptViewClient({ mass, script }: MassScriptViewClientProps
 
   // Action buttons for the sidebar
   const actionButtons = (
-    <div className="space-y-2">
+    <>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/print/masses/${mass.id}/scripts/${script.id}`} target="_blank">
+          <Printer className="h-4 w-4 mr-2" />
+          Print View
+        </Link>
+      </Button>
       <Button
         onClick={handleBackToMass}
         variant="outline"
@@ -59,12 +65,31 @@ export function MassScriptViewClient({ mass, script }: MassScriptViewClientProps
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Mass
       </Button>
-    </div>
+    </>
   )
 
   // Export buttons for the sidebar
   const exportButtons = (
-    <MassExportButtonGroup massId={mass.id} scriptId={script.id} />
+    <>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/masses/${mass.id}/scripts/${script.id}/export/pdf`} target="_blank">
+          <FileText className="h-4 w-4 mr-2" />
+          Download PDF
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/masses/${mass.id}/scripts/${script.id}/export/docx`}>
+          <FileDown className="h-4 w-4 mr-2" />
+          Download Word
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/masses/${mass.id}/scripts/${script.id}/export/txt`}>
+          <File className="h-4 w-4 mr-2" />
+          Download Text
+        </Link>
+      </Button>
+    </>
   )
 
   return (
