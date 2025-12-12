@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.families (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES public.parishes(id) ON DELETE CASCADE,
   family_name TEXT NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.families (
 -- Add indexes
 CREATE INDEX IF NOT EXISTS idx_families_parish_id ON public.families(parish_id);
 CREATE INDEX IF NOT EXISTS idx_families_family_name ON public.families(family_name);
+CREATE INDEX IF NOT EXISTS idx_families_active ON public.families(active);
 
 -- Grant permissions
 GRANT ALL ON public.families TO anon;

@@ -580,6 +580,11 @@ export function Step6InteractivePreview({
             ? proposedMasses.find(m => m.id === editingAssignment.massId)?.massTimesTemplateItemId
             : undefined
         }
+        massDate={
+          editingAssignment
+            ? proposedMasses.find(m => m.id === editingAssignment.massId)?.date
+            : undefined
+        }
         allMassRoles={
           Array.from(
             new Map(

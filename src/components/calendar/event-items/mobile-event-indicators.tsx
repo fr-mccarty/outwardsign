@@ -1,11 +1,12 @@
 'use client'
 
-import { getModuleIcon } from '@/components/calendar/module-icons'
+import { getModuleIcon, getIconByName } from '@/components/calendar/module-icons'
 
 interface MobileEventIndicatorsProps {
   parishEvents: Array<{
     id: string
     moduleType?: string | null
+    eventTypeIcon?: string | null  // Lucide icon name from event_type
     [key: string]: any
   }>
   maxItems?: number
@@ -32,17 +33,10 @@ export function MobileEventIndicators({
     >
       {/* Parish event icons */}
       {parishEvents.slice(0, itemsToShow).map((event, index) => {
-        const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
-
-        if (!ModuleIcon) {
-          // Fallback dot if no icon
-          return (
-            <div
-              key={event.id || `parish-${index}`}
-              className="w-2 h-2 rounded-full bg-muted-foreground flex-shrink-0"
-            />
-          )
-        }
+        // Priority: module icon (for linked modules) > event type icon > default FileText
+        const ModuleIcon = event.moduleType
+          ? getModuleIcon(event.moduleType as any) || getIconByName(event.eventTypeIcon)
+          : getIconByName(event.eventTypeIcon)
 
         return (
           <ModuleIcon

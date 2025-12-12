@@ -708,3 +708,134 @@ export async function deleteEvent(id: string): Promise<void> {
 
   revalidatePath(`/events/${event.event_type_id}`)
 }
+
+/**
+ * Calendar occasion item - flattened data for calendar display
+ */
+export interface CalendarOccasionItem {
+  id: string  // occasion.id
+  event_id: string
+  date: string
+  time: string | null
+  label: string
+  location_id: string | null
+  location_name: string | null
+  is_primary: boolean
+  // From dynamic_event
+  event_title: string
+  event_field_values: Record<string, unknown>
+  // From event_type
+  event_type_id: string
+  event_type_slug: string
+  event_type_name: string
+  event_type_icon: string | null
+  // Module link (computed)
+  module_type: string | null
+  module_id: string | null
+}
+
+/**
+ * Get all occasions for calendar display
+ * Fetches occasions with their parent events and event types
+ * for rendering on the parish calendar
+ */
+export async function getOccasionsForCalendar(): Promise<CalendarOccasionItem[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Fetch all occasions with their parent events and event types
+  const { data: occasions, error } = await supabase
+    .from('occasions')
+    .select(`
+      id,
+      event_id,
+      label,
+      date,
+      time,
+      location_id,
+      is_primary,
+      location:locations(name),
+      event:dynamic_events!inner(
+        id,
+        field_values,
+        parish_id,
+        event_type:event_types(id, slug, name, icon)
+      )
+    `)
+    .eq('event.parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .is('event.deleted_at', null)
+    .not('date', 'is', null)
+    .order('date', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching occasions for calendar:', error)
+    return []
+  }
+
+  if (!occasions || occasions.length === 0) {
+    return []
+  }
+
+  // Collect event_ids to check for module links
+  const eventIds = [...new Set(occasions.map(o => o.event_id))]
+
+  // Check for module links (weddings, funerals, baptisms, etc.)
+  const moduleLinks = new Map<string, { moduleType: string; moduleId: string }>()
+
+  // Check each module table for linked events
+  const [weddings, funerals, baptisms, presentations, quinceaneras, masses] = await Promise.all([
+    supabase.from('weddings').select('id, wedding_event_id').in('wedding_event_id', eventIds),
+    supabase.from('funerals').select('id, funeral_event_id').in('funeral_event_id', eventIds),
+    supabase.from('baptisms').select('id, baptism_event_id').in('baptism_event_id', eventIds),
+    supabase.from('presentations').select('id, presentation_event_id').in('presentation_event_id', eventIds),
+    supabase.from('quinceaneras').select('id, quinceanera_event_id').in('quinceanera_event_id', eventIds),
+    supabase.from('masses').select('id, event_id').in('event_id', eventIds),
+  ])
+
+  // Build module link map
+  weddings.data?.forEach(w => moduleLinks.set(w.wedding_event_id, { moduleType: 'wedding', moduleId: w.id }))
+  funerals.data?.forEach(f => moduleLinks.set(f.funeral_event_id, { moduleType: 'funeral', moduleId: f.id }))
+  baptisms.data?.forEach(b => moduleLinks.set(b.baptism_event_id, { moduleType: 'baptism', moduleId: b.id }))
+  presentations.data?.forEach(p => moduleLinks.set(p.presentation_event_id, { moduleType: 'presentation', moduleId: p.id }))
+  quinceaneras.data?.forEach(q => moduleLinks.set(q.quinceanera_event_id, { moduleType: 'quinceanera', moduleId: q.id }))
+  masses.data?.forEach(m => moduleLinks.set(m.event_id, { moduleType: 'mass', moduleId: m.id }))
+
+  // Transform to calendar items
+  const calendarItems: CalendarOccasionItem[] = occasions.map(occasion => {
+    // Supabase returns nested relations - handle the structure properly
+    const eventData = occasion.event as unknown as {
+      id: string
+      field_values: Record<string, unknown>
+      event_type: { id: string; slug: string; name: string; icon: string | null } | null
+    }
+    // Location is a single object from the foreign key relation
+    const locationData = occasion.location as unknown as { name: string } | null
+    const moduleLink = moduleLinks.get(occasion.event_id)
+
+    // Generate event title from event type name or use label
+    const eventTypeName = eventData.event_type?.name || 'Event'
+
+    return {
+      id: occasion.id,
+      event_id: occasion.event_id,
+      date: occasion.date!,
+      time: occasion.time,
+      label: occasion.label,
+      location_id: occasion.location_id,
+      location_name: locationData?.name || null,
+      is_primary: occasion.is_primary,
+      event_title: eventTypeName,
+      event_field_values: eventData.field_values || {},
+      event_type_id: eventData.event_type?.id || '',
+      event_type_slug: eventData.event_type?.slug || '',
+      event_type_name: eventTypeName,
+      event_type_icon: eventData.event_type?.icon || null,
+      module_type: moduleLink?.moduleType || null,
+      module_id: moduleLink?.moduleId || null,
+    }
+  })
+
+  return calendarItems
+}

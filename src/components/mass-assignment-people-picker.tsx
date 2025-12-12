@@ -9,8 +9,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { UserPlus, CheckCircle2, Settings } from 'lucide-react'
+import { UserPlus, CheckCircle2, Settings, Users2, AlertTriangle } from 'lucide-react'
 import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
+import { getFamilyMembershipsForPeople, getFamilyBlackoutDatesForPeople } from '@/lib/actions/families'
 import {
   createMassRoleMember,
   deleteMassRoleMember,
@@ -37,9 +38,30 @@ import {
 } from '@/components/ui/dialog'
 import { formatTime } from '@/lib/utils/formatters'
 
+interface FamilyMembershipInfo {
+  family_id: string
+  family_name: string
+  relationship: string | null
+  is_primary_contact: boolean
+  other_members: Array<{
+    person_id: string
+    full_name: string
+    relationship: string | null
+  }>
+}
+
+interface FamilyBlackoutInfo {
+  person_id: string
+  full_name: string
+  relationship: string | null
+  blackout_reason: string | null
+}
+
 interface PersonWithPreference extends Person {
   isPreferredTime: boolean
   isMassRoleMember: boolean
+  families?: FamilyMembershipInfo[]
+  familyBlackouts?: FamilyBlackoutInfo[]
 }
 
 interface MassAssignmentPeoplePickerProps {
@@ -53,6 +75,7 @@ interface MassAssignmentPeoplePickerProps {
   massRoleId: string // Required: The role we're assigning for
   massRoleName: string // Required: The role name (for UI display)
   massTimesTemplateItemId?: string // Optional: The specific mass time
+  massDate?: string // Optional: The date of the mass (YYYY-MM-DD) for blackout checking
   allMassRoles?: Array<{ id: string; name: string }> // All mass roles in the system (for management)
 }
 
@@ -69,6 +92,7 @@ export function MassAssignmentPeoplePicker({
   massRoleId,
   massRoleName,
   massTimesTemplateItemId,
+  massDate,
   allMassRoles = [],
 }: MassAssignmentPeoplePickerProps) {
   const [people, setPeople] = useState<PersonWithPreference[]>([])
@@ -92,6 +116,10 @@ export function MassAssignmentPeoplePicker({
   const [showOnlyMembers, setShowOnlyMembers] = useState(false)
   const [showOnlyPreferredTime, setShowOnlyPreferredTime] = useState(false)
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
+  const [showOnlyWithFamily, setShowOnlyWithFamily] = useState(false)
+
+  // Family data - stored for potential future use (e.g., blackout date coordination)
+  const [, setFamilyMemberships] = useState<Map<string, FamilyMembershipInfo[]>>(new Map())
 
   const PAGE_SIZE = 10
 
@@ -150,18 +178,38 @@ export function MassAssignmentPeoplePicker({
       })
       setAllPersonRoleMemberships(membershipsByPerson)
 
-      // Enrich people with preference and membership info
+      // Get family memberships for all people
+      const personIds = result.items.map(p => p.id)
+      let familyMap = new Map<string, FamilyMembershipInfo[]>()
+      let familyBlackoutMap = new Map<string, FamilyBlackoutInfo[]>()
+      try {
+        familyMap = await getFamilyMembershipsForPeople(personIds)
+        setFamilyMemberships(familyMap)
+
+        // If we have a mass date, fetch family blackout info
+        if (massDate) {
+          familyBlackoutMap = await getFamilyBlackoutDatesForPeople(personIds, massDate)
+        }
+      } catch (error) {
+        console.error('Error loading family memberships:', error)
+      }
+
+      // Enrich people with preference, membership, and family info
       const enrichedPeople: PersonWithPreference[] = result.items.map(person => {
         const isPreferredTime = massTimesTemplateItemId
           ? person.mass_times_template_item_ids?.includes(massTimesTemplateItemId) ?? false
           : false
 
         const isMassRoleMember = memberIds.has(person.id)
+        const families = familyMap.get(person.id) || []
+        const familyBlackouts = familyBlackoutMap.get(person.id) || []
 
         return {
           ...person,
           isPreferredTime,
           isMassRoleMember,
+          families,
+          familyBlackouts,
         }
       })
 
@@ -226,8 +274,12 @@ export function MassAssignmentPeoplePicker({
       filtered = filtered.filter(p => p.isMassRoleMember || p.isPreferredTime)
     }
 
+    if (showOnlyWithFamily) {
+      filtered = filtered.filter(p => p.families && p.families.length > 0)
+    }
+
     return filtered
-  }, [people, showOnlyMembers, showOnlyPreferredTime, showOnlyAvailable])
+  }, [people, showOnlyMembers, showOnlyPreferredTime, showOnlyAvailable, showOnlyWithFamily])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -508,6 +560,14 @@ export function MassAssignmentPeoplePicker({
     // Get this person's mass role memberships
     const personMemberships = allPersonRoleMemberships.get(person.id) || []
 
+    // Get family info
+    const personFamilies = person.families || []
+    const hasFamily = personFamilies.length > 0
+
+    // Get family blackout info
+    const familyBlackouts = person.familyBlackouts || []
+    const hasFamilyBlackout = familyBlackouts.length > 0
+
     return (
       <div className="flex items-center gap-3">
         <Avatar className="h-8 w-8">
@@ -538,6 +598,20 @@ export function MassAssignmentPeoplePicker({
                 Preferred Time
               </Badge>
             )}
+
+            {hasFamily && (
+              <Badge variant="outline" className="text-xs border-purple-500 text-purple-700 dark:text-purple-400">
+                <Users2 className="h-3 w-3 mr-1" />
+                {personFamilies[0].family_name}
+              </Badge>
+            )}
+
+            {hasFamilyBlackout && (
+              <Badge variant="outline" className="text-xs border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Family Unavailable
+              </Badge>
+            )}
           </div>
 
           {/* Show mass role badges */}
@@ -552,6 +626,41 @@ export function MassAssignmentPeoplePicker({
               </Badge>
             ))}
           </div>
+
+          {/* Show family members */}
+          {hasFamily && personFamilies[0].other_members.length > 0 && (
+            <div className="text-xs text-muted-foreground mt-1">
+              <span className="text-purple-600 dark:text-purple-400">Family:</span>{' '}
+              {personFamilies[0].other_members.slice(0, 3).map((m, i) => (
+                <span key={m.person_id}>
+                  {i > 0 && ', '}
+                  {m.full_name}
+                  {m.relationship && ` (${m.relationship})`}
+                </span>
+              ))}
+              {personFamilies[0].other_members.length > 3 && (
+                <span> +{personFamilies[0].other_members.length - 3} more</span>
+              )}
+            </div>
+          )}
+
+          {/* Show family blackout warning details */}
+          {hasFamilyBlackout && (
+            <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+              <AlertTriangle className="h-3 w-3 inline mr-1" />
+              <span className="font-medium">Unavailable:</span>{' '}
+              {familyBlackouts.slice(0, 2).map((b, i) => (
+                <span key={b.person_id}>
+                  {i > 0 && ', '}
+                  {b.full_name}
+                  {b.blackout_reason && ` (${b.blackout_reason})`}
+                </span>
+              ))}
+              {familyBlackouts.length > 2 && (
+                <span> +{familyBlackouts.length - 2} more</span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -651,6 +760,20 @@ export function MassAssignmentPeoplePicker({
             onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
           >
             Available Only
+          </Badge>
+
+          <Badge
+            variant={showOnlyWithFamily ? "default" : "outline"}
+            className={cn(
+              "cursor-pointer transition-colors",
+              showOnlyWithFamily
+                ? "bg-purple-600 hover:bg-purple-700"
+                : "hover:bg-accent"
+            )}
+            onClick={() => setShowOnlyWithFamily(!showOnlyWithFamily)}
+          >
+            <Users2 className="h-3 w-3 mr-1" />
+            Has Family
           </Badge>
         </div>
       </CorePicker>

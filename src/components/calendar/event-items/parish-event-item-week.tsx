@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils'
 import { RELATED_EVENT_TYPE_LABELS } from '@/lib/constants'
 import { useAppContext } from '@/contexts/AppContextProvider'
-import { getModuleIcon } from '@/components/calendar/module-icons'
+import { getModuleIcon, getIconByName } from '@/components/calendar/module-icons'
 import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 
 interface ParishEventItemWeekProps {
@@ -12,6 +12,7 @@ interface ParishEventItemWeekProps {
     title: string
     event_type?: string
     moduleType?: string | null
+    eventTypeIcon?: string | null  // Lucide icon name from event_type
     liturgicalColor?: string // Hex color from liturgical calendar
     [key: string]: any
   }
@@ -28,7 +29,10 @@ export function ParishEventItemWeek({ event, onClick }: ParishEventItemWeekProps
     ? RELATED_EVENT_TYPE_LABELS[event.event_type]?.[userLanguage]
     : undefined
 
-  const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
+  // Priority: module icon (for linked modules) > event type icon > default FileText
+  const ModuleIcon = event.moduleType
+    ? getModuleIcon(event.moduleType as any) || getIconByName(event.eventTypeIcon)
+    : getIconByName(event.eventTypeIcon)
   const liturgicalColor = event.liturgicalColor
 
   return (
@@ -41,7 +45,7 @@ export function ParishEventItemWeek({ event, onClick }: ParishEventItemWeekProps
         onClick={onClick}
       >
         <div className="font-medium flex items-center gap-1.5 sm:gap-2 min-w-0">
-          {ModuleIcon && <ModuleIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />}
+          <ModuleIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
           {liturgicalColor && (
             <div
               className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-background shadow-sm flex-shrink-0"

@@ -9,4 +9,5 @@ export { seedGroups, seedGroupMemberships, seedMassRoleMemberships } from './see
 export { seedLocations } from './seed-locations'
 export { seedMasses } from './seed-masses'
 export { seedEvents } from './seed-events'
+export { seedFamilies } from './seed-families'
 export type { DevSeederContext, SamplePerson, DevSeederResult } from './types'

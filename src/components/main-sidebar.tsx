@@ -19,7 +19,7 @@ import {
   Calendar,
   Settings,
   Church,
-  User, Users, CirclePlus, Plus, List,
+  User, Users, Users2, CirclePlus, Plus, List,
   CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText,
   Library, Tag
 } from "lucide-react"
@@ -232,7 +232,23 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
-
+              <CollapsibleNavSection
+                name="Families"
+                icon={Users2}
+                items={[
+                  {
+                    title: "Our Families",
+                    url: "/families",
+                    icon: Users2,
+                  },
+                  {
+                    title: "Create Family",
+                    url: "/families/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
               <SidebarMenuItem key="WeekendSummary">
                 <SidebarMenuButton asChild>

@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import { Calendar } from '@/components/calendar/calendar'
 import { CalendarView, CalendarItem } from '@/components/calendar/types'
 import { PageContainer } from '@/components/page-container'
-import { EventWithModuleLink, getEventModuleLink } from '@/lib/actions/events'
+import { CalendarOccasionItem } from '@/lib/actions/dynamic-events'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getGlobalLiturgicalEventsByMonth, GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 interface CalendarClientProps {
-  events: EventWithModuleLink[]
+  occasions: CalendarOccasionItem[]
   initialView: CalendarView
   initialDate?: string
 }
@@ -26,26 +26,37 @@ interface LiturgicalCalendarItem extends CalendarItem {
   liturgicalColor?: string
   moduleType?: string | null
   start_time?: string | null
+  eventTypeIcon?: string | null  // Lucide icon name from event_type
+  // Occasion-specific fields for navigation
+  event_id?: string
+  event_type_slug?: string
+  module_id?: string | null
 }
 
-// Transform Event to CalendarItem
-function eventToCalendarItem(event: EventWithModuleLink): LiturgicalCalendarItem {
-  // Determine display name for event type
-  // Priority: related_event_type (system-defined) > event_type entity (user-defined)
-  const eventTypeName = event.related_event_type || event.event_type?.name || 'Event'
+// Transform Occasion to CalendarItem
+function occasionToCalendarItem(occasion: CalendarOccasionItem): LiturgicalCalendarItem {
+  // Use event type name as the title, with occasion label for context
+  const title = occasion.is_primary
+    ? occasion.event_type_name
+    : `${occasion.event_type_name} - ${occasion.label}`
 
   return {
-    id: event.id,
-    date: event.start_date || '',
-    title: event.name,
-    event_type: eventTypeName, // Store the display name for calendar rendering
+    id: occasion.id,
+    date: occasion.date,
+    title,
+    event_type: occasion.event_type_name,
     isLiturgical: false,
-    moduleType: event.moduleLink?.moduleType || null,
-    start_time: event.start_time || null,
+    moduleType: occasion.module_type,
+    start_time: occasion.time,
+    eventTypeIcon: occasion.event_type_icon,
+    // Additional fields for navigation
+    event_id: occasion.event_id,
+    event_type_slug: occasion.event_type_slug,
+    module_id: occasion.module_id,
   }
 }
 
-export function CalendarClient({ events, initialView, initialDate }: CalendarClientProps) {
+export function CalendarClient({ occasions, initialView, initialDate }: CalendarClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { setBreadcrumbs } = useBreadcrumbs()
@@ -142,16 +153,9 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
     ])
   }, [setBreadcrumbs])
 
-  // Convert parish events to calendar items
-  const parishCalendarItems: LiturgicalCalendarItem[] = events
-    .filter(event => event.start_date)
-    .map(event => {
-      const item = eventToCalendarItem(event)
-      return {
-        ...item,
-        isLiturgical: false,
-      }
-    })
+  // Convert parish occasions to calendar items
+  const parishCalendarItems: LiturgicalCalendarItem[] = occasions
+    .map(occasion => occasionToCalendarItem(occasion))
 
   // Convert liturgical events to calendar items
   const liturgicalCalendarItems: LiturgicalCalendarItem[] = liturgicalEvents.map(event => ({
@@ -205,28 +209,28 @@ export function CalendarClient({ events, initialView, initialDate }: CalendarCli
   const handleEventClick = async (item: CalendarItem, event: React.MouseEvent) => {
     event.preventDefault()
 
-    const liturgicalItem = item as LiturgicalCalendarItem
+    const calendarItem = item as LiturgicalCalendarItem
 
     // Handle liturgical events differently
-    if (liturgicalItem.isLiturgical && liturgicalItem.liturgicalEvent) {
-      setSelectedLiturgicalEvent(liturgicalItem.liturgicalEvent)
+    if (calendarItem.isLiturgical && calendarItem.liturgicalEvent) {
+      setSelectedLiturgicalEvent(calendarItem.liturgicalEvent)
       setModalOpen(true)
       return
     }
 
-    // Get the module link for this parish event
-    const moduleLink = await getEventModuleLink(item.id)
-
-    if (moduleLink.moduleType && moduleLink.moduleId) {
+    // Check if this occasion has a module link
+    if (calendarItem.moduleType && calendarItem.module_id) {
       // Navigate to the module
       // Special case: "mass" → "masses" (not "masss")
-      const modulePath = moduleLink.moduleType === 'mass'
+      const modulePath = calendarItem.moduleType === 'mass'
         ? '/masses'
-        : `/${moduleLink.moduleType}s` // weddings, funerals, baptisms, etc.
-      router.push(`${modulePath}/${moduleLink.moduleId}`)
+        : `/${calendarItem.moduleType}s` // weddings, funerals, baptisms, etc.
+      router.push(`${modulePath}/${calendarItem.module_id}`)
+    } else if (calendarItem.event_type_slug && calendarItem.event_id) {
+      // Navigate to the dynamic event page
+      router.push(`/events/${calendarItem.event_type_slug}/${calendarItem.event_id}`)
     } else {
-      // No module found, go to event page (need event_type_id)
-      // TODO: Events need event_type_id to navigate - may need to fetch or store it
+      // Fallback to events list
       router.push(`/events`)
     }
   }

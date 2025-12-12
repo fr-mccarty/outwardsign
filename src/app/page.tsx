@@ -263,11 +263,20 @@ const translations = {
       },
       exampleExport: "Example Script",
       weddingCeremony: "Wedding Ceremony",
-      firstReading: "First Reading",
-      gospel: "Gospel",
-      lector: "Lector",
-      wordOfTheLord: "The word of the Lord.",
-      thanksBe: "Thanks be to God.",
+      coverPage: {
+        bride: "Bride",
+        groom: "Groom",
+        presider: "Presider",
+        location: "Location"
+      },
+      prayerOfFaithful: {
+        title: "Prayer of the Faithful",
+        introduction: "The Presider invites the assembly to pray:",
+        introText: "Let us bring our prayers before the Lord, who blesses this couple with abundant grace.",
+        petition1: "For Michael and Maria, that their love may grow deeper with each passing year. We pray to the Lord.",
+        petition2: "For their families, that they may support this new union with joy and encouragement. We pray to the Lord.",
+        response: "Lord, hear our prayer."
+      },
       fullScriptContinues: "+ Full script continues...",
       downloadPdf: "Download PDF",
       downloadWord: "Download Word"
@@ -587,11 +596,20 @@ const translations = {
       },
       exampleExport: "Ejemplo de Guion",
       weddingCeremony: "Ceremonia de Boda",
-      firstReading: "Primera Lectura",
-      gospel: "Evangelio",
-      lector: "Lector",
-      wordOfTheLord: "Palabra de Dios.",
-      thanksBe: "Te alabamos, Señor.",
+      coverPage: {
+        bride: "Novia",
+        groom: "Novio",
+        presider: "Presidente",
+        location: "Lugar"
+      },
+      prayerOfFaithful: {
+        title: "Oración de los Fieles",
+        introduction: "El Presidente invita a la asamblea a orar:",
+        introText: "Presentemos nuestras oraciones ante el Señor, que bendice a esta pareja con gracia abundante.",
+        petition1: "Por Miguel y María, para que su amor crezca más profundo con cada año que pase. Roguemos al Señor.",
+        petition2: "Por sus familias, para que apoyen esta nueva unión con alegría y ánimo. Roguemos al Señor.",
+        response: "Te rogamos, óyenos."
+      },
       fullScriptContinues: "+ El guion completo continúa...",
       downloadPdf: "Descargar PDF",
       downloadWord: "Descargar Word"
@@ -1278,46 +1296,45 @@ function HomeContent() {
 
               <div className="bg-card text-card-foreground rounded-xl p-6 shadow-xl border space-y-4">
                 <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t.printFeature.exampleExport}</div>
-                <div className="bg-background rounded-lg p-8 space-y-6 border border-border">
-                  {/* Event Title */}
-                  <div className="text-center space-y-1">
-                    <div className="font-bold text-lg text-foreground">{t.printFeature.weddingCeremony}</div>
+                <div className="bg-background rounded-lg p-6 space-y-5 border border-border">
+                  {/* Cover Page */}
+                  <div className="text-center space-y-3 pb-4 border-b border-border">
+                    <div className="font-bold text-xl text-foreground">{t.printFeature.weddingCeremony}</div>
                     <div className="text-sm text-muted-foreground">October 12, 2025 • 2:00 PM</div>
-                  </div>
-
-                  {/* First Reading */}
-                  <div className="space-y-1 pt-4">
-                    <div className="text-right font-bold text-sm text-destructive">
-                      {t.printFeature.firstReading}
-                    </div>
-                    <div className="text-right italic text-xs text-destructive">
-                      1 Corinthians 13:4-8a
-                    </div>
-                    <div className="text-right text-xs text-destructive">
-                      {t.printFeature.lector}: Sarah Johnson
-                    </div>
-                    <div className="pt-2 text-sm leading-relaxed text-foreground">
-                      Love is patient, love is kind. It is not jealous, it is not pompous, it is not inflated, it is not rude...
-                    </div>
-                    <div className="pt-1 italic text-sm text-muted-foreground">
-                      {t.printFeature.wordOfTheLord}
-                    </div>
-                    <div className="pt-1 text-sm text-foreground">
-                      <span className="font-bold">People: </span>
-                      <span className="italic text-muted-foreground">{t.printFeature.thanksBe}</span>
+                    <div className="grid grid-cols-2 gap-2 text-sm pt-2">
+                      <div className="text-right text-muted-foreground">{t.printFeature.coverPage.groom}:</div>
+                      <div className="text-left font-medium">Michael Johnson</div>
+                      <div className="text-right text-muted-foreground">{t.printFeature.coverPage.bride}:</div>
+                      <div className="text-left font-medium">Maria Garcia</div>
+                      <div className="text-right text-muted-foreground">{t.printFeature.coverPage.presider}:</div>
+                      <div className="text-left font-medium">Fr. Thomas Smith</div>
+                      <div className="text-right text-muted-foreground">{t.printFeature.coverPage.location}:</div>
+                      <div className="text-left font-medium">St. Mary&apos;s Church</div>
                     </div>
                   </div>
 
-                  {/* Gospel */}
-                  <div className="space-y-1 pt-4">
-                    <div className="text-right font-bold text-sm text-destructive">
-                      {t.printFeature.gospel}
+                  {/* Prayer of the Faithful */}
+                  <div className="space-y-2">
+                    <div className="font-bold text-sm text-primary">
+                      {t.printFeature.prayerOfFaithful.title}
                     </div>
-                    <div className="text-right italic text-xs text-destructive">
-                      John 15:9-12
+                    <div className="text-xs italic text-muted-foreground">
+                      {t.printFeature.prayerOfFaithful.introduction}
                     </div>
-                    <div className="pt-2 text-sm leading-relaxed text-foreground">
-                      As the Father loves me, so I also love you. Remain in my love...
+                    <div className="text-sm leading-relaxed text-foreground pt-1">
+                      {t.printFeature.prayerOfFaithful.introText}
+                    </div>
+                    <div className="text-sm leading-relaxed text-foreground pt-2">
+                      {t.printFeature.prayerOfFaithful.petition1}
+                    </div>
+                    <div className="text-sm italic text-muted-foreground pl-4">
+                      <span className="font-semibold">R.</span> {t.printFeature.prayerOfFaithful.response}
+                    </div>
+                    <div className="text-sm leading-relaxed text-foreground pt-1">
+                      {t.printFeature.prayerOfFaithful.petition2}
+                    </div>
+                    <div className="text-sm italic text-muted-foreground pl-4">
+                      <span className="font-semibold">R.</span> {t.printFeature.prayerOfFaithful.response}
                     </div>
                   </div>
 

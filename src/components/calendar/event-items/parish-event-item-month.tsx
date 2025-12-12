@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { getModuleIcon } from '@/components/calendar/module-icons'
+import { getModuleIcon, getIconByName } from '@/components/calendar/module-icons'
 import { CalendarTooltip } from '@/components/calendar/calendar-tooltip'
 import { formatTime } from '@/lib/utils/formatters'
 
@@ -10,6 +10,7 @@ interface ParishEventItemMonthProps {
     id: string
     title: string
     moduleType?: string | null
+    eventTypeIcon?: string | null  // Lucide icon name from event_type
     liturgicalColor?: string // Hex color from liturgical calendar
     start_time?: string | null
     [key: string]: any
@@ -18,7 +19,10 @@ interface ParishEventItemMonthProps {
 }
 
 export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthProps) {
-  const ModuleIcon = event.moduleType ? getModuleIcon(event.moduleType as any) : null
+  // Priority: module icon (for linked modules) > event type icon > default FileText
+  const ModuleIcon = event.moduleType
+    ? getModuleIcon(event.moduleType as any) || getIconByName(event.eventTypeIcon)
+    : getIconByName(event.eventTypeIcon)
 
   // Extract liturgical color for left border
   const liturgicalColor = event.liturgicalColor
@@ -38,7 +42,7 @@ export function ParishEventItemMonth({ event, onClick }: ParishEventItemMonthPro
         )}
         onClick={onClick}
       >
-        {ModuleIcon && <ModuleIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />}
+        <ModuleIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
         {liturgicalColor && (
           <div
             className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full border border-background shadow-sm flex-shrink-0"

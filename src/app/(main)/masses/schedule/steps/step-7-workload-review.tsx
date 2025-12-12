@@ -645,6 +645,7 @@ export function Step7WorkloadReview({
           onSelect={handlePersonSelected}
           massRoleId={editingAssignment.roleId}
           massRoleName={editingAssignment.roleName}
+          massDate={proposedMasses.find(m => m.id === editingAssignment.massId)?.date}
         />
       )}
     </div>

@@ -20,7 +20,8 @@ import {
   seedMassRoleMemberships,
   seedLocations,
   seedMasses,
-  seedEvents
+  seedEvents,
+  seedFamilies
 } from './dev-seeders'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -274,6 +275,14 @@ async function seedDevData() {
   // =====================================================
   if (people) {
     await seedMassRoleMemberships(ctx, people)
+  }
+
+  // =====================================================
+  // Seed Families and Family Members
+  // =====================================================
+  console.log('')
+  if (people) {
+    await seedFamilies(ctx, people as Array<{ id: string; first_name: string; last_name: string }>)
   }
 
   // =====================================================
