@@ -18,6 +18,8 @@ export const inputFieldTypeSchema = z.enum([
   'datetime',
   'number',
   'yes_no',
+  'mass-intention',
+  'spacer',
 ])
 
 // Create input field definition schema

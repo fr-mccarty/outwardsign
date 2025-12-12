@@ -7,7 +7,7 @@ import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildPersonContactCard } from '@/lib/content-builders/person'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Edit, Printer, FileText, Download } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
 import Link from 'next/link'
 import { getPersonFilename } from '@/lib/utils/formatters'
 
@@ -65,16 +65,22 @@ export function PersonViewClient({ person }: PersonViewClientProps) {
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/people/${person.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
           <FileText className="h-4 w-4 mr-2" />
           Download PDF
         </Link>
       </Button>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/people/${person.id}/word?filename=${generateFilename('docx')}`}>
-          <Download className="h-4 w-4 mr-2" />
+          <FileDown className="h-4 w-4 mr-2" />
           Download Word
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/people/${person.id}/txt?filename=${generateFilename('txt')}`}>
+          <File className="h-4 w-4 mr-2" />
+          Download Text
         </Link>
       </Button>
     </>

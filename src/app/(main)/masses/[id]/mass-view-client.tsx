@@ -4,7 +4,7 @@ import { MassWithRelations, updateMass, deleteMass } from '@/lib/actions/masses'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { buildMassLiturgy, MASS_TEMPLATES } from '@/lib/content-builders/mass'
-import { Edit, Printer, FileText, Download } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { ScriptCard } from '@/components/script-card'
@@ -64,16 +64,22 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/masses/${mass.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
           <FileText className="h-4 w-4 mr-2" />
           Download PDF
         </Link>
       </Button>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/masses/${mass.id}/word?filename=${generateFilename('docx')}`}>
-          <Download className="h-4 w-4 mr-2" />
+          <FileDown className="h-4 w-4 mr-2" />
           Download Word
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/masses/${mass.id}/txt?filename=${generateFilename('txt')}`}>
+          <File className="h-4 w-4 mr-2" />
+          Download Text
         </Link>
       </Button>
     </>

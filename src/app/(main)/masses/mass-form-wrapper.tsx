@@ -5,17 +5,20 @@ import { MassForm } from './mass-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
 import type { MassWithRelations } from '@/lib/actions/masses'
+import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
 interface MassFormWrapperProps {
   mass?: MassWithRelations
   title: string
   description: string
+  initialLiturgicalEvent?: GlobalLiturgicalEvent | null
 }
 
 export function MassFormWrapper({
   mass,
   title,
-  description
+  description,
+  initialLiturgicalEvent
 }: MassFormWrapperProps) {
   const formId = 'mass-form'
   const [isLoading, setIsLoading] = useState(false)
@@ -38,6 +41,7 @@ export function MassFormWrapper({
         mass={mass}
         formId={formId}
         onLoadingChange={setIsLoading}
+        initialLiturgicalEvent={initialLiturgicalEvent}
       />
     </PageContainer>
   )

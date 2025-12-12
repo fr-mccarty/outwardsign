@@ -570,6 +570,8 @@ export type InputFieldType =
   | 'datetime'
   | 'number'
   | 'yes_no'
+  | 'mass-intention'
+  | 'spacer'
 
 // DynamicEventType is an alias for EventType for backward compatibility
 // Both represent the same database table (event_types)

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getMassIntentionsReport } from '@/lib/actions/mass-intentions'
 import { formatDatePretty } from '@/lib/utils/formatters'
-import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
+import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
 import { buildMassIntentionReport, REPORT_STYLES } from '@/lib/report-builders'
 
 interface PageProps {
@@ -50,26 +50,7 @@ export default async function PrintMassIntentionsReportPage({ searchParams }: Pa
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        @page {
-          margin: ${PRINT_PAGE_MARGIN};
-        }
-        body {
-          margin: 0 !important;
-          background: white !important;
-          color: black !important;
-          font-family: system-ui, -apple-system, sans-serif;
-          padding: 0 !important;
-        }
-        .print-container {
-          max-width: none !important;
-          padding: 1rem !important;
-          box-shadow: none !important;
-          border-radius: 0 !important;
-          background: transparent !important;
-        }
-        ${REPORT_STYLES}
-      `}} />
+      <style dangerouslySetInnerHTML={{ __html: `${PRINT_PAGE_STYLES}\n${REPORT_STYLES}` }} />
       <div dangerouslySetInnerHTML={{ __html: reportHTML }} />
     </>
   )

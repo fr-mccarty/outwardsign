@@ -47,9 +47,10 @@ interface MassFormProps {
   mass?: MassWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
+  initialLiturgicalEvent?: GlobalLiturgicalEvent | null
 }
 
-export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
+export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent }: MassFormProps) {
   const router = useRouter()
   const isEditing = !!mass
 
@@ -61,7 +62,7 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
       event_id: mass?.event_id || undefined,
       presider_id: mass?.presider_id || undefined,
       homilist_id: mass?.homilist_id || undefined,
-      liturgical_event_id: mass?.liturgical_event_id || undefined,
+      liturgical_event_id: mass?.liturgical_event_id || initialLiturgicalEvent?.id || undefined,
       mass_roles_template_id: mass?.mass_roles_template_id || undefined,
       petitions: mass?.petitions || undefined,
       announcements: mass?.announcements || undefined,
@@ -148,6 +149,14 @@ export function MassForm({ mass, formId, onLoadingChange }: MassFormProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mass?.id]) // Only re-run when mass ID changes
+
+  // Initialize liturgical event from URL params when creating new mass
+  useEffect(() => {
+    if (!isEditing && initialLiturgicalEvent) {
+      liturgicalEvent.setValue(initialLiturgicalEvent)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
   // Sync picker values to form state
   useEffect(() => {

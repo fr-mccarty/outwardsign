@@ -1,17 +1,20 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { getLiturgicalColorClasses, getLiturgicalCssVarValue } from '@/lib/utils/liturgical-colors'
 import { LITURGICAL_COLOR_BAR_TOTAL_WIDTH } from '@/lib/constants'
 import { formatDate } from '@/lib/utils/formatters'
-import { Calendar, Book, Palette } from 'lucide-react'
+import { Calendar, Book, Palette, Plus } from 'lucide-react'
 
 interface LiturgicalEventPreviewProps {
   open: boolean
@@ -24,9 +27,17 @@ export function LiturgicalEventPreview({
   onOpenChange,
   event
 }: LiturgicalEventPreviewProps) {
+  const router = useRouter()
+
   if (!event) return null
 
   const { event_data } = event
+
+  const handleCreateMass = () => {
+    // Navigate to create mass page with liturgical event ID
+    router.push(`/masses/create?liturgical_event_id=${event.id}`)
+    onOpenChange(false)
+  }
   const colors = event_data.color || []
   const primaryColor = (colors[0] || '').toLowerCase()
   const colorStyles = getLiturgicalColorClasses(primaryColor, 10)
@@ -183,6 +194,13 @@ export function LiturgicalEventPreview({
             )}
           </div>
         </div>
+
+        <DialogFooter className="flex-shrink-0 border-t pt-4">
+          <Button onClick={handleCreateMass}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Mass
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

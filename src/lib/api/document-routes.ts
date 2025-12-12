@@ -5,6 +5,7 @@ import { Document, Packer } from 'docx'
 import { pdfStyles } from '@/lib/styles/liturgy-styles'
 import { renderPDF } from '@/lib/renderers/pdf-renderer'
 import { renderWord } from '@/lib/renderers/word-renderer'
+import { renderText } from '@/lib/renderers/text-renderer'
 import { WORD_PAGE_MARGIN } from '@/lib/print-styles'
 import type { LiturgyDocument } from '@/lib/types/liturgy-content'
 
@@ -225,6 +226,85 @@ export function createWordRoute<T>(config: WordRouteConfig<T>) {
       console.error(`Error generating Word document for ${config.entityName}:`, error)
       return NextResponse.json(
         { error: 'Failed to generate Word document' },
+        { status: 500 }
+      )
+    }
+  }
+}
+
+/**
+ * Configuration for creating a Text route handler
+ */
+export interface TextRouteConfig<T> {
+  /** Name of the entity (e.g., 'Wedding', 'Funeral') - used in error messages */
+  entityName: string
+  /** Function to fetch the entity by ID */
+  fetchEntity: (id: string) => Promise<T | null>
+  /** Function to build the liturgy document from the entity (can be sync or async) */
+  buildContent: (entity: T, templateId?: string) => LiturgyDocument | Promise<LiturgyDocument>
+  /** Function to generate the filename for the text document */
+  getFilename: (entity: T) => string
+  /** Optional: Default template ID if entity doesn't have one */
+  defaultTemplate?: string
+  /** Optional: Key name of the template ID field in the entity (e.g., 'wedding_template_id') */
+  templateIdField?: keyof T
+}
+
+/**
+ * Creates a plain text route handler for a given entity type
+ *
+ * @example
+ * ```typescript
+ * export const GET = createTextRoute({
+ *   entityName: 'Group',
+ *   fetchEntity: getGroup,
+ *   buildContent: buildGroupMembersReport,
+ *   getFilename: (group) => getGroupFilename(group, 'txt')
+ * })
+ * ```
+ */
+export function createTextRoute<T>(config: TextRouteConfig<T>) {
+  return async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) {
+    try {
+      const { id } = await params
+      const entity = await config.fetchEntity(id)
+
+      if (!entity) {
+        return NextResponse.json(
+          { error: `${config.entityName} not found` },
+          { status: 404 }
+        )
+      }
+
+      // Get template ID from entity if templateIdField is specified
+      let templateId = config.defaultTemplate
+      if (config.templateIdField && entity[config.templateIdField]) {
+        templateId = entity[config.templateIdField] as string
+      }
+
+      // Build liturgy content using centralized content builder (supports async)
+      const liturgyDocument = await Promise.resolve(config.buildContent(entity, templateId))
+
+      // Render to plain text format
+      const textContent = renderText(liturgyDocument)
+
+      // Generate filename
+      const filename = config.getFilename(entity)
+
+      // Return plain text
+      return new NextResponse(textContent, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Content-Disposition': `attachment; filename="${filename}"`
+        }
+      })
+    } catch (error) {
+      console.error(`Error generating text document for ${config.entityName}:`, error)
+      return NextResponse.json(
+        { error: 'Failed to generate text document' },
         { status: 500 }
       )
     }

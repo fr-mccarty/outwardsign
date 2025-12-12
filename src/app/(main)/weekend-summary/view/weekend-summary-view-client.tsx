@@ -4,7 +4,7 @@ import { WeekendSummaryData, WeekendSummaryParams } from '@/lib/actions/weekend-
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildWeekendSummary } from '@/lib/content-builders/weekend-summary'
 import { Button } from '@/components/ui/button'
-import { Edit, Printer, FileText, Download } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
 import Link from 'next/link'
 import { formatDatePretty } from '@/lib/utils/formatters'
 
@@ -54,7 +54,7 @@ export function WeekendSummaryViewClient({
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link
           href={`/api/weekend-summary/pdf?${buildQueryParams()}&filename=${generateFilename('pdf')}`}
           target="_blank"
@@ -63,10 +63,16 @@ export function WeekendSummaryViewClient({
           Download PDF
         </Link>
       </Button>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/weekend-summary/word?${buildQueryParams()}&filename=${generateFilename('docx')}`}>
-          <Download className="h-4 w-4 mr-2" />
+          <FileDown className="h-4 w-4 mr-2" />
           Download Word
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/weekend-summary/txt?${buildQueryParams()}&filename=${generateFilename('txt')}`}>
+          <File className="h-4 w-4 mr-2" />
+          Download Text
         </Link>
       </Button>
     </>

@@ -5,7 +5,7 @@ import type { GroupWithMembers } from '@/lib/actions/groups'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { buildGroupMembersReport } from '@/lib/content-builders/group'
 import { Button } from '@/components/ui/button'
-import { Edit, Printer, FileText, Download } from 'lucide-react'
+import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
 import Link from 'next/link'
 import { getGroupFilename } from '@/lib/utils/formatters'
 import { Badge } from '@/components/ui/badge'
@@ -41,16 +41,22 @@ export function GroupViewClient({ group }: GroupViewClientProps) {
   // Generate export buttons
   const exportButtons = (
     <>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/groups/${group.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
           <FileText className="h-4 w-4 mr-2" />
           Download PDF
         </Link>
       </Button>
-      <Button asChild variant="outline" className="w-full">
+      <Button asChild variant="default" className="w-full">
         <Link href={`/api/groups/${group.id}/word?filename=${generateFilename('docx')}`}>
-          <Download className="h-4 w-4 mr-2" />
+          <FileDown className="h-4 w-4 mr-2" />
           Download Word
+        </Link>
+      </Button>
+      <Button asChild variant="default" className="w-full">
+        <Link href={`/api/groups/${group.id}/txt?filename=${generateFilename('txt')}`}>
+          <File className="h-4 w-4 mr-2" />
+          Download Text
         </Link>
       </Button>
     </>

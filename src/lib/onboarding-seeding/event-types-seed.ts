@@ -93,16 +93,18 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: 'Groom', type: 'person', required: true, is_key_person: true, order: 1 },
     { name: '---', type: 'spacer', required: false, order: 2 },
     { name: 'Wedding Ceremony', type: 'occasion', required: true, is_primary: true, order: 3 },
-    { name: 'Presider', type: 'person', required: false, order: 4 },
-    { name: 'Reception Location', type: 'location', required: false, order: 5 },
-    { name: '---', type: 'spacer', required: false, order: 6 },
-    { name: 'Opening Song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 7 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 8 },
-    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 9 },
-    { name: 'First Reading', type: 'text', required: false, order: 10 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 11 },
-    { name: 'Unity Candle', type: 'yes_no', required: false, order: 12 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 13 }
+    { name: 'Wedding Rehearsal', type: 'occasion', required: false, is_primary: false, order: 4 },
+    { name: 'Presider', type: 'person', required: false, order: 5 },
+    { name: 'Reception Location', type: 'location', required: false, order: 6 },
+    { name: '---', type: 'spacer', required: false, order: 7 },
+    { name: 'Opening Song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 9 },
+    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
+    { name: 'First Reading', type: 'text', required: false, order: 11 },
+    { name: 'Second Reading', type: 'text', required: false, order: 12 },
+    { name: 'Gospel Reading', type: 'text', required: false, order: 13 },
+    { name: 'Unity Candle', type: 'yes_no', required: false, order: 14 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 15 }
   ]
 
   const { error: weddingFieldsError } = await supabase
@@ -174,6 +176,9 @@ Please join us in celebrating the marriage of
 
 ### First Reading
 {{First Reading}}
+
+### Second Reading
+{{Second Reading}}
 
 ### Gospel
 {{Gospel Reading}}`,
@@ -258,6 +263,9 @@ Por favor, acompáñenos a celebrar el matrimonio de
 
 ### Primera Lectura
 {{First Reading}}
+
+### Segunda Lectura
+{{Second Reading}}
 
 ### Evangelio
 {{Gospel Reading}}`,
@@ -386,6 +394,11 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
 
 ---
 
+### Second Reading
+{{Second Reading}}
+
+---
+
 ### Gospel
 {{Gospel Reading}}`,
       page_break_after: true,
@@ -500,9 +513,10 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
     { name: 'First Reading', type: 'text', required: false, order: 10 },
     { name: 'Psalm', type: 'text', required: false, order: 11 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 12 },
-    { name: 'Eulogy Speaker', type: 'person', required: false, order: 13 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 14 }
+    { name: 'Second Reading', type: 'text', required: false, order: 12 },
+    { name: 'Gospel Reading', type: 'text', required: false, order: 13 },
+    { name: 'Eulogy Speaker', type: 'person', required: false, order: 14 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 15 }
   ]
 
   const { error: funeralFieldsError } = await supabase
@@ -585,6 +599,9 @@ Presider: {{Presider}}`,
 
 ### Responsorial Psalm
 {{Psalm}}
+
+### Second Reading
+{{Second Reading}}
 
 ### Gospel
 {{Gospel Reading}}`,
@@ -772,6 +789,11 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
 
 ### Responsorial Psalm
 {{Psalm}}
+
+---
+
+### Second Reading
+{{Second Reading}}
 
 ---
 

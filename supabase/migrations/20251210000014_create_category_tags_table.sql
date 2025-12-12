@@ -82,12 +82,3 @@ CREATE TRIGGER category_tags_updated_at
   BEFORE UPDATE ON category_tags
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
-
--- Migrate existing data from content_tags (if upgrading)
-INSERT INTO category_tags (id, parish_id, name, slug, sort_order, color, created_at, updated_at, created_by)
-SELECT id, parish_id, name, slug, sort_order, color, created_at, updated_at, created_by
-FROM content_tags
-WHERE EXISTS (SELECT 1 FROM content_tags LIMIT 1);
-
--- Drop old table
-DROP TABLE IF EXISTS content_tags CASCADE;

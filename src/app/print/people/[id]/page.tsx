@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getPerson } from '@/lib/actions/people'
 import { buildPersonContactCard } from '@/lib/content-builders/person'
 import { renderHTML } from '@/lib/renderers/html-renderer'
-import { PRINT_PAGE_MARGIN } from '@/lib/print-styles'
+import { PRINT_PAGE_STYLES } from '@/lib/print-styles'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -33,26 +33,7 @@ export default async function PrintPersonPage({ params }: PageProps) {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        @page {
-          margin: ${PRINT_PAGE_MARGIN};
-        }
-        body {
-          margin: 0 !important;
-          background: white !important;
-          color: black !important;
-        }
-        .print-container {
-          max-width: none !important;
-          box-shadow: none !important;
-          border-radius: 0 !important;
-          padding: 0 !important;
-          background: white !important;
-        }
-        .person-print-content div {
-          color: black !important;
-        }
-      `}} />
+      <style dangerouslySetInnerHTML={{ __html: PRINT_PAGE_STYLES }} />
       <div className="person-print-content">
         {content}
       </div>

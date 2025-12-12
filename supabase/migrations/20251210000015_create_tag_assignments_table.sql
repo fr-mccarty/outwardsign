@@ -60,12 +60,3 @@ CREATE POLICY tag_assignments_delete_policy ON tag_assignments
         AND ('admin' = ANY(pu.roles) OR 'staff' = ANY(pu.roles))
     )
   );
-
--- Migrate existing data from content_tag_assignments (if upgrading)
-INSERT INTO tag_assignments (id, tag_id, entity_type, entity_id, created_at)
-SELECT id, tag_id, 'content', content_id, created_at
-FROM content_tag_assignments
-WHERE EXISTS (SELECT 1 FROM content_tag_assignments LIMIT 1);
-
--- Drop old table
-DROP TABLE IF EXISTS content_tag_assignments CASCADE;

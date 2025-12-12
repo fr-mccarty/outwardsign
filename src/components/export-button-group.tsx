@@ -69,7 +69,7 @@ export function ExportButtonGroup({ eventTypeSlug, eventId, scriptId }: ExportBu
   }
 
   const handlePrint = () => {
-    window.location.href = `/print/events/${eventTypeSlug}/${eventId}/scripts/${scriptId}`
+    window.open(`/print/events/${eventTypeSlug}/${eventId}/scripts/${scriptId}`, '_blank')
   }
 
   const handleTextExport = async () => {
