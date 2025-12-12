@@ -562,6 +562,7 @@ export type InputFieldType =
   | 'document'
   | 'content'
   | 'petition'
+  | 'occasion'
   | 'text'
   | 'rich_text'
   | 'date'
@@ -604,6 +605,7 @@ export interface InputFieldDefinition {
   event_type_filter_id: string | null
   filter_tags: string[] | null
   is_key_person: boolean
+  is_primary: boolean
   order: number
   deleted_at: string | null
   created_at: string
@@ -624,6 +626,7 @@ export interface CreateInputFieldDefinitionData {
   event_type_filter_id?: string | null
   filter_tags?: string[] | null
   is_key_person?: boolean
+  is_primary?: boolean
 }
 
 export interface UpdateInputFieldDefinitionData {
@@ -634,6 +637,7 @@ export interface UpdateInputFieldDefinitionData {
   event_type_filter_id?: string | null
   filter_tags?: string[] | null
   is_key_person?: boolean
+  is_primary?: boolean
 }
 
 // Custom Lists (parish-defined option sets)

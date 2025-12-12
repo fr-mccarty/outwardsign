@@ -3,6 +3,8 @@
 import type { DynamicEventWithRelations, DynamicEventType, Script } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { ScriptCard } from '@/components/script-card'
 import { Edit } from 'lucide-react'
 import Link from 'next/link'
@@ -46,6 +48,25 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
     </>
   )
 
+  // Format time to 12-hour format with AM/PM
+  const formatTime = (time: string | null) => {
+    if (!time) return null
+    try {
+      // Parse HH:mm:ss format
+      const [hours, minutes] = time.split(':').map(Number)
+      const period = hours >= 12 ? 'PM' : 'AM'
+      const displayHours = hours % 12 || 12
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+    } catch {
+      return time
+    }
+  }
+
+  // Sort occasions by created_at (no position field anymore)
+  const sortedOccasions = [...(event.occasions || [])].sort((a, b) =>
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  )
+
   return (
     <ModuleViewContainer
       entity={event}
@@ -55,8 +76,54 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
       details={details}
       onDelete={deleteEvent}
     >
+      {/* Occasions Section */}
+      {sortedOccasions.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Occasions</h3>
+          <div className="space-y-3">
+            {sortedOccasions.map((occasion) => (
+              <Card key={occasion.id}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base">
+                      {occasion.label}
+                    </CardTitle>
+                    {occasion.is_primary && (
+                      <Badge variant="secondary" className="text-xs">
+                        Primary
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {occasion.date && (
+                    <div>
+                      <span className="font-medium">Date:</span>{' '}
+                      {formatDatePretty(occasion.date)}
+                    </div>
+                  )}
+                  {occasion.time && (
+                    <div>
+                      <span className="font-medium">Time:</span>{' '}
+                      {formatTime(occasion.time)}
+                    </div>
+                  )}
+                  {occasion.location && (
+                    <div>
+                      <span className="font-medium">Location:</span>{' '}
+                      {occasion.location.name}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Script cards stacked vertically */}
       <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Scripts</h3>
         {scripts.length > 0 ? (
           scripts.map((script) => (
             <ScriptCard

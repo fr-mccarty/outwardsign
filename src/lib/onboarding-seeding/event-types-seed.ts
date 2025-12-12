@@ -91,17 +91,18 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
   const weddingFields = [
     { name: 'Bride', type: 'person', required: true, is_key_person: true, order: 0 },
     { name: 'Groom', type: 'person', required: true, is_key_person: true, order: 1 },
-    { name: 'Wedding Date', type: 'date', required: true, order: 2 },
-    { name: 'Ceremony Location', type: 'location', required: true, order: 3 },
+    { name: '---', type: 'spacer', required: false, order: 2 },
+    { name: 'Wedding Ceremony', type: 'occasion', required: true, is_primary: true, order: 3 },
     { name: 'Presider', type: 'person', required: false, order: 4 },
     { name: 'Reception Location', type: 'location', required: false, order: 5 },
-    { name: 'Opening Song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 6 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 7 },
-    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 8 },
-    { name: 'First Reading', type: 'text', required: false, order: 9 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 10 },
-    { name: 'Unity Candle', type: 'yes_no', required: false, order: 11 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 12 }
+    { name: '---', type: 'spacer', required: false, order: 6 },
+    { name: 'Opening Song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 7 },
+    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 8 },
+    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 9 },
+    { name: 'First Reading', type: 'text', required: false, order: 10 },
+    { name: 'Gospel Reading', type: 'text', required: false, order: 11 },
+    { name: 'Unity Candle', type: 'yes_no', required: false, order: 12 },
+    { name: 'Special Instructions', type: 'rich_text', required: false, order: 13 }
   ]
 
   const { error: weddingFieldsError } = await supabase
@@ -109,8 +110,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     .insert(
       weddingFields.map(field => ({
         event_type_id: weddingType.id,
-        is_key_person: false,
-        ...field
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
       }))
     )
 
@@ -488,11 +490,11 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
   const funeralFields = [
     { name: 'Deceased', type: 'person', required: true, is_key_person: true, order: 0 },
     { name: 'Date of Death', type: 'date', required: false, order: 1 },
-    { name: 'Funeral Date', type: 'date', required: true, order: 2 },
-    { name: 'Funeral Location', type: 'location', required: true, order: 3 },
-    { name: 'Presider', type: 'person', required: false, order: 4 },
-    { name: 'Burial Location', type: 'location', required: false, order: 5 },
-    { name: 'Visitation Location', type: 'location', required: false, order: 6 },
+    { name: 'Funeral Mass', type: 'occasion', required: true, is_primary: true, order: 2 },
+    { name: 'Presider', type: 'person', required: false, order: 3 },
+    { name: 'Burial Location', type: 'location', required: false, order: 4 },
+    { name: 'Visitation Location', type: 'location', required: false, order: 5 },
+    { name: '---', type: 'spacer', required: false, order: 6 },
     { name: 'Opening Song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
     { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
     { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
@@ -508,8 +510,9 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     .insert(
       funeralFields.map(field => ({
         event_type_id: funeralType.id,
-        is_key_person: false,
-        ...field
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
       }))
     )
 
@@ -883,8 +886,8 @@ Burial will take place at:
     { name: 'Father', type: 'person', required: false, order: 2 },
     { name: 'Godmother', type: 'person', required: false, order: 3 },
     { name: 'Godfather', type: 'person', required: false, order: 4 },
-    { name: 'Baptism Date', type: 'date', required: true, order: 5 },
-    { name: 'Baptism Location', type: 'location', required: true, order: 6 },
+    { name: '---', type: 'spacer', required: false, order: 5 },
+    { name: 'Baptism', type: 'occasion', required: true, is_primary: true, order: 6 },
     { name: 'Presider', type: 'person', required: false, order: 7 },
     { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['baptism', 'opening-prayer'], order: 8 },
     { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
@@ -895,8 +898,9 @@ Burial will take place at:
     .insert(
       baptismFields.map(field => ({
         event_type_id: baptismType.id,
-        is_key_person: false,
-        ...field
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
       }))
     )
 
@@ -1009,8 +1013,8 @@ Please join us in celebrating the Baptism of
     { name: 'Quinceañera', type: 'person', required: true, is_key_person: true, order: 0 },
     { name: 'Mother', type: 'person', required: false, order: 1 },
     { name: 'Father', type: 'person', required: false, order: 2 },
-    { name: 'Ceremony Date', type: 'date', required: true, order: 3 },
-    { name: 'Ceremony Location', type: 'location', required: true, order: 4 },
+    { name: '---', type: 'spacer', required: false, order: 3 },
+    { name: 'Quinceañera Mass', type: 'occasion', required: true, is_primary: true, order: 4 },
     { name: 'Presider', type: 'person', required: false, order: 5 },
     { name: 'Reception Location', type: 'location', required: false, order: 6 },
     { name: 'Court of Honor', type: 'group', required: false, order: 7 },
@@ -1023,8 +1027,9 @@ Please join us in celebrating the Baptism of
     .insert(
       quinceaneraFields.map(field => ({
         event_type_id: quinceaneraType.id,
-        is_key_person: false,
-        ...field
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
       }))
     )
 
@@ -1141,8 +1146,8 @@ Please join us for a reception following the ceremony at:
     { name: 'Father', type: 'person', required: false, order: 2 },
     { name: 'Godmother', type: 'person', required: false, order: 3 },
     { name: 'Godfather', type: 'person', required: false, order: 4 },
-    { name: 'Presentation Date', type: 'date', required: true, order: 5 },
-    { name: 'Presentation Location', type: 'location', required: true, order: 6 },
+    { name: '---', type: 'spacer', required: false, order: 5 },
+    { name: 'Presentation', type: 'occasion', required: true, is_primary: true, order: 6 },
     { name: 'Presider', type: 'person', required: false, order: 7 },
     { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['presentation', 'opening-prayer'], order: 8 },
     { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
@@ -1153,8 +1158,9 @@ Please join us for a reception following the ceremony at:
     .insert(
       presentationFields.map(field => ({
         event_type_id: presentationType.id,
-        is_key_person: false,
-        ...field
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
       }))
     )
 

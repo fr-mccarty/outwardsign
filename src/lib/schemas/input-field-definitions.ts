@@ -10,6 +10,7 @@ export const inputFieldTypeSchema = z.enum([
   'document',
   'content',
   'petition',
+  'occasion',
   'text',
   'rich_text',
   'date',
@@ -30,6 +31,7 @@ export const createInputFieldDefinitionSchema = z
     event_type_filter_id: z.string().uuid().nullable().optional(),
     filter_tags: z.array(z.string()).nullable().optional(),
     is_key_person: z.boolean().optional(),
+    is_primary: z.boolean().optional(),
   })
   .refine(
     (data) => {
@@ -44,6 +46,19 @@ export const createInputFieldDefinitionSchema = z
       path: ['is_key_person'],
     }
   )
+  .refine(
+    (data) => {
+      // is_primary can only be true for occasion type
+      if (data.is_primary && data.type !== 'occasion') {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Primary flag is only valid for occasion type fields',
+      path: ['is_primary'],
+    }
+  )
 
 // Update input field definition schema (all fields optional)
 export const updateInputFieldDefinitionSchema = z.object({
@@ -54,6 +69,7 @@ export const updateInputFieldDefinitionSchema = z.object({
   event_type_filter_id: z.string().uuid().nullable().optional(),
   filter_tags: z.array(z.string()).nullable().optional(),
   is_key_person: z.boolean().optional(),
+  is_primary: z.boolean().optional(),
 })
 
 // Export types using z.infer

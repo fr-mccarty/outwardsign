@@ -36,8 +36,9 @@ interface LiturgicalCalendarItem extends CalendarItem {
 // Transform Occasion to CalendarItem
 function occasionToCalendarItem(occasion: CalendarOccasionItem): LiturgicalCalendarItem {
   // Use event type name as the title, with occasion label for context
+  // Show "(Primary)" label for primary occasions
   const title = occasion.is_primary
-    ? occasion.event_type_name
+    ? `${occasion.event_type_name} (Primary)`
     : `${occasion.event_type_name} - ${occasion.label}`
 
   return {

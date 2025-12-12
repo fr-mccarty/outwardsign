@@ -35,7 +35,6 @@ export async function getOccasions(eventId: string): Promise<Occasion[]> {
     .select('*, location:locations(*)')
     .eq('event_id', eventId)
     .is('deleted_at', null)
-    .order('date', { ascending: true })
     .order('created_at', { ascending: true })
 
   if (error) {
@@ -204,25 +203,20 @@ export async function deleteOccasion(id: string): Promise<void> {
     throw new Error('Event not found or access denied')
   }
 
-  // If this is the primary occasion, check if there are other occasions
-  if (occasion.is_primary) {
-    const { data: remainingOccasions, error: countError } = await supabase
-      .from('occasions')
-      .select('id')
-      .eq('event_id', occasion.event_id)
-      .is('deleted_at', null)
+  // Check if this is the last occasion (prevent deleting the last one)
+  const { data: remainingOccasions, error: countError } = await supabase
+    .from('occasions')
+    .select('id')
+    .eq('event_id', occasion.event_id)
+    .is('deleted_at', null)
 
-    if (countError) {
-      console.error('Error counting occasions:', countError)
-      throw new Error('Failed to check remaining occasions')
-    }
+  if (countError) {
+    console.error('Error counting occasions:', countError)
+    throw new Error('Failed to check remaining occasions')
+  }
 
-    if (remainingOccasions && remainingOccasions.length <= 1) {
-      throw new Error('Cannot delete the last occasion for an event')
-    }
-
-    // If there are other occasions, suggest marking another as primary
-    throw new Error('Cannot delete primary occasion. Mark another occasion as primary first.')
+  if (remainingOccasions && remainingOccasions.length <= 1) {
+    throw new Error('Cannot delete the last occasion for an event')
   }
 
   // Hard delete
@@ -238,3 +232,4 @@ export async function deleteOccasion(id: string): Promise<void> {
 
   revalidatePath(`/events/${event.event_type_id}/${occasion.event_id}`)
 }
+

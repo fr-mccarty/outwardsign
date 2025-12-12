@@ -10,6 +10,7 @@ import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
 import { ContentPickerField } from "@/components/content-picker-field"
 import { PetitionPickerField } from "@/components/petition-picker-field"
+import { OccasionFieldView, type OccasionFieldData } from "@/components/occasion-field-view"
 import { createEvent, updateEvent } from "@/lib/actions/dynamic-events"
 import type { DynamicEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -30,24 +31,38 @@ interface FieldValues {
   [key: string]: string | boolean | null | undefined
 }
 
-interface OccasionData {
-  label: string
-  date: string
-  time: string
-  location_id?: string
-  is_primary: boolean
-}
-
 export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: DynamicEventFormProps) {
   const router = useRouter()
   const isEditing = !!event
 
-  // State for field values
+  // Get occasion fields from input definitions
+  const occasionFields = (eventType.input_field_definitions || []).filter(f => f.type === 'occasion')
+
+  // State for field values (non-occasion fields)
   const [fieldValues, setFieldValues] = useState<FieldValues>(() => {
     const initial: FieldValues = {}
-    // Initialize from existing event or empty
+    // Initialize from existing event or empty (skip occasion fields)
     eventType.input_field_definitions?.forEach((field) => {
-      initial[field.name] = event?.field_values?.[field.name] ?? (field.type === 'yes_no' ? false : '')
+      if (field.type !== 'occasion') {
+        initial[field.name] = event?.field_values?.[field.name] ?? (field.type === 'yes_no' ? false : '')
+      }
+    })
+    return initial
+  })
+
+  // State for occasion field values (keyed by field name)
+  const [occasionValues, setOccasionValues] = useState<Record<string, OccasionFieldData>>(() => {
+    const initial: Record<string, OccasionFieldData> = {}
+    // Initialize occasion fields from existing occasions
+    occasionFields.forEach((field) => {
+      // Match occasion to field by label (field name = occasion label)
+      const existingOccasion = event?.occasions?.find(occ => occ.label === field.name)
+      initial[field.name] = {
+        date: existingOccasion?.date || '',
+        time: existingOccasion?.time || '',
+        location_id: existingOccasion?.location_id || null,
+        location: existingOccasion?.location || null
+      }
     })
     return initial
   })
@@ -72,22 +87,6 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
   // State for picker visibility
   const [pickerOpen, setPickerOpen] = useState<Record<string, boolean>>({})
 
-  // State for primary occasion (simplified - just one occasion for now)
-  const [occasion, setOccasion] = useState<OccasionData>(() => {
-    const primaryOccasion = event?.occasions?.find(o => o.is_primary)
-    return {
-      label: primaryOccasion?.label || eventType.name,
-      date: primaryOccasion?.date || '',
-      time: primaryOccasion?.time || '',
-      location_id: primaryOccasion?.location_id || undefined,
-      is_primary: true
-    }
-  })
-  const [occasionLocation, setOccasionLocation] = useState<Location | null>(
-    event?.occasions?.find(o => o.is_primary)?.location || null
-  )
-  const [occasionLocationOpen, setOccasionLocationOpen] = useState(false)
-
   // Initialize React Hook Form (for form submission handling)
   const {
     handleSubmit,
@@ -110,13 +109,28 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
     setFieldValues(prev => ({ ...prev, [fieldName]: value?.id || null }))
   }
 
+  // Update occasion field value
+  const updateOccasionValue = (fieldName: string, value: OccasionFieldData) => {
+    setOccasionValues(prev => ({
+      ...prev,
+      [fieldName]: value
+    }))
+  }
+
   // Handle form submission
   const onSubmit = async () => {
-    // Validate required fields
+    // Validate required fields (non-occasion fields)
     const missingRequired: string[] = []
     eventType.input_field_definitions?.forEach((field) => {
-      if (field.required && !fieldValues[field.name]) {
+      if (field.type !== 'occasion' && field.required && !fieldValues[field.name]) {
         missingRequired.push(field.name)
+      }
+    })
+
+    // Validate required occasion fields (must have at least a date)
+    occasionFields.forEach((field) => {
+      if (field.required && !occasionValues[field.name]?.date) {
+        missingRequired.push(`${field.name} (Date)`)
       }
     })
 
@@ -125,37 +139,52 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
       return
     }
 
-    // Validate occasion has a date
-    if (!occasion.date) {
-      toast.error('Please set a date for the event')
-      return
+    // Build occasions array from occasion field values
+    const occasions = occasionFields.map((field) => ({
+      label: field.name,
+      date: occasionValues[field.name]?.date || new Date().toISOString().split('T')[0],
+      time: occasionValues[field.name]?.time || null,
+      location_id: occasionValues[field.name]?.location_id || null,
+      is_primary: field.is_primary
+    }))
+
+    // Ensure at least one occasion exists (use event type name as default if no occasion fields)
+    if (occasions.length === 0) {
+      occasions.push({
+        label: eventType.name,
+        date: new Date().toISOString().split('T')[0],
+        time: null,
+        location_id: null,
+        is_primary: true
+      })
     }
 
-    try {
-      if (isEditing) {
-        await updateEvent(event.id, {
-          field_values: fieldValues,
-        })
-        toast.success(`${eventType.name} updated successfully`)
-        router.refresh() // Stay on edit page after update
-      } else {
+    if (!isEditing) {
+      // Create event with occasions from occasion fields
+      try {
         const newEvent = await createEvent(eventType.id, {
           field_values: fieldValues,
-          occasions: [{
-            label: occasion.label || eventType.name,
-            date: occasion.date,
-            time: occasion.time || null,
-            location_id: occasionLocation?.id || null,
-            is_primary: true
-          }]
+          occasions
         })
         toast.success(`${eventType.name} created successfully`)
-        // Redirect to edit page after creation
-        router.push(`/events/${eventType.slug}/${newEvent.id}/edit`)
+        router.push(`/events/${eventType.slug}/${newEvent.id}`)
+      } catch (error) {
+        console.error('Error creating event:', error)
+        toast.error(`Failed to create ${eventType.name.toLowerCase()}`)
       }
-    } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} event:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} ${eventType.name.toLowerCase()}`)
+    } else {
+      // Update event with field values and occasions
+      try {
+        await updateEvent(event.id, {
+          field_values: fieldValues,
+          occasions
+        })
+        toast.success(`${eventType.name} updated successfully`)
+        router.push(`/events/${eventType.slug}/${event.id}`)
+      } catch (error) {
+        console.error('Error updating event:', error)
+        toast.error(`Failed to update ${eventType.name.toLowerCase()}`)
+      }
     }
   }
 
@@ -220,9 +249,22 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
             placeholder={`Select or create ${field.name}`}
             eventContext={{
               eventTypeName: eventType.name,
-              occasionDate: occasion.date || new Date().toISOString().split('T')[0],
+              occasionDate: Object.values(occasionValues)[0]?.date || new Date().toISOString().split('T')[0],
               language: 'en', // TODO: Detect from event or use parish default
             }}
+          />
+        )
+
+      case 'occasion':
+        // Occasion inputs render date, time, and location together inline
+        return (
+          <OccasionFieldView
+            key={field.id}
+            label={field.name}
+            value={occasionValues[field.name] || { date: '', time: '', location_id: null, location: null }}
+            onValueChange={(value) => updateOccasionValue(field.name, value)}
+            required={field.required}
+            isPrimary={field.is_primary}
           />
         )
 
@@ -295,6 +337,12 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
           />
         )
 
+      case 'spacer':
+        // Visual divider - no data field
+        return (
+          <div key={field.id} className="border-t border-border mt-8 mb-8" />
+        )
+
       case 'text':
       default:
         return (
@@ -324,36 +372,6 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
           </div>
         </FormSectionCard>
       )}
-
-      {/* Occasion Section */}
-      <FormSectionCard title="Date & Location">
-        <div className="space-y-4">
-          <DatePickerField
-            id="occasion_date"
-            label="Date"
-            value={occasion.date ? new Date(occasion.date + 'T12:00:00') : undefined}
-            onValueChange={(date) => setOccasion(prev => ({ ...prev, date: date ? toLocalDateString(date) : '' }))}
-            required
-            closeOnSelect
-          />
-
-          <TimePickerField
-            id="occasion_time"
-            label="Time"
-            value={occasion.time}
-            onChange={(time) => setOccasion(prev => ({ ...prev, time }))}
-          />
-
-          <LocationPickerField
-            label="Location"
-            value={occasionLocation}
-            onValueChange={setOccasionLocation}
-            showPicker={occasionLocationOpen}
-            onShowPickerChange={setOccasionLocationOpen}
-            placeholder="Select location"
-          />
-        </div>
-      </FormSectionCard>
 
       <FormBottomActions
         isEditing={isEditing}

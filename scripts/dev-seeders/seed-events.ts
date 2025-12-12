@@ -68,12 +68,11 @@ export async function seedEvents(
 
     switch (eventType.slug) {
       case 'weddings':
+        // Note: Occasion label must match the input field name 'Wedding Ceremony'
         eventsData.push({
           field_values: {
             'Bride': people[1].id,
             'Groom': people[0].id,
-            'Wedding Date': getFutureDate(45),
-            'Ceremony Location': churchLocation?.id || '',
             'Presider': people[8].id,
             'Reception Location': hallLocation?.id || '',
             'First Reading': 'Genesis 2:18-24',
@@ -87,8 +86,6 @@ export async function seedEvents(
           field_values: {
             'Bride': people[3].id,
             'Groom': people[2].id,
-            'Wedding Date': getFutureDate(90),
-            'Ceremony Location': churchLocation?.id || '',
             'Presider': people[8].id,
             'Reception Location': hallLocation?.id || '',
             'First Reading': '1 Corinthians 13:1-13',
@@ -100,12 +97,11 @@ export async function seedEvents(
         break
 
       case 'funerals':
+        // Note: Occasion label must match the input field name 'Funeral Mass'
         eventsData.push({
           field_values: {
             'Deceased': people[10].id,
             'Date of Death': getPastDate(3),
-            'Funeral Date': getFutureDate(2),
-            'Funeral Location': churchLocation?.id || '',
             'Presider': people[8].id,
             'Burial Location': funeralHomeLocation?.id || '',
             'First Reading': 'Wisdom 3:1-9',
@@ -119,8 +115,6 @@ export async function seedEvents(
           field_values: {
             'Deceased': people[12].id,
             'Date of Death': getPastDate(1),
-            'Funeral Date': getFutureDate(5),
-            'Funeral Location': churchLocation?.id || '',
             'Presider': people[8].id,
             'First Reading': 'Romans 8:31-39',
             'Psalm': 'Psalm 116',
@@ -131,6 +125,7 @@ export async function seedEvents(
         break
 
       case 'baptisms':
+        // Note: Occasion label must match the input field name 'Baptism'
         eventsData.push({
           field_values: {
             'Child': people[4].id,
@@ -138,8 +133,6 @@ export async function seedEvents(
             'Father': people[6].id,
             'Godmother': people[7].id,
             'Godfather': people[8].id,
-            'Baptism Date': getFutureDate(14),
-            'Baptism Location': churchLocation?.id || '',
             'Presider': people[0].id
           },
           occasion: { label: 'Baptism', date: getFutureDate(14), time: '13:00:00', location_id: churchLocation?.id || null }
@@ -151,8 +144,6 @@ export async function seedEvents(
             'Father': people[14].id,
             'Godmother': people[15].id,
             'Godfather': people[16].id,
-            'Baptism Date': getFutureDate(21),
-            'Baptism Location': churchLocation?.id || '',
             'Presider': people[0].id
           },
           occasion: { label: 'Baptism', date: getFutureDate(21), time: '14:00:00', location_id: churchLocation?.id || null }
@@ -160,13 +151,12 @@ export async function seedEvents(
         break
 
       case 'quinceaneras':
+        // Note: Occasion label must match the input field name 'Quinceañera Mass'
         eventsData.push({
           field_values: {
             'Quinceañera': people[5].id,
             'Mother': people[3].id,
             'Father': people[6].id,
-            'Ceremony Date': getFutureDate(60),
-            'Ceremony Location': churchLocation?.id || '',
             'Presider': people[0].id,
             'Reception Location': hallLocation?.id || ''
           },
@@ -177,8 +167,6 @@ export async function seedEvents(
             'Quinceañera': people[7].id,
             'Mother': people[11].id,
             'Father': people[10].id,
-            'Ceremony Date': getFutureDate(75),
-            'Ceremony Location': churchLocation?.id || '',
             'Presider': people[8].id,
             'Reception Location': hallLocation?.id || ''
           },
@@ -187,6 +175,7 @@ export async function seedEvents(
         break
 
       case 'presentations':
+        // Note: Occasion label must match the input field name 'Presentation'
         eventsData.push({
           field_values: {
             'Child': people[4].id,
@@ -194,8 +183,6 @@ export async function seedEvents(
             'Father': people[0].id,
             'Godmother': people[3].id,
             'Godfather': people[2].id,
-            'Presentation Date': getFutureDate(30),
-            'Presentation Location': churchLocation?.id || '',
             'Presider': people[8].id
           },
           occasion: { label: 'Presentation', date: getFutureDate(30), time: '12:00:00', location_id: churchLocation?.id || null }
@@ -207,8 +194,6 @@ export async function seedEvents(
             'Father': people[16].id,
             'Godmother': people[17].id,
             'Godfather': people[18].id,
-            'Presentation Date': getFutureDate(35),
-            'Presentation Location': churchLocation?.id || '',
             'Presider': people[0].id
           },
           occasion: { label: 'Presentation', date: getFutureDate(35), time: '11:30:00', location_id: churchLocation?.id || null }

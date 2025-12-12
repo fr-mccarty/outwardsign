@@ -19,6 +19,7 @@ export type InputFieldType =
   | 'rich_text'       // JSON string (multiline)
   | 'content'         // References contents table (content library)
   | 'petition'        // References petitions table
+  | 'occasion'        // Occasion input (date/time/location grouped)
   | 'date'            // JSON date string (YYYY-MM-DD)
   | 'time'            // JSON time string (HH:MM:SS)
   | 'datetime'        // JSON datetime string (ISO 8601)
@@ -65,6 +66,7 @@ export interface InputFieldDefinition {
   list_id: string | null          // For list_item type
   event_type_filter_id: string | null  // For event_link type
   is_key_person: boolean          // Only for person type, marks as searchable
+  is_primary: boolean             // Only for occasion type, marks as primary occasion
   filter_tags?: string[] | null   // For content type - array of tag slugs for default filtering
   order: number                   // Display order in form
   deleted_at: string | null
@@ -260,6 +262,7 @@ export interface CreateInputFieldDefinitionData {
   list_id?: string | null
   event_type_filter_id?: string | null
   is_key_person?: boolean
+  is_primary?: boolean
 }
 
 export interface UpdateInputFieldDefinitionData {
@@ -269,6 +272,7 @@ export interface UpdateInputFieldDefinitionData {
   list_id?: string | null
   event_type_filter_id?: string | null
   is_key_person?: boolean
+  is_primary?: boolean
 }
 
 export interface CreateCustomListData {
