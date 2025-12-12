@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import { PeoplePicker } from '@/components/people-picker'
@@ -193,7 +194,7 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
       {/* Main content */}
       <div className="flex-1 order-2 md:order-1 space-y-6">
         {/* Family Members Card */}
-        <Card>
+        <Card className="bg-card text-card-foreground border">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Family Members</CardTitle>
@@ -219,7 +220,7 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
                 {family.members.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                    className="flex items-center gap-4 p-3 rounded-lg border hover:bg-accent/50 transition-colors"
                   >
                     <Avatar className="h-12 w-12">
                       {member.person?.avatar_url && (
@@ -366,12 +367,10 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
 
             {/* Primary Contact Checkbox */}
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="is_primary"
                 checked={isPrimaryContact}
-                onChange={(e) => setIsPrimaryContact(e.target.checked)}
-                className="h-4 w-4 rounded border-input"
+                onCheckedChange={(checked) => setIsPrimaryContact(checked === true)}
               />
               <Label htmlFor="is_primary" className="text-sm font-normal">
                 Set as primary contact for this family
@@ -422,12 +421,10 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
 
             {/* Primary Contact Checkbox */}
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="edit_is_primary"
                 checked={editIsPrimary}
-                onChange={(e) => setEditIsPrimary(e.target.checked)}
-                className="h-4 w-4 rounded border-input"
+                onCheckedChange={(checked) => setEditIsPrimary(checked === true)}
               />
               <Label htmlFor="edit_is_primary" className="text-sm font-normal">
                 Set as primary contact for this family

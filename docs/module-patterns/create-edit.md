@@ -199,7 +199,6 @@ export function [Entity]FormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="4xl"
       actions={actions}
     >
       <[Entity]Form

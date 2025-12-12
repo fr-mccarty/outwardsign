@@ -46,7 +46,7 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
     >
       {/* Description */}
       {location.description && (
-        <Card>
+        <Card className="bg-card text-card-foreground border">
           <CardHeader>
             <CardTitle>Description</CardTitle>
           </CardHeader>
@@ -60,7 +60,7 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
 
       {/* Address */}
       {(location.street || location.city || location.state || location.country) && (
-        <Card>
+        <Card className="bg-card text-card-foreground border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
@@ -83,7 +83,7 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
 
       {/* Contact Information */}
       {location.phone_number && (
-        <Card>
+        <Card className="bg-card text-card-foreground border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5" />
@@ -102,7 +102,7 @@ export function LocationViewClient({ location }: LocationViewClientProps) {
       )}
 
       {/* Location Information */}
-      <Card>
+      <Card className="bg-card text-card-foreground border">
         <CardHeader>
           <CardTitle>Location Information</CardTitle>
         </CardHeader>

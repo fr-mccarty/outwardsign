@@ -204,7 +204,6 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 <PageContainer
   title="Weddings"
   description="Manage wedding celebrations"
-  maxWidth="7xl"
 >
   {/* Search/Filter Card */}
   <Card className="bg-card text-card-foreground border mb-6">
@@ -224,7 +223,7 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 ```
 
 **Pattern Notes:**
-- PageContainer with maxWidth
+- PageContainer handles max-width via `PAGE_MAX_WIDTH_CLASS` constant
 - Search/filter in separate card
 - Responsive grid for results
 
@@ -262,7 +261,7 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 ### Form Layout
 
 ```tsx
-<PageContainer title="Edit Wedding" maxWidth="4xl">
+<PageContainer title="Edit Wedding">
   <Card className="bg-card text-card-foreground border">
     <CardContent className="pt-6">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -286,7 +285,6 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 ```
 
 **Pattern Notes:**
-- Narrower maxWidth for forms: `4xl`
 - Form spacing: `space-y-6`
 - Field spacing: `space-y-4`
 - Buttons at bottom: `justify-end pt-6 border-t`
@@ -294,7 +292,7 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 ### View Page with Side Panel
 
 ```tsx
-<PageContainer title="Wedding Details" maxWidth="7xl">
+<PageContainer title="Wedding Details">
   <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
     {/* Side panel */}
     <div className="lg:col-span-1">

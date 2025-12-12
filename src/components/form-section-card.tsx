@@ -32,7 +32,7 @@ export function FormSectionCard({
   contentClassName
 }: FormSectionCardProps) {
   return (
-    <Card className={className}>
+    <Card className={cn("bg-card text-card-foreground border", className)}>
       <CardHeader>
         <CardTitle className={!description ? "mb-2" : ""}>{title}</CardTitle>
         {description && <CardDescription className="mb-2">{description}</CardDescription>}

@@ -180,7 +180,7 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
           occasions
         })
         toast.success(`${eventType.name} updated successfully`)
-        router.push(`/events/${eventType.slug}/${event.id}`)
+        router.refresh()
       } catch (error) {
         console.error('Error updating event:', error)
         toast.error(`Failed to update ${eventType.name.toLowerCase()}`)
@@ -256,7 +256,9 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
         )
 
       case 'occasion':
-        // Occasion inputs render date, time, and location together inline
+        // Occasion inputs render date, time, and location together
+        // In edit mode, show display view with modal for separate save
+        const existingOccasion = event?.occasions?.find(occ => occ.label === field.name)
         return (
           <OccasionFieldView
             key={field.id}
@@ -265,6 +267,9 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
             onValueChange={(value) => updateOccasionValue(field.name, value)}
             required={field.required}
             isPrimary={field.is_primary}
+            occasionId={existingOccasion?.id}
+            eventId={event?.id}
+            isEditing={isEditing}
           />
         )
 

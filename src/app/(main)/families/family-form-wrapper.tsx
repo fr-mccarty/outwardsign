@@ -15,7 +15,7 @@ interface FamilyFormWrapperProps {
  */
 export function FamilyFormWrapper({ family }: FamilyFormWrapperProps) {
   return (
-    <Card>
+    <Card className="bg-card text-card-foreground border">
       <CardContent className="pt-6">
         <FamilyForm family={family} />
       </CardContent>

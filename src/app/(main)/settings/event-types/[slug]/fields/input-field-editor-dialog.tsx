@@ -28,24 +28,83 @@ import type { InputFieldDefinition, InputFieldType } from '@/lib/types'
 import { getCustomLists } from '@/lib/actions/custom-lists'
 import { getActiveEventTypes } from '@/lib/actions/event-types'
 import type { CustomList, DynamicEventType } from '@/lib/types'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { HelpCircle } from 'lucide-react'
 
-// Field type options
-const FIELD_TYPE_OPTIONS: { value: InputFieldType; label: string }[] = [
-  { value: 'person', label: 'Person' },
-  { value: 'group', label: 'Group' },
-  { value: 'location', label: 'Location' },
-  { value: 'event_link', label: 'Event Link' },
-  { value: 'list_item', label: 'List Item' },
-  { value: 'document', label: 'Document' },
-  { value: 'content', label: 'Content' },
-  { value: 'petition', label: 'Petition' },
-  { value: 'text', label: 'Text' },
-  { value: 'rich_text', label: 'Rich Text' },
-  { value: 'date', label: 'Date' },
-  { value: 'time', label: 'Time' },
-  { value: 'datetime', label: 'Date & Time' },
-  { value: 'number', label: 'Number' },
-  { value: 'yes_no', label: 'Yes/No' },
+// Field type options with descriptions for tooltips
+const FIELD_TYPE_OPTIONS: {
+  value: InputFieldType
+  label: string
+  description: string
+}[] = [
+  {
+    value: 'person',
+    label: 'Person',
+    description: 'Select a person from the parish directory',
+  },
+  {
+    value: 'group',
+    label: 'Group',
+    description: 'Select a ministry group (e.g., choir, lectors)',
+  },
+  {
+    value: 'location',
+    label: 'Location',
+    description: 'Select a location (church, hall, cemetery)',
+  },
+  {
+    value: 'event_link',
+    label: 'Event Link',
+    description: 'Link to another event',
+  },
+  {
+    value: 'list_item',
+    label: 'List Item',
+    description: 'Select from a custom list (e.g., music selections)',
+  },
+  {
+    value: 'document',
+    label: 'Document',
+    description: 'Attach a document',
+  },
+  {
+    value: 'content',
+    label: 'Content',
+    description: 'Select reusable content (readings, prayers)',
+  },
+  {
+    value: 'petition',
+    label: 'Petition',
+    description: 'Select petitions for the liturgy',
+  },
+  {
+    value: 'occasion',
+    label: 'Occasion',
+    description: 'Date, time, and location. Shows in calendar.',
+  },
+  { value: 'text', label: 'Text', description: 'Single-line text entry' },
+  {
+    value: 'rich_text',
+    label: 'Rich Text',
+    description: 'Multi-line text entry',
+  },
+  { value: 'date', label: 'Date', description: 'Date selection (no time)' },
+  { value: 'time', label: 'Time', description: 'Time selection (no date)' },
+  {
+    value: 'datetime',
+    label: 'Date & Time',
+    description: 'Combined date and time selection',
+  },
+  { value: 'number', label: 'Number', description: 'Numeric entry' },
+  {
+    value: 'yes_no',
+    label: 'Yes/No',
+    description: 'Toggle for yes/no questions',
+  },
 ]
 
 interface InputFieldEditorDialogProps {
@@ -181,16 +240,45 @@ export function InputFieldEditorDialog({
               placeholder="e.g., Bride, Deceased, Opening Song"
             />
 
-            <FormInput
-              id="type"
-              label="Field Type"
-              inputType="select"
-              value={type}
-              onChange={(value) => setValue('type', value as InputFieldType)}
-              error={errors.type?.message}
-              required
-              options={FIELD_TYPE_OPTIONS}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="type">
+                  Field Type <span className="text-destructive">*</span>
+                </Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs">
+                    <p className="font-medium mb-1">Field Types:</p>
+                    <ul className="space-y-0.5 text-xs">
+                      {FIELD_TYPE_OPTIONS.map((opt) => (
+                        <li key={opt.value}>
+                          <span className="font-medium">{opt.label}:</span>{' '}
+                          {opt.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <FormInput
+                id="type"
+                label="Field Type"
+                hideLabel
+                inputType="select"
+                value={type}
+                onChange={(value) => setValue('type', value as InputFieldType)}
+                error={errors.type?.message}
+                required
+                options={FIELD_TYPE_OPTIONS}
+              />
+              {type && (
+                <p className="text-xs text-muted-foreground">
+                  {FIELD_TYPE_OPTIONS.find((opt) => opt.value === type)?.description}
+                </p>
+              )}
+            </div>
 
             {/* Show "Key Person" checkbox only for person type */}
             {type === 'person' && (

@@ -37,7 +37,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 
 ## Agent Inventory
 
-### Complete Agent List (11 agents)
+### Complete Agent List (14 agents)
 
 | Agent | Folder | Role | Phase |
 |-------|--------|------|-------|
@@ -53,6 +53,8 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **explorer-agent** | N/A | Codebase exploration | As-needed |
 | **refactor-agent** | N/A | Code improvement | As-needed |
 | **qa-specialist** | N/A | Performance/security | As-needed |
+| **ui-agent** | N/A (read-only) | Visual styling audits | As-needed |
+| **ux-agent** | N/A (read-only) | User understanding audits | As-needed |
 
 ---
 
@@ -76,6 +78,8 @@ Each agent "owns" a specific folder where it creates and manages files:
 - explorer-agent (explores codebase)
 - refactor-agent (improves code in /src/)
 - qa-specialist (audits quality)
+- ui-agent (audits visual styling)
+- ux-agent (audits user understanding)
 
 ---
 
@@ -117,8 +121,14 @@ USER REQUEST
     ├─ "Deploy to production"
     │   └─ qa-specialist → code-review-agent → release-agent
     │
-    └─ "Performance/accessibility issues"
-        └─ qa-specialist → developer-agent (fix) → code-review-agent
+    ├─ "Performance/accessibility issues"
+    │   └─ qa-specialist → developer-agent (fix) → code-review-agent
+    │
+    ├─ "UI looks inconsistent/styling issues"
+    │   └─ ui-agent → developer-agent (fix) → code-review-agent
+    │
+    └─ "Labels/navigation/descriptions unclear"
+        └─ ux-agent → developer-agent (fix) → code-review-agent
 ```
 
 ---

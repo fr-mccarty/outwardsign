@@ -99,7 +99,6 @@ export function [Entity]FormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="4xl"
       actions={actions}
     >
       <[Entity]Form
@@ -125,7 +124,6 @@ export function [Entity]FormWrapper({
 | ✅ **View button only in edit** | Create mode doesn't have an entity to view yet | `{isEditing && ...}` |
 | ✅ **SaveButton in actions** | Appears in PageContainer header | Pass in `actions` prop |
 | ✅ **Pass onLoadingChange** | Form notifies wrapper of loading state changes | Callback prop |
-| ✅ **maxWidth="4xl"** | Standard width for forms | Prevents overly wide layouts |
 
 ---
 
@@ -231,7 +229,6 @@ const actions = (
 <PageContainer
   title={title}
   description={description}
-  maxWidth="4xl"
   actions={actions}
 >
   {/* Form goes here */}
@@ -241,7 +238,6 @@ const actions = (
 **Props:**
 - `title` - Dynamic title from Layer 1 (e.g., "Smith-Jones Wedding")
 - `description` - Static description (e.g., "Update wedding information")
-- `maxWidth="4xl"` - Standard form width (prevents overly wide layouts)
 - `actions` - Action buttons (View + Save)
 
 ---
@@ -299,7 +295,6 @@ export function WeddingFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="4xl"
       actions={actions}
     >
       <WeddingForm
@@ -363,7 +358,6 @@ export function FuneralFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      maxWidth="4xl"
       actions={actions}
     >
       <FuneralForm
@@ -401,7 +395,6 @@ Use this checklist when implementing Layer 2:
 - [ ] **Pass entity to form** (optional prop)
 - [ ] **Pass formId to form**
 - [ ] **Pass onLoadingChange callback** to form
-- [ ] **Set maxWidth="4xl"** on PageContainer
 - [ ] **Test:** View button appears only in edit mode
 - [ ] **Test:** Save button shows spinner during submission
 - [ ] **Test:** Form submission works in both create and edit modes
@@ -482,16 +475,6 @@ const actions = (
 
 // CORRECT - use label from props
 <SaveButton form={formId}>{saveButtonLabel}</SaveButton>
-```
-
-### ❌ Wrong maxWidth for forms
-
-```tsx
-// WRONG - forms will be too wide
-<PageContainer title={title} maxWidth="7xl">
-
-// CORRECT - standard form width
-<PageContainer title={title} maxWidth="4xl">
 ```
 
 ---

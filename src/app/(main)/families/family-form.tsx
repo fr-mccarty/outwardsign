@@ -15,8 +15,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { SaveButton } from '@/components/save-button'
-import { CancelButton } from '@/components/cancel-button'
+import { FormBottomActions } from '@/components/form-bottom-actions'
 import {
   createFamily,
   updateFamily,
@@ -76,14 +75,6 @@ export function FamilyForm({ family }: FamilyFormProps) {
     }
   }
 
-  const handleCancel = () => {
-    if (isEditing && family) {
-      router.push(`/families/${family.id}`)
-    } else {
-      router.push('/families')
-    }
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -109,7 +100,7 @@ export function FamilyForm({ family }: FamilyFormProps) {
           control={form.control}
           name="active"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Active</FormLabel>
                 <div className="text-sm text-muted-foreground">
@@ -126,16 +117,12 @@ export function FamilyForm({ family }: FamilyFormProps) {
           )}
         />
 
-        {/* Form Actions */}
-        <div className="flex items-center gap-3 pt-4">
-          <SaveButton
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-          >
-            {isEditing ? 'Update Family' : 'Create Family'}
-          </SaveButton>
-          <CancelButton onClick={handleCancel} />
-        </div>
+        <FormBottomActions
+          isEditing={isEditing}
+          isLoading={isSubmitting}
+          cancelHref={isEditing && family ? `/families/${family.id}` : '/families'}
+          moduleName="Family"
+        />
       </form>
     </Form>
   )
