@@ -38,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useTranslations } from 'next-intl'
 
 interface MassesListClientProps {
   initialData: MassWithNames[]
@@ -48,6 +49,8 @@ interface MassesListClientProps {
 export function MassesListClient({ initialData, stats, initialHasMore }: MassesListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('masses')
+  const tCommon = useTranslations('common')
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -69,10 +72,10 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
-    { value: stats.total, label: 'Total Masses' },
-    { value: stats.upcoming, label: 'Upcoming' },
-    { value: stats.past, label: 'Past' },
-    { value: stats.filtered, label: 'Filtered Results' }
+    { value: stats.total, label: t('totalMasses') },
+    { value: stats.upcoming, label: t('upcoming') },
+    { value: stats.past, label: t('past') },
+    { value: stats.filtered, label: tCommon('filteredResults') }
   ]
 
   // Date filters - convert string params to Date objects for DatePickerField
@@ -132,7 +135,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
       setHasMore(nextMasses.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more masses:', error)
-      toast.error('Failed to load more masses')
+      toast.error(t('errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
@@ -155,11 +158,11 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
 
     try {
       await deleteMass(massToDelete.id)
-      toast.success('Mass deleted successfully')
+      toast.success(t('massDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete mass:', error)
-      toast.error('Failed to delete mass. Please try again.')
+      toast.error(t('errorDeleting'))
       throw error
     }
   }
@@ -168,7 +171,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
   const buildMassWhoColumn = (): DataTableColumn<MassWithNames> => {
     return {
       key: 'who',
-      header: 'Name of Mass',
+      header: t('nameOfMass'),
       cell: (mass) => {
         const status = mass.status || 'PLANNING'
         const statusLabel = getStatusLabel(status, 'en')
@@ -188,7 +191,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
             </TooltipProvider>
             <div className="flex flex-col">
               <span className="text-sm font-medium">
-                {mass.name || 'Unnamed Mass'}
+                {mass.name || t('unnamedMass')}
               </span>
             </div>
           </div>
@@ -226,7 +229,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard title="Search Masses">
+      <SearchCard title={t('title')}>
         <div className="space-y-4">
           {/* Main Search and Status Row - Inline */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -235,7 +238,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
               <ClearableSearchInput
                 value={searchValue}
                 onChange={setSearchValue}
-                placeholder="Search by presider, homilist, or event name..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full"
               />
             </div>
@@ -283,22 +286,22 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
             hasMore={hasMore}
             emptyState={{
               icon: <Church className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
-              title: hasActiveFilters ? 'No masses found' : 'No masses yet',
+              title: hasActiveFilters ? t('noMasses') : t('noMassesYet'),
               description: hasActiveFilters
-                ? 'Try adjusting your search or filters to find more masses.'
-                : 'Create your first mass to start managing mass celebrations in your parish.',
+                ? t('noMassesMessage')
+                : t('noMassesYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild>
                     <Link href="/masses/create">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Mass
+                      {t('createYourFirstMass')}
                     </Link>
                   </Button>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
-                      Clear Filters
+                      {tCommon('clearFilters')}
                     </Button>
                   )}
                 </div>
@@ -312,22 +315,22 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
       ) : (
         <EmptyState
           icon={<Church className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No masses found' : 'No masses yet'}
+          title={hasActiveFilters ? t('noMasses') : t('noMassesYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search or filters to find more masses.'
-            : 'Create your first mass to start managing mass celebrations in your parish.'}
+            ? t('noMassesMessage')
+            : t('noMassesYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/masses/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Mass
+                  {t('createYourFirstMass')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {tCommon('clearFilters')}
                 </Button>
               )}
             </>
@@ -337,7 +340,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <ListStatsBar title="Mass Overview" stats={statsList} />
+        <ListStatsBar title={t('massOverview')} stats={statsList} />
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -345,13 +348,13 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Mass"
+        title={t('deleteMass')}
         description={
           massToDelete
-            ? `Are you sure you want to delete the mass with presider ${massToDelete.presider?.full_name || 'unknown'}? This action cannot be undone.`
-            : 'Are you sure you want to delete this mass? This action cannot be undone.'
+            ? t('confirmDelete', { presider: massToDelete.presider?.full_name || 'unknown' })
+            : t('confirmDeleteGeneric')
         }
-        actionLabel="Delete"
+        actionLabel={tCommon('delete')}
       />
     </div>
   )

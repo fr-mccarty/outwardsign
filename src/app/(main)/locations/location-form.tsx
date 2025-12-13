@@ -11,6 +11,7 @@ import type { Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
+import { useTranslations } from 'next-intl'
 
 interface LocationFormProps {
   location?: Location
@@ -20,6 +21,7 @@ interface LocationFormProps {
 
 export function LocationForm({ location, formId, onLoadingChange }: LocationFormProps) {
   const router = useRouter()
+  const t = useTranslations('locations')
   const isEditing = !!location
 
   const {
@@ -69,16 +71,16 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
 
       if (isEditing) {
         await updateLocation(location.id, locationData)
-        toast.success('Location updated successfully')
+        toast.success(t('locationUpdated'))
         router.refresh() // Refresh to get updated data
       } else {
         const newLocation = await createLocation(locationData)
-        toast.success('Location created successfully!')
+        toast.success(t('locationCreated'))
         router.push(`/locations/${newLocation.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} location:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} location. Please try again.`)
+      toast.error(isEditing ? t('errorUpdating') : t('errorCreating'))
     }
   }
 
@@ -86,26 +88,26 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
     <form onSubmit={handleSubmit(onSubmit)} id={formId} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
-        title="Basic Information"
-        description="Location name and description"
+        title={t('basicInformation')}
+        description={t('basicInformationDescription')}
       >
         <FormInput
           id="name"
-          label="Location Name"
+          label={t('locationName')}
           value={name}
           onChange={(value) => setValue("name", value)}
           required
-          placeholder="Enter location name"
+          placeholder={t('locationNamePlaceholder')}
           error={errors.name?.message}
         />
 
         <FormInput
           id="description"
-          label="Description"
+          label={t('descriptionLabel')}
           inputType="textarea"
           value={description ?? ""}
           onChange={(value) => setValue("description", value)}
-          placeholder="Enter location description..."
+          placeholder={t('descriptionPlaceholder')}
           rows={3}
           error={errors.description?.message}
         />
@@ -113,60 +115,60 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
 
       {/* Address */}
       <FormSectionCard
-        title="Address"
-        description="Location address details"
+        title={t('addressSection')}
+        description={t('addressSectionDescription')}
       >
         <FormInput
           id="street"
-          label="Street Address"
+          label={t('streetAddress')}
           value={street ?? ""}
           onChange={(value) => setValue("street", value)}
-          placeholder="Enter street address"
+          placeholder={t('streetAddressPlaceholder')}
           error={errors.street?.message}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
             id="city"
-            label="City"
+            label={t('city')}
             value={city ?? ""}
             onChange={(value) => setValue("city", value)}
-            placeholder="Enter city"
+            placeholder={t('cityPlaceholder')}
             error={errors.city?.message}
           />
 
           <FormInput
             id="state"
-            label="State"
+            label={t('state')}
             value={state ?? ""}
             onChange={(value) => setValue("state", value)}
-            placeholder="Enter state"
+            placeholder={t('statePlaceholder')}
             error={errors.state?.message}
           />
         </div>
 
         <FormInput
           id="country"
-          label="Country"
+          label={t('country')}
           value={country ?? ""}
           onChange={(value) => setValue("country", value)}
-          placeholder="Enter country"
+          placeholder={t('countryPlaceholder')}
           error={errors.country?.message}
         />
       </FormSectionCard>
 
       {/* Contact Information */}
       <FormSectionCard
-        title="Contact Information"
-        description="Phone number for this location"
+        title={t('contactInformation')}
+        description={t('contactInformationDescription')}
       >
         <FormInput
           id="phone_number"
-          label="Phone Number"
+          label={t('phoneNumber')}
           inputType="tel"
           value={phoneNumber ?? ""}
           onChange={(value) => setValue("phone_number", value)}
-          placeholder="Enter phone number"
+          placeholder={t('phoneNumberPlaceholder')}
           error={errors.phone_number?.message}
         />
       </FormSectionCard>
@@ -175,7 +177,7 @@ export function LocationForm({ location, formId, onLoadingChange }: LocationForm
         isEditing={isEditing}
         cancelHref="/locations"
         isLoading={isSubmitting}
-        moduleName="Location"
+        moduleName={t('title')}
       />
     </form>
   )

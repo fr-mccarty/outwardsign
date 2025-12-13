@@ -25,6 +25,7 @@ import {
   buildActionsColumn
 } from '@/lib/utils/table-columns'
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
+import { useTranslations } from 'next-intl'
 
 interface Stats {
   total: number
@@ -42,6 +43,7 @@ interface PeopleListClientProps {
 
 export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleListClientProps) {
   const router = useRouter()
+  const t = useTranslations()
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -102,7 +104,7 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
       setHasMore(nextPeople.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more people:', error)
-      toast.error('Failed to load more people')
+      toast.error(t('people.errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
@@ -110,10 +112,10 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
-    { value: stats.total, label: 'Total People' },
-    { value: stats.withEmail, label: 'With Email' },
-    { value: stats.withPhone, label: 'With Phone' },
-    { value: stats.filtered, label: 'Filtered Results' }
+    { value: stats.total, label: t('people.totalPeople') },
+    { value: stats.withEmail, label: t('people.withEmail') },
+    { value: stats.withPhone, label: t('people.withPhone') },
+    { value: stats.filtered, label: t('people.filteredResults') }
   ]
 
   // Delete dialog state
@@ -135,11 +137,11 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
 
     try {
       await deletePerson(personToDelete.id)
-      toast.success('Person deleted successfully')
+      toast.success(t('people.personDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete person:', error)
-      toast.error('Failed to delete person. Please try again.')
+      toast.error(t('people.errorDeleting'))
       throw error
     }
   }
@@ -162,15 +164,15 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
       ...buildWhoColumn<Person>({
         getName: (person) => person.full_name,
         getStatus: () => 'ACTIVE', // People don't have status, use placeholder
-        fallback: 'No name',
-        header: 'Name',
+        fallback: t('people.noContactInfo'),
+        header: t('people.name'),
         sortable: true
       }),
       key: 'name' // Override key to match server sort parameter
     },
     {
       key: 'contact',
-      header: 'Contact',
+      header: t('people.contact'),
       cell: (person: Person) => (
         <div className="flex flex-col gap-1 text-sm">
           {person.email && (
@@ -184,7 +186,7 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
             </span>
           )}
           {!person.email && !person.phone_number && (
-            <span className="text-muted-foreground">No contact info</span>
+            <span className="text-muted-foreground">{t('people.noContactInfo')}</span>
           )}
         </div>
       ),
@@ -193,13 +195,13 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
     },
     {
       key: 'location',
-      header: 'Location',
+      header: t('people.location'),
       cell: (person: Person) => {
         if (person.city || person.state) {
           const location = `${person.city || ''}${person.city && person.state ? ', ' : ''}${person.state || ''}`
           return <span className="text-sm truncate block max-w-[150px]">{location}</span>
         }
-        return <span className="text-muted-foreground text-sm">No location</span>
+        return <span className="text-muted-foreground text-sm">{t('people.noLocation')}</span>
       },
       className: 'min-w-[100px] lg:min-w-[120px]',
       hiddenOn: 'lg' as const
@@ -218,11 +220,11 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
   return (
     <div className="space-y-6">
       {/* Search */}
-      <SearchCard title="Search People">
+      <SearchCard title={t('people.title')}>
         <ClearableSearchInput
           value={searchValue}
           onChange={setSearchValue}
-          placeholder="Search people by name, email, or phone..."
+          placeholder={t('people.searchPlaceholder')}
           className="w-full"
         />
       </SearchCard>
@@ -241,22 +243,22 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
             hasMore={hasMore}
             emptyState={{
               icon: <User className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
-              title: hasActiveFilters ? 'No people found' : 'No people yet',
+              title: hasActiveFilters ? t('people.noPeople') : t('people.noPeopleYet'),
               description: hasActiveFilters
-                ? 'Try adjusting your search to find more people.'
-                : 'Create your first person to start managing your parish directory.',
+                ? t('people.noPeopleMessage')
+                : t('people.noPeopleYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild>
                     <Link href="/people/create">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Person
+                      {t('people.createYourFirstPerson')}
                     </Link>
                   </Button>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
-                      Clear Filters
+                      {t('common.filter')}
                     </Button>
                   )}
                 </div>
@@ -270,22 +272,22 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
       ) : (
         <EmptyState
           icon={<User className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No people found' : 'No people yet'}
+          title={hasActiveFilters ? t('people.noPeople') : t('people.noPeopleYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search to find more people.'
-            : 'Create your first person to start managing your parish directory.'}
+            ? t('people.noPeopleMessage')
+            : t('people.noPeopleYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/people/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Person
+                  {t('people.createYourFirstPerson')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t('common.filter')}
                 </Button>
               )}
             </>
@@ -295,7 +297,7 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <ListStatsBar title="People Overview" stats={statsList} />
+        <ListStatsBar title={t('people.peopleOverview')} stats={statsList} />
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -303,13 +305,13 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Person"
+        title={t('people.deletePerson')}
         description={
           personToDelete
-            ? `Are you sure you want to delete ${personToDelete.full_name}? This action cannot be undone.`
-            : 'Are you sure you want to delete this person? This action cannot be undone.'
+            ? `${t('people.confirmDelete')} ${t('people.confirmDeleteMessage')}`
+            : `${t('people.confirmDelete')} ${t('people.confirmDeleteMessage')}`
         }
-        actionLabel="Delete"
+        actionLabel={t('common.delete')}
       />
     </div>
   )

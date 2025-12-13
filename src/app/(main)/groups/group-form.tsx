@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslations } from 'next-intl'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { FormInput } from "@/components/form-input"
@@ -35,6 +36,7 @@ interface GroupFormProps {
 
 export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
   const router = useRouter()
+  const t = useTranslations()
   const isEditing = !!group
   const [isLoading, setIsLoading] = useState(false)
 
@@ -69,9 +71,10 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
     if (isEditing) {
       getGroupRoles().then(setGroupRoles).catch(error => {
         console.error('Failed to load group roles:', error)
-        toast.error('Failed to load group roles')
+        toast.error(t('groups.errorLoadingRoles'))
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing])
 
   const onSubmit = async (data: GroupFormValues) => {
@@ -86,16 +89,16 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
 
       if (isEditing && group) {
         await updateGroup(group.id, groupData)
-        toast.success('Group updated successfully')
+        toast.success(t('groups.groupUpdated'))
         router.refresh() // Stay on edit page to show updated data
       } else {
         const newGroup = await createGroup(groupData)
-        toast.success('Group created successfully')
+        toast.success(t('groups.groupCreated'))
         router.push(`/groups/${newGroup.id}/edit`) // Go to edit page
       }
     } catch (error) {
       console.error('Error saving group:', error)
-      toast.error(isEditing ? 'Failed to update group' : 'Failed to create group')
+      toast.error(isEditing ? t('groups.errorUpdating') : t('groups.errorCreating'))
     } finally {
       setIsLoading(false)
     }
@@ -106,7 +109,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
 
     // Check if person already a member
     if (members.some(m => m.person_id === selectedPerson.id)) {
-      toast.error('This person is already a member of this group')
+      toast.error(t('groups.personAlreadyMember'))
       return
     }
 
@@ -145,14 +148,14 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
         } : undefined
       }])
 
-      toast.success('Member added successfully')
+      toast.success(t('groups.memberAdded'))
 
       // Reset and close
       setSelectedPerson(null)
       setSelectedGroupRoleId('none')
       setAddMemberDialogOpen(false)
     } catch (error) {
-      toast.error('Failed to add member')
+      toast.error(t('groups.errorAddingMember'))
       console.error(error)
     } finally {
       setIsAddingMember(false)
@@ -177,9 +180,9 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
       // Optimistically remove from local state
       setMembers(prev => prev.filter(m => m.id !== memberId))
 
-      toast.success('Member removed successfully')
+      toast.success(t('groups.memberRemoved'))
     } catch (error) {
-      toast.error('Failed to remove member')
+      toast.error(t('groups.errorRemovingMember'))
       console.error(error)
       throw error
     }
@@ -190,15 +193,15 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
       <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Group Information */}
         <FormSectionCard
-          title="Group Information"
-          description="Basic information about this group"
+          title={t('groups.groupInformation')}
+          description={t('groups.groupInformationDescription')}
         >
           <FormInput
             id="name"
-            label="Name"
+            label={t('groups.name')}
             value={form.watch('name')}
             onChange={(value) => form.setValue('name', value)}
-            placeholder="e.g., Lectors, Eucharistic Ministers, Choir"
+            placeholder={t('groups.namePlaceholder')}
             required
             error={form.formState.errors.name?.message}
           />
@@ -206,10 +209,10 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
           <FormInput
             id="description"
             inputType="textarea"
-            label="Description"
+            label={t('groups.description')}
             value={form.watch('description') || ''}
             onChange={(value) => form.setValue('description', value)}
-            placeholder="Optional description of this group's purpose"
+            placeholder={t('groups.descriptionPlaceholder')}
             rows={3}
             error={form.formState.errors.description?.message}
           />
@@ -217,8 +220,8 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
           <FormInput
             id="is_active"
             inputType="checkbox"
-            label="Active"
-            description="Inactive groups are hidden from selection but not deleted"
+            label={t('groups.isActive')}
+            description={t('groups.isActiveDescription')}
             value={form.watch('is_active') ?? true}
             onChange={(value: boolean) => form.setValue('is_active', value)}
             error={form.formState.errors.is_active?.message}
@@ -228,19 +231,19 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
         {/* Member Management (Edit Mode Only) */}
         {isEditing && (
           <ListCard
-            title="Manage Members"
-            description={`${members.length} ${members.length === 1 ? 'member' : 'members'} in this group`}
+            title={t('groups.manageMembers')}
+            description={t('groups.membersCount', { count: members.length })}
             items={members}
             getItemId={(member) => member.id}
             onAdd={() => setAddMemberDialogOpen(true)}
-            addButtonLabel="Add Member"
-            emptyMessage="No members in this group yet. Use the button above to add people to this group."
+            addButtonLabel={t('groups.addMember')}
+            emptyMessage={t('groups.noMembersYet')}
             renderItem={(member) => (
               <CardListItem
                 id={member.id}
                 onDelete={() => handleDeleteMember(member.id)}
-                deleteConfirmTitle="Remove Member"
-                deleteConfirmDescription={`Are you sure you want to remove ${member.person?.full_name} from this group?`}
+                deleteConfirmTitle={t('groups.removeMember')}
+                deleteConfirmDescription={t('groups.confirmRemoveMember', { personName: member.person?.full_name || '' })}
               >
                 <div className="flex items-center gap-2 flex-1">
                   <div className="flex-1 min-w-0">
@@ -267,7 +270,7 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
           isEditing={isEditing}
           isLoading={isLoading}
           cancelHref={isEditing && group ? `/groups/${group.id}` : '/groups'}
-          moduleName="Group"
+          moduleName={t('groups.title')}
         />
       </form>
 
@@ -276,33 +279,33 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
         <Dialog open={addMemberDialogOpen} onOpenChange={setAddMemberDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Member to {group?.name}</DialogTitle>
+              <DialogTitle>{t('groups.addMemberTo', { groupName: group?.name })}</DialogTitle>
               <DialogDescription>
-                Select a person and optionally assign a group role
+                {t('groups.addMemberDescription')}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <PersonPickerField
-                label="Person"
+                label={t('groups.person')}
                 value={selectedPerson}
                 onValueChange={setSelectedPerson}
                 showPicker={showPersonPicker}
                 onShowPickerChange={setShowPersonPicker}
-                placeholder="Search or create a person"
+                placeholder={t('groups.personPlaceholder')}
                 required
                 additionalVisibleFields={['email', 'phone_number', 'note']}
               />
 
               <FormInput
                 id="group_role"
-                label="Group Role"
+                label={t('groups.groupRole')}
                 inputType="select"
                 value={selectedGroupRoleId}
                 onChange={setSelectedGroupRoleId}
-                placeholder="Select role (optional)"
+                placeholder={t('groups.groupRolePlaceholder')}
                 options={[
-                  { value: 'none', label: 'No role' },
+                  { value: 'none', label: t('groups.noRole') },
                   ...groupRoles.map((role) => ({
                     value: role.id,
                     label: role.name,
@@ -318,14 +321,14 @@ export function GroupForm({ group, formId, onLoadingChange }: GroupFormProps) {
                 onClick={handleCancelAddMember}
                 disabled={isAddingMember}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 type="button"
                 onClick={handleAddMember}
                 disabled={!selectedPerson || isAddingMember}
               >
-                {isAddingMember ? 'Adding...' : 'Add Member'}
+                {isAddingMember ? t('groups.adding') : t('groups.addMember')}
               </Button>
             </DialogFooter>
           </DialogContent>

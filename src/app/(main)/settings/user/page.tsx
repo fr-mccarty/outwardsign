@@ -6,10 +6,12 @@ import { UserSettingsClient } from './user-settings-client'
 import { PageContainer } from '@/components/page-container'
 import { EmptyState } from '@/components/empty-state'
 import { User } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function UserSettingsPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
 
   // Check authentication server-side
@@ -25,18 +27,18 @@ export default async function UserSettingsPage() {
     return (
       <>
         <BreadcrumbSetter breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Settings", href: "/settings" },
-          { label: "User Preferences" }
+          { label: t('nav.dashboard'), href: "/dashboard" },
+          { label: t('nav.settings'), href: "/settings" },
+          { label: t('settings.userPreferences') }
         ]} />
         <PageContainer
-          title="User Preferences"
-          description="Customize your liturgical planning experience"
+          title={t('settings.userPreferences')}
+          description={t('settings.userPreferencesDescription')}
         >
           <EmptyState
             icon={<User className="h-16 w-16" />}
-            title="Unable to Load Settings"
-            description="There was an error loading your settings. Please try again later."
+            title={t('settings.unableToLoadSettings')}
+            description={t('settings.errorLoadingSettings')}
           />
         </PageContainer>
       </>
@@ -44,9 +46,9 @@ export default async function UserSettingsPage() {
   }
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Settings", href: "/settings" },
-    { label: "User Preferences" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.settings'), href: "/settings" },
+    { label: t('settings.userPreferences') }
   ]
 
   return (

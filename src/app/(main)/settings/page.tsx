@@ -7,20 +7,22 @@ import { PageContainer } from '@/components/page-container'
 import { User, FileText, ChevronRight, Church, Calendar, Tag } from 'lucide-react'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function SettingsPage() {
   const { setBreadcrumbs } = useBreadcrumbs()
+  const t = useTranslations()
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Dashboard", href: "/dashboard" },
-      { label: "Settings" }
+      { label: t('nav.dashboard'), href: "/dashboard" },
+      { label: t('nav.settings') }
     ])
-  }, [setBreadcrumbs])
+  }, [setBreadcrumbs, t])
   return (
     <PageContainer
-      title="Settings"
-      description="Configure your application preferences and manage your account"
+      title={t('settings.title')}
+      description={t('settings.description')}
     >
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -28,16 +30,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <User className="h-5 w-5 text-primary" />
-              User Preferences
+              {t('settings.userPreferences')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Customize your language, liturgical preferences, and default settings.
+              {t('settings.userPreferencesDescription')}
             </p>
             <Button asChild className="w-full justify-between">
               <Link href="/settings/user">
-                Configure Preferences
+                {t('settings.configurePreferences')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -48,16 +50,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-primary" />
-              Event Types
+              {t('settings.eventTypes')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Manage custom event types for your parish. Drag to reorder.
+              {t('settings.eventTypesDescription')}
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/event-types">
-                Manage Event Types
+                {t('settings.manageEventTypes')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -68,16 +70,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
-              Custom Lists
+              {t('settings.customLists')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Manage custom lists for event field options like songs, readings, or locations.
+              {t('settings.customListsDescription')}
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/custom-lists">
-                Manage Custom Lists
+                {t('settings.manageCustomLists')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -88,16 +90,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
-              Petition Settings
+              {t('settings.petitionSettings')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Configure default petition templates for different liturgical occasions.
+              {t('settings.petitionSettingsDescription')}
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/petitions">
-                Manage Petitions
+                {t('settings.managePetitions')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -108,16 +110,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Church className="h-5 w-5 text-primary" />
-              Parish Settings
+              {t('settings.parishSettings')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Manage your current parish information and administrative settings.
+              {t('settings.parishSettingsDescription')}
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/parish">
-                Manage Parish
+                {t('settings.manageParish')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -128,16 +130,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
-              Content Library
+              {t('settings.contentLibrary')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Manage reusable liturgical content like readings, prayers, and ceremony text.
+              {t('settings.contentLibraryDescription')}
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/content-library">
-                Manage Content Library
+                {t('settings.manageContentLibrary')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -148,16 +150,16 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Tag className="h-5 w-5 text-primary" />
-              Category Tags
+              {t('settings.categoryTags')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Manage tags for organizing and categorizing content and petitions (Admin only).
+              {t('settings.categoryTagsDescription')}
             </p>
             <Button asChild variant="outline" className="w-full justify-between">
               <Link href="/settings/category-tags">
-                Manage Category Tags
+                {t('settings.manageCategoryTags')}
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>

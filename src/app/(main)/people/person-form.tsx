@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { createPersonSchema, type CreatePersonData } from "@/lib/schemas/people"
 import { Button } from "@/components/ui/button"
 import { Sparkles, Loader2 } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 interface PersonFormProps {
   person?: Person
@@ -26,6 +27,7 @@ interface PersonFormProps {
 
 export function PersonForm({ person, formId = 'person-form', onLoadingChange }: PersonFormProps) {
   const router = useRouter()
+  const t = useTranslations()
   const isEditing = !!person
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPronunciation, setShowPronunciation] = useState(false)
@@ -120,7 +122,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
 
       if (isEditing) {
         await updatePerson(person.id, personData)
-        toast.success('Person updated successfully')
+        toast.success(t('people.personUpdated'))
         router.refresh() // Stay on edit page
       } else {
         const newPerson = await createPerson(personData)
@@ -132,16 +134,16 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
           } catch (avatarError) {
             console.error('Failed to upload avatar:', avatarError)
             // Don't fail the whole operation, person was created
-            toast.error('Person created but photo upload failed')
+            toast.error(t('people.personCreatedButPhotoFailed'))
           }
         }
 
-        toast.success('Person created successfully!')
+        toast.success(t('people.personCreated'))
         router.push(`/people/${newPerson.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} person:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} person. Please try again.`)
+      toast.error(isEditing ? t('people.errorUpdating') : t('people.errorCreating'))
     }
   }
 
@@ -154,10 +156,10 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         const storagePath = await uploadPersonAvatar(person.id, base64Data, extension)
         const url = await getPersonAvatarSignedUrl(storagePath)
         setAvatarSignedUrl(url)
-        toast.success('Photo uploaded successfully')
+        toast.success(t('people.photoUploaded'))
       } catch (error) {
         console.error('Failed to upload avatar:', error)
-        toast.error('Failed to upload photo')
+        toast.error(t('people.errorUploadingPhoto'))
         throw error // Re-throw to let ImageCropUpload know it failed
       } finally {
         setIsUploadingAvatar(false)
@@ -167,7 +169,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       setPendingAvatarData({ base64: base64Data, extension })
       // Show preview using base64 directly
       setAvatarSignedUrl(base64Data)
-      toast.success('Photo ready to upload')
+      toast.success(t('people.photoReadyToUpload'))
     }
   }
 
@@ -179,10 +181,10 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         setIsUploadingAvatar(true)
         await deletePersonAvatar(person.id)
         setAvatarSignedUrl(null)
-        toast.success('Photo removed')
+        toast.success(t('people.photoRemoved'))
       } catch (error) {
         console.error('Failed to remove avatar:', error)
-        toast.error('Failed to remove photo')
+        toast.error(t('people.errorRemovingPhoto'))
         throw error
       } finally {
         setIsUploadingAvatar(false)
@@ -206,7 +208,7 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
     const currentLastName = lastName?.trim()
 
     if (!currentFirstName && !currentLastName) {
-      toast.error('Please enter both first and last name before generating pronunciations')
+      toast.error(t('people.enterBothNames'))
       return
     }
 
@@ -221,10 +223,10 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       setValue('first_name_pronunciation', result.firstNamePronunciation, { shouldValidate: true })
       setValue('last_name_pronunciation', result.lastNamePronunciation, { shouldValidate: true })
 
-      toast.success('Pronunciations generated successfully')
+      toast.success(t('people.pronunciationsGenerated'))
     } catch (error) {
       console.error('Failed to generate pronunciations:', error)
-      toast.error('Failed to generate pronunciations. Please try again.')
+      toast.error(t('people.errorGeneratingPronunciations'))
     } finally {
       setIsGenerating(false)
     }
@@ -234,8 +236,8 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Photo Upload Section */}
       <FormSectionCard
-        title="Profile Photo"
-        description="Upload a photo to help identify this person (optional)"
+        title={t('people.profilePhoto')}
+        description={t('people.profilePhotoDescription')}
       >
         <ImageCropUpload
           currentImageUrl={avatarSignedUrl}
@@ -247,27 +249,27 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
       </FormSectionCard>
 
       <FormSectionCard
-        title="Person Details"
-        description="Basic information and contact details"
+        title={t('people.personDetails')}
+        description={t('people.personDetailsDescription')}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormInput
             id="first_name"
-            label="First Name"
+            label={t('people.firstName')}
             value={firstName}
             onChange={(value) => setValue("first_name", value)}
             required
-            placeholder="Enter first name"
+            placeholder={t('people.firstNamePlaceholder')}
             error={errors.first_name?.message}
           />
 
           <FormInput
             id="last_name"
-            label="Last Name"
+            label={t('people.lastName')}
             value={lastName}
             onChange={(value) => setValue("last_name", value)}
             required
-            placeholder="Enter last name"
+            placeholder={t('people.lastNamePlaceholder')}
             error={errors.last_name?.message}
           />
         </div>
@@ -285,22 +287,22 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormInput
                   id="first_name_pronunciation"
-                  label="First Name Pronunciation"
+                  label={t('people.firstNamePronunciation')}
                   value={firstNamePronunciation || ""}
                   onChange={(value) => setValue("first_name_pronunciation", value)}
-                  placeholder="How to pronounce first name"
+                  placeholder={t('people.firstNamePronunciationPlaceholder')}
                   error={errors.first_name_pronunciation?.message}
-                  description="How to pronounce the first name"
+                  description={t('people.firstNamePronunciationDescription')}
                 />
 
                 <FormInput
                   id="last_name_pronunciation"
-                  label="Last Name Pronunciation"
+                  label={t('people.lastNamePronunciation')}
                   value={lastNamePronunciation || ""}
                   onChange={(value) => setValue("last_name_pronunciation", value)}
-                  placeholder="How to pronounce last name"
+                  placeholder={t('people.lastNamePronunciationPlaceholder')}
                   error={errors.last_name_pronunciation?.message}
-                  description="How to pronounce the last name"
+                  description={t('people.lastNamePronunciationDescription')}
                 />
               </div>
 
@@ -317,12 +319,12 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
                   {isGenerating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
+                      {t('people.generating')}
                     </>
                   ) : (
                     <>
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Pronunciations with AI
+                      {t('people.generatePronunciations')}
                     </>
                   )}
                 </Button>
@@ -334,78 +336,78 @@ export function PersonForm({ person, formId = 'person-form', onLoadingChange }: 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormInput
             id="email"
-            label="Email (Optional)"
+            label={t('people.email')}
             inputType="email"
             value={email || ""}
             onChange={(value) => setValue("email", value)}
-            placeholder="Enter email address"
+            placeholder={t('people.emailPlaceholder')}
             error={errors.email?.message}
           />
 
           <FormInput
             id="phone_number"
-            label="Phone Number (Optional)"
+            label={t('people.phoneNumber')}
             inputType="tel"
             value={phoneNumber || ""}
             onChange={(value) => setValue("phone_number", value)}
-            placeholder="Enter phone number"
+            placeholder={t('people.phoneNumberPlaceholder')}
             error={errors.phone_number?.message}
           />
         </div>
 
         <FormInput
           id="street"
-          label="Street Address (Optional)"
+          label={t('people.streetAddress')}
           value={street || ""}
           onChange={(value) => setValue("street", value)}
-          placeholder="Enter street address"
+          placeholder={t('people.streetAddressPlaceholder')}
           error={errors.street?.message}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FormInput
             id="city"
-            label="City (Optional)"
+            label={t('people.city')}
             value={city || ""}
             onChange={(value) => setValue("city", value)}
-            placeholder="Enter city"
+            placeholder={t('people.cityPlaceholder')}
             error={errors.city?.message}
           />
 
           <FormInput
             id="state"
-            label="State (Optional)"
+            label={t('people.state')}
             value={state || ""}
             onChange={(value) => setValue("state", value)}
-            placeholder="Enter state"
+            placeholder={t('people.statePlaceholder')}
             error={errors.state?.message}
           />
 
           <FormInput
             id="zipcode"
-            label="Zip Code (Optional)"
+            label={t('people.zipCode')}
             value={zipcode || ""}
             onChange={(value) => setValue("zipcode", value)}
-            placeholder="Enter zip code"
+            placeholder={t('people.zipCodePlaceholder')}
             error={errors.zipcode?.message}
           />
         </div>
 
         <FormInput
           id="note"
-          label="Notes (Optional)"
+          label={t('people.notes')}
           inputType="textarea"
           value={note || ""}
           onChange={(value) => setValue("note", value)}
-          placeholder="Enter any additional notes..."
+          placeholder={t('people.notesPlaceholder')}
           rows={4}
           error={errors.note?.message}
         />
       </FormSectionCard>
 
       <FormSectionCard
-        title="Mass Attendance"
-        description="Select which masses this person typically attends"
+        title={t('people.massAttendance')}
+        description={t('people.massAttendanceDescription')}
       >
         <MassAttendanceSelector
           selectedIds={massTimeIds || []}

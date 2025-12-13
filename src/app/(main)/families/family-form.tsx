@@ -22,14 +22,15 @@ import {
   type FamilyWithMembers
 } from '@/lib/actions/families'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
-// Form schema - defined here to avoid type inference issues with .default()
-const familyFormSchema = z.object({
-  family_name: z.string().min(1, 'Family name is required').trim(),
+// Form schema factory - creates schema with translations
+const createFamilyFormSchema = (t: any) => z.object({
+  family_name: z.string().min(1, t('forms.required', { field: t('families.familyName') })).trim(),
   active: z.boolean(),
 })
 
-type FamilyFormValues = z.infer<typeof familyFormSchema>
+type FamilyFormValues = z.infer<ReturnType<typeof createFamilyFormSchema>>
 
 interface FamilyFormProps {
   family?: FamilyWithMembers
@@ -43,12 +44,13 @@ interface FamilyFormProps {
  */
 export function FamilyForm({ family }: FamilyFormProps) {
   const router = useRouter()
+  const t = useTranslations()
   const isEditing = !!family
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<FamilyFormValues>({
-    resolver: zodResolver(familyFormSchema),
+    resolver: zodResolver(createFamilyFormSchema(t)),
     defaultValues: {
       family_name: family?.family_name || '',
       active: family?.active ?? true
@@ -60,16 +62,16 @@ export function FamilyForm({ family }: FamilyFormProps) {
     try {
       if (isEditing && family) {
         await updateFamily(family.id, data)
-        toast.success('Family updated successfully')
+        toast.success(t('families.familyUpdated'))
         router.push(`/families/${family.id}`)
       } else {
         const newFamily = await createFamily(data)
-        toast.success('Family created successfully')
+        toast.success(t('families.familyCreated'))
         router.push(`/families/${newFamily.id}`)
       }
     } catch (error: any) {
       console.error('Failed to save family:', error)
-      toast.error(error.message || 'Failed to save family')
+      toast.error(error.message || t('families.errorCreating'))
     } finally {
       setIsSubmitting(false)
     }
@@ -83,11 +85,11 @@ export function FamilyForm({ family }: FamilyFormProps) {
           name="family_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Family Name</FormLabel>
+              <FormLabel>{t('families.familyName')}</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="e.g., Smith Family, The Johnsons"
+                  placeholder={t('families.familyNamePlaceholder')}
                   autoFocus
                 />
               </FormControl>
@@ -102,7 +104,7 @@ export function FamilyForm({ family }: FamilyFormProps) {
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">Active</FormLabel>
+                <FormLabel className="text-base">{t('common.active')}</FormLabel>
                 <div className="text-sm text-muted-foreground">
                   Inactive families will be hidden from scheduling and pickers
                 </div>
@@ -121,7 +123,7 @@ export function FamilyForm({ family }: FamilyFormProps) {
           isEditing={isEditing}
           isLoading={isSubmitting}
           cancelHref={isEditing && family ? `/families/${family.id}` : '/families'}
-          moduleName="Family"
+          moduleName={t('families.title')}
         />
       </form>
     </Form>

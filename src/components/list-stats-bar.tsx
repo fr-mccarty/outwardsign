@@ -1,4 +1,7 @@
+'use client'
+
 import { FormSectionCard } from "@/components/form-section-card"
+import { useTranslations } from 'next-intl'
 
 export interface ListStat {
   value: number
@@ -18,7 +21,7 @@ interface ListStatsBarProps {
  * Stats automatically adjust from 2 columns on mobile to 4+ columns on larger screens.
  *
  * @param stats - Array of stat objects with value and label
- * @param title - Optional title for the stats section (default: "Overview")
+ * @param title - Optional title for the stats section (default: translated "Overview")
  * @param className - Optional additional CSS classes
  *
  * @example
@@ -36,7 +39,9 @@ interface ListStatsBarProps {
  *   stats={weddingStats}
  * />
  */
-export function ListStatsBar({ stats, title = "Overview", className }: ListStatsBarProps) {
+export function ListStatsBar({ stats, title, className }: ListStatsBarProps) {
+  const t = useTranslations('components.listStatsBar')
+
   // Don't render if no stats provided
   if (!stats || stats.length === 0) {
     return null
@@ -51,7 +56,7 @@ export function ListStatsBar({ stats, title = "Overview", className }: ListStats
   }
 
   return (
-    <FormSectionCard title={title} className={className}>
+    <FormSectionCard title={title || t('overview')} className={className}>
       <div className={`grid ${getGridCols()} gap-4 text-center`}>
         {stats.map((stat, index) => (
           <div key={index}>

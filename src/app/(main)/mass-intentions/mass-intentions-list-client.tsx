@@ -28,6 +28,7 @@ import type { DataTableColumn } from '@/components/data-table/data-table'
 import {
   buildActionsColumn
 } from '@/lib/utils/table-columns'
+import { useTranslations } from 'next-intl'
 
 interface MassIntentionsListClientProps {
   initialData: MassIntentionWithNames[]
@@ -38,6 +39,7 @@ interface MassIntentionsListClientProps {
 export function MassIntentionsListClient({ initialData, stats, initialHasMore }: MassIntentionsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('massIntentions')
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -59,10 +61,10 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
-    { value: stats.total, label: 'Total Intentions' },
-    { value: stats.requested, label: 'Requested' },
-    { value: stats.scheduled, label: 'Confirmed' },
-    { value: stats.filtered, label: 'Filtered Results' }
+    { value: stats.total, label: t('totalIntentions') },
+    { value: stats.requested, label: t('requested') },
+    { value: stats.scheduled, label: t('confirmed') },
+    { value: stats.filtered, label: t('filteredResults') }
   ]
 
   // Date filters - convert string params to Date objects for DatePickerField
@@ -127,7 +129,7 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
       setHasMore(nextIntentions.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more mass intentions:', error)
-      toast.error('Failed to load more mass intentions')
+      toast.error(t('errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
@@ -150,11 +152,11 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
 
     try {
       await deleteMassIntention(intentionToDelete.id)
-      toast.success('Mass intention deleted successfully')
+      toast.success(t('intentionDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete mass intention:', error)
-      toast.error('Failed to delete mass intention. Please try again.')
+      toast.error(t('errorDeleting'))
       throw error
     }
   }
@@ -162,18 +164,18 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
   // Define custom "For" column (replaces Who column for mass intentions)
   const forColumn: DataTableColumn<MassIntentionWithNames> = {
     key: 'for',
-    header: 'For',
+    header: t('forColumn'),
     cell: (intention) => (
       <div className="flex items-center gap-2 max-w-[200px] md:max-w-[250px]">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="font-medium truncate">
-              {intention.mass_offered_for || 'No intention specified'}
+              {intention.mass_offered_for || t('noIntentionSpecified')}
             </span>
           </div>
           {intention.requested_by && (
             <div className="text-sm text-muted-foreground truncate">
-              Requested by {intention.requested_by.full_name}
+              {t('requestedBy')} {intention.requested_by.full_name}
             </div>
           )}
         </div>
@@ -185,10 +187,10 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
   // Define custom "Requested" column (replaces When column - using date_requested instead of event date)
   const requestedColumn: DataTableColumn<MassIntentionWithNames> = {
     key: 'requested',
-    header: 'Requested',
+    header: t('requestedColumn'),
     cell: (intention) => {
       if (!intention.date_requested) {
-        return <span className="text-sm text-muted-foreground">No date</span>
+        return <span className="text-sm text-muted-foreground">{t('noDate')}</span>
       }
 
       return (
@@ -196,7 +198,7 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
           <span className="text-sm">{toLocalDateString(new Date(intention.date_requested))}</span>
           {intention.date_received && (
             <span className="text-xs text-muted-foreground">
-              Received: {toLocalDateString(new Date(intention.date_received))}
+              {t('receivedLabel')}: {toLocalDateString(new Date(intention.date_received))}
             </span>
           )}
         </div>
@@ -216,14 +218,14 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
         setDeleteDialogOpen(true)
       },
       getDeleteMessage: (intention) =>
-        `Are you sure you want to delete the mass intention for ${intention.mass_offered_for || 'this intention'}?`
+        t('confirmDelete', { intention: intention.mass_offered_for || t('confirmDeleteGeneric') })
     })
   ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard title="Search Mass Intentions">
+      <SearchCard title={t('title')}>
         <div className="space-y-4">
           {/* Main Search and Status Row - Inline */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -235,7 +237,7 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
                   setSearchValue(value)
                   filters.updateFilter('search', value)
                 }}
-                placeholder="Search by intention or name..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full"
               />
             </div>
@@ -289,22 +291,22 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
       ) : (
         <EmptyState
           icon={<Heart className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No mass intentions found' : 'No mass intentions yet'}
+          title={hasActiveFilters ? t('noIntentions') : t('noIntentionsYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search or filters to find more mass intentions.'
-            : 'Create your first mass intention to start managing Mass offerings in your parish.'}
+            ? t('noIntentionsMessage')
+            : t('noIntentionsYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/mass-intentions/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Mass Intention
+                  {t('createYourFirstIntention')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t('clearFilters', { ns: 'events' })}
                 </Button>
               )}
             </>
@@ -320,11 +322,11 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Mass Intention"
+        title={t('deleteIntention')}
         description={
           intentionToDelete
-            ? `Are you sure you want to delete the mass intention for ${intentionToDelete.mass_offered_for || 'this intention'}?`
-            : 'Are you sure you want to delete this mass intention?'
+            ? t('confirmDelete', { intention: intentionToDelete.mass_offered_for || t('confirmDeleteGeneric') })
+            : t('confirmDeleteGeneric')
         }
       />
     </div>

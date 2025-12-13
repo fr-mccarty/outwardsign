@@ -14,6 +14,7 @@ import {
 import { CorePicker } from '@/components/core-picker'
 import { CorePickerFieldProps } from '@/types/core-picker'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 /**
  * CorePickerField - FormField wrapper for CorePicker
@@ -30,7 +31,7 @@ export function CorePickerField<T>({
   label,
   description,
   required,
-  placeholder = 'Select an item',
+  placeholder,
   renderSelected,
 
   // CorePicker props
@@ -53,6 +54,9 @@ export function CorePickerField<T>({
 }: CorePickerFieldProps<T>) {
   const [showPicker, setShowPicker] = useState(false)
   const form = useFormContext()
+  const t = useTranslations('common')
+
+  const displayPlaceholder = placeholder || t('selectAnItem')
 
   return (
     <FormField
@@ -90,7 +94,7 @@ export function CorePickerField<T>({
                     getItemLabel(selectedItem)
                   )
                 ) : (
-                  placeholder
+                  displayPlaceholder
                 )}
               </Button>
             </FormControl>

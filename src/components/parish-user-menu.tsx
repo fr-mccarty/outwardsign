@@ -30,6 +30,7 @@ import {
   Languages
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useAppLanguage } from '@/hooks/use-app-language'
 
 interface UserData {
   email: string
@@ -52,6 +53,7 @@ export function ParishUserMenu() {
   const router = useRouter()
   const supabase = createClient()
   const { theme, setTheme } = useTheme()
+  const { language, setLanguage } = useAppLanguage()
 
   useEffect(() => {
     loadData()
@@ -284,12 +286,13 @@ export function ParishUserMenu() {
             <span>Language</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem onClick={() => setLanguage('en')} className="flex items-center gap-2">
               <span>English</span>
-              <Check className="ml-auto h-4 w-4" />
+              {language === 'en' && <Check className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2" disabled>
-              <span>Español (Coming Soon)</span>
+            <DropdownMenuItem onClick={() => setLanguage('es')} className="flex items-center gap-2">
+              <span>Español</span>
+              {language === 'es' && <Check className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>

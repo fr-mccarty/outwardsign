@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { DataTableEmpty } from "./data-table-empty";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export type SortDirection = "asc" | "desc" | null;
 
@@ -71,6 +72,8 @@ export function DataTable<T>({
   hasMore = false,
   stickyHeader = false,
 }: DataTableProps<T>) {
+  const t = useTranslations('common')
+
   // Infinite scroll hook
   const { sentinelRef, isLoading } = useInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
@@ -231,7 +234,7 @@ export function DataTable<T>({
                   {isLoading && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading more...</span>
+                      <span>{t('loadingMore')}</span>
                     </div>
                   )}
                 </div>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { Group } from '@/lib/actions/groups'
 import type { GroupStats } from '@/lib/actions/groups'
 import { deleteGroup, getGroups, type GroupFilters } from '@/lib/actions/groups'
@@ -34,6 +35,7 @@ interface GroupsListClientProps {
 
 export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsListClientProps) {
   const router = useRouter()
+  const t = useTranslations()
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -95,7 +97,7 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
       setHasMore(nextGroups.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more groups:', error)
-      toast.error('Failed to load more groups')
+      toast.error(t('groups.errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
@@ -103,8 +105,8 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
-    { value: stats.total, label: 'Total Groups' },
-    { value: stats.filtered, label: 'Filtered Results' }
+    { value: stats.total, label: t('groups.totalGroups') },
+    { value: stats.filtered, label: t('common.filteredResults') }
   ]
 
   // Delete dialog state
@@ -126,11 +128,11 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
 
     try {
       await deleteGroup(groupToDelete.id)
-      toast.success('Group deleted successfully')
+      toast.success(t('groups.groupDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete group:', error)
-      toast.error('Failed to delete group. Please try again.')
+      toast.error(t('groups.errorDeleting'))
       throw error
     }
   }
@@ -139,7 +141,7 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
   const columns: DataTableColumn<Group>[] = [
     {
       key: 'name',
-      header: 'Name',
+      header: t('groups.name'),
       cell: (group) => (
         <span className="text-sm font-medium">{group.name}</span>
       ),
@@ -148,10 +150,10 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
     },
     {
       key: 'description',
-      header: 'Description',
+      header: t('groups.description'),
       cell: (group) => {
         if (!group.description) {
-          return <span className="text-muted-foreground text-sm">No description</span>
+          return <span className="text-muted-foreground text-sm">{t('groups.noDescription')}</span>
         }
         return (
           <span className="text-sm line-clamp-2">{group.description}</span>
@@ -162,10 +164,10 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('common.status'),
       cell: (group) => (
         <span className={`text-sm ${group.is_active ? 'text-foreground' : 'text-muted-foreground'}`}>
-          {group.is_active ? 'Active' : 'Inactive'}
+          {group.is_active ? t('common.active') : t('common.inactive')}
         </span>
       ),
       className: 'min-w-[100px]',
@@ -178,14 +180,14 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
         setDeleteDialogOpen(true)
       },
       getDeleteMessage: (group) =>
-        `Are you sure you want to delete ${group.name}?`
+        t('groups.confirmDelete', { groupName: group.name })
     })
   ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard title="Search Groups">
+      <SearchCard title={t('groups.searchGroups')}>
         {/* Main Search and Status Row - Inline */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* Search Input */}
@@ -196,7 +198,7 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
                 setSearchValue(value)
                 filters.updateFilter('search', value)
               }}
-              placeholder="Search by name or description..."
+              placeholder={t('groups.searchPlaceholder')}
               className="w-full"
             />
           </div>
@@ -227,22 +229,22 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
             hasMore={hasMore}
             emptyState={{
               icon: <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
-              title: hasActiveFilters ? 'No groups found' : 'No groups yet',
+              title: hasActiveFilters ? t('groups.noGroups') : t('groups.noGroupsYet'),
               description: hasActiveFilters
-                ? 'Try adjusting your search to find more groups.'
-                : 'Create your first group to start managing ministry groups.',
+                ? t('groups.noGroupsMessage')
+                : t('groups.noGroupsYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild>
                     <Link href="/groups/create">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Group
+                      {t('groups.createYourFirstGroup')}
                     </Link>
                   </Button>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
-                      Clear Filters
+                      {t('groups.clearFilters')}
                     </Button>
                   )}
                 </div>
@@ -256,22 +258,22 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
       ) : (
         <EmptyState
           icon={<Users className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No groups found' : 'No groups yet'}
+          title={hasActiveFilters ? t('groups.noGroups') : t('groups.noGroupsYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search to find more groups.'
-            : 'Create and manage groups of people who can be scheduled together for liturgical services.'}
+            ? t('groups.noGroupsMessage')
+            : t('groups.noGroupsYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/groups/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Group
+                  {t('groups.createYourFirstGroup')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t('groups.clearFilters')}
                 </Button>
               )}
             </>
@@ -281,7 +283,7 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <ListStatsBar title="Group Overview" stats={statsList} />
+        <ListStatsBar title={t('groups.groupOverview')} stats={statsList} />
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -289,13 +291,13 @@ export function GroupsListClient({ initialData, stats, initialHasMore }: GroupsL
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Group"
+        title={t('groups.deleteGroup')}
         description={
           groupToDelete
-            ? `Are you sure you want to delete ${groupToDelete.name}? This action cannot be undone.`
-            : 'Are you sure you want to delete this group? This action cannot be undone.'
+            ? t('groups.confirmDelete', { groupName: groupToDelete.name })
+            : t('groups.confirmDeleteGeneric')
         }
-        actionLabel="Delete"
+        actionLabel={t('common.delete')}
       />
     </div>
   )

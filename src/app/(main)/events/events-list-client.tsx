@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { getAllDynamicEvents, deleteEvent, type DynamicEventFilterParams, type DynamicEventWithTypeAndOccasion } from '@/lib/actions/dynamic-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -40,6 +41,7 @@ interface EventsListClientProps {
 export function EventsListClient({ initialData, initialHasMore, eventTypes }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations()
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -112,7 +114,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
       setHasMore(nextEvents.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more events:', error)
-      toast.error('Failed to load more events')
+      toast.error(t('events.errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
@@ -149,11 +151,11 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
 
     try {
       await deleteEvent(eventToDelete.id)
-      toast.success('Event deleted successfully')
+      toast.success(t('events.eventDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete event:', error)
-      toast.error('Failed to delete event. Please try again.')
+      toast.error(t('events.errorDeleting'))
       throw error
     }
   }
@@ -161,7 +163,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   // Define custom "What" column (event type name)
   const whatColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
     key: 'name',
-    header: 'What',
+    header: t('events.what'),
     cell: (event) => (
       <div className="flex items-center gap-2 max-w-[200px] md:max-w-[300px]">
         <div className="min-w-0 flex-1">
@@ -177,11 +179,11 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   // Define "When" column
   const whenColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
     key: 'date',
-    header: 'When',
+    header: t('events.when'),
     cell: (event) => {
       const occasion = event.primary_occasion
       if (!occasion?.date) {
-        return <span className="text-muted-foreground">No date set</span>
+        return <span className="text-muted-foreground">{t('events.noDateSet')}</span>
       }
       return (
         <div>
@@ -198,7 +200,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   // Define "Where" column
   const whereColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
     key: 'location',
-    header: 'Where',
+    header: t('events.where'),
     cell: (event) => {
       const location = event.primary_occasion?.location
       if (!location) {
@@ -229,15 +231,15 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('events.openMenu')}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/events/${typeSlug}/${event.id}`}>View</Link>
+                <Link href={`/events/${typeSlug}/${event.id}`}>{t('events.view')}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/events/${typeSlug}/${event.id}/edit`}>Edit</Link>
+                <Link href={`/events/${typeSlug}/${event.id}/edit`}>{t('common.edit')}</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -248,7 +250,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
                   setDeleteDialogOpen(true)
                 }}
               >
-                Delete
+                {t('common.delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -261,7 +263,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard title="Search Events">
+      <SearchCard title={t('events.searchEvents')}>
         <div className="space-y-4">
           {/* Main Search Row with Event Type Filter */}
           <div className="flex flex-col sm:flex-row gap-2">
@@ -272,7 +274,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
                   setSearchValue(value)
                   filters.updateFilter('search', value)
                 }}
-                placeholder="Search events..."
+                placeholder={t('events.searchPlaceholder')}
                 className="w-full"
               />
             </div>
@@ -280,7 +282,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
             <div className="w-full sm:w-[200px]">
               <FormInput
                 id="event-type-filter"
-                label="Event Type"
+                label={t('events.eventType')}
                 hideLabel
                 inputType="select"
                 value={selectedEventTypeSlug || 'all'}
@@ -288,7 +290,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
                   filters.updateFilter('type', value === 'all' ? '' : value)
                 }}
                 options={[
-                  { value: 'all', label: 'All Event Types' },
+                  { value: 'all', label: t('events.allEventTypes') },
                   ...eventTypes.map((eventType) => ({
                     value: eventType.slug || eventType.id,
                     label: eventType.name
@@ -336,22 +338,22 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
       ) : (
         <EmptyState
           icon={<CalendarDays className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No events found' : 'No events yet'}
+          title={hasActiveFilters ? t('events.noEvents') : t('events.noEventsYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search or filters to find more events.'
-            : 'Create your first event to start managing parish activities.'}
+            ? t('events.noEventsMessage')
+            : t('events.noEventsYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/events/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Event
+                  {t('events.createYourFirstEvent')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t('events.clearFilters')}
                 </Button>
               )}
             </>
@@ -364,11 +366,11 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Event"
+        title={t('events.deleteEvent')}
         description={
           eventToDelete
-            ? `Are you sure you want to delete this ${eventToDelete.event_type?.name?.toLowerCase() || 'event'}?`
-            : 'Are you sure you want to delete this event?'
+            ? t('events.confirmDelete', { eventType: eventToDelete.event_type?.name?.toLowerCase() || 'event' })
+            : t('events.confirmDeleteGeneric')
         }
       />
     </div>

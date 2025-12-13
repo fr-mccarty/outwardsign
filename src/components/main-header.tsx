@@ -10,11 +10,11 @@ interface MainHeaderProps {
   showSidebarTrigger?: boolean;
 }
 
-export function MainHeader({ 
+export function MainHeader({
   showSidebarTrigger = true
 }: MainHeaderProps) {
   const { breadcrumbs } = useBreadcrumbs();
-  
+
   // If no breadcrumbs provided, show default Dashboard breadcrumb
   const displayBreadcrumbs = breadcrumbs.length > 0 ? breadcrumbs : [
     { label: "Dashboard" }
@@ -29,7 +29,7 @@ export function MainHeader({
             <Separator orientation="vertical" className="mr-2 h-4" />
           </>
         )}
-        
+
         <Breadcrumb>
           <BreadcrumbList>
             {displayBreadcrumbs.map((item, index) => (

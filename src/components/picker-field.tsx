@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface BasePickerFieldProps<T> {
   label: string
@@ -34,7 +35,7 @@ export function PickerField<T>({
   onValueChange,
   onShowPickerChange,
   description,
-  placeholder = 'Select',
+  placeholder,
   required = false,
   icon: Icon,
   renderValue,
@@ -48,6 +49,9 @@ export function PickerField<T>({
 }: BasePickerFieldProps<T>) {
   const labelId = testId || label.toLowerCase().replace(/\s+/g, '-')
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const t = useTranslations('common')
+
+  const displayPlaceholder = placeholder || t('select')
 
   const handleValueClick = () => {
     if (onValueClick) {
@@ -143,7 +147,7 @@ export function PickerField<T>({
           data-testid={`${labelId}-trigger`}
         >
           <Icon className="h-4 w-4 mr-2" />
-          {placeholder}
+          {displayPlaceholder}
         </Button>
       )}
 

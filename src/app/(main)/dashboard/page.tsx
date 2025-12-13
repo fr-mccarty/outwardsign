@@ -23,10 +23,12 @@ import { DashboardErrorHandler } from "./dashboard-error-handler"
 import { getAllDynamicEvents } from "@/lib/actions/dynamic-events"
 import { getActiveEventTypes } from "@/lib/actions/event-types"
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -122,53 +124,53 @@ export default async function DashboardPage() {
     <>
       <DashboardErrorHandler />
       <PageContainer
-        title="Dashboard"
-        description="Your sacramental ministry at a glance"
+        title={t('dashboard.title')}
+        description={t('dashboard.description')}
         data-testid="dashboard-page"
       >
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <Link href="/events" className="block hover:opacity-80 transition-opacity">
           <MetricCard
-            title="Total Events"
+            title={t('dashboard.totalEvents')}
             value={dynamicEvents.length}
-            description="Events created"
+            description={t('dashboard.eventsCreated')}
             icon={CalendarDays}
           />
         </Link>
 
         <Link href={`/calendar?view=month&date=${format(now, 'yyyy-MM-dd')}`} className="block hover:opacity-80 transition-opacity">
           <MetricCard
-            title="Scheduled This Month"
+            title={t('dashboard.scheduledThisMonth')}
             value={scheduledThisMonth}
-            description="Ceremonies this month"
+            description={t('dashboard.ceremoniesThisMonth')}
             icon={TrendingUp}
           />
         </Link>
 
         <Link href="/people" className="block hover:opacity-80 transition-opacity">
           <MetricCard
-            title="People Directory"
+            title={t('dashboard.peopleDirectory')}
             value={people.length}
-            description="People in your parish"
+            description={t('dashboard.peopleInParish')}
             icon={Users}
           />
         </Link>
 
         <Link href="/locations" className="block hover:opacity-80 transition-opacity">
           <MetricCard
-            title="Locations"
+            title={t('dashboard.locations')}
             value={locations.length}
-            description="Venues registered"
+            description={t('dashboard.venuesRegistered')}
             icon={MapPin}
           />
         </Link>
 
         <Link href="/events" className="block hover:opacity-80 transition-opacity">
           <MetricCard
-            title="This Week"
+            title={t('dashboard.thisWeek')}
             value={upcomingEventsCount}
-            description="Events in next 7 days"
+            description={t('dashboard.eventsNextSevenDays')}
             icon={CalendarCheck}
           />
         </Link>
@@ -190,7 +192,7 @@ export default async function DashboardPage() {
                 <MetricCard
                   title={eventType.name}
                   value={count}
-                  description={count === 1 ? "event" : "events"}
+                  description={count === 1 ? t('dashboard.event') : t('dashboard.events')}
                   icon={Icon}
                 />
               </Link>
@@ -202,7 +204,7 @@ export default async function DashboardPage() {
       {/* Main Content Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
         {/* Upcoming Events */}
-        <FormSectionCard title="Upcoming Events">
+        <FormSectionCard title={t('dashboard.upcomingEvents')}>
           {upcomingDynamicEvents30Days.length > 0 ? (
             <div className="space-y-3">
               {upcomingDynamicEvents30Days.map((event) => {
@@ -236,20 +238,20 @@ export default async function DashboardPage() {
             <div className="text-center py-8">
               <CalendarDays className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground mb-3">
-                No upcoming events in the next 30 days
+                {t('dashboard.noUpcomingEvents')}
               </p>
               <Link
                 href="/events/create"
                 className="text-sm text-primary hover:underline"
               >
-                Schedule an event
+                {t('dashboard.scheduleAnEvent')}
               </Link>
             </div>
           )}
         </FormSectionCard>
 
         {/* Recent Events */}
-        <FormSectionCard title="Recently Created">
+        <FormSectionCard title={t('dashboard.recentlyCreated')}>
           {dynamicEvents.length > 0 ? (
             <div className="space-y-3">
               {dynamicEvents.slice(0, 5).map((dynEvent) => {
@@ -285,21 +287,21 @@ export default async function DashboardPage() {
             <div className="text-center py-8">
               <CalendarDays className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground mb-3">
-                No events yet
+                {t('dashboard.noEventsYet')}
               </p>
               {eventTypes.length > 0 ? (
                 <Link
                   href="/events/create"
                   className="text-sm text-primary hover:underline"
                 >
-                  Create your first event
+                  {t('dashboard.createYourFirstEvent')}
                 </Link>
               ) : (
                 <Link
                   href="/settings/event-types"
                   className="text-sm text-primary hover:underline"
                 >
-                  Set up event types first
+                  {t('dashboard.setUpEventTypesFirst')}
                 </Link>
               )}
             </div>
@@ -307,13 +309,13 @@ export default async function DashboardPage() {
         </FormSectionCard>
 
         {/* Mini Calendar */}
-        <FormSectionCard title="Calendar" contentClassName="p-3 pt-0">
+        <FormSectionCard title={t('dashboard.calendar')} contentClassName="p-3 pt-0">
           <MiniCalendar events={events} />
         </FormSectionCard>
       </div>
 
       {/* Quick Access Links */}
-      <FormSectionCard title="Quick Access">
+      <FormSectionCard title={t('dashboard.quickAccess')}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {/* Dynamic Event Type Quick Links */}
           {eventTypes.map((eventType) => {
@@ -337,28 +339,28 @@ export default async function DashboardPage() {
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <CirclePlus className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Mass</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.newMass')}</span>
           </Link>
           <Link
             href="/masses/schedule"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <CalendarCheck className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">Schedule Masses</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.scheduleMasses')}</span>
           </Link>
           <Link
             href="/mass-intentions/create"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <Heart className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Mass Intention</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.newMassIntention')}</span>
           </Link>
           <Link
             href="/people/create"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <Plus className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">New Person</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.newPerson')}</span>
           </Link>
         </div>
       </FormSectionCard>

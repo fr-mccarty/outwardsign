@@ -24,6 +24,7 @@ import { toast } from "sonner"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { buildActionsColumn } from '@/lib/utils/table-columns'
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
+import { useTranslations } from 'next-intl'
 
 interface LocationsListClientProps {
   initialData: Location[]
@@ -33,6 +34,8 @@ interface LocationsListClientProps {
 
 export function LocationsListClient({ initialData, stats, initialHasMore }: LocationsListClientProps) {
   const router = useRouter()
+  const t = useTranslations('locations')
+  const tCommon = useTranslations('common')
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
@@ -93,7 +96,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
       setHasMore(nextLocations.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more locations:', error)
-      toast.error('Failed to load more locations')
+      toast.error(t('errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
@@ -101,8 +104,8 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
 
   // Transform stats for ListStatsBar
   const statsList: ListStat[] = [
-    { value: stats.total, label: 'Total Locations' },
-    { value: stats.filtered, label: 'Filtered Results' }
+    { value: stats.total, label: t('totalLocations') },
+    { value: stats.filtered, label: tCommon('filteredResults') }
   ]
 
   // Delete dialog state
@@ -124,11 +127,11 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
 
     try {
       await deleteLocation(locationToDelete.id)
-      toast.success('Location deleted successfully')
+      toast.success(t('locationDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete location:', error)
-      toast.error('Failed to delete location. Please try again.')
+      toast.error(t('errorDeleting'))
       throw error
     }
   }
@@ -137,7 +140,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
   const columns: DataTableColumn<Location>[] = [
     {
       key: 'name',
-      header: 'Name',
+      header: t('name'),
       cell: (location) => (
         <span className="text-sm font-medium">{location.name}</span>
       ),
@@ -146,11 +149,11 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
     },
     {
       key: 'address',
-      header: 'Address',
+      header: t('address'),
       cell: (location) => {
         const addressParts = [location.street, location.city, location.state].filter(Boolean)
         if (addressParts.length === 0) {
-          return <span className="text-muted-foreground text-sm">No address</span>
+          return <span className="text-muted-foreground text-sm">{t('noAddress')}</span>
         }
         return (
           <div className="flex items-start gap-2">
@@ -164,7 +167,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
     },
     {
       key: 'phone',
-      header: 'Phone',
+      header: t('phone'),
       cell: (location) => {
         if (!location.phone_number) {
           return <span className="text-muted-foreground text-sm">—</span>
@@ -186,14 +189,14 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
         setDeleteDialogOpen(true)
       },
       getDeleteMessage: (location) =>
-        `Are you sure you want to delete ${location.name}?`
+        t('confirmDelete', { locationName: location.name })
     })
   ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard title="Search Locations">
+      <SearchCard title={t('searchLocations')}>
         <div className="space-y-4">
           {/* Main Search Row */}
           <ClearableSearchInput
@@ -202,7 +205,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
               setSearchValue(value)
               filters.updateFilter('search', value)
             }}
-            placeholder="Search by name, description, or city..."
+            placeholder={t('searchPlaceholder')}
             className="w-full"
           />
 
@@ -225,22 +228,22 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
             hasMore={hasMore}
             emptyState={{
               icon: <Building className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
-              title: hasActiveFilters ? 'No locations found' : 'No locations yet',
+              title: hasActiveFilters ? t('noLocations') : t('noLocationsYet'),
               description: hasActiveFilters
-                ? 'Try adjusting your search to find more locations.'
-                : 'Create your first location to start managing parish venues.',
+                ? t('noLocationsMessage')
+                : t('noLocationsYetMessage'),
               action: (
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild>
                     <Link href="/locations/create">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Location
+                      {t('createYourFirstLocation')}
                     </Link>
                   </Button>
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={handleClearFilters}>
                       <Filter className="h-4 w-4 mr-2" />
-                      Clear Filters
+                      {t('clearFilters')}
                     </Button>
                   )}
                 </div>
@@ -254,22 +257,22 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
       ) : (
         <EmptyState
           icon={<Building className="h-16 w-16" />}
-          title={hasActiveFilters ? 'No locations found' : 'No locations yet'}
+          title={hasActiveFilters ? t('noLocations') : t('noLocationsYet')}
           description={hasActiveFilters
-            ? 'Try adjusting your search to find more locations.'
-            : 'Create your first location to start managing parish venues.'}
+            ? t('noLocationsMessage')
+            : t('noLocationsYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/locations/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Location
+                  {t('createYourFirstLocation')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t('clearFilters')}
                 </Button>
               )}
             </>
@@ -279,7 +282,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
 
       {/* Quick Stats */}
       {stats.total > 0 && (
-        <ListStatsBar title="Location Overview" stats={statsList} />
+        <ListStatsBar title={t('locationOverview')} stats={statsList} />
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -287,13 +290,13 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Location"
+        title={t('deleteLocation')}
         description={
           locationToDelete
-            ? `Are you sure you want to delete ${locationToDelete.name}? This action cannot be undone.`
-            : 'Are you sure you want to delete this location? This action cannot be undone.'
+            ? t('confirmDelete', { locationName: locationToDelete.name })
+            : t('confirmDeleteGeneric')
         }
-        actionLabel="Delete"
+        actionLabel={tCommon('delete')}
       />
     </div>
   )

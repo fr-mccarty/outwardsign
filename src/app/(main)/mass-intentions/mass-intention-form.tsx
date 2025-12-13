@@ -21,6 +21,7 @@ import { FormBottomActions } from "@/components/form-bottom-actions"
 import { usePickerState } from "@/hooks/use-picker-state"
 import { MassPicker } from "@/components/mass-picker"
 import type { MassWithNames } from "@/lib/actions/masses"
+import { useTranslations } from 'next-intl'
 
 interface MassIntentionFormProps {
   intention?: MassIntentionWithRelations
@@ -31,6 +32,7 @@ interface MassIntentionFormProps {
 export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIntentionFormProps) {
   const router = useRouter()
   const isEditing = !!intention
+  const t = useTranslations('massIntentions')
 
   // Initialize React Hook Form with Zod validation
   const {
@@ -93,16 +95,16 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
     try {
       if (isEditing && intention) {
         await updateMassIntention(intention.id, data)
-        toast.success('Mass intention updated successfully')
+        toast.success(t('intentionUpdated'))
         router.refresh() // Stay on edit page to show updated data
       } else {
         const newIntention = await createMassIntention(data)
-        toast.success('Mass intention created successfully')
+        toast.success(t('intentionCreated'))
         router.push(`/mass-intentions/${newIntention.id}/edit`)
       }
     } catch (error) {
       console.error(`Failed to ${isEditing ? 'update' : 'create'} mass intention:`, error)
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} mass intention. Please try again.`)
+      toast.error(isEditing ? t('errorUpdating') : t('errorCreating'))
     }
   }
 
@@ -110,23 +112,23 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Information */}
       <FormSectionCard
-        title="Mass Intention Details"
-        description="Core information about this Mass intention"
+        title={t('intentionDetails')}
+        description={t('intentionDetailsDescription')}
       >
         <FormInput
             id="mass_offered_for"
-            label="Mass Offered For"
-            description="Who or what this Mass is being offered for (required)"
+            label={t('massOfferedFor')}
+            description={t('massOfferedForDescription')}
             value={massOfferedFor}
             onChange={(value) => setValue("mass_offered_for", value)}
-            placeholder="In memory of John Smith"
+            placeholder={t('massOfferedForPlaceholder')}
             required
             error={errors.mass_offered_for?.message}
           />
 
           <PersonPickerField
-            label="Requested By"
-            description="Person who requested this Mass intention"
+            label={t('requestedByLabel')}
+            description={t('requestedByDescription')}
             value={requestedBy.value}
             onValueChange={requestedBy.setValue}
             showPicker={requestedBy.showPicker}
@@ -136,8 +138,8 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           />
 
           <MassPickerField
-            label="Assigned Mass"
-            description="Link this intention to a specific Mass (optional)"
+            label={t('assignedMass')}
+            description={t('assignedMassDescription')}
             value={assignedMass.value}
             onValueChange={assignedMass.setValue}
             showPicker={assignedMass.showPicker}
@@ -147,8 +149,8 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           <FormInput
             id="status"
             inputType="select"
-            label="Status"
-            description="Current status of this Mass intention"
+            label={t('statusLabel')}
+            description={t('statusDescription')}
             value={status || ""}
             onChange={(value) => setValue("status", value as MassIntentionStatus)}
             error={errors.status?.message}
@@ -163,8 +165,8 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           <FormInput
             id="mass_intention_template_id"
             inputType="select"
-            label="Print Template"
-            description="Choose the template for printing this Mass intention"
+            label={t('printTemplate')}
+            description={t('printTemplateDescription')}
             value={massIntentionTemplateId || ""}
             onChange={(value) => setValue("mass_intention_template_id", value as MassIntentionTemplate)}
             error={errors.mass_intention_template_id?.message}
@@ -179,13 +181,13 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
 
       {/* Dates and Financial Information */}
       <FormSectionCard
-        title="Dates and Stipend"
-        description="When the intention was requested/received and stipend amount"
+        title={t('datesAndStipend')}
+        description={t('datesAndStipendDescription')}
       >
         <DatePickerField
             id="date_requested"
-            label="Date Requested"
-            description="When the parishioner requested this Mass intention"
+            label={t('dateRequested')}
+            description={t('dateRequestedDescription')}
             value={dateRequested ? new Date(dateRequested + 'T12:00:00') : undefined}
             onValueChange={(date) => setValue("date_requested", date ? toLocalDateString(date) : null)}
             error={errors.date_requested?.message}
@@ -194,8 +196,8 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
 
           <DatePickerField
             id="date_received"
-            label="Date Received"
-            description="When the parish office received this request"
+            label={t('dateReceived')}
+            description={t('dateReceivedDescription')}
             value={dateReceived ? new Date(dateReceived + 'T12:00:00') : undefined}
             onValueChange={(date) => setValue("date_received", date ? toLocalDateString(date) : null)}
             error={errors.date_received?.message}
@@ -205,11 +207,11 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
           <FormInput
             id="stipend_amount"
             inputType="number"
-            label="Stipend Amount (cents)"
-            description="Offering amount in cents (e.g., 1000 for $10.00)"
+            label={t('stipendAmount')}
+            description={t('stipendAmountDescription')}
             value={stipendInCents?.toString() || ""}
             onChange={(value) => setValue("stipend_in_cents", value ? parseInt(value) : null)}
-            placeholder="1000"
+            placeholder={t('stipendAmountPlaceholder')}
             step="1"
             min="0"
             error={errors.stipend_in_cents?.message}
@@ -218,17 +220,17 @@ export function MassIntentionForm({ intention, formId, onLoadingChange }: MassIn
 
       {/* Template and Notes */}
       <FormSectionCard
-        title="Notes"
-        description="Additional information about this Mass intention"
+        title={t('notes')}
+        description={t('notesDescription')}
       >
         <FormInput
           id="note"
-          label="Notes (Optional)"
-          description="Additional information or special requests"
+          label={t('notesLabel')}
+          description={t('notesLabelDescription')}
           inputType="textarea"
           value={note || ""}
           onChange={(value) => setValue("note", value || null)}
-          placeholder="Add any additional notes or special requests..."
+          placeholder={t('notesPlaceholder')}
           rows={3}
           error={errors.note?.message}
         />

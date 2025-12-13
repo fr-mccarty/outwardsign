@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Loader2, Save } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface ModuleSaveButtonProps {
   moduleName: string
@@ -29,7 +30,10 @@ export function ModuleSaveButton({
   type = 'submit',
   onClick
 }: ModuleSaveButtonProps) {
-  const action = isEditing ? 'Update' : 'Save'
+  const t = useTranslations('components.buttons')
+  const tCommon = useTranslations('common')
+
+  const action = isEditing ? t('update') : t('save')
 
   return (
     <Button
@@ -41,7 +45,7 @@ export function ModuleSaveButton({
       {isLoading ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Saving...
+          {tCommon('saving')}
         </>
       ) : (
         <>

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface DataTableAction {
   label: string;
@@ -32,12 +33,14 @@ export function DataTableActions({
   variant = "inline",
   className,
 }: DataTableActionsProps) {
+  const t = useTranslations('common')
+
   if (variant === "dropdown") {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className={cn("h-8 w-8 p-0", className)}>
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('openMenu')}</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -105,6 +108,8 @@ export function DataTableRowActions<T>({
   variant = "inline",
   className,
 }: DataTableRowActionsProps<T>) {
+  const t = useTranslations('common')
+
   if (variant === "hybrid") {
     // For hybrid variant, only show dropdown with actions (no inline edit button)
     const dropdownActions: DataTableAction[] = [];
@@ -123,7 +128,7 @@ export function DataTableRowActions<T>({
 
     if (onDelete) {
       dropdownActions.push({
-        label: "Delete",
+        label: t('delete'),
         icon: <Trash2 className="h-4 w-4" />,
         onClick: () => onDelete(row),
         variant: "destructive",
@@ -137,7 +142,7 @@ export function DataTableRowActions<T>({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -181,7 +186,7 @@ export function DataTableRowActions<T>({
 
   if (onEdit) {
     actions.push({
-      label: "Edit",
+      label: t('edit'),
       icon: <Edit className="h-4 w-4" />,
       onClick: () => onEdit(row),
     });
@@ -189,7 +194,7 @@ export function DataTableRowActions<T>({
 
   if (onDelete) {
     actions.push({
-      label: "Delete",
+      label: t('delete'),
       icon: <Trash2 className="h-4 w-4" />,
       onClick: () => onDelete(row),
       variant: "destructive",

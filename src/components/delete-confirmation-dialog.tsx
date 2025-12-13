@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useTranslations } from "next-intl"
 
 interface DeleteConfirmationDialogProps {
   open: boolean
@@ -28,13 +29,14 @@ export function DeleteConfirmationDialog({
   open,
   onOpenChange,
   onConfirm,
-  title = "Delete Item",
+  title,
   itemName,
   description,
-  actionLabel = "Delete",
+  actionLabel,
   children,
 }: DeleteConfirmationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const t = useTranslations('common')
 
   const handleConfirm = async () => {
     setIsSubmitting(true)
@@ -48,23 +50,31 @@ export function DeleteConfirmationDialog({
     }
   }
 
+  const dialogTitle = title || t('deleteItem')
+  const deleteLabel = actionLabel || t('delete')
+  const deletingLabel = isSubmitting
+    ? actionLabel === "Remove"
+      ? t('removing')
+      : t('deleting')
+    : deleteLabel
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
             {description || (
               <>
-                Are you sure you want to delete{" "}
+                {t('areYouSure').replace("?", "")} you want to delete{" "}
                 {itemName ? (
                   <>
                     &quot;<span className="font-medium">{itemName}</span>&quot;
                   </>
                 ) : (
-                  "this item"
+                  t('thisItem')
                 )}
-                ? This action cannot be undone.
+                ? {t('cannotBeUndone')}
               </>
             )}
           </DialogDescription>
@@ -76,14 +86,14 @@ export function DeleteConfirmationDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={isSubmitting}
           >
-            {isSubmitting ? `${actionLabel.replace(/e$/, '')}ing...` : actionLabel}
+            {deletingLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

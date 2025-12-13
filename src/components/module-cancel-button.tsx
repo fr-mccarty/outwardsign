@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface ModuleCancelButtonProps {
   href: string
@@ -18,9 +19,11 @@ interface ModuleCancelButtonProps {
  * <ModuleCancelButton href="/weddings" disabled={isLoading} />
  */
 export function ModuleCancelButton({ href, disabled }: ModuleCancelButtonProps) {
+  const t = useTranslations('components.buttons')
+
   return (
     <Button variant="outline" asChild disabled={disabled}>
-      <Link href={href}>Cancel</Link>
+      <Link href={href}>{t('cancel')}</Link>
     </Button>
   )
 }

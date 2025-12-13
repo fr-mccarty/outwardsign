@@ -30,6 +30,7 @@ import { Logo } from "@/components/logo"
 import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
 import type { DynamicEventType } from "@/lib/types"
+import { useTranslations } from 'next-intl'
 
 interface MainSidebarProps {
   eventTypes: DynamicEventType[]
@@ -37,6 +38,7 @@ interface MainSidebarProps {
 
 export function MainSidebar({ eventTypes }: MainSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar()
+  const t = useTranslations()
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -63,7 +65,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
       </SidebarHeader>
       <SidebarContent className="pb-16">
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.application')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
 
@@ -71,7 +73,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/dashboard" onClick={handleLinkClick}>
                     <Home />
-                    <span>Dashboard</span>
+                    <span>{t('nav.dashboard')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -80,22 +82,22 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/calendar?view=month" onClick={handleLinkClick}>
                     <Calendar />
-                    <span>Calendar</span>
+                    <span>{t('nav.calendar')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <CollapsibleNavSection
-                name="Events"
+                name={t('nav.events')}
                 icon={CalendarDays}
                 items={[
                   {
-                    title: "Our Events",
+                    title: t('nav.ourEvents'),
                     url: "/events",
                     icon: CalendarDays,
                   },
                   {
-                    title: "Create Event",
+                    title: t('nav.createEvent'),
                     url: "/events/create",
                     icon: Plus,
                   },
@@ -105,16 +107,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
 
 
               <CollapsibleNavSection
-                name="Groups"
+                name={t('nav.groups')}
                 icon={Users}
                 items={[
                   {
-                    title: "Our Groups",
+                    title: t('nav.ourGroups'),
                     url: "/groups",
                     icon: Users,
                   },
                   {
-                    title: "New Group",
+                    title: t('nav.newGroup'),
                     url: "/groups",
                     icon: Plus,
                   },
@@ -123,16 +125,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="Locations"
+                name={t('nav.locations')}
                 icon={Building}
                 items={[
                   {
-                    title: "Our Locations",
+                    title: t('nav.ourLocations'),
                     url: "/locations",
                     icon: Building,
                   },
                   {
-                    title: "New Location",
+                    title: t('nav.newLocation'),
                     url: "/locations/create",
                     icon: Plus,
                   },
@@ -141,21 +143,21 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="Mass Intentions"
+                name={t('nav.massIntentions')}
                 icon={ScrollText}
                 items={[
                   {
-                    title: "Our Mass Intentions",
+                    title: t('nav.ourMassIntentions'),
                     url: "/mass-intentions",
                     icon: ScrollText,
                   },
                   {
-                    title: "Create Mass Intention",
+                    title: t('nav.createMassIntention'),
                     url: "/mass-intentions/create",
                     icon: Plus,
                   },
                   {
-                    title: "Report",
+                    title: t('nav.report'),
                     url: "/mass-intentions/report",
                     icon: FileText,
                   },
@@ -164,31 +166,31 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="Mass Scheduling"
+                name={t('nav.massScheduling')}
                 icon={Clock}
                 items={[
                   {
-                    title: "Schedule Masses",
+                    title: t('nav.scheduleMasses'),
                     url: "/masses/schedule",
                     icon: CalendarDays,
                   },
                   {
-                    title: "Mass Times Templates",
+                    title: t('nav.massTimesTemplates'),
                     url: "/mass-times-templates",
                     icon: Clock,
                   },
                   {
-                    title: "Mass Role Templates",
+                    title: t('nav.massRoleTemplates'),
                     url: "/mass-role-templates",
                     icon: LayoutTemplate,
                   },
                   {
-                    title: "Mass Roles",
+                    title: t('nav.massRoles'),
                     url: "/mass-roles",
                     icon: UserCog,
                   },
                   {
-                    title: "Role Members",
+                    title: t('nav.roleMembers'),
                     url: "/mass-role-members",
                     icon: UsersIcon,
                   },
@@ -197,16 +199,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="Masses"
+                name={t('nav.masses')}
                 icon={CirclePlus}
                 items={[
                   {
-                    title: "Our Masses",
+                    title: t('nav.ourMasses'),
                     url: "/masses",
                     icon: CirclePlus,
                   },
                   {
-                    title: "New Mass",
+                    title: t('nav.newMass'),
                     url: "/masses/create",
                     icon: Plus,
                   },
@@ -215,16 +217,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="People"
+                name={t('nav.people')}
                 icon={User}
                 items={[
                   {
-                    title: "Our People",
+                    title: t('nav.ourPeople'),
                     url: "/people",
                     icon: User,
                   },
                   {
-                    title: "Create Person",
+                    title: t('nav.createPerson'),
                     url: "/people/create",
                     icon: Plus,
                   },
@@ -233,16 +235,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="Families"
+                name={t('nav.families')}
                 icon={Users2}
                 items={[
                   {
-                    title: "Our Families",
+                    title: t('nav.ourFamilies'),
                     url: "/families",
                     icon: Users2,
                   },
                   {
-                    title: "Create Family",
+                    title: t('nav.createFamily'),
                     url: "/families/create",
                     icon: Plus,
                   },
@@ -254,7 +256,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/weekend-summary" onClick={handleLinkClick}>
                     <CalendarDays />
-                    <span>Weekend Summary</span>
+                    <span>{t('nav.weekendSummary')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -266,7 +268,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
         {/* Dynamic Event Types Section */}
         {eventTypes.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Event Types</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('nav.eventTypes')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {eventTypes.map((eventType) => {
@@ -279,12 +281,12 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                       icon={Icon}
                       items={[
                         {
-                          title: `Our ${eventType.name}s`,
+                          title: `${t('common.our')} ${eventType.name}s`,
                           url: `/events?type=${slug}`,
                           icon: Icon,
                         },
                         {
-                          title: `New ${eventType.name}`,
+                          title: `${t('common.new')} ${eventType.name}`,
                           url: `/events/create?type=${slug}`,
                           icon: Plus,
                         },
@@ -300,51 +302,51 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
 
         {/* Settings section at the bottom */}
         <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.settings')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
 
               <CollapsibleNavSection
-                name="Parish Settings"
+                name={t('nav.parishSettings')}
                 icon={Church}
                 items={[
                   {
-                    title: "General",
+                    title: t('nav.general'),
                     url: "/settings/parish/general",
                     icon: Settings,
                   },
                   {
-                    title: "Event Types",
+                    title: t('nav.eventTypes'),
                     url: "/settings/event-types",
                     icon: CalendarDays,
                   },
                   {
-                    title: "Content Library",
+                    title: t('nav.contentLibrary'),
                     url: "/settings/content-library",
                     icon: Library,
                   },
                   {
-                    title: "Category Tags",
+                    title: t('nav.categoryTags'),
                     url: "/settings/category-tags",
                     icon: Tag,
                   },
                   {
-                    title: "Custom Lists",
+                    title: t('nav.customLists'),
                     url: "/settings/custom-lists",
                     icon: List,
                   },
                   {
-                    title: "Mass Intentions",
+                    title: t('nav.massIntentions'),
                     url: "/settings/parish/mass-intentions",
                     icon: ScrollText,
                   },
                   {
-                    title: "Petitions",
+                    title: t('nav.petitions'),
                     url: "/settings/parish/petitions",
                     icon: FileText,
                   },
                   {
-                    title: "Users",
+                    title: t('nav.users'),
                     url: "/settings/parish/users",
                     icon: Users,
                   },
@@ -353,11 +355,11 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name="User Settings"
+                name={t('nav.userSettings')}
                 icon={User}
                 items={[
                   {
-                    title: "General",
+                    title: t('nav.general'),
                     url: "/settings/user",
                     icon: Settings,
                   },
@@ -369,7 +371,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/support" onClick={handleLinkClick}>
                     <HelpCircle />
-                    <span>Support</span>
+                    <span>{t('nav.support')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
