@@ -1,14 +1,15 @@
 # Viewable Routes
 
-> **Note:** This content is generated from the `npm run build` process output. Routes marked with different symbols indicate their rendering strategy. Last updated: 2025-12-12.
+> **Note:** This document lists the primary viewable routes in Outward Sign. Routes marked with different symbols indicate their rendering strategy.
+>
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments and parish events (Weddings, Funerals, Baptisms, etc.) are all managed through the Events module with dynamic Event Types.
 
 ## Route Legend
 
 | Symbol | Type | Description |
 |--------|------|-------------|
 | ○ | Static | Prerendered as static content |
-| ƒ | Dynamic | Prerendered as static HTML (uses 'loading' UI for dynamic server-rendering) |
-| λ | Dynamic | Server-rendered on demand |
+| ƒ | Dynamic | Server-rendered on demand |
 
 ---
 
@@ -28,55 +29,22 @@
 | `/` | ○ | Home/landing page |
 | `/dashboard` | ƒ | Main dashboard |
 | `/calendar` | ƒ | Parish calendar view |
+| `/weekend-summary` | ƒ | Weekend summary view |
 
 ---
 
-## Sacraments & Sacramentals
+## Events (Unified System)
 
-### Weddings
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/weddings` | ƒ | Wedding list |
-| `/weddings/create` | ƒ | Create wedding |
-| `/weddings/[id]` | ƒ | View wedding |
-| `/weddings/[id]/edit` | ƒ | Edit wedding |
-
-### Baptisms
+All sacraments and parish events are managed through the Events module with dynamic Event Types.
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/baptisms` | ƒ | Baptism list |
-| `/baptisms/create` | ƒ | Create baptism |
-| `/baptisms/[id]` | ƒ | View baptism |
-| `/baptisms/[id]/edit` | ƒ | Edit baptism |
+| `/events` | ƒ | Event list (filterable by Event Type) |
+| `/events/create` | ƒ | Event type selector / create event |
+| `/events/[event_type_id]/[id]` | ƒ | View event |
+| `/events/[event_type_id]/[id]/edit` | ƒ | Edit event |
 
-### Funerals
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/funerals` | ƒ | Funeral list |
-| `/funerals/create` | ƒ | Create funeral |
-| `/funerals/[id]` | ƒ | View funeral |
-| `/funerals/[id]/edit` | ƒ | Edit funeral |
-
-### Quinceañeras
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/quinces` | ƒ | Quinceañera list |
-| `/quinces/create` | ƒ | Create quinceañera |
-| `/quinces/[id]` | ƒ | View quinceañera |
-| `/quinces/[id]/edit` | ƒ | Edit quinceañera |
-
-### Presentations
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/presentations` | ƒ | Presentation list |
-| `/presentations/create` | ƒ | Create presentation |
-| `/presentations/[id]` | ƒ | View presentation |
-| `/presentations/[id]/edit` | ƒ | Edit presentation |
+**Note:** Event Types (Wedding, Funeral, Baptism, Bible Study, etc.) are configured in Settings. Events are accessed via `/events?type=[slug]` for filtered lists.
 
 ---
 
@@ -88,6 +56,7 @@
 |-------|------|-------------|
 | `/masses` | ƒ | Mass list |
 | `/masses/create` | ƒ | Create mass |
+| `/masses/schedule` | ƒ | Mass scheduling wizard |
 | `/masses/[id]` | ƒ | View mass |
 | `/masses/[id]/edit` | ƒ | Edit mass |
 
@@ -106,15 +75,12 @@
 | Route | Type | Description |
 |-------|------|-------------|
 | `/mass-roles` | ƒ | Mass role list |
-| `/mass-roles/create` | ƒ | Create mass role |
-| `/mass-roles/[id]` | ƒ | View mass role |
-| `/mass-roles/[id]/edit` | ƒ | Edit mass role |
 
 ### Mass Role Members
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/mass-role-members` | ƒ | Mass role members scheduling |
+| `/mass-role-members` | ƒ | Mass role members directory |
 
 ### Mass Role Templates
 
@@ -122,7 +88,6 @@
 |-------|------|-------------|
 | `/mass-role-templates` | ƒ | Mass role template list |
 | `/mass-role-templates/create` | ƒ | Create mass role template |
-| `/mass-role-templates/[id]` | ƒ | View mass role template |
 | `/mass-role-templates/[id]/edit` | ƒ | Edit mass role template |
 
 ### Mass Times Templates
@@ -131,23 +96,11 @@
 |-------|------|-------------|
 | `/mass-times-templates` | ƒ | Mass times template list |
 | `/mass-times-templates/create` | ƒ | Create mass times template |
-| `/mass-times-templates/[id]` | ƒ | View mass times template |
 | `/mass-times-templates/[id]/edit` | ƒ | Edit mass times template |
 
 ---
 
-## Events
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/events` | ƒ | Event list |
-| `/events/create` | ƒ | Create event |
-| `/events/[id]` | ƒ | View event |
-| `/events/[id]/edit` | ƒ | Edit event |
-
----
-
-## People & Groups
+## People & Families
 
 ### People
 
@@ -167,14 +120,14 @@
 | `/families/[id]` | ƒ | View family |
 | `/families/[id]/edit` | ƒ | Edit family |
 
-### Groups
+---
+
+## Groups
 
 | Route | Type | Description |
 |-------|------|-------------|
 | `/groups` | ƒ | Group list |
-| `/groups/create` | ƒ | Create group |
-| `/groups/[id]` | ƒ | View group |
-| `/groups/[id]/edit` | ƒ | Edit group |
+| `/groups/[id]` | ƒ | View group (dialog-based editing) |
 
 ---
 
@@ -189,19 +142,11 @@
 
 ---
 
-## Reports
-
-| Route | Type | Description |
-|-------|------|-------------|
-| `/sacramental-report` | ƒ | Sacramental report builder |
-
----
-
 ## Settings
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/settings` | ƒ | Settings overview |
+| `/settings` | ƒ | Settings hub |
 
 ### Event Types
 
@@ -209,8 +154,9 @@
 |-------|------|-------------|
 | `/settings/event-types` | ƒ | Event types list |
 | `/settings/event-types/create` | ƒ | Create event type |
-| `/settings/event-types/[slug]` | ƒ | View/edit event type |
-| `/settings/event-types/[slug]/form-builder` | ƒ | Event type form builder |
+| `/settings/event-types/[slug]` | ƒ | View event type |
+| `/settings/event-types/[slug]/fields` | ƒ | Event type custom fields |
+| `/settings/event-types/[slug]/scripts` | ƒ | Event type scripts |
 
 ### Category Tags
 
@@ -218,7 +164,6 @@
 |-------|------|-------------|
 | `/settings/category-tags` | ƒ | Category tag list |
 | `/settings/category-tags/create` | ƒ | Create category tag |
-| `/settings/category-tags/[id]` | ƒ | View category tag |
 | `/settings/category-tags/[id]/edit` | ƒ | Edit category tag |
 
 ### Content Library
@@ -236,15 +181,33 @@
 |-------|------|-------------|
 | `/settings/custom-lists` | ƒ | Custom lists |
 | `/settings/custom-lists/create` | ƒ | Create custom list |
-| `/settings/custom-lists/[id]` | ƒ | View custom list |
-| `/settings/custom-lists/[id]/edit` | ƒ | Edit custom list |
+| `/settings/custom-lists/[slug]` | ƒ | View/edit custom list |
 
 ### Petitions
 
 | Route | Type | Description |
 |-------|------|-------------|
+| `/settings/petitions` | ƒ | Petitions list |
+| `/settings/petitions/create` | ƒ | Create petition |
 | `/settings/petitions/default` | ƒ | Default petitions |
 | `/settings/petitions/contexts` | ƒ | Petition contexts |
+| `/settings/petitions/[id]` | ƒ | View petition |
+| `/settings/petitions/[id]/edit` | ƒ | Edit petition |
+
+### Parish Settings
+
+| Route | Type | Description |
+|-------|------|-------------|
+| `/settings/parish/general` | ƒ | Parish general settings |
+| `/settings/parish/users` | ƒ | Parish users management |
+| `/settings/parish/mass-intentions` | ƒ | Mass intentions settings |
+| `/settings/parish/petitions` | ƒ | Parish petitions settings |
+
+### User Settings
+
+| Route | Type | Description |
+|-------|------|-------------|
+| `/settings/user` | ƒ | User preferences |
 
 ---
 
@@ -263,7 +226,7 @@
 |-------|------|-------------|
 | `/parishioner` | ƒ | Parishioner portal home |
 | `/parishioner/calendar` | ƒ | Parishioner calendar |
-| `/parishioner/chat` | ƒ | Parishioner chat |
+| `/parishioner/chat` | ƒ | Parishioner AI chat |
 | `/parishioner/notifications` | ƒ | Parishioner notifications |
 
 ---
@@ -277,7 +240,7 @@
 | `/onboarding/join` | ƒ | Join parish |
 | `/onboarding/join/[invitationId]` | ƒ | Accept invitation |
 | `/onboarding/pending` | ƒ | Pending approval |
-| `/onboarding/select` | ○ | Select parish |
+| `/select-parish` | ○ | Select parish |
 
 ---
 
@@ -285,15 +248,18 @@
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/print/[module]/[id]` | λ | Print view for any module |
+| `/print/masses/[id]` | ƒ | Print mass |
+| `/print/events/[type]/[id]` | ƒ | Print event |
+| `/print/weekend-summary` | ƒ | Print weekend summary |
 
 ---
 
-## Development/Testing
+## Support & Testing
 
 | Route | Type | Description |
 |-------|------|-------------|
-| `/testing` | ƒ | Testing utilities page |
+| `/support` | ƒ | Support page |
+| `/testing` | ƒ | Testing utilities |
 | `/testing/pickers` | ƒ | Picker component testing |
 | `/tests/error` | ƒ | Error state testing |
 | `/tests/loading` | ƒ | Loading state testing |
@@ -305,17 +271,16 @@
 | Category | Count |
 |----------|-------|
 | Authentication | 2 |
-| Dashboard & Calendar | 3 |
-| Sacraments (Weddings, Baptisms, Funerals, Quinces, Presentations) | 20 |
-| Mass Management | 24 |
-| Events | 4 |
-| People & Groups | 12 |
+| Dashboard & Calendar | 4 |
+| Events (unified system) | 4 |
+| Mass Management | 17 |
+| People & Families | 8 |
+| Groups | 2 |
 | Locations | 4 |
-| Reports | 1 |
-| Settings | 17 |
+| Settings | 25 |
 | Documentation | 2 |
 | Parishioner Portal | 4 |
 | Onboarding | 6 |
-| Print Views | 1 |
-| Development/Testing | 4 |
-| **Total Viewable Routes** | **104** |
+| Print Views | 3 |
+| Support & Testing | 5 |
+| **Total Viewable Routes** | **~86** |

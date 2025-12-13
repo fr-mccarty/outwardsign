@@ -3,7 +3,7 @@
 > **Purpose:** Detailed styling patterns and implementation examples for specific contexts.
 > **General Principles:** See [CLAUDE.md](./CLAUDE.md) § Styling for high-level guidelines.
 >
-> **⚠️ File Size Note:** This file is approaching the 1000-line limit (currently 856 lines). File is well-organized with useful examples. Monitor for growth and consider splitting if content exceeds 950 lines.
+> **⚠️ File Size Note:** This file has reached the 1000-line threshold (currently ~960 lines). Consider splitting into separate files if adding more content. Candidates for extraction: Homepage Styling, Module Styling, or Common Mistakes sections.
 
 ---
 
@@ -15,6 +15,7 @@
 - [Button Styling](#button-styling)
 - [Typography Patterns](#typography-patterns)
 - [Color Token Reference](#color-token-reference)
+- [Spacing Scale Usage](#spacing-scale-usage)
 - [Common Mistakes](#common-mistakes)
 
 ---
@@ -607,21 +608,37 @@ Styling patterns for CRUD modules (weddings, funerals, presentations, etc.).
 
 ### Heading Hierarchy
 
+Standard heading sizes for different contexts across the application:
+
+| Context | Class | Example Usage |
+|---------|-------|---------------|
+| Page title (PageContainer) | `text-3xl font-bold` | "Our People", "Weddings" |
+| Hero title (Homepage) | `text-4xl md:text-6xl font-bold tracking-tight` | Marketing headlines |
+| Section heading | `text-2xl font-semibold` | "Upcoming Events", "Recent Activity" |
+| Card title | `text-lg font-semibold` | FormSectionCard titles |
+| Subsection title | `text-base font-medium` | SearchCard titles, form section labels |
+| Inline heading | `text-sm font-medium` | Field group labels |
+
+**Code Examples:**
+
 ```tsx
-// Page title (hero)
+// Page title (PageContainer handles this automatically)
+<h1 className="text-3xl font-bold">Our People</h1>
+
+// Hero title (homepage only)
 <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
 
 // Section heading
-<h2 className="text-3xl md:text-4xl font-bold">
-
-// Subsection heading
-<h3 className="text-2xl md:text-3xl font-bold">
+<h2 className="text-2xl font-semibold">Upcoming Events</h2>
 
 // Card title
-<h3 className="text-xl font-semibold">
+<h3 className="text-lg font-semibold">Wedding Details</h3>
+
+// Subsection title
+<h4 className="text-base font-medium">Search Weddings</h4>
 
 // Small heading
-<h4 className="text-lg font-semibold">
+<h5 className="text-sm font-medium">Contact Information</h5>
 ```
 
 ### Body Text
@@ -721,6 +738,79 @@ These work on any background:
 
 - `ring-ring` - Focus ring color
 - `focus-visible:ring-2 focus-visible:ring-ring` - Standard focus style
+
+---
+
+## Spacing Scale Usage
+
+Standard spacing values for consistent layout across the application.
+
+### Section Spacing (Vertical)
+
+| Context | Class | Pixels | Usage |
+|---------|-------|--------|-------|
+| Major page sections | `space-y-6` | 24px | Between main content blocks in PageContainer |
+| Card content sections | `space-y-4` | 16px | Between groups within a card |
+| Form fields | `space-y-4` | 16px | Between form field groups |
+| List items | `space-y-3` | 12px | Between items in a list |
+| Compact lists | `space-y-2` | 8px | Tight item spacing (e.g., checkbox lists) |
+
+### Grid/Flex Gaps
+
+| Context | Class | Pixels | Usage |
+|---------|-------|--------|-------|
+| Primary grid layouts | `gap-6` | 24px | Main content grids (cards, sections) |
+| Secondary layouts | `gap-4` | 16px | Inner card grids, form layouts |
+| Compact grids | `gap-3` | 12px | Button groups, tight card grids |
+| Inline elements | `gap-2` | 8px | Icon + text, badges |
+
+### Component Padding
+
+| Component | Class | Notes |
+|-----------|-------|-------|
+| PageContainer | `p-6 pb-12` | Standard page padding |
+| ContentCard | `py-6` | Vertical padding via CardContent |
+| SearchCard | `py-5 px-6` | Compact vertical for search sections |
+| EmptyState | `py-12` | Extra vertical for visual weight |
+| Form action row | `pt-6` | Space before Save/Cancel buttons |
+
+### Empty State Icon Sizes
+
+| Context | Class | Usage |
+|---------|-------|-------|
+| Full-page empty state | `h-16 w-16` | Main empty state in PageContainer |
+| Card empty state | `h-12 w-12` | Empty state within a card |
+| Inline/compact | `h-8 w-8` | Dashboard sections, small areas |
+
+**Code Examples:**
+
+```tsx
+// Page-level spacing
+<PageContainer>
+  <div className="space-y-6">
+    <SearchCard>...</SearchCard>
+    <DataTable>...</DataTable>
+    <ListStatsBar>...</ListStatsBar>
+  </div>
+</PageContainer>
+
+// Card content spacing
+<CardContent className="space-y-4">
+  <div>Section 1</div>
+  <div>Section 2</div>
+</CardContent>
+
+// Grid layout
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {items.map(item => <Card key={item.id}>...</Card>)}
+</div>
+
+// Button group
+<div className="flex gap-3 justify-end">
+  <Button variant="outline">Cancel</Button>
+  <Button>Save</Button>
+</div>
+```
 
 ---
 

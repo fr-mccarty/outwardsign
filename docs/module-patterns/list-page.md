@@ -4,6 +4,8 @@
 >
 > This document covers patterns for the list page (server) and list client components that form the foundation of module list views in Outward Sign.
 
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments are Event Types, not separate modules. Code examples may use older patterns for illustration. **Reference Implementation:** Masses module (`src/app/(main)/masses/`).
+
 ## Table of Contents
 
 - [Overview](#overview)

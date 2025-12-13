@@ -18,10 +18,8 @@ import {
   FileText,
   Calendar,
   Settings,
-  Church,
-  User, Users, Users2, CirclePlus, Plus, List,
+  User, Users, Users2, CirclePlus, Plus,
   CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText,
-  Library, Tag
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -306,66 +304,14 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
 
-              <CollapsibleNavSection
-                name={t('nav.parishSettings')}
-                icon={Church}
-                items={[
-                  {
-                    title: t('nav.general'),
-                    url: "/settings/parish/general",
-                    icon: Settings,
-                  },
-                  {
-                    title: t('nav.eventTypes'),
-                    url: "/settings/event-types",
-                    icon: CalendarDays,
-                  },
-                  {
-                    title: t('nav.contentLibrary'),
-                    url: "/settings/content-library",
-                    icon: Library,
-                  },
-                  {
-                    title: t('nav.categoryTags'),
-                    url: "/settings/category-tags",
-                    icon: Tag,
-                  },
-                  {
-                    title: t('nav.customLists'),
-                    url: "/settings/custom-lists",
-                    icon: List,
-                  },
-                  {
-                    title: t('nav.massIntentions'),
-                    url: "/settings/parish/mass-intentions",
-                    icon: ScrollText,
-                  },
-                  {
-                    title: t('nav.petitions'),
-                    url: "/settings/parish/petitions",
-                    icon: FileText,
-                  },
-                  {
-                    title: t('nav.users'),
-                    url: "/settings/parish/users",
-                    icon: Users,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <CollapsibleNavSection
-                name={t('nav.userSettings')}
-                icon={User}
-                items={[
-                  {
-                    title: t('nav.general'),
-                    url: "/settings/user",
-                    icon: Settings,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              <SidebarMenuItem key="Settings">
+                <SidebarMenuButton asChild>
+                  <Link href="/settings" onClick={handleLinkClick}>
+                    <Settings />
+                    <span>{t('nav.settings')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
               <SidebarMenuItem key="Support">
                 <SidebarMenuButton asChild>

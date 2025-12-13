@@ -493,7 +493,7 @@
     "userPreferencesDescription": "Customize your language, liturgical preferences, and default settings.",
     "configurePreferences": "Configure Preferences",
     "eventTypes": "Event Types",
-    "eventTypesDescription": "Manage custom event types for your parish. Drag to reorder.",
+    "eventTypesDescription": "Define custom event categories for parish activities. Each event type becomes a template with its own fields and settings.",
     "manageEventTypes": "Manage Event Types",
     "customLists": "Custom Lists",
     "customListsDescription": "Manage custom lists for event field options like songs, readings, or locations.",
@@ -512,5 +512,23 @@
     "manageCategoryTags": "Manage Category Tags",
     "unableToLoadSettings": "Unable to Load Settings",
     "errorLoadingSettings": "There was an error loading your settings. Please try again later."
+  },
+  "eventTypes": {
+    "title": "Event Types",
+    "description": "Manage your parish's event categories",
+    "explanation": "Event Types define the categories of events your parish can schedule. Create types for sacraments (Weddings, Baptisms, Funerals), parish activities (Bible Study, Youth Group), or any recurring event your parish needs.",
+    "examples": "Examples: Wedding, Baptism, Funeral, Parish Meeting, Bible Study, Youth Group, RCIA Session",
+    "howItWorks": "When you create an Event Type, you're creating a template. You can then add custom fields, configure settings, and create printable scripts. Every event created with this type will inherit these settings.",
+    "dragToReorder": "Drag to reorder how event types appear in menus.",
+    "noEventTypes": "No event types yet",
+    "noEventTypesMessage": "Create an event type to start scheduling parish events. Event types define categories like \"Wedding\", \"Funeral\", \"Bible Study\", or any other recurring event your parish needs.",
+    "createTitle": "Create Event Type",
+    "createDescription": "Create a new event category for your parish",
+    "createExplanation": "You're creating a new event category. After creation, you can add custom fields (like \"Topic\" or \"Room Number\") and configure scripts for printing.",
+    "nameLabel": "Event Type Name",
+    "namePlaceholder": "e.g., Parish Meeting, Bible Study, Youth Group",
+    "nameHelp": "Choose a clear, descriptive name. This will appear in dropdown menus when staff create new events.",
+    "iconLabel": "Icon",
+    "iconHelp": "Choose an icon to help visually identify this event type in lists and calendars."
   }
 }

@@ -2,6 +2,8 @@
 
 This document provides comprehensive architectural patterns and guidelines for Outward Sign. It covers data architecture, data flow patterns, authentication, component communication, and performance optimization.
 
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments and parish events (Weddings, Funerals, Baptisms, etc.) are all configured as **Event Types** through the Settings UI - they are NOT separate code modules. Some code examples in this document may reference the older pattern for illustration purposes, but the patterns themselves remain valid.
+
 ---
 
 ## Table of Contents
@@ -34,7 +36,7 @@ This document provides comprehensive architectural patterns and guidelines for O
 
 **Database tables:** plural form
 ```
-petitions, baptisms, weddings, funerals
+events, masses, people, locations, groups
 ```
 
 **Database columns:** singular form
@@ -45,8 +47,9 @@ status (not statuses)
 
 **TypeScript interfaces:** singular form
 ```typescript
-interface Petition { }
-interface Baptism { }
+interface Event { }
+interface Mass { }
+interface Person { }
 ```
 
 **React state variables:** Match database column names (singular form)
@@ -76,14 +79,14 @@ const [notes, setNotes] = useState('')  // for a 'note' column
 - Can invite all role types
 
 **Staff:**
-- Can create, read, update, and delete all sacrament/event modules (weddings, funerals, baptisms, masses, presentations, quinceañeras, groups, etc.)
+- Can create, read, update, and delete all event modules (Events, Masses, Groups, etc.)
 - **Cannot access Mass Intentions** (admin-only)
 - Can invite parishioners to parish
 - Cannot manage parish settings
 
 **Ministry-Leader:**
 - Configurable per-user module access
-- When inviting someone as a ministry-leader, admin/staff selects which specific modules (masses, groups, weddings, etc.) they can access
+- When inviting someone as a ministry-leader, admin/staff selects which specific modules they can access
 - Limited to assigned modules only
 
 **Parishioner:**

@@ -2,19 +2,55 @@
 
 > **Purpose:** Central reference for all modules in Outward Sign, including routes, labels, and internationalization.
 >
-> **Note:** This registry preserves module metadata that was previously in `constants.ts` but is kept here for documentation and future i18n needs.
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments and parish events (Weddings, Funerals, Baptisms, Bible Study, etc.) are all created as **Event Types** through the Settings UI - they are NOT separate code modules.
 
 ---
 
 ## Table of Contents
 
+- [Architecture Overview](#architecture-overview)
 - [Main Sidebar Navigation Structure](#main-sidebar-navigation-structure)
-- [Primary Modules](#primary-modules)
+- [Core Modules](#core-modules)
 - [Supporting Modules](#supporting-modules)
+- [Mass Scheduling Modules](#mass-scheduling-modules)
+- [Settings Modules](#settings-modules)
 - [Module Status Constants](#module-status-constants)
 - [Module Labels (Internationalization)](#module-labels-internationalization)
 - [Module Icons](#module-icons)
 - [Module Routes](#module-routes)
+- [Module Database Tables](#module-database-tables)
+
+---
+
+## Architecture Overview
+
+### Unified Event Types System
+
+Outward Sign uses a **unified Event Types architecture** where all sacraments and parish events are managed through configurable Event Types:
+
+- **Event Types** are created by parish administrators in Settings > Event Types
+- Each Event Type (Wedding, Funeral, Baptism, Bible Study, etc.) can have custom fields, scripts, and templates
+- **Events** are instances of Event Types - e.g., "Smith-Jones Wedding" is an Event of type "Wedding"
+- All events are accessed through `/events/[event_type_slug]/[id]`
+
+**There are NO separate code modules for Weddings, Funerals, Baptisms, etc.** These are all Event Types configured through the UI.
+
+### Code Modules vs Event Types
+
+| Concept | Description | Examples |
+|---------|-------------|----------|
+| **Code Modules** | Distinct functionality requiring separate code | Masses, People, Locations, Groups, Families |
+| **Event Types** | User-configured event categories (no code changes) | Wedding, Funeral, Baptism, Bible Study, Youth Group, RCIA |
+
+**When to create a new Code Module:**
+- Fundamentally different data model (not just different fields)
+- Unique workflows not supported by Events
+- Special integrations (e.g., Masses with liturgical calendar)
+
+**When to create a new Event Type:**
+- Any sacrament or parish event
+- Any recurring activity that needs scheduling
+- Anything that needs custom fields, scripts, or templates
 
 ---
 
@@ -22,296 +58,263 @@
 
 **Source:** `src/components/main-sidebar.tsx`
 
-The main sidebar follows a specific ordering and grouping structure. All navigation items are organized under the "Application" group.
-
 ### Navigation Order
 
-1. **Dashboard** (`/dashboard`) - Always visible, no permission check
-2. **Calendar** (`/calendar?view=month`) - Always visible, no permission check
+1. **Dashboard** (`/dashboard`) - Always visible
+2. **Calendar** (`/calendar?view=month`) - Always visible
 3. **Events** (Collapsible Section) - Always visible
    - Our Events (`/events`)
    - Create Event (`/events/create`)
-4. **Locations** (Collapsible Section) - Always visible
+4. **Groups** (Collapsible Section) - Always visible
+   - Our Groups (`/groups`)
+   - New Group (`/groups`)
+5. **Locations** (Collapsible Section) - Always visible
    - Our Locations (`/locations`)
    - New Location (`/locations/create`)
-5. **Readings** (Collapsible Section) - Always visible
-   - Our Readings (`/readings`)
-   - Create Reading (`/readings/create`)
-6. **Masses** (Collapsible Section) - Permission check: `canAccess('masses')`
-   - Our Masses (`/masses`)
-   - New Mass (`/masses/create`)
-7. **Mass Scheduling** (Collapsible Section) - Permission check: `canAccess('masses')`
+6. **Mass Intentions** (Collapsible Section)
+   - Our Mass Intentions (`/mass-intentions`)
+   - Create Mass Intention (`/mass-intentions/create`)
+   - Report (`/mass-intentions/report`)
+7. **Mass Scheduling** (Collapsible Section)
    - Schedule Masses (`/masses/schedule`)
    - Mass Times Templates (`/mass-times-templates`)
-   - Mass Types (`/mass-types`)
    - Mass Role Templates (`/mass-role-templates`)
    - Mass Roles (`/mass-roles`)
    - Role Members (`/mass-role-members`)
-8. **Weddings** (Collapsible Section) - Permission check: `canAccess('weddings')`
-   - Our Weddings (`/weddings`)
-   - New Wedding (`/weddings/create`)
-9. **Funerals** (Collapsible Section) - Permission check: `canAccess('funerals')`
-   - Our Funerals (`/funerals`)
-   - New Funeral (`/funerals/create`)
-10. **Presentations** (Collapsible Section) - Permission check: `canAccess('presentations')`
-    - Our Presentations (`/presentations`)
-    - New Presentation (`/presentations/create`)
-11. **People** (Collapsible Section) - Always visible
-    - Our People (`/people`)
-    - Create Person (`/people/create`)
-12. **Groups** (Collapsible Section) - Permission check: `canAccess('groups')`
-    - Our Groups (`/groups`)
-    - New Group (`/groups`)
-13. **Mass Intentions** (Collapsible Section) - Permission check: `canAccess('mass-intentions')`
-    - Our Mass Intentions (`/mass-intentions`)
-    - Create Mass Intention (`/mass-intentions/create`)
-    - Report (`/mass-intentions/report`)
-14. **Baptisms** (Collapsible Section) - Permission check: `canAccess('baptisms')`
-    - Our Baptisms (`/baptisms`)
-    - New Baptisms (`/baptisms/create`)
-15. **Group Baptisms** (Collapsible Section) - Permission check: `canAccess('group-baptisms')`
-    - Our Group Baptisms (`/group-baptisms`)
-    - New Group Baptism (`/group-baptisms/create`)
-16. **Quinceañeras** (Collapsible Section) - Permission check: `canAccess('quinceaneras')`
-    - Our Quinceañeras (`/quinceaneras`)
-    - New Quinceañera (`/quinceaneras/create`)
+8. **Masses** (Collapsible Section)
+   - Our Masses (`/masses`)
+   - New Mass (`/masses/create`)
+9. **People** (Collapsible Section) - Always visible
+   - Our People (`/people`)
+   - Create Person (`/people/create`)
+10. **Families** (Collapsible Section) - Always visible
+    - Our Families (`/families`)
+    - Create Family (`/families/create`)
+11. **Weekend Summary** (`/weekend-summary`) - Always visible
 
-### Settings Section (Bottom of Sidebar)
+### Dynamic Event Types Section
 
-Separate from the main "Application" group, settings appear in their own group at the bottom:
+When Event Types are configured, they appear in a separate "Event Types" section:
+- Each Event Type gets its own collapsible section
+- Links to filtered events list (`/events?type=[slug]`)
+- Links to create event of that type (`/events/create?type=[slug]`)
 
-- **Parish Settings** (`/settings/parish`) - Permission check: `canManageParishSettings(userParish)` - Admin only
-  - Event Types (`/settings/event-types`) - User-configurable event type management
-- **User Settings** (`/settings`) - Always visible
+### Settings Section
 
-### Ordering Principles
-
-1. **Core Navigation First** - Dashboard and Calendar appear first as the most frequently accessed pages
-2. **Supporting Modules Early** - Events, Locations, and Readings appear before sacramental modules because they provide foundational data
-3. **Masses Module Prominence** - Masses module appears before other sacramental modules due to its central importance in parish life
-4. **Sacramental Modules Grouped** - Weddings, Funerals, and Presentations appear consecutively
-5. **People Before Groups** - People module (foundational data) appears before Groups module (uses people data)
-6. **Administrative Last** - Mass Intentions, Baptisms, and Quinceañeras appear toward the end
-7. **Settings Separated** - Settings section is visually separated at the bottom
-
-### Permission-Based Display
-
-- **Always Visible:** Dashboard, Calendar, Events, Locations, Readings, People, User Settings
-- **Permission-Gated:** Masses, Mass Scheduling, Weddings, Funerals, Presentations, Groups, Mass Intentions, Baptisms, Group Baptisms, Quinceañeras
-- **Admin-Only:** Parish Settings
-
-**Note:** All permission checks use the `canAccessModule(userParish, moduleName)` helper function from `@/lib/auth/permissions-client`.
+- **Settings** (`/settings`) - Hub page with all settings
+- **Support** (`/support`)
 
 ---
 
-## Primary Modules
+## Core Modules
 
-**Primary modules** are the core sacramental and liturgical modules in Outward Sign. Each primary module follows the standard 9-file architecture pattern.
+### Events Module
 
-### List of Primary Modules
+**Purpose:** Unified system for all parish events and sacraments
 
-1. **Weddings** - Wedding celebrations and ceremonies
-2. **Funerals** - Funeral liturgies and services
-3. **Baptisms** - Individual baptism celebrations
-4. **Group Baptisms** - Group baptism celebrations with multiple children baptized together
-5. **Presentations** - Presentation of children in the temple (Latino tradition)
-6. **Quinceañeras** - Quinceañera celebrations
-7. **Masses** - Mass celebrations with optional event type templating for custom fields and scripts
-8. **Mass Intentions** - Mass intention requests and tracking *(Admin-only, not available for staff or ministry-leader roles)*
+**Route:** `/events`
 
-### Planned Modules (Not Yet Implemented)
+**Architecture:**
+- Uses dynamic Event Types configured in Settings
+- All sacraments (Weddings, Funerals, Baptisms) are Event Types
+- All parish activities (Bible Study, Youth Group) are Event Types
+- Single codebase handles all event types
 
-- **Confirmations** - Confirmation celebrations
+**Key Files:**
+- `src/app/(main)/events/page.tsx` - List page
+- `src/app/(main)/events/[event_type_id]/[id]/page.tsx` - View page
+- `src/app/(main)/events/events-list-client.tsx` - List client
+
+### Masses Module
+
+**Purpose:** Mass celebrations with liturgical calendar integration
+
+**Route:** `/masses`
+
+**Architecture:**
+- Separate module due to unique requirements (scheduling wizard, role assignment, liturgical calendar)
+- Can optionally use Event Types for custom fields and scripts via `event_type_id`
+- Mass-specific features not available in generic Events
+
+**Key Features:**
+- Mass scheduling wizard
+- Role assignment (Lector, EMHC, Altar Server, etc.)
+- Liturgical calendar integration
+- Optional Event Type templating for custom fields
+
+### Mass Intentions Module
+
+**Purpose:** Track and manage Mass intention requests
+
+**Route:** `/mass-intentions`
+
+**Architecture:**
+- Standalone module for intention workflow
+- Links to Masses when intentions are fulfilled
+- Report generation for stipend tracking
 
 ---
 
 ## Supporting Modules
 
-**Supporting modules** provide foundational data and functionality for primary modules. Some use different architectural patterns.
+### People Module
 
-1. **People** - Parish directory and person management
-2. **Events** - Event scheduling and calendar
-3. **Event Types** - User-configurable event types for the Events module (settings-based, dialog architecture)
-4. **Locations** - Parish locations and venues
-5. **Groups** - Ministry groups and teams (uses dialog-based architecture)
-6. **Readings** - Scripture readings for liturgies
-7. **Petitions** - Prayer intentions and petitions
+**Purpose:** Parish directory and person management
 
-### Mass Scheduling Supporting Modules
+**Route:** `/people`
 
-These modules support the Mass Scheduling functionality and appear under the "Mass Scheduling" collapsible section in the sidebar:
+**Key Features:**
+- Contact information
+- Family relationships
+- Ministry participation tracking
+- Full name generation (database computed field)
 
-1. **Mass Times Templates** - Recurring mass schedule templates (weekly schedules)
-2. **Mass Types** - Mass type categorization (Sunday, Weekday, Holy Day, etc.)
-3. **Mass Role Templates** - Reusable role templates for different liturgical contexts
-4. **Mass Roles** - Parish-specific mass role definitions (Lector, EMHC, Altar Server, etc.)
-5. **Mass Role Members** - Member directory for people serving in mass roles with preferences and availability
+### Families Module
+
+**Purpose:** Family unit management
+
+**Route:** `/families`
+
+**Key Features:**
+- Family groupings
+- Head of household designation
+- Address management
+
+### Locations Module
+
+**Purpose:** Parish locations and venues
+
+**Route:** `/locations`
+
+**Key Features:**
+- Venue management (Church, Hall, Chapel, etc.)
+- Address and capacity information
+- Used by Events, Masses, and other modules
+
+### Groups Module
+
+**Purpose:** Ministry groups and teams
+
+**Route:** `/groups`
+
+**Architecture:** Uses dialog-based editing (not standard 8-file pattern)
+
+**Key Features:**
+- Ministry group management
+- Member assignment
+- Role tracking within groups
 
 ---
 
-## Parishioner Portal
+## Mass Scheduling Modules
 
-**The Parishioner Portal is a separate web application for parishioners** (not parish staff). It provides a simple, mobile-friendly interface for parishioners to view their ministry schedules, communicate with an AI assistant, and receive notifications.
+These modules support the Mass Scheduling functionality:
 
-**Access:** `/parishioner/*` routes (separate from main staff application)
+### Mass Times Templates
 
-**Authentication:** Magic link via email (separate from Supabase Auth used by staff)
+**Route:** `/mass-times-templates`
+
+**Purpose:** Recurring mass schedule templates (weekly schedules)
+
+### Mass Role Templates
+
+**Route:** `/mass-role-templates`
+
+**Purpose:** Reusable role templates for different liturgical contexts
+
+### Mass Roles
+
+**Route:** `/mass-roles`
+
+**Purpose:** Parish-specific mass role definitions (Lector, EMHC, Altar Server, etc.)
+
+### Mass Role Members
+
+**Route:** `/mass-role-members`
+
+**Purpose:** Member directory for people serving in mass roles
+
+---
+
+## Settings Modules
+
+### Event Types
+
+**Route:** `/settings/event-types`
+
+**Purpose:** Configure event categories for the Events module
 
 **Key Features:**
-1. **Calendar Tab** - View ministry schedule and parish events
-2. **Chat Tab** - AI assistant powered by Claude API
-3. **Notifications Tab** - Receive and manage notifications from ministry coordinators
+- Create event types (Wedding, Funeral, Baptism, Bible Study, etc.)
+- Define custom fields per event type
+- Configure scripts and templates
+- Set icons and display order
 
-**Purpose:**
-- Give parishioners visibility into their ministry commitments
-- Reduce "When am I scheduled?" questions to coordinators
-- Enable AI-powered assistance for schedule management
-- Provide mobile-friendly access without requiring app download
+### Content Library
 
-**Target Users:**
-- Ministry volunteers (lectors, EMHCs, altar servers, cantors, ushers, music ministers)
-- Family members viewing shared events
-- Parishioners with limited technical expertise
+**Route:** `/settings/content-library`
 
-**Architecture:**
-- Responsive web app (works on desktop, tablet, mobile browsers)
-- Progressive Web App (PWA) - can be added to home screen
-- Separate authentication system (HTTP-only cookies, not Supabase Auth)
-- Parish-scoped access via URL parameter
+**Purpose:** Reusable content (readings, prayers, blessings)
 
-**For complete technical documentation, see [PARISHIONER_PORTAL.md](./PARISHIONER_PORTAL.md)**
+### Category Tags
+
+**Route:** `/settings/category-tags`
+
+**Purpose:** Tags for organizing content and petitions
+
+### Custom Lists
+
+**Route:** `/settings/custom-lists`
+
+**Purpose:** User-defined dropdown options
+
+### Petitions
+
+**Route:** `/settings/petitions`
+
+**Purpose:** Petition templates and contexts
 
 ---
 
 ## Module Status Constants
 
-Each module uses specific status constants from `src/lib/constants.ts`. Modules are grouped by which status constant set they use.
+### Events (via Event Types)
 
-### Modules Using `MODULE_STATUS_VALUES`
+Events use `MODULE_STATUS_VALUES` from `src/lib/constants.ts`:
+- PLANNING
+- ACTIVE
+- INACTIVE
+- COMPLETED
+- CANCELLED
 
-**Most sacramental/sacramental modules use the standard module status constants:**
+### Masses
 
-| Module | Status Constant | Status Type | Values |
-|--------|----------------|-------------|--------|
-| **Weddings** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
-| **Funerals** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
-| **Baptisms** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
-| **Group Baptisms** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
-| **Presentations** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
-| **Quinceañeras** | `MODULE_STATUS_VALUES` | _(none - uses values directly)_ | PLANNING, ACTIVE, INACTIVE, COMPLETED, CANCELLED |
+Masses use `MASS_STATUS_VALUES`:
+- ACTIVE
+- PLANNING
+- SCHEDULED
+- COMPLETED
+- CANCELLED
 
-**Labels Constant:** `MODULE_STATUS_LABELS`
-**Used in:** Entity interfaces, form dropdowns, filters
-**Display Helper:** `getStatusLabel(status, language)` from `@/lib/content-builders/shared/helpers`
+### Mass Intentions
 
-### Modules Using `MASS_STATUS_VALUES`
-
-**The Mass module uses its own status constants with an additional SCHEDULED status:**
-
-| Module | Status Constant | Status Type | Values |
-|--------|----------------|-------------|--------|
-| **Masses** | `MASS_STATUS_VALUES` | `MassStatus` | ACTIVE, PLANNING, SCHEDULED, COMPLETED, CANCELLED |
-
-**Labels Constant:** `MASS_STATUS_LABELS`
-**Used in:** Mass entity interface, mass forms, mass filters
-**Display Helper:** `getStatusLabel(status, language)` from `@/lib/content-builders/shared/helpers`
-
-### Modules Using `MASS_INTENTION_STATUS_VALUES`
-
-**The Mass Intentions module uses its own status constants for request workflow:**
-
-| Module | Status Constant | Status Type | Values |
-|--------|----------------|-------------|--------|
-| **Mass Intentions** | `MASS_INTENTION_STATUS_VALUES` | `MassIntentionStatus` | REQUESTED, CONFIRMED, FULFILLED, CANCELLED |
-
-**Labels Constant:** `MASS_INTENTION_STATUS_LABELS`
-**Used in:** MassIntention entity interface, mass intention forms, mass intention filters
-**Display Helper:** `getStatusLabel(status, language)` from `@/lib/content-builders/shared/helpers`
-
-### Combined Status Labels
-
-**For display purposes only**, all status labels are also available in a single combined constant:
-
-- **Constant:** `ALL_STATUS_LABELS`
-- **Purpose:** Used by the `getStatusLabel()` helper function to display any status value
-- **Location:** `src/lib/constants.ts`
-- **Contains:** All status labels from all three sets (MODULE, MASS, MASS_INTENTION)
-
-**Important:** Database entity interfaces should use module-specific status types (`MassStatus`, `MassIntentionStatus`), not the combined constant. See [🔴 Data Model Interfaces vs. Filter Interfaces](./CODE_CONVENTIONS.md#-data-model-interfaces-vs-filter-interfaces) for details.
-
----
-
-## Mass Event Type Integration
-
-**The Masses module supports optional event type templating** for custom fields and scripts, allowing parishes to customize Mass data collection and document generation.
-
-### Key Features
-
-- **Optional Integration**: Masses can link to an event type template via `event_type_id` (nullable)
-- **Custom Fields**: Event types define custom input fields (announcements, hymns, intentions, special instructions, etc.)
-- **Scripts & Export**: Event types define scripts (presider script, music director sheet, bulletin insert) with PDF, Word, Print, and Text export
-- **Backward Compatible**: Masses without event types continue to work with base fields only
-
-### Architecture
-
-**Hybrid Model:**
-- Masses remain a **separate module** with their own table (`masses`) and Mass-specific features
-- Masses **share the event_types templating system** with dynamic events for custom fields and scripts
-- Mass-specific features (scheduling wizard, role assignment, liturgical calendar integration) continue to work unchanged
-
-### Database Schema
-
-**New Columns in `masses` table:**
-- `event_type_id` (UUID, nullable) - Foreign key to `event_types.id`
-- `field_values` (JSONB) - Stores custom field data from event type template
-
-### New Input Field Types
-
-Two new input field types were added specifically for Masses:
-
-1. **`mass-intention`** - Textarea component for Mass intentions (free text, 4-6 rows)
-2. **`spacer`** - Visual section divider with heading (non-data field for form organization)
-
-See [FORMS.md](./FORMS.md#mass-specific-input-field-types) for rendering details.
-
-### User Workflow
-
-1. **Admin creates Mass event type** in Settings → Event Types (e.g., "Sunday Mass", "Daily Mass", "Funeral Mass")
-2. **Admin adds custom fields** to event type (hymns, intentions, announcements, etc.)
-3. **Admin creates scripts** with sections and placeholders for the event type
-4. **Staff creates Mass** and optionally selects an event type template
-5. **Staff fills in custom fields** defined by the event type
-6. **Staff exports scripts** to PDF, Word, or Print for presider/music director/bulletin
-
-### Export Integration
-
-Mass scripts use the existing event_types export infrastructure:
-- **API Routes**: `/api/masses/[id]/pdf`, `/api/masses/[id]/word`, `/api/masses/[id]/text`
-- **Print View**: `/print/masses/[id]`
-- **Placeholder Resolution**: Placeholders like `{{Presider}}`, `{{Opening Hymn}}`, `{{Mass Intentions}}` are replaced with actual Mass data
-
-### References
-
-- **Requirements**: `/requirements/2025-12-11-mass-templating-via-event-types.md`
-- **Forms Documentation**: [FORMS.md](./FORMS.md#mass-specific-input-field-types)
-- **Liturgical Script System**: [LITURGICAL_SCRIPT_SYSTEM.md](./LITURGICAL_SCRIPT_SYSTEM.md)
+Mass Intentions use `MASS_INTENTION_STATUS_VALUES`:
+- REQUESTED
+- CONFIRMED
+- FULFILLED
+- CANCELLED
 
 ---
 
 ## Module Labels (Internationalization)
 
-All module labels are provided in **English** and **Spanish** for internationalization support.
+All module labels are provided in **English** and **Spanish**.
 
-### Primary Module Labels
+### Core Module Labels
 
 | Module | English | Spanish |
 |--------|---------|---------|
-| **Weddings** | Weddings | Bodas |
-| **Funerals** | Funerals | Funerales |
-| **Baptisms** | Baptisms | Bautismos |
-| **Group Baptisms** | Group Baptisms | Bautismos Grupales |
-| **Presentations** | Presentations | Presentaciones |
-| **Quinceañeras** | Quinceañeras | Quinceañeras |
+| **Events** | Events | Eventos |
 | **Masses** | Masses | Misas |
 | **Mass Intentions** | Mass Intentions | Intenciones de Misa |
 
@@ -320,150 +323,105 @@ All module labels are provided in **English** and **Spanish** for internationali
 | Module | English | Spanish |
 |--------|---------|---------|
 | **People** | People | Personas |
-| **Events** | Events | Eventos |
-| **Event Types** | Event Types | Tipos de Eventos |
+| **Families** | Families | Familias |
 | **Locations** | Locations | Ubicaciones |
 | **Groups** | Groups | Grupos |
-| **Readings** | Readings | Lecturas |
+
+### Settings Module Labels
+
+| Module | English | Spanish |
+|--------|---------|---------|
+| **Event Types** | Event Types | Tipos de Eventos |
+| **Content Library** | Content Library | Biblioteca de Contenido |
+| **Category Tags** | Category Tags | Etiquetas de Categoría |
+| **Custom Lists** | Custom Lists | Listas Personalizadas |
 | **Petitions** | Petitions | Peticiones |
-
-### Mass Scheduling Supporting Module Labels
-
-| Module | English | Spanish |
-|--------|---------|---------|
-| **Mass Times Templates** | Mass Times Templates | Plantillas de Horarios de Misa |
-| **Mass Types** | Mass Types | Tipos de Misa |
-| **Mass Role Templates** | Mass Role Templates | Plantillas de Roles de Misa |
-| **Mass Roles** | Mass Roles | Roles de Misa |
-| **Mass Role Members** | Mass Role Members | Miembros de Roles de Misa |
-
-### Planned Module Labels
-
-| Module | English | Spanish |
-|--------|---------|---------|
-| **Confirmations** | Confirmations | Confirmaciones |
 
 ---
 
 ## Module Icons
 
-Each module uses a consistent icon throughout the application. All icons are from **Lucide React**.
+Icons are from **Lucide React**.
 
-| Module | Icon Component | Visual |
-|--------|---------------|--------|
-| **Weddings** | `VenusAndMars` | ⚤ |
-| **Funerals** | `Cross` | ✝ |
-| **Baptisms** | `Droplet` | 💧 |
-| **Presentations** | `HandHeartIcon` | 🤲 |
-| **Quinceañeras** | `BookHeart` | 📖 |
-| **Masses** | `CirclePlus` | ⊕ |
-| **Mass Intentions** | `List` | 📋 |
-| **People** | `User` | 👤 |
-| **Events** | `CalendarDays` | 📅 |
-| **Event Types** | _(settings-based)_ | - |
-| **Locations** | `Building` | 🏢 |
-| **Groups** | `Users` | 👥 |
-| **Readings** | `BookOpen` | 📖 |
-| **Mass Times Templates** | `Clock` | ⏰ |
-| **Mass Types** | `List` | 📋 |
-| **Mass Role Templates** | `LayoutTemplate` | 📄 |
-| **Mass Roles** | `UserCog` | ⚙️ |
-| **Mass Role Members** | `UsersIcon` | 👥 |
+| Module | Icon Component |
+|--------|---------------|
+| **Events** | `CalendarDays` |
+| **Masses** | `CirclePlus` |
+| **Mass Intentions** | `ScrollText` |
+| **People** | `User` |
+| **Families** | `Users2` |
+| **Locations** | `Building` |
+| **Groups** | `Users` |
+| **Settings** | `Settings` |
 
-**Source of Truth:** The main sidebar (`src/components/main-sidebar.tsx`) defines the official icon for each module.
+**Event Type Icons:** Each Event Type can have its own icon configured in Settings > Event Types.
 
 ---
 
 ## Module Routes
 
-### Primary Module Routes
+### Core Module Routes
 
-| Module | Route | Pattern |
-|--------|-------|---------|
-| **Weddings** | `/weddings` | `/weddings`, `/weddings/create`, `/weddings/[id]`, `/weddings/[id]/edit` |
-| **Funerals** | `/funerals` | `/funerals`, `/funerals/create`, `/funerals/[id]`, `/funerals/[id]/edit` |
-| **Baptisms** | `/baptisms` | `/baptisms`, `/baptisms/create`, `/baptisms/[id]`, `/baptisms/[id]/edit` |
-| **Presentations** | `/presentations` | `/presentations`, `/presentations/create`, `/presentations/[id]`, `/presentations/[id]/edit` |
-| **Quinceañeras** | `/quinceaneras` | `/quinceaneras`, `/quinceaneras/create`, `/quinceaneras/[id]`, `/quinceaneras/[id]/edit` |
-| **Masses** | `/masses` | `/masses`, `/masses/create`, `/masses/[id]`, `/masses/[id]/edit` |
-| **Mass Intentions** | `/mass-intentions` | `/mass-intentions`, `/mass-intentions/create`, `/mass-intentions/[id]`, `/mass-intentions/[id]/edit` |
+| Module | Base Route | Patterns |
+|--------|------------|----------|
+| **Events** | `/events` | `/events`, `/events/create`, `/events/[type]/[id]`, `/events/[type]/[id]/edit` |
+| **Masses** | `/masses` | `/masses`, `/masses/create`, `/masses/[id]`, `/masses/[id]/edit`, `/masses/schedule` |
+| **Mass Intentions** | `/mass-intentions` | `/mass-intentions`, `/mass-intentions/create`, `/mass-intentions/[id]`, `/mass-intentions/[id]/edit`, `/mass-intentions/report` |
 
 ### Supporting Module Routes
 
-| Module | Route | Pattern |
-|--------|-------|---------|
+| Module | Base Route | Patterns |
+|--------|------------|----------|
 | **People** | `/people` | `/people`, `/people/create`, `/people/[id]`, `/people/[id]/edit` |
-| **Events** | `/events` | `/events`, `/events/create`, `/events/[id]`, `/events/[id]/edit` |
-| **Event Types** | `/settings/event-types` | `/settings/event-types` (settings-based, dialog architecture) |
+| **Families** | `/families` | `/families`, `/families/create`, `/families/[id]`, `/families/[id]/edit` |
 | **Locations** | `/locations` | `/locations`, `/locations/create`, `/locations/[id]`, `/locations/[id]/edit` |
-| **Groups** | `/groups` | `/groups`, `/groups/[id]` (no separate edit page, uses dialogs) |
-| **Readings** | `/readings` | `/readings`, `/readings/create`, `/readings/[id]/edit` |
-| **Petitions** | `/petitions` | `/petitions` |
+| **Groups** | `/groups` | `/groups`, `/groups/[id]` (dialog-based editing) |
 
-### Mass Scheduling Supporting Module Routes
+### Mass Scheduling Routes
 
-| Module | Route | Pattern |
-|--------|-------|---------|
-| **Mass Times Templates** | `/mass-times-templates` | `/mass-times-templates`, `/mass-times-templates/create`, `/mass-times-templates/[id]/edit` |
-| **Mass Types** | `/mass-types` | `/mass-types` (dialog-based architecture) |
-| **Mass Role Templates** | `/mass-role-templates` | `/mass-role-templates`, `/mass-role-templates/create`, `/mass-role-templates/[id]/edit` |
-| **Mass Roles** | `/mass-roles` | `/mass-roles` (dialog-based architecture) |
-| **Mass Role Members** | `/mass-role-members` | `/mass-role-members` (read-only directory view) |
+| Module | Route |
+|--------|-------|
+| **Mass Times Templates** | `/mass-times-templates` |
+| **Mass Role Templates** | `/mass-role-templates` |
+| **Mass Roles** | `/mass-roles` |
+| **Mass Role Members** | `/mass-role-members` |
 
-### Special Routes
+### Settings Routes
 
-| Purpose | Route | Description |
-|---------|-------|-------------|
-| **Calendar** | `/calendar` | Parish calendar view |
-| **Dashboard** | `/dashboard` | Main dashboard after login |
-| **Settings** | `/settings/*` | User and parish settings |
-| **Onboarding** | `/onboarding` | New user onboarding flow |
-
----
-
-## Module Route Patterns
-
-All primary modules follow the **standard 9-file architecture** with these route patterns:
-
-1. **List** - `/[module-plural]` - Shows all entities with filters
-2. **Create** - `/[module-plural]/create` - Create new entity
-3. **View** - `/[module-plural]/[id]` - View entity details
-4. **Edit** - `/[module-plural]/[id]/edit` - Edit entity
-5. **Print** - `/print/[module-plural]/[id]` - Print-optimized view
-6. **PDF Export** - `/api/[module-plural]/[id]/pdf` - Download PDF
-7. **Word Export** - `/api/[module-plural]/[id]/word` - Download Word document
-
-**Exception:** Groups module uses dialog-based editing instead of separate edit pages.
+| Module | Route |
+|--------|-------|
+| **Settings Hub** | `/settings` |
+| **Event Types** | `/settings/event-types` |
+| **Content Library** | `/settings/content-library` |
+| **Category Tags** | `/settings/category-tags` |
+| **Custom Lists** | `/settings/custom-lists` |
+| **Petitions** | `/settings/petitions` |
+| **Parish Settings** | `/settings/parish/*` |
+| **User Settings** | `/settings/user` |
 
 ---
 
 ## Module Database Tables
 
-### Primary Module Database Tables
+### Core Tables
 
 | Module | Database Table | Singular Form |
 |--------|---------------|---------------|
-| **Weddings** | `weddings` | `wedding` |
-| **Funerals** | `funerals` | `funeral` |
-| **Baptisms** | `baptisms` | `baptism` |
-| **Presentations** | `presentations` | `presentation` |
-| **Quinceañeras** | `quinceaneras` | `quinceanera` |
+| **Events** | `events` | `event` |
+| **Event Types** | `event_types` | `event_type` |
 | **Masses** | `masses` | `mass` |
 | **Mass Intentions** | `mass_intentions` | `mass_intention` |
 
-### Supporting Module Database Tables
+### Supporting Tables
 
 | Module | Database Table | Singular Form |
 |--------|---------------|---------------|
 | **People** | `people` | `person` |
-| **Events** | `events` | `event` |
-| **Event Types** | `event_types` | `event_type` |
+| **Families** | `families` | `family` |
 | **Locations** | `locations` | `location` |
 | **Groups** | `groups` | `group` |
-| **Readings** | `individual_readings` | `individual_reading` |
-| **Petitions** | `petitions` | `petition` |
 
-### Mass Scheduling Supporting Module Database Tables
+### Mass Scheduling Tables
 
 | Module | Database Table | Singular Form |
 |--------|---------------|---------------|
@@ -473,85 +431,29 @@ All primary modules follow the **standard 9-file architecture** with these route
 | **Mass Role Members** | `mass_role_members` | `mass_role_member` |
 
 **Naming Convention:**
-- Database tables: plural form (e.g., `weddings`, `baptisms`)
+- Database tables: plural form (e.g., `events`, `masses`)
 - Database columns: singular form (e.g., `note`, not `notes`)
-- TypeScript interfaces: singular form (e.g., `Wedding`, `Baptism`)
+- TypeScript interfaces: singular form (e.g., `Event`, `Mass`)
 
 ---
 
-## Adding a New Module
+## Parishioner Portal
 
-When creating a new module, ensure it's documented in this registry:
+**The Parishioner Portal is a separate web application for parishioners** (not parish staff).
 
-1. Add to appropriate section (Primary or Supporting)
-2. Add bilingual labels (English + Spanish)
-3. Add icon reference (Lucide React component)
-4. Add route patterns
-5. Add database table name
-6. Update main sidebar (`src/components/main-sidebar.tsx`)
-7. Follow MODULE_CHECKLIST.md for implementation
+**Access:** `/parishioner/*` routes
+
+**Key Features:**
+1. **Calendar Tab** - View ministry schedule and parish events
+2. **Chat Tab** - AI assistant powered by Claude API
+3. **Notifications Tab** - Receive notifications from ministry coordinators
+
+**For complete documentation, see [PARISHIONER_PORTAL.md](./PARISHIONER_PORTAL.md)**
 
 ---
 
 ## Related Documentation
 
-- **[MODULE_CHECKLIST.md](./MODULE_CHECKLIST.md)** - Step-by-step guide for creating new modules
+- **[MODULE_CHECKLIST.md](./MODULE_CHECKLIST.md)** - Step-by-step guide for creating new code modules
 - **[MODULE_COMPONENT_PATTERNS.md](./MODULE_COMPONENT_PATTERNS.md)** - Implementation patterns for module files
-- **[CLAUDE.md](../CLAUDE.md)** - Main development guide with module architecture
-
----
-
-## Liturgical Roles
-
-Liturgical roles are used in the Groups module for assigning people to ministry roles.
-
-### Mass Role Values
-
-These constants are defined in `src/lib/constants.ts`:
-- `MASS_ROLE_VALUES` - Array of mass role constants
-- `MASS_ROLE_LABELS` - Bilingual labels for each mass role
-- `MassRoleType` - TypeScript type
-
-### Available Mass Roles
-
-| Role | English | Spanish |
-|------|---------|---------|
-| **LECTOR** | Lector | Lector |
-| **EMHC** | Extraordinary Minister of Holy Communion | Ministro Extraordinario de la Comunión |
-| **ALTAR_SERVER** | Altar Server | Monaguillo |
-| **CANTOR** | Cantor | Cantor |
-| **USHER** | Usher | Ujier |
-| **SACRISTAN** | Sacristan | Sacristán |
-| **MUSIC_MINISTER** | Music Minister | Ministro de Música |
-
-**Usage:**
-```typescript
-import { MASS_ROLE_VALUES, MASS_ROLE_LABELS, type MassRoleType } from '@/lib/constants'
-
-// Display role in select dropdown
-<FormField
-  inputType="select"
-  options={MASS_ROLE_VALUES.map(role => ({
-    value: role,
-    label: MASS_ROLE_LABELS[role].en  // or .es for Spanish
-  }))}
-/>
-```
-
----
-
-## Future Internationalization
-
-This registry preserves all module labels in multiple languages to support future internationalization efforts. When implementing language selection:
-
-1. Import labels from this registry or from `constants.ts`
-2. Use user's selected language to display appropriate label
-3. Maintain consistency across all modules
-4. Follow bilingual patterns established here
-
-**Example Implementation:**
-```typescript
-// Future i18n pattern
-const selectedLanguage = getUserLanguage() // 'en' or 'es'
-const moduleLabel = MODULE_LABELS.WEDDINGS[selectedLanguage]
-```
+- **[CLAUDE.md](../CLAUDE.md)** - Main development guide

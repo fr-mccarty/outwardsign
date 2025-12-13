@@ -268,7 +268,7 @@ During initial development, modify existing migrations instead of creating new m
 
 **Migration File Structure:**
 - **One table per migration file** - Each migration file should create or modify only ONE table
-- Module tables should be named in **plural form** (e.g., `weddings`, `funerals`, `baptisms`)
+- Module tables should be named in **plural form** (e.g., `masses`, `events`, `people`, `locations`)
 - Keep migrations focused and atomic for better version control and rollback capability
 - **Migration file naming timestamp** - When creating new migration files, use a timestamp within the range of the current date to current date plus 30 days. This ensures migrations are properly ordered and prevents timestamp conflicts.
 
@@ -395,7 +395,7 @@ Permission configuration for what operations Claude can perform automatically. S
 
 **Role Permissions:**
 - Admin: Full access to all modules and parish management
-- Staff: CRUD access to all sacrament/event modules
+- Staff: CRUD access to all event modules
 - Ministry-Leader: Configurable per-module access
 - Parishioner: Read-only access to shared modules
 
@@ -451,11 +451,11 @@ This includes:
 **IMPORTANT:** Always include FORMS.md in context when creating or editing forms.
 
 ## 🔴 Module Structure (Main Files)
-**CRITICAL**: Always follow the wedding module as the reference implementation. Create ALL files that exist in the wedding module.
+**CRITICAL**: Always follow the masses module (`src/app/(main)/masses/`) as the reference implementation for the standard 8-file module structure.
 
 **🔴 When implementing module components, you MUST read [MODULE_COMPONENT_PATTERNS.md](./docs/MODULE_COMPONENT_PATTERNS.md)** - Authoritative patterns for all 8 module files with code examples.
 
-**Note on Groups Module:** The Groups module uses a different architecture pattern (dialog-based forms) rather than the standard 8-file structure. Groups is designed for managing collections of people (ministry groups, choirs, etc.) and uses inline editing with dialogs instead of separate create/edit pages. For new sacrament/sacramental modules, always follow the standard 8-file pattern.
+**Note on Groups Module:** The Groups module uses a different architecture pattern (dialog-based forms) rather than the standard 8-file structure. Groups is designed for managing collections of people (ministry groups, choirs, etc.) and uses inline editing with dialogs instead of separate create/edit pages.
 
 ### The 8 Main Files
 
@@ -487,7 +487,7 @@ export default async function Page({ searchParams }: PageProps) {
 
 **Key Patterns:**
 - All server pages: `page.tsx` (no 'use client')
-- List client file: PLURAL name (`weddings-list-client.tsx`)
+- List client file: PLURAL name (`masses-list-client.tsx`)
 - Form wrapper: Shows action buttons in edit mode only
 - Unified form: Detects mode via `entity` prop, redirects to view page after save
 - View client: Integrates ModuleViewPanel + renders liturgy content
@@ -533,7 +533,7 @@ Module development includes file naming conventions, directory structure, reusab
 - **ALWAYS use helper functions** for formatting (never inline)
 - **ALWAYS format dates** - never display raw date strings like "2025-07-15"
 - **Person names:** Use `person.full_name` directly (database-generated field, no helper needed)
-- Use `formatDatePretty()`, `getWeddingPageTitle()`, etc.
+- Use `formatDatePretty()`, `getMassPageTitle()`, `getEventPageTitle()`, etc.
 - See [FORMATTERS.md](./docs/FORMATTERS.md) for complete reference
 
 **UI Patterns:**
@@ -571,11 +571,13 @@ These core principles guide all development decisions in Outward Sign:
 
 See DESIGN_PRINCIPLES.md for detailed explanations and examples of each principle.
 
-## 🔴 Creating New Modules
+## 🔴 Creating New Event Types vs New Modules
 
-**IMPORTANT:** When the user requests creation of a new module (Funerals, Baptisms, Presentations, etc.), you MUST read the [MODULE_CHECKLIST.md](docs/MODULE_CHECKLIST.md) file first to ensure you follow the complete checklist and avoid common mistakes.
+**Event Types (Most Common):** Sacraments and parish events (Weddings, Funerals, Baptisms, Bible Study, etc.) are created as **Event Types** through the Settings UI - no code changes needed. Event Types are configured with custom fields, scripts, and templates through `/settings/event-types`.
 
-**Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
+**New Code Modules:** Only create new code modules for fundamentally different functionality (like Masses, People, Locations, Groups). These are rare.
+
+**Reference Implementation:** Masses module (`src/app/(main)/masses/`)
 
 **Complete Checklist:** See [MODULE_CHECKLIST.md](docs/MODULE_CHECKLIST.md) for the comprehensive step-by-step guide including:
 - Detailed phase-by-phase checklist (Database → Server Actions → Module Structure → Print/Export → Testing)
@@ -583,10 +585,10 @@ See DESIGN_PRINCIPLES.md for detailed explanations and examples of each principl
 - Validation checklist
 - Module icons reference
 
-**Quick Reference:** When creating a new module, follow these major steps:
+**Quick Reference:** When creating a new code module, follow these major steps:
 1. Database Layer - Migration, RLS policies, base types
 2. Server Actions - CRUD operations with `WithRelations` interface
-3. Module Structure - 8 main files + 1 print page (follow wedding pattern exactly)
+3. Module Structure - 8 main files + 1 print page (follow masses pattern)
 4. Reusable Components - Use existing pickers and shared components
 5. Content & Export - Content builder + API routes for PDF/Word
 6. Constants - Status constants and sidebar navigation

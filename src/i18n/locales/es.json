@@ -493,7 +493,7 @@
     "userPreferencesDescription": "Personaliza tu idioma, preferencias litúrgicas y configuraciones predeterminadas.",
     "configurePreferences": "Configurar Preferencias",
     "eventTypes": "Tipos de Eventos",
-    "eventTypesDescription": "Administra tipos de eventos personalizados para tu parroquia. Arrastra para reordenar.",
+    "eventTypesDescription": "Define categorías de eventos personalizadas para actividades parroquiales. Cada tipo de evento se convierte en una plantilla con sus propios campos y configuraciones.",
     "manageEventTypes": "Administrar Tipos de Eventos",
     "customLists": "Listas Personalizadas",
     "customListsDescription": "Administra listas personalizadas para opciones de campos de eventos como canciones, lecturas o ubicaciones.",
@@ -512,5 +512,23 @@
     "manageCategoryTags": "Administrar Etiquetas de Categoría",
     "unableToLoadSettings": "No se Pueden Cargar las Configuraciones",
     "errorLoadingSettings": "Hubo un error al cargar tus configuraciones. Por favor, intenta nuevamente más tarde."
+  },
+  "eventTypes": {
+    "title": "Tipos de Eventos",
+    "description": "Administra las categorías de eventos de tu parroquia",
+    "explanation": "Los Tipos de Eventos definen las categorías de eventos que tu parroquia puede programar. Crea tipos para sacramentos (Bodas, Bautismos, Funerales), actividades parroquiales (Estudio Bíblico, Grupo de Jóvenes), o cualquier evento recurrente que tu parroquia necesite.",
+    "examples": "Ejemplos: Boda, Bautismo, Funeral, Reunión Parroquial, Estudio Bíblico, Grupo de Jóvenes, Sesión de RICA",
+    "howItWorks": "Cuando creas un Tipo de Evento, estás creando una plantilla. Luego puedes agregar campos personalizados, configurar ajustes y crear guiones imprimibles. Cada evento creado con este tipo heredará estas configuraciones.",
+    "dragToReorder": "Arrastra para reordenar cómo aparecen los tipos de eventos en los menús.",
+    "noEventTypes": "No hay tipos de eventos todavía",
+    "noEventTypesMessage": "Crea un tipo de evento para comenzar a programar eventos parroquiales. Los tipos de eventos definen categorías como \"Boda\", \"Funeral\", \"Estudio Bíblico\", o cualquier otro evento recurrente que tu parroquia necesite.",
+    "createTitle": "Crear Tipo de Evento",
+    "createDescription": "Crea una nueva categoría de evento para tu parroquia",
+    "createExplanation": "Estás creando una nueva categoría de evento. Después de la creación, puedes agregar campos personalizados (como \"Tema\" o \"Número de Sala\") y configurar guiones para imprimir.",
+    "nameLabel": "Nombre del Tipo de Evento",
+    "namePlaceholder": "ej., Reunión Parroquial, Estudio Bíblico, Grupo de Jóvenes",
+    "nameHelp": "Elige un nombre claro y descriptivo. Aparecerá en los menús desplegables cuando el personal cree nuevos eventos.",
+    "iconLabel": "Icono",
+    "iconHelp": "Elige un icono para ayudar a identificar visualmente este tipo de evento en listas y calendarios."
   }
 }

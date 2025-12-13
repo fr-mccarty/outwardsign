@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PageContainer } from '@/components/page-container'
 import { ContentCard } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FormInput } from '@/components/form-input'
 import { Label } from '@/components/ui/label'
 import { createEventType } from '@/lib/actions/event-types'
@@ -16,9 +17,12 @@ import {
 } from '@/lib/schemas/event-types'
 import { toast } from 'sonner'
 import { IconSelector } from '@/components/icon-selector'
+import { useTranslations } from 'next-intl'
+import { Info } from 'lucide-react'
 
 export function EventTypeCreateClient() {
   const router = useRouter()
+  const t = useTranslations('eventTypes')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -59,28 +63,40 @@ export function EventTypeCreateClient() {
 
   return (
     <PageContainer
-      title="Create Event Type"
-      description="Add a new event type for your parish"
+      title={t('createTitle')}
+      description={t('createDescription')}
     >
+      {/* Explanatory Alert */}
+      <Alert className="mb-6">
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          <p>{t('createExplanation')}</p>
+        </AlertDescription>
+      </Alert>
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <ContentCard>
           <div className="space-y-4">
-            <FormInput
-              id="name"
-              label="Name"
-              value={name}
-              onChange={(value) => setValue('name', value)}
-              error={errors.name?.message}
-              required
-              placeholder="e.g., Wedding, Funeral, Baptism..."
-            />
+            <div className="space-y-2">
+              <FormInput
+                id="name"
+                label={t('nameLabel')}
+                value={name}
+                onChange={(value) => setValue('name', value)}
+                error={errors.name?.message}
+                required
+                placeholder={t('namePlaceholder')}
+              />
+              <p className="text-sm text-muted-foreground">{t('nameHelp')}</p>
+            </div>
 
             <div className="space-y-2">
-              <Label htmlFor="icon">Icon</Label>
+              <Label htmlFor="icon">{t('iconLabel')}</Label>
               <IconSelector
                 value={icon}
                 onChange={(value) => setValue('icon', value)}
               />
+              <p className="text-sm text-muted-foreground">{t('iconHelp')}</p>
               {errors.icon && (
                 <p className="text-sm text-destructive">{errors.icon.message}</p>
               )}
@@ -97,7 +113,7 @@ export function EventTypeCreateClient() {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Event Type'}
+              {isSubmitting ? 'Creating...' : t('createTitle')}
             </Button>
           </div>
         </ContentCard>

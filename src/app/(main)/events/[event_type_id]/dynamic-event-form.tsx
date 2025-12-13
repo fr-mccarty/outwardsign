@@ -10,9 +10,13 @@ import { PersonPickerField } from "@/components/person-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
 import { ContentPickerField } from "@/components/content-picker-field"
 import { PetitionPickerField } from "@/components/petition-picker-field"
+import { GroupPickerField } from "@/components/group-picker-field"
+import { ListItemPickerField } from "@/components/list-item-picker-field"
+import { DocumentPickerField } from "@/components/document-picker-field"
 import { OccasionFieldView, type OccasionFieldData } from "@/components/occasion-field-view"
 import { createEvent, updateEvent } from "@/lib/actions/dynamic-events"
-import type { DynamicEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition } from "@/lib/types"
+import type { DynamicEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document, CustomListItem } from "@/lib/types"
+import type { Group } from "@/lib/actions/groups"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
 import { FormBottomActions } from "@/components/form-bottom-actions"
@@ -67,16 +71,16 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
     return initial
   })
 
-  // State for picker values (person, location, content, petition references)
-  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | null>>(() => {
-    const initial: Record<string, Person | Location | ContentWithTags | Petition | null> = {}
+  // State for picker values (person, location, content, petition, group, document references)
+  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | Group | Document | null>>(() => {
+    const initial: Record<string, Person | Location | ContentWithTags | Petition | Group | Document | null> = {}
     // Initialize from resolved fields if editing
     if (event?.resolved_fields) {
       eventType.input_field_definitions?.forEach((field) => {
-        if (field.type === 'person' || field.type === 'location' || field.type === 'content' || field.type === 'petition') {
+        if (field.type === 'person' || field.type === 'location' || field.type === 'content' || field.type === 'petition' || field.type === 'group' || field.type === 'document') {
           const resolved = event.resolved_fields?.[field.name]
           if (resolved?.resolved_value) {
-            initial[field.name] = resolved.resolved_value as Person | Location | ContentWithTags | Petition
+            initial[field.name] = resolved.resolved_value as Person | Location | ContentWithTags | Petition | Group | Document
           }
         }
       })
@@ -104,9 +108,14 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
   }
 
   // Update picker value (stores the ID in fieldValues)
-  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | null) => {
+  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | Group | Document | null) => {
     setPickerValues(prev => ({ ...prev, [fieldName]: value }))
     setFieldValues(prev => ({ ...prev, [fieldName]: value?.id || null }))
+  }
+
+  // Update list item value (stores the ID in fieldValues, also gets the item for display)
+  const updateListItemValue = (fieldName: string, itemId: string | null, _item: CustomListItem | null) => {
+    setFieldValues(prev => ({ ...prev, [fieldName]: itemId }))
   }
 
   // Update occasion field value
@@ -252,6 +261,56 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
               occasionDate: Object.values(occasionValues)[0]?.date || new Date().toISOString().split('T')[0],
               language: 'en', // TODO: Detect from event or use parish default
             }}
+          />
+        )
+
+      case 'group':
+        return (
+          <GroupPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as Group | null}
+            onValueChange={(group) => updatePickerValue(field.name, group)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            required={field.required}
+            placeholder={`Select ${field.name}`}
+          />
+        )
+
+      case 'list_item':
+        // Requires a list_id from the field definition
+        if (!field.list_id) {
+          return (
+            <div key={field.id} className="text-sm text-destructive">
+              Error: List not configured for field &quot;{field.name}&quot;
+            </div>
+          )
+        }
+        return (
+          <ListItemPickerField
+            key={field.id}
+            label={field.name}
+            listId={field.list_id}
+            value={typeof value === 'string' ? value : null}
+            onValueChange={(itemId, item) => updateListItemValue(field.name, itemId, item)}
+            required={field.required}
+            placeholder={`Select ${field.name}`}
+          />
+        )
+
+      case 'document':
+        return (
+          <DocumentPickerField
+            key={field.id}
+            label={field.name}
+            value={typeof value === 'string' ? value : null}
+            onValueChange={(documentId, doc) => {
+              setPickerValues(prev => ({ ...prev, [field.name]: doc }))
+              setFieldValues(prev => ({ ...prev, [field.name]: documentId }))
+            }}
+            required={field.required}
+            placeholder={`Upload ${field.name}`}
           />
         )
 

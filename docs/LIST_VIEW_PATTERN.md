@@ -2,7 +2,9 @@
 
 > **🔴 Context Requirement:** When implementing list pages for any module, you MUST include this file in your context. This file contains the authoritative pattern for all list pages to ensure consistency across the application.
 
-**Reference Implementation:** Wedding module (`src/app/(main)/weddings/`)
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments and parish events are configured as Event Types, not separate modules. Some code examples may reference older patterns for illustration purposes, but the patterns themselves remain valid.
+
+**Reference Implementation:** Masses module (`src/app/(main)/masses/`)
 
 ---
 

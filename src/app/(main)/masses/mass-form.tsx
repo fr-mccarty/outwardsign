@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
 import { getMassRoleTemplates, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { getTemplateItems, type MassRoleTemplateItemWithRole } from "@/lib/actions/mass-role-template-items"
-import type { Person, Event, Location, ContentWithTags, Petition } from "@/lib/types"
+import type { Person, Event, Location, ContentWithTags, Petition, Document, CustomListItem } from "@/lib/types"
+import type { Group } from "@/lib/actions/groups"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import type { MassIntentionWithNames } from "@/lib/actions/mass-intentions"
 import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/event-types"
@@ -23,6 +24,9 @@ import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker
 import { LocationPickerField } from "@/components/location-picker-field"
 import { ContentPickerField } from "@/components/content-picker-field"
 import { PetitionPickerField } from "@/components/petition-picker-field"
+import { GroupPickerField } from "@/components/group-picker-field"
+import { ListItemPickerField } from "@/components/list-item-picker-field"
+import { DocumentPickerField } from "@/components/document-picker-field"
 import { DatePickerField } from "@/components/date-picker-field"
 import { TimePickerField } from "@/components/time-picker-field"
 import { EventTypeSelectField } from "@/components/event-type-select-field"
@@ -105,13 +109,13 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     // Initialize from existing mass or empty
     return mass?.field_values || {}
   })
-  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | null>>(() => {
-    const initial: Record<string, Person | Location | ContentWithTags | Petition | null> = {}
+  const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | Group | Document | null>>(() => {
+    const initial: Record<string, Person | Location | ContentWithTags | Petition | Group | Document | null> = {}
     // Initialize from resolved fields if editing
     if (mass?.resolved_fields) {
       Object.entries(mass.resolved_fields).forEach(([fieldName, resolved]) => {
         if (resolved.resolved_value) {
-          initial[fieldName] = resolved.resolved_value as Person | Location | ContentWithTags | Petition
+          initial[fieldName] = resolved.resolved_value as Person | Location | ContentWithTags | Petition | Group | Document
         }
       })
     }
@@ -393,9 +397,14 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   }
 
   // Update picker value (stores the ID in fieldValues for person, location, content, petition fields)
-  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | null) => {
+  const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | Group | Document | null) => {
     setPickerValues(prev => ({ ...prev, [fieldName]: value }))
     setFieldValues(prev => ({ ...prev, [fieldName]: value?.id || null }))
+  }
+
+  // Update list item value (stores the ID in fieldValues)
+  const updateListItemValue = (fieldName: string, itemId: string | null, _item: CustomListItem | null) => {
+    setFieldValues(prev => ({ ...prev, [fieldName]: itemId }))
   }
 
   const onSubmit = async (data: CreateMassData) => {
@@ -497,6 +506,53 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
               occasionDate: event.value?.start_date || new Date().toISOString().split('T')[0],
               language: 'en',
             }}
+          />
+        )
+
+      case 'group':
+        return (
+          <GroupPickerField
+            key={field.id}
+            label={field.name}
+            value={pickerValues[field.name] as Group | null}
+            onValueChange={(group) => updatePickerValue(field.name, group)}
+            showPicker={pickerOpen[field.name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            placeholder={`Select ${field.name}`}
+          />
+        )
+
+      case 'list_item':
+        // Requires a list_id from the field definition
+        if (!field.list_id) {
+          return (
+            <div key={field.id} className="text-sm text-destructive">
+              Error: List not configured for field &quot;{field.name}&quot;
+            </div>
+          )
+        }
+        return (
+          <ListItemPickerField
+            key={field.id}
+            label={field.name}
+            listId={field.list_id}
+            value={typeof value === 'string' ? value : null}
+            onValueChange={(itemId, item) => updateListItemValue(field.name, itemId, item)}
+            placeholder={`Select ${field.name}`}
+          />
+        )
+
+      case 'document':
+        return (
+          <DocumentPickerField
+            key={field.id}
+            label={field.name}
+            value={typeof value === 'string' ? value : null}
+            onValueChange={(documentId, doc) => {
+              setPickerValues(prev => ({ ...prev, [field.name]: doc }))
+              setFieldValues(prev => ({ ...prev, [field.name]: documentId }))
+            }}
+            placeholder={`Upload ${field.name}`}
           />
         )
 

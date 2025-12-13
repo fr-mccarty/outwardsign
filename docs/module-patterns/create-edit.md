@@ -4,6 +4,8 @@
 >
 > This document covers patterns for create pages, edit pages, and form wrapper components that handle entity creation and editing.
 
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments are Event Types, not separate modules. Code examples may use older patterns for illustration. **Reference Implementation:** Masses module (`src/app/(main)/masses/`).
+
 ## Table of Contents
 
 - [Overview](#overview)

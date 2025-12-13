@@ -20,8 +20,8 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-// Badge available for status indicators
-import { Plus, Trash2, GripVertical, type LucideIcon } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Plus, Trash2, GripVertical, Info, type LucideIcon } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { EventType } from '@/lib/types'
 import { deleteEventType, reorderEventTypes } from '@/lib/actions/event-types'
@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface EventTypesListClientProps {
   initialData: EventType[]
@@ -102,6 +103,7 @@ function SortableEventTypeItem({
 
 export function EventTypesListClient({ initialData }: EventTypesListClientProps) {
   const router = useRouter()
+  const t = useTranslations('eventTypes')
   const [items, setItems] = useState<EventType[]>(initialData)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [eventTypeToDelete, setEventTypeToDelete] = useState<EventType | null>(null)
@@ -168,17 +170,25 @@ export function EventTypesListClient({ initialData }: EventTypesListClientProps)
 
   return (
     <PageContainer
-      title="Event Types"
-      description="Manage custom event types for your parish. Drag to reorder."
+      title={t('title')}
+      description={t('description')}
       primaryAction={
         <Button asChild>
           <Link href="/settings/event-types/create">
             <Plus className="h-4 w-4 mr-2" />
-            Create Event Type
+            {t('createTitle')}
           </Link>
         </Button>
       }
     >
+      {/* Explanatory Alert */}
+      <Alert className="mb-6">
+        <Info className="h-4 w-4" />
+        <AlertDescription className="space-y-2">
+          <p>{t('explanation')}</p>
+          <p className="text-muted-foreground text-sm">{t('examples')}</p>
+        </AlertDescription>
+      </Alert>
 
       {/* Sortable List */}
       <div className="border rounded-lg p-4 bg-muted/30">
@@ -201,13 +211,14 @@ export function EventTypesListClient({ initialData }: EventTypesListClientProps)
               ))}
               {items.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    No event types yet. Create one to get started.
+                  <p className="font-medium mb-2">{t('noEventTypes')}</p>
+                  <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                    {t('noEventTypesMessage')}
                   </p>
                   <Button asChild>
                     <Link href="/settings/event-types/create">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Event Type
+                      {t('createTitle')}
                     </Link>
                   </Button>
                 </div>

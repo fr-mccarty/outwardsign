@@ -4,6 +4,8 @@ This document defines the role-based permission system for users within the Outw
 
 > **Note:** This document is about **application user permissions** (Admin, Staff, Ministry-Leader, Parishioner). For **Claude Code permissions** (what Claude can do autonomously), see [CLAUDE_CODE_SETTINGS.md](./CLAUDE_CODE_SETTINGS.md).
 
+> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments and parish events (Weddings, Funerals, Baptisms, etc.) are all configured as **Event Types** through the Settings UI. Module-level permissions apply to the Events module as a whole. Some code examples may reference older patterns for illustration purposes.
+
 ---
 
 ## Table of Contents
@@ -24,7 +26,7 @@ This document defines the role-based permission system for users within the Outw
 **Full control over the parish and all modules**
 
 **Access:**
-- All modules (weddings, funerals, baptisms, masses, presentations, quinceañeras, groups, mass-intentions)
+- All modules (Events, Masses, Groups, Mass Intentions, People, Locations, Families)
 - Parish settings and management
 - Parishioner management (invite, remove, update roles)
 - Template management
@@ -42,10 +44,10 @@ This document defines the role-based permission system for users within the Outw
 ---
 
 ### Staff
-**Full operational access to sacrament/event modules, limited administrative access**
+**Full operational access to event modules, limited administrative access**
 
 **Access:**
-- All sacrament/event modules (weddings, funerals, baptisms, masses, presentations, quinceañeras, groups)
+- All event modules (Events, Masses, Groups, People, Locations, Families)
 - **Cannot access Mass Intentions** (admin-only module)
 - Can invite parishioners to parish
 
@@ -83,14 +85,12 @@ This document defines the role-based permission system for users within the Outw
 
 **Configuration:**
 When inviting a ministry-leader, admin/staff selects which modules they can access:
+- Events (all Event Types)
 - Masses
-- Weddings
-- Funerals
-- Baptisms
-- Group Baptisms
-- Presentations
-- Quinceañeras
 - Groups
+- People
+- Locations
+- Families
 - Mass Intentions (admin approval required)
 
 ---
@@ -100,7 +100,7 @@ When inviting a ministry-leader, admin/staff selects which modules they can acce
 
 **Access:**
 - Shared modules only (via magic links or family sharing)
-- Read-only view of their own records (weddings, baptisms, etc.)
+- Read-only view of their own records
 
 **Key Abilities:**
 - View records shared with them
@@ -147,7 +147,7 @@ When inviting a ministry-leader, admin/staff selects which modules they can acce
 
 ### How Module Access Works
 
-**Module-specific resources** (weddings, funerals, baptisms, masses, presentations, quinceañeras, groups, mass-intentions) use module-level access control:
+**Module-specific resources** (events, masses, groups, people, locations, families, mass-intentions) use module-level access control:
 
 1. **Admin & Staff**: Full access to all modules (except staff cannot access Mass Intentions)
 2. **Ministry-Leader**: Access only to enabled modules (checked against `parish_users.enabled_modules`)
@@ -156,14 +156,12 @@ When inviting a ministry-leader, admin/staff selects which modules they can acce
 **Available Modules:**
 ```typescript
 const AVAILABLE_MODULES = [
+  'events',        // Includes all Event Types (Weddings, Funerals, etc.)
   'masses',
-  'weddings',
-  'funerals',
-  'baptisms',
-  'group-baptisms',
-  'presentations',
-  'quinceaneras',
   'groups',
+  'people',
+  'locations',
+  'families',
   'mass-intentions',
 ]
 ```
@@ -179,10 +177,10 @@ When inviting a ministry-leader, the inviter (admin or staff) selects which modu
   enabled_modules: ['masses', 'groups']
 }
 
-// Example: Wedding coordinator
+// Example: Event coordinator
 {
   roles: ['ministry-leader'],
-  enabled_modules: ['weddings']
+  enabled_modules: ['events']
 }
 ```
 
