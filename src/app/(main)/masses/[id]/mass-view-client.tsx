@@ -1,6 +1,7 @@
 "use client"
 
-import { MassWithRelations, updateMass, deleteMass } from '@/lib/actions/masses'
+import type { MasterEventWithRelations } from '@/lib/types'
+import { updateEvent, deleteEvent } from '@/lib/actions/master-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { buildMassLiturgy, MASS_TEMPLATES } from '@/lib/content-builders/mass'
@@ -8,39 +9,75 @@ import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { ScriptCard } from '@/components/script-card'
+import { RoleAssignmentSection } from '@/components/role-assignment-section'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getMassFilename } from '@/lib/utils/formatters'
-import type { Script } from '@/lib/types/event-types'
+import type { Script } from '@/lib/types'
+import { assignRole, removeRoleAssignment } from '@/lib/actions/master-events'
+import { toast } from 'sonner'
+import type { Person } from '@/lib/types'
 
 interface MassViewClientProps {
-  mass: MassWithRelations
+  mass: MasterEventWithRelations
   scripts: Script[]
 }
 
 export function MassViewClient({ mass, scripts }: MassViewClientProps) {
   const router = useRouter()
 
+  // Get primary calendar event for main event display
+  const primaryCalendarEvent = mass.calendar_events?.find(ce => ce.is_primary) || mass.calendar_events?.[0]
+
   // Generate filename for downloads
   const generateFilename = (extension: string) => {
-    return getMassFilename(mass, extension)
+    return getMassFilename(mass as any, extension) // TODO: Update getMassFilename to work with MasterEventWithRelations
   }
 
   // Extract template ID from mass record
-  const getTemplateId = (mass: MassWithRelations) => {
-    return mass.mass_template_id || 'mass-english'
+  const getTemplateId = (mass: MasterEventWithRelations) => {
+    // For now, default to mass-english template
+    // TODO: Store template preference in master_event
+    return 'mass-english'
   }
 
   // Handle template update
   const handleUpdateTemplate = async (templateId: string) => {
-    await updateMass(mass.id, {
-      mass_template_id: templateId,
-    })
+    // TODO: Store template preference in master_event
+    // await updateEvent(mass.id, {
+    //   field_values: { ...mass.field_values, template_id: templateId }
+    // })
   }
 
   // Handle script card click
   const handleScriptClick = (scriptId: string) => {
     router.push(`/masses/${mass.id}/scripts/${scriptId}`)
+  }
+
+  // Handle role assignment
+  const handleRoleAssigned = async (roleId: string, person: Person, notes?: string) => {
+    try {
+      await assignRole(mass.id, roleId, person.id, notes)
+      toast.success('Role assigned successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Error assigning role:', error)
+      toast.error('Failed to assign role')
+      throw error
+    }
+  }
+
+  // Handle role removal
+  const handleRoleRemoved = async (roleAssignmentId: string) => {
+    try {
+      await removeRoleAssignment(roleAssignmentId)
+      toast.success('Role removed successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Error removing role:', error)
+      toast.error('Failed to remove role')
+      throw error
+    }
   }
 
   // Generate action buttons
@@ -106,15 +143,39 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
         </div>
       )}
 
-      {mass.event?.location && (
+      {primaryCalendarEvent?.location && (
         <div className={mass.status ? "pt-2 border-t" : ""}>
-          <span className="font-medium">Location:</span> {mass.event.location.name}
-          {(mass.event.location.street || mass.event.location.city || mass.event.location.state) && (
+          <span className="font-medium">Location:</span> {primaryCalendarEvent.location.name}
+          {(primaryCalendarEvent.location.street || primaryCalendarEvent.location.city || primaryCalendarEvent.location.state) && (
             <div className="text-xs text-muted-foreground mt-1">
-              {[mass.event.location.street, mass.event.location.city, mass.event.location.state]
+              {[primaryCalendarEvent.location.street, primaryCalendarEvent.location.city, primaryCalendarEvent.location.state]
                 .filter(Boolean).join(', ')}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Display resolved field values */}
+      {mass.resolved_fields && Object.keys(mass.resolved_fields).length > 0 && (
+        <div className="pt-2 border-t space-y-2">
+          {Object.entries(mass.resolved_fields).map(([fieldName, fieldValue]) => {
+            if (!fieldValue.resolved_value) return null
+
+            let displayValue = ''
+            if (typeof fieldValue.resolved_value === 'object' && 'full_name' in fieldValue.resolved_value) {
+              displayValue = fieldValue.resolved_value.full_name
+            } else if (typeof fieldValue.resolved_value === 'object' && 'name' in fieldValue.resolved_value) {
+              displayValue = fieldValue.resolved_value.name
+            } else {
+              displayValue = String(fieldValue.resolved_value)
+            }
+
+            return (
+              <div key={fieldName}>
+                <span className="font-medium">{fieldName}:</span> {displayValue}
+              </div>
+            )
+          })}
         </div>
       )}
     </>
@@ -122,21 +183,30 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
 
   return (
     <ModuleViewContainer
-      entity={mass}
-      entityType="Mass"
+      entity={mass as any} // TODO: Update ModuleViewContainer to work with MasterEventWithRelations
+      entityType={mass.event_type?.name || "Mass"}
       modulePath="masses"
-      mainEvent={mass.event}
+      mainEvent={primaryCalendarEvent as any} // TODO: Update to use CalendarEvent type
       generateFilename={generateFilename}
-      buildLiturgy={buildMassLiturgy}
+      buildLiturgy={buildMassLiturgy as any} // TODO: Update buildMassLiturgy to work with MasterEventWithRelations
       getTemplateId={getTemplateId}
       statusType="mass"
       actionButtons={actionButtons}
       exportButtons={exportButtons}
       templateSelector={templateSelector}
       details={details}
-      onDelete={deleteMass}
+      onDelete={deleteEvent}
     >
-      {/* Mass Intention and Role Assignments are now in the content builder */}
+      {/* Role Assignments */}
+      {mass.event_type?.role_definitions && (
+        <div className="mt-6">
+          <RoleAssignmentSection
+            masterEvent={mass}
+            onRoleAssigned={handleRoleAssigned}
+            onRoleRemoved={handleRoleRemoved}
+          />
+        </div>
+      )}
 
       {/* Show custom scripts if Mass has an event type */}
       {mass.event_type_id && scripts.length > 0 && (

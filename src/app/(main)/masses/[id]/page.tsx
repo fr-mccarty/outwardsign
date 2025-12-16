@@ -2,10 +2,10 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getMassWithRelations } from '@/lib/actions/masses'
+import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
 import { getScripts } from '@/lib/actions/scripts'
 import { MassViewClient } from './mass-view-client'
-import { getMassPageTitle } from '@/lib/utils/formatters'
+import { formatDatePretty } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -21,7 +21,7 @@ export default async function ViewMassPage({ params }: PageProps) {
   }
 
   const { id } = await params
-  const mass = await getMassWithRelations(id)
+  const mass = await getEventWithRelations(id)
 
   if (!mass) {
     notFound()
@@ -30,8 +30,8 @@ export default async function ViewMassPage({ params }: PageProps) {
   // Fetch scripts if Mass has an event type
   const scripts = mass.event_type_id ? await getScripts(mass.event_type_id) : []
 
-  // Build dynamic title from presider name and date
-  const title = getMassPageTitle(mass)
+  // Build dynamic title from computeMasterEventTitle
+  const title = await computeMasterEventTitle(mass)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },

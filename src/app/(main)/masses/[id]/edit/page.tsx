@@ -1,7 +1,7 @@
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getMassWithRelations } from '@/lib/actions/masses'
+import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
 import { MassFormWrapper } from '../../mass-form-wrapper'
 
 interface PageProps {
@@ -18,25 +18,14 @@ export default async function EditMassPage({ params }: PageProps) {
   }
 
   const { id } = await params
-  const mass = await getMassWithRelations(id)
+  const mass = await getEventWithRelations(id)
 
   if (!mass) {
     notFound()
   }
 
-  // Build dynamic title from presider name and date
-  let title = "Mass"
-
-  if (mass.presider) {
-    const presiderName = `${mass.presider.first_name} ${mass.presider.last_name}`
-    const eventDate = mass.event?.start_date
-      ? new Date(mass.event.start_date).toLocaleDateString()
-      : ''
-    title = eventDate ? `${presiderName}-${eventDate}-Mass` : `${presiderName}-Mass`
-  } else if (mass.event?.start_date) {
-    const eventDate = new Date(mass.event.start_date).toLocaleDateString()
-    title = `${eventDate}-Mass`
-  }
+  // Build dynamic title from computeMasterEventTitle
+  const title = await computeMasterEventTitle(mass)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
@@ -48,7 +37,7 @@ export default async function EditMassPage({ params }: PageProps) {
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <MassFormWrapper
-        mass={mass}
+        mass={mass as any} // TODO: Update MassFormWrapper to work with MasterEventWithRelations
         title={title}
         description="Update Mass information."
       />

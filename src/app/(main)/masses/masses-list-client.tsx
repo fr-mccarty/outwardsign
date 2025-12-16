@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { MassWithNames, MassStats } from '@/lib/actions/masses'
-import { deleteMass, getMasses, type MassFilterParams } from '@/lib/actions/masses'
+import type { MasterEventWithTypeAndCalendarEvent, MasterEventStats, MasterEventFilterParams } from '@/lib/actions/master-events'
+import { getAllMasterEvents, deleteEvent } from '@/lib/actions/master-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
@@ -20,12 +20,10 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Church, Filter } from "lucide-react"
 import { toast } from "sonner"
-import { MASS_STATUS_VALUES } from "@/lib/constants"
-import { toLocalDateString } from "@/lib/utils/formatters"
+import { toLocalDateString, formatDatePretty } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import {
-  buildWhenColumn,
   buildWhereColumn,
   buildActionsColumn
 } from '@/lib/utils/table-columns'
@@ -40,13 +38,14 @@ import {
 } from '@/components/ui/tooltip'
 import { useTranslations } from 'next-intl'
 
+const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const
+
 interface MassesListClientProps {
-  initialData: MassWithNames[]
-  stats: MassStats
-  initialHasMore: boolean
+  initialData: MasterEventWithTypeAndCalendarEvent[]
+  stats: MasterEventStats
 }
 
-export function MassesListClient({ initialData, stats, initialHasMore }: MassesListClientProps) {
+export function MassesListClient({ initialData, stats }: MassesListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('masses')
@@ -67,7 +66,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
   // Infinite scroll state
   const [masses, setMasses] = useState(initialData)
   const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
-  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [hasMore, setHasMore] = useState(initialData.length === LIST_VIEW_PAGE_SIZE)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Transform stats for ListStatsBar
@@ -90,7 +89,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [massToDelete, setMassToDelete] = useState<MassWithNames | null>(null)
+  const [massToDelete, setMassToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
 
   // Update URL when debounced search value changes
   useEffect(() => {
@@ -102,8 +101,8 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
   useEffect(() => {
     setMasses(initialData)
     setOffset(LIST_VIEW_PAGE_SIZE)
-    setHasMore(initialHasMore)
-  }, [initialData, initialHasMore])
+    setHasMore(initialData.length === LIST_VIEW_PAGE_SIZE)
+  }, [initialData])
 
   // Sorting state
   const currentSort = parseSort(filters.getFilterValue('sort'))
@@ -120,14 +119,15 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
 
     setIsLoadingMore(true)
     try {
-      const nextMasses = await getMasses({
+      const nextMasses = await getAllMasterEvents({
         search: filters.getFilterValue('search'),
-        status: filters.getFilterValue('status') as MassFilterParams['status'],
-        sort: filters.getFilterValue('sort') as MassFilterParams['sort'],
+        systemType: 'mass',
+        status: filters.getFilterValue('status') as MasterEventFilterParams['status'],
+        sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
-        start_date: searchParams.get('start_date') || undefined,
-        end_date: searchParams.get('end_date') || undefined
+        startDate: searchParams.get('start_date') || undefined,
+        endDate: searchParams.get('end_date') || undefined
       })
 
       setMasses(prev => [...prev, ...nextMasses])
@@ -157,7 +157,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
     if (!massToDelete) return
 
     try {
-      await deleteMass(massToDelete.id)
+      await deleteEvent(massToDelete.id)
       toast.success(t('massDeleted'))
       router.refresh()
     } catch (error) {
@@ -167,8 +167,8 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
     }
   }
 
-  // Custom "Name of Mass" column (only shows mass name)
-  const buildMassWhoColumn = (): DataTableColumn<MassWithNames> => {
+  // Custom "Event Name" column
+  const buildMassWhoColumn = (): DataTableColumn<MasterEventWithTypeAndCalendarEvent> => {
     return {
       key: 'who',
       header: t('nameOfMass'),
@@ -176,6 +176,9 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
         const status = mass.status || 'PLANNING'
         const statusLabel = getStatusLabel(status, 'en')
         const statusColor = MODULE_STATUS_COLORS[status] || 'bg-muted-foreground/50'
+
+        // Compute simple title from event type name
+        const title = mass.event_type?.name || 'Mass'
 
         return (
           <div className="flex items-start gap-2">
@@ -191,7 +194,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
             </TooltipProvider>
             <div className="flex flex-col">
               <span className="text-sm font-medium">
-                {mass.name || t('unnamedMass')}
+                {title}
               </span>
             </div>
           </div>
@@ -199,30 +202,46 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
       },
       className: 'max-w-[200px] md:max-w-[250px]',
       sortable: true,
-      accessorFn: (mass) => mass.name || ''
+      accessorFn: (mass) => mass.event_type?.name || 'Mass'
     }
   }
 
   // Define table columns using column builders
-  const columns = [
+  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
     buildMassWhoColumn(),
-    buildWhenColumn<MassWithNames>({
-      getDate: (mass) => mass.event?.start_date || null,
-      getTime: (mass) => mass.event?.start_time || null,
-      sortable: true
-    }),
-    buildWhereColumn<MassWithNames>({
-      getLocation: (mass) => mass.event?.location || null,
+    // When column - date and time from primary calendar event
+    {
+      key: 'when',
+      header: 'When',
+      cell: (mass) => {
+        if (!mass.primary_calendar_event?.start_datetime) {
+          return <span className="text-sm text-muted-foreground">No date set</span>
+        }
+        const date = new Date(mass.primary_calendar_event.start_datetime)
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm">
+              {formatDatePretty(date)}
+            </span>
+          </div>
+        )
+      },
+      className: 'max-w-[180px]',
+      sortable: true,
+      accessorFn: (mass) => mass.primary_calendar_event?.start_datetime || ''
+    },
+    buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
+      getLocation: (mass) => mass.primary_calendar_event?.location || null,
       hiddenOn: 'lg'
     }),
-    buildActionsColumn<MassWithNames>({
+    buildActionsColumn<MasterEventWithTypeAndCalendarEvent>({
       baseUrl: '/masses',
       onDelete: (mass) => {
         setMassToDelete(mass)
         setDeleteDialogOpen(true)
       },
       getDeleteMessage: (mass) =>
-        `Are you sure you want to delete the mass with presider ${mass.presider?.full_name || 'unknown'}?`
+        `Are you sure you want to delete this ${mass.event_type?.name || 'event'}?`
     })
   ]
 
@@ -248,7 +267,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
               <StatusFilter
                 value={filters.getFilterValue('status')}
                 onChange={(value) => filters.updateFilter('status', value)}
-                statusValues={MASS_STATUS_VALUES}
+                statusValues={MASTER_EVENT_STATUS_VALUES as unknown as string[]}
                 hideLabel
               />
             </div>
@@ -351,7 +370,7 @@ export function MassesListClient({ initialData, stats, initialHasMore }: MassesL
         title={t('deleteMass')}
         description={
           massToDelete
-            ? t('confirmDelete', { presider: massToDelete.presider?.full_name || 'unknown' })
+            ? `Are you sure you want to delete this ${massToDelete.event_type?.name || 'event'}? This action cannot be undone.`
             : t('confirmDeleteGeneric')
         }
         actionLabel={tCommon('delete')}

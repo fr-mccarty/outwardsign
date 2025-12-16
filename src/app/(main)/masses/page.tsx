@@ -36,8 +36,8 @@ export default async function MassesPage({ searchParams }: PageProps) {
     search: params.search,
     systemType: 'mass', // Filter only master_events with system_type = 'mass'
     status: (params.status as MasterEventFilterParams['status']) || 'ACTIVE', // Default applied
-    start_date: params.start_date,
-    end_date: params.end_date,
+    startDate: params.start_date,
+    endDate: params.end_date,
     sort: (params.sort as MasterEventFilterParams['sort']) || 'date_asc', // Default to date ascending
     offset: 0,
     limit: LIST_VIEW_PAGE_SIZE
