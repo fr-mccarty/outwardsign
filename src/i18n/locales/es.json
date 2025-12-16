@@ -43,7 +43,13 @@
     "petitions": "Peticiones",
     "users": "Usuarios",
     "support": "Soporte",
-    "documentation": "Documentación"
+    "documentation": "Documentación",
+    "calendarEvents": "Eventos de Calendario",
+    "ourCalendarEvents": "Nuestros Eventos de Calendario",
+    "newCalendarEvent": "Nuevo Evento de Calendario",
+    "specialLiturgies": "Liturgias Especiales",
+    "specialLiturgy": "Liturgia Especial",
+    "sacraments": "Sacramentos"
   },
   "common": {
     "create": "Crear",
@@ -530,5 +536,45 @@
     "nameHelp": "Elige un nombre claro y descriptivo. Aparecerá en los menús desplegables cuando el personal cree nuevos eventos.",
     "iconLabel": "Icono",
     "iconHelp": "Elige un icono para ayudar a identificar visualmente este tipo de evento en listas y calendarios."
+  },
+  "event_type": {
+    "category": {
+      "sacrament": "Sacramentos",
+      "mass": "Misas",
+      "special_liturgy": "Liturgias Especiales",
+      "event": "Eventos"
+    }
+  },
+  "specialLiturgies": {
+    "title": "Liturgias Especiales",
+    "description": "Administra celebraciones litúrgicas especiales",
+    "explanation": "Las Liturgias Especiales son celebraciones litúrgicas no sacramentales como la Bendición del Santísimo, el Vía Crucis o las Horas Santas. Crea tipos para cada liturgia especial que tu parroquia celebre.",
+    "examples": "Ejemplos: Bendición del Santísimo, Vía Crucis, Hora Santa, Adoración, Liturgia de las Horas",
+    "noSpecialLiturgies": "No hay liturgias especiales todavía",
+    "noSpecialLiturgiesMessage": "Crea un tipo de liturgia especial para comenzar a programar estas celebraciones. Las liturgias especiales son celebraciones litúrgicas no sacramentales.",
+    "createTitle": "Crear Liturgia Especial",
+    "createDescription": "Crea un nuevo tipo de liturgia especial",
+    "createExplanation": "Estás creando un nuevo tipo de liturgia especial. Después de la creación, puedes agregar campos personalizados y configurar guiones para imprimir.",
+    "nameLabel": "Nombre de la Liturgia Especial",
+    "namePlaceholder": "ej., Bendición del Santísimo, Vía Crucis, Hora Santa",
+    "nameHelp": "Elige un nombre claro y descriptivo para este tipo de liturgia especial.",
+    "iconLabel": "Icono",
+    "iconHelp": "Elige un icono para ayudar a identificar visualmente este tipo de liturgia especial."
+  },
+  "sacraments": {
+    "title": "Sacramentos",
+    "description": "Administra celebraciones sacramentales",
+    "explanation": "Los Sacramentos son signos sagrados y misterios instituidos por Cristo. Crea tipos para cada sacramento que tu parroquia celebre.",
+    "examples": "Ejemplos: Bautismo, Confirmación, Boda, Reconciliación, Unción de Enfermos, Primera Comunión, Quinceañera",
+    "noSacraments": "No hay sacramentos todavía",
+    "noSacramentsMessage": "Crea un tipo de sacramento para comenzar a programar estas celebraciones. Los sacramentos son signos sagrados instituidos por Cristo.",
+    "createTitle": "Crear Sacramento",
+    "createDescription": "Crea un nuevo tipo de sacramento",
+    "createExplanation": "Estás creando un nuevo tipo de sacramento. Después de la creación, puedes agregar campos personalizados y configurar guiones para imprimir.",
+    "nameLabel": "Nombre del Sacramento",
+    "namePlaceholder": "ej., Bautismo, Boda, Primera Comunión",
+    "nameHelp": "Elige un nombre claro y descriptivo para este tipo de sacramento.",
+    "iconLabel": "Icono",
+    "iconHelp": "Elige un icono para ayudar a identificar visualmente este tipo de sacramento."
   }
 }

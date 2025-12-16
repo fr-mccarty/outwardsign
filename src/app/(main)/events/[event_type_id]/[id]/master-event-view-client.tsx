@@ -10,7 +10,7 @@ import { Edit } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatDatePretty } from '@/lib/utils/formatters'
-import { deleteEvent } from '@/lib/actions/dynamic-events'
+import { deleteEvent } from '@/lib/actions/master-events'
 
 interface DynamicEventViewClientProps {
   event: DynamicEventWithRelations
@@ -62,8 +62,8 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
     }
   }
 
-  // Sort occasions by created_at (no position field anymore)
-  const sortedOccasions = [...(event.occasions || [])].sort((a, b) =>
+  // Sort calendar_events by created_at (no position field anymore)
+  const sortedOccasions = [...(event.calendar_events || [])].sort((a, b) =>
     new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   )
 

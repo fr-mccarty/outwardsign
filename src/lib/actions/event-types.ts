@@ -18,6 +18,7 @@ import { generateSlug } from '@/lib/utils/formatters'
 export interface EventTypeFilterParams {
   search?: string
   sort?: 'order_asc' | 'order_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
+  category?: 'sacrament' | 'mass' | 'special_liturgy' | 'event'
 }
 
 /**
@@ -41,6 +42,11 @@ export async function getEventTypes(filters?: EventTypeFilterParams): Promise<Dy
     .select('*')
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
+
+  // Apply category filter
+  if (filters?.category) {
+    query = query.eq('category', filters.category)
+  }
 
   // Apply sorting
   if (filters?.sort === 'order_asc' || !filters?.sort) {
@@ -310,6 +316,7 @@ export async function createEventType(data: CreateDynamicEventTypeData): Promise
         description: data.description || null,
         icon: data.icon,
         slug: finalSlug,
+        category: data.category,
         order: newOrder
       }
     ])

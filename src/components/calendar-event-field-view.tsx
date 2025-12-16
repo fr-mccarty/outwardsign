@@ -14,51 +14,51 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { toLocalDateString, formatDatePretty, formatTime } from "@/lib/utils/formatters"
-import { updateOccasion, createOccasion } from "@/lib/actions/occasions"
+import { updateCalendarEvent, createCalendarEvent } from "@/lib/actions/calendar-events"
 import { toast } from "sonner"
 import { Pencil, Calendar, Clock, MapPin } from "lucide-react"
 import type { Location } from "@/lib/types"
 
-export interface OccasionFieldData {
+export interface CalendarEventFieldData {
   date: string
   time: string
   location_id: string | null
   location?: Location | null
 }
 
-interface OccasionFieldViewProps {
+interface CalendarEventFieldViewProps {
   label: string
-  value: OccasionFieldData
-  onValueChange: (value: OccasionFieldData) => void
+  value: CalendarEventFieldData
+  onValueChange: (value: CalendarEventFieldData) => void
   required?: boolean
   isPrimary?: boolean
-  occasionId?: string  // If provided, will update; otherwise will create
-  eventId?: string     // Required for creating new occasions
-  isEditing?: boolean  // If true, show display view with modal (even without occasionId)
+  calendarEventId?: string  // If provided, will update; otherwise will create
+  masterEventId?: string     // Required for creating new calendar events
+  isEditing?: boolean  // If true, show display view with modal (even without calendarEventId)
 }
 
-export function OccasionFieldView({
+export function CalendarEventFieldView({
   label,
   value,
   onValueChange,
   required = false,
   isPrimary = false,
-  occasionId,
-  eventId,
+  calendarEventId,
+  masterEventId,
   isEditing = false
-}: OccasionFieldViewProps) {
+}: CalendarEventFieldViewProps) {
   const router = useRouter()
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   // Local state for editing in the dialog
-  const [editValue, setEditValue] = useState<OccasionFieldData>(value)
+  const [editValue, setEditValue] = useState<CalendarEventFieldData>(value)
 
   // Use display view with modal if we're in edit mode (editing an existing event)
   const useDisplayMode = isEditing
 
-  const updateLocalValue = (key: keyof OccasionFieldData, newValue: string | Location | null) => {
+  const updateLocalValue = (key: keyof CalendarEventFieldData, newValue: string | Location | null) => {
     if (key === 'location' && typeof newValue === 'object') {
       setEditValue(prev => ({
         ...prev,
@@ -74,7 +74,7 @@ export function OccasionFieldView({
   }
 
   // For create mode - update parent directly
-  const updateValue = (key: keyof OccasionFieldData, newValue: string | Location | null) => {
+  const updateValue = (key: keyof CalendarEventFieldData, newValue: string | Location | null) => {
     if (key === 'location' && typeof newValue === 'object') {
       onValueChange({
         ...value,
@@ -97,33 +97,33 @@ export function OccasionFieldView({
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      if (occasionId) {
-        // Update existing occasion
-        await updateOccasion(occasionId, {
+      if (calendarEventId) {
+        // Update existing calendar event
+        await updateCalendarEvent(calendarEventId, {
           date: editValue.date || null,
           time: editValue.time || null,
           location_id: editValue.location_id || null
         })
-        toast.success("Occasion updated")
-      } else if (eventId) {
-        // Create new occasion
-        await createOccasion(eventId, {
+        toast.success("Calendar event updated")
+      } else if (masterEventId) {
+        // Create new calendar event
+        await createCalendarEvent(masterEventId, {
           label: label,
           date: editValue.date || null,
           time: editValue.time || null,
           location_id: editValue.location_id || null,
           is_primary: isPrimary
         })
-        toast.success("Occasion created")
+        toast.success("Calendar event created")
       } else {
-        throw new Error("Cannot save: missing event ID")
+        throw new Error("Cannot save: missing master event ID")
       }
       onValueChange(editValue) // Update parent state
       setIsDialogOpen(false)
       router.refresh()
     } catch (error) {
-      console.error('Error saving occasion:', error)
-      toast.error("Failed to save occasion")
+      console.error('Error saving calendar event:', error)
+      toast.error("Failed to save calendar event")
     } finally {
       setIsSaving(false)
     }

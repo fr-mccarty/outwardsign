@@ -78,10 +78,6 @@ test.describe('Person Avatar Upload', () => {
     // Wait for redirect to edit page
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    // Get the person ID from URL
-    const editUrl = page.url();
-    const personId = editUrl.split('/').slice(-2)[0];
-
     // Step 2: Upload an avatar image
     // Find the file input (hidden) and set the file
     const fileInput = page.locator('input[type="file"][accept*="image"]');

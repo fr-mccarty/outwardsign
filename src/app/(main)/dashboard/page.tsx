@@ -20,7 +20,7 @@ import { getEvents } from "@/lib/actions/events"
 import { format } from "date-fns"
 import { MiniCalendar } from "@/components/mini-calendar"
 import { DashboardErrorHandler } from "./dashboard-error-handler"
-import { getAllDynamicEvents } from "@/lib/actions/dynamic-events"
+import { getAllMasterEvents } from "@/lib/actions/master-events"
 import { getActiveEventTypes } from "@/lib/actions/event-types"
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
 import { getTranslations } from 'next-intl/server'
@@ -41,13 +41,13 @@ export default async function DashboardPage() {
     people,
     locations,
     events,
-    dynamicEvents,
+    masterEvents,
     eventTypes
   ] = await Promise.all([
     getPeople(),
     getLocations(),
     getEvents(),
-    getAllDynamicEvents({ limit: 50 }),
+    getAllMasterEvents({ limit: 50 }),
     getActiveEventTypes()
   ])
 
@@ -66,9 +66,9 @@ export default async function DashboardPage() {
     return eventDate >= startOfMonth && eventDate <= endOfMonth
   }).length
 
-  // Dynamic events scheduled this month (based on primary occasion date)
-  const scheduledThisMonthDynamic = dynamicEvents.filter(e => {
-    const date = e.primary_occasion?.date
+  // Dynamic events scheduled this month (based on primary calendar event date)
+  const scheduledThisMonthDynamic = masterEvents.filter(e => {
+    const date = e.primary_calendar_event?.date
     if (!date) return false
     return date >= startOfMonthString && date <= endOfMonthString
   }).length
@@ -87,8 +87,8 @@ export default async function DashboardPage() {
   })
 
   // Dynamic events upcoming (next 7 days)
-  const upcomingDynamicEvents = dynamicEvents.filter(e => {
-    const date = e.primary_occasion?.date
+  const upcomingDynamicEvents = masterEvents.filter(e => {
+    const date = e.primary_calendar_event?.date
     if (!date) return false
     return date >= todayString && date <= sevenDaysString
   })
@@ -100,22 +100,22 @@ export default async function DashboardPage() {
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
   const thirtyDaysString = format(thirtyDaysFromNow, 'yyyy-MM-dd')
 
-  const upcomingDynamicEvents30Days = dynamicEvents
+  const upcomingDynamicEvents30Days = masterEvents
     .filter(e => {
-      const date = e.primary_occasion?.date
+      const date = e.primary_calendar_event?.date
       if (!date) return false
       return date >= todayString && date <= thirtyDaysString
     })
     .sort((a, b) => {
-      const dateA = a.primary_occasion?.date || ''
-      const dateB = b.primary_occasion?.date || ''
+      const dateA = a.primary_calendar_event?.date || ''
+      const dateB = b.primary_calendar_event?.date || ''
       return dateA.localeCompare(dateB)
     })
     .slice(0, 5)
 
   // Count events by event type
   const eventCountsByType = new Map<string, number>()
-  for (const event of dynamicEvents) {
+  for (const event of masterEvents) {
     const typeId = event.event_type_id
     eventCountsByType.set(typeId, (eventCountsByType.get(typeId) || 0) + 1)
   }
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
         <Link href="/events" className="block hover:opacity-80 transition-opacity">
           <MetricCard
             title={t('dashboard.totalEvents')}
-            value={dynamicEvents.length}
+            value={masterEvents.length}
             description={t('dashboard.eventsCreated')}
             icon={CalendarDays}
           />
@@ -222,12 +222,12 @@ export default async function DashboardPage() {
                         {event.event_type?.name || 'Event'}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {event.primary_occasion?.date && new Date(event.primary_occasion.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        {event.primary_calendar_event?.date && new Date(event.primary_calendar_event.date + 'T00:00:00').toLocaleDateString('en-US', {
                           weekday: 'short',
                           month: 'short',
                           day: 'numeric'
                         })}
-                        {event.primary_occasion?.time && ` at ${event.primary_occasion.time.slice(0, 5)}`}
+                        {event.primary_calendar_event?.time && ` at ${event.primary_calendar_event.time.slice(0, 5)}`}
                       </p>
                     </div>
                   </Link>
@@ -252,9 +252,9 @@ export default async function DashboardPage() {
 
         {/* Recent Events */}
         <FormSectionCard title={t('dashboard.recentlyCreated')}>
-          {dynamicEvents.length > 0 ? (
+          {masterEvents.length > 0 ? (
             <div className="space-y-3">
-              {dynamicEvents.slice(0, 5).map((dynEvent) => {
+              {masterEvents.slice(0, 5).map((dynEvent) => {
                 const Icon = dynEvent.event_type ? getLucideIcon(dynEvent.event_type.icon) : CalendarDays
                 const slug = dynEvent.event_type?.slug || dynEvent.event_type_id
                 return (
@@ -267,8 +267,8 @@ export default async function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <h4 className="font-medium text-sm">{dynEvent.event_type?.name || 'Event'}</h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {dynEvent.primary_occasion?.date
-                          ? new Date(dynEvent.primary_occasion.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        {dynEvent.primary_calendar_event?.date
+                          ? new Date(dynEvent.primary_calendar_event.date + 'T00:00:00').toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric'
                             })

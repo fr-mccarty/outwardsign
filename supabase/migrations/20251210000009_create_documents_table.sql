@@ -1,6 +1,6 @@
 -- Create documents table
 -- Purpose: File uploads for events (DOCX, PDF, etc.)
--- Related: dynamic_events (via field_values JSON)
+-- Related: master_events (via field_values JSON)
 
 CREATE TABLE documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

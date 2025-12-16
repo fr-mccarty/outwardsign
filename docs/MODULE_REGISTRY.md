@@ -191,6 +191,24 @@ When Event Types are configured, they appear in a separate "Event Types" section
 - Address and capacity information
 - Used by Events, Masses, and other modules
 
+### Calendar Events Module
+
+**Purpose:** Standalone scheduled events (rehearsals, meetings, parish activities) that appear on the calendar
+
+**Route:** `/calendar-events`
+
+**Architecture:**
+- Calendar events are standalone occurrences separate from master events
+- Used for non-sacramental activities (Zumba, Parish Picnic, Bible Study)
+- Also stores individual occurrences of master events (wedding ceremony, funeral service)
+- All calendar events appear on the main Calendar view
+
+**Key Features:**
+- Scheduled event management
+- Links to master events (optional)
+- Locations and time management
+- Calendar integration
+
 ### Groups Module
 
 **Purpose:** Ministry groups and teams

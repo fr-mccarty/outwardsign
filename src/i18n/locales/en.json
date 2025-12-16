@@ -43,7 +43,13 @@
     "petitions": "Petitions",
     "users": "Users",
     "support": "Support",
-    "documentation": "Documentation"
+    "documentation": "Documentation",
+    "calendarEvents": "Calendar Events",
+    "ourCalendarEvents": "Our Calendar Events",
+    "newCalendarEvent": "New Calendar Event",
+    "specialLiturgies": "Special Liturgies",
+    "specialLiturgy": "Special Liturgy",
+    "sacraments": "Sacraments"
   },
   "common": {
     "create": "Create",
@@ -530,5 +536,45 @@
     "nameHelp": "Choose a clear, descriptive name. This will appear in dropdown menus when staff create new events.",
     "iconLabel": "Icon",
     "iconHelp": "Choose an icon to help visually identify this event type in lists and calendars."
+  },
+  "event_type": {
+    "category": {
+      "sacrament": "Sacraments",
+      "mass": "Masses",
+      "special_liturgy": "Special Liturgies",
+      "event": "Events"
+    }
+  },
+  "specialLiturgies": {
+    "title": "Special Liturgies",
+    "description": "Manage special liturgical celebrations",
+    "explanation": "Special Liturgies are non-sacramental liturgical celebrations like Benediction, Stations of the Cross, or Holy Hours. Create types for each special liturgy your parish celebrates.",
+    "examples": "Examples: Benediction, Stations of the Cross, Holy Hour, Adoration, Liturgy of the Hours",
+    "noSpecialLiturgies": "No special liturgies yet",
+    "noSpecialLiturgiesMessage": "Create a special liturgy type to start scheduling these celebrations. Special liturgies are non-sacramental liturgical celebrations.",
+    "createTitle": "Create Special Liturgy",
+    "createDescription": "Create a new special liturgy type",
+    "createExplanation": "You're creating a new special liturgy type. After creation, you can add custom fields and configure scripts for printing.",
+    "nameLabel": "Special Liturgy Name",
+    "namePlaceholder": "e.g., Benediction, Stations of the Cross, Holy Hour",
+    "nameHelp": "Choose a clear, descriptive name for this special liturgy type.",
+    "iconLabel": "Icon",
+    "iconHelp": "Choose an icon to help visually identify this special liturgy type."
+  },
+  "sacraments": {
+    "title": "Sacraments",
+    "description": "Manage sacramental celebrations",
+    "explanation": "Sacraments are sacred signs and mysteries instituted by Christ. Create types for each sacrament your parish celebrates.",
+    "examples": "Examples: Baptism, Confirmation, Wedding, Reconciliation, Anointing of the Sick, First Communion, Quinceanera",
+    "noSacraments": "No sacraments yet",
+    "noSacramentsMessage": "Create a sacrament type to start scheduling these celebrations. Sacraments are sacred signs instituted by Christ.",
+    "createTitle": "Create Sacrament",
+    "createDescription": "Create a new sacrament type",
+    "createExplanation": "You're creating a new sacrament type. After creation, you can add custom fields and configure scripts for printing.",
+    "nameLabel": "Sacrament Name",
+    "namePlaceholder": "e.g., Baptism, Wedding, First Communion",
+    "nameHelp": "Choose a clear, descriptive name for this sacrament type.",
+    "iconLabel": "Icon",
+    "iconHelp": "Choose an icon to help visually identify this sacrament type."
   }
 }

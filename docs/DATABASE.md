@@ -4,6 +4,24 @@
 
 > **Overview:** This file provides detailed database management procedures. For migration creation guidelines and file structure, see the Database section in [CLAUDE.md](../CLAUDE.md#-database).
 
+## Table Renames (December 2025)
+
+As part of the Event Categories feature implementation, the following tables were renamed for clarity:
+
+| Old Name | New Name | Purpose |
+|----------|----------|---------|
+| `dynamic_events` | `master_events` | Sacrament containers (Wedding, Funeral) and event planning records |
+| `occasions` | `calendar_events` | Scheduled calendar items (rehearsals, ceremonies, parish activities) |
+
+**Migration Files:**
+- `20251213000001_rename_dynamic_events_to_master_events.sql`
+- `20251213000002_rename_occasions_to_calendar_events.sql`
+
+**Type Aliases:** Backward compatibility aliases exist in `src/lib/types.ts`:
+- `DynamicEvent` → `MasterEvent`
+- `DynamicEventType` → `EventType`
+- `Occasion` → `CalendarEvent`
+
 ## Database Resets
 
 **For local development**, reset the database and apply all migrations using:

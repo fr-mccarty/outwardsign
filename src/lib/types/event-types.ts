@@ -6,6 +6,12 @@
  */
 
 /**
+ * Event Type Category
+ * Used to organize event types in the UI (sidebar navigation)
+ */
+export type EventTypeCategory = 'sacrament' | 'mass' | 'special_liturgy' | 'event'
+
+/**
  * Field types available for input field definitions
  */
 export type InputFieldType =
@@ -40,6 +46,7 @@ export interface EventType {
   icon: string                    // Lucide icon name
   slug: string | null             // URL-safe identifier (e.g., "weddings", "funerals")
   order: number                   // Display order in sidebar
+  category: EventTypeCategory     // Category for UI organization (sacrament, mass, special_liturgy, event)
   deleted_at: string | null
   created_at: string
   updated_at: string
@@ -182,7 +189,7 @@ export interface ParishInfo {
  */
 export interface EventWithRelations extends Event {
   event_type: EventType
-  occasions: Occasion[]
+  calendar_events: Occasion[]  // RENAMED from occasions
   resolved_fields: Record<string, ResolvedFieldValue>
   parish?: ParishInfo
 }
@@ -203,12 +210,14 @@ export interface ResolvedFieldValue {
  */
 export interface Occasion {
   id: string
-  event_id: string
+  master_event_id: string | null  // RENAMED from event_id (nullable for standalone events)
+  parish_id: string               // NEW - For standalone events
   label: string                   // e.g., "Rehearsal", "Ceremony", "Reception"
   date: string | null             // Date string (YYYY-MM-DD)
   time: string | null             // Time string (HH:MM:SS)
   location_id: string | null
   is_primary: boolean             // One occasion marked as primary per event
+  is_standalone: boolean          // NEW - True if not linked to a master event
   deleted_at: string | null
   created_at: string
 }
@@ -244,6 +253,7 @@ export interface CreateEventTypeData {
   description?: string | null
   icon: string
   slug?: string | null
+  category: EventTypeCategory
   // order calculated automatically
 }
 
@@ -252,6 +262,7 @@ export interface UpdateEventTypeData {
   description?: string | null
   icon?: string
   slug?: string | null
+  category?: EventTypeCategory
 }
 
 export interface CreateInputFieldDefinitionData {

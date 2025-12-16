@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { DynamicEventForm } from '../../dynamic-event-form'
+import { MasterEventForm } from '../../master-event-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
 import type { DynamicEventTypeWithRelations, DynamicEventWithRelations } from '@/lib/types'
@@ -35,7 +35,7 @@ export function DynamicEventEditClient({
         }
       ]}
     >
-      <DynamicEventForm
+      <MasterEventForm
         event={event}
         eventType={eventType}
         formId={formId}

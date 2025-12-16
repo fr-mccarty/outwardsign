@@ -47,6 +47,7 @@ export function EventTypeCreateClient() {
       const eventType = await createEventType({
         name: data.name,
         icon: data.icon,
+        category: 'event', // Default to 'event' category
       })
       toast.success('Event type created successfully')
       router.push(`/settings/event-types/${eventType.slug}`)

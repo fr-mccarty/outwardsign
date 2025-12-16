@@ -11,6 +11,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { seedEventTypesForParish } from './event-types-seed'
 import { seedMassEventTypesForParish } from './mass-event-types-seed'
+import { seedSpecialLiturgyEventTypesForParish } from './special-liturgy-event-types-seed'
 import { seedContentTagsForParish } from './content-tags-seed'
 
 // Import petition templates
@@ -322,6 +323,16 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   if (!massEventTypesResult.success) {
     console.error('Error seeding Mass event types')
     throw new Error('Failed to seed Mass event types')
+  }
+
+  // =====================================================
+  // 8c. Seed Special Liturgy Event Types (Easter Vigil, Holy Thursday, Good Friday)
+  // =====================================================
+  const specialLiturgyEventTypesResult = await seedSpecialLiturgyEventTypesForParish(supabase, parishId)
+
+  if (!specialLiturgyEventTypesResult.success) {
+    console.error('Error seeding Special Liturgy event types')
+    throw new Error('Failed to seed Special Liturgy event types')
   }
 
   // =====================================================

@@ -378,8 +378,6 @@ test.describe('Mass Roles Module', () => {
       await page.locator('button[type="submit"]').last().click();
       await page.waitForURL(/\/mass-roles\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-      const massRoleId = page.url().split('/').pop();
-
       // Create a person
       await page.goto('/people/create');
       await page.fill('#first_name', 'Mary');

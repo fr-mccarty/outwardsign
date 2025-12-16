@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import { Calendar } from '@/components/calendar/calendar'
 import { CalendarView, CalendarItem } from '@/components/calendar/types'
 import { PageContainer } from '@/components/page-container'
-import { CalendarOccasionItem } from '@/lib/actions/dynamic-events'
+import { CalendarCalendarEventItem } from '@/lib/actions/master-events'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { getGlobalLiturgicalEventsByMonth, GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 interface CalendarClientProps {
-  occasions: CalendarOccasionItem[]
+  occasions: CalendarCalendarEventItem[]
   initialView: CalendarView
   initialDate?: string
 }
@@ -34,27 +34,28 @@ interface LiturgicalCalendarItem extends CalendarItem {
 }
 
 // Transform Occasion to CalendarItem
-function occasionToCalendarItem(occasion: CalendarOccasionItem): LiturgicalCalendarItem {
+function occasionToCalendarItem(occasion: CalendarCalendarEventItem): LiturgicalCalendarItem {
   // Use event type name as the title
   // For primary occasions, just show the event type name
-  // For non-primary occasions, show event type with occasion label for context (e.g., "Wedding - Rehearsal")
+  // For non-primary calendar events, show event type with label for context (e.g., "Wedding - Rehearsal")
+  const eventTypeName = occasion.event_type_name || 'Event'
   const title = occasion.is_primary
-    ? occasion.event_type_name
-    : `${occasion.event_type_name} - ${occasion.label}`
+    ? eventTypeName
+    : `${eventTypeName} - ${occasion.label}`
 
   return {
     id: occasion.id,
     date: occasion.date,
     title,
-    event_type: occasion.event_type_name,
+    event_type: eventTypeName,
     isLiturgical: false,
     moduleType: occasion.module_type,
     start_time: occasion.time,
     eventTypeIcon: occasion.event_type_icon,
     // Additional fields for navigation
-    event_id: occasion.event_id,
-    event_type_slug: occasion.event_type_slug,
-    module_id: occasion.module_id,
+    event_id: occasion.master_event_id ?? undefined,
+    event_type_slug: occasion.event_type_slug ?? undefined,
+    module_id: occasion.module_id ?? undefined,
   }
 }
 

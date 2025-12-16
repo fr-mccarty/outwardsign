@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * CSRF Protection Tests

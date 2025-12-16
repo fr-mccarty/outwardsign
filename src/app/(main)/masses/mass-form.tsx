@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
 import { getMassRoleTemplates, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { getTemplateItems, type MassRoleTemplateItemWithRole } from "@/lib/actions/mass-role-template-items"
-import type { Person, Event, Location, ContentWithTags, Petition, Document, CustomListItem } from "@/lib/types"
+import type { Person, Event, Location, ContentWithTags, Petition, Document } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import type { MassIntentionWithNames } from "@/lib/actions/mass-intentions"
@@ -403,7 +403,7 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   }
 
   // Update list item value (stores the ID in fieldValues)
-  const updateListItemValue = (fieldName: string, itemId: string | null, _item: CustomListItem | null) => {
+  const updateListItemValue = (fieldName: string, itemId: string | null) => {
     setFieldValues(prev => ({ ...prev, [fieldName]: itemId }))
   }
 
@@ -537,7 +537,7 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
             label={field.name}
             listId={field.list_id}
             value={typeof value === 'string' ? value : null}
-            onValueChange={(itemId, item) => updateListItemValue(field.name, itemId, item)}
+            onValueChange={(itemId) => updateListItemValue(field.name, itemId)}
             placeholder={`Select ${field.name}`}
           />
         )

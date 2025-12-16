@@ -1,7 +1,7 @@
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations } from '@/lib/actions/dynamic-events'
+import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getScriptWithSections } from '@/lib/actions/scripts'
 import { ScriptViewClient } from './script-view-client'
 

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { getAllDynamicEvents, deleteEvent, type DynamicEventFilterParams, type DynamicEventWithTypeAndOccasion } from '@/lib/actions/dynamic-events'
+import { getAllMasterEvents, deleteEvent, type MasterEventFilterParams, type MasterEventWithTypeAndCalendarEvent } from '@/lib/actions/master-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 interface EventsListClientProps {
-  initialData: DynamicEventWithTypeAndOccasion[]
+  initialData: MasterEventWithTypeAndCalendarEvent[]
   initialHasMore: boolean
   eventTypes: DynamicEventType[]
 }
@@ -99,10 +99,10 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
 
     setIsLoadingMore(true)
     try {
-      const nextEvents = await getAllDynamicEvents({
+      const nextEvents = await getAllMasterEvents({
         search: filters.getFilterValue('search'),
         eventTypeId: selectedEventTypeSlug ? getEventTypeIdFromSlug(selectedEventTypeSlug) : undefined,
-        sort: filters.getFilterValue('sort') as DynamicEventFilterParams['sort'],
+        sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
         startDate: searchParams.get('start_date') || undefined,
@@ -132,7 +132,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventToDelete, setEventToDelete] = useState<DynamicEventWithTypeAndOccasion | null>(null)
+  const [eventToDelete, setEventToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -161,7 +161,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   }
 
   // Define custom "What" column (event type name)
-  const whatColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
+  const whatColumn: DataTableColumn<MasterEventWithTypeAndCalendarEvent> = {
     key: 'name',
     header: t('events.what'),
     cell: (event) => (
@@ -177,11 +177,11 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   }
 
   // Define "When" column
-  const whenColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
+  const whenColumn: DataTableColumn<MasterEventWithTypeAndCalendarEvent> = {
     key: 'date',
     header: t('events.when'),
     cell: (event) => {
-      const occasion = event.primary_occasion
+      const occasion = event.primary_calendar_event
       if (!occasion?.date) {
         return <span className="text-muted-foreground">{t('events.noDateSet')}</span>
       }
@@ -198,11 +198,11 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   }
 
   // Define "Where" column
-  const whereColumn: DataTableColumn<DynamicEventWithTypeAndOccasion> = {
+  const whereColumn: DataTableColumn<MasterEventWithTypeAndCalendarEvent> = {
     key: 'location',
     header: t('events.where'),
     cell: (event) => {
-      const location = event.primary_occasion?.location
+      const location = event.primary_calendar_event?.location
       if (!location) {
         return <span className="text-muted-foreground">-</span>
       }
@@ -216,7 +216,7 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   }
 
   // Define table columns
-  const columns: DataTableColumn<DynamicEventWithTypeAndOccasion>[] = [
+  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
     whatColumn,
     whenColumn,
     whereColumn,

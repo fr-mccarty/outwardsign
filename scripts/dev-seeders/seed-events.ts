@@ -204,10 +204,10 @@ export async function seedEvents(
         continue
     }
 
-    // Insert events and occasions
+    // Insert events and calendar events
     for (const eventData of eventsData) {
       const { data: newEvent, error: eventError } = await supabase
-        .from('dynamic_events')
+        .from('master_events')
         .insert({
           parish_id: parishId,
           event_type_id: eventType.id,
@@ -221,19 +221,21 @@ export async function seedEvents(
         continue
       }
 
-      const { error: occasionError } = await supabase
-        .from('occasions')
+      const { error: calendarEventError } = await supabase
+        .from('calendar_events')
         .insert({
-          event_id: newEvent.id,
+          master_event_id: newEvent.id,
+          parish_id: parishId,
           label: eventData.occasion.label,
           date: eventData.occasion.date,
           time: eventData.occasion.time,
           location_id: eventData.occasion.location_id,
-          is_primary: true
+          is_primary: true,
+          is_standalone: false
         })
 
-      if (occasionError) {
-        await supabase.from('dynamic_events').delete().eq('id', newEvent.id)
+      if (calendarEventError) {
+        await supabase.from('master_events').delete().eq('id', newEvent.id)
         continue
       }
 

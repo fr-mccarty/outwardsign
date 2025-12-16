@@ -18,8 +18,9 @@ import {
   FileText,
   Calendar,
   Settings,
-  User, Users, Users2, CirclePlus, Plus,
+  User, Users, Users2, Plus,
   CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText,
+  Church, BookOpen, Star,
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -42,6 +43,12 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
     if (isMobile) {
       setOpenMobile(false)
     }
+  }
+
+  // Group event types by category
+  const groupedEventTypes = {
+    sacrament: eventTypes.filter(et => et.category === 'sacrament'),
+    special_liturgy: eventTypes.filter(et => et.category === 'special_liturgy'),
   }
 
   return (
@@ -86,23 +93,40 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <CollapsibleNavSection
-                name={t('nav.events')}
-                icon={CalendarDays}
+                name={t('nav.masses')}
+                icon={BookOpen}
                 items={[
                   {
-                    title: t('nav.ourEvents'),
-                    url: "/events",
-                    icon: CalendarDays,
+                    title: t('nav.ourMasses'),
+                    url: "/masses",
+                    icon: BookOpen,
                   },
                   {
-                    title: t('nav.createEvent'),
-                    url: "/events/create",
+                    title: t('nav.newMass'),
+                    url: "/masses/create",
                     icon: Plus,
                   },
                 ]}
                 defaultOpen={false}
               />
 
+              <CollapsibleNavSection
+                name={t('nav.calendarEvents')}
+                icon={CalendarDays}
+                items={[
+                  {
+                    title: t('nav.ourCalendarEvents'),
+                    url: "/calendar-events",
+                    icon: CalendarDays,
+                  },
+                  {
+                    title: t('nav.newCalendarEvent'),
+                    url: "/calendar-events/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
               <CollapsibleNavSection
                 name={t('nav.groups')}
@@ -197,24 +221,6 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               />
 
               <CollapsibleNavSection
-                name={t('nav.masses')}
-                icon={CirclePlus}
-                items={[
-                  {
-                    title: t('nav.ourMasses'),
-                    url: "/masses",
-                    icon: CirclePlus,
-                  },
-                  {
-                    title: t('nav.newMass'),
-                    url: "/masses/create",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <CollapsibleNavSection
                 name={t('nav.people')}
                 icon={User}
                 items={[
@@ -263,15 +269,44 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Dynamic Event Types Section */}
-        {eventTypes.length > 0 && (
+        {/* Special Liturgies - Simple Module Structure */}
+        <SidebarGroup>
+          <SidebarGroupLabel>{t('nav.application')}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <CollapsibleNavSection
+                name={t('nav.specialLiturgies')}
+                icon={Star}
+                items={[
+                  {
+                    title: `${t('common.our')} ${t('nav.specialLiturgies')}`,
+                    url: "/settings/special-liturgies",
+                    icon: Star,
+                  },
+                  {
+                    title: `${t('common.new')} ${t('nav.specialLiturgy')}`,
+                    url: "/settings/special-liturgies/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Sacraments - Expanded */}
+        {groupedEventTypes.sacrament.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>{t('nav.eventTypes')}</SidebarGroupLabel>
+            <SidebarGroupLabel>
+              <Church className="mr-2 h-4 w-4" />
+              {t('nav.sacraments')}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {eventTypes.map((eventType) => {
+                {groupedEventTypes.sacrament.map((eventType) => {
                   const Icon = getLucideIcon(eventType.icon)
-                  const slug = eventType.slug || eventType.id // Fallback to ID if slug missing
+                  const slug = eventType.slug || eventType.id
                   return (
                     <CollapsibleNavSection
                       key={eventType.id}

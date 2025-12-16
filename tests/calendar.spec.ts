@@ -134,9 +134,6 @@ test.describe('Calendar Module', () => {
     // Should redirect to event edit page
     await page.waitForURL(/\/events\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const urlParts = page.url().split('/');
-    const eventId = urlParts[urlParts.length - 2];
-
     console.log(`Created event: ${eventName}`);
 
     // Navigate to calendar

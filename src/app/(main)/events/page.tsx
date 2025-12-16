@@ -1,7 +1,7 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getAllDynamicEvents, type DynamicEventFilterParams } from "@/lib/actions/dynamic-events"
+import { getAllMasterEvents, type MasterEventFilterParams } from "@/lib/actions/master-events"
 import { getEventTypeBySlug, getActiveEventTypes } from '@/lib/actions/event-types'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -40,18 +40,18 @@ export default async function EventsPage({ searchParams }: PageProps) {
   }
 
   // Build filters from search params with defaults
-  const filters: DynamicEventFilterParams = {
+  const filters: MasterEventFilterParams = {
     search: params.search,
     eventTypeId,
     startDate: params.start_date,
     endDate: params.end_date,
-    sort: (params.sort as DynamicEventFilterParams['sort']) || 'date_desc',
+    sort: (params.sort as MasterEventFilterParams['sort']) || 'date_desc',
     offset: 0,
     limit: LIST_VIEW_PAGE_SIZE
   }
 
   // Fetch dynamic events server-side with filters
-  const events = await getAllDynamicEvents(filters)
+  const events = await getAllMasterEvents(filters)
 
   // Determine if there are more results
   const initialHasMore = events.length === LIST_VIEW_PAGE_SIZE

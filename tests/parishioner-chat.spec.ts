@@ -214,17 +214,14 @@ test.describe('Parishioner Chat', () => {
 
     // Voice input button (microphone icon) should be visible if browser supports it
     // This is optional - depends on browser support
-    const voiceButton = page.getByRole('button').filter({ has: page.locator('svg') }).filter({ hasText: '' });
-
     // Check if any button has a microphone icon
     // If not supported, test passes (voice is optional feature)
     const buttons = await page.locator('button:has(svg)').all();
-    let hasMicButton = false;
 
     for (const button of buttons) {
       const ariaLabel = await button.getAttribute('aria-label');
       if (ariaLabel?.toLowerCase().includes('voice') || ariaLabel?.toLowerCase().includes('mic')) {
-        hasMicButton = true;
+        // Voice button found
         break;
       }
     }

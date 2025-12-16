@@ -175,7 +175,7 @@ test.describe('DatePickerField - Timezone Edge Cases', () => {
     const url = page.url()
     const dateMatch = url.match(/date=(\d{4}-\d{2}-\d{2})/)
     if (dateMatch) {
-      const [year, month, day] = dateMatch[1].split('-')
+      const [, , day] = dateMatch[1].split('-')
       // The day in URL should match what we clicked
       expect(parseInt(day)).toBe(parseInt(expectedDay || '0'))
     }

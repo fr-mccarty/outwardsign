@@ -1,9 +1,9 @@
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations } from '@/lib/actions/dynamic-events'
+import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
-import { DynamicEventEditClient } from './dynamic-event-edit-client'
+import { DynamicEventEditClient } from './master-event-edit-client'
 
 interface PageProps {
   params: Promise<{

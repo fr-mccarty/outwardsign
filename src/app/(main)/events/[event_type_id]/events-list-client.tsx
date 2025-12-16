@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { DynamicEvent, DynamicEventType } from '@/lib/types'
-import { getEvents, type DynamicEventFilterParams } from '@/lib/actions/dynamic-events'
+import { getEvents, type MasterEventFilterParams } from '@/lib/actions/master-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
 import { EndOfListMessage } from '@/components/end-of-list-message'
@@ -81,7 +81,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore }: Eve
     try {
       const nextEvents = await getEvents(eventType.id, {
         search: filters.getFilterValue('search'),
-        sort: filters.getFilterValue('sort') as DynamicEventFilterParams['sort'],
+        sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
         startDate: filters.getFilterValue('start_date'),

@@ -82,6 +82,7 @@ export function EventTypePicker({
       name: formData.name as string,
       icon: formData.icon as string,
       description: formData.description as string | undefined,
+      category: 'event', // Default to 'event' category
     })
 
     // Add to local state

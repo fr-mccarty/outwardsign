@@ -211,7 +211,7 @@ test.describe('Event Picker Component', () => {
   // Note: Nested location picker tests are skipped due to complex dialog interaction issues
   // The location picker within event picker has re-rendering issues that cause test instability
   // These tests should be addressed when the nested dialog behavior is fixed
-  test.skip('should allow selecting existing location in event creation', async ({ page }) => {
+  test.skip('should allow selecting existing location in event creation', async () => {
     // This test is skipped - see comment above
     // TODO: Fix nested dialog interaction between EventPicker and LocationPicker
   });

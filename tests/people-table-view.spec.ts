@@ -201,9 +201,6 @@ test.describe('People Table View', () => {
     // This is done via Tailwind CSS classes, so we need to check computed styles
     const contactHeader = page.getByRole('columnheader', { name: 'Contact' })
 
-    // The column may still exist in DOM but be hidden via CSS
-    const isVisible = await contactHeader.isVisible().catch(() => false)
-
     // On medium screens, it may or may not be visible depending on CSS
     // Just verify the header exists
     expect(await contactHeader.count()).toBeGreaterThan(0)

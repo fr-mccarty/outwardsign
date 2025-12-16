@@ -13,9 +13,9 @@ import { PetitionPickerField } from "@/components/petition-picker-field"
 import { GroupPickerField } from "@/components/group-picker-field"
 import { ListItemPickerField } from "@/components/list-item-picker-field"
 import { DocumentPickerField } from "@/components/document-picker-field"
-import { OccasionFieldView, type OccasionFieldData } from "@/components/occasion-field-view"
-import { createEvent, updateEvent } from "@/lib/actions/dynamic-events"
-import type { DynamicEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document, CustomListItem } from "@/lib/types"
+import { CalendarEventFieldView, type CalendarEventFieldData } from "@/components/calendar-event-field-view"
+import { createEvent, updateEvent } from "@/lib/actions/master-events"
+import type { MasterEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -24,8 +24,8 @@ import { toLocalDateString } from "@/lib/utils/formatters"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
-interface DynamicEventFormProps {
-  event?: DynamicEventWithRelations
+interface MasterEventFormProps {
+  event?: MasterEventWithRelations
   eventType: DynamicEventTypeWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
@@ -35,17 +35,17 @@ interface FieldValues {
   [key: string]: string | boolean | null | undefined
 }
 
-export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: DynamicEventFormProps) {
+export function MasterEventForm({ event, eventType, formId, onLoadingChange }: MasterEventFormProps) {
   const router = useRouter()
   const isEditing = !!event
 
-  // Get occasion fields from input definitions
-  const occasionFields = (eventType.input_field_definitions || []).filter(f => f.type === 'occasion')
+  // Get calendar event fields from input definitions
+  const calendarEventFields = (eventType.input_field_definitions || []).filter(f => f.type === 'occasion')
 
-  // State for field values (non-occasion fields)
+  // State for field values (non-calendar-event fields)
   const [fieldValues, setFieldValues] = useState<FieldValues>(() => {
     const initial: FieldValues = {}
-    // Initialize from existing event or empty (skip occasion fields)
+    // Initialize from existing event or empty (skip calendar event fields)
     eventType.input_field_definitions?.forEach((field) => {
       if (field.type !== 'occasion') {
         initial[field.name] = event?.field_values?.[field.name] ?? (field.type === 'yes_no' ? false : '')
@@ -54,18 +54,18 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
     return initial
   })
 
-  // State for occasion field values (keyed by field name)
-  const [occasionValues, setOccasionValues] = useState<Record<string, OccasionFieldData>>(() => {
-    const initial: Record<string, OccasionFieldData> = {}
-    // Initialize occasion fields from existing occasions
-    occasionFields.forEach((field) => {
-      // Match occasion to field by label (field name = occasion label)
-      const existingOccasion = event?.occasions?.find(occ => occ.label === field.name)
+  // State for calendar event field values (keyed by field name)
+  const [calendarEventValues, setCalendarEventValues] = useState<Record<string, CalendarEventFieldData>>(() => {
+    const initial: Record<string, CalendarEventFieldData> = {}
+    // Initialize calendar event fields from existing calendar events
+    calendarEventFields.forEach((field) => {
+      // Match calendar event to field by label (field name = calendar event label)
+      const existingCalendarEvent = event?.calendar_events?.find(ce => ce.label === field.name)
       initial[field.name] = {
-        date: existingOccasion?.date || '',
-        time: existingOccasion?.time || '',
-        location_id: existingOccasion?.location_id || null,
-        location: existingOccasion?.location || null
+        date: existingCalendarEvent?.date || '',
+        time: existingCalendarEvent?.time || '',
+        location_id: existingCalendarEvent?.location_id || null,
+        location: existingCalendarEvent?.location || null
       }
     })
     return initial
@@ -114,13 +114,13 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
   }
 
   // Update list item value (stores the ID in fieldValues, also gets the item for display)
-  const updateListItemValue = (fieldName: string, itemId: string | null, _item: CustomListItem | null) => {
+  const updateListItemValue = (fieldName: string, itemId: string | null) => {
     setFieldValues(prev => ({ ...prev, [fieldName]: itemId }))
   }
 
   // Update occasion field value
-  const updateOccasionValue = (fieldName: string, value: OccasionFieldData) => {
-    setOccasionValues(prev => ({
+  const updateOccasionValue = (fieldName: string, value: CalendarEventFieldData) => {
+    setCalendarEventValues(prev => ({
       ...prev,
       [fieldName]: value
     }))
@@ -137,8 +137,8 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
     })
 
     // Validate required occasion fields (must have at least a date)
-    occasionFields.forEach((field) => {
-      if (field.required && !occasionValues[field.name]?.date) {
+    calendarEventFields.forEach((field) => {
+      if (field.required && !calendarEventValues[field.name]?.date) {
         missingRequired.push(`${field.name} (Date)`)
       }
     })
@@ -149,17 +149,17 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
     }
 
     // Build occasions array from occasion field values
-    const occasions = occasionFields.map((field) => ({
+    const calendar_events = calendarEventFields.map((field) => ({
       label: field.name,
-      date: occasionValues[field.name]?.date || new Date().toISOString().split('T')[0],
-      time: occasionValues[field.name]?.time || null,
-      location_id: occasionValues[field.name]?.location_id || null,
+      date: calendarEventValues[field.name]?.date || new Date().toISOString().split('T')[0],
+      time: calendarEventValues[field.name]?.time || null,
+      location_id: calendarEventValues[field.name]?.location_id || null,
       is_primary: field.is_primary
     }))
 
-    // Ensure at least one occasion exists (use event type name as default if no occasion fields)
-    if (occasions.length === 0) {
-      occasions.push({
+    // Ensure at least one calendar event exists (use event type name as default if no occasion fields)
+    if (calendar_events.length === 0) {
+      calendar_events.push({
         label: eventType.name,
         date: new Date().toISOString().split('T')[0],
         time: null,
@@ -173,7 +173,7 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
       try {
         const newEvent = await createEvent(eventType.id, {
           field_values: fieldValues,
-          occasions
+          calendar_events
         })
         toast.success(`${eventType.name} created successfully`)
         router.push(`/events/${eventType.slug}/${newEvent.id}`)
@@ -186,7 +186,7 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
       try {
         await updateEvent(event.id, {
           field_values: fieldValues,
-          occasions
+          calendar_events
         })
         toast.success(`${eventType.name} updated successfully`)
         router.refresh()
@@ -258,7 +258,7 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
             placeholder={`Select or create ${field.name}`}
             eventContext={{
               eventTypeName: eventType.name,
-              occasionDate: Object.values(occasionValues)[0]?.date || new Date().toISOString().split('T')[0],
+              occasionDate: Object.values(calendarEventValues)[0]?.date || new Date().toISOString().split('T')[0],
               language: 'en', // TODO: Detect from event or use parish default
             }}
           />
@@ -293,7 +293,7 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
             label={field.name}
             listId={field.list_id}
             value={typeof value === 'string' ? value : null}
-            onValueChange={(itemId, item) => updateListItemValue(field.name, itemId, item)}
+            onValueChange={(itemId) => updateListItemValue(field.name, itemId)}
             required={field.required}
             placeholder={`Select ${field.name}`}
           />
@@ -317,17 +317,17 @@ export function DynamicEventForm({ event, eventType, formId, onLoadingChange }: 
       case 'occasion':
         // Occasion inputs render date, time, and location together
         // In edit mode, show display view with modal for separate save
-        const existingOccasion = event?.occasions?.find(occ => occ.label === field.name)
+        const existingOccasion = event?.calendar_events?.find(occ => occ.label === field.name)
         return (
-          <OccasionFieldView
+          <CalendarEventFieldView
             key={field.id}
             label={field.name}
-            value={occasionValues[field.name] || { date: '', time: '', location_id: null, location: null }}
+            value={calendarEventValues[field.name] || { date: '', time: '', location_id: null, location: null }}
             onValueChange={(value) => updateOccasionValue(field.name, value)}
             required={field.required}
             isPrimary={field.is_primary}
-            occasionId={existingOccasion?.id}
-            eventId={event?.id}
+            calendarEventId={existingOccasion?.id}
+            masterEventId={event?.id}
             isEditing={isEditing}
           />
         )

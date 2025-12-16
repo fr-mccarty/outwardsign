@@ -294,6 +294,7 @@ export interface EventType {
   icon: string // Lucide icon name
   slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
   order: number
+  category: 'sacrament' | 'mass' | 'special_liturgy' | 'event' // Category for UI organization
   deleted_at: string | null
   created_at: string
   updated_at: string
@@ -587,6 +588,7 @@ export interface CreateDynamicEventTypeData {
   description?: string | null
   icon: string
   slug?: string | null
+  category: 'sacrament' | 'mass' | 'special_liturgy' | 'event'
 }
 
 export interface UpdateDynamicEventTypeData {
@@ -594,6 +596,7 @@ export interface UpdateDynamicEventTypeData {
   description?: string | null
   icon?: string
   slug?: string | null
+  category?: 'sacrament' | 'mass' | 'special_liturgy' | 'event'
 }
 
 // Input Field Definitions (fields for event types)
@@ -741,12 +744,19 @@ export interface UpdateSectionData {
   page_break_after?: boolean
 }
 
-// Dynamic Events (replaces Wedding, Funeral, etc.)
-export interface DynamicEvent {
+// ========================================
+// MASTER EVENTS (formerly DynamicEvent)
+// ========================================
+// Master events are containers for sacraments (Weddings, Funerals, etc.)
+// They store dynamic field values and have manual minister assignment
+
+export interface MasterEvent {
   id: string
   parish_id: string
   event_type_id: string
   field_values: Record<string, any> // JSON object
+  presider_id: string | null  // NEW - Manual minister assignment
+  homilist_id: string | null  // NEW - Manual minister assignment
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -757,7 +767,7 @@ export interface ResolvedFieldValue {
   field_type: InputFieldType
   raw_value: any
   // Content is defined later in file - TypeScript handles forward references within the same file
-  resolved_value?: Person | Group | Location | DynamicEvent | CustomListItem | Document | Content | Petition | null
+  resolved_value?: Person | Group | Location | MasterEvent | CustomListItem | Document | Content | Petition | null
 }
 
 /**
@@ -769,46 +779,65 @@ export interface ParishInfo {
   state: string
 }
 
-export interface DynamicEventWithRelations extends DynamicEvent {
+export interface MasterEventWithRelations extends MasterEvent {
   event_type: DynamicEventType
-  occasions: Occasion[]
+  calendar_events: CalendarEvent[]  // RENAMED from occasions
+  presider?: Person | null  // NEW - Resolved presider
+  homilist?: Person | null  // NEW - Resolved homilist
   resolved_fields: Record<string, ResolvedFieldValue>
   parish?: ParishInfo
 }
 
-export interface CreateDynamicEventData {
+export interface CreateMasterEventData {
   field_values: Record<string, any>
-  occasions?: CreateOccasionData[]
+  presider_id?: string | null  // NEW
+  homilist_id?: string | null  // NEW
+  calendar_events?: CreateCalendarEventData[]
 }
 
-export interface UpdateDynamicEventData {
+export interface UpdateMasterEventData {
   field_values?: Record<string, any>
-  occasions?: (CreateOccasionData | UpdateOccasionData)[]
+  presider_id?: string | null  // NEW
+  homilist_id?: string | null  // NEW
+  calendar_events?: (CreateCalendarEventData | UpdateCalendarEventData)[]
 }
 
-// Occasions (date/time/location entries for events)
-export interface Occasion {
+// ========================================
+// CALENDAR EVENTS (formerly Occasion)
+// ========================================
+// Calendar events are scheduled items that appear on the calendar
+// Can be linked to master events (rehearsal, ceremony) OR standalone (Zumba, Parish Picnic)
+
+export interface CalendarEvent {
   id: string
-  event_id: string
+  master_event_id: string | null  // RENAMED from event_id, nullable for standalone
+  parish_id: string  // NEW - For standalone events and RLS
   label: string
   date: string | null
   time: string | null
   location_id: string | null
   is_primary: boolean
+  is_standalone: boolean  // NEW - True if standalone event (not linked to master)
   deleted_at: string | null
   created_at: string
   location?: Location | null
 }
 
-export interface CreateOccasionData {
+export interface CalendarEventWithLocation extends CalendarEvent {
+  master_event?: MasterEvent | null  // NEW - For linked events, include parent
+}
+
+export interface CreateCalendarEventData {
   label: string
   date?: string | null
   time?: string | null
   location_id?: string | null
   is_primary?: boolean
+  is_standalone?: boolean  // NEW - For standalone events
+  master_event_id?: string | null  // NEW - Nullable for standalone
 }
 
-export interface UpdateOccasionData {
+export interface UpdateCalendarEventData {
   id?: string
   label?: string
   date?: string | null
@@ -816,6 +845,33 @@ export interface UpdateOccasionData {
   location_id?: string | null
   is_primary?: boolean
 }
+
+// ========================================
+// BACKWARD COMPATIBILITY ALIASES
+// ========================================
+// These are maintained temporarily during migration
+// TODO: Remove after full codebase migration
+
+/** @deprecated Use MasterEvent instead */
+export type DynamicEvent = MasterEvent
+
+/** @deprecated Use MasterEventWithRelations instead */
+export type DynamicEventWithRelations = MasterEventWithRelations
+
+/** @deprecated Use CreateMasterEventData instead */
+export type CreateDynamicEventData = CreateMasterEventData
+
+/** @deprecated Use UpdateMasterEventData instead */
+export type UpdateDynamicEventData = UpdateMasterEventData
+
+/** @deprecated Use CalendarEvent instead */
+export type Occasion = CalendarEvent
+
+/** @deprecated Use CreateCalendarEventData instead */
+export type CreateOccasionData = CreateCalendarEventData
+
+/** @deprecated Use UpdateCalendarEventData instead */
+export type UpdateOccasionData = UpdateCalendarEventData
 
 // Documents (file uploads)
 export interface Document {

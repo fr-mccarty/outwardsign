@@ -255,7 +255,6 @@ test.describe('Parishioner Notifications', () => {
       await expect(page.getByText('Deletable Notification')).toBeVisible();
 
       // Find and click delete button (trash icon)
-      const deleteButton = page.getByRole('button').filter({ has: page.locator('svg') }).filter({ hasText: '' });
       const trashButtons = await page.locator('button:has(svg)').all();
 
       // Find the delete button by looking for the Trash2 icon

@@ -59,7 +59,7 @@ export default async function PrintMassScriptPage({ params }: PageProps) {
     field_values: mass.field_values || {},
     resolved_fields: mass.resolved_fields || {},
     event_type: mass.event_type!,
-    occasions: [], // Masses don't use occasions like events do
+    calendar_events: [], // Masses don't use calendar events like events do
     parish: mass.event?.location ? {
       name: 'Parish', // TODO: Get actual parish name if needed
       city: mass.event.location.city || '',

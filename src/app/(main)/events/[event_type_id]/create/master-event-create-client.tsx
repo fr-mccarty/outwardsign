@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { DynamicEventForm } from '../dynamic-event-form'
+import { MasterEventForm } from '../master-event-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
 import type { DynamicEventTypeWithRelations } from '@/lib/types'
@@ -26,7 +26,7 @@ export function DynamicEventCreateClient({
       description={description}
       primaryAction={<ModuleSaveButton moduleName={eventType.name} isLoading={isLoading} isEditing={false} form={formId} />}
     >
-      <DynamicEventForm
+      <MasterEventForm
         eventType={eventType}
         formId={formId}
         onLoadingChange={setIsLoading}

@@ -33,7 +33,7 @@ export function MassScriptViewClient({ mass, script }: MassScriptViewClientProps
     field_values: mass.field_values || {},
     resolved_fields: mass.resolved_fields || {},
     event_type: mass.event_type!,
-    occasions: [],
+    calendar_events: [],
     parish: mass.event?.location ? {
       name: 'Parish',
       city: mass.event.location.city || '',

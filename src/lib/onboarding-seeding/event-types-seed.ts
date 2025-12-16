@@ -31,6 +31,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       description: 'Celebrating the union of two people in marriage.',
       icon: 'VenusAndMars',
       slug: 'weddings',
+      category: 'sacrament',
       order: 1
     })
     .select()
@@ -443,6 +444,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       description: 'Honoring the life of the deceased and commending them to God.',
       icon: 'Cross',
       slug: 'funerals',
+      category: 'sacrament',
       order: 2
     })
     .select()
@@ -891,6 +893,7 @@ Burial will take place at:
       description: 'Welcoming new members into the faith through the waters of baptism.',
       icon: 'Droplet',
       slug: 'baptisms',
+      category: 'sacrament',
       order: 3
     })
     .select()
@@ -1018,6 +1021,7 @@ Please join us in celebrating the Baptism of
       description: 'Celebrating a young woman\'s fifteenth birthday and her transition to adulthood.',
       icon: 'BookHeart',
       slug: 'quinceaneras',
+      category: 'sacrament',
       order: 4
     })
     .select()
@@ -1149,6 +1153,7 @@ Please join us for a reception following the ceremony at:
       description: 'Presenting a child to God and asking for His blessing.',
       icon: 'HandHeartIcon',
       slug: 'presentations',
+      category: 'sacrament',
       order: 5
     })
     .select()
@@ -1280,6 +1285,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       description: 'General parish events and activities.',
       icon: 'CalendarDays',
       slug: 'other',
+      category: 'event',
       order: 6
     })
     .select()

@@ -14,14 +14,23 @@ import {
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form-input'
 import { IconPicker } from '@/components/icon-picker'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import { createEventType, updateEventType } from '@/lib/actions/event-types'
 import {
   createEventTypeSchema,
   type CreateEventTypeData,
 } from '@/lib/schemas/event-types'
 import { toast } from 'sonner'
-import type { EventType } from '@/lib/types/event-types'
+import type { EventType, EventTypeCategory } from '@/lib/types/event-types'
 import { generateSlug } from '@/lib/utils/formatters'
+import { useTranslations } from 'next-intl'
 
 interface EventTypeFormDialogProps {
   open: boolean
@@ -36,6 +45,7 @@ export function EventTypeFormDialog({
   eventType,
   onSuccess,
 }: EventTypeFormDialogProps) {
+  const t = useTranslations('event_type.category')
   const isEditing = !!eventType
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
@@ -51,12 +61,14 @@ export function EventTypeFormDialog({
       name: '',
       icon: 'FileText',
       slug: '',
+      category: 'event',
     },
   })
 
   const name = watch('name')
   const icon = watch('icon')
   const slug = watch('slug')
+  const category = watch('category')
 
   // Initialize form when dialog opens or eventType changes
   useEffect(() => {
@@ -66,6 +78,7 @@ export function EventTypeFormDialog({
           name: eventType.name,
           icon: eventType.icon || 'FileText',
           slug: eventType.slug || '',
+          category: eventType.category,
         })
         setSlugManuallyEdited(false)
       } else {
@@ -73,6 +86,7 @@ export function EventTypeFormDialog({
           name: '',
           icon: 'FileText',
           slug: '',
+          category: 'event',
         })
         setSlugManuallyEdited(false)
       }
@@ -93,6 +107,7 @@ export function EventTypeFormDialog({
           name: data.name,
           icon: data.icon,
           slug: data.slug,
+          category: data.category,
         })
         toast.success('Event type updated successfully')
       } else {
@@ -100,6 +115,7 @@ export function EventTypeFormDialog({
           name: data.name,
           icon: data.icon,
           slug: data.slug,
+          category: data.category,
         })
         toast.success('Event type created successfully')
       }
@@ -146,6 +162,32 @@ export function EventTypeFormDialog({
               placeholder="e.g., weddings, funerals, baptisms, etc."
               description="URL-friendly identifier. Auto-generated from name, but you can customize it."
             />
+
+            <div className="space-y-2">
+              <Label htmlFor="category">
+                Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={category}
+                onValueChange={(value) => setValue('category', value as EventTypeCategory)}
+              >
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sacrament">{t('sacrament')}</SelectItem>
+                  <SelectItem value="mass">{t('mass')}</SelectItem>
+                  <SelectItem value="special_liturgy">{t('special_liturgy')}</SelectItem>
+                  <SelectItem value="event">{t('event')}</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.category?.message && (
+                <p className="text-sm text-destructive">{errors.category.message}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Determines where this event type appears in the sidebar navigation
+              </p>
+            </div>
 
             <IconPicker
               value={icon}

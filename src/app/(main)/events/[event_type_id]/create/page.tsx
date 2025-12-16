@@ -2,7 +2,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
-import { DynamicEventCreateClient } from './dynamic-event-create-client'
+import { DynamicEventCreateClient } from './master-event-create-client'
 
 interface PageProps {
   params: Promise<{

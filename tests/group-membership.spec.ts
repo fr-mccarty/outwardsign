@@ -45,9 +45,6 @@ test.describe('Group Roles - Default Roles', () => {
     await page.locator('button[type="submit"]').last().click();
     await page.waitForURL(/\/people\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
-    const urlParts = page.url().split('/');
-    const personId = urlParts[urlParts.length - 2];
-
     // Navigate back to the group
     await page.goto(`/groups/${groupId}`);
     await expect(page).toHaveURL(`/groups/${groupId}`);
@@ -467,7 +464,7 @@ test.describe('Group Roles - Edit Member Role', () => {
     await page.waitForTimeout(2000);
 
     // Add member with initial role (Lector)
-    let dialog, pickerDialog, rolePickerDialog;
+    let dialog, rolePickerDialog;
 
     const addMemberButton = page.getByRole('button', { name: /Add Member/i });
     await expect(addMemberButton).toBeVisible({ timeout: 10000 });
@@ -478,7 +475,7 @@ test.describe('Group Roles - Edit Member Role', () => {
     await dialog.getByRole('button', { name: /Select Person/i }).click();
     await page.waitForTimeout(1000);
 
-    pickerDialog = page.locator('[role="dialog"]').last();
+    const pickerDialog = page.locator('[role="dialog"]').last();
     await pickerDialog.getByRole('button', { name: /Role Changer/i }).first().click();
     await page.waitForTimeout(500);
 

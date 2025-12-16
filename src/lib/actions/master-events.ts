@@ -5,13 +5,13 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import type {
-  DynamicEvent,
-  DynamicEventWithRelations,
-  CreateDynamicEventData,
-  UpdateDynamicEventData,
+  MasterEvent,
+  MasterEventWithRelations,
+  CreateMasterEventData,
+  UpdateMasterEventData,
   DynamicEventType,
   InputFieldDefinition,
-  Occasion,
+  CalendarEvent,
   Person,
   Group,
   Location,
@@ -23,7 +23,7 @@ import type {
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
-export interface DynamicEventFilterParams {
+export interface MasterEventFilterParams {
   search?: string
   eventTypeId?: string
   startDate?: string
@@ -33,21 +33,21 @@ export interface DynamicEventFilterParams {
   limit?: number
 }
 
-export interface DynamicEventWithTypeAndOccasion extends DynamicEvent {
+export interface MasterEventWithTypeAndCalendarEvent extends MasterEvent {
   event_type?: DynamicEventType
-  primary_occasion?: Occasion
+  primary_calendar_event?: CalendarEvent
 }
 
 /**
- * Get all dynamic events for the parish (used by dashboard)
+ * Get all master events for the parish (used by dashboard)
  */
-export async function getDynamicEvents(): Promise<(DynamicEvent & { event_type?: DynamicEventType })[]> {
+export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: DynamicEventType })[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('*, event_type:event_types(*)')
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
@@ -55,7 +55,7 @@ export async function getDynamicEvents(): Promise<(DynamicEvent & { event_type?:
     .limit(50) // Limit for dashboard performance
 
   if (error) {
-    console.error('Error fetching dynamic events:', error)
+    console.error('Error fetching master events:', error)
     return []
   }
 
@@ -63,11 +63,11 @@ export async function getDynamicEvents(): Promise<(DynamicEvent & { event_type?:
 }
 
 /**
- * Get all dynamic events across all event types for the main events list
+ * Get all master events across all event types for the main events list
  */
-export async function getAllDynamicEvents(
-  filters?: DynamicEventFilterParams
-): Promise<DynamicEventWithTypeAndOccasion[]> {
+export async function getAllMasterEvents(
+  filters?: MasterEventFilterParams
+): Promise<MasterEventWithTypeAndCalendarEvent[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -77,7 +77,7 @@ export async function getAllDynamicEvents(
 
   // Build query
   let query = supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('*, event_type:event_types(*)')
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
@@ -103,7 +103,7 @@ export async function getAllDynamicEvents(
   const { data: events, error } = await query
 
   if (error) {
-    console.error('Error fetching all dynamic events:', error)
+    console.error('Error fetching all master events:', error)
     throw new Error('Failed to fetch events')
   }
 
@@ -111,48 +111,48 @@ export async function getAllDynamicEvents(
     return []
   }
 
-  // Fetch primary occasions for all events
+  // Fetch primary calendar events for all events
   const eventIds = events.map(e => e.id)
-  const { data: occasions } = await supabase
-    .from('occasions')
+  const { data: calendarEvents } = await supabase
+    .from('calendar_events')
     .select('*, location:locations(*)')
-    .in('event_id', eventIds)
+    .in('master_event_id', eventIds)
     .eq('is_primary', true)
     .is('deleted_at', null)
 
-  // Create a map of event_id to primary occasion
-  const occasionMap = new Map(occasions?.map(o => [o.event_id, o]) || [])
+  // Create a map of master_event_id to primary calendar event
+  const calendarEventMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce]) || [])
 
-  // Combine events with their primary occasions
-  const eventsWithOccasions: DynamicEventWithTypeAndOccasion[] = events.map(event => ({
+  // Combine events with their primary calendar events
+  const eventsWithCalendarEvents: MasterEventWithTypeAndCalendarEvent[] = events.map(event => ({
     ...event,
-    primary_occasion: occasionMap.get(event.id) || undefined
+    primary_calendar_event: calendarEventMap.get(event.id) || undefined
   }))
 
-  // Apply date filters if provided (post-fetch since occasions are separate)
-  let filteredEvents = eventsWithOccasions
+  // Apply date filters if provided (post-fetch since calendar events are separate)
+  let filteredEvents = eventsWithCalendarEvents
   if (filters?.startDate) {
     filteredEvents = filteredEvents.filter(e =>
-      e.primary_occasion?.date && e.primary_occasion.date >= filters.startDate!
+      e.primary_calendar_event?.date && e.primary_calendar_event.date >= filters.startDate!
     )
   }
   if (filters?.endDate) {
     filteredEvents = filteredEvents.filter(e =>
-      e.primary_occasion?.date && e.primary_occasion.date <= filters.endDate!
+      e.primary_calendar_event?.date && e.primary_calendar_event.date <= filters.endDate!
     )
   }
 
   // Apply date sorting if requested
   if (filters?.sort === 'date_asc') {
     filteredEvents.sort((a, b) => {
-      const dateA = a.primary_occasion?.date || ''
-      const dateB = b.primary_occasion?.date || ''
+      const dateA = a.primary_calendar_event?.date || ''
+      const dateB = b.primary_calendar_event?.date || ''
       return dateA.localeCompare(dateB)
     })
   } else if (filters?.sort === 'date_desc') {
     filteredEvents.sort((a, b) => {
-      const dateA = a.primary_occasion?.date || ''
-      const dateB = b.primary_occasion?.date || ''
+      const dateA = a.primary_calendar_event?.date || ''
+      const dateB = b.primary_calendar_event?.date || ''
       return dateB.localeCompare(dateA)
     })
   }
@@ -165,8 +165,8 @@ export async function getAllDynamicEvents(
  */
 export async function getEvents(
   eventTypeId: string,
-  filters?: DynamicEventFilterParams
-): Promise<DynamicEvent[]> {
+  filters?: MasterEventFilterParams
+): Promise<MasterEvent[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -176,7 +176,7 @@ export async function getEvents(
   const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
 
   let query = supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('*')
     .eq('parish_id', selectedParishId)
     .eq('event_type_id', eventTypeId)
@@ -262,27 +262,27 @@ export async function getEvents(
         }
       }
 
-      // For date range filter - filter on primary occasion date
+      // For date range filter - filter on primary calendar event date
       if (filters?.startDate || filters?.endDate) {
         const eventIds = events.map(e => e.id)
         if (eventIds.length > 0) {
-          let occasionsQuery = supabase
-            .from('occasions')
-            .select('event_id')
-            .in('event_id', eventIds)
+          let calendarEventsQuery = supabase
+            .from('calendar_events')
+            .select('master_event_id')
+            .in('master_event_id', eventIds)
             .eq('is_primary', true)
             .is('deleted_at', null)
 
           if (filters?.startDate) {
-            occasionsQuery = occasionsQuery.gte('date', filters.startDate)
+            calendarEventsQuery = calendarEventsQuery.gte('date', filters.startDate)
           }
           if (filters?.endDate) {
-            occasionsQuery = occasionsQuery.lte('date', filters.endDate)
+            calendarEventsQuery = calendarEventsQuery.lte('date', filters.endDate)
           }
 
-          const { data: matchingOccasions } = await occasionsQuery
+          const { data: matchingCalendarEvents } = await calendarEventsQuery
 
-          const matchingEventIds = new Set(matchingOccasions?.map(o => o.event_id) || [])
+          const matchingEventIds = new Set(matchingCalendarEvents?.map(ce => ce.master_event_id) || [])
           events = events.filter(e => matchingEventIds.has(e.id))
         } else {
           events = []
@@ -291,19 +291,19 @@ export async function getEvents(
     }
   }
 
-  // Apply date sorting if requested (requires fetching occasions)
+  // Apply date sorting if requested (requires fetching calendar events)
   if (filters?.sort === 'date_asc' || filters?.sort === 'date_desc') {
     const eventIds = events.map(e => e.id)
     if (eventIds.length > 0) {
-      const { data: occasions } = await supabase
-        .from('occasions')
-        .select('event_id, date')
-        .in('event_id', eventIds)
+      const { data: calendarEvents } = await supabase
+        .from('calendar_events')
+        .select('master_event_id, date')
+        .in('master_event_id', eventIds)
         .eq('is_primary', true)
         .is('deleted_at', null)
 
-      // Create map of event_id to primary occasion date
-      const dateMap = new Map(occasions?.map(o => [o.event_id, o.date]) || [])
+      // Create map of master_event_id to primary calendar event date
+      const dateMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce.date]) || [])
 
       events.sort((a, b) => {
         const dateA = dateMap.get(a.id) || ''
@@ -323,13 +323,13 @@ export async function getEvents(
 /**
  * Get a single event by ID
  */
-export async function getEvent(id: string): Promise<DynamicEvent | null> {
+export async function getEvent(id: string): Promise<MasterEvent | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('*')
     .eq('id', id)
     .eq('parish_id', selectedParishId)
@@ -348,16 +348,16 @@ export async function getEvent(id: string): Promise<DynamicEvent | null> {
 }
 
 /**
- * Get event with all related data (event type, occasions, resolved field values, parish)
+ * Get event with all related data (event type, calendar events, presider, homilist, resolved field values, parish)
  */
-export async function getEventWithRelations(id: string): Promise<DynamicEventWithRelations | null> {
+export async function getEventWithRelations(id: string): Promise<MasterEventWithRelations | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   // Get the event
   const { data: event, error } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('*')
     .eq('id', id)
     .eq('parish_id', selectedParishId)
@@ -372,8 +372,8 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
     throw new Error('Failed to fetch event')
   }
 
-  // Fetch event type, occasions, and parish in parallel
-  const [eventTypeData, occasionsData, parishData] = await Promise.all([
+  // Fetch event type, calendar events, presider, homilist, and parish in parallel
+  const [eventTypeData, calendarEventsData, presiderData, homilistData, parishData] = await Promise.all([
     supabase
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -382,12 +382,18 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
       .is('deleted_at', null)
       .single(),
     supabase
-      .from('occasions')
+      .from('calendar_events')
       .select('*, location:locations(*)')
-      .eq('event_id', id)
+      .eq('master_event_id', id)
       .is('deleted_at', null)
       .order('date', { ascending: true })
       .order('created_at', { ascending: true }),
+    event.presider_id
+      ? supabase.from('people').select('*').eq('id', event.presider_id).single()
+      : Promise.resolve({ data: null, error: null }),
+    event.homilist_id
+      ? supabase.from('people').select('*').eq('id', event.homilist_id).single()
+      : Promise.resolve({ data: null, error: null }),
     supabase
       .from('parishes')
       .select('name, city, state')
@@ -400,13 +406,15 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
     throw new Error('Failed to fetch event type')
   }
 
-  if (occasionsData.error) {
-    console.error('Error fetching occasions:', occasionsData.error)
-    throw new Error('Failed to fetch occasions')
+  if (calendarEventsData.error) {
+    console.error('Error fetching calendar events:', calendarEventsData.error)
+    throw new Error('Failed to fetch calendar events')
   }
 
   const eventType = eventTypeData.data as DynamicEventType
-  const occasions = occasionsData.data as Occasion[]
+  const calendarEvents = calendarEventsData.data as CalendarEvent[]
+  const presider = presiderData.data as Person | null
+  const homilist = homilistData.data as Person | null
   const inputFieldDefinitions = eventTypeData.data.input_field_definitions as InputFieldDefinition[]
 
   // Resolve field values
@@ -454,12 +462,12 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
           }
           case 'event_link': {
             const { data: linkedEvent } = await supabase
-              .from('dynamic_events')
+              .from('master_events')
               .select('*')
               .eq('id', rawValue)
               .is('deleted_at', null)
               .single()
-            resolvedField.resolved_value = linkedEvent as DynamicEvent | null
+            resolvedField.resolved_value = linkedEvent as MasterEvent | null
             break
           }
           case 'list_item': {
@@ -527,7 +535,9 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
   return {
     ...event,
     event_type: eventType,
-    occasions,
+    calendar_events: calendarEvents,
+    presider: presider || undefined,
+    homilist: homilist || undefined,
     resolved_fields: resolvedFields,
     parish: parishData.data ? {
       name: parishData.data.name,
@@ -542,8 +552,8 @@ export async function getEventWithRelations(id: string): Promise<DynamicEventWit
  */
 export async function createEvent(
   eventTypeId: string,
-  data: CreateDynamicEventData
-): Promise<DynamicEvent> {
+  data: CreateMasterEventData
+): Promise<MasterEvent> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -569,24 +579,26 @@ export async function createEvent(
     }
   }
 
-  // Validate occasions (at least one, exactly one primary)
-  if (!data.occasions || data.occasions.length === 0) {
-    throw new Error('At least one occasion is required')
+  // Validate calendar events (at least one, exactly one primary)
+  if (!data.calendar_events || data.calendar_events.length === 0) {
+    throw new Error('At least one calendar event is required')
   }
 
-  const primaryOccasions = data.occasions.filter(o => o.is_primary)
-  if (primaryOccasions.length !== 1) {
-    throw new Error('Exactly one occasion must be marked as primary')
+  const primaryCalendarEvents = data.calendar_events.filter(ce => ce.is_primary)
+  if (primaryCalendarEvents.length !== 1) {
+    throw new Error('Exactly one calendar event must be marked as primary')
   }
 
   // Insert event
   const { data: newEvent, error: eventError } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .insert([
       {
         parish_id: selectedParishId,
         event_type_id: eventTypeId,
-        field_values: data.field_values
+        field_values: data.field_values,
+        presider_id: data.presider_id || null,
+        homilist_id: data.homilist_id || null
       }
     ])
     .select()
@@ -597,25 +609,27 @@ export async function createEvent(
     throw new Error('Failed to create event')
   }
 
-  // Insert occasions
-  const occasionsToInsert = data.occasions.map(occasion => ({
-    event_id: newEvent.id,
-    label: occasion.label,
-    date: occasion.date || null,
-    time: occasion.time || null,
-    location_id: occasion.location_id || null,
-    is_primary: occasion.is_primary || false
+  // Insert calendar events
+  const calendarEventsToInsert = data.calendar_events.map(calendarEvent => ({
+    master_event_id: newEvent.id,
+    parish_id: selectedParishId, // Required for RLS
+    label: calendarEvent.label,
+    date: calendarEvent.date || null,
+    time: calendarEvent.time || null,
+    location_id: calendarEvent.location_id || null,
+    is_primary: calendarEvent.is_primary || false,
+    is_standalone: false // Linked to master event
   }))
 
-  const { error: occasionsError } = await supabase
-    .from('occasions')
-    .insert(occasionsToInsert)
+  const { error: calendarEventsError } = await supabase
+    .from('calendar_events')
+    .insert(calendarEventsToInsert)
 
-  if (occasionsError) {
-    console.error('Error creating occasions:', occasionsError)
+  if (calendarEventsError) {
+    console.error('Error creating calendar events:', calendarEventsError)
     // Rollback event creation
-    await supabase.from('dynamic_events').delete().eq('id', newEvent.id)
-    throw new Error('Failed to create occasions')
+    await supabase.from('master_events').delete().eq('id', newEvent.id)
+    throw new Error('Failed to create calendar events')
   }
 
   revalidatePath(`/events/${eventTypeId}`)
@@ -627,15 +641,15 @@ export async function createEvent(
  */
 export async function updateEvent(
   id: string,
-  data: UpdateDynamicEventData
-): Promise<DynamicEvent> {
+  data: UpdateMasterEventData
+): Promise<MasterEvent> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   // Get existing event
   const { data: existingEvent } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('*')
     .eq('id', id)
     .eq('parish_id', selectedParishId)
@@ -646,11 +660,24 @@ export async function updateEvent(
     throw new Error('Event not found')
   }
 
-  // Update field_values if provided
-  if (data.field_values) {
+  // Build update object
+  const updateData: Partial<MasterEvent> = {}
+
+  if (data.field_values !== undefined) {
+    updateData.field_values = data.field_values
+  }
+  if (data.presider_id !== undefined) {
+    updateData.presider_id = data.presider_id
+  }
+  if (data.homilist_id !== undefined) {
+    updateData.homilist_id = data.homilist_id
+  }
+
+  // Update event if there are changes
+  if (Object.keys(updateData).length > 0) {
     const { data: updatedEvent, error } = await supabase
-      .from('dynamic_events')
-      .update({ field_values: data.field_values })
+      .from('master_events')
+      .update(updateData)
       .eq('id', id)
       .eq('parish_id', selectedParishId)
       .select()
@@ -683,7 +710,7 @@ export async function deleteEvent(id: string): Promise<void> {
 
   // Get event to find event_type_id for revalidation
   const { data: event } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .select('event_type_id')
     .eq('id', id)
     .eq('parish_id', selectedParishId)
@@ -694,9 +721,9 @@ export async function deleteEvent(id: string): Promise<void> {
     throw new Error('Event not found')
   }
 
-  // Hard delete (will cascade to occasions)
+  // Hard delete (will cascade to calendar events)
   const { error } = await supabase
-    .from('dynamic_events')
+    .from('master_events')
     .delete()
     .eq('id', id)
     .eq('parish_id', selectedParishId)
@@ -710,24 +737,125 @@ export async function deleteEvent(id: string): Promise<void> {
 }
 
 /**
- * Calendar occasion item - flattened data for calendar display
+ * Assign presider to master event
  */
-export interface CalendarOccasionItem {
-  id: string  // occasion.id
-  event_id: string
+export async function assignPresiderToMasterEvent(eventId: string, personId: string | null): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Validate person exists in same parish if provided
+  if (personId) {
+    const { data: person } = await supabase
+      .from('people')
+      .select('id')
+      .eq('id', personId)
+      .eq('parish_id', selectedParishId)
+      .single()
+
+    if (!person) {
+      throw new Error('Person not found in parish')
+    }
+  }
+
+  // Get event to find event_type_id for revalidation
+  const { data: event } = await supabase
+    .from('master_events')
+    .select('event_type_id')
+    .eq('id', eventId)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found')
+  }
+
+  // Update presider_id
+  const { error } = await supabase
+    .from('master_events')
+    .update({ presider_id: personId })
+    .eq('id', eventId)
+    .eq('parish_id', selectedParishId)
+
+  if (error) {
+    console.error('Error assigning presider:', error)
+    throw new Error('Failed to assign presider')
+  }
+
+  revalidatePath(`/events/${event.event_type_id}/${eventId}`)
+}
+
+/**
+ * Assign homilist to master event
+ */
+export async function assignHomilisToMasterEvent(eventId: string, personId: string | null): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Validate person exists in same parish if provided
+  if (personId) {
+    const { data: person } = await supabase
+      .from('people')
+      .select('id')
+      .eq('id', personId)
+      .eq('parish_id', selectedParishId)
+      .single()
+
+    if (!person) {
+      throw new Error('Person not found in parish')
+    }
+  }
+
+  // Get event to find event_type_id for revalidation
+  const { data: event } = await supabase
+    .from('master_events')
+    .select('event_type_id')
+    .eq('id', eventId)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found')
+  }
+
+  // Update homilist_id
+  const { error } = await supabase
+    .from('master_events')
+    .update({ homilist_id: personId })
+    .eq('id', eventId)
+    .eq('parish_id', selectedParishId)
+
+  if (error) {
+    console.error('Error assigning homilist:', error)
+    throw new Error('Failed to assign homilist')
+  }
+
+  revalidatePath(`/events/${event.event_type_id}/${eventId}`)
+}
+
+/**
+ * Calendar calendar event item - flattened data for calendar display
+ */
+export interface CalendarCalendarEventItem {
+  id: string  // calendar_event.id
+  master_event_id: string | null
   date: string
   time: string | null
   label: string
   location_id: string | null
   location_name: string | null
   is_primary: boolean
-  // From dynamic_event
+  is_standalone: boolean
+  // From master_event (if linked)
   event_title: string
   event_field_values: Record<string, unknown>
-  // From event_type
-  event_type_id: string
-  event_type_slug: string
-  event_type_name: string
+  // From event_type (if linked)
+  event_type_id: string | null
+  event_type_slug: string | null
+  event_type_name: string | null
   event_type_icon: string | null
   // Module link (computed)
   module_type: string | null
@@ -735,103 +863,131 @@ export interface CalendarOccasionItem {
 }
 
 /**
- * Get all occasions for calendar display
- * Fetches occasions with their parent events and event types
+ * Get all calendar events for calendar display
+ * Fetches calendar events with their parent master events and event types
  * for rendering on the parish calendar
  */
-export async function getOccasionsForCalendar(): Promise<CalendarOccasionItem[]> {
+export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEventItem[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Fetch all occasions with their parent events and event types
-  const { data: occasions, error } = await supabase
-    .from('occasions')
+  // Fetch all calendar events (both linked and standalone) with their parent master events and event types
+  const { data: calendarEvents, error } = await supabase
+    .from('calendar_events')
     .select(`
       id,
-      event_id,
+      master_event_id,
       label,
       date,
       time,
       location_id,
       is_primary,
+      is_standalone,
       location:locations(name),
-      event:dynamic_events!inner(
+      master_event:master_events(
         id,
         field_values,
         parish_id,
         event_type:event_types(id, slug, name, icon)
       )
     `)
-    .eq('event.parish_id', selectedParishId)
+    .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
-    .is('event.deleted_at', null)
     .not('date', 'is', null)
     .order('date', { ascending: true })
 
   if (error) {
-    console.error('Error fetching occasions for calendar:', error)
+    console.error('Error fetching calendar events for calendar:', error)
     return []
   }
 
-  if (!occasions || occasions.length === 0) {
+  if (!calendarEvents || calendarEvents.length === 0) {
     return []
   }
 
-  // Collect event_ids to check for module links
-  const eventIds = [...new Set(occasions.map(o => o.event_id))]
+  // Collect master_event_ids to check for module links (only for linked events)
+  const linkedCalendarEvents = calendarEvents.filter(ce => !ce.is_standalone && ce.master_event_id)
+  const masterEventIds = [...new Set(linkedCalendarEvents.map(ce => ce.master_event_id).filter(Boolean))] as string[]
 
   // Check for module links (weddings, funerals, baptisms, etc.)
   const moduleLinks = new Map<string, { moduleType: string; moduleId: string }>()
 
-  // Check each module table for linked events
-  const [weddings, funerals, baptisms, presentations, quinceaneras, masses] = await Promise.all([
-    supabase.from('weddings').select('id, wedding_event_id').in('wedding_event_id', eventIds),
-    supabase.from('funerals').select('id, funeral_event_id').in('funeral_event_id', eventIds),
-    supabase.from('baptisms').select('id, baptism_event_id').in('baptism_event_id', eventIds),
-    supabase.from('presentations').select('id, presentation_event_id').in('presentation_event_id', eventIds),
-    supabase.from('quinceaneras').select('id, quinceanera_event_id').in('quinceanera_event_id', eventIds),
-    supabase.from('masses').select('id, event_id').in('event_id', eventIds),
-  ])
+  if (masterEventIds.length > 0) {
+    // Check each module table for linked events
+    const [weddings, funerals, baptisms, presentations, quinceaneras, masses] = await Promise.all([
+      supabase.from('weddings').select('id, wedding_event_id').in('wedding_event_id', masterEventIds),
+      supabase.from('funerals').select('id, funeral_event_id').in('funeral_event_id', masterEventIds),
+      supabase.from('baptisms').select('id, baptism_event_id').in('baptism_event_id', masterEventIds),
+      supabase.from('presentations').select('id, presentation_event_id').in('presentation_event_id', masterEventIds),
+      supabase.from('quinceaneras').select('id, quinceanera_event_id').in('quinceanera_event_id', masterEventIds),
+      supabase.from('masses').select('id, event_id').in('event_id', masterEventIds),
+    ])
 
-  // Build module link map
-  weddings.data?.forEach(w => moduleLinks.set(w.wedding_event_id, { moduleType: 'wedding', moduleId: w.id }))
-  funerals.data?.forEach(f => moduleLinks.set(f.funeral_event_id, { moduleType: 'funeral', moduleId: f.id }))
-  baptisms.data?.forEach(b => moduleLinks.set(b.baptism_event_id, { moduleType: 'baptism', moduleId: b.id }))
-  presentations.data?.forEach(p => moduleLinks.set(p.presentation_event_id, { moduleType: 'presentation', moduleId: p.id }))
-  quinceaneras.data?.forEach(q => moduleLinks.set(q.quinceanera_event_id, { moduleType: 'quinceanera', moduleId: q.id }))
-  masses.data?.forEach(m => moduleLinks.set(m.event_id, { moduleType: 'mass', moduleId: m.id }))
+    // Build module link map
+    weddings.data?.forEach(w => moduleLinks.set(w.wedding_event_id, { moduleType: 'wedding', moduleId: w.id }))
+    funerals.data?.forEach(f => moduleLinks.set(f.funeral_event_id, { moduleType: 'funeral', moduleId: f.id }))
+    baptisms.data?.forEach(b => moduleLinks.set(b.baptism_event_id, { moduleType: 'baptism', moduleId: b.id }))
+    presentations.data?.forEach(p => moduleLinks.set(p.presentation_event_id, { moduleType: 'presentation', moduleId: p.id }))
+    quinceaneras.data?.forEach(q => moduleLinks.set(q.quinceanera_event_id, { moduleType: 'quinceanera', moduleId: q.id }))
+    masses.data?.forEach(m => moduleLinks.set(m.event_id, { moduleType: 'mass', moduleId: m.id }))
+  }
 
   // Transform to calendar items
-  const calendarItems: CalendarOccasionItem[] = occasions.map(occasion => {
-    // Supabase returns nested relations - handle the structure properly
-    const eventData = occasion.event as unknown as {
+  const calendarItems: CalendarCalendarEventItem[] = calendarEvents.map(calendarEvent => {
+    // Standalone event - no master event data
+    if (calendarEvent.is_standalone) {
+      const locationData = calendarEvent.location as unknown as { name: string } | null
+      return {
+        id: calendarEvent.id,
+        master_event_id: null,
+        date: calendarEvent.date!,
+        time: calendarEvent.time,
+        label: calendarEvent.label,
+        location_id: calendarEvent.location_id,
+        location_name: locationData?.name || null,
+        is_primary: false, // Standalone events don't have primary status
+        is_standalone: true,
+        event_title: calendarEvent.label,
+        event_field_values: {},
+        event_type_id: null,
+        event_type_slug: null,
+        event_type_name: null,
+        event_type_icon: null,
+        module_type: null,
+        module_id: null,
+      }
+    }
+
+    // Linked event - has master event data
+    const masterEventData = calendarEvent.master_event as unknown as {
       id: string
       field_values: Record<string, unknown>
       event_type: { id: string; slug: string; name: string; icon: string | null } | null
-    }
-    // Location is a single object from the foreign key relation
-    const locationData = occasion.location as unknown as { name: string } | null
-    const moduleLink = moduleLinks.get(occasion.event_id)
+    } | null
+
+    const locationData = calendarEvent.location as unknown as { name: string } | null
+    const moduleLink = calendarEvent.master_event_id ? moduleLinks.get(calendarEvent.master_event_id) : undefined
 
     // Generate event title from event type name or use label
-    const eventTypeName = eventData.event_type?.name || 'Event'
+    const eventTypeName = masterEventData?.event_type?.name || 'Event'
 
     return {
-      id: occasion.id,
-      event_id: occasion.event_id,
-      date: occasion.date!,
-      time: occasion.time,
-      label: occasion.label,
-      location_id: occasion.location_id,
+      id: calendarEvent.id,
+      master_event_id: calendarEvent.master_event_id,
+      date: calendarEvent.date!,
+      time: calendarEvent.time,
+      label: calendarEvent.label,
+      location_id: calendarEvent.location_id,
       location_name: locationData?.name || null,
-      is_primary: occasion.is_primary,
+      is_primary: calendarEvent.is_primary,
+      is_standalone: false,
       event_title: eventTypeName,
-      event_field_values: eventData.field_values || {},
-      event_type_id: eventData.event_type?.id || '',
-      event_type_slug: eventData.event_type?.slug || '',
+      event_field_values: masterEventData?.field_values || {},
+      event_type_id: masterEventData?.event_type?.id || null,
+      event_type_slug: masterEventData?.event_type?.slug || null,
       event_type_name: eventTypeName,
-      event_type_icon: eventData.event_type?.icon || null,
+      event_type_icon: masterEventData?.event_type?.icon || null,
       module_type: moduleLink?.moduleType || null,
       module_id: moduleLink?.moduleId || null,
     }

@@ -2,10 +2,10 @@ import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { getEventWithRelations } from '@/lib/actions/dynamic-events'
+import { getEventWithRelations } from '@/lib/actions/master-events'
 import { getEventTypeBySlug } from '@/lib/actions/event-types'
 import { getScripts } from '@/lib/actions/scripts'
-import { DynamicEventViewClient } from './dynamic-event-view-client'
+import { DynamicEventViewClient } from './master-event-view-client'
 
 interface PageProps {
   params: Promise<{
