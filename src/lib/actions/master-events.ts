@@ -19,7 +19,9 @@ import type {
   Document,
   Content,
   Petition,
-  ResolvedFieldValue
+  ResolvedFieldValue,
+  MasterEventRole,
+  MasterEventRoleWithPerson
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
@@ -372,8 +374,8 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     throw new Error('Failed to fetch event')
   }
 
-  // Fetch event type, calendar events, presider, homilist, and parish in parallel
-  const [eventTypeData, calendarEventsData, presiderData, homilistData, parishData] = await Promise.all([
+  // Fetch event type, calendar events, presider, homilist, roles, and parish in parallel
+  const [eventTypeData, calendarEventsData, presiderData, homilistData, rolesData, parishData] = await Promise.all([
     supabase
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -386,7 +388,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
       .select('*, location:locations(*)')
       .eq('master_event_id', id)
       .is('deleted_at', null)
-      .order('date', { ascending: true })
+      .order('start_datetime', { ascending: true })
       .order('created_at', { ascending: true }),
     event.presider_id
       ? supabase.from('people').select('*').eq('id', event.presider_id).single()
@@ -394,6 +396,11 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     event.homilist_id
       ? supabase.from('people').select('*').eq('id', event.homilist_id).single()
       : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from('master_event_roles')
+      .select('*')
+      .eq('master_event_id', id)
+      .is('deleted_at', null),
     supabase
       .from('parishes')
       .select('name, city, state')
@@ -538,6 +545,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     calendar_events: calendarEvents,
     presider: presider || undefined,
     homilist: homilist || undefined,
+    roles: rolesData.data || [],
     resolved_fields: resolvedFields,
     parish: parishData.data ? {
       name: parishData.data.name,
@@ -994,4 +1002,183 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
   })
 
   return calendarItems
+}
+
+/**
+ * Get role assignments for a master event with person data
+ */
+export async function getMasterEventRoles(masterEventId: string): Promise<MasterEventRoleWithPerson[]> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Verify master event belongs to user's parish
+  const { data: masterEvent } = await supabase
+    .from('master_events')
+    .select('parish_id')
+    .eq('id', masterEventId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+    throw new Error('Event not found or access denied')
+  }
+
+  const { data, error } = await supabase
+    .from('master_event_roles')
+    .select('*, person:people(*)')
+    .eq('master_event_id', masterEventId)
+    .is('deleted_at', null)
+
+  if (error) {
+    console.error('Error fetching master event roles:', error)
+    throw new Error('Failed to fetch master event roles')
+  }
+
+  return data || []
+}
+
+/**
+ * Assign a person to a role for a master event
+ */
+export async function assignRole(
+  masterEventId: string,
+  roleId: string,
+  personId: string,
+  notes?: string
+): Promise<MasterEventRole> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Verify master event belongs to user's parish
+  const { data: masterEvent } = await supabase
+    .from('master_events')
+    .select('parish_id, event_type_id')
+    .eq('id', masterEventId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+    throw new Error('Event not found or access denied')
+  }
+
+  // Verify person exists in same parish
+  const { data: person } = await supabase
+    .from('people')
+    .select('id')
+    .eq('id', personId)
+    .eq('parish_id', selectedParishId)
+    .single()
+
+  if (!person) {
+    throw new Error('Person not found in parish')
+  }
+
+  // Insert role assignment
+  const { data: roleAssignment, error } = await supabase
+    .from('master_event_roles')
+    .insert([
+      {
+        master_event_id: masterEventId,
+        role_id: roleId,
+        person_id: personId,
+        notes: notes || null
+      }
+    ])
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error assigning role:', error)
+    throw new Error('Failed to assign role')
+  }
+
+  revalidatePath(`/events/${masterEvent.event_type_id}/${masterEventId}`)
+  return roleAssignment
+}
+
+/**
+ * Remove a role assignment (soft delete)
+ */
+export async function removeRoleAssignment(roleAssignmentId: string): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get role assignment to verify access and get master event details
+  const { data: roleAssignment } = await supabase
+    .from('master_event_roles')
+    .select('master_event_id, master_event:master_events(parish_id, event_type_id)')
+    .eq('id', roleAssignmentId)
+    .is('deleted_at', null)
+    .single()
+
+  if (!roleAssignment) {
+    throw new Error('Role assignment not found')
+  }
+
+  const masterEventData = roleAssignment.master_event as unknown as { parish_id: string; event_type_id: string }
+  
+  if (masterEventData.parish_id !== selectedParishId) {
+    throw new Error('Access denied')
+  }
+
+  // Soft delete
+  const { error } = await supabase
+    .from('master_event_roles')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', roleAssignmentId)
+
+  if (error) {
+    console.error('Error removing role assignment:', error)
+    throw new Error('Failed to remove role assignment')
+  }
+
+  revalidatePath(`/events/${masterEventData.event_type_id}/${roleAssignment.master_event_id}`)
+}
+
+/**
+ * Compute master event title from key persons and event type name
+ * Example: "John Doe and Jane Smith-Wedding" or "Robert Johnson-Funeral"
+ */
+export async function computeMasterEventTitle(masterEvent: MasterEventWithRelations): Promise<string> {
+  const keyPersonFields = masterEvent.event_type.input_field_definitions
+    ?.filter(field => field.is_key_person && field.type === 'person') || []
+
+  const keyPersonNames: string[] = []
+
+  for (const field of keyPersonFields) {
+    const personValue = masterEvent.resolved_fields[field.name]
+    if (personValue?.resolved_value && 'full_name' in personValue.resolved_value) {
+      const person = personValue.resolved_value as Person
+      keyPersonNames.push(person.full_name)
+    }
+  }
+
+  if (keyPersonNames.length === 0) {
+    return masterEvent.event_type.name
+  }
+
+  const namesString = keyPersonNames.join(' and ')
+  return `${namesString}-${masterEvent.event_type.name}`
+}
+
+/**
+ * Compute calendar event title with optional suffix from field definition
+ * Example: "John Doe and Jane Smith-Wedding Ceremony" or "John Doe and Jane Smith-Wedding Rehearsal"
+ */
+export async function computeCalendarEventTitle(
+  masterEvent: MasterEventWithRelations,
+  fieldDefinition: InputFieldDefinition
+): Promise<string> {
+  const baseTitle = await computeMasterEventTitle(masterEvent)
+
+  // If field definition has a suffix (e.g., "Ceremony", "Rehearsal"), append it
+  // This would be stored in the field definition name
+  if (fieldDefinition.name && fieldDefinition.name.trim().length > 0) {
+    return `${baseTitle} ${fieldDefinition.name}`
+  }
+
+  return baseTitle
 }

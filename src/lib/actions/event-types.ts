@@ -18,7 +18,7 @@ import { generateSlug } from '@/lib/utils/formatters'
 export interface EventTypeFilterParams {
   search?: string
   sort?: 'order_asc' | 'order_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  category?: 'sacrament' | 'mass' | 'special_liturgy' | 'event'
+  system_type?: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
 }
 
 /**
@@ -43,9 +43,9 @@ export async function getEventTypes(filters?: EventTypeFilterParams): Promise<Dy
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
 
-  // Apply category filter
-  if (filters?.category) {
-    query = query.eq('category', filters.category)
+  // Apply system_type filter
+  if (filters?.system_type) {
+    query = query.eq('system_type', filters.system_type)
   }
 
   // Apply sorting
@@ -316,7 +316,7 @@ export async function createEventType(data: CreateDynamicEventTypeData): Promise
         description: data.description || null,
         icon: data.icon,
         slug: finalSlug,
-        category: data.category,
+        system_type: data.system_type,
         order: newOrder
       }
     ])
@@ -462,4 +462,75 @@ export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
 
   revalidatePath('/settings/event-types')
   revalidatePath('/dashboard')
+}
+
+/**
+ * Get event types filtered by system type
+ */
+export async function getEventTypesBySystemType(
+  systemType: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
+): Promise<DynamicEventType[]> {
+  return getEventTypes({ system_type: systemType })
+}
+
+/**
+ * Get role definitions for an event type
+ */
+export async function getRoleDefinitions(eventTypeId: string): Promise<{ roles: Array<{ id: string; name: string; required: boolean }> } | null> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('event_types')
+    .select('role_definitions')
+    .eq('id', eventTypeId)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null // Not found
+    }
+    console.error('Error fetching role definitions:', error)
+    throw new Error('Failed to fetch role definitions')
+  }
+
+  return data.role_definitions as { roles: Array<{ id: string; name: string; required: boolean }> } | null
+}
+
+/**
+ * Update role definitions for an event type (admin only)
+ */
+export async function updateRoleDefinitions(
+  eventTypeId: string,
+  roles: Array<{ id: string; name: string; required: boolean }>
+): Promise<void> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Check permissions (admin only)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+  await requireManageParishSettings(user.id, selectedParishId)
+
+  // Update role definitions
+  const { error } = await supabase
+    .from('event_types')
+    .update({ role_definitions: { roles } })
+    .eq('id', eventTypeId)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+
+  if (error) {
+    console.error('Error updating role definitions:', error)
+    throw new Error('Failed to update role definitions')
+  }
+
+  revalidatePath('/settings/event-types')
+  revalidatePath(`/settings/event-types/${eventTypeId}`)
 }

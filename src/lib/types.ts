@@ -294,10 +294,22 @@ export interface EventType {
   icon: string // Lucide icon name
   slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
   order: number
-  category: 'sacrament' | 'mass' | 'special_liturgy' | 'event' // Category for UI organization
+  system_type: 'mass' | 'special-liturgy' | 'sacrament' | 'event' // System type for categorization
+  role_definitions: RoleDefinitions | null // JSON-B role definitions for this event type
   deleted_at: string | null
   created_at: string
   updated_at: string
+}
+
+// Role definitions for event types
+export interface RoleDefinitions {
+  roles: RoleDefinition[]
+}
+
+export interface RoleDefinition {
+  id: string
+  name: string
+  required: boolean
 }
 
 export interface Event {
@@ -563,7 +575,7 @@ export type InputFieldType =
   | 'document'
   | 'content'
   | 'petition'
-  | 'occasion'
+  | 'calendar_event'  // Renamed from 'occasion'
   | 'text'
   | 'rich_text'
   | 'date'
@@ -588,7 +600,7 @@ export interface CreateDynamicEventTypeData {
   description?: string | null
   icon: string
   slug?: string | null
-  category: 'sacrament' | 'mass' | 'special_liturgy' | 'event'
+  system_type: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
 }
 
 export interface UpdateDynamicEventTypeData {
@@ -596,7 +608,7 @@ export interface UpdateDynamicEventTypeData {
   description?: string | null
   icon?: string
   slug?: string | null
-  category?: 'sacrament' | 'mass' | 'special_liturgy' | 'event'
+  system_type?: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
 }
 
 // Input Field Definitions (fields for event types)
@@ -750,13 +762,31 @@ export interface UpdateSectionData {
 // Master events are containers for sacraments (Weddings, Funerals, etc.)
 // They store dynamic field values and have manual minister assignment
 
+export type MasterEventStatus = 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+
+export interface MasterEventRole {
+  id: string
+  master_event_id: string
+  role_id: string
+  person_id: string
+  notes: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export interface MasterEventRoleWithPerson extends MasterEventRole {
+  person: Person
+}
+
 export interface MasterEvent {
   id: string
   parish_id: string
   event_type_id: string
   field_values: Record<string, any> // JSON object
-  presider_id: string | null  // NEW - Manual minister assignment
-  homilist_id: string | null  // NEW - Manual minister assignment
+  presider_id: string | null  // Manual minister assignment
+  homilist_id: string | null  // Manual minister assignment
+  status: MasterEventStatus  // Event status
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -782,8 +812,9 @@ export interface ParishInfo {
 export interface MasterEventWithRelations extends MasterEvent {
   event_type: DynamicEventType
   calendar_events: CalendarEvent[]  // RENAMED from occasions
-  presider?: Person | null  // NEW - Resolved presider
-  homilist?: Person | null  // NEW - Resolved homilist
+  presider?: Person | null  // Resolved presider
+  homilist?: Person | null  // Resolved homilist
+  roles: MasterEventRole[]  // Role assignments for this event
   resolved_fields: Record<string, ResolvedFieldValue>
   parish?: ParishInfo
 }
@@ -806,44 +837,45 @@ export interface UpdateMasterEventData {
 // CALENDAR EVENTS (formerly Occasion)
 // ========================================
 // Calendar events are scheduled items that appear on the calendar
-// Can be linked to master events (rehearsal, ceremony) OR standalone (Zumba, Parish Picnic)
+// Always linked to master events through calendar_event input fields
 
 export interface CalendarEvent {
   id: string
-  master_event_id: string | null  // RENAMED from event_id, nullable for standalone
-  parish_id: string  // NEW - For standalone events and RLS
-  label: string
-  date: string | null
-  time: string | null
+  master_event_id: string  // Required - always linked to a master event
+  parish_id: string  // For RLS
+  start_datetime: string  // ISO 8601 datetime
+  end_datetime: string | null  // ISO 8601 datetime (optional)
   location_id: string | null
   is_primary: boolean
-  is_standalone: boolean  // NEW - True if standalone event (not linked to master)
+  input_field_definition_id: string  // Links to the calendar_event field definition
+  is_cancelled: boolean  // Whether this calendar event has been cancelled
   deleted_at: string | null
   created_at: string
   location?: Location | null
 }
 
-export interface CalendarEventWithLocation extends CalendarEvent {
-  master_event?: MasterEvent | null  // NEW - For linked events, include parent
+export interface CalendarEventWithRelations extends CalendarEvent {
+  master_event?: MasterEvent | null  // For linked events, include parent
+  input_field_definition: InputFieldDefinition  // The field definition this calendar event belongs to
 }
 
 export interface CreateCalendarEventData {
-  label: string
-  date?: string | null
-  time?: string | null
+  master_event_id: string  // Required
+  input_field_definition_id: string  // Required
+  start_datetime: string  // Required - ISO 8601 datetime
+  end_datetime?: string | null  // Optional - ISO 8601 datetime
   location_id?: string | null
   is_primary?: boolean
-  is_standalone?: boolean  // NEW - For standalone events
-  master_event_id?: string | null  // NEW - Nullable for standalone
+  is_cancelled?: boolean
 }
 
 export interface UpdateCalendarEventData {
   id?: string
-  label?: string
-  date?: string | null
-  time?: string | null
+  start_datetime?: string
+  end_datetime?: string | null
   location_id?: string | null
   is_primary?: boolean
+  is_cancelled?: boolean
 }
 
 // ========================================
