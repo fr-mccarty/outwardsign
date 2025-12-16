@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
-import { SpecialLiturgiesListClient } from './special-liturgies-list-client'
+import { EventsListClient } from './events-list-client'
 import { getEventTypes } from '@/lib/actions/event-types'
 import { getTranslations } from 'next-intl/server'
 
-export default async function SpecialLiturgiesPage() {
+export default async function EventsPage() {
   const t = await getTranslations()
   const supabase = await createClient()
 
@@ -17,19 +17,19 @@ export default async function SpecialLiturgiesPage() {
     redirect('/login')
   }
 
-  // Fetch special liturgy event types
-  const eventTypes = await getEventTypes({ system_type: 'special-liturgy' })
+  // Fetch event event types
+  const eventTypes = await getEventTypes({ system_type: 'event' })
 
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },
     { label: t('nav.settings'), href: '/settings' },
-    { label: t('nav.specialLiturgies'), href: '/settings/special-liturgies' },
+    { label: t('nav.events'), href: '/settings/events' },
   ]
 
   return (
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <SpecialLiturgiesListClient initialData={eventTypes} />
+      <EventsListClient initialData={eventTypes} />
     </>
   )
 }

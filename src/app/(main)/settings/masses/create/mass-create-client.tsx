@@ -20,9 +20,9 @@ import { IconSelector } from '@/components/icon-selector'
 import { useTranslations } from 'next-intl'
 import { Info } from 'lucide-react'
 
-export function SpecialLiturgyCreateClient() {
+export function MassCreateClient() {
   const router = useRouter()
-  const t = useTranslations('specialLiturgies')
+  const t = useTranslations('masses')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -35,7 +35,7 @@ export function SpecialLiturgyCreateClient() {
     defaultValues: {
       name: '',
       icon: 'Calendar',
-      system_type: 'special-liturgy', // Fixed system_type
+      system_type: 'mass', // Fixed system_type
     },
   })
 
@@ -48,19 +48,19 @@ export function SpecialLiturgyCreateClient() {
       const eventType = await createEventType({
         name: data.name,
         icon: data.icon,
-        system_type: 'special-liturgy', // Always set to special-liturgy
+        system_type: 'mass', // Always set to mass
       })
-      toast.success('Special liturgy type created successfully')
+      toast.success('Mass type created successfully')
       router.push(`/settings/event-types/${eventType.slug}`)
     } catch (error) {
-      console.error('Failed to create special liturgy type:', error)
-      toast.error('Failed to create special liturgy type')
+      console.error('Failed to create mass type:', error)
+      toast.error('Failed to create mass type')
       setIsSubmitting(false)
     }
   }
 
   const handleCancel = () => {
-    router.push('/settings/special-liturgies')
+    router.push('/settings/masses')
   }
 
   return (

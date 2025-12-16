@@ -18,7 +18,7 @@ export default async function SacramentsPage() {
   }
 
   // Fetch sacrament event types
-  const eventTypes = await getEventTypes({ category: 'sacrament' })
+  const eventTypes = await getEventTypes({ system_type: 'sacrament' })
 
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },

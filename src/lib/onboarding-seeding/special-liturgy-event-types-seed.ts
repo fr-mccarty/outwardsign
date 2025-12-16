@@ -32,7 +32,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
       description: 'The Great Vigil of Easter - the most solemn celebration of the liturgical year',
       icon: 'Flame',
       slug: 'easter-vigil',
-      category: 'special_liturgy',
+      system_type: 'special-liturgy',
       order: 201
     })
     .select()
@@ -154,7 +154,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
       description: 'Mass of the Lord\'s Supper - beginning of the Sacred Triduum',
       icon: 'Wheat',
       slug: 'holy-thursday',
-      category: 'special_liturgy',
+      system_type: 'special-liturgy',
       order: 202
     })
     .select()
@@ -276,7 +276,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
       description: 'Celebration of the Lord\'s Passion - second day of the Sacred Triduum',
       icon: 'Cross',
       slug: 'good-friday',
-      category: 'special_liturgy',
+      system_type: 'special-liturgy',
       order: 203
     })
     .select()

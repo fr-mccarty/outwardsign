@@ -35,7 +35,7 @@ export function SacramentCreateClient() {
     defaultValues: {
       name: '',
       icon: 'Calendar',
-      category: 'sacrament', // Fixed category
+      system_type: 'sacrament', // Fixed system_type
     },
   })
 
@@ -48,7 +48,7 @@ export function SacramentCreateClient() {
       const eventType = await createEventType({
         name: data.name,
         icon: data.icon,
-        category: 'sacrament', // Always set to sacrament
+        system_type: 'sacrament', // Always set to sacrament
       })
       toast.success('Sacrament type created successfully')
       router.push(`/settings/event-types/${eventType.slug}`)

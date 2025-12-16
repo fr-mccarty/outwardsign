@@ -28,14 +28,14 @@ import {
   type CreateEventTypeData,
 } from '@/lib/schemas/event-types'
 import { toast } from 'sonner'
-import type { EventType, EventTypeCategory } from '@/lib/types/event-types'
+import type { DynamicEventType } from '@/lib/types'
 import { generateSlug } from '@/lib/utils/formatters'
 import { useTranslations } from 'next-intl'
 
 interface EventTypeFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  eventType?: EventType
+  eventType?: DynamicEventType
   onSuccess: () => void
 }
 
@@ -61,14 +61,14 @@ export function EventTypeFormDialog({
       name: '',
       icon: 'FileText',
       slug: '',
-      category: 'event',
+      system_type: 'event',
     },
   })
 
   const name = watch('name')
   const icon = watch('icon')
   const slug = watch('slug')
-  const category = watch('category')
+  const system_type = watch('system_type')
 
   // Initialize form when dialog opens or eventType changes
   useEffect(() => {
@@ -78,7 +78,7 @@ export function EventTypeFormDialog({
           name: eventType.name,
           icon: eventType.icon || 'FileText',
           slug: eventType.slug || '',
-          category: eventType.category,
+          system_type: eventType.system_type,
         })
         setSlugManuallyEdited(false)
       } else {
@@ -86,7 +86,7 @@ export function EventTypeFormDialog({
           name: '',
           icon: 'FileText',
           slug: '',
-          category: 'event',
+          system_type: 'event',
         })
         setSlugManuallyEdited(false)
       }
@@ -107,7 +107,7 @@ export function EventTypeFormDialog({
           name: data.name,
           icon: data.icon,
           slug: data.slug,
-          category: data.category,
+          system_type: data.system_type,
         })
         toast.success('Event type updated successfully')
       } else {
@@ -115,7 +115,7 @@ export function EventTypeFormDialog({
           name: data.name,
           icon: data.icon,
           slug: data.slug,
-          category: data.category,
+          system_type: data.system_type,
         })
         toast.success('Event type created successfully')
       }
@@ -164,25 +164,25 @@ export function EventTypeFormDialog({
             />
 
             <div className="space-y-2">
-              <Label htmlFor="category">
-                Category <span className="text-destructive">*</span>
+              <Label htmlFor="system_type">
+                System Type <span className="text-destructive">*</span>
               </Label>
               <Select
-                value={category}
-                onValueChange={(value) => setValue('category', value as EventTypeCategory)}
+                value={system_type}
+                onValueChange={(value) => setValue('system_type', value as 'mass' | 'special-liturgy' | 'sacrament' | 'event')}
               >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
+                <SelectTrigger id="system_type">
+                  <SelectValue placeholder="Select a system type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sacrament">{t('sacrament')}</SelectItem>
                   <SelectItem value="mass">{t('mass')}</SelectItem>
-                  <SelectItem value="special_liturgy">{t('special_liturgy')}</SelectItem>
+                  <SelectItem value="special-liturgy">{t('special_liturgy')}</SelectItem>
                   <SelectItem value="event">{t('event')}</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.category?.message && (
-                <p className="text-sm text-destructive">{errors.category.message}</p>
+              {errors.system_type?.message && (
+                <p className="text-sm text-destructive">{errors.system_type.message}</p>
               )}
               <p className="text-sm text-muted-foreground">
                 Determines where this event type appears in the sidebar navigation
