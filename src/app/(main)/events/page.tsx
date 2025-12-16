@@ -1,17 +1,18 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-import { getAllMasterEvents, type MasterEventFilterParams } from "@/lib/actions/master-events"
-import { getEventTypeBySlug, getActiveEventTypes } from '@/lib/actions/event-types'
+import { getAllMasterEvents, getMasterEventStats, type MasterEventFilterParams } from "@/lib/actions/master-events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EventsListClient } from './events-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   searchParams: Promise<{
     search?: string
-    type?: string  // Event type slug
+    status?: string
     start_date?: string
     end_date?: string
     sort?: string
@@ -29,38 +30,22 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // If type param exists (slug), look up event_type_id
-  let eventTypeId: string | undefined
-
-  if (params.type) {
-    const eventType = await getEventTypeBySlug(params.type)
-    if (eventType) {
-      eventTypeId = eventType.id
-    }
-  }
-
-  // Build filters from search params with defaults
+  // Build filters from search params WITH DEFAULTS
+  // Per LIST_VIEW_PATTERN.md: Apply defaults on server BEFORE calling server actions
   const filters: MasterEventFilterParams = {
     search: params.search,
-    eventTypeId,
+    systemType: 'event', // Filter only master_events with system_type = 'event'
+    status: (params.status as MasterEventFilterParams['status']) || 'ACTIVE', // Default applied
     startDate: params.start_date,
     endDate: params.end_date,
-    sort: (params.sort as MasterEventFilterParams['sort']) || 'date_desc',
+    sort: (params.sort as MasterEventFilterParams['sort']) || 'date_asc', // Default to date ascending
     offset: 0,
     limit: LIST_VIEW_PAGE_SIZE
   }
 
-  // Fetch dynamic events server-side with filters
+  // Fetch master events (events) and stats server-side with filters
   const events = await getAllMasterEvents(filters)
-
-  // Determine if there are more results
-  const initialHasMore = events.length === LIST_VIEW_PAGE_SIZE
-
-  // Fetch event types for filter dropdown
-  const eventTypes = await getActiveEventTypes()
-
-  // Determine create URL - if filtering by type, go directly to that type's create page
-  const createHref = params.type ? `/events/${params.type}/create` : '/events/create'
+  const stats = await getMasterEventStats(filters)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
@@ -70,15 +55,11 @@ export default async function EventsPage({ searchParams }: PageProps) {
   return (
     <PageContainer
       title="Our Events"
-      description="Manage parish events and activities."
-      primaryAction={<ModuleCreateButton moduleName="Event" href={createHref} />}
+      description="Organize parish gatherings, meetings, and special occasions."
+      primaryAction={<ModuleCreateButton moduleName="Event" href="/events/create" />}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventsListClient
-        initialData={events}
-        initialHasMore={initialHasMore}
-        eventTypes={eventTypes}
-      />
+      <EventsListClient initialData={events} stats={stats} />
     </PageContainer>
   )
 }

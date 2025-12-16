@@ -1,13 +1,11 @@
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getEventTypeBySlug, getEventTypes } from '@/lib/actions/event-types'
-import { EventTypeSelector } from './event-type-selector'
+import { EventFormWrapper } from '../event-form-wrapper'
+import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
 interface PageProps {
-  searchParams: Promise<{
-    type?: string  // Event type slug - if provided, redirect directly to that create page
-  }>
+  searchParams: Promise<{ liturgical_event_id?: string }>
 }
 
 export default async function CreateEventPage({ searchParams }: PageProps) {
@@ -19,29 +17,30 @@ export default async function CreateEventPage({ searchParams }: PageProps) {
     redirect('/login')
   }
 
+  // Read URL params (Next.js 15 requires awaiting searchParams)
   const params = await searchParams
+  const liturgicalEventId = params.liturgical_event_id
 
-  // If type is provided in URL, redirect directly to the dynamic create page
-  if (params.type) {
-    const eventType = await getEventTypeBySlug(params.type)
-    if (eventType) {
-      redirect(`/events/${params.type}/create`)
-    }
+  // Fetch liturgical event if ID is provided
+  let initialLiturgicalEvent = null
+  if (liturgicalEventId) {
+    initialLiturgicalEvent = await getGlobalLiturgicalEvent(liturgicalEventId)
   }
-
-  // Fetch all event types to display as options
-  const eventTypes = await getEventTypes()
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Our Events", href: "/events" },
+    { label: "Events", href: "/events" },
     { label: "Create" }
   ]
 
   return (
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <EventTypeSelector eventTypes={eventTypes} />
+      <EventFormWrapper
+        title="Create Event"
+        description="Add a new event to your parish."
+        initialLiturgicalEvent={initialLiturgicalEvent}
+      />
     </>
   )
 }

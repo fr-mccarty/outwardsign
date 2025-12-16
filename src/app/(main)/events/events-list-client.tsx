@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { getAllMasterEvents, deleteEvent, type MasterEventFilterParams, type MasterEventWithTypeAndCalendarEvent } from '@/lib/actions/master-events'
+import type { MasterEventWithTypeAndCalendarEvent, MasterEventStats, MasterEventFilterParams } from '@/lib/actions/master-events'
+import { getAllMasterEvents, deleteEvent } from '@/lib/actions/master-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
@@ -13,47 +13,52 @@ import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialo
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
+import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
+import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, CalendarDays, Filter, MoreVertical } from "lucide-react"
+import { Plus, CalendarDays, Filter } from "lucide-react"
 import { toast } from "sonner"
 import { toLocalDateString, formatDatePretty } from "@/lib/utils/formatters"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
-import type { DataTableColumn } from '@/components/data-table/data-table'
-import type { DynamicEventType } from '@/lib/types'
-import { FormInput } from '@/components/form-input'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  buildWhereColumn,
+  buildActionsColumn
+} from '@/lib/utils/table-columns'
+import { DataTableColumn } from '@/components/data-table/data-table'
+import { MODULE_STATUS_COLORS } from '@/lib/constants'
+import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { useTranslations } from 'next-intl'
+
+const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const
 
 interface EventsListClientProps {
   initialData: MasterEventWithTypeAndCalendarEvent[]
-  initialHasMore: boolean
-  eventTypes: DynamicEventType[]
+  stats: MasterEventStats
 }
 
-export function EventsListClient({ initialData, initialHasMore, eventTypes }: EventsListClientProps) {
+export function EventsListClient({ initialData, stats }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const t = useTranslations()
+  const t = useTranslations('events')
+  const tCommon = useTranslations('common')
 
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/events',
-    defaultFilters: { sort: 'date_desc' }
+    defaultFilters: { status: 'ACTIVE', sort: 'date_asc' }
   })
 
   // Local state for search value (immediate visual feedback)
   const [searchValue, setSearchValue] = useState(filters.getFilterValue('search'))
-
-  // Event type filter from URL (using 'type' param for slug)
-  const selectedEventTypeSlug = filters.getFilterValue('type')
 
   // Debounced search value (delays URL update)
   const debouncedSearchValue = useDebounce(searchValue, SEARCH_DEBOUNCE_MS)
@@ -61,8 +66,30 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   // Infinite scroll state
   const [events, setEvents] = useState(initialData)
   const [offset, setOffset] = useState(LIST_VIEW_PAGE_SIZE)
-  const [hasMore, setHasMore] = useState(initialHasMore)
+  const [hasMore, setHasMore] = useState(initialData.length === LIST_VIEW_PAGE_SIZE)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Transform stats for ListStatsBar
+  const statsList: ListStat[] = [
+    { value: stats.total, label: t('totalEvents') },
+    { value: stats.upcoming, label: t('upcoming') },
+    { value: stats.past, label: t('past') },
+    { value: stats.filtered, label: tCommon('filteredResults') }
+  ]
+
+  // Date filters - convert string params to Date objects for DatePickerField
+  const startDateParam = filters.getFilterValue('start_date')
+  const endDateParam = filters.getFilterValue('end_date')
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    startDateParam ? new Date(startDateParam) : undefined
+  )
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    endDateParam ? new Date(endDateParam) : undefined
+  )
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [eventToDelete, setEventToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
 
   // Update URL when debounced search value changes
   useEffect(() => {
@@ -74,24 +101,17 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
   useEffect(() => {
     setEvents(initialData)
     setOffset(LIST_VIEW_PAGE_SIZE)
-    setHasMore(initialHasMore)
-  }, [initialData, initialHasMore])
+    setHasMore(initialData.length === LIST_VIEW_PAGE_SIZE)
+  }, [initialData])
 
-  // Parse current sort from URL
+  // Sorting state
   const currentSort = parseSort(filters.getFilterValue('sort'))
 
-  // Handle sort change
   const handleSortChange = useCallback((column: string, direction: 'asc' | 'desc' | null) => {
     const sortValue = formatSort(column, direction)
     filters.updateFilter('sort', sortValue)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // Get event type ID from slug for API calls
-  const getEventTypeIdFromSlug = (slug: string): string | undefined => {
-    const eventType = eventTypes.find(et => et.slug === slug)
-    return eventType?.id
-  }
 
   // Load more function for infinite scroll
   const handleLoadMore = async () => {
@@ -101,7 +121,8 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
     try {
       const nextEvents = await getAllMasterEvents({
         search: filters.getFilterValue('search'),
-        eventTypeId: selectedEventTypeSlug ? getEventTypeIdFromSlug(selectedEventTypeSlug) : undefined,
+        systemType: 'event',
+        status: filters.getFilterValue('status') as MasterEventFilterParams['status'],
         sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
@@ -114,25 +135,11 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
       setHasMore(nextEvents.length === INFINITE_SCROLL_LOAD_MORE_SIZE)
     } catch (error) {
       console.error('Failed to load more events:', error)
-      toast.error(t('events.errorLoading'))
+      toast.error(t('errorLoading'))
     } finally {
       setIsLoadingMore(false)
     }
   }
-
-  // Date filters - convert string params to Date objects for DatePickerField
-  const startDateParam = searchParams.get('start_date')
-  const endDateParam = searchParams.get('end_date')
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    startDateParam ? new Date(startDateParam) : undefined
-  )
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    endDateParam ? new Date(endDateParam) : undefined
-  )
-
-  // Delete dialog state
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventToDelete, setEventToDelete] = useState<MasterEventWithTypeAndCalendarEvent | null>(null)
 
   // Clear all filters (including date filters)
   const handleClearFilters = () => {
@@ -151,156 +158,122 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
 
     try {
       await deleteEvent(eventToDelete.id)
-      toast.success(t('events.eventDeleted'))
+      toast.success(t('eventDeleted'))
       router.refresh()
     } catch (error) {
       console.error('Failed to delete event:', error)
-      toast.error(t('events.errorDeleting'))
+      toast.error(t('errorDeleting'))
       throw error
     }
   }
 
-  // Define custom "What" column (event type name)
-  const whatColumn: DataTableColumn<MasterEventWithTypeAndCalendarEvent> = {
-    key: 'name',
-    header: t('events.what'),
-    cell: (event) => (
-      <div className="flex items-center gap-2 max-w-[200px] md:max-w-[300px]">
-        <div className="min-w-0 flex-1">
-          <div className="font-medium truncate">
-            {event.event_type?.name || 'Event'}
-          </div>
-        </div>
-      </div>
-    ),
-    sortable: false
-  }
-
-  // Define "When" column
-  const whenColumn: DataTableColumn<MasterEventWithTypeAndCalendarEvent> = {
-    key: 'date',
-    header: t('events.when'),
-    cell: (event) => {
-      const occasion = event.primary_calendar_event
-      if (!occasion?.date) {
-        return <span className="text-muted-foreground">{t('events.noDateSet')}</span>
-      }
-      return (
-        <div>
-          <div className="font-medium">{formatDatePretty(occasion.date)}</div>
-          {occasion.time && (
-            <div className="text-sm text-muted-foreground">{occasion.time}</div>
-          )}
-        </div>
-      )
-    },
-    sortable: true
-  }
-
-  // Define "Where" column
-  const whereColumn: DataTableColumn<MasterEventWithTypeAndCalendarEvent> = {
-    key: 'location',
-    header: t('events.where'),
-    cell: (event) => {
-      const location = event.primary_calendar_event?.location
-      if (!location) {
-        return <span className="text-muted-foreground">-</span>
-      }
-      return (
-        <div className="truncate max-w-[150px]">
-          {location.name}
-        </div>
-      )
-    },
-    hiddenOn: 'lg'
-  }
-
-  // Define table columns
-  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
-    whatColumn,
-    whenColumn,
-    whereColumn,
-    // Custom actions column for events (uses slug in URLs)
-    {
-      key: 'actions',
-      header: '',
+  // Custom "Event Name" column
+  const buildEventWhoColumn = (): DataTableColumn<MasterEventWithTypeAndCalendarEvent> => {
+    return {
+      key: 'who',
+      header: t('nameOfEvent'),
       cell: (event) => {
-        const typeSlug = event.event_type?.slug || event.event_type_id
+        const status = event.status || 'PLANNING'
+        const statusLabel = getStatusLabel(status, 'en')
+        const statusColor = MODULE_STATUS_COLORS[status] || 'bg-muted-foreground/50'
+
+        // Compute simple title from event type name
+        const title = event.event_type?.name || 'Event'
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">{t('events.openMenu')}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/events/${typeSlug}/${event.id}`}>{t('events.view')}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/events/${typeSlug}/${event.id}/edit`}>{t('common.edit')}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onSelect={(e) => {
-                  e.preventDefault()
-                  setEventToDelete(event)
-                  setDeleteDialogOpen(true)
-                }}
-              >
-                {t('common.delete')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-start gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={`h-2 w-2 rounded-full flex-shrink-0 mt-1.5 ${statusColor}`} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{statusLabel}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">
+                {title}
+              </span>
+            </div>
+          </div>
         )
       },
-      className: 'w-[50px]'
+      className: 'max-w-[200px] md:max-w-[250px]',
+      sortable: true,
+      accessorFn: (event) => event.event_type?.name || 'Event'
     }
+  }
+
+  // Define table columns using column builders
+  const columns: DataTableColumn<MasterEventWithTypeAndCalendarEvent>[] = [
+    buildEventWhoColumn(),
+    // When column - date and time from primary calendar event
+    {
+      key: 'when',
+      header: 'When',
+      cell: (event) => {
+        if (!event.primary_calendar_event?.start_datetime) {
+          return <span className="text-sm text-muted-foreground">No date set</span>
+        }
+        const date = new Date(event.primary_calendar_event.start_datetime)
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm">
+              {formatDatePretty(date)}
+            </span>
+          </div>
+        )
+      },
+      className: 'max-w-[180px]',
+      sortable: true,
+      accessorFn: (event) => event.primary_calendar_event?.start_datetime || ''
+    },
+    buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
+      getLocation: (event) => event.primary_calendar_event?.location || null,
+      hiddenOn: 'lg'
+    }),
+    buildActionsColumn<MasterEventWithTypeAndCalendarEvent>({
+      baseUrl: '/events',
+      onDelete: (event) => {
+        setEventToDelete(event)
+        setDeleteDialogOpen(true)
+      },
+      getDeleteMessage: (event) =>
+        `Are you sure you want to delete this ${event.event_type?.name || 'event'}?`
+    })
   ]
 
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <SearchCard title={t('events.searchEvents')}>
+      <SearchCard title={t('title')}>
         <div className="space-y-4">
-          {/* Main Search Row with Event Type Filter */}
-          <div className="flex flex-col sm:flex-row gap-2">
+          {/* Main Search and Status Row - Inline */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Search Input */}
             <div className="flex-1">
               <ClearableSearchInput
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  filters.updateFilter('search', value)
-                }}
-                placeholder={t('events.searchPlaceholder')}
+                onChange={setSearchValue}
+                placeholder={t('searchPlaceholder')}
                 className="w-full"
               />
             </div>
-            {/* Event Type Filter */}
+
+            {/* Status Filter - Now Inline */}
             <div className="w-full sm:w-[200px]">
-              <FormInput
-                id="event-type-filter"
-                label={t('events.eventType')}
+              <StatusFilter
+                value={filters.getFilterValue('status')}
+                onChange={(value) => filters.updateFilter('status', value)}
+                statusValues={MASTER_EVENT_STATUS_VALUES as unknown as string[]}
                 hideLabel
-                inputType="select"
-                value={selectedEventTypeSlug || 'all'}
-                onChange={(value) => {
-                  filters.updateFilter('type', value === 'all' ? '' : value)
-                }}
-                options={[
-                  { value: 'all', label: t('events.allEventTypes') },
-                  ...eventTypes.map((eventType) => ({
-                    value: eventType.slug || eventType.id,
-                    label: eventType.name
-                  }))
-                ]}
               />
             </div>
           </div>
 
-          {/* Advanced Search Collapsible */}
+          {/* Advanced Search - Date Range Only */}
           <AdvancedSearch
             dateRangeFilter={{
               startDate: startDate,
@@ -322,14 +295,37 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
       {events.length > 0 ? (
         <>
           <DataTable
-            columns={columns}
             data={events}
+            columns={columns}
+            keyExtractor={(event) => event.id}
+            onRowClick={(event) => router.push(`/events/${event.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
-            keyExtractor={(event) => event.id}
-            onRowClick={(event) => router.push(`/events/${event.event_type?.slug || event.event_type_id}/${event.id}`)}
             onLoadMore={handleLoadMore}
             hasMore={hasMore}
+            emptyState={{
+              icon: <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4" />,
+              title: hasActiveFilters ? t('noEvents') : t('noEventsYet'),
+              description: hasActiveFilters
+                ? t('noEventsMessage')
+                : t('noEventsYetMessage'),
+              action: (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button asChild>
+                    <Link href="/events/create">
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('createYourFirstEvent')}
+                    </Link>
+                  </Button>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      <Filter className="h-4 w-4 mr-2" />
+                      {tCommon('clearFilters')}
+                    </Button>
+                  )}
+                </div>
+              )
+            }}
             stickyHeader
           />
           <EndOfListMessage show={!hasMore && events.length > 0} />
@@ -338,22 +334,22 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
       ) : (
         <EmptyState
           icon={<CalendarDays className="h-16 w-16" />}
-          title={hasActiveFilters ? t('events.noEvents') : t('events.noEventsYet')}
+          title={hasActiveFilters ? t('noEvents') : t('noEventsYet')}
           description={hasActiveFilters
-            ? t('events.noEventsMessage')
-            : t('events.noEventsYetMessage')}
+            ? t('noEventsMessage')
+            : t('noEventsYetMessage')}
           action={
             <>
               <Button asChild>
                 <Link href="/events/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  {t('events.createYourFirstEvent')}
+                  {t('createYourFirstEvent')}
                 </Link>
               </Button>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={handleClearFilters}>
                   <Filter className="h-4 w-4 mr-2" />
-                  {t('events.clearFilters')}
+                  {tCommon('clearFilters')}
                 </Button>
               )}
             </>
@@ -361,17 +357,23 @@ export function EventsListClient({ initialData, initialHasMore, eventTypes }: Ev
         />
       )}
 
+      {/* Quick Stats */}
+      {stats.total > 0 && (
+        <ListStatsBar title={t('eventOverview')} stats={statsList} />
+      )}
+
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title={t('events.deleteEvent')}
+        title={t('deleteEvent')}
         description={
           eventToDelete
-            ? t('events.confirmDelete', { eventType: eventToDelete.event_type?.name?.toLowerCase() || 'event' })
-            : t('events.confirmDeleteGeneric')
+            ? `Are you sure you want to delete this ${eventToDelete.event_type?.name || 'event'}? This action cannot be undone.`
+            : t('confirmDeleteGeneric')
         }
+        actionLabel={tCommon('delete')}
       />
     </div>
   )
