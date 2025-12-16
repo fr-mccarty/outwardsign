@@ -24,9 +24,12 @@ import type {
   MasterEventRoleWithPerson
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
+import type { SystemType } from '@/lib/constants/system-types'
 
 export interface MasterEventFilterParams {
   search?: string
+  systemType?: SystemType | 'all'
+  status?: 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'all'
   eventTypeId?: string
   startDate?: string
   endDate?: string
@@ -80,9 +83,19 @@ export async function getAllMasterEvents(
   // Build query
   let query = supabase
     .from('master_events')
-    .select('*, event_type:event_types(*)')
+    .select('*, event_type:event_types!inner(*)')
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
+
+  // Filter by system type if provided (filter on joined event_types table)
+  if (filters?.systemType && filters.systemType !== 'all') {
+    query = query.eq('event_type.system_type', filters.systemType)
+  }
+
+  // Filter by status if provided
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
+  }
 
   // Filter by event type if provided
   if (filters?.eventTypeId) {
@@ -1181,4 +1194,74 @@ export async function computeCalendarEventTitle(
   }
 
   return baseTitle
+}
+
+/**
+ * Stats interface for master events
+ */
+export interface MasterEventStats {
+  total: number
+  upcoming: number
+  past: number
+  filtered: number
+}
+
+/**
+ * Get stats for master events with optional filtering by system type
+ */
+export async function getMasterEventStats(filters?: MasterEventFilterParams): Promise<MasterEventStats> {
+  const selectedParishId = await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Build query for all events (for total, upcoming, past counts)
+  let allEventsQuery = supabase
+    .from('master_events')
+    .select('*, event_type:event_types!inner(*)')
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
+
+  // Apply system type filter if provided
+  if (filters?.systemType && filters.systemType !== 'all') {
+    allEventsQuery = allEventsQuery.eq('event_type.system_type', filters.systemType)
+  }
+
+  const { data: allEvents, error: allEventsError } = await allEventsQuery
+
+  if (allEventsError) {
+    console.error('Error fetching master events for stats:', allEventsError)
+    throw new Error('Failed to fetch master events for stats')
+  }
+
+  const allMasterEvents = allEvents || []
+  const total = allMasterEvents.length
+
+  // Fetch primary calendar events for all events to calculate upcoming/past
+  const eventIds = allMasterEvents.map(e => e.id)
+  let upcoming = 0
+  let past = 0
+
+  if (eventIds.length > 0) {
+    const { data: calendarEvents } = await supabase
+      .from('calendar_events')
+      .select('master_event_id, start_datetime')
+      .in('master_event_id', eventIds)
+      .eq('is_primary', true)
+      .is('deleted_at', null)
+
+    const now = new Date()
+    upcoming = calendarEvents?.filter(ce => new Date(ce.start_datetime) >= now).length || 0
+    past = calendarEvents?.filter(ce => new Date(ce.start_datetime) < now).length || 0
+  }
+
+  // Get filtered count using getAllMasterEvents with all filters applied
+  const filteredEvents = await getAllMasterEvents(filters)
+  const filtered = filteredEvents.length
+
+  return {
+    total,
+    upcoming,
+    past,
+    filtered
+  }
 }

@@ -1,13 +1,10 @@
 import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ModuleCreateButton } from '@/components/module-create-button'
-// Button available for inline actions
-import { getMasses, getMassStats, type MassFilterParams } from "@/lib/actions/masses"
+import { getAllMasterEvents, getMasterEventStats, type MasterEventFilterParams } from "@/lib/actions/master-events"
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
-import { CalendarClock } from 'lucide-react'
-// Link available for additional navigation
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
@@ -33,52 +30,36 @@ export default async function MassesPage({ searchParams }: PageProps) {
 
   const params = await searchParams
 
-  // Build filters from search params
-  const filters: MassFilterParams = {
+  // Build filters from search params WITH DEFAULTS
+  // Per LIST_VIEW_PATTERN.md: Apply defaults on server BEFORE calling server actions
+  const filters: MasterEventFilterParams = {
     search: params.search,
-    status: params.status as MassFilterParams['status'],
+    systemType: 'mass', // Filter only master_events with system_type = 'mass'
+    status: (params.status as MasterEventFilterParams['status']) || 'ACTIVE', // Default applied
     start_date: params.start_date,
     end_date: params.end_date,
-    sort: (params.sort as MassFilterParams['sort']) || 'date_asc', // Default to date ascending (chronological)
+    sort: (params.sort as MasterEventFilterParams['sort']) || 'date_asc', // Default to date ascending
     offset: 0,
     limit: LIST_VIEW_PAGE_SIZE
   }
 
-  // Fetch masses and stats server-side with filters
-  const masses = await getMasses(filters)
-  const initialHasMore = masses.length === LIST_VIEW_PAGE_SIZE
-  const stats = await getMassStats(filters)
-
-  // Get user role for schedule button permission
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  const canSchedule = profile && (profile.role === 'ADMIN' || profile.role === 'STAFF')
+  // Fetch master events (masses) and stats server-side with filters
+  const masses = await getAllMasterEvents(filters)
+  const stats = await getMasterEventStats(filters)
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Masses" }
+    { label: "Our Masses" }
   ]
 
   return (
     <PageContainer
-      title="Masses"
-      description="The source and summit of Catholic life."
+      title="Our Masses"
+      description="Celebrate the Eucharist and gather the community in worship."
       primaryAction={<ModuleCreateButton moduleName="Mass" href="/masses/create" />}
-      additionalActions={canSchedule ? [
-        {
-          type: 'action',
-          label: 'Schedule Masses',
-          icon: <CalendarClock className="h-4 w-4" />,
-          href: '/masses/schedule'
-        }
-      ] : undefined}
     >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
-      <MassesListClient initialData={masses} stats={stats} initialHasMore={initialHasMore} />
+      <MassesListClient initialData={masses} stats={stats} />
     </PageContainer>
   )
 }
