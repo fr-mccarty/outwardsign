@@ -6,10 +6,10 @@
  */
 
 /**
- * Event Type Category
+ * System Type
  * Used to organize event types in the UI (sidebar navigation)
  */
-export type EventTypeCategory = 'sacrament' | 'mass' | 'special_liturgy' | 'event'
+export type SystemType = 'sacrament' | 'mass' | 'special-liturgy' | 'event'
 
 /**
  * Field types available for input field definitions
@@ -25,7 +25,7 @@ export type InputFieldType =
   | 'rich_text'       // JSON string (multiline)
   | 'content'         // References contents table (content library)
   | 'petition'        // References petitions table
-  | 'occasion'        // Occasion input (date/time/location grouped)
+  | 'calendar_event'  // Calendar event input (date/time/location grouped)
   | 'date'            // JSON date string (YYYY-MM-DD)
   | 'time'            // JSON time string (HH:MM:SS)
   | 'datetime'        // JSON datetime string (ISO 8601)
@@ -46,7 +46,7 @@ export interface EventType {
   icon: string                    // Lucide icon name
   slug: string | null             // URL-safe identifier (e.g., "weddings", "funerals")
   order: number                   // Display order in sidebar
-  category: EventTypeCategory     // Category for UI organization (sacrament, mass, special_liturgy, event)
+  system_type: SystemType         // System type for UI organization (sacrament, mass, special_liturgy, event)
   deleted_at: string | null
   created_at: string
   updated_at: string
@@ -73,7 +73,7 @@ export interface InputFieldDefinition {
   list_id: string | null          // For list_item type
   event_type_filter_id: string | null  // For event_link type
   is_key_person: boolean          // Only for person type, marks as searchable
-  is_primary: boolean             // Only for occasion type, marks as primary occasion
+  is_primary: boolean             // Only for calendar_event type, marks as primary calendar event
   filter_tags?: string[] | null   // For content type - array of tag slugs for default filtering
   order: number                   // Display order in form
   deleted_at: string | null
@@ -253,7 +253,7 @@ export interface CreateEventTypeData {
   description?: string | null
   icon: string
   slug?: string | null
-  category: EventTypeCategory
+  system_type: SystemType
   // order calculated automatically
 }
 
@@ -262,7 +262,7 @@ export interface UpdateEventTypeData {
   description?: string | null
   icon?: string
   slug?: string | null
-  category?: EventTypeCategory
+  system_type?: SystemType
 }
 
 export interface CreateInputFieldDefinitionData {

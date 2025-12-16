@@ -47,7 +47,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
 
   // Create input field definitions for Easter Vigil
   const easterVigilFields = [
-    { name: 'Easter Vigil Mass', type: 'occasion', required: true, is_primary: true, order: 0 },
+    { name: 'Easter Vigil Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Presider', type: 'person', required: false, order: 1 },
     { name: 'Deacon', type: 'person', required: false, order: 2 },
     { name: '---', type: 'spacer', required: false, order: 3 },
@@ -169,7 +169,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
 
   // Create input field definitions for Holy Thursday
   const holyThursdayFields = [
-    { name: 'Holy Thursday Mass', type: 'occasion', required: true, is_primary: true, order: 0 },
+    { name: 'Holy Thursday Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Presider', type: 'person', required: false, order: 1 },
     { name: 'Deacon', type: 'person', required: false, order: 2 },
     { name: '---', type: 'spacer', required: false, order: 3 },
@@ -291,7 +291,7 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
 
   // Create input field definitions for Good Friday
   const goodFridayFields = [
-    { name: 'Good Friday Service', type: 'occasion', required: true, is_primary: true, order: 0 },
+    { name: 'Good Friday Service', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Presider', type: 'person', required: false, order: 1 },
     { name: 'Deacon', type: 'person', required: false, order: 2 },
     { name: '---', type: 'spacer', required: false, order: 3 },

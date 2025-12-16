@@ -10,7 +10,7 @@ export const inputFieldTypeSchema = z.enum([
   'document',
   'content',
   'petition',
-  'occasion',
+  'calendar_event',
   'text',
   'rich_text',
   'date',
@@ -50,14 +50,14 @@ export const createInputFieldDefinitionSchema = z
   )
   .refine(
     (data) => {
-      // is_primary can only be true for occasion type
-      if (data.is_primary && data.type !== 'occasion') {
+      // is_primary can only be true for calendar_event type
+      if (data.is_primary && data.type !== 'calendar_event') {
         return false
       }
       return true
     },
     {
-      message: 'Primary flag is only valid for occasion type fields',
+      message: 'Primary flag is only valid for calendar_event type fields',
       path: ['is_primary'],
     }
   )

@@ -117,24 +117,24 @@ export async function createInputFieldDefinition(data: CreateInputFieldDefinitio
     throw new Error('is_key_person can only be true for person type fields')
   }
 
-  // Validate is_primary only for occasion type
-  if (data.is_primary && data.type !== 'occasion') {
-    throw new Error('is_primary can only be true for occasion type fields')
+  // Validate is_primary only for calendar_event type
+  if (data.is_primary && data.type !== 'calendar_event') {
+    throw new Error('is_primary can only be true for calendar_event type fields')
   }
 
-  // If marking as primary, check if there's already a primary occasion field
-  if (data.is_primary && data.type === 'occasion') {
+  // If marking as primary, check if there's already a primary calendar_event field
+  if (data.is_primary && data.type === 'calendar_event') {
     const { data: existingPrimary } = await supabase
       .from('input_field_definitions')
       .select('id')
       .eq('event_type_id', data.event_type_id)
-      .eq('type', 'occasion')
+      .eq('type', 'calendar_event')
       .eq('is_primary', true)
       .is('deleted_at', null)
       .single()
 
     if (existingPrimary) {
-      throw new Error('Only one occasion field can be marked as primary per event type')
+      throw new Error('Only one calendar_event field can be marked as primary per event type')
     }
   }
 
@@ -199,13 +199,13 @@ export async function updateInputFieldDefinition(id: string, data: UpdateInputFi
     throw new Error('is_key_person can only be true for person type fields')
   }
 
-  // Validate is_primary only for occasion type
-  if (data.is_primary && data.type && data.type !== 'occasion') {
-    throw new Error('is_primary can only be true for occasion type fields')
+  // Validate is_primary only for calendar_event type
+  if (data.is_primary && data.type && data.type !== 'calendar_event') {
+    throw new Error('is_primary can only be true for calendar_event type fields')
   }
 
-  // If marking as primary, check if there's already a primary occasion field
-  if (data.is_primary && data.type === 'occasion') {
+  // If marking as primary, check if there's already a primary calendar_event field
+  if (data.is_primary && data.type === 'calendar_event') {
     // Get the field we're updating to find event_type_id
     const { data: currentField } = await supabase
       .from('input_field_definitions')
@@ -219,14 +219,14 @@ export async function updateInputFieldDefinition(id: string, data: UpdateInputFi
         .from('input_field_definitions')
         .select('id')
         .eq('event_type_id', currentField.event_type_id)
-        .eq('type', 'occasion')
+        .eq('type', 'calendar_event')
         .eq('is_primary', true)
         .neq('id', id) // Exclude current field
         .is('deleted_at', null)
         .single()
 
       if (existingPrimary) {
-        throw new Error('Only one occasion field can be marked as primary per event type')
+        throw new Error('Only one calendar_event field can be marked as primary per event type')
       }
     }
   }

@@ -40,14 +40,14 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
   const isEditing = !!event
 
   // Get calendar event fields from input definitions
-  const calendarEventFields = (eventType.input_field_definitions || []).filter(f => f.type === 'occasion')
+  const calendarEventFields = (eventType.input_field_definitions || []).filter(f => f.type === 'calendar_event')
 
   // State for field values (non-calendar-event fields)
   const [fieldValues, setFieldValues] = useState<FieldValues>(() => {
     const initial: FieldValues = {}
     // Initialize from existing event or empty (skip calendar event fields)
     eventType.input_field_definitions?.forEach((field) => {
-      if (field.type !== 'occasion') {
+      if (field.type !== 'calendar_event') {
         initial[field.name] = event?.field_values?.[field.name] ?? (field.type === 'yes_no' ? false : '')
       }
     })
@@ -128,10 +128,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
 
   // Handle form submission
   const onSubmit = async () => {
-    // Validate required fields (non-occasion fields)
+    // Validate required fields (non-calendar_event fields)
     const missingRequired: string[] = []
     eventType.input_field_definitions?.forEach((field) => {
-      if (field.type !== 'occasion' && field.required && !fieldValues[field.name]) {
+      if (field.type !== 'calendar_event' && field.required && !fieldValues[field.name]) {
         missingRequired.push(field.name)
       }
     })
@@ -314,8 +314,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
           />
         )
 
-      case 'occasion':
-        // Occasion inputs render date, time, and location together
+      case 'calendar_event':
+        // Calendar event inputs render date, time, and location together
         // In edit mode, show display view with modal for separate save
         const existingOccasion = event?.calendar_events?.find(occ => occ.label === field.name)
         return (
