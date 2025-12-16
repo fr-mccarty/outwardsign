@@ -18,6 +18,29 @@ This document serves as a navigation hub for all coding standards and convention
 
 ## Critical Rules Summary
 
+### 🔴 Unified Event Data Model Patterns
+
+**System Type Metadata:**
+- System types (mass, special-liturgy, sacrament, event) are stored as enum field in `event_types.system_type`
+- Metadata (icons, bilingual labels) is in `src/lib/constants/system-types.ts`, NOT in database
+- Use `SYSTEM_TYPE_METADATA` constant for labels and icons
+
+**Computed Titles:**
+- Calendar event titles are computed (not stored) from `master_event.title + field_name`
+- Use helpers: `computeMasterEventTitle()`, `computeCalendarEventTitle()`
+
+**Role Definitions:**
+- Stored as JSONB in `event_types.role_definitions`
+- Structure: `{"roles": [{"id": "presider", "name": "Presider", "required": true}, ...]}`
+- Assignments stored in `master_event_roles` table
+
+**calendar_event Input Type:**
+- `input_type: "calendar_event"` creates records in `calendar_events` table
+- Stores calendar_event.id in `master_events.field_values`
+- Unlike other input types, it creates a new record (not just a reference)
+
+**See:** [ARCHITECTURE.md - Unified Event Data Model](./ARCHITECTURE.md#unified-event-data-model)
+
 ### 🔴 No Inline/Bespoke Functions
 
 **NEVER create inline utility functions.** All formatting and utility logic must be centralized in `/src/lib/utils/` files.

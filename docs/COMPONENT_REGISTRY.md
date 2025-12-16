@@ -21,6 +21,8 @@ Components for building forms including input fields, buttons, date pickers, and
 - `FormInput` - All-in-one form field (no validation)
 - `FormField` - All-in-one form field with validation support
 - `DatePickerField` - Calendar date picker
+- `CalendarEventField` - Date/time/location picker for calendar_event input type fields (creates calendar_events records)
+- `CalendarEventFieldView` - Display version of CalendarEventField for view pages
 - `SaveButton`, `CancelButton`, `DeleteButton` - Form action buttons
 - `EventFormFields` - Reusable event form fields
 - `usePickerState` - Picker state management hook
@@ -84,9 +86,11 @@ Components for displaying data including cards, badges, avatars, and status labe
 - `ScrollToTopButton` - Floating scroll-to-top button
 - `EndOfListMessage` - Message when infinite scroll reaches end
 - `AdvancedSearch` - Collapsible advanced search filters
+- `SystemTypeFilter` - Filter dropdown for system types (mass, special-liturgy, sacrament, event)
 - `ModuleStatusLabel` - Status badges for modules
 - `ModuleViewPanel` - Side panel for view pages
 - `ModuleViewContainer` - Complete view page container
+- `RoleAssignmentSection` - Role management section for master_event view pages (displays master_event_roles)
 
 ---
 

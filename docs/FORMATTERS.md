@@ -116,7 +116,7 @@ When you need a formatter that doesn't exist:
 
 ## Formatter Categories
 
-The formatter documentation is organized into five categories:
+The formatter documentation is organized into six categories:
 
 ### 1. Date & Time Formatters
 
@@ -189,7 +189,45 @@ Export filename generators for PDF and Word documents.
 - `getBaptismFilename()` - "Martinez-Baptism-20251225.pdf"
 - Plus: Mass, Quinceañera, Presentation, Mass Intention, Event
 
-### 6. String Formatters
+### 6. Title Computation Helpers (Unified Event Data Model)
+
+**File:** `src/lib/utils/formatters.ts`
+
+Helpers for computing master_event and calendar_event titles following the unified event data model patterns.
+
+**Title Computation Algorithm:**
+
+Master event titles are computed from key persons + event_type.name:
+- Extract key persons from field_values (where input_field_definition.is_key_person = true)
+- Combine person names with " & " separator
+- Append event_type.name
+- Example: "John & Jane Wedding" or "Maria Garcia Funeral"
+
+Calendar event titles are computed based on number of calendar_event fields:
+- **Single calendar_event field:** `{master_event.title}` (no suffix)
+- **Multiple calendar_event fields:** `{master_event.title} - {field_name}`
+
+**Planned Functions:**
+- `computeMasterEventTitle(masterEvent, eventType, fieldValues)` - Generate master_event title
+- `computeCalendarEventTitle(masterEvent, fieldName, totalFields)` - Generate calendar_event title
+
+**Examples:**
+```typescript
+// Single calendar_event field (no suffix)
+computeCalendarEventTitle("9am Mass Jan 19", "Mass", 1)
+// → "9am Mass Jan 19"
+
+// Multiple calendar_event fields (with suffix)
+computeCalendarEventTitle("Mark and Susan's Wedding", "Rehearsal", 2)
+// → "Mark and Susan's Wedding - Rehearsal"
+
+computeCalendarEventTitle("Mark and Susan's Wedding", "Ceremony", 2)
+// → "Mark and Susan's Wedding - Ceremony"
+```
+
+**Current Status:** Title computation is currently performed inline in components. These helpers will centralize the logic once implemented.
+
+### 7. String Formatters
 
 **File:** [formatters/STRING_FORMATTERS.md](./formatters/STRING_FORMATTERS.md)
 
@@ -253,6 +291,9 @@ General string manipulation and transformation utilities.
 | **Strings** |
 | URL-safe slug | `generateSlug()` | [String](./formatters/STRING_FORMATTERS.md) | "wedding-songs" |
 | Capitalize first | `capitalizeFirstLetter()` | [String](./formatters/STRING_FORMATTERS.md) | "Person" |
+| **Title Computation (Unified Event Model)** |
+| Master event title | `computeMasterEventTitle()` | [Title Computation](#6-title-computation-helpers-unified-event-data-model) | "John & Jane Wedding" |
+| Calendar event title | `computeCalendarEventTitle()` | [Title Computation](#6-title-computation-helpers-unified-event-data-model) | "Wedding - Rehearsal" |
 
 ---
 

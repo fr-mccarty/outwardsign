@@ -24,33 +24,49 @@
 
 ## Architecture Overview
 
-### Unified Event Types System
+### Unified Event Data Model (3-Table Hierarchy)
 
-Outward Sign uses a **unified Event Types architecture** where all sacraments and parish events are managed through configurable Event Types:
+Outward Sign uses a **unified 3-level event data model** that consolidates all parish activities into a single coherent hierarchy:
 
-- **Event Types** are created by parish administrators in Settings > Event Types
-- Each Event Type (Wedding, Funeral, Baptism, Bible Study, etc.) can have custom fields, scripts, and templates
-- **Events** are instances of Event Types - e.g., "Smith-Jones Wedding" is an Event of type "Wedding"
-- All events are accessed through `/events/[event_type_slug]/[id]`
+**The 3 Levels:**
+1. **event_types** - User-defined templates (Wedding, Funeral, Sunday Mass, Bible Study, etc.)
+2. **master_events** - Specific instances (John & Jane's Wedding, Easter Vigil 2025, Zumba Jan 15)
+3. **calendar_events** - Date/time/location entries that appear on the calendar
 
-**There are NO separate code modules for Weddings, Funerals, Baptisms, etc.** These are all Event Types configured through the UI.
+**System Types (4 Categories):**
+All event_types belong to one of four **system types** (stored as enum field with CHECK constraint):
+- **mass** - Masses (system_type = 'mass')
+- **special-liturgy** - Special Liturgies (system_type = 'special-liturgy')
+- **sacrament** - Sacraments (system_type = 'sacrament')
+- **event** - Events (system_type = 'event')
 
-### Code Modules vs Event Types
+System type metadata (icons, bilingual labels) is stored in application constants at `src/lib/constants/system-types.ts`, not in the database.
 
-| Concept | Description | Examples |
-|---------|-------------|----------|
-| **Code Modules** | Distinct functionality requiring separate code | Masses, People, Locations, Groups, Families |
-| **Event Types** | User-configured event categories (no code changes) | Wedding, Funeral, Baptism, Bible Study, Youth Group, RCIA |
+**Key Design Decisions:**
+- Every calendar_event MUST have a master_event (NOT NULL FK)
+- Titles are computed (not stored) from master_event + field_name
+- Roles belong to master_events, NOT calendar_events
+- Scripts are generated from master_events, NOT calendar_events
 
-**When to create a new Code Module:**
-- Fundamentally different data model (not just different fields)
-- Unique workflows not supported by Events
-- Special integrations (e.g., Masses with liturgical calendar)
+### Code Modules by System Type
 
-**When to create a new Event Type:**
-- Any sacrament or parish event
+| System Type | Module Route | Event Types Examples |
+|-------------|-------------|----------------------|
+| **mass** | `/masses` | Sunday Mass, Daily Mass, Funeral Mass |
+| **special-liturgy** | `/special-liturgies/[event_type_slug]` | Easter Vigil, Christmas Midnight Mass, Stations of the Cross |
+| **sacrament** | `/sacraments/[event_type_slug]` | Wedding, Baptism, Confirmation, First Communion |
+| **event** | `/events/[event_type_id]` | Bible Study, Zumba, Parish Picnic, Finance Committee Meeting |
+
+**Event Types are user-configured** - Parish administrators create event types through Settings pages (Settings → Masses, Settings → Sacraments, etc.) with custom fields, role definitions, and script templates.
+
+**When to create a new Event Type (NOT a code module):**
+- Any sacrament or parish activity
 - Any recurring activity that needs scheduling
 - Anything that needs custom fields, scripts, or templates
+
+**When to create a new Code Module:**
+- Fundamentally different data model (People, Locations, Groups)
+- Unique workflows not supported by the unified event model
 
 ---
 
@@ -108,22 +124,7 @@ When Event Types are configured, they appear in a separate "Event Types" section
 
 ## Core Modules
 
-### Events Module
-
-**Purpose:** Unified system for all parish events and sacraments
-
-**Route:** `/events`
-
-**Architecture:**
-- Uses dynamic Event Types configured in Settings
-- All sacraments (Weddings, Funerals, Baptisms) are Event Types
-- All parish activities (Bible Study, Youth Group) are Event Types
-- Single codebase handles all event types
-
-**Key Files:**
-- `src/app/(main)/events/page.tsx` - List page
-- `src/app/(main)/events/[event_type_id]/[id]/page.tsx` - View page
-- `src/app/(main)/events/events-list-client.tsx` - List client
+All core modules use the **unified event data model** with master_events → calendar_events hierarchy.
 
 ### Masses Module
 
@@ -131,16 +132,105 @@ When Event Types are configured, they appear in a separate "Event Types" section
 
 **Route:** `/masses`
 
-**Architecture:**
-- Separate module due to unique requirements (scheduling wizard, role assignment, liturgical calendar)
-- Can optionally use Event Types for custom fields and scripts via `event_type_id`
-- Mass-specific features not available in generic Events
+**System Type:** `mass`
+
+**Database Tables:**
+- `master_events` (with event_type_id → event_types where system_type = 'mass')
+- `calendar_events` (scheduled occurrences)
+- `master_event_roles` (role assignments)
 
 **Key Features:**
-- Mass scheduling wizard
-- Role assignment (Lector, EMHC, Altar Server, etc.)
+- Standard 8-file module structure (follows masses module pattern)
+- Mass scheduling wizard for bulk creation
+- Role assignment (Lector, EMHC, Altar Server, etc.) via master_event_roles
 - Liturgical calendar integration
-- Optional Event Type templating for custom fields
+- Script generation from event_type templates
+
+**Key Files:**
+- `src/app/(main)/masses/page.tsx` - List page (server)
+- `src/app/(main)/masses/masses-list-client.tsx` - List client
+- `src/app/(main)/masses/mass-form.tsx` - Unified form
+- `src/app/(main)/masses/[id]/page.tsx` - View page
+- `src/app/(main)/masses/[id]/edit/page.tsx` - Edit page
+
+### Special Liturgies Module
+
+**Purpose:** Non-Mass liturgical celebrations (Easter Vigil, Stations of the Cross, etc.)
+
+**Route:** `/special-liturgies/[event_type_slug]`
+
+**System Type:** `special-liturgy`
+
+**Database Tables:**
+- `master_events` (with event_type_id → event_types where system_type = 'special-liturgy')
+- `calendar_events` (scheduled occurrences)
+- `master_event_roles` (role assignments)
+
+**Architecture:**
+- Dynamic routes based on event_type slug
+- Single module handles all special liturgy types
+- Event types configured in Settings → Special Liturgies
+
+**Key Files:**
+- `src/app/(main)/special-liturgies/[event_type_slug]/page.tsx` - List page
+- `src/app/(main)/special-liturgies/[event_type_slug]/[id]/page.tsx` - View page
+- `src/app/(main)/special-liturgies/[event_type_slug]/[id]/edit/page.tsx` - Edit page
+- `src/app/(main)/special-liturgies/[event_type_slug]/create/page.tsx` - Create page
+
+### Sacraments Module
+
+**Purpose:** Sacramental celebrations (Weddings, Baptisms, Confirmations, etc.)
+
+**Route:** `/sacraments/[event_type_slug]`
+
+**System Type:** `sacrament`
+
+**Database Tables:**
+- `master_events` (with event_type_id → event_types where system_type = 'sacrament')
+- `calendar_events` (scheduled occurrences, often multiple per master_event)
+- `master_event_roles` (role assignments)
+
+**Architecture:**
+- Dynamic routes based on event_type slug
+- Single module handles all sacrament types
+- Event types configured in Settings → Sacraments
+- Supports multiple calendar_events per master_event (e.g., Wedding Rehearsal + Ceremony)
+
+**Key Files:**
+- `src/app/(main)/sacraments/[event_type_slug]/page.tsx` - List page
+- `src/app/(main)/sacraments/[event_type_slug]/[id]/page.tsx` - View page
+- `src/app/(main)/sacraments/[event_type_slug]/[id]/edit/page.tsx` - Edit page
+- `src/app/(main)/sacraments/[event_type_slug]/create/page.tsx` - Create page
+
+### Events Module
+
+**Purpose:** Non-liturgical parish activities (Bible Study, Zumba, Parish Picnic, etc.)
+
+**Route:** `/events/[event_type_id]`
+
+**System Type:** `event`
+
+**Database Tables:**
+- `master_events` (with event_type_id → event_types where system_type = 'event')
+- `calendar_events` (scheduled occurrences)
+- `master_event_roles` (role assignments for volunteers)
+
+**Architecture:**
+- Standard 8-file module structure
+- Event types configured in Settings → Events
+- Role scheduling works for volunteers (Setup, Cleanup, Instructor, etc.)
+
+**Key Features:**
+- Same role scheduling system as liturgical events
+- Script generation available (optional agendas/runsheets)
+- Custom fields per event type
+
+**Key Files:**
+- `src/app/(main)/events/[event_type_id]/page.tsx` - List page
+- `src/app/(main)/events/[event_type_id]/master-event-form.tsx` - Unified form
+- `src/app/(main)/events/[event_type_id]/[id]/page.tsx` - View page
+- `src/app/(main)/events/[event_type_id]/[id]/edit/page.tsx` - Edit page
+- `src/app/(main)/events/[event_type_id]/create/page.tsx` - Create page
 
 ### Mass Intentions Module
 
@@ -330,10 +420,19 @@ All module labels are provided in **English** and **Spanish**.
 
 ### Core Module Labels
 
+**System Type Modules** (bilingual labels from `SYSTEM_TYPE_METADATA`):
+
+| Module | English | Spanish | Icon |
+|--------|---------|---------|------|
+| **Masses** | Masses | Misas | BookOpen |
+| **Special Liturgies** | Special Liturgies | Liturgias Especiales | Star |
+| **Sacraments** | Sacraments | Sacramentos | Church |
+| **Events** | Events | Eventos | CalendarDays |
+
+**Other Core Modules:**
+
 | Module | English | Spanish |
 |--------|---------|---------|
-| **Events** | Events | Eventos |
-| **Masses** | Masses | Misas |
 | **Mass Intentions** | Mass Intentions | Intenciones de Misa |
 
 ### Supporting Module Labels
@@ -421,13 +520,30 @@ Icons are from **Lucide React**.
 
 ## Module Database Tables
 
-### Core Tables
+### Core Tables (Unified Event Data Model)
+
+**The 3-Table Hierarchy:**
+
+| Table | Purpose | Singular Form |
+|-------|---------|---------------|
+| **event_types** | User-defined templates for all system types | `event_type` |
+| **master_events** | Specific event instances (John & Jane's Wedding, Easter Vigil 2025) | `master_event` |
+| **calendar_events** | Date/time/location entries that appear on calendar | `calendar_event` |
+| **master_event_roles** | Role assignments for master_events | `master_event_role` |
+
+**Key Relationships:**
+- `event_types.system_type` → enum ('mass', 'special-liturgy', 'sacrament', 'event')
+- `master_events.event_type_id` → `event_types.id` (NOT NULL)
+- `calendar_events.master_event_id` → `master_events.id` (NOT NULL)
+- `calendar_events.input_field_definition_id` → `input_field_definitions.id` (NOT NULL)
+- `master_event_roles.master_event_id` → `master_events.id`
+
+**Note:** The `masses` table was deleted and migrated to the unified structure. All masses are now `master_events` with `event_type_id` pointing to an event_type where `system_type = 'mass'`.
+
+### Other Core Tables
 
 | Module | Database Table | Singular Form |
 |--------|---------------|---------------|
-| **Events** | `events` | `event` |
-| **Event Types** | `event_types` | `event_type` |
-| **Masses** | `masses` | `mass` |
 | **Mass Intentions** | `mass_intentions` | `mass_intention` |
 
 ### Supporting Tables

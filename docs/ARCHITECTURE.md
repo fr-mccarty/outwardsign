@@ -2,7 +2,7 @@
 
 This document provides comprehensive architectural patterns and guidelines for Outward Sign. It covers data architecture, data flow patterns, authentication, component communication, and performance optimization.
 
-> **Architecture Note:** Outward Sign uses a **unified Event Types system**. Sacraments and parish events (Weddings, Funerals, Baptisms, etc.) are all configured as **Event Types** through the Settings UI - they are NOT separate code modules. Some code examples in this document may reference the older pattern for illustration purposes, but the patterns themselves remain valid.
+> **Architecture Note:** Outward Sign uses a **unified Event Data Model** with a 3-table hierarchy (event_types → master_events → calendar_events). All parish activities (Masses, Special Liturgies, Sacraments, Events) use this unified structure. Event Types are user-configured templates, master_events are specific instances, and calendar_events are scheduled occurrences.
 
 ---
 
@@ -23,6 +23,39 @@ This document provides comprehensive architectural patterns and guidelines for O
 ---
 
 ## Data Architecture
+
+### Unified Event Data Model
+
+**The 3-Table Hierarchy:**
+1. **event_types** - User-defined templates for all system types (Wedding, Funeral, Sunday Mass, Bible Study, etc.)
+2. **master_events** - Specific event instances (John & Jane's Wedding, Easter Vigil 2025, Zumba Jan 15)
+3. **calendar_events** - Date/time/location entries that appear on the calendar
+
+**System Types (4 Categories):**
+All event_types belong to one of four system types (stored as enum field):
+- `mass` - Masses
+- `special-liturgy` - Special Liturgies
+- `sacrament` - Sacraments
+- `event` - Events
+
+**Key Relationships:**
+- `master_events.event_type_id` → `event_types.id` (NOT NULL)
+- `calendar_events.master_event_id` → `master_events.id` (NOT NULL)
+- `calendar_events.input_field_definition_id` → `input_field_definitions.id` (NOT NULL)
+
+**Title Computation:**
+Calendar event titles are computed (not stored):
+- Single calendar_event field: `{master_event.title}`
+- Multiple calendar_event fields: `{master_event.title} - {field_name}`
+
+Examples:
+- "Mark and Susan's Wedding - Rehearsal" (2 calendar events)
+- "9am Mass Jan 19" (1 calendar event, no suffix)
+
+**Role Assignments:**
+- Roles are defined in `event_types.role_definitions` (JSONB)
+- Assignments stored in `master_event_roles` table
+- Roles belong to master_events, NOT calendar_events
 
 ### Parish Structure
 
@@ -182,11 +215,42 @@ export async function get[Entity]WithRelations(id: string): Promise<[Entity]With
 }
 ```
 
+**For master_events (unified event data model):**
+
+```typescript
+// In lib/actions/master-events.ts
+export interface MasterEventWithRelations extends MasterEvent {
+  event_type?: EventType | null
+  calendar_events?: CalendarEvent[]
+  roles?: MasterEventRole[]
+  // ... related data for field_values (person, location, etc.)
+}
+
+export async function getMasterEventWithRelations(id: string): Promise<MasterEventWithRelations | null> {
+  const masterEvent = await getMasterEvent(id)
+  if (!masterEvent) return null
+
+  const [eventType, calendarEvents, roles] = await Promise.all([
+    masterEvent.event_type_id ? getEventType(masterEvent.event_type_id) : null,
+    getCalendarEventsByMasterEventId(id),
+    getMasterEventRolesByMasterEventId(id),
+  ])
+
+  return {
+    ...masterEvent,
+    event_type: eventType,
+    calendar_events: calendarEvents,
+    roles,
+  }
+}
+```
+
 **Why:**
 - Forms need related data for display (not just IDs)
 - Type-safe access to nested properties
 - Eliminates unsafe `as any` type casts
 - View pages need full entity details for rendering
+- Master events need event_type, calendar_events, and roles for complete rendering
 
 #### Simplified Update Pattern
 

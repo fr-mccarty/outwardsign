@@ -4,23 +4,58 @@
 
 > **Overview:** This file provides detailed database management procedures. For migration creation guidelines and file structure, see the Database section in [CLAUDE.md](../CLAUDE.md#-database).
 
-## Table Renames (December 2025)
+## Unified Event Data Model (December 2025)
 
-As part of the Event Categories feature implementation, the following tables were renamed for clarity:
+As part of the Unified Event Data Model implementation, the database was restructured into a 3-table hierarchy:
 
-| Old Name | New Name | Purpose |
-|----------|----------|---------|
-| `dynamic_events` | `master_events` | Sacrament containers (Wedding, Funeral) and event planning records |
-| `occasions` | `calendar_events` | Scheduled calendar items (rehearsals, ceremonies, parish activities) |
+### The 3-Table Hierarchy
+
+| Table | Purpose | Key Fields |
+|-------|---------|------------|
+| **event_types** | User-defined templates | `system_type` (enum), `role_definitions` (jsonb) |
+| **master_events** | Specific event instances | `event_type_id` (NOT NULL), `field_values` (jsonb), `status` |
+| **calendar_events** | Date/time/location entries | `master_event_id` (NOT NULL), `input_field_definition_id` (NOT NULL), `start_datetime` |
+| **master_event_roles** | Role assignments | `master_event_id`, `role_id`, `person_id` |
+
+### System Types (Enum Field)
+
+**event_types.system_type** is an enum field with CHECK constraint (NOT a foreign key):
+- `'mass'` - Masses
+- `'special-liturgy'` - Special Liturgies
+- `'sacrament'` - Sacraments
+- `'event'` - Events
+
+System type metadata (icons, bilingual labels) is stored in application constants at `src/lib/constants/system-types.ts`.
+
+### Key Database Changes
+
+**calendar_events table restructure:**
+- `start_datetime` (timestamptz, NOT NULL) - Includes timezone
+- `input_field_definition_id` (uuid, NOT NULL) - References the field definition that created this calendar event
+- `master_event_id` (uuid, NOT NULL) - Every calendar_event MUST have a master_event
+- NO title field (computed from master_event + field_name)
+
+**master_event_roles table (new):**
+- Stores role assignments for master_events
+- Links to `event_types.role_definitions` JSONB structure
+- One row per person per role per master_event
+
+**event_types.role_definitions (new JSONB field):**
+- Defines available roles for each event type
+- Structure: `{"roles": [{"id": "presider", "name": "Presider", "required": true}, ...]}`
+
+**masses table (deleted):**
+- Migrated to unified structure via `master_events`
+- All masses are now `master_events` with `event_type_id` pointing to event_types where `system_type = 'mass'`
 
 **Migration Files:**
-- `20251213000001_rename_dynamic_events_to_master_events.sql`
-- `20251213000002_rename_occasions_to_calendar_events.sql`
-
-**Type Aliases:** Backward compatibility aliases exist in `src/lib/types.ts`:
-- `DynamicEvent` → `MasterEvent`
-- `DynamicEventType` → `EventType`
-- `Occasion` → `CalendarEvent`
+- `20251216000001_update_event_types_system_type.sql`
+- `20251216000002_update_input_field_definitions_calendar_event.sql`
+- `20251216000003_recreate_calendar_events_table.sql`
+- `20251216000004_add_status_to_master_events.sql`
+- `20251216000005_create_master_event_roles_table.sql`
+- `20251216000006_add_role_definitions_to_event_types.sql`
+- `20251216000007_delete_masses_table.sql`
 
 ## Database Resets
 

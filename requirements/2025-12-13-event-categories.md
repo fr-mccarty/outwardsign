@@ -1,9 +1,12 @@
 # Event Categories
 
 **Created:** 2025-12-13
-**Status:** IMPLEMENTED
+**Status:** SUPERSEDED
 **Agent:** brainstorming-agent → requirements-agent → developer-agent
 **Implemented:** 2025-12-14
+**Superseded by:** [2025-12-16-unified-event-data-model.md](./2025-12-16-unified-event-data-model.md)
+
+> **SUPERSEDED NOTICE:** This requirements document has been superseded by the unified event data model implementation. The concepts introduced here (system types for categorization) have been refined and implemented as part of the unified 3-table hierarchy (event_types → master_events → calendar_events). Refer to the unified event data model requirements for the current architecture.
 
 ## Feature Overview
 
