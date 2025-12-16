@@ -20,7 +20,6 @@ import {
   Settings,
   User, Users, Users2, Plus,
   CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText,
-  Church, BookOpen, Star,
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -28,11 +27,12 @@ import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
 import { Logo } from "@/components/logo"
 import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
-import type { DynamicEventType } from "@/lib/types"
+import { SYSTEM_TYPE_METADATA } from "@/lib/constants/system-types"
+import type { EventType } from "@/lib/types"
 import { useTranslations } from 'next-intl'
 
 interface MainSidebarProps {
-  eventTypes: DynamicEventType[]
+  eventTypes: EventType[]
 }
 
 export function MainSidebar({ eventTypes }: MainSidebarProps) {
@@ -45,11 +45,19 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
     }
   }
 
-  // Group event types by category
+  // Group event types by system_type (using new unified data model)
   const groupedEventTypes = {
-    sacrament: eventTypes.filter(et => et.category === 'sacrament'),
-    special_liturgy: eventTypes.filter(et => et.category === 'special_liturgy'),
+    mass: eventTypes.filter(et => et.system_type === 'mass'),
+    'special-liturgy': eventTypes.filter(et => et.system_type === 'special-liturgy'),
+    sacrament: eventTypes.filter(et => et.system_type === 'sacrament'),
+    event: eventTypes.filter(et => et.system_type === 'event'),
   }
+
+  // Get system type icons
+  const MassIcon = getLucideIcon(SYSTEM_TYPE_METADATA.mass.icon)
+  const SpecialLiturgyIcon = getLucideIcon(SYSTEM_TYPE_METADATA['special-liturgy'].icon)
+  const SacramentIcon = getLucideIcon(SYSTEM_TYPE_METADATA.sacrament.icon)
+  const EventIcon = getLucideIcon(SYSTEM_TYPE_METADATA.event.icon)
 
   return (
     <Sidebar>
@@ -69,6 +77,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="pb-16">
+        {/* Primary Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>{t('nav.application')}</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -93,40 +102,140 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <CollapsibleNavSection
-                name={t('nav.masses')}
-                icon={BookOpen}
+                name={t('nav.massScheduling')}
+                icon={Clock}
                 items={[
                   {
-                    title: t('nav.ourMasses'),
-                    url: "/masses",
-                    icon: BookOpen,
+                    title: t('nav.scheduleMasses'),
+                    url: "/masses/schedule",
+                    icon: CalendarDays,
                   },
                   {
-                    title: t('nav.newMass'),
-                    url: "/masses/create",
-                    icon: Plus,
+                    title: t('nav.massTimesTemplates'),
+                    url: "/mass-times-templates",
+                    icon: Clock,
+                  },
+                  {
+                    title: t('nav.massRoleTemplates'),
+                    url: "/mass-role-templates",
+                    icon: LayoutTemplate,
+                  },
+                  {
+                    title: t('nav.massRoles'),
+                    url: "/mass-roles",
+                    icon: UserCog,
+                  },
+                  {
+                    title: t('nav.roleMembers'),
+                    url: "/mass-role-members",
+                    icon: UsersIcon,
                   },
                 ]}
                 defaultOpen={false}
               />
 
-              <CollapsibleNavSection
-                name={t('nav.calendarEvents')}
-                icon={CalendarDays}
-                items={[
-                  {
-                    title: t('nav.ourCalendarEvents'),
-                    url: "/calendar-events",
-                    icon: CalendarDays,
-                  },
-                  {
-                    title: t('nav.newCalendarEvent'),
-                    url: "/calendar-events/create",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              <SidebarMenuItem key="EventScheduling">
+                <SidebarMenuButton asChild>
+                  <Link href="/event-scheduling" onClick={handleLinkClick}>
+                    <CalendarDays />
+                    <span>Event Scheduling</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Masses */}
+        <SidebarGroup>
+          <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.mass.name_en}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem key="Masses">
+                <SidebarMenuButton asChild>
+                  <Link href="/masses" onClick={handleLinkClick}>
+                    <MassIcon />
+                    <span>{t('nav.ourMasses')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Special Liturgies - Expandable by event type */}
+        {groupedEventTypes['special-liturgy'].length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{SYSTEM_TYPE_METADATA['special-liturgy'].name_en}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {groupedEventTypes['special-liturgy'].map((eventType) => {
+                  const Icon = getLucideIcon(eventType.icon)
+                  const slug = eventType.slug || eventType.id
+                  return (
+                    <SidebarMenuItem key={eventType.id}>
+                      <SidebarMenuButton asChild>
+                        <Link href={`/special-liturgies/${slug}`} onClick={handleLinkClick}>
+                          <Icon />
+                          <span>{eventType.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Sacraments - Expandable by event type */}
+        {groupedEventTypes.sacrament.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.sacrament.name_en}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {groupedEventTypes.sacrament.map((eventType) => {
+                  const Icon = getLucideIcon(eventType.icon)
+                  const slug = eventType.slug || eventType.id
+                  return (
+                    <SidebarMenuItem key={eventType.id}>
+                      <SidebarMenuButton asChild>
+                        <Link href={`/sacraments/${slug}`} onClick={handleLinkClick}>
+                          <Icon />
+                          <span>{eventType.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Events */}
+        <SidebarGroup>
+          <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.event.name_en}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem key="Events">
+                <SidebarMenuButton asChild>
+                  <Link href="/events" onClick={handleLinkClick}>
+                    <EventIcon />
+                    <span>Our Events</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Supporting Modules */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Parish Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
 
               <CollapsibleNavSection
                 name={t('nav.groups')}
@@ -159,62 +268,6 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                     title: t('nav.newLocation'),
                     url: "/locations/create",
                     icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <CollapsibleNavSection
-                name={t('nav.massIntentions')}
-                icon={ScrollText}
-                items={[
-                  {
-                    title: t('nav.ourMassIntentions'),
-                    url: "/mass-intentions",
-                    icon: ScrollText,
-                  },
-                  {
-                    title: t('nav.createMassIntention'),
-                    url: "/mass-intentions/create",
-                    icon: Plus,
-                  },
-                  {
-                    title: t('nav.report'),
-                    url: "/mass-intentions/report",
-                    icon: FileText,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <CollapsibleNavSection
-                name={t('nav.massScheduling')}
-                icon={Clock}
-                items={[
-                  {
-                    title: t('nav.scheduleMasses'),
-                    url: "/masses/schedule",
-                    icon: CalendarDays,
-                  },
-                  {
-                    title: t('nav.massTimesTemplates'),
-                    url: "/mass-times-templates",
-                    icon: Clock,
-                  },
-                  {
-                    title: t('nav.massRoleTemplates'),
-                    url: "/mass-role-templates",
-                    icon: LayoutTemplate,
-                  },
-                  {
-                    title: t('nav.massRoles'),
-                    url: "/mass-roles",
-                    icon: UserCog,
-                  },
-                  {
-                    title: t('nav.roleMembers'),
-                    url: "/mass-role-members",
-                    icon: UsersIcon,
                   },
                 ]}
                 defaultOpen={false}
@@ -256,6 +309,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Reports */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Reports</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+
               <SidebarMenuItem key="WeekendSummary">
                 <SidebarMenuButton asChild>
                   <Link href="/weekend-summary" onClick={handleLinkClick}>
@@ -265,73 +328,32 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Special Liturgies - Simple Module Structure */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.application')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
               <CollapsibleNavSection
-                name={t('nav.specialLiturgies')}
-                icon={Star}
+                name={t('nav.massIntentions')}
+                icon={ScrollText}
                 items={[
                   {
-                    title: `${t('common.our')} ${t('nav.specialLiturgies')}`,
-                    url: "/settings/special-liturgies",
-                    icon: Star,
+                    title: t('nav.ourMassIntentions'),
+                    url: "/mass-intentions",
+                    icon: ScrollText,
                   },
                   {
-                    title: `${t('common.new')} ${t('nav.specialLiturgy')}`,
-                    url: "/settings/special-liturgies/create",
+                    title: t('nav.createMassIntention'),
+                    url: "/mass-intentions/create",
                     icon: Plus,
+                  },
+                  {
+                    title: t('nav.report'),
+                    url: "/mass-intentions/report",
+                    icon: FileText,
                   },
                 ]}
                 defaultOpen={false}
               />
+
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Sacraments - Expanded */}
-        {groupedEventTypes.sacrament.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>
-              <Church className="mr-2 h-4 w-4" />
-              {t('nav.sacraments')}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {groupedEventTypes.sacrament.map((eventType) => {
-                  const Icon = getLucideIcon(eventType.icon)
-                  const slug = eventType.slug || eventType.id
-                  return (
-                    <CollapsibleNavSection
-                      key={eventType.id}
-                      name={eventType.name}
-                      icon={Icon}
-                      items={[
-                        {
-                          title: `${t('common.our')} ${eventType.name}s`,
-                          url: `/events?type=${slug}`,
-                          icon: Icon,
-                        },
-                        {
-                          title: `${t('common.new')} ${eventType.name}`,
-                          url: `/events/create?type=${slug}`,
-                          icon: Plus,
-                        },
-                      ]}
-                      defaultOpen={false}
-                    />
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
 
         {/* Settings section at the bottom */}
         <SidebarGroup>
