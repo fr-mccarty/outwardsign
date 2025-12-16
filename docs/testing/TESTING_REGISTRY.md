@@ -319,6 +319,56 @@ This document provides a complete reference of all test files and individual tes
 | should validate required fields on create | Confirms form validation prevents submission without required event name and type |
 | should create event and verify print view | Validates event creation and print view page displays correctly |
 
+### Unified Event Data Model
+
+#### `tests/master-events.spec.ts` (5 tests)
+
+**Module:** Master Events (Unified Event Data Model)
+
+| Test | Description |
+|------|-------------|
+| should create master_event with calendar_event and verify title computation | Verifies creating master event with calendar event and computed title display |
+| should update master_event and verify cascade to calendar_events | Validates master event updates cascade correctly to linked calendar events |
+| should delete master_event and verify cascade to calendar_events | Confirms deleting master event cascades deletion to calendar events and roles |
+| should filter master events by status | Verifies status filter correctly filters master events by their status |
+| should show empty state when no events exist | Validates empty state message displays when event list is empty |
+
+#### `tests/calendar-events.spec.ts` (5 tests)
+
+**Module:** Calendar Events (Unified Event Data Model)
+
+| Test | Description |
+|------|-------------|
+| should create calendar_event linked to master_event | Verifies creating calendar event linked to parent master event |
+| should enforce unique constraint on (master_event_id, input_field_definition_id) | Validates database unique constraint prevents duplicate calendar events for same field |
+| should cancel calendar_event (is_cancelled = true) | Confirms calendar event cancellation updates is_cancelled flag |
+| should display calendar events in date range query | Verifies calendar events appear in calendar view with date range filtering |
+| should compute title with single calendar_event field (no suffix) | Validates title computation for calendar events without suffix |
+
+#### `tests/master-event-roles.spec.ts` (5 tests)
+
+**Module:** Master Event Roles (Unified Event Data Model)
+
+| Test | Description |
+|------|-------------|
+| should assign person to role on master_event | Verifies assigning a person to a role for a master event |
+| should prevent duplicate role assignment (same person, same role) | Validates database constraint prevents duplicate role assignments |
+| should remove role assignment (soft delete) | Confirms removing role assignment soft deletes the record |
+| should query all roles for event | Verifies retrieving all role assignments for a master event |
+| should validate role_id exists in event_type.role_definitions | Validates role_id references valid role definition in event type |
+
+#### `tests/event-types-system-type.spec.ts` (5 tests)
+
+**Module:** Event Types System Type Filtering
+
+| Test | Description |
+|------|-------------|
+| should filter event_types by system_type (mass) | Verifies filtering event types by mass system type |
+| should filter event_types by system_type (sacrament) | Validates filtering event types by sacrament system type |
+| should show all system types in sidebar navigation | Confirms sidebar displays all four system type navigation sections |
+| should validate CHECK constraint on system_type enum | Verifies database CHECK constraint enforces valid system type values |
+| should display event types grouped by system_type | Validates event types are organized and displayed by system type |
+
 ### Readings
 
 #### `tests/readings.spec.ts` (5 tests)
@@ -694,19 +744,20 @@ This document provides a complete reference of all test files and individual tes
 
 ## Test Statistics
 
-**Total Test Files:** 27 (excluding templates and backups)
+**Total Test Files:** 31 (excluding templates and backups)
 
 **Total Tests by Category:**
 - **Authentication:** 10 tests (Signup: 3, Login: 7)
 - **Sacrament Modules:** 30 tests (5 modules × 5-6 tests each)
 - **Liturgical Modules:** 22 tests (Masses: 6, Mass Intentions: 9, Templates: 7)
 - **Supporting Modules:** 28 tests (People: 5, Locations: 5, Events: 8, Readings: 5, Groups: 18)
+- **Unified Event Data Model:** 20 tests (Master Events: 5, Calendar Events: 5, Roles: 5, System Types: 5)
 - **Picker Components:** 12 tests (Person: 7, Event: 5)
 - **Application Features:** 45 tests (Dashboard: 19, Calendar: 10, Parish Settings: 16)
 - **Parishioner Portal:** 88 tests (Auth: 11, Calendar: 11, Notifications: 9, Chat: 13, Security: 44)
 - **Security:** 44 tests (CSRF: 8, Rate Limiting: 21, Cron Cleanup: 15)
 
-**Total Active Tests:** ~235 tests (some skipped in groups-membership)
+**Total Active Tests:** ~255 tests (some skipped in groups-membership)
 
 **Skipped Tests:** 11 tests (all in groups-membership.spec.ts)
 
