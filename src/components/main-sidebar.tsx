@@ -53,10 +53,8 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
     event: eventTypes.filter(et => et.system_type === 'event'),
   }
 
-  // Get system type icons
+  // Get system type icons (only for sections that don't use dynamic event type icons)
   const MassIcon = getLucideIcon(SYSTEM_TYPE_METADATA.mass.icon)
-  const SpecialLiturgyIcon = getLucideIcon(SYSTEM_TYPE_METADATA['special-liturgy'].icon)
-  const SacramentIcon = getLucideIcon(SYSTEM_TYPE_METADATA.sacrament.icon)
   const EventIcon = getLucideIcon(SYSTEM_TYPE_METADATA.event.icon)
 
   return (

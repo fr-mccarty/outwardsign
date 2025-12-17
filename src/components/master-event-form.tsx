@@ -53,7 +53,6 @@ interface MasterEventFormProps {
   initialData?: MasterEventWithRelations
   isEditing?: boolean
   onSubmit?: (data: any) => Promise<void>
-  onCancel?: () => void
   formId?: string
   onLoadingChange?: (loading: boolean) => void
 }
@@ -72,7 +71,6 @@ export function MasterEventForm({
   initialData,
   isEditing = false,
   onSubmit: customOnSubmit,
-  onCancel,
   formId,
   onLoadingChange
 }: MasterEventFormProps) {
@@ -120,21 +118,16 @@ export function MasterEventForm({
   const [presiderPickerOpen, setPresiderPickerOpen] = useState(false)
   const [homilistPickerOpen, setHomilstPickerOpen] = useState(false)
 
-  // Calendar events state
-  const [calendarEvents, setCalendarEvents] = useState<CreateCalendarEventData[]>(() => {
-    if (initialData?.calendar_events && initialData.calendar_events.length > 0) {
-      return initialData.calendar_events.map(ce => ({
-        master_event_id: initialData.id,
-        input_field_definition_id: ce.input_field_definition_id,
-        start_datetime: ce.start_datetime,
-        end_datetime: ce.end_datetime,
-        location_id: ce.location_id,
-        is_primary: ce.is_primary,
-        is_cancelled: ce.is_cancelled || false,
-      }))
-    }
-    return []
-  })
+  // Calendar events derived from initial data (read-only for now, editing handled elsewhere)
+  const calendarEvents: CreateCalendarEventData[] = initialData?.calendar_events?.map(ce => ({
+    master_event_id: initialData.id,
+    input_field_definition_id: ce.input_field_definition_id,
+    start_datetime: ce.start_datetime,
+    end_datetime: ce.end_datetime,
+    location_id: ce.location_id,
+    is_primary: ce.is_primary,
+    is_cancelled: ce.is_cancelled || false,
+  })) || []
 
   // Sync presider to form
   useEffect(() => {

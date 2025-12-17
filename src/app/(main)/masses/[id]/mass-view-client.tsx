@@ -1,7 +1,7 @@
 "use client"
 
 import type { MasterEventWithRelations } from '@/lib/types'
-import { updateEvent, deleteEvent } from '@/lib/actions/master-events'
+import { deleteEvent } from '@/lib/actions/master-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { buildMassLiturgy, MASS_TEMPLATES } from '@/lib/content-builders/mass'
@@ -35,13 +35,14 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
   }
 
   // Extract template ID from mass record
-  const getTemplateId = (mass: MasterEventWithRelations) => {
+  const getTemplateId = () => {
     // For now, default to mass-english template
     // TODO: Store template preference in master_event
     return 'mass-english'
   }
 
   // Handle template update
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUpdateTemplate = async (templateId: string) => {
     // TODO: Store template preference in master_event
     // await updateEvent(mass.id, {

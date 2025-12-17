@@ -5,7 +5,6 @@ import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
 import { getScripts } from '@/lib/actions/scripts'
 import { MassViewClient } from './mass-view-client'
-import { formatDatePretty } from '@/lib/utils/formatters'
 
 interface PageProps {
   params: Promise<{ id: string }>
