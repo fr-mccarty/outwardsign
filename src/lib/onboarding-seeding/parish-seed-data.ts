@@ -13,6 +13,8 @@ import { seedEventTypesForParish } from './event-types-seed'
 import { seedMassEventTypesForParish } from './mass-event-types-seed'
 import { seedSpecialLiturgyEventTypesForParish } from './special-liturgy-event-types-seed'
 import { seedContentTagsForParish } from './content-tags-seed'
+import { seedEventsForParish } from './events-seed'
+import { logError } from '@/lib/utils/console'
 
 // Import petition templates
 import sundayEnglish from '@/lib/default-petition-templates/sunday-english'
@@ -68,7 +70,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .select()
 
   if (petitionTemplatesError) {
-    console.error('Error creating petition templates:', petitionTemplatesError)
+    logError(`Error creating petition templates: ${petitionTemplatesError.message}`)
     throw new Error(`Failed to create petition templates: ${petitionTemplatesError.message}`)
   }
 
@@ -89,7 +91,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .select()
 
   if (groupRolesError) {
-    console.error('Error creating default group roles:', groupRolesError)
+    logError(`Error creating default group roles: ${groupRolesError.message}`)
     throw new Error(`Failed to create default group roles: ${groupRolesError.message}`)
   }
 
@@ -117,7 +119,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .select('id, name')
 
   if (massRolesError) {
-    console.error('Error creating default mass roles:', massRolesError)
+    logError(`Error creating default mass roles: ${massRolesError.message}`)
     throw new Error(`Failed to create default mass roles: ${massRolesError.message}`)
   }
 
@@ -140,7 +142,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .single()
 
   if (sundayTemplateError) {
-    console.error('Error creating Sunday role template:', sundayTemplateError)
+    logError(`Error creating Sunday role template: ${sundayTemplateError.message}`)
     throw new Error(`Failed to create Sunday role template: ${sundayTemplateError.message}`)
   }
 
@@ -158,7 +160,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .single()
 
   if (dailyTemplateError) {
-    console.error('Error creating Daily role template:', dailyTemplateError)
+    logError(`Error creating Daily role template: ${dailyTemplateError.message}`)
     throw new Error(`Failed to create Daily role template: ${dailyTemplateError.message}`)
   }
 
@@ -186,7 +188,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
       .insert(validSundayItems)
 
     if (sundayItemsError) {
-      console.error('Error creating Sunday template items:', sundayItemsError)
+      logError(`Error creating Sunday template items: ${sundayItemsError.message}`)
       throw new Error(`Failed to create Sunday template items: ${sundayItemsError.message}`)
     }
   }
@@ -213,7 +215,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
       .insert(validDailyItems)
 
     if (dailyItemsError) {
-      console.error('Error creating Daily template items:', dailyItemsError)
+      logError(`Error creating Daily template items: ${dailyItemsError.message}`)
       throw new Error(`Failed to create Daily template items: ${dailyItemsError.message}`)
     }
   }
@@ -285,7 +287,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
       .single()
 
     if (templateError) {
-      console.error(`Error creating mass times template ${template.name}:`, templateError)
+      logError(`Error creating mass times template ${template.name}: ${templateError.message}`)
       throw new Error(`Failed to create mass times template ${template.name}: ${templateError.message}`)
     }
 
@@ -300,7 +302,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
       )
 
     if (itemsError) {
-      console.error(`Error creating mass times template items for ${template.name}:`, itemsError)
+      logError(`Error creating mass times template items for ${template.name}: ${itemsError.message}`)
       throw new Error(`Failed to create mass times template items for ${template.name}: ${itemsError.message}`)
     }
   }
@@ -311,7 +313,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   const userDefinedEventTypesResult = await seedEventTypesForParish(supabase, parishId)
 
   if (!userDefinedEventTypesResult.success) {
-    console.error('Error seeding user-defined event types')
+    logError('Error seeding user-defined event types')
     throw new Error('Failed to seed user-defined event types')
   }
 
@@ -321,7 +323,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   const massEventTypesResult = await seedMassEventTypesForParish(supabase, parishId)
 
   if (!massEventTypesResult.success) {
-    console.error('Error seeding Mass event types')
+    logError('Error seeding Mass event types')
     throw new Error('Failed to seed Mass event types')
   }
 
@@ -331,7 +333,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   const specialLiturgyEventTypesResult = await seedSpecialLiturgyEventTypesForParish(supabase, parishId)
 
   if (!specialLiturgyEventTypesResult.success) {
-    console.error('Error seeding Special Liturgy event types')
+    logError('Error seeding Special Liturgy event types')
     throw new Error('Failed to seed Special Liturgy event types')
   }
 
@@ -339,6 +341,11 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   // 9. Seed Content Tags
   // =====================================================
   await seedContentTagsForParish(supabase, parishId)
+
+  // =====================================================
+  // 9b. Seed Sample Events
+  // =====================================================
+  await seedEventsForParish(supabase, parishId)
 
   // =====================================================
   // 10. Assign Tags to Petition Templates
@@ -350,7 +357,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     .eq('parish_id', parishId)
 
   if (categoryTagsError) {
-    console.error('Error fetching category tags:', categoryTagsError)
+    logError(`Error fetching category tags: ${categoryTagsError.message}`)
     // Don't throw - templates are created, just log the error
   }
 
@@ -385,7 +392,7 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
         .insert(tagAssignments)
 
       if (tagAssignmentsError) {
-        console.error('Error creating petition template tag assignments:', tagAssignmentsError)
+        logError(`Error creating petition template tag assignments: ${tagAssignmentsError.message}`)
         // Don't throw - templates are created, just log the error
       }
     }
@@ -396,6 +403,10 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     petitionTemplates: petitionTemplates || [],
     groupRoles: groupRoles || [],
     massRoles: massRoles || [],
-    eventTypes: [...userDefinedEventTypesResult.eventTypes, ...massEventTypesResult.eventTypes]
+    eventTypes: [...userDefinedEventTypesResult.eventTypes, ...massEventTypesResult.eventTypes, ...specialLiturgyEventTypesResult.eventTypes],
+    sacramentEventTypesCount: userDefinedEventTypesResult.sacramentCount || 0,
+    generalEventTypesCount: userDefinedEventTypesResult.generalEventCount || 0,
+    massEventTypesCount: massEventTypesResult.eventTypes.length,
+    specialLiturgyEventTypesCount: specialLiturgyEventTypesResult.eventTypes.length
   }
 }

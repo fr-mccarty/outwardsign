@@ -1,11 +1,17 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type { LiturgicalContext } from '@/lib/constants'
+import { logError } from '@/lib/utils/console'
 import { createMassRoleTemplateSchema, updateMassRoleTemplateSchema, type CreateMassRoleTemplateData, type UpdateMassRoleTemplateData } from '@/lib/schemas/mass-role-templates'
+import { logError } from '@/lib/utils/console'
 
 // Types
 export interface MassRoleTemplate {
@@ -48,7 +54,7 @@ export async function getMassRoleTemplates(): Promise<MassRoleTemplate[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching mass role templates:', error)
+    logError('Error fetching mass role templates:', error)
     throw new Error('Failed to fetch mass role templates')
   }
 
@@ -77,7 +83,7 @@ export async function getMassRoleTemplatesWithItems(): Promise<MassRoleTemplateW
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching mass role templates with items:', error)
+    logError('Error fetching mass role templates with items:', error)
     throw new Error('Failed to fetch mass role templates with items')
   }
 
@@ -101,7 +107,7 @@ export async function getMassRoleTemplate(id: string): Promise<MassRoleTemplate 
     if (error.code === 'PGRST116') {
       return null
     }
-    console.error('Error fetching mass role template:', error)
+    logError('Error fetching mass role template:', error)
     throw new Error('Failed to fetch mass role template')
   }
 
@@ -131,7 +137,7 @@ export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): 
     .single()
 
   if (error) {
-    console.error('Error creating mass role template:', error)
+    logError('Error creating mass role template:', error)
     throw new Error('Failed to create mass role template')
   }
 
@@ -164,7 +170,7 @@ export async function updateMassRoleTemplate(id: string, data: UpdateMassRoleTem
     .single()
 
   if (error) {
-    console.error('Error updating mass role template:', error)
+    logError('Error updating mass role template:', error)
     throw new Error('Failed to update mass role template')
   }
 
@@ -187,7 +193,7 @@ export async function deleteMassRoleTemplate(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting mass role template:', error)
+    logError('Error deleting mass role template:', error)
     throw new Error('Failed to delete mass role template')
   }
 

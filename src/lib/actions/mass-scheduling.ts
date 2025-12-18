@@ -7,6 +7,7 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { MassScheduleEntry } from '@/app/(main)/masses/schedule/steps/step-2-schedule-pattern'
 import { getLiturgicalContextFromGrade, type LiturgicalContext } from '@/lib/constants'
 import { toLocalDateString } from '@/lib/utils/formatters'
+import { logInfo, logError } from '@/lib/utils/console'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { EventType } from '@/lib/types'
 
@@ -82,7 +83,7 @@ export async function scheduleMasses(
       .in('id', params.selectedLiturgicalEventIds)
 
     if (liturgicalError) {
-      console.error('Error fetching liturgical events:', liturgicalError)
+      logError('Error fetching liturgical events:', liturgicalError)
       throw new Error('Failed to fetch liturgical events')
     }
 
@@ -106,7 +107,7 @@ export async function scheduleMasses(
         .single()
 
       if (error) {
-        console.error('Error fetching specified event type:', error)
+        logError('Error fetching specified event type:', error)
         throw new Error('Failed to fetch specified event type')
       }
       massEventType = data
@@ -122,7 +123,7 @@ export async function scheduleMasses(
         .single()
 
       if (error) {
-        console.error('Error fetching mass event type:', error)
+        logError('Error fetching mass event type:', error)
         throw new Error('No mass event type configured for this parish')
       }
       massEventType = data
@@ -147,7 +148,7 @@ export async function scheduleMasses(
       .single()
 
     if (fieldDefError) {
-      console.error('Error fetching primary field definition:', fieldDefError)
+      logError('Error fetching primary field definition:', fieldDefError)
       throw new Error('No primary calendar event field defined for mass event type')
     }
 
@@ -267,7 +268,7 @@ export async function scheduleMasses(
         .single()
 
       if (masterEventError) {
-        console.error('Error creating master event:', {
+        logError('Error creating master event:', {
           error: masterEventError,
           massData: {
             date: massData.date,
@@ -293,7 +294,7 @@ export async function scheduleMasses(
         .single()
 
       if (calendarEventError) {
-        console.error('Error creating calendar event:', calendarEventError)
+        logError('Error creating calendar event:', calendarEventError)
         throw new Error(`Failed to create calendar event for ${massData.date} ${normalizedTime}`)
       }
 
@@ -324,7 +325,7 @@ export async function scheduleMasses(
               .single()
 
             if (roleError) {
-              console.error('Error creating role assignment:', roleError)
+              logError('Error creating role assignment:', roleError)
               roleAssignments.push({
                 roleAssignmentId: '',
                 roleId: assignment.roleId,
@@ -469,7 +470,7 @@ export async function scheduleMasses(
               assignment.status = 'ASSIGNED'
               totalAssigned++
             } else {
-              console.error('Error assigning minister:', assignError)
+              logError('Error assigning minister:', assignError)
               assignment.status = 'UNASSIGNED'
               assignment.reason = 'Failed to save assignment'
               totalUnassigned++
@@ -497,7 +498,7 @@ export async function scheduleMasses(
       masses: createdMasses,
     }
   } catch (error) {
-    console.error('Error in scheduleMasses:', error)
+    logError('Error in scheduleMasses:', error)
     throw error
   }
 }
@@ -561,7 +562,7 @@ export async function previewMassAssignments(
   const parishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  console.log('[previewMassAssignments] Starting with:', {
+  logInfo('[previewMassAssignments] Starting with:', {
     massCount: proposedMasses.length,
     balanceWorkload,
     parishId
@@ -590,7 +591,7 @@ export async function previewMassAssignments(
     }> = []
 
     for (const role of mass.assignments || []) {
-      console.log('[previewMassAssignments] Processing role:', { massId: mass.id, role })
+      logInfo('[previewMassAssignments] Processing role:', { massId: mass.id, role })
       try {
         const suggested = await getSuggestedMinister(
           role.roleId,
@@ -600,7 +601,7 @@ export async function previewMassAssignments(
           alreadyAssignedThisMass
         )
 
-        console.log('[previewMassAssignments] Suggested minister:', suggested)
+        logInfo('[previewMassAssignments] Suggested minister:', suggested)
 
         if (suggested) {
           massAssignments.push({
@@ -615,7 +616,7 @@ export async function previewMassAssignments(
           const currentCount = assignmentCounts.get(suggested.id) || 0
           assignmentCounts.set(suggested.id, currentCount + 1)
         } else {
-          console.log('[previewMassAssignments] No suggested minister found for role:', role.roleId)
+          logInfo('[previewMassAssignments] No suggested minister found for role:', role.roleId)
           massAssignments.push({
             roleId: role.roleId,
             roleName: role.roleName,
@@ -624,7 +625,7 @@ export async function previewMassAssignments(
           })
         }
       } catch (error) {
-        console.error(`[previewMassAssignments] Error getting suggested minister for role ${role.roleId}:`, error)
+        logError(`[previewMassAssignments] Error getting suggested minister for role ${role.roleId}:`, error)
         massAssignments.push({
           roleId: role.roleId,
           roleName: role.roleName,
@@ -667,21 +668,21 @@ export async function getAvailableMinisters(
     .eq('parish_id', parishId)
     .eq('active', true)
 
-  console.log('[getAvailableMinisters] Query params:', { roleId, date, time, parishId })
-  console.log('[getAvailableMinisters] Members query result:', { members, membersError })
+  logInfo('[getAvailableMinisters] Query params:', { roleId, date, time, parishId })
+  logInfo('[getAvailableMinisters] Members query result:', { members, membersError })
 
   if (!members || members.length === 0) {
-    console.log('[getAvailableMinisters] No members found for role:', roleId)
+    logInfo('[getAvailableMinisters] No members found for role:', roleId)
     return []
   }
 
   const ministers: Array<{ id: string; name: string; assignmentCount: number }> = []
 
   for (const member of members) {
-    console.log('[getAvailableMinisters] Processing member:', member)
+    logInfo('[getAvailableMinisters] Processing member:', member)
 
     if (!member.person) {
-      console.log('[getAvailableMinisters] Skipping member - no person data:', member)
+      logInfo('[getAvailableMinisters] Skipping member - no person data:', member)
       continue
     }
 
@@ -689,11 +690,11 @@ export async function getAvailableMinisters(
     const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string }
 
     if (!person || !person.id || !person.first_name || !person.last_name) {
-      console.log('[getAvailableMinisters] Skipping member - incomplete person data:', person)
+      logInfo('[getAvailableMinisters] Skipping member - incomplete person data:', person)
       continue
     }
 
-    console.log('[getAvailableMinisters] Person extracted:', person)
+    logInfo('[getAvailableMinisters] Person extracted:', person)
 
     // 2. Check for blackout dates (person-centric, not role-specific)
     const { data: blackouts } = await supabase
@@ -725,7 +726,7 @@ export async function getAvailableMinisters(
     })
   }
 
-  console.log('[getAvailableMinisters] Final ministers list:', ministers)
+  logInfo('[getAvailableMinisters] Final ministers list:', ministers)
   return ministers
 }
 
@@ -750,7 +751,7 @@ export async function assignMinisterToRole(
     })
 
   if (error) {
-    console.error('Error assigning minister:', error)
+    logError('Error assigning minister:', error)
     throw new Error('Failed to assign minister to role')
   }
 

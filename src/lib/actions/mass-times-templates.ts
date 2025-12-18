@@ -1,10 +1,15 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type { PaginatedResult } from './people'
+import { logError } from '@/lib/utils/console'
 
 // MassTimesTemplate interface (matches mass_times_templates table)
 export interface MassTimesTemplate {
@@ -87,7 +92,7 @@ export async function getMassTimes(filters?: MassTimeFilterParams): Promise<Mass
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching mass times templates:', error)
+    logError('Error fetching mass times templates:', error)
     throw new Error('Failed to fetch mass times templates')
   }
 
@@ -123,7 +128,7 @@ export async function getMassTimesWithItems(filters?: MassTimeFilterParams): Pro
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching mass times templates with items:', error)
+    logError('Error fetching mass times templates with items:', error)
     throw new Error('Failed to fetch mass times templates with items')
   }
 
@@ -164,7 +169,7 @@ export async function getMassTimesPaginated(
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated mass times templates:', error)
+    logError('Error fetching paginated mass times templates:', error)
     throw new Error('Failed to fetch mass times templates')
   }
 
@@ -195,7 +200,7 @@ export async function getMassTimeWithRelations(id: string): Promise<MassTimeWith
     .single()
 
   if (error) {
-    console.error('Error fetching mass times template:', error)
+    logError('Error fetching mass times template:', error)
     return null
   }
 
@@ -218,7 +223,7 @@ export async function getMassTime(id: string): Promise<MassTime | null> {
     .single()
 
   if (error) {
-    console.error('Error fetching mass times template:', error)
+    logError('Error fetching mass times template:', error)
     return null
   }
 
@@ -248,7 +253,7 @@ export async function createMassTime(data: CreateMassTimeData): Promise<MassTime
     .single()
 
   if (error) {
-    console.error('Error creating mass times template:', error)
+    logError('Error creating mass times template:', error)
     throw new Error(`Failed to create mass times template: ${error.message}`)
   }
 
@@ -279,7 +284,7 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
     .single()
 
   if (error) {
-    console.error('Error updating mass times template:', error)
+    logError('Error updating mass times template:', error)
     throw new Error('Failed to update mass times template')
   }
 
@@ -304,7 +309,7 @@ export async function deleteMassTime(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting mass times template:', error)
+    logError('Error deleting mass times template:', error)
     throw new Error('Failed to delete mass times template')
   }
 

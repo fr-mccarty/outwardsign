@@ -13,6 +13,7 @@ CREATE TABLE calendar_events (
   location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
   is_primary BOOLEAN NOT NULL DEFAULT false,
   is_cancelled BOOLEAN NOT NULL DEFAULT false,
+  is_all_day BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ,
   CONSTRAINT calendar_events_end_after_start CHECK (end_datetime IS NULL OR end_datetime > start_datetime)
@@ -32,6 +33,7 @@ CREATE INDEX idx_calendar_events_master_event_id ON calendar_events(master_event
 CREATE INDEX idx_calendar_events_input_field_definition_id ON calendar_events(input_field_definition_id);
 CREATE INDEX idx_calendar_events_start_datetime ON calendar_events(start_datetime) WHERE deleted_at IS NULL;
 CREATE INDEX idx_calendar_events_location_id ON calendar_events(location_id);
+CREATE INDEX idx_calendar_events_is_all_day ON calendar_events(is_all_day) WHERE deleted_at IS NULL;
 
 -- Unique index to ensure only one calendar_event per master_event per field_definition
 -- (Prevents duplicate "Rehearsal" entries for same wedding)
@@ -86,7 +88,8 @@ CREATE POLICY calendar_events_delete_policy ON calendar_events
 COMMENT ON TABLE calendar_events IS 'Calendar events - scheduled items that appear on parish calendar. Every calendar_event must belong to a master_event.';
 COMMENT ON COLUMN calendar_events.master_event_id IS 'Foreign key to master_events (NOT NULL - every calendar event must have a parent master event)';
 COMMENT ON COLUMN calendar_events.input_field_definition_id IS 'References which field definition this calendar event corresponds to (e.g., Rehearsal field, Ceremony field)';
-COMMENT ON COLUMN calendar_events.start_datetime IS 'Start date and time with timezone (TIMESTAMPTZ)';
-COMMENT ON COLUMN calendar_events.end_datetime IS 'Optional end date and time (NULL for events without specific end time)';
+COMMENT ON COLUMN calendar_events.start_datetime IS 'Start date and time with timezone (TIMESTAMPTZ). For all-day events, should be midnight in parish timezone.';
+COMMENT ON COLUMN calendar_events.end_datetime IS 'Optional end date and time (NULL for events without specific end time). For multi-day all-day events, this is the end date at midnight.';
 COMMENT ON COLUMN calendar_events.is_primary IS 'True if this is the primary calendar event for the master event';
 COMMENT ON COLUMN calendar_events.is_cancelled IS 'True if this specific calendar event is cancelled (master event may still be active)';
+COMMENT ON COLUMN calendar_events.is_all_day IS 'True if this is an all-day event (no specific time, only date). For all-day events, start_datetime and end_datetime should be at midnight.';

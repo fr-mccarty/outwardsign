@@ -6,6 +6,7 @@
  */
 
 import type { DevSeederContext } from './types'
+import { logSuccess, logWarning, logInfo, logError } from '../../src/lib/utils/console'
 
 interface LocationRefs {
   churchLocation: { id: string } | null
@@ -29,8 +30,8 @@ export async function seedEvents(
   const { supabase, parishId } = ctx
   const { churchLocation, hallLocation, funeralHomeLocation } = locations
 
-  console.log('')
-  console.log('📅 Creating sample events for each event type...')
+  logInfo('')
+  logInfo('Creating sample events for each event type...')
 
   // Fetch all event types with their input field definitions
   const { data: eventTypes } = await supabase
@@ -41,12 +42,12 @@ export async function seedEvents(
     .order('order')
 
   if (!eventTypes || eventTypes.length === 0) {
-    console.log('   ⚠️  No event types found, skipping event creation')
+    logWarning('No event types found, skipping event creation')
     return { success: false }
   }
 
   if (!people || people.length < 10) {
-    console.log('   ⚠️  Not enough people to create events, skipping event creation')
+    logWarning('Not enough people to create events, skipping event creation')
     return { success: false }
   }
 
@@ -82,7 +83,7 @@ export async function seedEvents(
     // Get the primary calendar_event field for this event type
     const primaryCalendarEventField = getPrimaryCalendarEventField(eventType)
     if (!primaryCalendarEventField) {
-      console.log(`   ⚠️  No primary calendar_event field for ${eventType.name}, skipping`)
+      logWarning(`No primary calendar_event field for ${eventType.name}, skipping`)
       continue
     }
 
@@ -238,7 +239,7 @@ export async function seedEvents(
         .single()
 
       if (eventError) {
-        console.error(`   ❌ Error creating ${eventType.name} event:`, eventError.message)
+        logError(`Error creating ${eventType.name} event: ${eventError.message}`)
         continue
       }
 
@@ -257,7 +258,7 @@ export async function seedEvents(
         })
 
       if (calendarEventError) {
-        console.error(`   ❌ Error creating calendar_event for ${eventType.name}:`, calendarEventError.message)
+        logError(`Error creating calendar_event for ${eventType.name}: ${calendarEventError.message}`)
         // Clean up the orphaned master_event
         await supabase.from('master_events').delete().eq('id', newEvent.id)
         continue
@@ -266,9 +267,9 @@ export async function seedEvents(
       totalEventsCreated++
     }
 
-    console.log(`   ✅ Created 2 ${eventType.name} events`)
+    logSuccess(`Created 2 ${eventType.name} events`)
   }
 
-  console.log(`   📊 Total events created: ${totalEventsCreated}`)
+  logSuccess(`Total events created: ${totalEventsCreated}`)
   return { success: true }
 }

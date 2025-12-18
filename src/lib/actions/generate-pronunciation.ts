@@ -2,6 +2,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
+import { logInfo, logError } from '@/lib/utils/console'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -104,7 +105,7 @@ If a name was not provided (N/A), return an empty string for that field.`
     try {
       parsedResponse = JSON.parse(responseText)
     } catch {
-      console.error('Failed to parse AI response:', responseText)
+      logError('Failed to parse AI response:', responseText)
       throw new Error('Received unexpected response format from AI')
     }
 
@@ -113,7 +114,7 @@ If a name was not provided (N/A), return an empty string for that field.`
       typeof parsedResponse.firstNamePronunciation !== 'string' ||
       typeof parsedResponse.lastNamePronunciation !== 'string'
     ) {
-      console.error('Invalid response structure:', parsedResponse)
+      logError('Invalid response structure:', parsedResponse)
       throw new Error('Received unexpected response format from AI')
     }
 
@@ -123,7 +124,7 @@ If a name was not provided (N/A), return an empty string for that field.`
 
     // Log explanation for debugging (optional)
     if (parsedResponse.explanation) {
-      console.log('Pronunciation explanation:', parsedResponse.explanation)
+      logInfo('Pronunciation explanation:', parsedResponse.explanation)
     }
 
     return {
@@ -131,7 +132,7 @@ If a name was not provided (N/A), return an empty string for that field.`
       lastNamePronunciation: lastPronunciation,
     }
   } catch (error) {
-    console.error('Error generating pronunciations:', error)
+    logError('Error generating pronunciations:', error)
     throw new Error('Failed to generate pronunciations. Please try again.')
   }
 }

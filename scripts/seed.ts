@@ -11,9 +11,10 @@
  */
 
 import { execSync } from 'child_process'
+import { logSuccess, logError, logInfo } from '../src/lib/utils/console'
 
-console.log('🌱 Starting Database Seeding...')
-console.log('=' .repeat(60))
+logInfo('Starting Database Seeding...')
+logInfo('=' .repeat(60))
 
 interface Seeder {
   name: string
@@ -36,20 +37,20 @@ const seeders: Seeder[] = [
 ]
 
 async function runSeeder(seeder: Seeder, index: number) {
-  console.log(`\n📦 [${index + 1}/${seeders.length}] ${seeder.name}`)
-  console.log(`   ${seeder.description}`)
-  console.log(`   Command: ${seeder.command}`)
-  console.log('')
+  logInfo(`\n[${index + 1}/${seeders.length}] ${seeder.name}`)
+  logInfo(`   ${seeder.description}`)
+  logInfo(`   Command: ${seeder.command}`)
+  logInfo('')
 
   try {
     execSync(seeder.command, {
       stdio: 'inherit', // Show output in real-time
       env: process.env
     })
-    console.log(`   ✅ ${seeder.name} completed successfully`)
+    logSuccess(`   ${seeder.name} completed successfully`)
     return { success: true, seeder: seeder.name }
   } catch (error) {
-    console.error(`   ❌ ${seeder.name} failed`)
+    logError(`   ${seeder.name} failed`)
     return { success: false, seeder: seeder.name, error }
   }
 }
@@ -63,30 +64,30 @@ async function main() {
   }
 
   // Summary
-  console.log('\n' + '=' .repeat(60))
-  console.log('📊 Seeding Summary:')
-  console.log('=' .repeat(60))
+  logInfo('\n' + '=' .repeat(60))
+  logInfo('Seeding Summary:')
+  logInfo('=' .repeat(60))
 
   const successful = results.filter(r => r.success)
   const failed = results.filter(r => !r.success)
 
-  console.log(`✅ Successful: ${successful.length}/${seeders.length}`)
+  logSuccess(`Successful: ${successful.length}/${seeders.length}`)
   if (successful.length > 0) {
-    successful.forEach(r => console.log(`   ✓ ${r.seeder}`))
+    successful.forEach(r => logSuccess(`   ${r.seeder}`))
   }
 
   if (failed.length > 0) {
-    console.log(`\n❌ Failed: ${failed.length}/${seeders.length}`)
-    failed.forEach(r => console.log(`   ✗ ${r.seeder}`))
+    logError(`\nFailed: ${failed.length}/${seeders.length}`)
+    failed.forEach(r => logError(`   ${r.seeder}`))
   }
 
-  console.log('=' .repeat(60))
+  logInfo('=' .repeat(60))
 
   if (failed.length > 0) {
-    console.log('\n⚠️  Seeding completed with errors')
+    logError('\nSeeding completed with errors')
     process.exit(1)
   } else {
-    console.log('\n🎉 All seeders completed successfully!')
+    logInfo('\nAll seeders completed successfully!')
     process.exit(0)
   }
 }

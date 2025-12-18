@@ -6,6 +6,81 @@ This document explains how to populate the database with sample data for testing
 
 The seed scripts create comprehensive sample data for testing and development purposes. These scripts are **NOT** part of the migration system and must be run manually.
 
+## Console Helper Functions
+
+**CRITICAL:** All seeder AND server action console output MUST use the helper functions from `src/lib/utils/console.ts`. Direct use of `console.log()` is prohibited in seeder files and server actions.
+
+**Scope:** These helper functions are used by:
+- Database seed scripts (when written in TypeScript)
+- Server actions (for user-facing operation feedback)
+- Migration output and logging
+- Batch operations where consistent formatting is critical
+
+### Available Functions
+
+```typescript
+import { logSuccess, logWarning, logError, logInfo } from '@/lib/utils/console'
+
+// Success messages (prefixed with [OK])
+logSuccess('Created 5 users')
+
+// Warning messages (prefixed with ⚠️)
+logWarning('No existing groups found, creating defaults')
+
+// Error messages (prefixed with ❌)
+logError('Failed to create parish')
+
+// Info messages (no prefix - for section headers)
+logInfo('Creating sample locations...')
+```
+
+### Character Validation
+
+All console helper functions enforce strict character validation:
+
+**Allowed characters:**
+- Letters: a-z, A-Z
+- Numbers: 0-9
+- Spanish accented characters: ñÑáéíóúÁÉÍÓÚüÜ
+- Whitespace: space, newline (\n), carriage return (\r), tab (\t)
+- All standard keyboard symbols: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+
+**Prohibited characters:**
+- Emojis and other unicode symbols (except ⚠️ and ❌ which are added by the helper functions themselves)
+
+**If prohibited characters are detected, the function will throw an error and halt execution.**
+
+### Usage Patterns
+
+```typescript
+// Section headers
+logInfo('Creating sample people...')
+
+// Success with counts
+logSuccess('Created 25 people')
+
+// Errors with context
+logError('Failed to create location: No parish found')
+
+// Warnings for non-critical issues
+logWarning('Skipping duplicate record')
+```
+
+### Output Format Rules
+
+1. **Section Headers** - Use `logInfo()` with plain descriptive text
+2. **Success Messages** - Use `logSuccess()` with counts and details (prefixed with `[OK]`)
+3. **Warnings** - Use `logWarning()` for non-critical issues (prefixed with ⚠️)
+4. **Errors** - Use `logError()` for critical failures (prefixed with ❌)
+
+**Why These Rules:**
+- Consistent, professional output across all seeders and server actions
+- Strict validation prevents emoji/unicode creep in user messages
+- Easy to scan for success/failure (prefixes clearly indicate status)
+- Makes logs easier to parse programmatically
+- Reduces visual noise
+- Spanish characters are allowed for bilingual support
+
 ## Prerequisites
 
 Before running seed scripts:

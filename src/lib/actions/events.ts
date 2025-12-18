@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
+import { logError } from '@/lib/utils/console'
 import { Event, Location, Person, EventType } from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
 import { createEventSchema, updateEventSchema, type CreateEventData, type UpdateEventData } from '@/lib/schemas/events'
@@ -111,7 +112,7 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching events:', error)
+    logError('Error fetching events:', error)
     throw new Error('Failed to fetch events')
   }
 
@@ -146,7 +147,7 @@ export async function getEventsPaginated(params?: PaginatedParams): Promise<Pagi
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated events:', error)
+    logError('Error fetching paginated events:', error)
     throw new Error('Failed to fetch paginated events')
   }
 
@@ -178,7 +179,7 @@ export async function getEvent(id: string): Promise<Event | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching event:', error)
+    logError('Error fetching event:', error)
     throw new Error('Failed to fetch event')
   }
 
@@ -201,7 +202,7 @@ export async function getEventWithRelations(id: string): Promise<EventWithRelati
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching event:', error)
+    logError('Error fetching event:', error)
     throw new Error('Failed to fetch event')
   }
 
@@ -263,7 +264,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
     .single()
 
   if (error) {
-    console.error('Error creating event:', error.message, error.details, error.code)
+    logError('Error creating event:', error.message, error.details, error.code)
     throw new Error(`Failed to create event: ${error.message}`)
   }
 
@@ -310,7 +311,7 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
     .single()
 
   if (error) {
-    console.error('Error updating event:', error)
+    logError('Error updating event:', error)
     throw new Error('Failed to update event')
   }
 
@@ -337,7 +338,7 @@ export async function deleteEvent(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting event:', error)
+    logError('Error deleting event:', error)
     throw new Error('Failed to delete event')
   }
 
@@ -479,7 +480,7 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching events with relations:', error)
+    logError('Error fetching events with relations:', error)
     throw new Error('Failed to fetch events')
   }
 

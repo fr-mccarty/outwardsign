@@ -5,6 +5,7 @@
  */
 
 import type { DevSeederContext } from './types'
+import { logSuccess, logWarning, logInfo } from '../../src/lib/utils/console'
 
 export interface LocationsResult {
   success: boolean
@@ -16,8 +17,8 @@ export interface LocationsResult {
 export async function seedLocations(ctx: DevSeederContext): Promise<LocationsResult> {
   const { supabase, parishId } = ctx
 
-  console.log('')
-  console.log('📍 Creating sample locations...')
+  logInfo('')
+  logInfo('Creating sample locations...')
 
   let churchLocation: { id: string } | null = null
   let hallLocation: { id: string } | null = null
@@ -33,7 +34,7 @@ export async function seedLocations(ctx: DevSeederContext): Promise<LocationsRes
     churchLocation = existingLocations.find(l => l.name.includes('Church')) || existingLocations[0]
     hallLocation = existingLocations.find(l => l.name.includes('Hall')) || existingLocations[1]
     funeralHomeLocation = existingLocations.find(l => l.name.includes('Funeral')) || existingLocations[2]
-    console.log(`   ✅ Using ${existingLocations.length} existing locations`)
+    logSuccess(`Using ${existingLocations.length} existing locations`)
   } else {
     // Create locations if they don't exist
     const locationsToCreate = [
@@ -72,12 +73,12 @@ export async function seedLocations(ctx: DevSeederContext): Promise<LocationsRes
       .select()
 
     if (locationsError) {
-      console.error('⚠️  Warning: Error creating locations:', locationsError.message)
+      logWarning(`Error creating locations: ${locationsError.message}`)
     } else if (newLocations && newLocations.length === 3) {
       churchLocation = newLocations[0]
       hallLocation = newLocations[1]
       funeralHomeLocation = newLocations[2]
-      console.log(`   ✅ Created 3 sample locations`)
+      logSuccess('Created 3 sample locations')
     }
   }
 

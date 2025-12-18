@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
   CalendarEvent,
   CreateCalendarEventData,
@@ -38,7 +39,7 @@ export async function getCalendarEvents(masterEventId: string): Promise<Calendar
     .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('Error fetching calendar events:', error)
+    logError('Error fetching calendar events:', error)
     throw new Error('Failed to fetch calendar events')
   }
 
@@ -66,7 +67,7 @@ export async function getCalendarEventById(id: string): Promise<CalendarEvent | 
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching calendar event:', error)
+    logError('Error fetching calendar event:', error)
     throw new Error('Failed to fetch calendar event')
   }
 
@@ -124,7 +125,7 @@ export async function createCalendarEvent(
     .single()
 
   if (error) {
-    console.error('Error creating calendar event:', error)
+    logError('Error creating calendar event:', error)
     throw new Error('Failed to create calendar event')
   }
 
@@ -195,7 +196,7 @@ export async function updateCalendarEvent(
     .single()
 
   if (error) {
-    console.error('Error updating calendar event:', error)
+    logError('Error updating calendar event:', error)
     throw new Error('Failed to update calendar event')
   }
 
@@ -247,7 +248,7 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     .is('deleted_at', null)
 
   if (countError) {
-    console.error('Error counting calendar events:', countError)
+    logError('Error counting calendar events:', countError)
     throw new Error('Failed to check remaining calendar events')
   }
 
@@ -263,7 +264,7 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting calendar event:', error)
+    logError('Error deleting calendar event:', error)
     throw new Error('Failed to delete calendar event')
   }
 

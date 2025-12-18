@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CreateMinisterData, Minister } from '@/lib/types'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logWarning } from '@/lib/utils/console'
 
 export async function createMinister(data: CreateMinisterData) {
   const supabase = await createClient()
@@ -47,7 +48,7 @@ export async function getMinisters(): Promise<Minister[]> {
   if (error) {
     // If table doesn't exist yet, return empty array
     if (error.message?.includes('relation "public.ministers" does not exist')) {
-      console.warn('Ministers table not yet created. Please run database migrations.')
+      logWarning('Ministers table not yet created. Please run database migrations.')
       return []
     }
     throw new Error('Failed to fetch ministers')

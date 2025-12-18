@@ -17,7 +17,7 @@ done
 
 echo ""
 echo "================================================================"
-echo "🔄 Database Reset (No Seed)"
+echo "Database Reset (No Seed)"
 echo "================================================================"
 echo ""
 echo "This will:"
@@ -41,6 +41,6 @@ echo "================================================================"
 supabase db reset --no-seed
 
 echo ""
-echo "✅ Database reset complete!"
-echo "   All tables created, no seed data added."
+echo "[OK] Database reset complete!"
+echo "     All tables created, no seed data added."
 echo ""

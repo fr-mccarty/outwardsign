@@ -1,13 +1,16 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { redirect } from 'next/navigation'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import {
+import { logError } from '@/lib/utils/console'
   updateUserSettingsSchema,
   type UpdateUserSettingsData
 } from '@/lib/schemas/user-settings'
-import { logError } from '@/lib/utils/console'
 
 export interface UserSettings {
   id: string

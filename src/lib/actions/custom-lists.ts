@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
   CustomList,
   CustomListWithItems,
@@ -73,7 +74,7 @@ export async function getCustomLists(filters?: CustomListFilterParams): Promise<
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching custom lists:', error)
+    logError('Error fetching custom lists:', error)
     throw new Error('Failed to fetch custom lists')
   }
 
@@ -110,7 +111,7 @@ export async function getCustomList(id: string): Promise<CustomList | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching custom list:', error)
+    logError('Error fetching custom list:', error)
     throw new Error('Failed to fetch custom list')
   }
 
@@ -137,7 +138,7 @@ export async function getCustomListBySlug(slug: string): Promise<CustomList | nu
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching custom list by slug:', error)
+    logError('Error fetching custom list by slug:', error)
     throw new Error('Failed to fetch custom list')
   }
 
@@ -165,7 +166,7 @@ export async function getCustomListWithItemsBySlug(slug: string): Promise<Custom
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching custom list by slug:', error)
+    logError('Error fetching custom list by slug:', error)
     throw new Error('Failed to fetch custom list')
   }
 
@@ -178,7 +179,7 @@ export async function getCustomListWithItemsBySlug(slug: string): Promise<Custom
     .order('order', { ascending: true })
 
   if (itemsError) {
-    console.error('Error fetching custom list items:', itemsError)
+    logError('Error fetching custom list items:', itemsError)
     throw new Error('Failed to fetch custom list items')
   }
 
@@ -209,7 +210,7 @@ export async function getCustomListWithItems(id: string): Promise<CustomListWith
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching custom list:', error)
+    logError('Error fetching custom list:', error)
     throw new Error('Failed to fetch custom list')
   }
 
@@ -222,7 +223,7 @@ export async function getCustomListWithItems(id: string): Promise<CustomListWith
     .order('order', { ascending: true })
 
   if (itemsError) {
-    console.error('Error fetching custom list items:', itemsError)
+    logError('Error fetching custom list items:', itemsError)
     throw new Error('Failed to fetch custom list items')
   }
 
@@ -286,7 +287,7 @@ export async function createCustomList(data: CreateCustomListData): Promise<Cust
     .single()
 
   if (error) {
-    console.error('Error creating custom list:', error)
+    logError('Error creating custom list:', error)
     throw new Error('Failed to create custom list')
   }
 
@@ -352,7 +353,7 @@ export async function updateCustomList(id: string, data: UpdateCustomListData): 
     .single()
 
   if (error) {
-    console.error('Error updating custom list:', error)
+    logError('Error updating custom list:', error)
     throw new Error('Failed to update custom list')
   }
 
@@ -397,7 +398,7 @@ export async function deleteCustomList(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting custom list:', error)
+    logError('Error deleting custom list:', error)
     throw new Error('Failed to delete custom list')
   }
 

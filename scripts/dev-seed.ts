@@ -23,6 +23,7 @@ import {
   seedEvents,
   seedFamilies
 } from './dev-seeders'
+import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -30,18 +31,18 @@ const devUserEmail = process.env.DEV_USER_EMAIL
 const devUserPassword = process.env.DEV_USER_PASSWORD
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing required environment variables:')
-  console.error('   - NEXT_PUBLIC_SUPABASE_URL')
-  console.error('   - SUPABASE_SERVICE_ROLE_KEY')
+  logError('Missing required environment variables:')
+  logError('   - NEXT_PUBLIC_SUPABASE_URL')
+  logError('   - SUPABASE_SERVICE_ROLE_KEY')
   process.exit(1)
 }
 
 if (!devUserEmail || !devUserPassword) {
-  console.error('❌ Missing dev user credentials in environment:')
-  console.error('   - DEV_USER_EMAIL')
-  console.error('   - DEV_USER_PASSWORD')
-  console.error('')
-  console.error('Please add these to your .env.local file')
+  logError('Missing dev user credentials in environment:')
+  logError('   - DEV_USER_EMAIL')
+  logError('   - DEV_USER_PASSWORD')
+  logInfo('')
+  logError('Please add these to your .env.local file')
   process.exit(1)
 }
 
@@ -53,16 +54,16 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function seedDevData() {
-  console.log('')
-  console.log('=' .repeat(60))
-  console.log('🌱 Development Database Seeding')
-  console.log('=' .repeat(60))
-  console.log('')
+  logInfo('')
+  logInfo('=' .repeat(60))
+  logInfo('Development Database Seeding')
+  logInfo('=' .repeat(60))
+  logInfo('')
 
   // =====================================================
   // Create Storage Buckets
   // =====================================================
-  console.log('🪣 Creating storage buckets...')
+  logInfo('Creating storage buckets...')
 
   const bucketsToCreate = [
     { id: 'person-avatars', name: 'person-avatars', public: false }
@@ -75,20 +76,20 @@ async function seedDevData() {
 
     if (error) {
       if (error.message.includes('already exists')) {
-        console.log(`   ✅ Bucket "${bucket.id}" already exists`)
+        logSuccess(`Bucket ${bucket.id} already exists`)
       } else {
-        console.error(`   ⚠️  Warning: Could not create bucket "${bucket.id}":`, error.message)
+        logWarning(`Could not create bucket ${bucket.id}: ${error.message}`)
       }
     } else {
-      console.log(`   ✅ Created bucket "${bucket.id}"`)
+      logSuccess(`Created bucket ${bucket.id}`)
     }
   }
 
   // =====================================================
   // Get or Create Dev User
   // =====================================================
-  console.log('')
-  console.log('🔐 Setting up development user...')
+  logInfo('')
+  logInfo('Setting up development user...')
 
   let userId: string
   let userEmail: string = devUserEmail!
@@ -97,10 +98,10 @@ async function seedDevData() {
   const existingUser = existingUsers?.users.find(u => u.email === devUserEmail)
 
   if (existingUser) {
-    console.log(`   ✅ Using existing user: ${devUserEmail}`)
+    logSuccess(`Using existing user: ${devUserEmail}`)
     userId = existingUser.id
   } else {
-    console.log(`   Creating new user: ${devUserEmail}`)
+    logInfo(`Creating new user: ${devUserEmail}`)
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email: devUserEmail!,
       password: devUserPassword!,
@@ -108,19 +109,19 @@ async function seedDevData() {
     })
 
     if (createUserError) {
-      console.error('❌ Error creating dev user:', createUserError)
+      logError(`Error creating dev user: ${createUserError.message}`)
       process.exit(1)
     }
 
     userId = newUser.user.id
-    console.log(`   ✅ Created new user: ${devUserEmail}`)
+    logSuccess(`Created new user: ${devUserEmail}`)
   }
 
   // =====================================================
   // Get or Create Parish
   // =====================================================
-  console.log('')
-  console.log('⛪ Setting up development parish...')
+  logInfo('')
+  logInfo('Setting up development parish...')
 
   const { data: existingParishes, error: parishLookupError } = await supabase
     .from('parishes')
@@ -132,7 +133,7 @@ async function seedDevData() {
 
   if (existingParishes && !parishLookupError) {
     parishId = existingParishes.id
-    console.log(`   ✅ Using existing parish: ${existingParishes.name}`)
+    logSuccess(`Using existing parish: ${existingParishes.name}`)
   } else {
     const { data: newParish, error: createParishError } = await supabase
       .from('parishes')
@@ -144,19 +145,19 @@ async function seedDevData() {
       .single()
 
     if (createParishError) {
-      console.error('❌ Error creating parish:', createParishError)
+      logError(`Error creating parish: ${createParishError.message}`)
       process.exit(1)
     }
 
     parishId = newParish.id
-    console.log(`   ✅ Created new parish: ${newParish.name}`)
+    logSuccess(`Created new parish: ${newParish.name}`)
   }
 
   // =====================================================
   // Ensure User is Admin of Parish
   // =====================================================
-  console.log('')
-  console.log('👑 Ensuring user is admin of parish...')
+  logInfo('')
+  logInfo('Ensuring user is admin of parish...')
 
   const { data: existingMembership } = await supabase
     .from('parish_users')
@@ -173,7 +174,7 @@ async function seedDevData() {
         .eq('user_id', userId)
         .eq('parish_id', parishId)
     }
-    console.log(`   ✅ User is admin of parish`)
+    logSuccess('User is admin of parish')
   } else {
     const { error: membershipError } = await supabase
       .from('parish_users')
@@ -185,17 +186,17 @@ async function seedDevData() {
       })
 
     if (membershipError) {
-      console.error('❌ Error creating parish membership:', membershipError)
+      logError(`Error creating parish membership: ${membershipError.message}`)
       process.exit(1)
     }
-    console.log(`   ✅ Added user as admin of parish`)
+    logSuccess('Added user as admin of parish')
   }
 
   // =====================================================
   // Seed Onboarding Data (if not already present)
   // =====================================================
-  console.log('')
-  console.log('📦 Seeding onboarding data...')
+  logInfo('')
+  logInfo('Seeding onboarding data...')
 
   const { data: existingPetitionTemplates } = await supabase
     .from('petition_templates')
@@ -208,24 +209,26 @@ async function seedDevData() {
 
     try {
       const result = await seedParishData(supabase, parishId)
-      console.log(`   ✅ Petition templates: ${result.petitionTemplates.length}`)
-      console.log(`   ✅ Group roles: ${result.groupRoles.length}`)
-      console.log(`   ✅ Mass roles: ${result.massRoles.length}`)
-      console.log(`   ✅ Event types: ${result.eventTypes.length}`)
-      console.log(`   ✅ Mass event types, role templates, and time templates created`)
+      logSuccess(`Petition templates: ${result.petitionTemplates.length}`)
+      logSuccess(`Group roles: ${result.groupRoles.length}`)
+      logSuccess(`Mass roles: ${result.massRoles.length}`)
+      logSuccess(`Sacrament event types: ${result.sacramentEventTypesCount}`)
+      logSuccess(`General event types: ${result.generalEventTypesCount}`)
+      logSuccess(`Mass event types: ${result.massEventTypesCount}`)
+      logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
     } catch (error) {
-      console.error('❌ Error seeding parish data:', error)
+      logError(`Error seeding parish data: ${error}`)
       process.exit(1)
     }
   } else {
-    console.log(`   ✅ Parish data already exists, skipping`)
+    logSuccess('Parish data already exists, skipping')
   }
 
   // =====================================================
   // Seed Content Library
   // =====================================================
-  console.log('')
-  console.log('📝 Seeding content library...')
+  logInfo('')
+  logInfo('Seeding content library...')
 
   const { data: existingContent } = await supabase
     .from('contents')
@@ -239,11 +242,11 @@ async function seedDevData() {
     try {
       await seedContentForParish(supabase, parishId)
     } catch (error) {
-      console.error('❌ Error seeding content library:', error)
+      logError(`Error seeding content library: ${error}`)
       // Non-fatal - continue
     }
   } else {
-    console.log(`   ✅ Content library already exists, skipping`)
+    logSuccess('Content library already exists, skipping')
   }
 
   // =====================================================
@@ -254,13 +257,13 @@ async function seedDevData() {
   // =====================================================
   // Seed Sample Groups
   // =====================================================
-  console.log('')
+  logInfo('')
   const { groups } = await seedGroups(ctx)
 
   // =====================================================
   // Seed Sample People
   // =====================================================
-  console.log('')
+  logInfo('')
   const { people } = await seedPeople(ctx)
 
   // =====================================================
@@ -280,7 +283,7 @@ async function seedDevData() {
   // =====================================================
   // Seed Families and Family Members
   // =====================================================
-  console.log('')
+  logInfo('')
   if (people) {
     await seedFamilies(ctx, people as Array<{ id: string; first_name: string; last_name: string }>)
   }
@@ -312,31 +315,31 @@ async function seedDevData() {
   // =====================================================
   // Done!
   // =====================================================
-  console.log('')
-  console.log('=' .repeat(60))
-  console.log('🎉 Development seeding complete!')
-  console.log('=' .repeat(60))
-  console.log('')
-  console.log(`Parish ID:   ${parishId}`)
-  console.log(`Parish Name: Development Parish`)
-  console.log(`User Email:  ${userEmail}`)
-  console.log(`Role:        admin`)
-  console.log('')
-  console.log('You can now:')
-  console.log('  - Start the dev server: npm run dev')
-  console.log('  - Navigate to: http://localhost:3000/dashboard')
-  console.log(`  - Login with: ${devUserEmail}`)
-  console.log('  - Password: (see DEV_USER_PASSWORD in .env.local)')
-  console.log('')
-  console.log('=' .repeat(60))
-  console.log('')
+  logInfo('')
+  logInfo('=' .repeat(60))
+  logInfo('Development seeding complete!')
+  logInfo('=' .repeat(60))
+  logInfo('')
+  logInfo(`Parish ID:   ${parishId}`)
+  logInfo(`Parish Name: Development Parish`)
+  logInfo(`User Email:  ${userEmail}`)
+  logInfo(`Role:        admin`)
+  logInfo('')
+  logInfo('You can now:')
+  logInfo('  - Start the dev server: npm run dev')
+  logInfo('  - Navigate to: http://localhost:3000/dashboard')
+  logInfo(`  - Login with: ${devUserEmail}`)
+  logInfo('  - Password: (see DEV_USER_PASSWORD in .env.local)')
+  logInfo('')
+  logInfo('=' .repeat(60))
+  logInfo('')
 }
 
 seedDevData()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error('')
-    console.error('❌ Seeding failed:', error)
-    console.error('')
+    logError('')
+    logError(`Seeding failed: ${error}`)
+    logError('')
     process.exit(1)
   })

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
+import { logError } from '@/lib/utils/console'
 import { Person } from '@/lib/types'
 import { createPersonSchema, updatePersonSchema, CreatePersonData, UpdatePersonData } from '@/lib/schemas/people'
 
@@ -138,7 +139,7 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching people:', error)
+    logError('Error fetching people:', error)
     throw new Error('Failed to fetch people')
   }
 
@@ -189,7 +190,7 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated people:', error)
+    logError('Error fetching paginated people:', error)
     throw new Error('Failed to fetch paginated people')
   }
 
@@ -222,7 +223,7 @@ export async function getPerson(id: string): Promise<Person | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching person:', error)
+    logError('Error fetching person:', error)
     throw new Error('Failed to fetch person')
   }
 
@@ -268,7 +269,7 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
     .single()
 
   if (error) {
-    console.error('Error creating person:', error)
+    logError('Error creating person:', error)
     throw new Error(`Failed to create person: ${error.message}`)
   }
 
@@ -316,7 +317,7 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
     .single()
 
   if (error) {
-    console.error('Error updating person:', error)
+    logError('Error updating person:', error)
     throw new Error('Failed to update person')
   }
 
@@ -343,7 +344,7 @@ export async function deletePerson(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting person:', error)
+    logError('Error deleting person:', error)
     throw new Error('Failed to delete person')
   }
 
@@ -407,7 +408,7 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated people with roles:', error)
+    logError('Error fetching paginated people with roles:', error)
     throw new Error('Failed to fetch paginated people with roles')
   }
 
@@ -506,7 +507,7 @@ export async function uploadPersonAvatar(
     })
 
   if (uploadError) {
-    console.error('Error uploading avatar:', uploadError)
+    logError('Error uploading avatar:', uploadError)
     throw new Error('Failed to upload avatar')
   }
 
@@ -517,7 +518,7 @@ export async function uploadPersonAvatar(
     .eq('id', personId)
 
   if (updateError) {
-    console.error('Error updating person avatar_url:', updateError)
+    logError('Error updating person avatar_url:', updateError)
     throw new Error('Failed to update person record')
   }
 
@@ -562,7 +563,7 @@ export async function deletePersonAvatar(personId: string): Promise<void> {
       .remove([person.avatar_url])
 
     if (deleteError) {
-      console.error('Error deleting avatar from storage:', deleteError)
+      logError('Error deleting avatar from storage:', deleteError)
       // Continue to update database even if storage delete fails
     }
   }
@@ -574,7 +575,7 @@ export async function deletePersonAvatar(personId: string): Promise<void> {
     .eq('id', personId)
 
   if (updateError) {
-    console.error('Error clearing person avatar_url:', updateError)
+    logError('Error clearing person avatar_url:', updateError)
     throw new Error('Failed to update person record')
   }
 
@@ -608,7 +609,7 @@ export async function getPersonAvatarSignedUrl(storagePath: string): Promise<str
     .createSignedUrl(storagePath, 3600) // 1 hour in seconds
 
   if (error) {
-    console.error('Error generating signed URL:', error)
+    logError('Error generating signed URL:', error)
     return null
   }
 
@@ -647,7 +648,7 @@ export async function getPersonAvatarSignedUrls(
     .createSignedUrls(validPaths, 3600) // 1 hour in seconds
 
   if (error) {
-    console.error('Error generating signed URLs:', error)
+    logError('Error generating signed URLs:', error)
     return {}
   }
 

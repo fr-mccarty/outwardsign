@@ -6,6 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { logSuccess, logError } from '@/lib/utils/console'
 
 // Sacrament Tags (sort_order 1-10)
 const SACRAMENT_TAGS = [
@@ -81,13 +82,13 @@ export async function seedContentTagsForParish(
       .insert(tagsToInsert)
 
     if (error) {
-      console.error('Error seeding category tags:', error)
+      logError(`Error seeding category tags: ${error.message}`)
       throw new Error(`Failed to seed category tags: ${error.message}`)
     }
 
-    console.log(`✅ Seeded ${ALL_TAGS.length} category tags for parish ${parishId}`)
+    logSuccess(`Seeded ${ALL_TAGS.length} category tags for parish ${parishId}`)
   } catch (error) {
-    console.error('Error in seedContentTagsForParish:', error)
+    logError(`Error in seedContentTagsForParish: ${error}`)
     throw error
   }
 }

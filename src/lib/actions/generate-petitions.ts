@@ -2,6 +2,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
+import { logError } from '@/lib/utils/console'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -91,7 +92,7 @@ IMPORTANT FORMATTING RULES:
 
     return petitions
   } catch (error) {
-    console.error('Error generating petitions:', error)
+    logError('Error generating petitions:', error)
     throw new Error('Failed to generate petitions. Please try again.')
   }
 }

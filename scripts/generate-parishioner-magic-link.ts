@@ -11,6 +11,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { randomBytes } from 'crypto'
 import { hash } from 'bcryptjs'
+import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
 
 const MAGIC_LINK_EXPIRY_HOURS = 48
 const BCRYPT_ROUNDS = 10
@@ -22,9 +23,9 @@ async function generateMagicLink(email: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('❌ Missing required environment variables')
-    console.error('   NEXT_PUBLIC_SUPABASE_URL:', !!supabaseUrl)
-    console.error('   SUPABASE_SERVICE_ROLE_KEY:', !!supabaseServiceKey)
+    logError('Missing required environment variables')
+    logError('   NEXT_PUBLIC_SUPABASE_URL: ' + (!!supabaseUrl))
+    logError('   SUPABASE_SERVICE_ROLE_KEY: ' + (!!supabaseServiceKey))
     process.exit(1)
   }
 
@@ -38,20 +39,20 @@ async function generateMagicLink(email: string) {
     .single()
 
   if (personError || !person) {
-    console.error(`❌ Person not found with email: ${email}`)
+    logError(`Person not found with email: ${email}`)
     process.exit(1)
   }
 
   if (!person.parishioner_portal_enabled) {
-    console.warn(`⚠️  Parishioner portal is NOT enabled for ${person.full_name}`)
-    console.log('   Enabling portal access...')
+    logWarning(`Parishioner portal is NOT enabled for ${person.full_name}`)
+    logInfo('   Enabling portal access...')
 
     await supabase
       .from('people')
       .update({ parishioner_portal_enabled: true })
       .eq('id', person.id)
 
-    console.log('   ✅ Portal access enabled')
+    logSuccess('   Portal access enabled')
   }
 
   // Generate secure token
@@ -74,37 +75,37 @@ async function generateMagicLink(email: string) {
     })
 
   if (sessionError) {
-    console.error('❌ Error creating session:', sessionError)
+    logError('Error creating session: ' + sessionError)
     process.exit(1)
   }
 
   // Generate magic link URL
   const magicLinkUrl = `${appUrl}/parishioner/auth?token=${token}&parish=${person.parish_id}`
 
-  console.log('\n✅ Magic link generated successfully!')
-  console.log('─'.repeat(80))
-  console.log(`👤 Person: ${person.full_name}`)
-  console.log(`📧 Email: ${person.email}`)
-  console.log(`⏰ Expires: ${expiresAt.toLocaleString()}`)
-  console.log('─'.repeat(80))
-  console.log(`\n🔗 Magic Link:\n\n${magicLinkUrl}\n`)
-  console.log('─'.repeat(80))
+  logSuccess('\nMagic link generated successfully!')
+  logInfo('-'.repeat(80))
+  logInfo(`Person: ${person.full_name}`)
+  logInfo(`Email: ${person.email}`)
+  logInfo(`Expires: ${expiresAt.toLocaleString()}`)
+  logInfo('-'.repeat(80))
+  logInfo(`\nMagic Link:\n\n${magicLinkUrl}\n`)
+  logInfo('-'.repeat(80))
 }
 
 // Get email from command line arguments or use DEV_USER_EMAIL from .env
 const email = process.argv[2] || process.env.DEV_USER_EMAIL
 
 if (!email) {
-  console.error('❌ Usage: tsx scripts/generate-parishioner-magic-link.ts <email>')
-  console.error('   Example: tsx scripts/generate-parishioner-magic-link.ts fr.mccarty@gmail.com')
-  console.error('')
-  console.error('   Or set DEV_USER_EMAIL in your .env.local file')
+  logError('Usage: tsx scripts/generate-parishioner-magic-link.ts <email>')
+  logError('   Example: tsx scripts/generate-parishioner-magic-link.ts fr.mccarty@gmail.com')
+  logError('')
+  logError('   Or set DEV_USER_EMAIL in your .env.local file')
   process.exit(1)
 }
 
 generateMagicLink(email)
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error('❌ Error:', error)
+    logError('Error: ' + error)
     process.exit(1)
   })

@@ -319,9 +319,68 @@ export function WeddingViewClient({ wedding }: Props) {
 
 ---
 
+## Console Helper Functions
+
+**Location:** `src/lib/utils/console.ts`
+
+**Purpose:** Standardized console output with strict character validation for seeders and server actions.
+
+### Available Functions
+
+```typescript
+import { logSuccess, logWarning, logError, logInfo } from '@/lib/utils/console'
+
+// Success messages (prefixed with [OK])
+logSuccess('Created 5 users')
+
+// Warning messages (prefixed with ⚠️)
+logWarning('No existing groups found, creating defaults')
+
+// Error messages (prefixed with ❌)
+logError('Failed to create parish')
+
+// Info messages (no prefix - for section headers)
+logInfo('Creating sample locations...')
+```
+
+### Character Validation
+
+All functions enforce strict validation:
+
+**Allowed:**
+- Letters: a-z, A-Z
+- Numbers: 0-9
+- Spanish accented characters: ñÑáéíóúÁÉÍÓÚüÜ
+- Whitespace: space, newline (\n), carriage return (\r), tab (\t)
+- All standard keyboard symbols: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+
+**Prohibited:**
+- Emojis and other unicode symbols (except ⚠️ and ❌ which are added by the helper functions themselves)
+
+**If prohibited characters are detected, the function throws an error and halts execution.**
+
+### When to Use
+
+**DO use for:**
+- Database seed scripts (TypeScript)
+- Server actions (user-facing operation feedback)
+- Migration output
+- Batch operations
+- Automated scripts
+
+**DON'T use for:**
+- Debug logging (use `console.error()` for debugging)
+- Client-side logging
+- Development debugging
+
+**See:** [SEEDS.md](../SEEDS.md) for complete seeder documentation
+
+---
+
 ## Related Documentation
 
 - [GENERAL.md](./GENERAL.md) - General code conventions (no inline functions)
 - [UI_PATTERNS.md](./UI_PATTERNS.md) - UI component patterns
 - [DEVELOPMENT.md](./DEVELOPMENT.md) - Development guidelines and abstraction principles
 - [FORMATTERS.md](../FORMATTERS.md) - Complete helper function reference with all available functions
+- [SEEDS.md](../SEEDS.md) - Database seeding and console helper functions

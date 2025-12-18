@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
   ContentWithTags,
   CreateContentData,
@@ -68,7 +69,7 @@ async function fetchTagsForContent(
     .eq('entity_id', contentId)
 
   if (error) {
-    console.error('Error fetching tags for content:', error)
+    logError('Error fetching tags for content:', error)
     return []
   }
 
@@ -96,7 +97,7 @@ async function fetchTagsForContents(
     .in('entity_id', contentIds)
 
   if (error) {
-    console.error('Error fetching tags for contents:', error)
+    logError('Error fetching tags for contents:', error)
     return new Map()
   }
 
@@ -155,7 +156,7 @@ export async function getContents(filters: GetContentsFilters = {}): Promise<Get
     .range(offset, offset + safeLimit - 1)
 
   if (error) {
-    console.error('Error fetching contents:', error)
+    logError('Error fetching contents:', error)
     throw new Error('Failed to fetch contents')
   }
 
@@ -207,7 +208,7 @@ export async function getContentById(contentId: string): Promise<ContentWithTags
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching content:', error)
+    logError('Error fetching content:', error)
     throw new Error('Failed to fetch content')
   }
 
@@ -253,7 +254,7 @@ export async function createContent(input: CreateContentData): Promise<ContentWi
     .single()
 
   if (contentError) {
-    console.error('Error creating content:', contentError)
+    logError('Error creating content:', contentError)
     throw new Error('Failed to create content')
   }
 
@@ -270,7 +271,7 @@ export async function createContent(input: CreateContentData): Promise<ContentWi
       .insert(assignments)
 
     if (assignmentError) {
-      console.error('Error creating tag assignments:', assignmentError)
+      logError('Error creating tag assignments:', assignmentError)
       // Don't throw - content is created, just log the error
     }
   }
@@ -320,7 +321,7 @@ export async function updateContent(
       .eq('parish_id', parishId)
 
     if (updateError) {
-      console.error('Error updating content:', updateError)
+      logError('Error updating content:', updateError)
       throw new Error('Failed to update content')
     }
   }
@@ -335,7 +336,7 @@ export async function updateContent(
       .eq('entity_id', contentId)
 
     if (deleteError) {
-      console.error('Error deleting tag assignments:', deleteError)
+      logError('Error deleting tag assignments:', deleteError)
       throw new Error('Failed to update tag assignments')
     }
 
@@ -352,7 +353,7 @@ export async function updateContent(
         .insert(assignments)
 
       if (insertError) {
-        console.error('Error inserting tag assignments:', insertError)
+        logError('Error inserting tag assignments:', insertError)
         throw new Error('Failed to update tag assignments')
       }
     }
@@ -405,7 +406,7 @@ export async function deleteContent(contentId: string): Promise<{ success: boole
     .eq('parish_id', parishId)
 
   if (error) {
-    console.error('Error deleting content:', error)
+    logError('Error deleting content:', error)
     throw new Error('Failed to delete content')
   }
 
@@ -446,7 +447,7 @@ export async function searchContentByText(
     .limit(safeLimit)
 
   if (error) {
-    console.error('Error searching content:', error)
+    logError('Error searching content:', error)
     throw new Error('Failed to search content')
   }
 

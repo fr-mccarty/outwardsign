@@ -6,6 +6,7 @@
  */
 
 import type { DevSeederContext } from './types'
+import { logSuccess, logWarning, logInfo } from '../../src/lib/utils/console'
 
 interface FamilyDefinition {
   familyName: string
@@ -142,7 +143,7 @@ export async function seedFamilies(
 ) {
   const { supabase, parishId } = ctx
 
-  console.log('👨‍👩‍👧‍👦 Creating sample families...')
+  logInfo('Creating sample families...')
 
   // Create a map to find people by name
   const peopleByName = new Map<string, { id: string; first_name: string; last_name: string }>()
@@ -167,7 +168,7 @@ export async function seedFamilies(
       .single()
 
     if (familyError) {
-      console.error(`   ⚠️  Warning: Error creating family "${familyDef.familyName}":`, familyError.message)
+      logWarning(`Error creating family ${familyDef.familyName}: ${familyError.message}`)
       continue
     }
 
@@ -179,7 +180,7 @@ export async function seedFamilies(
       const person = peopleByName.get(personKey)
 
       if (!person) {
-        console.log(`      ⚠️  Person not found: ${memberDef.firstName} ${memberDef.lastName}`)
+        logWarning(`Person not found: ${memberDef.firstName} ${memberDef.lastName}`)
         continue
       }
 
@@ -195,9 +196,9 @@ export async function seedFamilies(
       if (memberError) {
         if (memberError.code === '23505') {
           // Unique constraint - person already in this family
-          console.log(`      ⚠️  ${memberDef.firstName} ${memberDef.lastName} already in family`)
+          logWarning(`${memberDef.firstName} ${memberDef.lastName} already in family`)
         } else {
-          console.error(`      ⚠️  Error adding member:`, memberError.message)
+          logWarning(`Error adding member: ${memberError.message}`)
         }
       } else {
         totalMemberships++
@@ -205,8 +206,8 @@ export async function seedFamilies(
     }
   }
 
-  console.log(`   ✅ ${createdFamilies.length} families created`)
-  console.log(`   ✅ ${totalMemberships} family memberships created`)
+  logSuccess(`${createdFamilies.length} families created`)
+  logSuccess(`${totalMemberships} family memberships created`)
 
   // Log some details
   const activeCount = createdFamilies.filter(f =>
@@ -214,8 +215,8 @@ export async function seedFamilies(
   ).length
   const inactiveCount = createdFamilies.length - activeCount
 
-  console.log(`      - ${activeCount} active families`)
-  console.log(`      - ${inactiveCount} inactive families`)
+  logInfo(`      - ${activeCount} active families`)
+  logInfo(`      - ${inactiveCount} inactive families`)
 
   return { families: createdFamilies, membershipsCreated: totalMemberships }
 }

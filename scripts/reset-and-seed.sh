@@ -17,7 +17,7 @@ done
 
 echo ""
 echo "================================================================"
-echo "🔄 Database Reset & Seed"
+echo "Database Reset and Seed"
 echo "================================================================"
 echo ""
 echo "This will:"
@@ -46,8 +46,8 @@ echo "================================================================"
 # if the database is actually ready.
 supabase db reset || {
   echo ""
-  echo "⚠️  supabase db reset reported an error (often a 502 during container restart)"
-  echo "   Waiting for services to stabilize..."
+  echo "WARNING: supabase db reset reported an error (often a 502 during container restart)"
+  echo "         Waiting for services to stabilize..."
   sleep 3
 }
 
@@ -57,5 +57,5 @@ echo "================================================================"
 npm run seed:dev
 
 echo ""
-echo "✅ All done!"
+echo "All done!"
 echo ""

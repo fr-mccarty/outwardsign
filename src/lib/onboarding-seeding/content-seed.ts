@@ -7,6 +7,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { logSuccess, logWarning, logInfo, logError } from '@/lib/utils/console'
 
 // =====================================================
 // Sample Content Data
@@ -641,7 +642,7 @@ export async function seedContentForParish(
   supabase: SupabaseClient,
   parishId: string
 ): Promise<void> {
-  console.log('📝 Seeding content library...')
+  logInfo('Seeding content library...')
 
   // First, fetch all category tags for this parish to get tag IDs
   const { data: tags, error: tagsError } = await supabase
@@ -650,12 +651,12 @@ export async function seedContentForParish(
     .eq('parish_id', parishId)
 
   if (tagsError) {
-    console.error('Error fetching category tags:', tagsError)
+    logError(`Error fetching category tags: ${tagsError.message}`)
     throw new Error(`Failed to fetch category tags: ${tagsError.message}`)
   }
 
   if (!tags || tags.length === 0) {
-    console.log('   ⚠️  No category tags found - skipping content seeding')
+    logWarning('No category tags found - skipping content seeding')
     return
   }
 
@@ -681,7 +682,7 @@ export async function seedContentForParish(
       .single()
 
     if (contentError) {
-      console.error(`   ❌ Error creating content "${content.title}":`, contentError.message)
+      logError(`Error creating content ${content.title}: ${contentError.message}`)
       continue
     }
 
@@ -704,15 +705,15 @@ export async function seedContentForParish(
         )
 
       if (assignmentError) {
-        console.error(`   ❌ Error creating tag assignments for "${content.title}":`, assignmentError.message)
+        logError(`Error creating tag assignments for ${content.title}: ${assignmentError.message}`)
       } else {
         assignmentCount += validTagIds.length
       }
     }
   }
 
-  console.log(`   ✅ Created ${contentCount} content items`)
-  console.log(`   ✅ Created ${assignmentCount} tag assignments`)
+  logSuccess(`Created ${contentCount} content items`)
+  logSuccess(`Created ${assignmentCount} tag assignments`)
 }
 
 /**

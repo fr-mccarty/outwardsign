@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
   ContentTag,
   ContentTagWithUsageCount,
@@ -73,7 +74,7 @@ export async function getContentTags(
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching content tags:', error)
+    logError('Error fetching content tags:', error)
     throw new Error('Failed to fetch content tags')
   }
 
@@ -101,7 +102,7 @@ export async function getContentTagsWithUsageCount(): Promise<ContentTagWithUsag
     .order('sort_order', { ascending: true })
 
   if (error) {
-    console.error('Error fetching content tags with usage count:', error)
+    logError('Error fetching content tags with usage count:', error)
     throw new Error('Failed to fetch content tags with usage count')
   }
 
@@ -133,7 +134,7 @@ export async function getContentTagById(tagId: string): Promise<ContentTag | nul
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching content tag:', error)
+    logError('Error fetching content tag:', error)
     throw new Error('Failed to fetch content tag')
   }
 
@@ -194,7 +195,7 @@ export async function createContentTag(input: CreateContentTagData): Promise<Con
     if (error.code === '23505') {
       throw new Error('A tag with this slug already exists')
     }
-    console.error('Error creating content tag:', error)
+    logError('Error creating content tag:', error)
     throw new Error('Failed to create content tag')
   }
 
@@ -239,7 +240,7 @@ export async function updateContentTag(
     if (error.code === '23505') {
       throw new Error('A tag with this slug already exists')
     }
-    console.error('Error updating content tag:', error)
+    logError('Error updating content tag:', error)
     throw new Error('Failed to update content tag')
   }
 
@@ -276,7 +277,7 @@ export async function deleteContentTag(tagId: string): Promise<{ success: boolea
     .eq('tag_id', tagId)
 
   if (countError) {
-    console.error('Error checking tag usage:', countError)
+    logError('Error checking tag usage:', countError)
     throw new Error('Failed to check tag usage')
   }
 
@@ -292,7 +293,7 @@ export async function deleteContentTag(tagId: string): Promise<{ success: boolea
     .eq('parish_id', parishId)
 
   if (error) {
-    console.error('Error deleting content tag:', error)
+    logError('Error deleting content tag:', error)
     throw new Error('Failed to delete content tag')
   }
 
@@ -323,7 +324,7 @@ export async function reorderContentTags(tagIdsInOrder: string[]): Promise<Conte
     .in('id', tagIdsInOrder)
 
   if (fetchError) {
-    console.error('Error fetching tags for reorder:', fetchError)
+    logError('Error fetching tags for reorder:', fetchError)
     throw new Error('Failed to verify tags')
   }
 
@@ -344,7 +345,7 @@ export async function reorderContentTags(tagIdsInOrder: string[]): Promise<Conte
 
   const errors = results.filter(r => r.error)
   if (errors.length > 0) {
-    console.error('Error reordering content tags:', errors)
+    logError('Error reordering content tags:', errors)
     throw new Error('Failed to reorder content tags')
   }
 

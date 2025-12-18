@@ -5,11 +5,12 @@
  */
 
 import type { DevSeederContext } from './types'
+import { logSuccess, logWarning, logInfo } from '../../src/lib/utils/console'
 
 export async function seedGroups(ctx: DevSeederContext) {
   const { supabase, parishId } = ctx
 
-  console.log('👥 Creating sample groups...')
+  logInfo('Creating sample groups...')
 
   const { data: groups, error: groupsError } = await supabase
     .from('groups')
@@ -48,11 +49,11 @@ export async function seedGroups(ctx: DevSeederContext) {
     .select()
 
   if (groupsError) {
-    console.error('⚠️  Warning: Error creating groups:', groupsError.message)
+    logWarning(`Error creating groups: ${groupsError.message}`)
     return { success: false, groups: null }
   }
 
-  console.log(`   ✅ ${groups?.length || 0} groups created`)
+  logSuccess(`${groups?.length || 0} groups created`)
   return { success: true, groups }
 }
 
@@ -64,7 +65,7 @@ export async function seedGroupMemberships(
   const { supabase, parishId } = ctx
 
   if (!groups || groups.length === 0 || !people || people.length === 0) {
-    console.log('   ⚠️  Skipping group memberships - missing groups or people')
+    logWarning('Skipping group memberships - missing groups or people')
     return { success: false }
   }
 
@@ -75,12 +76,12 @@ export async function seedGroupMemberships(
     .eq('parish_id', parishId)
 
   if (!groupRoles || groupRoles.length === 0) {
-    console.log('   ⚠️  Skipping group memberships - no group roles found')
+    logWarning('Skipping group memberships - no group roles found')
     return { success: false }
   }
 
-  console.log('')
-  console.log('🔗 Adding members to groups with group roles...')
+  logInfo('')
+  logInfo('Adding members to groups with group roles...')
 
   const leaderRole = groupRoles.find(r => r.name === 'Leader')
   const coordinatorRole = groupRoles.find(r => r.name === 'Coordinator')
@@ -106,11 +107,11 @@ export async function seedGroupMemberships(
     .insert(memberships)
 
   if (membershipsError) {
-    console.error('⚠️  Warning: Error creating group memberships:', membershipsError.message)
+    logWarning(`Error creating group memberships: ${membershipsError.message}`)
     return { success: false }
   }
 
-  console.log(`   ✅ ${memberships.length} group memberships created`)
+  logSuccess(`${memberships.length} group memberships created`)
   return { success: true }
 }
 
@@ -121,12 +122,12 @@ export async function seedMassRoleMemberships(
   const { supabase, parishId } = ctx
 
   if (!people || people.length === 0) {
-    console.log('   ⚠️  Skipping mass role memberships - no people')
+    logWarning('Skipping mass role memberships - no people')
     return { success: false }
   }
 
-  console.log('')
-  console.log('🎭 Adding mass role memberships...')
+  logInfo('')
+  logInfo('Adding mass role memberships...')
 
   const { data: massRoles } = await supabase
     .from('mass_roles')
@@ -135,7 +136,7 @@ export async function seedMassRoleMemberships(
     .order('display_order')
 
   if (!massRoles || massRoles.length === 0) {
-    console.log('   ⚠️  No mass roles found')
+    logWarning('No mass roles found')
     return { success: false }
   }
 
@@ -173,18 +174,18 @@ export async function seedMassRoleMemberships(
       .insert(massRoleMemberships)
 
     if (massRoleMembershipsError) {
-      console.error('⚠️  Warning: Error creating mass role memberships:', massRoleMembershipsError.message)
+      logWarning(`Error creating mass role memberships: ${massRoleMembershipsError.message}`)
       return { success: false }
     }
 
-    console.log(`   ✅ ${massRoleMemberships.length} mass role memberships created`)
+    logSuccess(`${massRoleMemberships.length} mass role memberships created`)
 
     // Show distribution summary
     const roleCounts = massRoles.map(role => {
       const count = massRoleMemberships.filter(m => m.mass_role_id === role.id).length
       return `${role.name}: ${count}`
     })
-    console.log(`   📊 Distribution: ${roleCounts.join(', ')}`)
+    logSuccess(`Distribution: ${roleCounts.join(', ')}`)
   }
 
   return { success: true }

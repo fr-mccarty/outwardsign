@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 
 export interface Ministry {
   id: string
@@ -46,7 +47,7 @@ export async function getMinistries(): Promise<Ministry[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching ministries:', error)
+    logError('Error fetching ministries:' + error)
     throw new Error('Failed to fetch ministries')
   }
 
@@ -68,7 +69,7 @@ export async function getMinistry(id: string): Promise<Ministry | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching ministry:', error)
+    logError('Error fetching ministry:' + error)
     throw new Error('Failed to fetch ministry')
   }
 
@@ -106,7 +107,7 @@ export async function createMinistry(data: CreateMinistryData): Promise<Ministry
     .single()
 
   if (error) {
-    console.error('Error creating ministry:', error)
+    logError('Error creating ministry:' + error)
     throw new Error('Failed to create ministry')
   }
 
@@ -134,7 +135,7 @@ export async function updateMinistry(id: string, data: UpdateMinistryData): Prom
     .single()
 
   if (error) {
-    console.error('Error updating ministry:', error)
+    logError('Error updating ministry:' + error)
     throw new Error('Failed to update ministry')
   }
 
@@ -153,7 +154,7 @@ export async function deleteMinistry(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting ministry:', error)
+    logError('Error deleting ministry:' + error)
     throw new Error('Failed to delete ministry')
   }
 
@@ -177,7 +178,7 @@ export async function reorderMinistries(ministryIds: string[]): Promise<void> {
   
   const failures = results.filter(result => result.status === 'rejected')
   if (failures.length > 0) {
-    console.error('Error reordering ministries:', failures)
+    logError('Error reordering ministries:' + failures)
     throw new Error('Failed to reorder some ministries')
   }
 
@@ -197,7 +198,7 @@ export async function getActiveMinistries(): Promise<Ministry[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching active ministries:', error)
+    logError('Error fetching active ministries:' + error)
     throw new Error('Failed to fetch active ministries')
   }
 
@@ -245,7 +246,7 @@ export async function initializeDefaultMinistries(): Promise<Ministry[]> {
     .select()
 
   if (error) {
-    console.error('Error creating default ministries:', error)
+    logError('Error creating default ministries:' + error)
     throw new Error('Failed to create default ministries')
   }
 

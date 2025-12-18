@@ -1,9 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 
 // Types
 export interface PersonBlackoutDate {
@@ -52,7 +56,7 @@ export async function getPersonBlackoutDates(personId: string): Promise<PersonBl
     .order('start_date', { ascending: true })
 
   if (error) {
-    console.error('Error fetching person blackout dates:', error)
+    logError('Error fetching person blackout dates:', error)
     throw new Error('Failed to fetch person blackout dates')
   }
 
@@ -79,7 +83,7 @@ export async function getPersonBlackoutDatesWithPerson(
     .order('start_date', { ascending: true })
 
   if (error) {
-    console.error('Error fetching person blackout dates with person:', error)
+    logError('Error fetching person blackout dates with person:', error)
     throw new Error('Failed to fetch person blackout dates with person')
   }
 
@@ -104,7 +108,7 @@ export async function getPersonBlackoutDate(id: string): Promise<PersonBlackoutD
     if (error.code === 'PGRST116') {
       return null
     }
-    console.error('Error fetching person blackout date:', error)
+    logError('Error fetching person blackout date:', error)
     throw new Error('Failed to fetch person blackout date')
   }
 
@@ -138,7 +142,7 @@ export async function createPersonBlackoutDate(
     .single()
 
   if (error) {
-    console.error('Error creating person blackout date:', error)
+    logError('Error creating person blackout date:', error)
     throw new Error('Failed to create person blackout date')
   }
 
@@ -174,7 +178,7 @@ export async function updatePersonBlackoutDate(
     .single()
 
   if (error) {
-    console.error('Error updating person blackout date:', error)
+    logError('Error updating person blackout date:', error)
     throw new Error('Failed to update person blackout date')
   }
 
@@ -206,7 +210,7 @@ export async function deletePersonBlackoutDate(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting person blackout date:', error)
+    logError('Error deleting person blackout date:', error)
     throw new Error('Failed to delete person blackout date')
   }
 
@@ -234,7 +238,7 @@ export async function checkPersonAvailability(personId: string, date: string): P
     .limit(1)
 
   if (error) {
-    console.error('Error checking person availability:', error)
+    logError('Error checking person availability:', error)
     throw new Error('Failed to check person availability')
   }
 
@@ -262,7 +266,7 @@ export async function getPersonBlackoutDatesInRange(
     .order('start_date', { ascending: true })
 
   if (error) {
-    console.error('Error fetching person blackout dates in range:', error)
+    logError('Error fetching person blackout dates in range:', error)
     throw new Error('Failed to fetch person blackout dates in range')
   }
 

@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { seedParishData } from '@/lib/onboarding-seeding/parish-seed-data'
 import { createParishSchema, updateParishSchema, type CreateParishData, type UpdateParishData } from '@/lib/schemas/parishes'
+import { logWarning, logError } from '@/lib/utils/console'
 
 /**
  * Populates initial data for a newly created parish.
@@ -69,7 +70,7 @@ export async function createTestParish() {
 
     return { success: true, parish }
   } catch (error) {
-    console.error('Error creating test parish:', error)
+    logError('Error creating test parish:', error)
     throw error
   }
 }
@@ -124,7 +125,7 @@ export async function createParish(data: CreateParishData) {
 
     return { success: true, parish }
   } catch (error) {
-    console.error('Error creating parish:', error)
+    logError('Error creating parish:', error)
     throw error
   }
 }
@@ -167,7 +168,7 @@ export async function updateParish(parishId: string, data: UpdateParishData) {
 
     return { success: true, parish }
   } catch (error) {
-    console.error('Error updating parish:', error)
+    logError('Error updating parish:', error)
     throw error
   }
 }
@@ -234,7 +235,7 @@ export async function getParishSettings(parishId: string) {
 
     return { success: true, settings }
   } catch (error) {
-    console.error('Error getting parish settings:', error)
+    logError('Error getting parish settings:', error)
     throw error
   }
 }
@@ -289,7 +290,7 @@ export async function updateParishSettings(parishId: string, data: {
 
     return { success: true, settings }
   } catch (error) {
-    console.error('Error updating parish settings:', error)
+    logError('Error updating parish settings:', error)
     throw error
   }
 }
@@ -339,15 +340,15 @@ export async function getParishMembers(parishId: string) {
           const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(parishMember.user_id)
 
           if (authError) {
-            console.error(`Error fetching user ${parishMember.user_id} from auth:`, authError)
+            logError(`Error fetching user ${parishMember.user_id} from auth:`, authError)
           } else if (authUser?.user) {
             userEmail = authUser.user.email || null
             userCreatedAt = authUser.user.created_at
           } else {
-            console.warn(`No user data returned for user_id ${parishMember.user_id}`)
+            logWarning(`No user data returned for user_id ${parishMember.user_id}`)
           }
         } catch (error) {
-          console.error(`Exception fetching email for user ${parishMember.user_id}:`, error)
+          logError(`Exception fetching email for user ${parishMember.user_id}:`, error)
         }
 
         return {
@@ -365,7 +366,7 @@ export async function getParishMembers(parishId: string) {
 
     return { success: true, members }
   } catch (error) {
-    console.error('Error fetching parish members:', error)
+    logError('Error fetching parish members:', error)
     throw error
   }
 }
@@ -478,7 +479,7 @@ export async function inviteStaff(parishId: string, email: string, roles: string
       userExists: false 
     }
   } catch (error) {
-    console.error('Error inviting parish member:', error)
+    logError('Error inviting parish member:', error)
     throw error
   }
 }
@@ -522,7 +523,7 @@ export async function removeParishMember(parishId: string, userId: string) {
 
     return { success: true }
   } catch (error) {
-    console.error('Error removing parish member:', error)
+    logError('Error removing parish member:', error)
     throw error
   }
 }
@@ -578,7 +579,7 @@ export async function updateMemberRole(
 
     return { success: true }
   } catch (error) {
-    console.error('Error updating member role:', error)
+    logError('Error updating member role:', error)
     throw error
   }
 }

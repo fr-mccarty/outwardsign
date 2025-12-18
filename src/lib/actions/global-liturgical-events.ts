@@ -1,8 +1,11 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { toLocalDateString } from '@/lib/utils/formatters'
+import { logError } from '@/lib/utils/console'
 import type { PaginatedParams, PaginatedResult } from './people'
+import { logError } from '@/lib/utils/console'
 
 export interface GlobalLiturgicalEvent {
   id: string
@@ -75,7 +78,7 @@ export async function getGlobalLiturgicalEvents(
     .order('date', { ascending: true })
 
   if (error) {
-    console.error('Error fetching global liturgical events:', error)
+    logError('Error fetching global liturgical events:', error)
     throw new Error('Failed to fetch global liturgical events')
   }
 
@@ -124,7 +127,7 @@ export async function getGlobalLiturgicalEventsPaginated(
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated global liturgical events:', error)
+    logError('Error fetching paginated global liturgical events:', error)
     throw new Error('Failed to fetch paginated global liturgical events')
   }
 
@@ -178,7 +181,7 @@ export async function getGlobalLiturgicalEvent(
     .single()
 
   if (error) {
-    console.error('Error fetching global liturgical event:', error)
+    logError('Error fetching global liturgical event:', error)
     return null
   }
 

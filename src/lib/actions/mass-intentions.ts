@@ -1,12 +1,19 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import { MassIntention, Person, MasterEvent } from '@/lib/types'
+import { logError } from '@/lib/utils/console'
 import type { MassIntentionStatus } from '@/lib/constants'
+import { logError } from '@/lib/utils/console'
 import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIntentionData, type UpdateMassIntentionData } from '@/lib/schemas/mass-intentions'
+import { logError } from '@/lib/utils/console'
 
 export interface MassIntentionFilterParams {
   search?: string
@@ -84,7 +91,7 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching mass intentions:', error)
+    logError('Error fetching mass intentions:', error)
     throw new Error('Failed to fetch mass intentions')
   }
 
@@ -190,7 +197,7 @@ export async function getMassIntentionsPaginated(params?: PaginatedParams): Prom
   const { data, error, count } = await query
 
   if (error) {
-    console.error('Error fetching paginated mass intentions:', error)
+    logError('Error fetching paginated mass intentions:', error)
     throw new Error('Failed to fetch paginated mass intentions')
   }
 
@@ -242,7 +249,7 @@ export async function getMassIntention(id: string): Promise<MassIntention | null
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching mass intention:', error)
+    logError('Error fetching mass intention:', error)
     throw new Error('Failed to fetch mass intention')
   }
 
@@ -271,7 +278,7 @@ export async function getMassIntentionWithRelations(id: string): Promise<MassInt
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching mass intention:', error)
+    logError('Error fetching mass intention:', error)
     throw new Error('Failed to fetch mass intention')
   }
 
@@ -320,7 +327,7 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
     .single()
 
   if (error) {
-    console.error('Error creating mass intention:', error)
+    logError('Error creating mass intention:', error)
     throw new Error('Failed to create mass intention')
   }
 
@@ -351,7 +358,7 @@ export async function updateMassIntention(id: string, data: UpdateMassIntentionD
     .single()
 
   if (error) {
-    console.error('Error updating mass intention:', error)
+    logError('Error updating mass intention:', error)
     throw new Error('Failed to update mass intention')
   }
 
@@ -373,7 +380,7 @@ export async function deleteMassIntention(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting mass intention:', error)
+    logError('Error deleting mass intention:', error)
     throw new Error('Failed to delete mass intention')
   }
 
@@ -420,7 +427,7 @@ export async function getMassIntentionsReport(
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching mass intentions for report:', error)
+    logError('Error fetching mass intentions for report:', error)
     throw new Error('Failed to fetch mass intentions for report')
   }
 

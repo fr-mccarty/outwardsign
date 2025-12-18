@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
   MasterEvent,
   Person,
@@ -76,7 +77,7 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
   const { data: events, error } = await query
 
   if (error) {
-    console.error('Error fetching masses:', error)
+    logError('Error fetching masses: ' + error)
     throw new Error('Failed to fetch masses')
   }
 
@@ -185,7 +186,7 @@ export async function getMassStats(filters?: MassFilterParams): Promise<MassStat
     .is('deleted_at', null)
 
   if (error) {
-    console.error('Error fetching masses for stats:', error)
+    logError('Error fetching masses for stats: ' + error)
     throw new Error('Failed to fetch masses for stats')
   }
 
@@ -278,7 +279,7 @@ export async function getMass(id: string): Promise<MasterEvent | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching mass:', error)
+    logError('Error fetching mass: ' + error)
     throw new Error('Failed to fetch mass')
   }
 
@@ -303,7 +304,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching mass:', error)
+    logError('Error fetching mass:', error)
     throw new Error('Failed to fetch mass')
   }
 
@@ -347,13 +348,13 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
   ])
 
   if (eventTypeData.error) {
-    console.error('Error fetching event type:', eventTypeData.error)
+    logError('Error fetching event type:', eventTypeData.error)
     // Event exists but is not a mass type
     return null
   }
 
   if (calendarEventsData.error) {
-    console.error('Error fetching calendar events:', calendarEventsData.error)
+    logError('Error fetching calendar events:', calendarEventsData.error)
     throw new Error('Failed to fetch calendar events')
   }
 
@@ -452,7 +453,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
             break
         }
       } catch (err) {
-        console.error(`Error resolving field ${fieldDef.name}:`, err)
+        logError(`Error resolving field ${fieldDef.name}:`, err)
       }
     }
 
@@ -499,7 +500,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
     .single()
 
   if (eventTypeError || !massEventType) {
-    console.error('Error finding mass event type:', eventTypeError)
+    logError('Error finding mass event type:', eventTypeError)
     throw new Error('No mass event type configured for this parish')
   }
 
@@ -520,7 +521,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
     .single()
 
   if (error) {
-    console.error('Error creating mass:', error)
+    logError('Error creating mass:', error)
     throw new Error('Failed to create mass')
   }
 
@@ -610,7 +611,7 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mast
     .single()
 
   if (error) {
-    console.error('Error updating mass:', error)
+    logError('Error updating mass:', error)
     throw new Error('Failed to update mass')
   }
 
@@ -633,7 +634,7 @@ export async function deleteMass(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting mass:', error)
+    logError('Error deleting mass:', error)
     throw new Error('Failed to delete mass')
   }
 
@@ -657,7 +658,7 @@ export async function linkMassIntention(massId: string, massIntentionId: string)
     .eq('id', massIntentionId)
 
   if (error) {
-    console.error('Error linking mass intention:', error)
+    logError('Error linking mass intention:', error)
     throw new Error('Failed to link mass intention')
   }
 
@@ -688,7 +689,7 @@ export async function unlinkMassIntention(massIntentionId: string): Promise<void
     .eq('id', massIntentionId)
 
   if (error) {
-    console.error('Error unlinking mass intention:', error)
+    logError('Error unlinking mass intention:', error)
     throw new Error('Failed to unlink mass intention')
   }
 
@@ -719,7 +720,7 @@ export async function getMassRoles(massId: string): Promise<MasterEventRoleWithR
     .order('created_at', { ascending: true })
 
   if (error) {
-    console.error('Error fetching mass roles:', error)
+    logError('Error fetching mass roles:', error)
     throw new Error('Failed to fetch mass roles')
   }
 
@@ -744,7 +745,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MasterEv
     .single()
 
   if (error) {
-    console.error('Error creating mass role:', error)
+    logError('Error creating mass role:', error)
     throw new Error('Failed to create mass role assignment')
   }
 
@@ -775,7 +776,7 @@ export async function deleteMassRole(roleId: string): Promise<void> {
     .eq('id', roleId)
 
   if (error) {
-    console.error('Error deleting mass role:', error)
+    logError('Error deleting mass role:', error)
     throw new Error('Failed to delete mass role assignment')
   }
 
@@ -800,7 +801,7 @@ export async function deleteAllMassRoles(massId: string): Promise<void> {
     .is('deleted_at', null)
 
   if (error) {
-    console.error('Error deleting mass roles:', error)
+    logError('Error deleting mass roles:', error)
     throw new Error('Failed to delete mass role assignments')
   }
 

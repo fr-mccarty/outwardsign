@@ -45,7 +45,7 @@ async function cleanup() {
     return;
   }
 
-  console.log('\n🧹 Cleaning up test data...');
+  console.log('\nCleaning up test data...');
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false }
@@ -67,7 +67,7 @@ async function cleanup() {
       console.log(`   ⚠️  Error deleting auth user: ${error.message}`);
     }
 
-    console.log('   ✅ Test data cleaned up successfully');
+    console.log('   [OK] Test data cleaned up successfully');
   } catch (error) {
     console.error('   ❌ Error during cleanup:', error.message);
   }
@@ -75,9 +75,9 @@ async function cleanup() {
 
 async function main() {
   try {
-    console.log('📦 Setting up test environment with dynamic credentials...\n');
-    console.log(`   📧 Email: ${TEST_EMAIL}`);
-    console.log(`   🏛️  Parish: ${TEST_PARISH_NAME}\n`);
+    console.log('Setting up test environment with dynamic credentials...\n');
+    console.log(`   Email: ${TEST_EMAIL}`);
+    console.log(`   Parish: ${TEST_PARISH_NAME}\n`);
 
     // Step 1: Run setup script with dynamic credentials
     const setupOutput = execSync('node scripts/setup-test-user.js', {
@@ -103,16 +103,16 @@ async function main() {
     if (parishIdMatch) testParishId = parishIdMatch[1];
 
     // Step 2: Clear Next.js cache to prevent build corruption
-    console.log('\n🧹 Clearing Next.js build cache...');
+    console.log('\nClearing Next.js build cache...');
     try {
       execSync('rm -rf .next', { encoding: 'utf-8', stdio: 'pipe' });
-      console.log('   ✅ Cache cleared successfully\n');
+      console.log('   [OK] Cache cleared successfully\n');
     } catch (cacheError) {
       console.log('   ⚠️  Cache may already be cleared or .next directory not found\n');
     }
 
     // Step 3: Run Playwright tests with same dynamic credentials
-    console.log('🎭 Running Playwright tests...\n');
+    console.log('Running Playwright tests...\n');
 
     const testArgs = process.argv.slice(2).join(' ');
     const playwrightCommand = testArgs
@@ -130,7 +130,7 @@ async function main() {
           TEST_PARISH_NAME: TEST_PARISH_NAME
         }
       });
-      console.log('\n✅ Tests completed successfully');
+      console.log('\n[OK] Tests completed successfully');
     } catch (testError) {
       console.log('\n❌ Some tests failed');
       // Continue to cleanup even if tests fail
@@ -139,7 +139,7 @@ async function main() {
     // Step 4: Cleanup
     await cleanup();
 
-    console.log('\n✨ Test run complete!\n');
+    console.log('\nTest run complete!\n');
 
   } catch (error) {
     console.error('\n❌ Error:', error.message);

@@ -15,6 +15,7 @@
 
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
 
 // Load environment variables from .env.production.local
 config({ path: '.env.production.local' })
@@ -24,9 +25,9 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('❌ Missing required environment variables:')
-  console.error('   NEXT_PUBLIC_SUPABASE_URL')
-  console.error('   SUPABASE_SERVICE_ROLE_KEY')
+  logError('Missing required environment variables:')
+  logError('   NEXT_PUBLIC_SUPABASE_URL')
+  logError('   SUPABASE_SERVICE_ROLE_KEY')
   process.exit(1)
 }
 
@@ -98,8 +99,8 @@ interface ApiResponse {
 async function fetchLiturgicalCalendar(year: number, locale: string): Promise<LiturgicalEvent[]> {
   const url = `https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/${year}?locale=${locale}`
 
-  console.log(`📅 Fetching US liturgical calendar for year ${year} (locale: ${locale})...`)
-  console.log(`   URL: ${url}`)
+  logInfo(`Fetching US liturgical calendar for year ${year} (locale: ${locale})...`)
+  logInfo(`   URL: ${url}`)
 
   const response = await fetch(url)
 
@@ -113,12 +114,12 @@ async function fetchLiturgicalCalendar(year: number, locale: string): Promise<Li
     throw new Error('Invalid API response: missing litcal array')
   }
 
-  console.log(`✅ Fetched ${data.litcal.length} events`)
+  logSuccess(`Fetched ${data.litcal.length} events`)
   return data.litcal
 }
 
 async function importEvents(events: LiturgicalEvent[], locale: string) {
-  console.log(`\n📥 Importing ${events.length} events into database...`)
+  logInfo(`\nImporting ${events.length} events into database...`)
 
   let inserted = 0
   let updated = 0
@@ -149,7 +150,7 @@ async function importEvents(events: LiturgicalEvent[], locale: string) {
         .select()
 
       if (error) {
-        console.error(`   ❌ Error importing ${event.event_key} (${dateOnly}):`, error.message)
+        logError(`   Error importing ${event.event_key} (${dateOnly}): ${error.message}`)
         errors++
       } else if (data && data.length > 0) {
         // Check if this was an insert or update by comparing created_at and updated_at
@@ -163,17 +164,17 @@ async function importEvents(events: LiturgicalEvent[], locale: string) {
         skipped++
       }
     } catch (err) {
-      console.error(`   ❌ Unexpected error importing ${event.event_key}:`, err)
+      logError(`   Unexpected error importing ${event.event_key}: ${err}`)
       errors++
     }
   }
 
-  console.log('\n📊 Import Summary:')
-  console.log(`   ✅ Inserted: ${inserted}`)
-  console.log(`   🔄 Updated: ${updated}`)
-  console.log(`   ⏭️  Skipped: ${skipped}`)
-  console.log(`   ❌ Errors: ${errors}`)
-  console.log(`   📝 Total processed: ${events.length}`)
+  logInfo('\nImport Summary:')
+  logSuccess(`   Inserted: ${inserted}`)
+  logInfo(`   Updated: ${updated}`)
+  logInfo(`   Skipped: ${skipped}`)
+  logError(`   Errors: ${errors}`)
+  logInfo(`   Total processed: ${events.length}`)
 
   return { inserted, updated, skipped, errors }
 }
@@ -181,11 +182,11 @@ async function importEvents(events: LiturgicalEvent[], locale: string) {
 async function main() {
   const { year, locale } = parseArgs()
 
-  console.log('🚀 Liturgical Events Import Script')
-  console.log('=' .repeat(50))
-  console.log(`Year: ${year}`)
-  console.log(`Locale: ${locale}`)
-  console.log('=' .repeat(50))
+  logInfo('Liturgical Events Import Script')
+  logInfo('=' .repeat(50))
+  logInfo(`Year: ${year}`)
+  logInfo(`Locale: ${locale}`)
+  logInfo('=' .repeat(50))
 
   try {
     // Fetch events from API
@@ -196,14 +197,14 @@ async function main() {
 
     // Exit with appropriate code
     if (results.errors > 0) {
-      console.log('\n⚠️  Import completed with errors')
+      logWarning('\nImport completed with errors')
       process.exit(1)
     } else {
-      console.log('\n✅ Import completed successfully!')
+      logSuccess('\nImport completed successfully!')
       process.exit(0)
     }
   } catch (error) {
-    console.error('\n❌ Fatal error:', error)
+    logError(`\nFatal error: ${error}`)
     process.exit(1)
   }
 }

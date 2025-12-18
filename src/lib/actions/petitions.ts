@@ -7,6 +7,7 @@ import { getPromptTemplate } from '@/lib/actions/definitions'
 import { replaceTemplateVariables, getTemplateVariables } from '@/lib/template-utils'
 import { getPetitionTemplate } from './petition-templates'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logInfo, logWarning, logError } from '@/lib/utils/console'
 import type { LiturgicalLanguage } from '@/lib/constants'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
 
@@ -293,7 +294,7 @@ export async function updatePetition(id: string, data: CreatePetitionData) {
     .single()
 
   if (petitionError) {
-    console.error('Petition update error:', petitionError)
+    logError('Petition update error:', petitionError)
     throw new Error('Failed to update petition')
   }
 
@@ -314,7 +315,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
         templateContent = template.context
       }
     } catch (error) {
-      console.warn('Failed to fetch template content:', error)
+      logWarning('Failed to fetch template content:', error)
     }
   }
 
@@ -326,9 +327,9 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
   const prompt = replaceTemplateVariables(template, variables)
   
   // Debug logging to see what's being sent to AI
-  console.log('[DEBUG] Petition generation data:', data)
-  console.log('[DEBUG] Template variables:', variables)
-  console.log('[DEBUG] Final prompt being sent to AI:', prompt)
+  logInfo('[DEBUG] Petition generation data:', data)
+  logInfo('[DEBUG] Template variables:', variables)
+  logInfo('[DEBUG] Final prompt being sent to AI:', prompt)
 
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -366,7 +367,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
     
     return result.content[0].text
   } catch (error) {
-    console.error('Error generating petitions:', error)
+    logError('Error generating petitions:', error)
     throw error // Throw the error instead of falling back silently
   }
 }
@@ -479,7 +480,7 @@ export async function updatePetitionFullDetails(id: string, data: { title: strin
     .single()
 
   if (petitionError) {
-    console.error('Petition update error:', petitionError)
+    logError('Petition update error:', petitionError)
     throw new Error(`Failed to update petition: ${petitionError.message || petitionError.code || 'Database error'}`)
   }
 
@@ -504,7 +505,7 @@ export async function regeneratePetitionContent(id: string, data: { title: strin
   try {
     generatedContent = await generatePetitionContent(petitionData)
   } catch (error) {
-    console.error('Content generation error:', error)
+    logError('Content generation error:', error)
     throw new Error(`Failed to generate petition content: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 
@@ -525,7 +526,7 @@ export async function regeneratePetitionContent(id: string, data: { title: strin
     .single()
 
   if (petitionError) {
-    console.error('Petition regeneration error:', petitionError)
+    logError('Petition regeneration error:', petitionError)
     throw new Error(`Failed to regenerate petition: ${petitionError.message || petitionError.code || 'Database error'}`)
   }
 
@@ -567,7 +568,7 @@ export async function duplicatePetition(id: string): Promise<Petition> {
     .single()
 
   if (duplicateError) {
-    console.error('Petition duplication error:', duplicateError)
+    logError('Petition duplication error:', duplicateError)
     throw new Error('Failed to duplicate petition')
   }
 
@@ -606,7 +607,7 @@ export async function deletePetition(id: string) {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Petition deletion error:', error)
+    logError('Petition deletion error:', error)
     throw new Error('Failed to delete petition')
   }
 }
@@ -651,7 +652,7 @@ export async function createPetitionFromEvent(data: {
     .single()
 
   if (error) {
-    console.error('Failed to create petition from event:', error)
+    logError('Failed to create petition from event:', error)
     throw new Error('Failed to create petition')
   }
 

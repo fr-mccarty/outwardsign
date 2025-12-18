@@ -7,6 +7,7 @@
  */
 
 import type { DevSeederContext } from './types'
+import { logSuccess, logWarning, logInfo, logError } from '../../src/lib/utils/console'
 
 export async function seedMasses(
   ctx: DevSeederContext,
@@ -27,22 +28,22 @@ export async function seedMasses(
   const dailyMassEventType = massEventTypes?.find(et => et.slug === 'daily-mass') || null
 
   if (!sundayMassEventType && !dailyMassEventType) {
-    console.log('   ⚠️  No Mass event types found - skipping Mass creation')
+    logWarning('No Mass event types found - skipping Mass creation')
     return { success: false }
   }
 
   if (!people || people.length === 0) {
-    console.log('   ⚠️  No people found - skipping Mass creation')
+    logWarning('No people found - skipping Mass creation')
     return { success: false }
   }
 
   if (!churchLocation) {
-    console.log('   ⚠️  No church location found - skipping Mass creation')
+    logWarning('No church location found - skipping Mass creation')
     return { success: false }
   }
 
-  console.log('')
-  console.log('📅 Creating 20 sample Masses...')
+  logInfo('')
+  logInfo('Creating 20 sample Masses...')
 
   // Helper to get future date
   const getMassDate = (daysFromNow: number) => {
@@ -140,7 +141,7 @@ export async function seedMasses(
 
     const primaryCalendarEventField = getPrimaryCalendarEventField(massData.eventType)
     if (!primaryCalendarEventField) {
-      console.error(`   ❌ No primary calendar_event field found for ${massData.eventType.name}`)
+      logError(`No primary calendar_event field found for ${massData.eventType.name}`)
       continue
     }
 
@@ -159,7 +160,7 @@ export async function seedMasses(
       .single()
 
     if (masterEventError) {
-      console.error(`   ❌ Error creating master_event for ${massData.date}:`, masterEventError.message)
+      logError(`Error creating master_event for ${massData.date}: ${masterEventError.message}`)
       continue
     }
 
@@ -178,7 +179,7 @@ export async function seedMasses(
       })
 
     if (calendarEventError) {
-      console.error(`   ❌ Error creating calendar_event for ${massData.date}:`, calendarEventError.message)
+      logError(`Error creating calendar_event for ${massData.date}: ${calendarEventError.message}`)
       // Clean up the orphaned master_event
       await supabase.from('master_events').delete().eq('id', newMasterEvent.id)
       continue
@@ -195,7 +196,7 @@ export async function seedMasses(
 
   const sundayCount = massesToCreate.filter(m => m.eventType?.slug === 'sunday-mass').length
   const dailyCount = massesToCreate.filter(m => m.eventType?.slug === 'daily-mass').length
-  console.log(`   ✅ Created ${massesCreatedCount} sample Masses (${sundayCount} Sunday, ${dailyCount} Daily)`)
+  logSuccess(`Created ${massesCreatedCount} sample Masses (${sundayCount} Sunday, ${dailyCount} Daily)`)
 
   return { success: true }
 }

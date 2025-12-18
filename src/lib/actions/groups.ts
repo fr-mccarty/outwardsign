@@ -11,6 +11,7 @@ import {
   type CreateGroupData,
   type UpdateGroupData
 } from '@/lib/schemas/groups'
+import { logError } from '@/lib/utils/console'
 
 export interface Group {
   id: string
@@ -73,7 +74,7 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
     .select('*', { count: 'exact', head: true })
 
   if (totalError) {
-    console.error('Error fetching total count:', totalError)
+    logError('Error fetching total count:', totalError)
     throw new Error('Failed to fetch total count')
   }
 
@@ -83,7 +84,7 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
     .select('*')
 
   if (allError) {
-    console.error('Error fetching groups for filtering:', allError)
+    logError('Error fetching groups for filtering:', allError)
     throw new Error('Failed to fetch groups for filtering')
   }
 
@@ -121,7 +122,7 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
     .select('*')
 
   if (error) {
-    console.error('Error fetching groups:', error)
+    logError('Error fetching groups:', error)
     throw new Error('Failed to fetch groups')
   }
 
@@ -184,7 +185,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     if (groupError.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching group:', groupError)
+    logError('Error fetching group:', groupError)
     throw new Error('Failed to fetch group')
   }
 
@@ -214,7 +215,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     .order('joined_at', { ascending: true })
 
   if (membersError) {
-    console.error('Error fetching group members:', membersError)
+    logError('Error fetching group members:', membersError)
     throw new Error('Failed to fetch group members')
   }
 
@@ -247,7 +248,7 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
     .single()
 
   if (error) {
-    console.error('Error creating group:', error)
+    logError('Error creating group:', error)
     throw new Error('Failed to create group')
   }
 
@@ -277,7 +278,7 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
     .single()
 
   if (error) {
-    console.error('Error updating group:', error)
+    logError('Error updating group:', error)
     throw new Error('Failed to update group')
   }
 
@@ -298,7 +299,7 @@ export async function deleteGroup(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting group:', error)
+    logError('Error deleting group:', error)
     throw new Error('Failed to delete group')
   }
 
@@ -338,7 +339,7 @@ export async function addGroupMember(groupId: string, personId: string, groupRol
     if (error.code === '23505') { // Unique constraint violation
       throw new Error('Person is already a member of this group')
     }
-    console.error('Error adding group member:', error)
+    logError('Error adding group member:', error)
     throw new Error('Failed to add group member')
   }
 
@@ -371,7 +372,7 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
     .eq('person_id', personId)
 
   if (error) {
-    console.error('Error removing group member:', error)
+    logError('Error removing group member:', error)
     throw new Error('Failed to remove group member')
   }
 
@@ -405,7 +406,7 @@ export async function updateGroupMemberRole(groupId: string, personId: string, g
     .single()
 
   if (error) {
-    console.error('Error updating group member role:', error)
+    logError('Error updating group member role:', error)
     throw new Error('Failed to update group member role')
   }
 
@@ -427,7 +428,7 @@ export async function getActiveGroups(): Promise<Group[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    console.error('Error fetching active groups:', error)
+    logError('Error fetching active groups:', error)
     throw new Error('Failed to fetch active groups')
   }
 
@@ -547,7 +548,7 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
     .order('joined_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching people with group memberships:', error)
+    logError('Error fetching people with group memberships:', error)
     throw new Error('Failed to fetch people with group memberships')
   }
 
@@ -653,7 +654,7 @@ export async function getPersonGroupMemberships(personId: string): Promise<Perso
     .order('joined_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching person group memberships:', error)
+    logError('Error fetching person group memberships:', error)
     throw new Error('Failed to fetch person group memberships')
   }
 

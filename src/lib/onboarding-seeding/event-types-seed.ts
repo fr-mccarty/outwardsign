@@ -12,6 +12,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { generateSlug } from '@/lib/utils/formatters'
+import { logError } from '@/lib/utils/console'
 
 /**
  * Seeds event types for a new parish with starter templates
@@ -38,7 +39,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     .single()
 
   if (weddingTypeError) {
-    console.error('Error creating Wedding event type:', weddingTypeError)
+    logError(`Error creating Wedding event type: ${weddingTypeError.message}`)
     throw new Error(`Failed to create Wedding event type: ${weddingTypeError.message}`)
   }
 
@@ -1275,7 +1276,495 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   }
 
   // =====================================================
-  // 6. Create "Other" Event Type (for general parish events)
+  // 6. Create Bible Study Event Type
+  // =====================================================
+  const { data: bibleStudyType, error: bibleStudyTypeError } = await supabase
+    .from('event_types')
+    .insert({
+      parish_id: parishId,
+      name: 'Bible Study',
+      description: 'Regular Bible study and scripture reflection gatherings.',
+      icon: 'Book',
+      slug: 'bible-studies',
+      system_type: 'event',
+      order: 6
+    })
+    .select()
+    .single()
+
+  if (bibleStudyTypeError) {
+    console.error('Error creating Bible Study event type:', bibleStudyTypeError)
+    throw new Error(`Failed to create Bible Study event type: ${bibleStudyTypeError.message}`)
+  }
+
+  // Create input field definitions for Bible Study
+  const bibleStudyFields = [
+    { name: 'Session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Discussion Leader', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Topic', type: 'text', required: false, order: 2 },
+    { name: 'Scripture Passage', type: 'text', required: false, order: 3 },
+    { name: 'Discussion Questions', type: 'rich_text', required: false, order: 4 },
+    { name: 'Resources', type: 'document', required: false, order: 5 },
+    { name: 'Expected Attendance', type: 'number', required: false, order: 6 },
+    { name: 'Notes', type: 'rich_text', required: false, order: 7 }
+  ]
+
+  const { error: bibleStudyFieldsError } = await supabase
+    .from('input_field_definitions')
+    .insert(
+      bibleStudyFields.map(field => ({
+        event_type_id: bibleStudyType.id,
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
+      }))
+    )
+
+  if (bibleStudyFieldsError) {
+    console.error('Error creating Bible Study fields:', bibleStudyFieldsError)
+    throw new Error(`Failed to create Bible Study fields: ${bibleStudyFieldsError.message}`)
+  }
+
+  // Create Bible Study script
+  const { data: bibleStudyScript, error: bibleStudyScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: bibleStudyType.id,
+      name: 'Bible Study Session Plan',
+      order: 0
+    })
+    .select()
+    .single()
+
+  if (bibleStudyScriptError) {
+    console.error('Error creating Bible Study script:', bibleStudyScriptError)
+    throw new Error(`Failed to create Bible Study script: ${bibleStudyScriptError.message}`)
+  }
+
+  // Create sections for Bible Study Session Plan
+  const bibleStudyScriptSections = [
+    {
+      name: 'Session Information',
+      content: `# Bible Study Session
+
+{{parish.name}}
+
+**Date:** {{Session}}
+
+**Leader:** {{Discussion Leader}}
+
+**Topic:** {{Topic}}`,
+      page_break_after: false,
+      order: 0
+    },
+    {
+      name: 'Scripture',
+      content: `## Scripture Passage
+
+{{Scripture Passage}}`,
+      page_break_after: false,
+      order: 1
+    },
+    {
+      name: 'Discussion Questions',
+      content: `## Discussion Questions
+
+{{Discussion Questions}}`,
+      page_break_after: false,
+      order: 2
+    },
+    {
+      name: 'Notes',
+      content: `## Session Notes
+
+{{Notes}}
+
+---
+
+**Expected Attendance:** {{Expected Attendance}}`,
+      page_break_after: false,
+      order: 3
+    }
+  ]
+
+  const { error: bibleStudyScriptSectionsError } = await supabase
+    .from('sections')
+    .insert(
+      bibleStudyScriptSections.map(section => ({
+        script_id: bibleStudyScript.id,
+        ...section
+      }))
+    )
+
+  if (bibleStudyScriptSectionsError) {
+    console.error('Error creating Bible Study script sections:', bibleStudyScriptSectionsError)
+    throw new Error(`Failed to create Bible Study script sections: ${bibleStudyScriptSectionsError.message}`)
+  }
+
+  // =====================================================
+  // 7. Create Fundraiser Event Type
+  // =====================================================
+  const { data: fundraiserType, error: fundraiserTypeError } = await supabase
+    .from('event_types')
+    .insert({
+      parish_id: parishId,
+      name: 'Fundraiser',
+      description: 'Parish fundraising events and activities.',
+      icon: 'DollarSign',
+      slug: 'fundraisers',
+      system_type: 'event',
+      order: 7
+    })
+    .select()
+    .single()
+
+  if (fundraiserTypeError) {
+    console.error('Error creating Fundraiser event type:', fundraiserTypeError)
+    throw new Error(`Failed to create Fundraiser event type: ${fundraiserTypeError.message}`)
+  }
+
+  // Create input field definitions for Fundraiser
+  const fundraiserFields = [
+    { name: 'Event Date', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Event Coordinator', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Fundraising Goal', type: 'number', required: false, order: 2 },
+    { name: 'Event Description', type: 'rich_text', required: false, order: 3 },
+    { name: 'Volunteer Needs', type: 'rich_text', required: false, order: 4 },
+    { name: 'Setup Notes', type: 'rich_text', required: false, order: 5 },
+    { name: 'Cleanup Notes', type: 'rich_text', required: false, order: 6 }
+  ]
+
+  const { error: fundraiserFieldsError } = await supabase
+    .from('input_field_definitions')
+    .insert(
+      fundraiserFields.map(field => ({
+        event_type_id: fundraiserType.id,
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
+      }))
+    )
+
+  if (fundraiserFieldsError) {
+    console.error('Error creating Fundraiser fields:', fundraiserFieldsError)
+    throw new Error(`Failed to create Fundraiser fields: ${fundraiserFieldsError.message}`)
+  }
+
+  // Create Fundraiser script
+  const { data: fundraiserScript, error: fundraiserScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: fundraiserType.id,
+      name: 'Fundraiser Plan',
+      order: 0
+    })
+    .select()
+    .single()
+
+  if (fundraiserScriptError) {
+    console.error('Error creating Fundraiser script:', fundraiserScriptError)
+    throw new Error(`Failed to create Fundraiser script: ${fundraiserScriptError.message}`)
+  }
+
+  // Create sections for Fundraiser Plan
+  const fundraiserScriptSections = [
+    {
+      name: 'Event Information',
+      content: '# Fundraiser Event\n\n{{parish.name}}\n\n**Date:** {{Event Date}}\n\n**Coordinator:** {{Event Coordinator}}\n\n**Fundraising Goal:** ${{Fundraising Goal}}',
+      page_break_after: false,
+      order: 0
+    },
+    {
+      name: 'Event Description',
+      content: `## Event Description
+
+{{Event Description}}`,
+      page_break_after: false,
+      order: 1
+    },
+    {
+      name: 'Volunteer Needs',
+      content: `## Volunteer Needs
+
+{{Volunteer Needs}}`,
+      page_break_after: false,
+      order: 2
+    },
+    {
+      name: 'Setup',
+      content: `## Setup Notes
+
+{{Setup Notes}}`,
+      page_break_after: false,
+      order: 3
+    },
+    {
+      name: 'Cleanup',
+      content: `## Cleanup Notes
+
+{{Cleanup Notes}}`,
+      page_break_after: false,
+      order: 4
+    }
+  ]
+
+  const { error: fundraiserScriptSectionsError } = await supabase
+    .from('sections')
+    .insert(
+      fundraiserScriptSections.map(section => ({
+        script_id: fundraiserScript.id,
+        ...section
+      }))
+    )
+
+  if (fundraiserScriptSectionsError) {
+    console.error('Error creating Fundraiser script sections:', fundraiserScriptSectionsError)
+    throw new Error(`Failed to create Fundraiser script sections: ${fundraiserScriptSectionsError.message}`)
+  }
+
+  // =====================================================
+  // 8. Create Religious Education Event Type
+  // =====================================================
+  const { data: religiousEdType, error: religiousEdTypeError } = await supabase
+    .from('event_types')
+    .insert({
+      parish_id: parishId,
+      name: 'Religious Education',
+      description: 'Faith formation classes and catechesis programs.',
+      icon: 'GraduationCap',
+      slug: 'religious-education',
+      system_type: 'event',
+      order: 8
+    })
+    .select()
+    .single()
+
+  if (religiousEdTypeError) {
+    console.error('Error creating Religious Education event type:', religiousEdTypeError)
+    throw new Error(`Failed to create Religious Education event type: ${religiousEdTypeError.message}`)
+  }
+
+  // Create input field definitions for Religious Education
+  const religiousEdFields = [
+    { name: 'Class Session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Catechist', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Grade Level', type: 'text', required: false, order: 2 },
+    { name: 'Lesson Topic', type: 'text', required: false, order: 3 },
+    { name: 'Lesson Plan', type: 'rich_text', required: false, order: 4 },
+    { name: 'Materials Needed', type: 'rich_text', required: false, order: 5 },
+    { name: 'Homework Assignment', type: 'rich_text', required: false, order: 6 }
+  ]
+
+  const { error: religiousEdFieldsError } = await supabase
+    .from('input_field_definitions')
+    .insert(
+      religiousEdFields.map(field => ({
+        event_type_id: religiousEdType.id,
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
+      }))
+    )
+
+  if (religiousEdFieldsError) {
+    console.error('Error creating Religious Education fields:', religiousEdFieldsError)
+    throw new Error(`Failed to create Religious Education fields: ${religiousEdFieldsError.message}`)
+  }
+
+  // Create Religious Education script
+  const { data: religiousEdScript, error: religiousEdScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: religiousEdType.id,
+      name: 'Lesson Plan',
+      order: 0
+    })
+    .select()
+    .single()
+
+  if (religiousEdScriptError) {
+    console.error('Error creating Religious Education script:', religiousEdScriptError)
+    throw new Error(`Failed to create Religious Education script: ${religiousEdScriptError.message}`)
+  }
+
+  // Create sections for Religious Education Lesson Plan
+  const religiousEdScriptSections = [
+    {
+      name: 'Class Information',
+      content: `# Religious Education Lesson Plan
+
+{{parish.name}}
+
+**Date:** {{Class Session}}
+
+**Catechist:** {{Catechist}}
+
+**Grade Level:** {{Grade Level}}
+
+**Topic:** {{Lesson Topic}}`,
+      page_break_after: false,
+      order: 0
+    },
+    {
+      name: 'Lesson Plan',
+      content: `## Lesson Plan
+
+{{Lesson Plan}}`,
+      page_break_after: false,
+      order: 1
+    },
+    {
+      name: 'Materials',
+      content: `## Materials Needed
+
+{{Materials Needed}}`,
+      page_break_after: false,
+      order: 2
+    },
+    {
+      name: 'Homework',
+      content: `## Homework Assignment
+
+{{Homework Assignment}}`,
+      page_break_after: false,
+      order: 3
+    }
+  ]
+
+  const { error: religiousEdScriptSectionsError } = await supabase
+    .from('sections')
+    .insert(
+      religiousEdScriptSections.map(section => ({
+        script_id: religiousEdScript.id,
+        ...section
+      }))
+    )
+
+  if (religiousEdScriptSectionsError) {
+    console.error('Error creating Religious Education script sections:', religiousEdScriptSectionsError)
+    throw new Error(`Failed to create Religious Education script sections: ${religiousEdScriptSectionsError.message}`)
+  }
+
+  // =====================================================
+  // 9. Create Staff Meeting Event Type
+  // =====================================================
+  const { data: staffMeetingType, error: staffMeetingTypeError } = await supabase
+    .from('event_types')
+    .insert({
+      parish_id: parishId,
+      name: 'Staff Meeting',
+      description: 'Parish staff meetings and administrative gatherings.',
+      icon: 'Users',
+      slug: 'staff-meetings',
+      system_type: 'event',
+      order: 9
+    })
+    .select()
+    .single()
+
+  if (staffMeetingTypeError) {
+    console.error('Error creating Staff Meeting event type:', staffMeetingTypeError)
+    throw new Error(`Failed to create Staff Meeting event type: ${staffMeetingTypeError.message}`)
+  }
+
+  // Create input field definitions for Staff Meeting
+  const staffMeetingFields = [
+    { name: 'Meeting Date', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Meeting Leader', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Agenda', type: 'rich_text', required: false, order: 2 },
+    { name: 'Meeting Minutes', type: 'rich_text', required: false, order: 3 },
+    { name: 'Action Items', type: 'rich_text', required: false, order: 4 },
+    { name: 'Attachments', type: 'document', required: false, order: 5 }
+  ]
+
+  const { error: staffMeetingFieldsError } = await supabase
+    .from('input_field_definitions')
+    .insert(
+      staffMeetingFields.map(field => ({
+        event_type_id: staffMeetingType.id,
+        ...field,
+        is_key_person: field.is_key_person ?? false,
+        is_primary: field.is_primary ?? false,
+      }))
+    )
+
+  if (staffMeetingFieldsError) {
+    console.error('Error creating Staff Meeting fields:', staffMeetingFieldsError)
+    throw new Error(`Failed to create Staff Meeting fields: ${staffMeetingFieldsError.message}`)
+  }
+
+  // Create Staff Meeting script
+  const { data: staffMeetingScript, error: staffMeetingScriptError } = await supabase
+    .from('scripts')
+    .insert({
+      event_type_id: staffMeetingType.id,
+      name: 'Meeting Agenda',
+      order: 0
+    })
+    .select()
+    .single()
+
+  if (staffMeetingScriptError) {
+    console.error('Error creating Staff Meeting script:', staffMeetingScriptError)
+    throw new Error(`Failed to create Staff Meeting script: ${staffMeetingScriptError.message}`)
+  }
+
+  // Create sections for Staff Meeting Agenda
+  const staffMeetingScriptSections = [
+    {
+      name: 'Meeting Information',
+      content: `# Staff Meeting
+
+{{parish.name}}
+
+**Date:** {{Meeting Date}}
+
+**Leader:** {{Meeting Leader}}`,
+      page_break_after: false,
+      order: 0
+    },
+    {
+      name: 'Agenda',
+      content: `## Agenda
+
+{{Agenda}}`,
+      page_break_after: false,
+      order: 1
+    },
+    {
+      name: 'Minutes',
+      content: `## Meeting Minutes
+
+{{Meeting Minutes}}`,
+      page_break_after: false,
+      order: 2
+    },
+    {
+      name: 'Action Items',
+      content: `## Action Items
+
+{{Action Items}}`,
+      page_break_after: false,
+      order: 3
+    }
+  ]
+
+  const { error: staffMeetingScriptSectionsError } = await supabase
+    .from('sections')
+    .insert(
+      staffMeetingScriptSections.map(section => ({
+        script_id: staffMeetingScript.id,
+        ...section
+      }))
+    )
+
+  if (staffMeetingScriptSectionsError) {
+    console.error('Error creating Staff Meeting script sections:', staffMeetingScriptSectionsError)
+    throw new Error(`Failed to create Staff Meeting script sections: ${staffMeetingScriptSectionsError.message}`)
+  }
+
+  // =====================================================
+  // 10. Create "Other" Event Type (for general parish events)
   // =====================================================
   const { data: otherType, error: otherTypeError } = await supabase
     .from('event_types')
@@ -1286,7 +1775,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       icon: 'CalendarDays',
       slug: 'other',
       system_type: 'event',
-      order: 6
+      order: 10
     })
     .select()
     .single()
@@ -1298,8 +1787,38 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
   // "Other" has no input field definitions - it uses only the base event fields
 
+  // Collect event types by category for reporting
+  const sacramentTypes = [
+    weddingType,
+    funeralType,
+    baptismType,
+    quinceaneraType,
+    presentationType
+  ]
+
+  const generalEventTypes = [
+    bibleStudyType,
+    fundraiserType,
+    religiousEdType,
+    staffMeetingType,
+    otherType
+  ]
+
   return {
     success: true,
-    eventTypes: [weddingType, funeralType, baptismType, quinceaneraType, presentationType, otherType]
+    eventTypes: [
+      weddingType,
+      funeralType,
+      baptismType,
+      quinceaneraType,
+      presentationType,
+      bibleStudyType,
+      fundraiserType,
+      religiousEdType,
+      staffMeetingType,
+      otherType
+    ],
+    sacramentCount: sacramentTypes.length,
+    generalEventCount: generalEventTypes.length
   }
 }

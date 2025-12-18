@@ -5,12 +5,17 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type { Person, PersonRoleStats } from '@/lib/types'
+import { logError } from '@/lib/utils/console'
 
 // Import functions from new modules
 import {
+import { logError } from '@/lib/utils/console'
   getPersonBlackoutDates,
   getPersonBlackoutDatesWithPerson,
   getPersonBlackoutDate,
@@ -25,6 +30,7 @@ import {
 } from './person-blackout-dates'
 
 import {
+import { logError } from '@/lib/utils/console'
   getMassRoleMembersByPerson,
   getMassRoleMember,
   createMassRoleMember,
@@ -35,7 +41,6 @@ import {
   type CreateMassRoleMemberData,
   type UpdateMassRoleMemberData,
 } from './mass-role-members'
-import { logError } from '@/lib/utils/console'
 
 // Re-export for backward compatibility
 export { getPersonBlackoutDates as getBlackoutDates }

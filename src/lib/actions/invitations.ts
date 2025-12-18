@@ -5,6 +5,7 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { revalidatePath } from 'next/cache'
 import { sendParishInvitationEmail } from '@/lib/email/ses-client'
+import { logInfo, logError } from '@/lib/utils/console'
 import type { UserParishRoleType } from '@/lib/constants'
 
 export interface ParishInvitation {
@@ -55,7 +56,7 @@ export async function getParishInvitations(): Promise<ParishInvitation[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching parish invitations:', error)
+    logError('Error fetching parish invitations:', error)
     throw new Error('Failed to fetch parish invitations')
   }
 
@@ -79,7 +80,7 @@ export async function getInvitationByToken(token: string): Promise<ParishInvitat
     .single()
 
   if (error) {
-    console.error('Error fetching invitation by token:', error)
+    logError('Error fetching invitation by token:', error)
     return null
   }
 
@@ -154,7 +155,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
     .single()
 
   if (error) {
-    console.error('Error creating parish invitation:', error)
+    logError('Error creating parish invitation:', error)
     throw new Error('Failed to create parish invitation')
   }
 
@@ -162,7 +163,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   const inviterName = user.email || 'A parish member'
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/accept-invitation?token=${token}`
 
-  console.log('[Invitation Email] Attempting to send invitation email:', {
+  logInfo('[Invitation Email] Attempting to send invitation email:', {
     to: data.email,
     parish: parish.name,
     inviter: inviterName,
@@ -177,12 +178,12 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   )
 
   if (emailResult.success) {
-    console.log('[Invitation Email] Successfully sent:', {
+    logInfo('[Invitation Email] Successfully sent:', {
       to: data.email,
       messageId: emailResult.messageId,
     })
   } else {
-    console.error('[Invitation Email] Failed to send:', emailResult.error)
+    logError('[Invitation Email] Failed to send:', emailResult.error)
     // Don't throw - invitation was created successfully, email is secondary
   }
 
@@ -216,7 +217,7 @@ export async function resendParishInvitation(invitationId: string): Promise<Pari
     .single()
 
   if (error) {
-    console.error('Error resending parish invitation:', error)
+    logError('Error resending parish invitation:', error)
     throw new Error('Failed to resend parish invitation')
   }
 
@@ -240,7 +241,7 @@ export async function revokeParishInvitation(invitationId: string): Promise<void
     .is('accepted_at', null) // Only delete pending invitations
 
   if (error) {
-    console.error('Error revoking parish invitation:', error)
+    logError('Error revoking parish invitation:', error)
     throw new Error('Failed to revoke parish invitation')
   }
 
@@ -262,7 +263,7 @@ export async function acceptParishInvitation(token: string, userId: string): Pro
     .single()
 
   if (fetchError || !invitation) {
-    console.error('Error fetching invitation:', fetchError)
+    logError('Error fetching invitation:', fetchError)
     throw new Error('Invalid or expired invitation')
   }
 
@@ -282,7 +283,7 @@ export async function acceptParishInvitation(token: string, userId: string): Pro
     })
 
   if (insertError) {
-    console.error('Error creating parish_users record:', insertError)
+    logError('Error creating parish_users record:', insertError)
     throw new Error('Failed to join parish')
   }
 
@@ -295,7 +296,7 @@ export async function acceptParishInvitation(token: string, userId: string): Pro
     .eq('id', invitation.id)
 
   if (updateError) {
-    console.error('Error marking invitation as accepted:', updateError)
+    logError('Error marking invitation as accepted:', updateError)
     // Don't throw here - the user was successfully added to the parish
   }
 }

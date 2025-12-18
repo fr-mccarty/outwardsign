@@ -47,11 +47,11 @@ async function setupTestUser() {
     }
   });
 
-  console.log('🚀 Starting test user setup...\n');
+  console.log('Starting test user setup...\n');
 
   try {
     // Step 1: Check if user already exists (try via auth admin API)
-    console.log(`1️⃣  Checking if user ${TEST_EMAIL} exists...`);
+    console.log(`1. Checking if user ${TEST_EMAIL} exists...`);
 
     let userId;
 
@@ -71,7 +71,7 @@ async function setupTestUser() {
       const found = allUsers?.users?.find(u => u.email === TEST_EMAIL);
       if (found) {
         userId = found.id;
-        console.log(`   ✅ Found existing user with ID: ${userId}`);
+        console.log(`   [OK] Found existing user with ID: ${userId}`);
       } else {
         // User doesn't exist but we got an error - this is a real problem
         console.error('   Error details:', JSON.stringify(userError, null, 2));
@@ -80,11 +80,11 @@ async function setupTestUser() {
     } else {
       // User created successfully
       userId = newUser.user.id;
-      console.log(`   ✅ User created with ID: ${userId}`);
+      console.log(`   [OK] User created with ID: ${userId}`);
     }
 
     // Step 2: Check if parish exists
-    console.log(`\n2️⃣  Checking if test parish exists...`);
+    console.log(`\n2. Checking if test parish exists...`);
     const { data: existingParishes } = await supabase
       .from('parishes')
       .select('id, name')
@@ -93,7 +93,7 @@ async function setupTestUser() {
     let parishId;
     if (existingParishes && existingParishes.length > 0) {
       parishId = existingParishes[0].id;
-      console.log(`   ✅ Parish already exists with ID: ${parishId}`);
+      console.log(`   [OK] Parish already exists with ID: ${parishId}`);
     } else {
       // Create new parish
       console.log('   Creating new parish...');
@@ -113,18 +113,18 @@ async function setupTestUser() {
       }
 
       parishId = newParish.id;
-      console.log(`   ✅ Parish created with ID: ${parishId}`);
+      console.log(`   [OK] Parish created with ID: ${parishId}`);
     }
 
     // Step 2.5: Create default group roles for the parish
-    console.log(`\n2️⃣.5️⃣  Creating default group roles...`);
+    console.log(`\n2.5 Creating default group roles...`);
     const { data: existingRoles } = await supabase
       .from('group_roles')
       .select('id')
       .eq('parish_id', parishId);
 
     if (existingRoles && existingRoles.length > 0) {
-      console.log(`   ✅ Group roles already exist (${existingRoles.length} roles)`);
+      console.log(`   [OK] Group roles already exist (${existingRoles.length} roles)`);
     } else {
       // Create the standard liturgical ministry roles
       const { error: rolesError } = await supabase
@@ -142,11 +142,11 @@ async function setupTestUser() {
       if (rolesError) {
         throw new Error(`Failed to create group roles: ${rolesError.message}`);
       }
-      console.log('   ✅ Created 7 default group roles');
+      console.log('   [OK] Created 7 default group roles');
     }
 
     // Step 3: Link user to parish with admin role
-    console.log(`\n3️⃣  Linking user to parish with admin role...`);
+    console.log(`\n3. Linking user to parish with admin role...`);
     const { data: existingLink } = await supabase
       .from('parish_users')
       .select('*')
@@ -165,7 +165,7 @@ async function setupTestUser() {
       if (updateError) {
         throw new Error(`Failed to update parish user link: ${updateError.message}`);
       }
-      console.log('   ✅ Updated existing parish user link with admin role');
+      console.log('   [OK] Updated existing parish user link with admin role');
     } else {
       // Create new link
       const { error: linkError } = await supabase
@@ -179,11 +179,11 @@ async function setupTestUser() {
       if (linkError) {
         throw new Error(`Failed to link user to parish: ${linkError.message}`);
       }
-      console.log('   ✅ User linked to parish with admin role');
+      console.log('   [OK] User linked to parish with admin role');
     }
 
     // Step 4: Create or update user settings
-    console.log(`\n4️⃣  Setting up user settings...`);
+    console.log(`\n4. Setting up user settings...`);
     const { data: existingSettings } = await supabase
       .from('user_settings')
       .select('*')
@@ -203,7 +203,7 @@ async function setupTestUser() {
       if (updateError) {
         throw new Error(`Failed to update user settings: ${updateError.message}`);
       }
-      console.log('   ✅ Updated user settings');
+      console.log('   [OK] Updated user settings');
     } else {
       // Create new settings
       const { error: settingsError } = await supabase
@@ -217,21 +217,21 @@ async function setupTestUser() {
       if (settingsError) {
         throw new Error(`Failed to create user settings: ${settingsError.message}`);
       }
-      console.log('   ✅ Created user settings');
+      console.log('   [OK] Created user settings');
     }
 
     // Success summary
-    console.log('\n✨ Test user setup complete!\n');
-    console.log('═══════════════════════════════════════');
-    console.log('📧 Email:', TEST_EMAIL);
-    console.log('🔑 Password:', TEST_PASSWORD);
-    console.log('🏛️  Parish:', PARISH_NAME);
-    console.log('👤 User ID:', userId);
-    console.log('🆔 Parish ID:', parishId);
-    console.log('👔 Role: staff');
-    console.log('═══════════════════════════════════════\n');
-    console.log('✅ You can now run Playwright tests!');
-    console.log('   npx playwright test\n');
+    console.log('\nTest user setup complete!\n');
+    console.log('=======================================');
+    console.log('Email:', TEST_EMAIL);
+    console.log('Password:', TEST_PASSWORD);
+    console.log('Parish:', PARISH_NAME);
+    console.log('User ID:', userId);
+    console.log('Parish ID:', parishId);
+    console.log('Role: staff');
+    console.log('=======================================\n');
+    console.log('[OK] You can now run Playwright tests!');
+    console.log('     npx playwright test\n');
 
   } catch (error) {
     console.error('\n❌ Error setting up test user:', error.message);

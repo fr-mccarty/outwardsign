@@ -1,9 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 
 // Types
 export interface MassRoleMember {
@@ -61,7 +65,7 @@ export async function getMassRoleMembers(): Promise<MassRoleMember[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching mass role members:', error)
+    logError('Error fetching mass role members:', error)
     throw new Error('Failed to fetch mass role members')
   }
 
@@ -84,7 +88,7 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
     .order('created_at', { ascending: false })
 
   if (membersError) {
-    console.error('Error fetching mass role members:', membersError)
+    logError('Error fetching mass role members:', membersError)
     throw new Error('Failed to fetch mass role members with details')
   }
 
@@ -101,7 +105,7 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
     .eq('parish_id', selectedParishId)
 
   if (peopleError) {
-    console.error('Error fetching people:', peopleError)
+    logError('Error fetching people:', peopleError)
   }
 
   // Get all roles
@@ -113,7 +117,7 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
     .eq('parish_id', selectedParishId)
 
   if (rolesError) {
-    console.error('Error fetching mass roles:', rolesError)
+    logError('Error fetching mass roles:', rolesError)
   }
 
   // Create lookup maps
@@ -153,7 +157,7 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
     .order('created_at', { ascending: false })
 
   if (membersError) {
-    console.error('Error fetching mass role members by role:', membersError)
+    logError('Error fetching mass role members by role:', membersError)
     throw new Error('Failed to fetch mass role members by role')
   }
 
@@ -170,7 +174,7 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
     .eq('parish_id', selectedParishId)
 
   if (peopleError) {
-    console.error('Error fetching people:', peopleError)
+    logError('Error fetching people:', peopleError)
   }
 
   // Get the role details
@@ -182,7 +186,7 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
     .single()
 
   if (roleError) {
-    console.error('Error fetching mass role:', roleError)
+    logError('Error fetching mass role:', roleError)
   }
 
   // Create lookup map for people
@@ -221,10 +225,10 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
     .order('created_at', { ascending: false })
 
   if (membersError) {
-    console.error('Error fetching mass role members:', membersError)
-    console.error('Error details:', JSON.stringify(membersError, null, 2))
-    console.error('Person ID:', personId)
-    console.error('Parish ID:', selectedParishId)
+    logError('Error fetching mass role members:', membersError)
+    logError('Error details:', JSON.stringify(membersError, null, 2))
+    logError('Person ID:', personId)
+    logError('Parish ID:', selectedParishId)
     throw new Error('Failed to fetch mass role members by person')
   }
 
@@ -244,7 +248,7 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
       .eq('parish_id', selectedParishId)
 
     if (rolesError) {
-      console.error('Error fetching mass roles:', rolesError)
+      logError('Error fetching mass roles:', rolesError)
     } else {
       roles = rolesData || []
     }
@@ -290,7 +294,7 @@ export async function getMassRoleMember(id: string): Promise<MassRoleMember | nu
     if (error.code === 'PGRST116') {
       return null
     }
-    console.error('Error fetching mass role member:', error)
+    logError('Error fetching mass role member:', error)
     throw new Error('Failed to fetch mass role member')
   }
 
@@ -322,7 +326,7 @@ export async function createMassRoleMember(
     .single()
 
   if (error) {
-    console.error('Error creating mass role member:', error)
+    logError('Error creating mass role member:', error)
     throw new Error('Failed to create mass role member')
   }
 
@@ -360,7 +364,7 @@ export async function updateMassRoleMember(
     .single()
 
   if (error) {
-    console.error('Error updating mass role member:', error)
+    logError('Error updating mass role member:', error)
     throw new Error('Failed to update mass role member')
   }
 
@@ -395,7 +399,7 @@ export async function deleteMassRoleMember(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    console.error('Error deleting mass role member:', error)
+    logError('Error deleting mass role member:', error)
     throw new Error('Failed to delete mass role member')
   }
 
@@ -424,7 +428,7 @@ export async function isActiveMember(personId: string, roleId: string): Promise<
     .limit(1)
 
   if (error) {
-    console.error('Error checking active membership:', error)
+    logError('Error checking active membership:', error)
     throw new Error('Failed to check active membership')
   }
 
@@ -458,7 +462,7 @@ export async function getActiveMembersForRole(roleId: string): Promise<Array<{
     .eq('active', true)
 
   if (error) {
-    console.error('Error fetching active members for role:', error)
+    logError('Error fetching active members for role:', error)
     throw new Error('Failed to fetch active members for role')
   }
 
@@ -520,7 +524,7 @@ export async function getPeopleAvailableForMassTime(
     .eq('active', true)
 
   if (membersError) {
-    console.error('Error fetching mass role members:', membersError)
+    logError('Error fetching mass role members:', membersError)
     throw new Error('Failed to fetch mass role members')
   }
 
@@ -579,7 +583,7 @@ export async function getMassRoleAvailabilityByMassTime(
     .eq('active', true)
 
   if (membersError) {
-    console.error('Error fetching mass role members:', membersError)
+    logError('Error fetching mass role members:', membersError)
     throw new Error('Failed to fetch mass role members')
   }
 
@@ -600,7 +604,7 @@ export async function getMassRoleAvailabilityByMassTime(
     .eq('is_active', true)
 
   if (templatesError) {
-    console.error('Error fetching mass times templates:', templatesError)
+    logError('Error fetching mass times templates:', templatesError)
     throw new Error('Failed to fetch mass times templates')
   }
 

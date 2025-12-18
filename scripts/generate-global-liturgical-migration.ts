@@ -9,6 +9,8 @@
  *   tsx scripts/generate-global-liturgical-migration.ts 2025 en
  */
 
+import { logSuccess, logError, logInfo } from '../src/lib/utils/console'
+
 interface LiturgicalEvent {
   event_key: string
   date: string
@@ -23,8 +25,8 @@ interface ApiResponse {
 async function fetchLiturgicalCalendar(year: number, locale: string): Promise<LiturgicalEvent[]> {
   const url = `https://litcal.johnromanodorazio.com/api/v5/calendar/nation/US/${year}?locale=${locale}`
 
-  console.log(`📅 Fetching US liturgical calendar for year ${year} (locale: ${locale})...`)
-  console.log(`   URL: ${url}`)
+  logInfo(`Fetching US liturgical calendar for year ${year} (locale: ${locale})...`)
+  logInfo(`   URL: ${url}`)
 
   const response = await fetch(url)
 
@@ -38,7 +40,7 @@ async function fetchLiturgicalCalendar(year: number, locale: string): Promise<Li
     throw new Error('Invalid API response: missing litcal array')
   }
 
-  console.log(`✅ Fetched ${data.litcal.length} events`)
+  logSuccess(`Fetched ${data.litcal.length} events`)
   return data.litcal
 }
 
@@ -59,11 +61,11 @@ async function main() {
   const year = parseInt(process.argv[2] || '2025', 10)
   const locale = process.argv[3] || 'en_US'
 
-  console.log('🚀 Generating Global Liturgical Events Migration')
-  console.log('=' .repeat(60))
-  console.log(`Year: ${year}`)
-  console.log(`Locale: ${locale}`)
-  console.log('=' .repeat(60))
+  logInfo('Generating Global Liturgical Events Migration')
+  logInfo('=' .repeat(60))
+  logInfo(`Year: ${year}`)
+  logInfo(`Locale: ${locale}`)
+  logInfo('=' .repeat(60))
 
   try {
     const events = await fetchLiturgicalCalendar(year, locale)
@@ -88,14 +90,14 @@ async function main() {
     const fs = require('fs')
     fs.writeFileSync(migrationFile, sql)
 
-    console.log(`\n✅ Migration file created: ${migrationFile}`)
-    console.log(`📝 Total events: ${events.length}`)
-    console.log(`\n📋 Next steps:`)
-    console.log(`   1. Review the migration file`)
-    console.log(`   2. Run: supabase db push`)
+    logSuccess(`\nMigration file created: ${migrationFile}`)
+    logInfo(`Total events: ${events.length}`)
+    logInfo(`\nNext steps:`)
+    logInfo(`   1. Review the migration file`)
+    logInfo(`   2. Run: supabase db push`)
 
   } catch (error) {
-    console.error('\n❌ Error:', error)
+    logError(`\nError: ${error}`)
     process.exit(1)
   }
 }

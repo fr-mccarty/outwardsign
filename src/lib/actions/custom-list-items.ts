@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
   CustomListItem,
   CreateCustomListItemData,
@@ -51,7 +52,7 @@ export async function getCustomListItems(listId: string): Promise<CustomListItem
     .order('order', { ascending: true })
 
   if (error) {
-    console.error('Error fetching custom list items:', error)
+    logError('Error fetching custom list items:', error)
     throw new Error('Failed to fetch custom list items')
   }
 
@@ -99,7 +100,7 @@ export async function createCustomListItem(listId: string, data: CreateCustomLis
     .single()
 
   if (error) {
-    console.error('Error creating custom list item:', error)
+    logError('Error creating custom list item:', error)
     throw new Error('Failed to create custom list item')
   }
 
@@ -137,7 +138,7 @@ export async function updateCustomListItem(id: string, data: UpdateCustomListIte
     .single()
 
   if (error) {
-    console.error('Error updating custom list item:', error)
+    logError('Error updating custom list item:', error)
     throw new Error('Failed to update custom list item')
   }
 
@@ -181,7 +182,7 @@ export async function deleteCustomListItem(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    console.error('Error deleting custom list item:', error)
+    logError('Error deleting custom list item:', error)
     throw new Error('Failed to delete custom list item')
   }
 

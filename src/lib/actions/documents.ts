@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
+import { logError } from '@/lib/utils/console'
 import type { Document } from '@/lib/types'
 
 // Allowed file types for documents
@@ -74,7 +75,7 @@ export async function uploadDocument(
     })
 
   if (uploadError) {
-    console.error('Error uploading document to storage:', uploadError)
+    logError('Error uploading document to storage:', uploadError)
     throw new Error(`Failed to upload document: ${uploadError.message}`)
   }
 
@@ -95,7 +96,7 @@ export async function uploadDocument(
     .single()
 
   if (dbError) {
-    console.error('Error creating document record:', dbError)
+    logError('Error creating document record:', dbError)
     // Try to clean up uploaded file
     await supabase.storage
       .from('event-documents')
@@ -128,7 +129,7 @@ export async function getDocumentSignedUrl(documentId: string): Promise<string> 
     if (error.code === 'PGRST116') {
       throw new Error('Document not found')
     }
-    console.error('Error fetching document:', error)
+    logError('Error fetching document:', error)
     throw new Error('Failed to fetch document')
   }
 
@@ -138,7 +139,7 @@ export async function getDocumentSignedUrl(documentId: string): Promise<string> 
     .createSignedUrl(document.file_path, 3600) // 3600 seconds = 60 minutes
 
   if (urlError) {
-    console.error('Error creating signed URL:', urlError)
+    logError('Error creating signed URL:', urlError)
     throw new Error('Failed to create download URL')
   }
 
@@ -180,7 +181,7 @@ export async function deleteDocument(id: string): Promise<void> {
     if (fetchError.code === 'PGRST116') {
       throw new Error('Document not found')
     }
-    console.error('Error fetching document:', fetchError)
+    logError('Error fetching document:', fetchError)
     throw new Error('Failed to fetch document')
   }
 
@@ -190,7 +191,7 @@ export async function deleteDocument(id: string): Promise<void> {
     .remove([document.file_path])
 
   if (storageError) {
-    console.error('Error deleting document from storage:', storageError)
+    logError('Error deleting document from storage:', storageError)
     // Continue with database deletion even if storage deletion fails
   }
 
@@ -202,7 +203,7 @@ export async function deleteDocument(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (dbError) {
-    console.error('Error deleting document from database:', dbError)
+    logError('Error deleting document from database:', dbError)
     throw new Error('Failed to delete document')
   }
 }
@@ -227,7 +228,7 @@ export async function getDocument(id: string): Promise<Document | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    console.error('Error fetching document:', error)
+    logError('Error fetching document:', error)
     throw new Error('Failed to fetch document')
   }
 

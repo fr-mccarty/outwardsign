@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 
 export interface Announcement {
   id: number
@@ -55,7 +56,7 @@ export async function getAnnouncements(parishId: string) {
 
     return { success: true, announcements: announcements || [] }
   } catch (error) {
-    console.error('Error fetching announcements:', error)
+    logError('Error fetching announcements:', error)
     throw error
   }
 }
@@ -109,7 +110,7 @@ export async function createAnnouncement(data: {
 
     return { success: true, announcement }
   } catch (error) {
-    console.error('Error creating announcement:', error)
+    logError('Error creating announcement:', error)
     throw error
   }
 }
@@ -171,7 +172,7 @@ export async function updateAnnouncement(announcementId: number, data: {
 
     return { success: true, announcement }
   } catch (error) {
-    console.error('Error updating announcement:', error)
+    logError('Error updating announcement:', error)
     throw error
   }
 }
@@ -220,7 +221,7 @@ export async function deleteAnnouncement(announcementId: number) {
 
     return { success: true }
   } catch (error) {
-    console.error('Error deleting announcement:', error)
+    logError('Error deleting announcement:', error)
     throw error
   }
 }
@@ -427,7 +428,7 @@ export async function searchAnnouncements(params: {
       currentPage
     }
   } catch (error) {
-    console.error('Error searching announcements:', error)
+    logError('Error searching announcements:', error)
     throw error
   }
 }
@@ -489,7 +490,7 @@ export async function duplicateAnnouncement(announcementId: number) {
 
     return duplicatedAnnouncement
   } catch (error) {
-    console.error('Error duplicating announcement:', error)
+    logError('Error duplicating announcement:', error)
     throw error
   }
 }
@@ -528,7 +529,7 @@ export async function getAnnouncement(announcementId: number) {
 
     return announcement
   } catch (error) {
-    console.error('Error fetching announcement:', error)
+    logError('Error fetching announcement:', error)
     throw error
   }
 }
@@ -600,7 +601,7 @@ export async function getAnnouncementsByDateRange(startDate: string, endDate: st
 
     return announcements || []
   } catch (error) {
-    console.error('Error fetching announcements by date range:', error)
+    logError('Error fetching announcements by date range:', error)
     throw error
   }
 }
@@ -639,7 +640,7 @@ export async function getLiturgicalEvents(parishId: string) {
 
     return { success: true, events: events || [] }
   } catch (error) {
-    console.error('Error fetching liturgical events:', error)
+    logError('Error fetching liturgical events:', error)
     throw error
   }
 }

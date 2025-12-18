@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CreateLiturgyPlanData, LiturgyPlan } from '@/lib/types'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logWarning } from '@/lib/utils/console'
 
 export async function createLiturgyPlan(data: CreateLiturgyPlanData) {
   const selectedParishId = await requireSelectedParish()
@@ -47,7 +48,7 @@ export async function getLiturgyPlans(): Promise<LiturgyPlan[]> {
   if (error) {
     // If table doesn't exist yet, return empty array
     if (error.message?.includes('relation "public.liturgy_plans" does not exist')) {
-      console.warn('Liturgy plans table not yet created. Please run database migrations.')
+      logWarning('Liturgy plans table not yet created. Please run database migrations.')
       return []
     }
     throw new Error('Failed to fetch liturgy plans')

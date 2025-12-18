@@ -8,6 +8,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import type { DevSeederContext, SamplePerson } from './types'
+import { logSuccess, logError, logInfo, logWarning } from '../../src/lib/utils/console'
 
 export const SAMPLE_PEOPLE: SamplePerson[] = [
   { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '(555) 123-4567', sex: 'MALE', avatarFile: 'fr-josh.webp' },
@@ -35,7 +36,7 @@ export const SAMPLE_PEOPLE: SamplePerson[] = [
 export async function seedPeople(ctx: DevSeederContext) {
   const { supabase, parishId, devUserEmail } = ctx
 
-  console.log('👤 Creating sample people...')
+  logInfo('Creating sample people...')
 
   // Fetch weekend mass time template items for assigning to people
   const { data: sundayTemplate } = await supabase
@@ -75,17 +76,17 @@ export async function seedPeople(ctx: DevSeederContext) {
     .select()
 
   if (peopleError) {
-    console.error('⚠️  Warning: Error creating people:', peopleError.message)
+    logWarning(`Error creating people: ${peopleError.message}`)
   } else {
-    console.log(`   ✅ ${people?.length || 0} people created:`)
+    logSuccess(`${people?.length || 0} people created:`)
     for (const person of people || []) {
-      console.log(`      - ${person.full_name} (${person.email})`)
+      logInfo(`      - ${person.full_name} (${person.email})`)
     }
   }
 
   // Create dev user person record with portal access
-  console.log('')
-  console.log('👤 Creating dev user person record for parishioner portal...')
+  logInfo('')
+  logInfo('Creating dev user person record for parishioner portal...')
 
   const { data: existingDevPerson } = await supabase
     .from('people')
@@ -95,13 +96,13 @@ export async function seedPeople(ctx: DevSeederContext) {
     .maybeSingle()
 
   if (existingDevPerson) {
-    console.log(`   ✅ Dev person already exists: ${existingDevPerson.full_name}`)
+    logSuccess(`Dev person already exists: ${existingDevPerson.full_name}`)
     if (!existingDevPerson.parishioner_portal_enabled) {
       await supabase
         .from('people')
         .update({ parishioner_portal_enabled: true })
         .eq('id', existingDevPerson.id)
-      console.log(`   ✅ Parishioner portal access enabled`)
+      logSuccess('Parishioner portal access enabled')
     }
   } else {
     const { data: devPerson, error: devPersonError } = await supabase
@@ -122,9 +123,9 @@ export async function seedPeople(ctx: DevSeederContext) {
       .single()
 
     if (devPersonError) {
-      console.error('   ❌ Error creating dev person:', devPersonError)
+      logError(`Error creating dev person: ${devPersonError.message}`)
     } else {
-      console.log(`   ✅ Dev person created: ${devPerson.full_name}`)
+      logSuccess(`Dev person created: ${devPerson.full_name}`)
     }
   }
 
@@ -134,8 +135,8 @@ export async function seedPeople(ctx: DevSeederContext) {
 export async function uploadAvatars(ctx: DevSeederContext) {
   const { supabase, parishId } = ctx
 
-  console.log('')
-  console.log('🖼️  Uploading sample avatar images...')
+  logInfo('')
+  logInfo('Uploading sample avatar images...')
 
   const peopleWithAvatars = SAMPLE_PEOPLE.filter(p => p.avatarFile)
 
@@ -149,14 +150,14 @@ export async function uploadAvatars(ctx: DevSeederContext) {
       .single()
 
     if (!person) {
-      console.log(`   ⚠️  Could not find ${samplePerson.firstName} ${samplePerson.lastName}`)
+      logWarning(`Could not find ${samplePerson.firstName} ${samplePerson.lastName}`)
       continue
     }
 
     const imagePath = path.join(process.cwd(), 'public', 'team', samplePerson.avatarFile!)
 
     if (!fs.existsSync(imagePath)) {
-      console.log(`   ⚠️  Image file not found: ${imagePath}`)
+      logWarning(`Image file not found: ${imagePath}`)
       continue
     }
 
@@ -172,7 +173,7 @@ export async function uploadAvatars(ctx: DevSeederContext) {
       })
 
     if (uploadError) {
-      console.error(`   ❌ Error uploading avatar for ${samplePerson.firstName} ${samplePerson.lastName}:`, uploadError)
+      logError(`Error uploading avatar for ${samplePerson.firstName} ${samplePerson.lastName}: ${uploadError.message}`)
       continue
     }
 
@@ -181,7 +182,7 @@ export async function uploadAvatars(ctx: DevSeederContext) {
       .update({ avatar_url: storagePath })
       .eq('id', person.id)
 
-    console.log(`   ✅ Uploaded avatar for ${samplePerson.firstName} ${samplePerson.lastName}`)
+    logSuccess(`Uploaded avatar for ${samplePerson.firstName} ${samplePerson.lastName}`)
   }
 
   return { success: true }

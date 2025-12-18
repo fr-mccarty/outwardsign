@@ -1,10 +1,15 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import type {
+import { logError } from '@/lib/utils/console'
   MasterEvent,
   MasterEventWithRelations,
   CreateMasterEventData,
@@ -24,6 +29,7 @@ import type {
   MasterEventRoleWithPerson
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
+import { logError } from '@/lib/utils/console'
 import type { SystemType } from '@/lib/constants/system-types'
 import { logError } from '@/lib/utils/console'
 

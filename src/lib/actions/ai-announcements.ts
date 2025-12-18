@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { logInfo, logError } from '@/lib/utils/console'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -36,7 +37,7 @@ export async function generateAnnouncementWithAI(prompt: string, parishId: strin
       throw new Error('ANTHROPIC_API_KEY environment variable is not configured')
     }
 
-    console.log('Making API call to Claude with prompt:', prompt)
+    logInfo('Making API call to Claude with prompt:', prompt)
     
     // Make API call to Claude using the SDK
     const response = await anthropic.messages.create({
@@ -61,16 +62,16 @@ Format the response as a ready-to-use announcement text.`,
       ],
     })
 
-    console.log('Claude API response:', response)
+    logInfo('Claude API response:', response)
     
     const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : ''
 
     if (!generatedText) {
-      console.error('No content in Claude response. Full response:', response)
+      logError('No content in Claude response. Full response:', response)
       throw new Error('No content generated from AI')
     }
 
-    console.log('Generated text:', generatedText)
+    logInfo('Generated text:', generatedText)
 
     return { 
       success: true, 
@@ -78,8 +79,8 @@ Format the response as a ready-to-use announcement text.`,
       usage: response.usage 
     }
   } catch (error) {
-    console.error('Error generating announcement with AI:', error)
-    console.error('Error details:', {
+    logError('Error generating announcement with AI:', error)
+    logError('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       prompt,

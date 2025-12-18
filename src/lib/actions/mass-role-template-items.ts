@@ -1,9 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 
 // Types
 export interface MassRoleTemplateItem {
@@ -50,7 +54,7 @@ export async function getTemplateItems(templateId: string): Promise<MassRoleTemp
     .order('position', { ascending: true })
 
   if (error) {
-    console.error('Error fetching template items:', error)
+    logError('Error fetching template items:', error)
     throw new Error('Failed to fetch template items')
   }
 
@@ -87,7 +91,7 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
     .single()
 
   if (error) {
-    console.error('Error creating template item:', error)
+    logError('Error creating template item:', error)
     if (error.code === '23505') { // Unique constraint violation
       throw new Error('This mass role is already in the template')
     }
@@ -118,7 +122,7 @@ export async function updateTemplateItem(id: string, data: UpdateTemplateItemDat
     .single()
 
   if (error) {
-    console.error('Error updating template item:', error)
+    logError('Error updating template item:', error)
     throw new Error('Failed to update template item')
   }
 
@@ -161,7 +165,7 @@ export async function deleteTemplateItem(id: string): Promise<void> {
     .eq('id', id)
 
   if (deleteError) {
-    console.error('Error deleting template item:', deleteError)
+    logError('Error deleting template item:', deleteError)
     throw new Error('Failed to delete template item')
   }
 
@@ -202,7 +206,7 @@ export async function reorderTemplateItems(templateId: string, itemIds: string[]
       .eq('mass_roles_template_id', templateId)
 
     if (error) {
-      console.error('Error setting temp positions:', error.message)
+      logError('Error setting temp positions:', error.message)
       throw new Error(`Failed to reorder template items: ${error.message}`)
     }
   }
@@ -216,7 +220,7 @@ export async function reorderTemplateItems(templateId: string, itemIds: string[]
       .eq('mass_roles_template_id', templateId)
 
     if (error) {
-      console.error('Error reordering template items:', error.message, error.code, error.details)
+      logError('Error reordering template items:', error.message, error.code, error.details)
       throw new Error(`Failed to reorder template items: ${error.message}`)
     }
   }

@@ -1,16 +1,21 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
+import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
+import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import { logError } from '@/lib/utils/console'
 import { requireManageParishSettings } from '@/lib/auth/permissions'
+import { logError } from '@/lib/utils/console'
 import type {
+import { logError } from '@/lib/utils/console'
   Section,
   CreateSectionData,
   UpdateSectionData
 } from '@/lib/types'
-import { logError } from '@/lib/utils/console'
 
 /**
  * Get all sections for a script
