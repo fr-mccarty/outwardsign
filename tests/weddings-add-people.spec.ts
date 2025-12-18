@@ -16,7 +16,7 @@ test.describe('Weddings Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new bride
     const dialog = page.locator('[role="dialog"]');
@@ -37,10 +37,10 @@ test.describe('Weddings Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify bride is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -84,7 +84,7 @@ test.describe('Weddings Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new groom
     const dialog = page.locator('[role="dialog"]');
@@ -105,10 +105,10 @@ test.describe('Weddings Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify groom is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -147,7 +147,7 @@ test.describe('Weddings Module - Add People', () => {
     // Add bride
     await page.getByTestId('bride-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const brideFirstName = `Bride${Date.now()}`;
     const brideLastName = 'Anderson';
@@ -156,8 +156,8 @@ test.describe('Weddings Module - Add People', () => {
     await dialog.locator('#first_name').fill(brideFirstName);
     await dialog.locator('#last_name').fill(brideLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify bride selected
     await expect(page.locator(`button:has-text("${brideFirstName} ${brideLastName}")`)).toBeVisible();
@@ -165,7 +165,7 @@ test.describe('Weddings Module - Add People', () => {
     // Add groom
     await page.getByTestId('groom-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const groomFirstName = `Groom${Date.now()}`;
     const groomLastName = 'Martinez';
@@ -174,8 +174,8 @@ test.describe('Weddings Module - Add People', () => {
     await dialog.locator('#first_name').fill(groomFirstName);
     await dialog.locator('#last_name').fill(groomLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify groom selected
     await expect(page.locator(`button:has-text("${groomFirstName} ${groomLastName}")`)).toBeVisible();

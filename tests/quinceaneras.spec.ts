@@ -66,7 +66,7 @@ test.describe('Quinceaneras Module', () => {
     await editSubmitButton.click();
 
     // Wait briefly for the update to complete
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Navigate back to view page
     await page.goto(`/quinceaneras/${quinceaneraId}`);
@@ -203,7 +203,7 @@ test.describe('Quinceaneras Module', () => {
 
     // Quinceanera form uses router.refresh() on edit, so it stays on edit page
     // Wait for the update to complete
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Navigate to view page to verify the update
     await page.goto(`/quinceaneras/${quinceaneraId}`);

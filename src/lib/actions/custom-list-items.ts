@@ -52,7 +52,7 @@ export async function getCustomListItems(listId: string): Promise<CustomListItem
     .order('order', { ascending: true })
 
   if (error) {
-    logError('Error fetching custom list items:', error)
+    logError('Error fetching custom list items: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch custom list items')
   }
 
@@ -100,7 +100,7 @@ export async function createCustomListItem(listId: string, data: CreateCustomLis
     .single()
 
   if (error) {
-    logError('Error creating custom list item:', error)
+    logError('Error creating custom list item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create custom list item')
   }
 
@@ -138,7 +138,7 @@ export async function updateCustomListItem(id: string, data: UpdateCustomListIte
     .single()
 
   if (error) {
-    logError('Error updating custom list item:', error)
+    logError('Error updating custom list item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update custom list item')
   }
 
@@ -182,7 +182,7 @@ export async function deleteCustomListItem(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting custom list item:', error)
+    logError('Error deleting custom list item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete custom list item')
   }
 

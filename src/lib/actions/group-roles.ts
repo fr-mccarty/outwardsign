@@ -3,13 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { logError } from '@/lib/utils/console'
 import type { PaginatedParams, PaginatedResult } from './people'
-import { logError } from '@/lib/utils/console'
 
 // ========== GROUP ROLE DEFINITIONS ==========
 
@@ -54,7 +50,7 @@ export async function getGroupRoles(): Promise<GroupRole[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    logError('Error fetching group roles:', error)
+    logError('Error fetching group roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch group roles')
   }
 
@@ -90,7 +86,7 @@ export async function getGroupRolesPaginated(params?: PaginatedParams): Promise<
   const { data, error, count } = await query
 
   if (error) {
-    logError('Error fetching paginated group roles:', error)
+    logError('Error fetching paginated group roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch paginated group roles')
   }
 
@@ -122,7 +118,7 @@ export async function getGroupRole(id: string): Promise<GroupRole | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching group role:', error)
+    logError('Error fetching group role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch group role')
   }
 
@@ -150,7 +146,7 @@ export async function createGroupRole(data: CreateGroupRoleData): Promise<GroupR
     .single()
 
   if (error) {
-    logError('Error creating group role:', error)
+    logError('Error creating group role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create group role')
   }
 
@@ -177,7 +173,7 @@ export async function updateGroupRole(id: string, data: UpdateGroupRoleData): Pr
     .single()
 
   if (error) {
-    logError('Error updating group role:', error)
+    logError('Error updating group role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update group role')
   }
 
@@ -196,7 +192,7 @@ export async function deleteGroupRole(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting group role:', error)
+    logError('Error deleting group role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete group role')
   }
 

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * Test Template for Outward Sign
@@ -43,10 +44,10 @@ test.describe('Module Name', () => {
     await page.click('button[type="submit"]');
 
     // Wait for success toast
-    await page.waitForSelector('text=/created successfully/i', { timeout: 5000 });
+    await page.waitForSelector('text=/created successfully/i', { timeout: TEST_TIMEOUTS.TOAST });
 
     // Should redirect to detail page
-    await page.waitForURL(/\/your-module\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.waitForURL(/\/your-module\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify data is displayed
     await expect(page.locator('text=Test Value')).toBeVisible();
@@ -59,7 +60,7 @@ test.describe('Module Name', () => {
     await page.goto('/your-module/create');
     await page.fill('input#field_name', 'Original Value');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/your-module\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.waitForURL(/\/your-module\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.TOAST });
 
     // Get the record ID from URL
     const recordUrl = page.url();
@@ -75,7 +76,7 @@ test.describe('Module Name', () => {
     await page.click('button[type="submit"]');
 
     // Wait for success toast
-    await page.waitForSelector('text=/updated successfully/i', { timeout: 5000 });
+    await page.waitForSelector('text=/updated successfully/i', { timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify the update
     await expect(page.locator('text=Updated Value')).toBeVisible();
@@ -113,7 +114,7 @@ test.describe('Module Name', () => {
     await page.goto('/your-module/create');
     await page.fill('input#field_name', 'Breadcrumb Test');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/your-module\/[a-f0-9-]+$/, { timeout: 5000 });
+    await page.waitForURL(/\/your-module\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify breadcrumbs
     const breadcrumbNav = page.getByLabel('breadcrumb');
@@ -154,10 +155,10 @@ test.describe('Module Name', () => {
  *
  * Wait for navigation:
  *   await page.waitForURL('/expected-path')
- *   await page.waitForURL(/\/regex-pattern\//, { timeout: 5000 })
+ *   await page.waitForURL(/\/regex-pattern\//, { timeout: TEST_TIMEOUTS.TOAST })
  *
  * Wait for element:
- *   await page.waitForSelector('text=/Success/i', { timeout: 5000 })
+ *   await page.waitForSelector('text=/Success/i', { timeout: TEST_TIMEOUTS.TOAST })
  *
  * Assertions:
  *   await expect(page).toHaveURL('/path')

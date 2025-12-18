@@ -3,11 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { logError } from '@/lib/utils/console'
 
 // Types
 export interface PersonBlackoutDate {
@@ -56,7 +53,7 @@ export async function getPersonBlackoutDates(personId: string): Promise<PersonBl
     .order('start_date', { ascending: true })
 
   if (error) {
-    logError('Error fetching person blackout dates:', error)
+    logError('Error fetching person blackout dates: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch person blackout dates')
   }
 
@@ -83,7 +80,7 @@ export async function getPersonBlackoutDatesWithPerson(
     .order('start_date', { ascending: true })
 
   if (error) {
-    logError('Error fetching person blackout dates with person:', error)
+    logError('Error fetching person blackout dates with person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch person blackout dates with person')
   }
 
@@ -108,7 +105,7 @@ export async function getPersonBlackoutDate(id: string): Promise<PersonBlackoutD
     if (error.code === 'PGRST116') {
       return null
     }
-    logError('Error fetching person blackout date:', error)
+    logError('Error fetching person blackout date: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch person blackout date')
   }
 
@@ -142,7 +139,7 @@ export async function createPersonBlackoutDate(
     .single()
 
   if (error) {
-    logError('Error creating person blackout date:', error)
+    logError('Error creating person blackout date: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create person blackout date')
   }
 
@@ -178,7 +175,7 @@ export async function updatePersonBlackoutDate(
     .single()
 
   if (error) {
-    logError('Error updating person blackout date:', error)
+    logError('Error updating person blackout date: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update person blackout date')
   }
 
@@ -210,7 +207,7 @@ export async function deletePersonBlackoutDate(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting person blackout date:', error)
+    logError('Error deleting person blackout date: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete person blackout date')
   }
 
@@ -238,7 +235,7 @@ export async function checkPersonAvailability(personId: string, date: string): P
     .limit(1)
 
   if (error) {
-    logError('Error checking person availability:', error)
+    logError('Error checking person availability: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to check person availability')
   }
 
@@ -266,7 +263,7 @@ export async function getPersonBlackoutDatesInRange(
     .order('start_date', { ascending: true })
 
   if (error) {
-    logError('Error fetching person blackout dates in range:', error)
+    logError('Error fetching person blackout dates in range: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch person blackout dates in range')
   }
 

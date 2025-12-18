@@ -91,7 +91,7 @@ export async function getPeopleWithMassRolePreferences(): Promise<PersonWithMass
     .eq('active', true)
 
   if (memberError) {
-    logError('Error fetching people with role memberships:', memberError)
+    logError('Error fetching people with role memberships: ' + (memberError instanceof Error ? memberError.message : JSON.stringify(memberError)))
     throw new Error('Failed to fetch people with mass role memberships')
   }
 
@@ -125,7 +125,7 @@ export async function getPeopleWithMassRolePreferences(): Promise<PersonWithMass
     .order('first_name', { ascending: true })
 
   if (peopleError) {
-    logError('Error fetching people:', peopleError)
+    logError('Error fetching people: ' + (peopleError instanceof Error ? peopleError.message : JSON.stringify(peopleError)))
     throw new Error('Failed to fetch people')
   }
 
@@ -155,7 +155,7 @@ export async function getPeopleWithRole(roleId: string): Promise<Person[]> {
     .eq('active', true)
 
   if (error) {
-    logError('Error fetching people with role:', error)
+    logError('Error fetching people with role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch people with role')
   }
 
@@ -191,7 +191,7 @@ export async function getPersonRoleStats(_personId: string): Promise<PersonRoleS
       roles: [],
     }
   } catch (error) {
-    logError('Unexpected error in getPersonRoleStats:', error)
+    logError('Unexpected error in getPersonRoleStats: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     // Return empty stats on any error
     return {
       total_assignments: 0,

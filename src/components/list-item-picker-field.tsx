@@ -37,6 +37,7 @@ export function ListItemPickerField({
     if (listId) {
       loadItems()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadItems is stable, only re-run when listId changes
   }, [listId])
 
   const loadItems = async () => {

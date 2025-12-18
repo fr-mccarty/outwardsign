@@ -30,7 +30,7 @@ export async function getScripts(eventTypeId: string): Promise<Script[]> {
     .order('order', { ascending: true })
 
   if (error) {
-    logError('Error fetching scripts:', error)
+    logError('Error fetching scripts: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch scripts')
   }
 
@@ -56,7 +56,7 @@ export async function getScript(id: string): Promise<Script | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching script:', error)
+    logError('Error fetching script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch script')
   }
 
@@ -83,7 +83,7 @@ export async function getScriptWithSections(id: string): Promise<ScriptWithSecti
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching script:', error)
+    logError('Error fetching script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch script')
   }
 
@@ -96,7 +96,7 @@ export async function getScriptWithSections(id: string): Promise<ScriptWithSecti
     .order('order', { ascending: true })
 
   if (sectionsError) {
-    logError('Error fetching sections:', sectionsError)
+    logError('Error fetching sections: ' + (sectionsError instanceof Error ? sectionsError.message : JSON.stringify(sectionsError)))
     throw new Error('Failed to fetch sections')
   }
 
@@ -148,7 +148,7 @@ export async function createScript(data: CreateScriptData): Promise<Script> {
     .single()
 
   if (error) {
-    logError('Error creating script:', error)
+    logError('Error creating script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create script')
   }
 
@@ -187,7 +187,7 @@ export async function updateScript(id: string, data: UpdateScriptData): Promise<
     .single()
 
   if (error) {
-    logError('Error updating script:', error)
+    logError('Error updating script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update script')
   }
 
@@ -232,7 +232,7 @@ export async function deleteScript(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting script:', error)
+    logError('Error deleting script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete script')
   }
 

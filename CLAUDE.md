@@ -193,6 +193,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[FORMS.md](./docs/FORMS.md)** - 🔴 CRITICAL - Form patterns, validation, styling, and component usage guidelines
 - **[FORMATTERS.md](./docs/FORMATTERS.md)** - Navigation hub for formatters (split into formatters/ subdirectory with DATE_FUNCTIONS, ENTITY_FUNCTIONS, GENERATORS, CREATING_HELPERS)
 - **[LINTING.md](./docs/LINTING.md)** - ESLint configuration, usage, common issues, and best practices
+- **[CONSOLE_HELPERS.md](./docs/CONSOLE_HELPERS.md)** - Standardized console logging utilities (logSuccess, logWarning, logError, logInfo)
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Navigation hub for liturgical script system (split into liturgical-script-system/ subdirectory with OVERVIEW, WITHRELATIONS, TEMPLATES, PRINT_EXPORT, VIEW_INTEGRATION)
 - **[TEMPLATE_REGISTRY.md](./docs/TEMPLATE_REGISTRY.md)** - Complete registry of all 19 liturgical script templates across all 7 modules with IDs, names, descriptions, and file locations

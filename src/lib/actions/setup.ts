@@ -70,7 +70,7 @@ export async function createTestParish() {
 
     return { success: true, parish }
   } catch (error) {
-    logError('Error creating test parish:', error)
+    logError('Error creating test parish: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -125,7 +125,7 @@ export async function createParish(data: CreateParishData) {
 
     return { success: true, parish }
   } catch (error) {
-    logError('Error creating parish:', error)
+    logError('Error creating parish: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -168,7 +168,7 @@ export async function updateParish(parishId: string, data: UpdateParishData) {
 
     return { success: true, parish }
   } catch (error) {
-    logError('Error updating parish:', error)
+    logError('Error updating parish: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -235,7 +235,7 @@ export async function getParishSettings(parishId: string) {
 
     return { success: true, settings }
   } catch (error) {
-    logError('Error getting parish settings:', error)
+    logError('Error getting parish settings: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -290,7 +290,7 @@ export async function updateParishSettings(parishId: string, data: {
 
     return { success: true, settings }
   } catch (error) {
-    logError('Error updating parish settings:', error)
+    logError('Error updating parish settings: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -340,7 +340,7 @@ export async function getParishMembers(parishId: string) {
           const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(parishMember.user_id)
 
           if (authError) {
-            logError(`Error fetching user ${parishMember.user_id} from auth:`, authError)
+            logError(`Error fetching user ${parishMember.user_id} from auth: ` + (authError instanceof Error ? authError.message : JSON.stringify(authError)))
           } else if (authUser?.user) {
             userEmail = authUser.user.email || null
             userCreatedAt = authUser.user.created_at
@@ -348,7 +348,7 @@ export async function getParishMembers(parishId: string) {
             logWarning(`No user data returned for user_id ${parishMember.user_id}`)
           }
         } catch (error) {
-          logError(`Exception fetching email for user ${parishMember.user_id}:`, error)
+          logError(`Exception fetching email for user ${parishMember.user_id}: ` + (error instanceof Error ? error.message : JSON.stringify(error)))
         }
 
         return {
@@ -366,7 +366,7 @@ export async function getParishMembers(parishId: string) {
 
     return { success: true, members }
   } catch (error) {
-    logError('Error fetching parish members:', error)
+    logError('Error fetching parish members: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -479,7 +479,7 @@ export async function inviteStaff(parishId: string, email: string, roles: string
       userExists: false 
     }
   } catch (error) {
-    logError('Error inviting parish member:', error)
+    logError('Error inviting parish member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -523,7 +523,7 @@ export async function removeParishMember(parishId: string, userId: string) {
 
     return { success: true }
   } catch (error) {
-    logError('Error removing parish member:', error)
+    logError('Error removing parish member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -579,7 +579,7 @@ export async function updateMemberRole(
 
     return { success: true }
   } catch (error) {
-    logError('Error updating member role:', error)
+    logError('Error updating member role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }

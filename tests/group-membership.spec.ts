@@ -50,11 +50,11 @@ test.describe('Group Roles - Default Roles', () => {
     await expect(page).toHaveURL(`/groups/${groupId}`);
 
     // Wait for the page to load completely (groups page loads client-side data)
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Click "Add Member" to open the dialog
     const addMemberButton = page.getByRole('button', { name: /Add Member/i });
-    await expect(addMemberButton).toBeVisible({ timeout: 10000 });
+    await expect(addMemberButton).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await addMemberButton.click();
 
     // Wait for Add Member dialog
@@ -63,18 +63,18 @@ test.describe('Group Roles - Default Roles', () => {
     // Click "Select Person" to open people picker
     const dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Find and select the person from the people picker
     const pickerDialog = page.locator('[role="dialog"]').last();
     const personButton = pickerDialog.getByRole('button', { name: /John GroupMember/i }).first();
     await personButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click the group role trigger to open role picker
     const groupRoleTrigger = dialog.getByTestId('group-role-trigger');
     await groupRoleTrigger.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Find the role picker dialog
     const rolePickerDialog = page.locator('[role="dialog"]').last();
@@ -134,40 +134,40 @@ test.describe('Group Roles - Assignment to Members', () => {
 
     // Navigate back to the group
     await page.goto(`/groups/${groupId}`);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Add member with role
     const addMemberButton = page.getByRole('button', { name: /Add Member/i });
-    await expect(addMemberButton).toBeVisible({ timeout: 10000 });
+    await expect(addMemberButton).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await addMemberButton.click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Select person
     const dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const pickerDialog = page.locator('[role="dialog"]').last();
     const personButton = pickerDialog.getByRole('button', { name: /Sarah Lector/i }).first();
     await personButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Select role (Lector)
     const groupRoleTrigger = dialog.getByTestId('group-role-trigger');
     await groupRoleTrigger.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const rolePickerDialog = page.locator('[role="dialog"]').last();
     const lectorRoleButton = rolePickerDialog.getByRole('button', { name: /^Lector$/i }).first();
     await lectorRoleButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Submit
     const addButton = dialog.getByRole('button', { name: /Add Member/i });
     await addButton.click();
 
     // Wait for dialog to close
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify member appears with role badge
     const memberCard = page.locator('text=Sarah Lector').first();
@@ -217,33 +217,33 @@ test.describe('Group Roles - Assignment to Members', () => {
 
     // Navigate to group and add Person 1 with Cantor role
     await page.goto(`/groups/${groupId}`);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     let dialog, pickerDialog, rolePickerDialog;
 
     // Add first member (Tom Cantor - Cantor role)
     const addMemberBtn = page.getByRole('button', { name: /Add Member/i });
-    await expect(addMemberBtn).toBeVisible({ timeout: 10000 });
+    await expect(addMemberBtn).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await addMemberBtn.click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
     dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     pickerDialog = page.locator('[role="dialog"]').last();
     await pickerDialog.getByRole('button', { name: /Tom Cantor/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     await dialog.getByTestId('group-role-trigger').click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     rolePickerDialog = page.locator('[role="dialog"]').last();
     await rolePickerDialog.getByRole('button', { name: /^Cantor$/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     await dialog.getByRole('button', { name: /Add Member/i }).click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Add second member (Mary Usher - Usher role)
     await page.getByRole('button', { name: /Add Member/i }).click();
@@ -251,21 +251,21 @@ test.describe('Group Roles - Assignment to Members', () => {
 
     dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     pickerDialog = page.locator('[role="dialog"]').last();
     await pickerDialog.getByRole('button', { name: /Mary Usher/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     await dialog.getByTestId('group-role-trigger').click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     rolePickerDialog = page.locator('[role="dialog"]').last();
     await rolePickerDialog.getByRole('button', { name: /^Usher$/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     await dialog.getByRole('button', { name: /Add Member/i }).click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify both members appear with their respective roles
     await expect(page.locator('text=Tom Cantor')).toBeVisible();
@@ -310,23 +310,23 @@ test.describe('Group Roles - Assignment to Members', () => {
 
     // Navigate back to the group
     await page.goto(`/groups/${groupId}`);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Add member WITHOUT selecting a role
     const addMemberButton = page.getByRole('button', { name: /Add Member/i });
-    await expect(addMemberButton).toBeVisible({ timeout: 10000 });
+    await expect(addMemberButton).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await addMemberButton.click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Select person
     const dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const pickerDialog = page.locator('[role="dialog"]').last();
     const personButton = pickerDialog.getByRole('button', { name: /David NoRole/i }).first();
     await personButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Do NOT select a role - submit without role
 
@@ -335,7 +335,7 @@ test.describe('Group Roles - Assignment to Members', () => {
     await addButton.click();
 
     // Wait for dialog to close
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify member appears
     const memberCard = page.locator('text=David NoRole').first();
@@ -378,28 +378,28 @@ test.describe('Group Roles - Role Filtering and Search', () => {
 
     // Navigate back to the group
     await page.goto(`/groups/${groupId}`);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Open Add Member dialog
     const addMemberButton = page.getByRole('button', { name: /Add Member/i });
-    await expect(addMemberButton).toBeVisible({ timeout: 10000 });
+    await expect(addMemberButton).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await addMemberButton.click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Select person
     const dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const pickerDialog = page.locator('[role="dialog"]').last();
     const personButton = pickerDialog.getByRole('button', { name: /Filter Test/i }).first();
     await personButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Open role picker
     const groupRoleTrigger = dialog.getByTestId('group-role-trigger');
     await groupRoleTrigger.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Find the role picker dialog
     const rolePickerDialog = page.locator('[role="dialog"]').last();
@@ -410,7 +410,7 @@ test.describe('Group Roles - Role Filtering and Search', () => {
     if (await searchInput.isVisible()) {
       // Test filtering by typing "Cantor"
       await searchInput.fill('Cantor');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should show Cantor
       await expect(rolePickerDialog.getByRole('button', { name: /Cantor/i })).toBeVisible();
@@ -461,33 +461,33 @@ test.describe('Group Roles - Edit Member Role', () => {
 
     // Navigate back to the group
     await page.goto(`/groups/${groupId}`);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Add member with initial role (Lector)
     let dialog, rolePickerDialog;
 
     const addMemberButton = page.getByRole('button', { name: /Add Member/i });
-    await expect(addMemberButton).toBeVisible({ timeout: 10000 });
+    await expect(addMemberButton).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await addMemberButton.click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
     dialog = page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const pickerDialog = page.locator('[role="dialog"]').last();
     await pickerDialog.getByRole('button', { name: /Role Changer/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     await dialog.getByTestId('group-role-trigger').click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     rolePickerDialog = page.locator('[role="dialog"]').last();
     await rolePickerDialog.getByRole('button', { name: /^Lector$/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     await dialog.getByRole('button', { name: /Add Member/i }).click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify initial role
     let badge = page.locator('[data-slot="badge"]', { hasText: /Lector/i });
@@ -502,7 +502,7 @@ test.describe('Group Roles - Edit Member Role', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Wait a moment for dialog to fully render
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Verify we see "Edit Member" dialog
     dialog = page.locator('[role="dialog"]').first();
@@ -510,19 +510,19 @@ test.describe('Group Roles - Edit Member Role', () => {
 
     // Click to change the group role
     const roleTrigger = dialog.getByTestId('group-role-trigger');
-    await expect(roleTrigger).toBeVisible({ timeout: 5000 });
+    await expect(roleTrigger).toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
     await roleTrigger.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Select new role (Cantor)
     rolePickerDialog = page.locator('[role="dialog"]').last();
     await rolePickerDialog.getByRole('button', { name: /^Cantor$/i }).first().click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Save the edit - button should say "Update Member" or similar
     const saveButton = dialog.getByRole('button', { name: /Update|Save/i });
     await saveButton.click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify role was changed to Cantor
     badge = page.locator('[data-slot="badge"]', { hasText: /Cantor/i });

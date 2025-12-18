@@ -15,7 +15,7 @@ test.describe('Mass Event Type Templating', () => {
     await page.getByRole('option', { name: 'Meeting' }).click();
 
     // Wait for custom fields to render (dynamic fields load after event type selection)
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Add basic mass notes
     const massNotes = `Mass with event type template - ${Date.now()}`;

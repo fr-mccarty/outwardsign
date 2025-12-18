@@ -307,7 +307,7 @@ test.describe('Parishioner Authentication', () => {
       // Loading state might be brief, but button should be disabled
       const button = page.getByRole('button', { name: /Sending/i });
       try {
-        await button.waitFor({ state: 'visible', timeout: 1000 });
+        await button.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.QUICK });
       } catch {
         // Loading state might be too fast to catch - that's okay
       }

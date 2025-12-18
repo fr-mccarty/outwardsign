@@ -1,5 +1,6 @@
 import { test as setup, expect } from '@playwright/test';
 import path from 'path';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 // Path to store authenticated state
 const authFile = path.join(__dirname, '../playwright/.auth/staff.json');
@@ -32,7 +33,7 @@ setup('authenticate as staff user', async ({ page }) => {
 
   // Wait for successful login - could redirect to dashboard or onboarding
   // Use networkidle instead of load event (dashboard has slow client hydration)
-  await page.waitForURL(/\/(dashboard|onboarding)/, { waitUntil: 'networkidle', timeout: 20000 });
+  await page.waitForURL(/\/(dashboard|onboarding)/, { waitUntil: 'networkidle', timeout: TEST_TIMEOUTS.AUTH });
 
   // Wait for the page to actually be ready by checking for a visible element
   const isDashboard = page.url().includes('/dashboard');
@@ -40,10 +41,10 @@ setup('authenticate as staff user', async ({ page }) => {
 
   if (isDashboard) {
     // Wait for dashboard to be fully loaded
-    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
   } else if (isOnboarding) {
     // Wait for onboarding form to be visible
-    await page.waitForSelector('input#parishName', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('input#parishName', { state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
   }
 
   // If redirected to onboarding, complete it
@@ -57,11 +58,11 @@ setup('authenticate as staff user', async ({ page }) => {
     await page.click('button[type="submit"]');
 
     // Wait for preparing screen and then dashboard
-    await expect(page.locator('text=/One minute while we get your parish ready for you/i')).toBeVisible({ timeout: 5000 });
-    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: 25000 });
+    await expect(page.locator('text=/One minute while we get your parish ready for you/i')).toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
+    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: TEST_TIMEOUTS.AUTH });
 
     // Wait for dashboard to be fully loaded
-    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 20000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: TEST_TIMEOUTS.AUTH });
   }
 
   // Verify we're authenticated by checking we're on dashboard

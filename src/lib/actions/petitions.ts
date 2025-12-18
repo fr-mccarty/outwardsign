@@ -294,7 +294,7 @@ export async function updatePetition(id: string, data: CreatePetitionData) {
     .single()
 
   if (petitionError) {
-    logError('Petition update error:', petitionError)
+    logError('Petition update error: ' + (petitionError instanceof Error ? petitionError.message : JSON.stringify(petitionError)))
     throw new Error('Failed to update petition')
   }
 
@@ -315,7 +315,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
         templateContent = template.context
       }
     } catch (error) {
-      logWarning('Failed to fetch template content:', error)
+      logWarning('Failed to fetch template content: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     }
   }
 
@@ -327,9 +327,9 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
   const prompt = replaceTemplateVariables(template, variables)
   
   // Debug logging to see what's being sent to AI
-  logInfo('[DEBUG] Petition generation data:', data)
-  logInfo('[DEBUG] Template variables:', variables)
-  logInfo('[DEBUG] Final prompt being sent to AI:', prompt)
+  logInfo('[DEBUG] Petition generation data: ' + JSON.stringify(data))
+  logInfo('[DEBUG] Template variables: ' + variables)
+  logInfo('[DEBUG] Final prompt being sent to AI: ' + prompt)
 
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -367,7 +367,7 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
     
     return result.content[0].text
   } catch (error) {
-    logError('Error generating petitions:', error)
+    logError('Error generating petitions: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error // Throw the error instead of falling back silently
   }
 }
@@ -480,7 +480,7 @@ export async function updatePetitionFullDetails(id: string, data: { title: strin
     .single()
 
   if (petitionError) {
-    logError('Petition update error:', petitionError)
+    logError('Petition update error: ' + (petitionError instanceof Error ? petitionError.message : JSON.stringify(petitionError)))
     throw new Error(`Failed to update petition: ${petitionError.message || petitionError.code || 'Database error'}`)
   }
 
@@ -505,7 +505,7 @@ export async function regeneratePetitionContent(id: string, data: { title: strin
   try {
     generatedContent = await generatePetitionContent(petitionData)
   } catch (error) {
-    logError('Content generation error:', error)
+    logError('Content generation error: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error(`Failed to generate petition content: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 
@@ -526,7 +526,7 @@ export async function regeneratePetitionContent(id: string, data: { title: strin
     .single()
 
   if (petitionError) {
-    logError('Petition regeneration error:', petitionError)
+    logError('Petition regeneration error: ' + (petitionError instanceof Error ? petitionError.message : JSON.stringify(petitionError)))
     throw new Error(`Failed to regenerate petition: ${petitionError.message || petitionError.code || 'Database error'}`)
   }
 
@@ -568,7 +568,7 @@ export async function duplicatePetition(id: string): Promise<Petition> {
     .single()
 
   if (duplicateError) {
-    logError('Petition duplication error:', duplicateError)
+    logError('Petition duplication error: ' + (duplicateError instanceof Error ? duplicateError.message : JSON.stringify(duplicateError)))
     throw new Error('Failed to duplicate petition')
   }
 
@@ -607,7 +607,7 @@ export async function deletePetition(id: string) {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Petition deletion error:', error)
+    logError('Petition deletion error: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete petition')
   }
 }
@@ -652,7 +652,7 @@ export async function createPetitionFromEvent(data: {
     .single()
 
   if (error) {
-    logError('Failed to create petition from event:', error)
+    logError('Failed to create petition from event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create petition')
   }
 

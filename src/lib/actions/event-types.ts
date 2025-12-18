@@ -68,7 +68,7 @@ export async function getEventTypes(filters?: EventTypeFilterParams): Promise<Ev
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching event types:', error)
+    logError('Error fetching event types: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event types')
   }
 
@@ -105,7 +105,7 @@ export async function getEventType(id: string): Promise<EventType | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event type:', error)
+    logError('Error fetching event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event type')
   }
 
@@ -132,7 +132,7 @@ export async function getEventTypeBySlug(slug: string): Promise<EventType | null
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event type by slug:', error)
+    logError('Error fetching event type by slug: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event type by slug')
   }
 
@@ -160,7 +160,7 @@ export async function getEventTypeWithRelations(id: string): Promise<EventTypeWi
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event type:', error)
+    logError('Error fetching event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event type')
   }
 
@@ -181,12 +181,12 @@ export async function getEventTypeWithRelations(id: string): Promise<EventTypeWi
   ])
 
   if (inputFieldsData.error) {
-    logError('Error fetching input field definitions:', inputFieldsData.error)
+    logError('Error fetching input field definitions: ' + (inputFieldsData.error instanceof Error ? inputFieldsData.error.message : JSON.stringify(inputFieldsData.error)))
     throw new Error('Failed to fetch input field definitions')
   }
 
   if (scriptsData.error) {
-    logError('Error fetching scripts:', scriptsData.error)
+    logError('Error fetching scripts: ' + (scriptsData.error instanceof Error ? scriptsData.error.message : JSON.stringify(scriptsData.error)))
     throw new Error('Failed to fetch scripts')
   }
 
@@ -218,7 +218,7 @@ export async function getEventTypeWithRelationsBySlug(slug: string): Promise<Eve
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event type by slug:', error)
+    logError('Error fetching event type by slug: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event type by slug')
   }
 
@@ -239,12 +239,12 @@ export async function getEventTypeWithRelationsBySlug(slug: string): Promise<Eve
   ])
 
   if (inputFieldsData.error) {
-    logError('Error fetching input field definitions:', inputFieldsData.error)
+    logError('Error fetching input field definitions: ' + (inputFieldsData.error instanceof Error ? inputFieldsData.error.message : JSON.stringify(inputFieldsData.error)))
     throw new Error('Failed to fetch input field definitions')
   }
 
   if (scriptsData.error) {
-    logError('Error fetching scripts:', scriptsData.error)
+    logError('Error fetching scripts: ' + (scriptsData.error instanceof Error ? scriptsData.error.message : JSON.stringify(scriptsData.error)))
     throw new Error('Failed to fetch scripts')
   }
 
@@ -325,7 +325,7 @@ export async function createEventType(data: CreateEventTypeData): Promise<EventT
     .single()
 
   if (error) {
-    logError('Error creating event type:', error)
+    logError('Error creating event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create event type')
   }
 
@@ -381,7 +381,7 @@ export async function updateEventType(id: string, data: UpdateEventTypeData): Pr
     .single()
 
   if (error) {
-    logError('Error updating event type:', error)
+    logError('Error updating event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update event type')
   }
 
@@ -426,7 +426,7 @@ export async function deleteEventType(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Error deleting event type:', error)
+    logError('Error deleting event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete event type')
   }
 
@@ -494,7 +494,7 @@ export async function getRoleDefinitions(eventTypeId: string): Promise<{ roles: 
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching role definitions:', error)
+    logError('Error fetching role definitions: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch role definitions')
   }
 
@@ -528,7 +528,7 @@ export async function updateRoleDefinitions(
     .is('deleted_at', null)
 
   if (error) {
-    logError('Error updating role definitions:', error)
+    logError('Error updating role definitions: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update role definitions')
   }
 

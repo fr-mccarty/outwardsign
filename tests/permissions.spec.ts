@@ -14,6 +14,7 @@
 
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -51,7 +52,7 @@ test.describe.serial('Permissions System', () => {
     await page.fill('input[type="email"]', email);
     await page.fill('input[type="password"]', password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: TEST_TIMEOUTS.EXTENDED });
   }
 
   test.beforeAll(async () => {

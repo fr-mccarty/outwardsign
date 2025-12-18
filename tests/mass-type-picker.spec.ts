@@ -59,7 +59,7 @@ test.describe('Mass Type Picker Component', () => {
     await createButton.click();
 
     // Wait for the dialog to close
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify the new mass type is auto-selected in the dropdown
     const massTypeSelect = page.locator('select').first();
@@ -98,7 +98,7 @@ test.describe('Mass Type Picker Component', () => {
 
     // Should show error message (toast notification or validation message)
     // Wait a moment for the error to appear
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Dialog should still be open (validation failed)
     await expect(page.locator('[role="dialog"]')).toBeVisible();
@@ -112,7 +112,7 @@ test.describe('Mass Type Picker Component', () => {
     await createButton.click();
 
     // Should succeed and close dialog
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     console.log('✅ Form successfully submitted with both labels');
   });
@@ -181,10 +181,10 @@ test.describe('Mass Type Picker Component', () => {
     const createButton = dialog.getByRole('button', { name: /Create/i, exact: false }).last();
     await createButton.click();
 
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Wait for the picker to reload
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Count mass types again
     const finalOptions = await massTypeSelect.locator('option:not([value=""])').all();
@@ -222,7 +222,7 @@ test.describe('Mass Type Picker Component', () => {
     const createButton = dialog.getByRole('button', { name: /Create/i, exact: false }).last();
     await createButton.click();
 
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // The mass type should be auto-selected, now complete the rest of the form
     // Verify mass type is selected

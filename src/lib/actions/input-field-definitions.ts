@@ -31,7 +31,7 @@ export async function getInputFieldDefinitions(eventTypeId: string): Promise<Inp
     .order('order', { ascending: true })
 
   if (error) {
-    logError('Error fetching input field definitions:', error)
+    logError('Error fetching input field definitions: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch input field definitions')
   }
 
@@ -57,7 +57,7 @@ export async function getInputFieldDefinitionWithRelations(id: string): Promise<
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching input field definition:', error)
+    logError('Error fetching input field definition: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch input field definition')
   }
 
@@ -171,7 +171,7 @@ export async function createInputFieldDefinition(data: CreateInputFieldDefinitio
     .single()
 
   if (error) {
-    logError('Error creating input field definition:', error)
+    logError('Error creating input field definition: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create input field definition')
   }
 
@@ -247,7 +247,7 @@ export async function updateInputFieldDefinition(id: string, data: UpdateInputFi
     .single()
 
   if (error) {
-    logError('Error updating input field definition:', error)
+    logError('Error updating input field definition: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update input field definition')
   }
 
@@ -295,7 +295,7 @@ export async function deleteInputFieldDefinition(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting input field definition:', error)
+    logError('Error deleting input field definition: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete input field definition')
   }
 

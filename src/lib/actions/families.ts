@@ -78,7 +78,7 @@ export async function getFamilyStats(filters: FamilyFilters = {}): Promise<Famil
     .is('deleted_at', null)
 
   if (totalError) {
-    logError('Error fetching total count:', totalError)
+    logError('Error fetching total count: ' + (totalError instanceof Error ? totalError.message : JSON.stringify(totalError)))
     throw new Error('Failed to fetch total count')
   }
 
@@ -89,7 +89,7 @@ export async function getFamilyStats(filters: FamilyFilters = {}): Promise<Famil
     .is('deleted_at', null)
 
   if (allError) {
-    logError('Error fetching families for filtering:', allError)
+    logError('Error fetching families for filtering: ' + (allError instanceof Error ? allError.message : JSON.stringify(allError)))
     throw new Error('Failed to fetch families for filtering')
   }
 
@@ -129,7 +129,7 @@ export async function getFamilies(filters: FamilyFilters = {}): Promise<Family[]
     .is('deleted_at', null)
 
   if (error) {
-    logError('Error fetching families:', error)
+    logError('Error fetching families: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch families')
   }
 
@@ -194,7 +194,7 @@ export async function getFamily(id: string): Promise<FamilyWithMembers | null> {
     if (familyError.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching family:', familyError)
+    logError('Error fetching family: ' + (familyError instanceof Error ? familyError.message : JSON.stringify(familyError)))
     throw new Error('Failed to fetch family')
   }
 
@@ -223,7 +223,7 @@ export async function getFamily(id: string): Promise<FamilyWithMembers | null> {
     .order('created_at', { ascending: true })
 
   if (membersError) {
-    logError('Error fetching family members:', membersError)
+    logError('Error fetching family members: ' + (membersError instanceof Error ? membersError.message : JSON.stringify(membersError)))
     throw new Error('Failed to fetch family members')
   }
 
@@ -266,7 +266,7 @@ export async function createFamily(data: CreateFamilyData): Promise<Family> {
     .single()
 
   if (error) {
-    logError('Error creating family:', error)
+    logError('Error creating family: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create family')
   }
 
@@ -295,7 +295,7 @@ export async function updateFamily(id: string, data: UpdateFamilyData): Promise<
     .single()
 
   if (error) {
-    logError('Error updating family:', error)
+    logError('Error updating family: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update family')
   }
 
@@ -317,7 +317,7 @@ export async function deleteFamily(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting family:', error)
+    logError('Error deleting family: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete family')
   }
 
@@ -372,7 +372,7 @@ export async function addFamilyMember(familyId: string, data: AddFamilyMemberDat
     if (error.code === '23505') { // Unique constraint violation
       throw new Error('Person is already a member of this family')
     }
-    logError('Error adding family member:', error)
+    logError('Error adding family member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to add family member')
   }
 
@@ -415,7 +415,7 @@ export async function updateFamilyMember(
     .single()
 
   if (error) {
-    logError('Error updating family member:', error)
+    logError('Error updating family member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update family member')
   }
 
@@ -437,7 +437,7 @@ export async function removeFamilyMember(familyId: string, personId: string): Pr
     .eq('person_id', personId)
 
   if (error) {
-    logError('Error removing family member:', error)
+    logError('Error removing family member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to remove family member')
   }
 
@@ -465,7 +465,7 @@ export async function setPrimaryContact(familyId: string, personId: string): Pro
     .eq('person_id', personId)
 
   if (error) {
-    logError('Error setting primary contact:', error)
+    logError('Error setting primary contact: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to set primary contact')
   }
 
@@ -491,7 +491,7 @@ export async function getAllFamilies(): Promise<Family[]> {
     .order('family_name', { ascending: true })
 
   if (error) {
-    logError('Error fetching all families:', error)
+    logError('Error fetching all families: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch families')
   }
 
@@ -539,7 +539,7 @@ export async function getFamilyMembershipsForPeople(personIds: string[]): Promis
     .in('person_id', personIds)
 
   if (membershipError) {
-    logError('Error fetching family memberships:', membershipError)
+    logError('Error fetching family memberships: ' + (membershipError instanceof Error ? membershipError.message : JSON.stringify(membershipError)))
     return new Map()
   }
 
@@ -574,7 +574,7 @@ export async function getFamilyMembershipsForPeople(personIds: string[]): Promis
     .in('family_id', familyIds)
 
   if (allMembersError) {
-    logError('Error fetching all family members:', allMembersError)
+    logError('Error fetching all family members: ' + (allMembersError instanceof Error ? allMembersError.message : JSON.stringify(allMembersError)))
     return new Map()
   }
 
@@ -662,7 +662,7 @@ export async function getFamilyBlackoutDatesForPeople(
     .in('person_id', personIds)
 
   if (membershipError) {
-    logError('Error fetching family memberships for blackout:', membershipError)
+    logError('Error fetching family memberships for blackout: ' + (membershipError instanceof Error ? membershipError.message : JSON.stringify(membershipError)))
     return new Map()
   }
 
@@ -697,7 +697,7 @@ export async function getFamilyBlackoutDatesForPeople(
     .in('family_id', familyIds)
 
   if (allMembersError) {
-    logError('Error fetching all family members for blackout:', allMembersError)
+    logError('Error fetching all family members for blackout: ' + (allMembersError instanceof Error ? allMembersError.message : JSON.stringify(allMembersError)))
     return new Map()
   }
 
@@ -719,7 +719,7 @@ export async function getFamilyBlackoutDatesForPeople(
     .gte('end_date', targetDate)
 
   if (blackoutError) {
-    logError('Error fetching blackout dates:', blackoutError)
+    logError('Error fetching blackout dates: ' + (blackoutError instanceof Error ? blackoutError.message : JSON.stringify(blackoutError)))
     return new Map()
   }
 
@@ -790,7 +790,7 @@ export async function getPersonFamilies(personId: string): Promise<FamilyWithMem
     .eq('person_id', personId)
 
   if (membershipError) {
-    logError('Error fetching person family memberships:', membershipError)
+    logError('Error fetching person family memberships: ' + (membershipError instanceof Error ? membershipError.message : JSON.stringify(membershipError)))
     throw new Error('Failed to fetch person family memberships')
   }
 

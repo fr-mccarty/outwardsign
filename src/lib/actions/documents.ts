@@ -75,7 +75,7 @@ export async function uploadDocument(
     })
 
   if (uploadError) {
-    logError('Error uploading document to storage:', uploadError)
+    logError('Error uploading document to storage: ' + (uploadError instanceof Error ? uploadError.message : JSON.stringify(uploadError)))
     throw new Error(`Failed to upload document: ${uploadError.message}`)
   }
 
@@ -96,7 +96,7 @@ export async function uploadDocument(
     .single()
 
   if (dbError) {
-    logError('Error creating document record:', dbError)
+    logError('Error creating document record: ' + (dbError instanceof Error ? dbError.message : JSON.stringify(dbError)))
     // Try to clean up uploaded file
     await supabase.storage
       .from('event-documents')
@@ -129,7 +129,7 @@ export async function getDocumentSignedUrl(documentId: string): Promise<string> 
     if (error.code === 'PGRST116') {
       throw new Error('Document not found')
     }
-    logError('Error fetching document:', error)
+    logError('Error fetching document: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch document')
   }
 
@@ -139,7 +139,7 @@ export async function getDocumentSignedUrl(documentId: string): Promise<string> 
     .createSignedUrl(document.file_path, 3600) // 3600 seconds = 60 minutes
 
   if (urlError) {
-    logError('Error creating signed URL:', urlError)
+    logError('Error creating signed URL: ' + (urlError instanceof Error ? urlError.message : JSON.stringify(urlError)))
     throw new Error('Failed to create download URL')
   }
 
@@ -181,7 +181,7 @@ export async function deleteDocument(id: string): Promise<void> {
     if (fetchError.code === 'PGRST116') {
       throw new Error('Document not found')
     }
-    logError('Error fetching document:', fetchError)
+    logError('Error fetching document: ' + (fetchError instanceof Error ? fetchError.message : JSON.stringify(fetchError)))
     throw new Error('Failed to fetch document')
   }
 
@@ -191,7 +191,7 @@ export async function deleteDocument(id: string): Promise<void> {
     .remove([document.file_path])
 
   if (storageError) {
-    logError('Error deleting document from storage:', storageError)
+    logError('Error deleting document from storage: ' + (storageError instanceof Error ? storageError.message : JSON.stringify(storageError)))
     // Continue with database deletion even if storage deletion fails
   }
 
@@ -203,7 +203,7 @@ export async function deleteDocument(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (dbError) {
-    logError('Error deleting document from database:', dbError)
+    logError('Error deleting document from database: ' + (dbError instanceof Error ? dbError.message : JSON.stringify(dbError)))
     throw new Error('Failed to delete document')
   }
 }
@@ -228,7 +228,7 @@ export async function getDocument(id: string): Promise<Document | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching document:', error)
+    logError('Error fetching document: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch document')
   }
 

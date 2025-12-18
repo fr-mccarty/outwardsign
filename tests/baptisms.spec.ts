@@ -198,7 +198,7 @@ test.describe('Baptisms Module', () => {
 
     // Baptism form uses router.refresh() on edit, so it stays on edit page
     // Wait for the update to complete
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Navigate to view page to verify the update
     await page.goto(`/baptisms/${baptismId}`);

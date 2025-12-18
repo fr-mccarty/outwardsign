@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * Verifies all main pages load correctly.
@@ -54,7 +55,7 @@ test.describe('Main Pages Render Correctly', () => {
 
       // Verify page loaded by checking for the heading
       const heading = page.getByRole('heading', { name: expectedHeading }).first();
-      await expect(heading, `Heading "${expectedHeading}" should be visible on ${path}`).toBeVisible({ timeout: 10000 });
+      await expect(heading, `Heading "${expectedHeading}" should be visible on ${path}`).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     }
   });
 
@@ -64,7 +65,7 @@ test.describe('Main Pages Render Correctly', () => {
 
       // Verify page loaded by checking for the heading
       const heading = page.getByRole('heading', { name: expectedHeading }).first();
-      await expect(heading, `Heading "${expectedHeading}" should be visible on ${path}`).toBeVisible({ timeout: 10000 });
+      await expect(heading, `Heading "${expectedHeading}" should be visible on ${path}`).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     }
   });
 });

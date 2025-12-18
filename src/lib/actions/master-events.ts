@@ -61,7 +61,7 @@ export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: E
     .limit(50) // Limit for dashboard performance
 
   if (error) {
-    logError('Error fetching master events:', error)
+    logError('Error fetching master events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return []
   }
 
@@ -119,7 +119,7 @@ export async function getAllMasterEvents(
   const { data: events, error } = await query
 
   if (error) {
-    logError('Error fetching all master events:', error)
+    logError('Error fetching all master events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch events')
   }
 
@@ -214,7 +214,7 @@ export async function getEvents(
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching events:', error)
+    logError('Error fetching events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch events')
   }
 
@@ -356,7 +356,7 @@ export async function getEvent(id: string): Promise<MasterEvent | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event:', error)
+    logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event')
   }
 
@@ -384,7 +384,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event:', error)
+    logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event')
   }
 
@@ -423,12 +423,12 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
   ])
 
   if (eventTypeData.error) {
-    logError('Error fetching event type:', eventTypeData.error, { eventTypeId: event.event_type_id, selectedParishId })
+    logError('Error fetching event type: ' + (eventTypeData.error instanceof Error ? eventTypeData.error.message : JSON.stringify(eventTypeData.error)) + ' Context: ' + JSON.stringify({ eventTypeId: event.event_type_id, selectedParishId }))
     throw new Error('Failed to fetch event type')
   }
 
   if (calendarEventsData.error) {
-    logError('Error fetching calendar events:', calendarEventsData.error)
+    logError('Error fetching calendar events: ' + (calendarEventsData.error instanceof Error ? calendarEventsData.error.message : JSON.stringify(calendarEventsData.error)))
     throw new Error('Failed to fetch calendar events')
   }
 
@@ -545,7 +545,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
             break
         }
       } catch (err) {
-        logError(`Error resolving field ${fieldDef.name}:`, err)
+        logError(`Error resolving field ${fieldDef.name}: ` + err)
         // Keep resolved_value as undefined
       }
     }
@@ -590,7 +590,7 @@ export async function createEvent(
     .single()
 
   if (eventTypeError || !eventType) {
-    logError('Error fetching event type:', eventTypeError, { eventTypeId, selectedParishId })
+    logError('Error fetching event type: ' + (eventTypeError instanceof Error ? eventTypeError.message : JSON.stringify(eventTypeError)) + ' Context: ' + JSON.stringify({ eventTypeId, selectedParishId }))
     throw new Error('Event type not found')
   }
 
@@ -627,7 +627,7 @@ export async function createEvent(
     .single()
 
   if (eventError) {
-    logError('Error creating event:', eventError)
+    logError('Error creating event: ' + (eventError instanceof Error ? eventError.message : JSON.stringify(eventError)))
     throw new Error('Failed to create event')
   }
 
@@ -640,7 +640,8 @@ export async function createEvent(
     end_datetime: calendarEvent.end_datetime || null,
     location_id: calendarEvent.location_id || null,
     is_primary: calendarEvent.is_primary || false,
-    is_cancelled: false
+    is_cancelled: false,
+    is_all_day: calendarEvent.is_all_day || false
   }))
 
   const { error: calendarEventsError } = await supabase
@@ -648,7 +649,7 @@ export async function createEvent(
     .insert(calendarEventsToInsert)
 
   if (calendarEventsError) {
-    logError('Error creating calendar events:', calendarEventsError)
+    logError('Error creating calendar events: ' + (calendarEventsError instanceof Error ? calendarEventsError.message : JSON.stringify(calendarEventsError)))
     // Rollback event creation
     await supabase.from('master_events').delete().eq('id', newEvent.id)
     throw new Error('Failed to create calendar events')
@@ -706,7 +707,7 @@ export async function updateEvent(
       .single()
 
     if (error) {
-      logError('Error updating event:', error)
+      logError('Error updating event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
       throw new Error('Failed to update event')
     }
 
@@ -751,7 +752,7 @@ export async function deleteEvent(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Error deleting event:', error)
+    logError('Error deleting event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete event')
   }
 
@@ -801,7 +802,7 @@ export async function assignPresiderToMasterEvent(eventId: string, personId: str
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Error assigning presider:', error)
+    logError('Error assigning presider: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to assign presider')
   }
 
@@ -851,7 +852,7 @@ export async function assignHomilisToMasterEvent(eventId: string, personId: stri
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Error assigning homilist:', error)
+    logError('Error assigning homilist: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to assign homilist')
   }
 
@@ -920,7 +921,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
     .order('start_datetime', { ascending: true })
 
   if (error) {
-    logError('Error fetching calendar events for calendar:', error)
+    logError('Error fetching calendar events for calendar: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return []
   }
 
@@ -1019,7 +1020,7 @@ export async function getMasterEventRoles(masterEventId: string): Promise<Master
     .is('deleted_at', null)
 
   if (error) {
-    logError('Error fetching master event roles:', error)
+    logError('Error fetching master event roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch master event roles')
   }
 
@@ -1078,7 +1079,7 @@ export async function assignRole(
     .single()
 
   if (error) {
-    logError('Error assigning role:', error)
+    logError('Error assigning role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to assign role')
   }
 
@@ -1119,7 +1120,7 @@ export async function removeRoleAssignment(roleAssignmentId: string): Promise<vo
     .eq('id', roleAssignmentId)
 
   if (error) {
-    logError('Error removing role assignment:', error)
+    logError('Error removing role assignment: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to remove role assignment')
   }
 
@@ -1204,7 +1205,7 @@ export async function getMasterEventStats(filters?: MasterEventFilterParams): Pr
   const { data: allEvents, error: allEventsError } = await allEventsQuery
 
   if (allEventsError) {
-    logError('Error fetching master events for stats:', allEventsError)
+    logError('Error fetching master events for stats: ' + (allEventsError instanceof Error ? allEventsError.message : JSON.stringify(allEventsError)))
     throw new Error('Failed to fetch master events for stats')
   }
 

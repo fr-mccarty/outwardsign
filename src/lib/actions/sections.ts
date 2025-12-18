@@ -28,7 +28,7 @@ export async function getSections(scriptId: string): Promise<Section[]> {
     .order('order', { ascending: true })
 
   if (error) {
-    logError('Error fetching sections:', error)
+    logError('Error fetching sections: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch sections')
   }
 
@@ -54,7 +54,7 @@ export async function getSection(id: string): Promise<Section | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching section:', error)
+    logError('Error fetching section: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch section')
   }
 
@@ -105,7 +105,7 @@ export async function createSection(scriptId: string, data: CreateSectionData): 
     .single()
 
   if (error) {
-    logError('Error creating section:', error)
+    logError('Error creating section: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create section')
   }
 
@@ -154,7 +154,7 @@ export async function updateSection(id: string, data: UpdateSectionData): Promis
     .single()
 
   if (error) {
-    logError('Error updating section:', error)
+    logError('Error updating section: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update section')
   }
 
@@ -207,7 +207,7 @@ export async function deleteSection(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting section:', error)
+    logError('Error deleting section: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete section')
   }
 

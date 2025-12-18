@@ -69,7 +69,7 @@ async function fetchTagsForContent(
     .eq('entity_id', contentId)
 
   if (error) {
-    logError('Error fetching tags for content:', error)
+    logError('Error fetching tags for content: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return []
   }
 
@@ -97,7 +97,7 @@ async function fetchTagsForContents(
     .in('entity_id', contentIds)
 
   if (error) {
-    logError('Error fetching tags for contents:', error)
+    logError('Error fetching tags for contents: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return new Map()
   }
 
@@ -156,7 +156,7 @@ export async function getContents(filters: GetContentsFilters = {}): Promise<Get
     .range(offset, offset + safeLimit - 1)
 
   if (error) {
-    logError('Error fetching contents:', error)
+    logError('Error fetching contents: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch contents')
   }
 
@@ -208,7 +208,7 @@ export async function getContentById(contentId: string): Promise<ContentWithTags
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching content:', error)
+    logError('Error fetching content: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch content')
   }
 
@@ -254,7 +254,7 @@ export async function createContent(input: CreateContentData): Promise<ContentWi
     .single()
 
   if (contentError) {
-    logError('Error creating content:', contentError)
+    logError('Error creating content: ' + (contentError instanceof Error ? contentError.message : JSON.stringify(contentError)))
     throw new Error('Failed to create content')
   }
 
@@ -271,7 +271,7 @@ export async function createContent(input: CreateContentData): Promise<ContentWi
       .insert(assignments)
 
     if (assignmentError) {
-      logError('Error creating tag assignments:', assignmentError)
+      logError('Error creating tag assignments: ' + (assignmentError instanceof Error ? assignmentError.message : JSON.stringify(assignmentError)))
       // Don't throw - content is created, just log the error
     }
   }
@@ -321,7 +321,7 @@ export async function updateContent(
       .eq('parish_id', parishId)
 
     if (updateError) {
-      logError('Error updating content:', updateError)
+      logError('Error updating content: ' + (updateError instanceof Error ? updateError.message : JSON.stringify(updateError)))
       throw new Error('Failed to update content')
     }
   }
@@ -336,7 +336,7 @@ export async function updateContent(
       .eq('entity_id', contentId)
 
     if (deleteError) {
-      logError('Error deleting tag assignments:', deleteError)
+      logError('Error deleting tag assignments: ' + (deleteError instanceof Error ? deleteError.message : JSON.stringify(deleteError)))
       throw new Error('Failed to update tag assignments')
     }
 
@@ -353,7 +353,7 @@ export async function updateContent(
         .insert(assignments)
 
       if (insertError) {
-        logError('Error inserting tag assignments:', insertError)
+        logError('Error inserting tag assignments: ' + (insertError instanceof Error ? insertError.message : JSON.stringify(insertError)))
         throw new Error('Failed to update tag assignments')
       }
     }
@@ -406,7 +406,7 @@ export async function deleteContent(contentId: string): Promise<{ success: boole
     .eq('parish_id', parishId)
 
   if (error) {
-    logError('Error deleting content:', error)
+    logError('Error deleting content: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete content')
   }
 
@@ -447,7 +447,7 @@ export async function searchContentByText(
     .limit(safeLimit)
 
   if (error) {
-    logError('Error searching content:', error)
+    logError('Error searching content: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to search content')
   }
 

@@ -112,7 +112,7 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching events:', error)
+    logError('Error fetching events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch events')
   }
 
@@ -147,7 +147,7 @@ export async function getEventsPaginated(params?: PaginatedParams): Promise<Pagi
   const { data, error, count } = await query
 
   if (error) {
-    logError('Error fetching paginated events:', error)
+    logError('Error fetching paginated events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch paginated events')
   }
 
@@ -179,7 +179,7 @@ export async function getEvent(id: string): Promise<Event | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event:', error)
+    logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event')
   }
 
@@ -202,7 +202,7 @@ export async function getEventWithRelations(id: string): Promise<EventWithRelati
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching event:', error)
+    logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch event')
   }
 
@@ -264,7 +264,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
     .single()
 
   if (error) {
-    logError('Error creating event:', error.message, error.details, error.code)
+    logError('Error creating event: ' + error.message + ' Details: ' + JSON.stringify({ details: error.details, code: error.code }))
     throw new Error(`Failed to create event: ${error.message}`)
   }
 
@@ -311,7 +311,7 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
     .single()
 
   if (error) {
-    logError('Error updating event:', error)
+    logError('Error updating event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update event')
   }
 
@@ -338,7 +338,7 @@ export async function deleteEvent(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting event:', error)
+    logError('Error deleting event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete event')
   }
 
@@ -480,7 +480,7 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching events with relations:', error)
+    logError('Error fetching events with relations: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch events')
   }
 

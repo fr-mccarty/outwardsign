@@ -37,7 +37,7 @@ export async function generateAnnouncementWithAI(prompt: string, parishId: strin
       throw new Error('ANTHROPIC_API_KEY environment variable is not configured')
     }
 
-    logInfo('Making API call to Claude with prompt:', prompt)
+    logInfo('Making API call to Claude with prompt: ' + prompt)
     
     // Make API call to Claude using the SDK
     const response = await anthropic.messages.create({
@@ -62,16 +62,16 @@ Format the response as a ready-to-use announcement text.`,
       ],
     })
 
-    logInfo('Claude API response:', response)
+    logInfo('Claude API response: ' + JSON.stringify(response))
     
     const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : ''
 
     if (!generatedText) {
-      logError('No content in Claude response. Full response:', response)
+      logError('No content in Claude response. Full response: ' + JSON.stringify(response))
       throw new Error('No content generated from AI')
     }
 
-    logInfo('Generated text:', generatedText)
+    logInfo('Generated text: ' + generatedText)
 
     return { 
       success: true, 
@@ -79,13 +79,23 @@ Format the response as a ready-to-use announcement text.`,
       usage: response.usage 
     }
   } catch (error) {
-    logError('Error generating announcement with AI:', error)
-    logError('Error details:', {
+    logError('Error generating announcement with AI: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+    logError('Error details: ' + ({
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       prompt,
       parishId
-    })
+    } instanceof Error ? {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      prompt,
+      parishId
+    }.message : JSON.stringify({
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      prompt,
+      parishId
+    })))
     throw error
   }
 }

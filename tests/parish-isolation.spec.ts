@@ -17,6 +17,7 @@
 
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -81,9 +82,9 @@ test.describe.serial('Parish Isolation', () => {
       console.log(`   Selecting parish for ${email}...`);
       // Click the first "Select Parish" button
       await page.locator('button:has-text("Select Parish")').first().click();
-      await page.waitForURL('/dashboard', { timeout: 10000 });
+      await page.waitForURL('/dashboard', { timeout: TEST_TIMEOUTS.NAVIGATION });
     } else {
-      await page.waitForURL('/dashboard', { timeout: 15000 });
+      await page.waitForURL('/dashboard', { timeout: TEST_TIMEOUTS.EXTENDED });
     }
   }
 

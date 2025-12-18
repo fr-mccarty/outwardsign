@@ -3,19 +3,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { logError } from '@/lib/utils/console'
 import { MassRole } from '@/lib/types'
-import { logError } from '@/lib/utils/console'
 import type { PaginatedParams, PaginatedResult } from './people'
-import { logError } from '@/lib/utils/console'
 import { createMassRoleSchema, updateMassRoleSchema } from '@/lib/schemas/mass-roles'
-import { logError } from '@/lib/utils/console'
 import type { CreateMassRoleData, UpdateMassRoleData } from '@/lib/schemas/mass-roles'
-import { logError } from '@/lib/utils/console'
 
 // ========== MASS ROLE DEFINITIONS ==========
 
@@ -32,7 +25,7 @@ export async function getMassRoles(): Promise<MassRole[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    logError('Error fetching mass roles:', error)
+    logError('Error fetching mass roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch mass roles')
   }
 
@@ -68,7 +61,7 @@ export async function getMassRolesPaginated(params?: PaginatedParams): Promise<P
   const { data, error, count } = await query
 
   if (error) {
-    logError('Error fetching paginated mass roles:', error)
+    logError('Error fetching paginated mass roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch paginated mass roles')
   }
 
@@ -100,7 +93,7 @@ export async function getMassRole(id: string): Promise<MassRole | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching mass role:', error)
+    logError('Error fetching mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch mass role')
   }
 
@@ -146,11 +139,19 @@ export async function getMassRoleWithRelations(id: string): Promise<MassRoleWith
     if (massRoleError.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching mass role:', {
+    logError('Error fetching mass role: ' + ({
       error: massRoleError,
       code: massRoleError.code,
       message: massRoleError.message
-    })
+    } instanceof Error ? {
+      error: massRoleError,
+      code: massRoleError.code,
+      message: massRoleError.message
+    }.message : JSON.stringify({
+      error: massRoleError,
+      code: massRoleError.code,
+      message: massRoleError.message
+    })))
     throw new Error(`Failed to fetch mass role: ${massRoleError.message}`)
   }
 
@@ -166,7 +167,7 @@ export async function getMassRoleWithRelations(id: string): Promise<MassRoleWith
     .eq('mass_role_id', id)
 
   if (membersError) {
-    logError('Error fetching mass role members:', membersError)
+    logError('Error fetching mass role members: ' + (membersError instanceof Error ? membersError.message : JSON.stringify(membersError)))
     // Don't throw, just return with empty members
     return {
       ...massRoleData,
@@ -187,7 +188,7 @@ export async function getMassRoleWithRelations(id: string): Promise<MassRoleWith
       .in('id', personIds)
 
     if (peopleError) {
-      logError('Error fetching people for mass role members:', peopleError)
+      logError('Error fetching people for mass role members: ' + (peopleError instanceof Error ? peopleError.message : JSON.stringify(peopleError)))
     } else if (peopleData) {
       // Add preferred_name: null to match the expected interface
       peopleMap = Object.fromEntries(peopleData.map(p => [p.id, { ...p, preferred_name: null }]))
@@ -239,7 +240,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
     .single()
 
   if (error) {
-    logError('Error creating mass role:', error)
+    logError('Error creating mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create mass role')
   }
 
@@ -269,7 +270,7 @@ export async function updateMassRole(id: string, data: UpdateMassRoleData): Prom
     .single()
 
   if (error) {
-    logError('Error updating mass role:', error)
+    logError('Error updating mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update mass role')
   }
 
@@ -290,7 +291,7 @@ export async function deleteMassRole(id: string): Promise<void> {
     .limit(1)
 
   if (checkError) {
-    logError('Error checking mass role usage:', checkError)
+    logError('Error checking mass role usage: ' + (checkError instanceof Error ? checkError.message : JSON.stringify(checkError)))
     throw new Error('Failed to check if mass role is in use')
   }
 
@@ -306,7 +307,7 @@ export async function deleteMassRole(id: string): Promise<void> {
     .limit(1)
 
   if (instanceCheckError) {
-    logError('Error checking mass role instance usage:', instanceCheckError)
+    logError('Error checking mass role instance usage: ' + (instanceCheckError instanceof Error ? instanceCheckError.message : JSON.stringify(instanceCheckError)))
     throw new Error('Failed to check if mass role is in use')
   }
 
@@ -320,7 +321,7 @@ export async function deleteMassRole(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting mass role:', error)
+    logError('Error deleting mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete mass role')
   }
 
@@ -347,7 +348,7 @@ export async function reorderMassRoles(orderedIds: string[]): Promise<void> {
   // Check for errors
   const errors = results.filter((r) => r.error)
   if (errors.length > 0) {
-    logError('Error reordering mass roles:', errors)
+    logError('Error reordering mass roles: ' + errors)
     throw new Error('Failed to reorder mass roles')
   }
 
@@ -381,7 +382,7 @@ export async function getMassRolesWithCounts(): Promise<MassRoleWithCount[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    logError('Error fetching mass roles with counts:', error)
+    logError('Error fetching mass roles with counts: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch mass roles')
   }
 

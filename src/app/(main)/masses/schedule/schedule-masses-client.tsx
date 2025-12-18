@@ -644,11 +644,13 @@ export function ScheduleMassesClient({ massEventTypes, massTimesTemplates, massR
   // Check if no mass event types are available
   if (massEventTypes.length === 0) {
     return (
-      <Card className="max-w-xl mx-auto">
-        <CardContent className="pt-6">
-          <div className="text-center space-y-4">
-            <AlertTriangle className="h-12 w-12 mx-auto text-amber-500" />
-            <h3 className="text-lg font-semibold">No Mass Event Types</h3>
+      <>
+        <h1 className="text-3xl font-bold mb-6">Schedule Masses</h1>
+        <Card className="max-w-xl mx-auto">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <AlertTriangle className="h-12 w-12 mx-auto text-amber-500" />
+              <h3 className="text-lg font-semibold">No Mass Event Types</h3>
             <p className="text-sm text-muted-foreground">
               No mass event types have been configured for this parish.
               Please contact an administrator to set up mass event types before scheduling.
@@ -659,11 +661,13 @@ export function ScheduleMassesClient({ massEventTypes, massTimesTemplates, massR
           </div>
         </CardContent>
       </Card>
+      </>
     )
   }
 
   return (
     <>
+      <h1 className="text-3xl font-bold mb-6">Schedule Masses</h1>
       <Wizard
         title="Schedule Masses"
         description="Create multiple Masses with automatic minister assignments"

@@ -16,7 +16,7 @@ test.describe('Presentations Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new child
     const dialog = page.locator('[role="dialog"]');
@@ -37,10 +37,10 @@ test.describe('Presentations Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify child is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -84,7 +84,7 @@ test.describe('Presentations Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new mother
     const dialog = page.locator('[role="dialog"]');
@@ -105,10 +105,10 @@ test.describe('Presentations Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify mother is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -152,7 +152,7 @@ test.describe('Presentations Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new father
     const dialog = page.locator('[role="dialog"]');
@@ -173,10 +173,10 @@ test.describe('Presentations Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify father is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -215,7 +215,7 @@ test.describe('Presentations Module - Add People', () => {
     // Add child
     await page.getByTestId('child-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const childFirstName = `Child${Date.now()}`;
     const childLastName = 'PresentationFamily';
@@ -224,8 +224,8 @@ test.describe('Presentations Module - Add People', () => {
     await dialog.locator('#first_name').fill(childFirstName);
     await dialog.locator('#last_name').fill(childLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify child selected
     await expect(page.locator(`button:has-text("${childFirstName} ${childLastName}")`)).toBeVisible();
@@ -233,7 +233,7 @@ test.describe('Presentations Module - Add People', () => {
     // Add mother
     await page.getByTestId('mother-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const motherFirstName = `Mother${Date.now()}`;
     const motherLastName = 'PresentationFamily';
@@ -242,8 +242,8 @@ test.describe('Presentations Module - Add People', () => {
     await dialog.locator('#first_name').fill(motherFirstName);
     await dialog.locator('#last_name').fill(motherLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify mother selected
     await expect(page.locator(`button:has-text("${motherFirstName} ${motherLastName}")`)).toBeVisible();
@@ -251,7 +251,7 @@ test.describe('Presentations Module - Add People', () => {
     // Add father
     await page.getByTestId('father-trigger').click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const fatherFirstName = `Father${Date.now()}`;
     const fatherLastName = 'PresentationFamily';
@@ -260,8 +260,8 @@ test.describe('Presentations Module - Add People', () => {
     await dialog.locator('#first_name').fill(fatherFirstName);
     await dialog.locator('#last_name').fill(fatherLastName);
     await dialog.getByRole('button', { name: /Save Person/i }).click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify father selected
     await expect(page.locator(`button:has-text("${fatherFirstName} ${fatherLastName}")`)).toBeVisible();

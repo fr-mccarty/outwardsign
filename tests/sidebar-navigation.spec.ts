@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * Navigation Smoke Test - Validates all sidebar links load without errors.
@@ -17,14 +18,14 @@ test.describe('Sidebar Navigation', () => {
     // Increase timeout for this test since it visits many pages
     test.setTimeout(180000); // 3 minutes
 
-    await page.goto('/dashboard', { timeout: 30000 });
+    await page.goto('/dashboard', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
 
     // Expand all collapsible sections to reveal hidden links
     // Keep clicking closed triggers until none remain
     let closedTrigger = page.locator('button[data-state="closed"]').first();
     while (await closedTrigger.count() > 0) {
       await closedTrigger.click();
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       closedTrigger = page.locator('button[data-state="closed"]').first();
     }
 
@@ -33,7 +34,7 @@ test.describe('Sidebar Navigation', () => {
     await expect(sidebar).toBeVisible();
 
     // Wait for sidebar to be hydrated - check for the dashboard link
-    await expect(sidebar.locator('a[href="/dashboard"]').first()).toBeVisible({ timeout: 10000 });
+    await expect(sidebar.locator('a[href="/dashboard"]').first()).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Find all anchor tags in sidebar
     const links = sidebar.locator('a[href]');
@@ -70,7 +71,7 @@ test.describe('Sidebar Navigation', () => {
 
       try {
         // Navigate to the page with extended timeout
-        const response = await page.goto(link.url, { timeout: 30000 });
+        const response = await page.goto(link.url, { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
 
         // Check for server errors (5xx status codes)
         if (response && response.status() >= 500) {
@@ -83,24 +84,25 @@ test.describe('Sidebar Navigation', () => {
         const errorBoundary = page.locator('text=Application error');
         const serverError = page.locator('text=500');
 
-        if (await errorOverlay.isVisible({ timeout: 1000 }).catch(() => false)) {
+        if (await errorOverlay.isVisible({ timeout: TEST_TIMEOUTS.QUICK }).catch(() => false)) {
           failures.push({ name: link.name, url: link.url, error: 'Next.js error overlay visible' });
           continue;
         }
 
-        if (await errorBoundary.isVisible({ timeout: 1000 }).catch(() => false)) {
+        if (await errorBoundary.isVisible({ timeout: TEST_TIMEOUTS.QUICK }).catch(() => false)) {
           failures.push({ name: link.name, url: link.url, error: 'Application error boundary' });
           continue;
         }
 
-        if (await serverError.isVisible({ timeout: 1000 }).catch(() => false)) {
+        if (await serverError.isVisible({ timeout: TEST_TIMEOUTS.QUICK }).catch(() => false)) {
           failures.push({ name: link.name, url: link.url, error: 'Server error page' });
           continue;
         }
 
         // Verify page has loaded by checking for any heading
+        // Use configured timeout for pages with heavy server-side data fetching
         const heading = page.locator('h1, h2').first();
-        const hasHeading = await heading.isVisible({ timeout: 5000 }).catch(() => false);
+        const hasHeading = await heading.isVisible({ timeout: TEST_TIMEOUTS.EXTENDED }).catch(() => false);
 
         if (!hasHeading) {
           failures.push({ name: link.name, url: link.url, error: 'No heading found - page may not have loaded' });
@@ -121,7 +123,7 @@ test.describe('Sidebar Navigation', () => {
   });
 
   test('sidebar persists and collapses work', async ({ page }) => {
-    await page.goto('/dashboard', { timeout: 30000 });
+    await page.goto('/dashboard', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
 
     // Verify sidebar is visible
     const sidebar = page.locator('[data-sidebar="sidebar"]').first();
@@ -134,13 +136,13 @@ test.describe('Sidebar Navigation', () => {
     if (hasCollapsible) {
       const initialState = await collapsibleTrigger.getAttribute('data-state');
       await collapsibleTrigger.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       const newState = await collapsibleTrigger.getAttribute('data-state');
       expect(newState).not.toBe(initialState);
     }
 
     // Navigate and verify sidebar persists
-    await page.goto('/calendar', { timeout: 30000 });
+    await page.goto('/calendar', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(sidebar).toBeVisible();
   });
 });

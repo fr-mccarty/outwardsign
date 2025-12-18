@@ -33,7 +33,7 @@ test.describe('Mass Role Picker Component', () => {
 
     // Wait for Mass Role Picker dialog to appear
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000); // Wait for dialog to fully load
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT); // Wait for dialog to fully load
 
     // Verify the dialog is open
     const dialog = page.locator('[role="dialog"]').first();
@@ -41,7 +41,7 @@ test.describe('Mass Role Picker Component', () => {
 
     // Close the picker by pressing Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Verify dialog is closed
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -77,13 +77,13 @@ test.describe('Mass Role Picker Component', () => {
     await addRoleButton.click();
 
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Click "Add New Mass Role" button
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
+    await addNewButton.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Fill in minimal mass role data (just name, which is required)
     const roleName = `Test Role ${Date.now()}`;
@@ -97,7 +97,7 @@ test.describe('Mass Role Picker Component', () => {
     await saveButton.click();
 
     // Wait for the picker to close and role to be added
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Picker dialog should be closed
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -133,13 +133,13 @@ test.describe('Mass Role Picker Component', () => {
     // Open mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Click "Add New Mass Role"
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
+    await addNewButton.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Fill in complete mass role data
     const roleData = {
@@ -164,7 +164,7 @@ test.describe('Mass Role Picker Component', () => {
 
     // Submit
     await dialog.getByRole('button', { name: /Save Mass Role/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify picker closed and role added
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -196,17 +196,17 @@ test.describe('Mass Role Picker Component', () => {
     // Add a role to this template (which creates it in the database)
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
+    await addNewButton.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const roleName = `Selectable Role ${Date.now()}`;
     await page.locator('[role="dialog"]').getByLabel('Name').fill(roleName);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Mass Role/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     console.log(`Created test mass role: ${roleName}`);
 
@@ -223,7 +223,7 @@ test.describe('Mass Role Picker Component', () => {
     // Open the mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Try to find the role by clicking on it (don't click "Add New")
     const roleButton = page.locator('[role="dialog"]').getByText(roleName).first();
@@ -240,7 +240,7 @@ test.describe('Mass Role Picker Component', () => {
       }
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Picker should close after selection
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -279,14 +279,14 @@ test.describe('Mass Role Picker Component', () => {
     const role1Name = `Lector ${Date.now()}`;
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
     const addNew1 = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-    await addNew1.waitFor({ state: 'visible', timeout: 15000 });
+    await addNew1.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
     await addNew1.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     await page.locator('[role="dialog"]').getByLabel('Name').fill(role1Name);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Mass Role/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Create second template and role
     await page.goto('/mass-role-templates/create');
@@ -298,14 +298,14 @@ test.describe('Mass Role Picker Component', () => {
     const role2Name = `Usher ${Date.now()}`;
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
     const addNew2 = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-    await addNew2.waitFor({ state: 'visible', timeout: 15000 });
+    await addNew2.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
     await addNew2.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     await page.locator('[role="dialog"]').getByLabel('Name').fill(role2Name);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Mass Role/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     console.log('Created 2 test mass roles');
 
@@ -319,7 +319,7 @@ test.describe('Mass Role Picker Component', () => {
     // Open the mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify the dialog is showing mass roles
     const dialog = page.locator('[role="dialog"]').first();
@@ -329,7 +329,7 @@ test.describe('Mass Role Picker Component', () => {
     const searchInput = dialog.getByPlaceholder(/Search/i);
     if (await searchInput.isVisible()) {
       await searchInput.fill('Lector');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should find the Lector role
       await expect(dialog.getByText(role1Name)).toBeVisible();
@@ -337,7 +337,7 @@ test.describe('Mass Role Picker Component', () => {
 
     // Close the picker
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     console.log('Successfully verified mass role picker search and display');
   });
@@ -363,18 +363,18 @@ test.describe('Mass Role Picker Component', () => {
     // Open mass role picker
     await page.getByRole('button', { name: /Add Role/i }).click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Click "Add New Mass Role"
     const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
+    await addNewButton.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
     await addNewButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Try to submit without filling the required name field
     const saveButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Mass Role/i });
     await saveButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Dialog should stay open (validation failed)
     await expect(page.locator('[role="dialog"]').first()).toBeVisible();
@@ -382,7 +382,7 @@ test.describe('Mass Role Picker Component', () => {
     // Now fill the name and try again
     await page.locator('[role="dialog"]').getByLabel('Name').fill('Valid Role Name');
     await saveButton.click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close and role should be added
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -416,16 +416,16 @@ test.describe('Mass Role Picker Component', () => {
     async function addRole(roleName: string) {
       await page.getByRole('button', { name: /Add Role/i }).click();
       await page.waitForSelector('[role="dialog"]', { state: 'visible' });
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
       const addNewButton = page.locator('[role="dialog"]').getByRole('button', { name: /Add New Mass Role/i }).first();
-      await addNewButton.waitFor({ state: 'visible', timeout: 15000 });
+      await addNewButton.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
       await addNewButton.click();
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       await page.locator('[role="dialog"]').getByLabel('Name').fill(roleName);
       await page.locator('[role="dialog"]').getByRole('button', { name: /Save Mass Role/i }).click();
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
     }
 
     // Add first role

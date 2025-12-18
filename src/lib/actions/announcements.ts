@@ -56,7 +56,7 @@ export async function getAnnouncements(parishId: string) {
 
     return { success: true, announcements: announcements || [] }
   } catch (error) {
-    logError('Error fetching announcements:', error)
+    logError('Error fetching announcements: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -110,7 +110,7 @@ export async function createAnnouncement(data: {
 
     return { success: true, announcement }
   } catch (error) {
-    logError('Error creating announcement:', error)
+    logError('Error creating announcement: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -172,7 +172,7 @@ export async function updateAnnouncement(announcementId: number, data: {
 
     return { success: true, announcement }
   } catch (error) {
-    logError('Error updating announcement:', error)
+    logError('Error updating announcement: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -221,7 +221,7 @@ export async function deleteAnnouncement(announcementId: number) {
 
     return { success: true }
   } catch (error) {
-    logError('Error deleting announcement:', error)
+    logError('Error deleting announcement: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -428,7 +428,7 @@ export async function searchAnnouncements(params: {
       currentPage
     }
   } catch (error) {
-    logError('Error searching announcements:', error)
+    logError('Error searching announcements: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -490,7 +490,7 @@ export async function duplicateAnnouncement(announcementId: number) {
 
     return duplicatedAnnouncement
   } catch (error) {
-    logError('Error duplicating announcement:', error)
+    logError('Error duplicating announcement: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -529,7 +529,7 @@ export async function getAnnouncement(announcementId: number) {
 
     return announcement
   } catch (error) {
-    logError('Error fetching announcement:', error)
+    logError('Error fetching announcement: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -601,7 +601,7 @@ export async function getAnnouncementsByDateRange(startDate: string, endDate: st
 
     return announcements || []
   } catch (error) {
-    logError('Error fetching announcements by date range:', error)
+    logError('Error fetching announcements by date range: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -640,7 +640,7 @@ export async function getLiturgicalEvents(parishId: string) {
 
     return { success: true, events: events || [] }
   } catch (error) {
-    logError('Error fetching liturgical events:', error)
+    logError('Error fetching liturgical events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }

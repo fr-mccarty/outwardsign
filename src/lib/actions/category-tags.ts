@@ -73,7 +73,7 @@ export async function getCategoryTags(
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching category tags:', error)
+    logError('Error fetching category tags: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch category tags')
   }
 
@@ -100,7 +100,7 @@ export async function getCategoryTagsWithUsageCount(): Promise<CategoryTagWithUs
     .order('sort_order', { ascending: true })
 
   if (error) {
-    logError('Error fetching category tags with usage count:', error)
+    logError('Error fetching category tags with usage count: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch category tags with usage count')
   }
 
@@ -132,7 +132,7 @@ export async function getCategoryTagById(tagId: string): Promise<CategoryTag | n
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching category tag:', error)
+    logError('Error fetching category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch category tag')
   }
 
@@ -193,7 +193,7 @@ export async function createCategoryTag(input: CreateCategoryTagData): Promise<C
     if (error.code === '23505') {
       throw new Error('A tag with this slug already exists')
     }
-    logError('Error creating category tag:', error)
+    logError('Error creating category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create category tag')
   }
 
@@ -238,7 +238,7 @@ export async function updateCategoryTag(
     if (error.code === '23505') {
       throw new Error('A tag with this slug already exists')
     }
-    logError('Error updating category tag:', error)
+    logError('Error updating category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update category tag')
   }
 
@@ -275,7 +275,7 @@ export async function deleteCategoryTag(tagId: string): Promise<{ success: boole
     .eq('tag_id', tagId)
 
   if (countError) {
-    logError('Error checking tag usage:', countError)
+    logError('Error checking tag usage: ' + (countError instanceof Error ? countError.message : JSON.stringify(countError)))
     throw new Error('Failed to check tag usage')
   }
 
@@ -291,7 +291,7 @@ export async function deleteCategoryTag(tagId: string): Promise<{ success: boole
     .eq('parish_id', parishId)
 
   if (error) {
-    logError('Error deleting category tag:', error)
+    logError('Error deleting category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete category tag')
   }
 
@@ -322,7 +322,7 @@ export async function reorderCategoryTags(tagIdsInOrder: string[]): Promise<Cate
     .in('id', tagIdsInOrder)
 
   if (fetchError) {
-    logError('Error fetching tags for reorder:', fetchError)
+    logError('Error fetching tags for reorder: ' + (fetchError instanceof Error ? fetchError.message : JSON.stringify(fetchError)))
     throw new Error('Failed to verify tags')
   }
 
@@ -343,7 +343,7 @@ export async function reorderCategoryTags(tagIdsInOrder: string[]): Promise<Cate
 
   const errors = results.filter(r => r.error)
   if (errors.length > 0) {
-    logError('Error reordering category tags:', errors)
+    logError('Error reordering category tags: ' + errors)
     throw new Error('Failed to reorder category tags')
   }
 

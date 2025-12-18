@@ -139,7 +139,7 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching people:', error)
+    logError('Error fetching people: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch people')
   }
 
@@ -190,7 +190,7 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
   const { data, error, count } = await query
 
   if (error) {
-    logError('Error fetching paginated people:', error)
+    logError('Error fetching paginated people: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch paginated people')
   }
 
@@ -223,7 +223,7 @@ export async function getPerson(id: string): Promise<Person | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching person:', error)
+    logError('Error fetching person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch person')
   }
 
@@ -269,7 +269,7 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
     .single()
 
   if (error) {
-    logError('Error creating person:', error)
+    logError('Error creating person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error(`Failed to create person: ${error.message}`)
   }
 
@@ -317,7 +317,7 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
     .single()
 
   if (error) {
-    logError('Error updating person:', error)
+    logError('Error updating person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update person')
   }
 
@@ -344,7 +344,7 @@ export async function deletePerson(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting person:', error)
+    logError('Error deleting person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete person')
   }
 
@@ -408,7 +408,7 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
   const { data, error, count } = await query
 
   if (error) {
-    logError('Error fetching paginated people with roles:', error)
+    logError('Error fetching paginated people with roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch paginated people with roles')
   }
 
@@ -507,7 +507,7 @@ export async function uploadPersonAvatar(
     })
 
   if (uploadError) {
-    logError('Error uploading avatar:', uploadError)
+    logError('Error uploading avatar: ' + (uploadError instanceof Error ? uploadError.message : JSON.stringify(uploadError)))
     throw new Error('Failed to upload avatar')
   }
 
@@ -518,7 +518,7 @@ export async function uploadPersonAvatar(
     .eq('id', personId)
 
   if (updateError) {
-    logError('Error updating person avatar_url:', updateError)
+    logError('Error updating person avatar_url: ' + (updateError instanceof Error ? updateError.message : JSON.stringify(updateError)))
     throw new Error('Failed to update person record')
   }
 
@@ -563,7 +563,7 @@ export async function deletePersonAvatar(personId: string): Promise<void> {
       .remove([person.avatar_url])
 
     if (deleteError) {
-      logError('Error deleting avatar from storage:', deleteError)
+      logError('Error deleting avatar from storage: ' + (deleteError instanceof Error ? deleteError.message : JSON.stringify(deleteError)))
       // Continue to update database even if storage delete fails
     }
   }
@@ -575,7 +575,7 @@ export async function deletePersonAvatar(personId: string): Promise<void> {
     .eq('id', personId)
 
   if (updateError) {
-    logError('Error clearing person avatar_url:', updateError)
+    logError('Error clearing person avatar_url: ' + (updateError instanceof Error ? updateError.message : JSON.stringify(updateError)))
     throw new Error('Failed to update person record')
   }
 
@@ -609,7 +609,7 @@ export async function getPersonAvatarSignedUrl(storagePath: string): Promise<str
     .createSignedUrl(storagePath, 3600) // 1 hour in seconds
 
   if (error) {
-    logError('Error generating signed URL:', error)
+    logError('Error generating signed URL: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return null
   }
 
@@ -648,7 +648,7 @@ export async function getPersonAvatarSignedUrls(
     .createSignedUrls(validPaths, 3600) // 1 hour in seconds
 
   if (error) {
-    logError('Error generating signed URLs:', error)
+    logError('Error generating signed URLs: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return {}
   }
 

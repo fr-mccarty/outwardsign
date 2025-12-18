@@ -45,13 +45,13 @@ export async function getUserSettings(): Promise<UserSettings | null> {
         .single()
 
       if (createError) {
-        logError('Error creating default settings:', createError)
+        logError('Error creating default settings: ' + (createError instanceof Error ? createError.message : JSON.stringify(createError)))
         return null
       }
 
       return newSettings
     }
-    logError('Error fetching user settings:', error)
+    logError('Error fetching user settings: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return null
   }
 
@@ -77,7 +77,7 @@ export async function updateUserSettings(data: UpdateUserSettingsData): Promise<
     .single()
 
   if (error) {
-    logError('Error updating user settings:', error)
+    logError('Error updating user settings: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update user settings')
   }
 

@@ -19,7 +19,7 @@ test.describe('Mass Intention Report', () => {
     await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Event/i })).toBeVisible();
 
     // Form should auto-open when no event is selected
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Fill in event details with the specified date
     const eventName = `Holy Mass ${Date.now()}`;
@@ -31,7 +31,7 @@ test.describe('Mass Intention Report', () => {
 
     // Submit the event creation
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Event picker should close
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -85,14 +85,14 @@ test.describe('Mass Intention Report', () => {
     // Wait for the loading spinner to appear (masses start loading)
     const loadingSpinner = page.locator('[role="dialog"]').locator('.animate-spin').first();
     try {
-      await loadingSpinner.waitFor({ state: 'visible', timeout: 2000 });
+      await loadingSpinner.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.SHORT });
       // Then wait for it to disappear (loading complete)
-      await loadingSpinner.waitFor({ state: 'detached', timeout: 5000 });
+      await loadingSpinner.waitFor({ state: 'detached', timeout: TEST_TIMEOUTS.TOAST });
     } catch {
       // If spinner never appears, masses may already be loaded or cached
       console.log('Loading spinner not detected, proceeding...');
     }
-    await page.waitForTimeout(500); // Let dialog fully render after loading
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK); // Let dialog fully render after loading
 
     // Try to find and select the specific mass by its card using the data-testid
     const massCard = page.locator(`[data-testid="mass-picker-dialog-${massId}"]`).first();
@@ -102,7 +102,7 @@ test.describe('Mass Intention Report', () => {
       console.log(`✓ Found mass card for ${massId}, clicking...`);
       // Force click to bypass pointer interception from child elements
       await massCard.click({ force: true });
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     } else {
       // Debug: Log how many mass cards are visible and which page we're on
       const allMassCards = page.locator('[role="dialog"]').locator('[data-testid^="mass-picker-dialog-"]');
@@ -122,27 +122,27 @@ test.describe('Mass Intention Report', () => {
         console.log(`↪️  Falling back to first available mass: ${firstCardId}`);
         // Force click to bypass pointer interception from child elements
         await firstMassCard.click({ force: true });
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       } else {
         console.log('✗ No mass cards found at all, closing dialog without selecting');
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       }
     }
 
     // Wait for dialog to close - force close all dialogs if needed
     try {
-      await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: 3000 });
+      await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: TEST_TIMEOUTS.DIALOG });
     } catch {
       console.log('Dialog(s) still open, force closing with Escape...');
       const dialogCount = await page.locator('[role="dialog"]').count();
       // Press Escape multiple times to close nested dialogs
       for (let i = 0; i < dialogCount; i++) {
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       }
       // Verify all dialogs are closed
-      await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: 2000 });
+      await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: TEST_TIMEOUTS.SHORT });
     }
 
     // Verify a mass was selected by checking if the mass picker shows a selected value
@@ -236,7 +236,7 @@ test.describe('Mass Intention Report', () => {
     await generateButton.click();
 
     // Wait for report to load
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify that the report displays the correct mass intentions (5 in range)
     // Intentions IN RANGE (should be visible)
@@ -319,7 +319,7 @@ test.describe('Mass Intention Report', () => {
     await page.getByRole('button', { name: /Generate Report/i }).click();
 
     // Wait for report to load
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify empty state message is displayed
     await expect(page.getByText(/No Mass Intentions Found/i)).toBeVisible();
@@ -346,7 +346,7 @@ test.describe('Mass Intention Report', () => {
     await page.getByRole('button', { name: /Generate Report/i }).click();
 
     // Wait a moment for validation
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Should show error message (toast notification or inline error)
     // The component shows a toast with "Start date must be before end date"
@@ -381,7 +381,7 @@ test.describe('Mass Intention Report', () => {
     // Generate report without date filters (should show ALL mass intentions)
     const generateButton = page.getByRole('button', { name: /Generate Report/i });
     await generateButton.click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Both intentions should be visible (no date filtering applied)
     await expect(page.getByText(intention1Text)).toBeVisible();
@@ -416,7 +416,7 @@ test.describe('Mass Intention Report', () => {
 
     // Generate report
     await page.getByRole('button', { name: /Generate Report/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify the mass intention appears
     await expect(page.getByText(intentionText)).toBeVisible();
@@ -472,7 +472,7 @@ test.describe('Mass Intention Report', () => {
 
     // Generate report
     await page.getByRole('button', { name: /Generate Report/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify total stipends: $10.00 + $25.50 + $15.00 = $51.00
     // The total should appear in the summary section
@@ -500,7 +500,7 @@ test.describe('Mass Intention Report', () => {
     await page.getByLabel('Start Date').fill('2025-01-01');
     await page.getByLabel('End Date').fill('2025-12-31');
     await page.getByRole('button', { name: /Generate Report/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // After generating report, buttons should be enabled
     await expect(printButton).toBeEnabled();
@@ -532,7 +532,7 @@ test.describe('Mass Intention Report', () => {
 
     // Generate report
     await page.getByRole('button', { name: /Generate Report/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Trigger CSV download
     const downloadPromise = page.waitForEvent('download');

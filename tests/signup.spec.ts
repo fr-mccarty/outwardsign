@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Signup Flow', () => {
   test('should sign up a new user and redirect to onboarding', async ({ page }) => {
@@ -23,7 +24,7 @@ test.describe('Signup Flow', () => {
     await page.click('button[type="submit"]');
 
     // 5. Wait for redirect to onboarding (navigation proves success)
-    await page.waitForURL('/onboarding', { timeout: 15000 });
+    await page.waitForURL('/onboarding', { timeout: TEST_TIMEOUTS.EXTENDED });
 
     // 6. Verify we're on the onboarding page
     await expect(page).toHaveURL('/onboarding');
@@ -37,7 +38,7 @@ test.describe('Signup Flow', () => {
     await page.click('button[type="submit"]');
 
     // Should redirect to dashboard after creating parish
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: TEST_TIMEOUTS.EXTENDED });
     await expect(page).toHaveURL('/dashboard');
   });
 

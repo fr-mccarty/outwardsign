@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, FileText, ChevronRight, Church, Calendar, Tag } from 'lucide-react'
+import { User, FileText, ChevronRight, Church, Calendar, Tag, FileStack } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -25,6 +25,26 @@ export function SettingsHubClient() {
           <Button asChild className="w-full justify-between">
             <Link href="/settings/user">
               {t('settings.configurePreferences')}
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-primary" />
+            {t('settings.events.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            {t('settings.events.description')}
+          </p>
+          <Button asChild variant="outline" className="w-full justify-between">
+            <Link href="/settings/events">
+              {t('settings.manageEvents')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -145,6 +165,26 @@ export function SettingsHubClient() {
           <Button asChild variant="outline" className="w-full justify-between">
             <Link href="/settings/category-tags">
               {t('settings.manageCategoryTags')}
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <FileStack className="h-5 w-5 text-primary" />
+            {t('settings.eventTemplates')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            {t('settings.eventTemplatesDescription')}
+          </p>
+          <Button asChild variant="outline" className="w-full justify-between">
+            <Link href="/settings/event-templates">
+              {t('settings.manageEventTemplates')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>

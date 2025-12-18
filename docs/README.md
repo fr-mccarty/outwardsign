@@ -54,6 +54,7 @@ All documentation in this directory must follow these standards:
 - [TESTING_GUIDE.md](./TESTING_GUIDE.md) - Test patterns, authentication, debugging
 - [CODE_CONVENTIONS.md](./CODE_CONVENTIONS.md) - Coding standards and conventions
 - [DATABASE.md](./DATABASE.md) - Database management procedures
+- [CONSOLE_HELPERS.md](./CONSOLE_HELPERS.md) - Standardized console logging utilities
 
 **Component References:**
 - [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md) - Complete component library reference

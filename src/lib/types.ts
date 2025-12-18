@@ -846,6 +846,7 @@ export interface CalendarEvent {
   location_id: string | null
   is_primary: boolean  // Primary calendar event for a master event
   is_cancelled: boolean  // True if this specific calendar event is cancelled
+  is_all_day: boolean  // True if this is an all-day event (no specific time, only date)
   deleted_at: string | null
   created_at: string
   location?: Location | null
@@ -864,6 +865,7 @@ export interface CreateCalendarEventData {
   location_id?: string | null
   is_primary?: boolean
   is_cancelled?: boolean
+  is_all_day?: boolean  // Optional - defaults to false
 }
 
 export interface UpdateCalendarEventData {
@@ -873,6 +875,54 @@ export interface UpdateCalendarEventData {
   location_id?: string | null
   is_primary?: boolean
   is_cancelled?: boolean
+  is_all_day?: boolean
+}
+
+// ========================================
+// MASTER EVENT TEMPLATES
+// ========================================
+// Templates for master events that can be reused when creating new events
+
+export interface CalendarEventTemplateData {
+  location_id: string | null
+  is_all_day: boolean
+  duration_days: number | null  // For multi-day all-day events
+}
+
+export interface TemplateData {
+  field_values: Record<string, any>
+  presider_id: string | null
+  homilist_id: string | null
+  calendar_events: Record<string, CalendarEventTemplateData>
+}
+
+export interface MasterEventTemplate {
+  id: string
+  parish_id: string
+  event_type_id: string
+  name: string
+  description: string | null
+  template_data: TemplateData
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export interface MasterEventTemplateWithRelations extends MasterEventTemplate {
+  event_type: EventType
+}
+
+export interface CreateMasterEventTemplateData {
+  event_type_id: string
+  name: string
+  description?: string | null
+  template_data: TemplateData
+}
+
+export interface UpdateMasterEventTemplateData {
+  name?: string
+  description?: string | null
 }
 
 // ========================================

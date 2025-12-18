@@ -115,7 +115,7 @@ test.describe('People Module', () => {
     if (await searchInput.count() > 0) {
       await searchInput.first().fill('SearchTest');
       // Wait a moment for search to filter
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should still see our test person
       await expect(page.locator('text=SearchTest Person').first()).toBeVisible();

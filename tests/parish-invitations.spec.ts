@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * Parish Invitations Test Suite
@@ -68,14 +69,14 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Send Invitation/i }).click();
 
     // Wait for success
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload the page to see the new invitation
     await page.reload();
     await page.waitForLoadState('networkidle');
 
     // Verify invitation appears with Staff role
-    await expect(page.getByText(testEmail)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(testEmail)).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
   });
 
   test('should create invitation for admin role', async ({ page }) => {
@@ -99,14 +100,14 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Send Invitation/i }).click();
 
     // Wait for success
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload the page to see the new invitation
     await page.reload();
     await page.waitForLoadState('networkidle');
 
     // Verify invitation appears with Admin role
-    await expect(page.getByText(testEmail)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(testEmail)).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
   });
 
   test('should create ministry-leader invitation with module selection', async ({ page }) => {
@@ -141,14 +142,14 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Send Invitation/i }).click();
 
     // Wait for success
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload the page to see the new invitation
     await page.reload();
     await page.waitForLoadState('networkidle');
 
     // Verify invitation appears
-    await expect(page.getByText(testEmail)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(testEmail)).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await expect(page.getByText('Ministry Leader')).toBeVisible();
   });
 
@@ -226,7 +227,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Invite User/i }).click();
     await page.fill('input#invite-email', testEmail);
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload to see the new invitation
     await page.reload();
@@ -255,7 +256,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Invite User/i }).click();
     await page.fill('input#invite-email', testEmail);
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload to see the invitation
     await page.reload();
@@ -278,7 +279,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Invite User/i }).click();
     await page.fill('input#invite-email', testEmail);
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload to see the invitation
     await page.reload();
@@ -293,7 +294,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('menuitem', { name: /Resend Invitation/i }).click();
 
     // Wait for resend operation
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify invitation still exists in pending list (not removed)
     await expect(page.getByText(testEmail)).toBeVisible();
@@ -306,7 +307,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Invite User/i }).click();
     await page.fill('input#invite-email', testEmail);
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Reload to see the invitation
     await page.reload();
@@ -324,7 +325,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('menuitem', { name: /Revoke Invitation/i }).click();
 
     // Wait for revoke operation
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify invitation is removed from pending list
     await expect(page.getByText(testEmail)).not.toBeVisible();
@@ -360,7 +361,7 @@ test.describe('Parish Invitations', () => {
     await roleSelect.click();
     await page.getByRole('option', { name: 'Admin' }).click();
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Create staff invitation
     await page.getByRole('button', { name: /Invite User/i }).click();
@@ -368,7 +369,7 @@ test.describe('Parish Invitations', () => {
     await roleSelect.click();
     await page.getByRole('option', { name: 'Staff' }).click();
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Create ministry-leader invitation with modules
     await page.getByRole('button', { name: /Invite User/i }).click();
@@ -377,7 +378,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('option', { name: 'Ministry Leader' }).click();
     await page.getByLabel('weddings', { exact: true }).click();
     await page.getByRole('button', { name: /Send Invitation/i }).click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify all invitations appear in pending list
     await expect(page.getByText(emails.admin)).toBeVisible();
@@ -401,7 +402,7 @@ test.describe('Parish Invitations', () => {
     await page.getByRole('button', { name: /Send Invitation/i }).click();
 
     // Wait for success and dialog to close
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Open dialog again
     await page.getByRole('button', { name: /Invite User/i }).click();

@@ -74,7 +74,7 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
     .select('*', { count: 'exact', head: true })
 
   if (totalError) {
-    logError('Error fetching total count:', totalError)
+    logError('Error fetching total count: ' + (totalError instanceof Error ? totalError.message : JSON.stringify(totalError)))
     throw new Error('Failed to fetch total count')
   }
 
@@ -84,7 +84,7 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
     .select('*')
 
   if (allError) {
-    logError('Error fetching groups for filtering:', allError)
+    logError('Error fetching groups for filtering: ' + (allError instanceof Error ? allError.message : JSON.stringify(allError)))
     throw new Error('Failed to fetch groups for filtering')
   }
 
@@ -122,7 +122,7 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
     .select('*')
 
   if (error) {
-    logError('Error fetching groups:', error)
+    logError('Error fetching groups: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch groups')
   }
 
@@ -185,7 +185,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     if (groupError.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching group:', groupError)
+    logError('Error fetching group: ' + (groupError instanceof Error ? groupError.message : JSON.stringify(groupError)))
     throw new Error('Failed to fetch group')
   }
 
@@ -215,7 +215,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     .order('joined_at', { ascending: true })
 
   if (membersError) {
-    logError('Error fetching group members:', membersError)
+    logError('Error fetching group members: ' + (membersError instanceof Error ? membersError.message : JSON.stringify(membersError)))
     throw new Error('Failed to fetch group members')
   }
 
@@ -248,7 +248,7 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
     .single()
 
   if (error) {
-    logError('Error creating group:', error)
+    logError('Error creating group: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create group')
   }
 
@@ -278,7 +278,7 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
     .single()
 
   if (error) {
-    logError('Error updating group:', error)
+    logError('Error updating group: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update group')
   }
 
@@ -299,7 +299,7 @@ export async function deleteGroup(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting group:', error)
+    logError('Error deleting group: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete group')
   }
 
@@ -339,7 +339,7 @@ export async function addGroupMember(groupId: string, personId: string, groupRol
     if (error.code === '23505') { // Unique constraint violation
       throw new Error('Person is already a member of this group')
     }
-    logError('Error adding group member:', error)
+    logError('Error adding group member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to add group member')
   }
 
@@ -372,7 +372,7 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
     .eq('person_id', personId)
 
   if (error) {
-    logError('Error removing group member:', error)
+    logError('Error removing group member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to remove group member')
   }
 
@@ -406,7 +406,7 @@ export async function updateGroupMemberRole(groupId: string, personId: string, g
     .single()
 
   if (error) {
-    logError('Error updating group member role:', error)
+    logError('Error updating group member role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update group member role')
   }
 
@@ -428,7 +428,7 @@ export async function getActiveGroups(): Promise<Group[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    logError('Error fetching active groups:', error)
+    logError('Error fetching active groups: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch active groups')
   }
 
@@ -548,7 +548,7 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
     .order('joined_at', { ascending: false })
 
   if (error) {
-    logError('Error fetching people with group memberships:', error)
+    logError('Error fetching people with group memberships: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch people with group memberships')
   }
 
@@ -654,7 +654,7 @@ export async function getPersonGroupMemberships(personId: string): Promise<Perso
     .order('joined_at', { ascending: false })
 
   if (error) {
-    logError('Error fetching person group memberships:', error)
+    logError('Error fetching person group memberships: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch person group memberships')
   }
 

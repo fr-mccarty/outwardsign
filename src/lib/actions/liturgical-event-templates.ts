@@ -4,11 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 // redirect import removed - not used
 import { revalidatePath } from 'next/cache'
-import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { logError } from '@/lib/utils/console'
 
 export interface LiturgicalEventTemplate {
   id: string
@@ -62,7 +59,7 @@ export async function getTemplates(): Promise<LiturgicalEventTemplate[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    logError('Error fetching templates:', error)
+    logError('Error fetching templates: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch templates')
   }
 
@@ -84,7 +81,7 @@ export async function getTemplate(id: string): Promise<LiturgicalEventTemplate |
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching template:', error)
+    logError('Error fetching template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch template')
   }
 
@@ -111,7 +108,7 @@ export async function createTemplate(data: CreateTemplateData): Promise<Liturgic
     .single()
 
   if (error) {
-    logError('Error creating template:', error)
+    logError('Error creating template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create template')
   }
 
@@ -138,7 +135,7 @@ export async function updateTemplate(id: string, data: UpdateTemplateData): Prom
     .single()
 
   if (error) {
-    logError('Error updating template:', error)
+    logError('Error updating template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update template')
   }
 
@@ -157,7 +154,7 @@ export async function deleteTemplate(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting template:', error)
+    logError('Error deleting template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete template')
   }
 
@@ -176,7 +173,7 @@ export async function getActiveTemplates(): Promise<LiturgicalEventTemplate[]> {
     .order('name', { ascending: true })
 
   if (error) {
-    logError('Error fetching active templates:', error)
+    logError('Error fetching active templates: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch active templates')
   }
 
@@ -274,7 +271,7 @@ export async function initializeDefaultTemplates(): Promise<LiturgicalEventTempl
     .select()
 
   if (error) {
-    logError('Error creating default templates:', error)
+    logError('Error creating default templates: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create default templates')
   }
 

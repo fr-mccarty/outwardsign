@@ -54,7 +54,7 @@ export async function getTagAssignments(
     .eq('entity_id', entityId)
 
   if (error) {
-    logError('Error fetching tag assignments:', error)
+    logError('Error fetching tag assignments: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch tag assignments')
   }
 
@@ -85,7 +85,7 @@ export async function getTagsForEntity(
     .eq('entity_id', entityId)
 
   if (error) {
-    logError('Error fetching tags for entity:', error)
+    logError('Error fetching tags for entity: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch tags for entity')
   }
 
@@ -136,7 +136,7 @@ export async function assignTag(data: CreateTagAssignmentData): Promise<TagAssig
     if (error.code === '23505') {
       throw new Error('Tag is already assigned to this entity')
     }
-    logError('Error assigning tag:', error)
+    logError('Error assigning tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to assign tag')
   }
 
@@ -172,7 +172,7 @@ export async function unassignTag(
     .eq('entity_id', entityId)
 
   if (error) {
-    logError('Error unassigning tag:', error)
+    logError('Error unassigning tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to unassign tag')
   }
 
@@ -218,7 +218,7 @@ export async function bulkAssignTags(
     .eq('entity_id', entityId)
 
   if (deleteError) {
-    logError('Error deleting existing tag assignments:', deleteError)
+    logError('Error deleting existing tag assignments: ' + (deleteError instanceof Error ? deleteError.message : JSON.stringify(deleteError)))
     throw new Error('Failed to delete existing tag assignments')
   }
 
@@ -235,7 +235,7 @@ export async function bulkAssignTags(
       .insert(assignments)
 
     if (insertError) {
-      logError('Error inserting tag assignments:', insertError)
+      logError('Error inserting tag assignments: ' + (insertError instanceof Error ? insertError.message : JSON.stringify(insertError)))
       throw new Error('Failed to insert tag assignments')
     }
   }

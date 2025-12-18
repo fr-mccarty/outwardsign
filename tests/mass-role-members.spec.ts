@@ -109,7 +109,7 @@ test.describe('Mass Role Members Module', () => {
 
     // Should load the preferences page
     // This page allows setting which mass roles a person serves in
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Verify we're on the preferences page
     await expect(page).toHaveURL(`/mass-role-members/${personId}/preferences`);

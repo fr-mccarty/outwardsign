@@ -99,7 +99,7 @@ class GroupMembershipPage {
     await dialog.getByRole('button', { name: /Select Person/i }).click();
 
     // Wait for people picker dialog to open (will be a nested dialog)
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Find the people picker dialog (the second/nested dialog)
     const pickerDialog = this.page.locator('[role="dialog"]').last();
@@ -110,7 +110,7 @@ class GroupMembershipPage {
     await searchInput.fill(personName);
 
     // Wait for search to process (same timing as working person-picker tests)
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click on the person from search results using getByRole (like working tests)
     // Use .first() in case there are multiple matches
@@ -118,7 +118,7 @@ class GroupMembershipPage {
     await personButton.click();
 
     // Wait for people picker to close
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
   }
 
   /**
@@ -129,7 +129,7 @@ class GroupMembershipPage {
     const dialog = this.page.locator('[role="dialog"]').first();
     await dialog.getByRole('button', { name: /Select Person/i }).click();
 
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Find the people picker dialog
     const pickerDialog = this.page.locator('[role="dialog"]').last();
@@ -139,7 +139,7 @@ class GroupMembershipPage {
     await addNewButton.click();
 
     // Wait for create form to appear
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Fill in person details
     await pickerDialog.getByLabel('First Name').fill(firstName);
@@ -152,7 +152,7 @@ class GroupMembershipPage {
     await pickerDialog.getByRole('button', { name: /Save Person/i }).click();
 
     // Wait for creation and auto-selection
-    await this.page.waitForTimeout(1500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.SHORT);
   }
 
   /**
@@ -167,7 +167,7 @@ class GroupMembershipPage {
     await groupRoleTrigger.click();
 
     // Wait for the group role picker modal to open (will be a nested dialog)
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Find the group role picker dialog (the second/nested dialog)
     const pickerDialog = this.page.locator('[role="dialog"]').last();
@@ -178,7 +178,7 @@ class GroupMembershipPage {
     await roleButton.click();
 
     // Wait for picker to close
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
   }
 
   /**
@@ -215,7 +215,7 @@ class GroupMembershipPage {
     await addButton.click();
 
     // Wait for dialog to close
-    await expect(this.page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(this.page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
   }
 
   /**
@@ -227,7 +227,7 @@ class GroupMembershipPage {
     await cancelButton.click();
 
     // Wait for dialog to close
-    await expect(this.page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 3000 });
+    await expect(this.page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
   }
 
   /**
@@ -277,28 +277,28 @@ class GroupMembershipPage {
     await editButton.click();
 
     // Wait for edit UI to appear - wait for the "Select Role" label
-    await memberCard.locator('text=Select Group Role').waitFor({ state: 'visible', timeout: 5000 });
+    await memberCard.locator('text=Select Group Role').waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.TOAST });
 
     // Give it a moment for the Select dropdown to render
-    await this.page.waitForTimeout(300);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click the Select trigger to open the dropdown
     const selectTrigger = memberCard.locator('[id^="role-select-"]');
     await selectTrigger.click();
-    await this.page.waitForTimeout(200);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Select the new role (or "none" to clear)
     const roleValue = newRole === null ? 'none' : newRole;
     const roleOption = this.page.getByRole('option', { name: roleValue === 'none' ? /No Group Role/i : new RegExp(roleValue, 'i') });
     await roleOption.click();
-    await this.page.waitForTimeout(200);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click Save button
     const saveButton = memberCard.locator('button[data-testid^="save-role-button-"]');
     await saveButton.click();
 
     // Wait for save to complete
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
   }
 
   /**
@@ -311,7 +311,7 @@ class GroupMembershipPage {
     const cancelButton = memberCard.locator('button[data-testid^="cancel-edit-button-"]');
     await cancelButton.click();
 
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
   }
 
   /**
@@ -325,7 +325,7 @@ class GroupMembershipPage {
     await deleteButton.click();
 
     // Wait for AlertDialog to appear
-    await this.page.waitForTimeout(500);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click the appropriate button in the AlertDialog
     if (confirm) {
@@ -334,7 +334,7 @@ class GroupMembershipPage {
       await this.page.getByRole('button', { name: /Cancel/i }).click();
     }
 
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(TEST_TIMEOUTS.QUICK);
   }
 
   /**
@@ -549,12 +549,12 @@ test.describe('Group Membership - Add Member Tests', () => {
     await addButton.click();
 
     // Wait a moment for potential error handling
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Close the dialog manually (since duplicate error prevents auto-close)
     const cancelButton = dialog.getByRole('button', { name: /Cancel/i });
     await cancelButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // The person should only appear once in the list (no duplicate)
     // Count occurrences of the person's name
@@ -654,7 +654,7 @@ test.describe('Group Membership - Edit Roles Tests', () => {
     const memberCard = page.locator(`div[data-testid^="member-card-"]:has-text("${testPersonName}")`).first();
     const editButton = memberCard.locator('button[data-testid^="edit-roles-button-"]');
     await editButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Make some changes (check additional roles)
     const cantorCheckbox = memberCard.getByTestId('role-checkbox-CANTOR');

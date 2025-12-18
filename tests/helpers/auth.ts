@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from '../utils/test-config';
 
 /**
  * Verify that the user is authenticated by checking for auth indicators
@@ -10,7 +11,7 @@ export async function verifyAuthenticated(page: Page) {
 
   // Optionally navigate to dashboard to verify auth
   await page.goto('/dashboard');
-  await expect(page).toHaveURL('/dashboard', { timeout: 5000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: TEST_TIMEOUTS.TOAST });
 }
 
 /**

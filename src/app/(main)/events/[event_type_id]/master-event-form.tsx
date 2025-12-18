@@ -15,7 +15,7 @@ import { ListItemPickerField } from "@/components/list-item-picker-field"
 import { DocumentPickerField } from "@/components/document-picker-field"
 import { CalendarEventFieldView, type CalendarEventFieldData } from "@/components/calendar-event-field-view"
 import { createEvent, updateEvent } from "@/lib/actions/master-events"
-import type { MasterEventWithRelations, EventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document } from "@/lib/types"
+import type { MasterEventWithRelations, EventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document, TemplateData } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -29,13 +29,14 @@ interface MasterEventFormProps {
   eventType: EventTypeWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
+  templateData?: TemplateData  // Template data to pre-fill the form
 }
 
 interface FieldValues {
   [key: string]: string | boolean | null | undefined
 }
 
-export function MasterEventForm({ event, eventType, formId, onLoadingChange }: MasterEventFormProps) {
+export function MasterEventForm({ event, eventType, formId, onLoadingChange, templateData }: MasterEventFormProps) {
   const router = useRouter()
   const isEditing = !!event
 
@@ -45,10 +46,17 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
   // State for field values (non-calendar-event fields)
   const [fieldValues, setFieldValues] = useState<FieldValues>(() => {
     const initial: FieldValues = {}
-    // Initialize from existing event or empty (skip calendar event fields)
+    // Initialize from template, existing event, or empty (skip calendar event fields)
     eventType.input_field_definitions?.forEach((field) => {
       if (field.type !== 'calendar_event') {
-        initial[field.name] = event?.field_values?.[field.name] ?? (field.type === 'yes_no' ? false : '')
+        // Priority: existing event > template > default
+        if (event?.field_values?.[field.name] !== undefined) {
+          initial[field.name] = event.field_values[field.name]
+        } else if (templateData?.field_values?.[field.name] !== undefined) {
+          initial[field.name] = templateData.field_values[field.name]
+        } else {
+          initial[field.name] = field.type === 'yes_no' ? false : ''
+        }
       }
     })
     return initial
@@ -57,23 +65,42 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
   // State for calendar event field values (keyed by field name)
   const [calendarEventValues, setCalendarEventValues] = useState<Record<string, CalendarEventFieldData>>(() => {
     const initial: Record<string, CalendarEventFieldData> = {}
-    // Initialize calendar event fields from existing calendar events
+    // Initialize calendar event fields from existing calendar events or template
     calendarEventFields.forEach((field) => {
       // Match calendar event to field by input_field_definition_id
       const existingCalendarEvent = event?.calendar_events?.find(ce => ce.input_field_definition_id === field.id)
+      const templateCalendarEvent = templateData?.calendar_events?.[field.name]
+
       // Parse start_datetime into date and time components
       let date = ''
       let time = ''
-      if (existingCalendarEvent?.start_datetime) {
-        const dt = new Date(existingCalendarEvent.start_datetime)
-        date = toLocalDateString(dt)
-        time = dt.toTimeString().slice(0, 8) // HH:MM:SS
+      let is_all_day = false
+      let location_id: string | null = null
+      let location: Location | null = null
+
+      if (existingCalendarEvent) {
+        // Priority: existing event
+        if (existingCalendarEvent.start_datetime) {
+          const dt = new Date(existingCalendarEvent.start_datetime)
+          date = toLocalDateString(dt)
+          time = dt.toTimeString().slice(0, 8) // HH:MM:SS
+        }
+        is_all_day = existingCalendarEvent.is_all_day || false
+        location_id = existingCalendarEvent.location_id
+        location = existingCalendarEvent.location || null
+      } else if (templateCalendarEvent) {
+        // Use template calendar event data (but not datetimes - user must set those)
+        is_all_day = templateCalendarEvent.is_all_day
+        location_id = templateCalendarEvent.location_id
+        // Note: location will be resolved when the form loads
       }
+
       initial[field.name] = {
         date,
         time,
-        location_id: existingCalendarEvent?.location_id || null,
-        location: existingCalendarEvent?.location || null
+        is_all_day,
+        location_id,
+        location
       }
     })
     return initial

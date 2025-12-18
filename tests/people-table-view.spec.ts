@@ -109,7 +109,7 @@ test.describe('People Table View', () => {
     await page.evaluate(() => window.scrollTo(0, 500))
 
     // Wait a moment for scroll position to update
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK)
 
     // Check if scroll to top button appears
     const scrollButton = page.getByRole('button', { name: /scroll to top/i })
@@ -119,7 +119,7 @@ test.describe('People Table View', () => {
     await scrollButton.click()
 
     // Wait for scroll to complete
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK)
 
     // Verify we're back at the top (scroll position should be 0 or close to it)
     const scrollPosition = await page.evaluate(() => window.scrollY)

@@ -103,7 +103,7 @@ test.describe('Event Picker Component', () => {
     await saveButton.click();
 
     // Event picker dialog should close
-    await expect(eventDialog).not.toBeVisible({ timeout: 10000 });
+    await expect(eventDialog).not.toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Verify the event is selected
     await expect(page.getByTestId('wedding-ceremony-selected-value')).toBeVisible();

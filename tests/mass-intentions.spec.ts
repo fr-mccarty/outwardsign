@@ -64,7 +64,7 @@ test.describe('Mass Intentions Module', () => {
     await editSubmitButton.click();
 
     // Wait briefly for the update to complete (edit stays on same page with router.refresh())
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Navigate back to view page
     await page.goto(`/mass-intentions/${intentionId}`);
@@ -182,7 +182,7 @@ test.describe('Mass Intentions Module', () => {
       await page.getByRole('option', { name: 'Requested' }).first().click();
 
       // Wait for any loading/filtering to complete
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Verify URL includes status filter or page updated
       // This is a basic check - actual behavior may vary
@@ -214,7 +214,7 @@ test.describe('Mass Intentions Module', () => {
       await searchInput.fill(searchableName);
 
       // Wait for search to filter results
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Verify the searchable intention appears in results
       await expect(page.locator(`text=${searchableName}`).first()).toBeVisible();
@@ -327,7 +327,7 @@ test.describe('Mass Intentions Module', () => {
 
     // Mass intention form uses router.refresh() on edit, so it stays on edit page
     // Wait for the update to complete
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Navigate to view page to verify the update
     await page.goto(`/mass-intentions/${intentionId}`);

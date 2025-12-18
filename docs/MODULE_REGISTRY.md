@@ -382,6 +382,40 @@ These modules support the Mass Scheduling functionality:
 
 **Purpose:** Petition templates and contexts
 
+### Event Templates
+
+**Route:** `/settings/event-templates`
+
+**Purpose:** Reusable master event templates for quick event creation
+
+**Key Features:**
+- Save configured master events as templates
+- Store field values, presider/homilist assignments, calendar event defaults
+- Apply templates when creating new events
+- Manage template library across all event types
+
+**Database Table:** `master_event_templates`
+
+**Server Actions:** `src/lib/actions/master-event-templates.ts`
+- `getAllTemplates()` - Fetch all templates with event type information
+- `getTemplatesByEventType(eventTypeId)` - Fetch templates for specific event type
+- `getTemplate(id)` - Fetch single template with relations
+- `createTemplateFromEvent(masterEventId, name, description)` - Save master event as template
+- `updateTemplate(id, data)` - Update template name/description
+- `deleteTemplate(id)` - Soft delete template
+
+**Template Data Structure:**
+Templates store JSONB data including:
+- `field_values` - All custom field values from master event
+- `presider_id` - Presider assignment
+- `homilist_id` - Homilist assignment
+- `calendar_events` - Location, is_all_day, duration_days (NOT date/time)
+
+**Key Files:**
+- `src/app/(main)/settings/event-templates/page.tsx` - List page
+- `src/app/(main)/settings/event-templates/[id]/page.tsx` - View page
+- `src/app/(main)/settings/event-templates/[id]/edit/page.tsx` - Edit page
+
 ---
 
 ## Module Status Constants
@@ -453,6 +487,7 @@ All module labels are provided in **English** and **Spanish**.
 | **Category Tags** | Category Tags | Etiquetas de Categoría |
 | **Custom Lists** | Custom Lists | Listas Personalizadas |
 | **Petitions** | Petitions | Peticiones |
+| **Event Templates** | Event Templates | Plantillas de Eventos |
 
 ---
 
@@ -513,6 +548,7 @@ Icons are from **Lucide React**.
 | **Category Tags** | `/settings/category-tags` |
 | **Custom Lists** | `/settings/custom-lists` |
 | **Petitions** | `/settings/petitions` |
+| **Event Templates** | `/settings/event-templates` |
 | **Parish Settings** | `/settings/parish/*` |
 | **User Settings** | `/settings/user` |
 

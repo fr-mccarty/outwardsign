@@ -6,6 +6,8 @@ import { DatePickerField } from "@/components/date-picker-field"
 import { TimePickerField } from "@/components/time-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
@@ -22,8 +24,10 @@ import type { Location } from "@/lib/types"
 export interface CalendarEventFieldData {
   date: string
   time: string
+  end_date?: string  // For multi-day all-day events
   location_id: string | null
   location?: Location | null
+  is_all_day?: boolean
 }
 
 interface CalendarEventFieldViewProps {
@@ -60,14 +64,19 @@ export function CalendarEventFieldView({
   // Use display view with modal if we're in edit mode (editing an existing event)
   const useDisplayMode = isEditing
 
-  const updateLocalValue = (key: keyof CalendarEventFieldData, newValue: string | Location | null) => {
+  const updateLocalValue = (key: keyof CalendarEventFieldData, newValue: string | Location | boolean | null) => {
     if (key === 'location' && typeof newValue === 'object') {
       setEditValue(prev => ({
         ...prev,
         location: newValue,
         location_id: newValue?.id || null
       }))
-    } else if (key === 'date' || key === 'time') {
+    } else if (key === 'is_all_day' && typeof newValue === 'boolean') {
+      setEditValue(prev => ({
+        ...prev,
+        is_all_day: newValue
+      }))
+    } else if (key === 'date' || key === 'time' || key === 'end_date') {
       setEditValue(prev => ({
         ...prev,
         [key]: typeof newValue === 'string' ? newValue : ''
@@ -76,14 +85,19 @@ export function CalendarEventFieldView({
   }
 
   // For create mode - update parent directly
-  const updateValue = (key: keyof CalendarEventFieldData, newValue: string | Location | null) => {
+  const updateValue = (key: keyof CalendarEventFieldData, newValue: string | Location | boolean | null) => {
     if (key === 'location' && typeof newValue === 'object') {
       onValueChange({
         ...value,
         location: newValue,
         location_id: newValue?.id || null
       })
-    } else if (key === 'date' || key === 'time') {
+    } else if (key === 'is_all_day' && typeof newValue === 'boolean') {
+      onValueChange({
+        ...value,
+        is_all_day: newValue
+      })
+    } else if (key === 'date' || key === 'time' || key === 'end_date') {
       onValueChange({
         ...value,
         [key]: typeof newValue === 'string' ? newValue : ''
@@ -116,11 +130,20 @@ export function CalendarEventFieldView({
       // Convert date + time to start_datetime
       const start_datetime = toStartDatetime(editValue.date, editValue.time)
 
+      // Calculate end_datetime if this is a multi-day all-day event
+      let end_datetime: string | null = null
+      if (editValue.is_all_day && editValue.end_date) {
+        // For all-day events, use midnight of the end date
+        end_datetime = new Date(`${editValue.end_date}T00:00:00`).toISOString()
+      }
+
       if (calendarEventId) {
         // Update existing calendar event
         await updateCalendarEvent(calendarEventId, {
           start_datetime,
-          location_id: editValue.location_id || null
+          end_datetime,
+          location_id: editValue.location_id || null,
+          is_all_day: editValue.is_all_day || false
         })
         toast.success("Calendar event updated")
       } else if (masterEventId && inputFieldDefinitionId) {
@@ -129,8 +152,10 @@ export function CalendarEventFieldView({
           master_event_id: masterEventId,
           input_field_definition_id: inputFieldDefinitionId,
           start_datetime,
+          end_datetime,
           location_id: editValue.location_id || null,
-          is_primary: isPrimary
+          is_primary: isPrimary,
+          is_all_day: editValue.is_all_day || false
         })
         toast.success("Calendar event created")
       } else {
@@ -204,22 +229,54 @@ export function CalendarEventFieldView({
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DatePickerField
-                  id={`${label}-date`}
-                  label="Date"
-                  value={editValue.date ? new Date(editValue.date + 'T12:00:00') : undefined}
-                  onValueChange={(date) => updateLocalValue('date', date ? toLocalDateString(date) : '')}
-                  required={required}
-                  closeOnSelect
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id={`${label}-all-day`}
+                  checked={editValue.is_all_day || false}
+                  onCheckedChange={(checked) => updateLocalValue('is_all_day', checked)}
                 />
-                <TimePickerField
-                  id={`${label}-time`}
-                  label="Time"
-                  value={editValue.time || ''}
-                  onChange={(time) => updateLocalValue('time', time)}
-                />
+                <Label htmlFor={`${label}-all-day`}>All-day event</Label>
               </div>
+
+              {editValue.is_all_day ? (
+                // All-day event: Show date pickers only
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DatePickerField
+                    id={`${label}-date`}
+                    label="Start Date"
+                    value={editValue.date ? new Date(editValue.date + 'T12:00:00') : undefined}
+                    onValueChange={(date) => updateLocalValue('date', date ? toLocalDateString(date) : '')}
+                    required={required}
+                    closeOnSelect
+                  />
+                  <DatePickerField
+                    id={`${label}-end-date`}
+                    label="End Date (optional)"
+                    value={editValue.end_date ? new Date(editValue.end_date + 'T12:00:00') : undefined}
+                    onValueChange={(date) => updateLocalValue('end_date', date ? toLocalDateString(date) : '')}
+                    closeOnSelect
+                  />
+                </div>
+              ) : (
+                // Timed event: Show date and time pickers
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DatePickerField
+                    id={`${label}-date`}
+                    label="Date"
+                    value={editValue.date ? new Date(editValue.date + 'T12:00:00') : undefined}
+                    onValueChange={(date) => updateLocalValue('date', date ? toLocalDateString(date) : '')}
+                    required={required}
+                    closeOnSelect
+                  />
+                  <TimePickerField
+                    id={`${label}-time`}
+                    label="Time"
+                    value={editValue.time || ''}
+                    onChange={(time) => updateLocalValue('time', time)}
+                  />
+                </div>
+              )}
+
               <LocationPickerField
                 label="Location"
                 value={editValue.location || null}
@@ -265,22 +322,55 @@ export function CalendarEventFieldView({
           <span className="text-xs text-muted-foreground">(Primary)</span>
         )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <DatePickerField
-          id={`${label}-date`}
-          label="Date"
-          value={value.date ? new Date(value.date + 'T12:00:00') : undefined}
-          onValueChange={(date) => updateValue('date', date ? toLocalDateString(date) : '')}
-          required={required}
-          closeOnSelect
+
+      <div className="flex items-center space-x-2">
+        <Switch
+          id={`${label}-all-day-create`}
+          checked={value.is_all_day || false}
+          onCheckedChange={(checked) => updateValue('is_all_day', checked)}
         />
-        <TimePickerField
-          id={`${label}-time`}
-          label="Time"
-          value={value.time || ''}
-          onChange={(time) => updateValue('time', time)}
-        />
+        <Label htmlFor={`${label}-all-day-create`}>All-day event</Label>
       </div>
+
+      {value.is_all_day ? (
+        // All-day event: Show date pickers only
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DatePickerField
+            id={`${label}-date`}
+            label="Start Date"
+            value={value.date ? new Date(value.date + 'T12:00:00') : undefined}
+            onValueChange={(date) => updateValue('date', date ? toLocalDateString(date) : '')}
+            required={required}
+            closeOnSelect
+          />
+          <DatePickerField
+            id={`${label}-end-date`}
+            label="End Date (optional)"
+            value={value.end_date ? new Date(value.end_date + 'T12:00:00') : undefined}
+            onValueChange={(date) => updateValue('end_date', date ? toLocalDateString(date) : '')}
+            closeOnSelect
+          />
+        </div>
+      ) : (
+        // Timed event: Show date and time pickers
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DatePickerField
+            id={`${label}-date`}
+            label="Date"
+            value={value.date ? new Date(value.date + 'T12:00:00') : undefined}
+            onValueChange={(date) => updateValue('date', date ? toLocalDateString(date) : '')}
+            required={required}
+            closeOnSelect
+          />
+          <TimePickerField
+            id={`${label}-time`}
+            label="Time"
+            value={value.time || ''}
+            onChange={(time) => updateValue('time', time)}
+          />
+        </div>
+      )}
+
       <LocationPickerField
         label="Location"
         value={value.location || null}

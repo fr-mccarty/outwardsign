@@ -105,7 +105,7 @@ If a name was not provided (N/A), return an empty string for that field.`
     try {
       parsedResponse = JSON.parse(responseText)
     } catch {
-      logError('Failed to parse AI response:', responseText)
+      logError('Failed to parse AI response: ' + responseText)
       throw new Error('Received unexpected response format from AI')
     }
 
@@ -114,7 +114,7 @@ If a name was not provided (N/A), return an empty string for that field.`
       typeof parsedResponse.firstNamePronunciation !== 'string' ||
       typeof parsedResponse.lastNamePronunciation !== 'string'
     ) {
-      logError('Invalid response structure:', parsedResponse)
+      logError('Invalid response structure: ' + parsedResponse)
       throw new Error('Received unexpected response format from AI')
     }
 
@@ -124,7 +124,7 @@ If a name was not provided (N/A), return an empty string for that field.`
 
     // Log explanation for debugging (optional)
     if (parsedResponse.explanation) {
-      logInfo('Pronunciation explanation:', parsedResponse.explanation)
+      logInfo('Pronunciation explanation: ' + parsedResponse.explanation)
     }
 
     return {
@@ -132,7 +132,7 @@ If a name was not provided (N/A), return an empty string for that field.`
       lastNamePronunciation: lastPronunciation,
     }
   } catch (error) {
-    logError('Error generating pronunciations:', error)
+    logError('Error generating pronunciations: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to generate pronunciations. Please try again.')
   }
 }

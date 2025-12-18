@@ -234,7 +234,7 @@ test.describe('Petitions Module', () => {
       await page.getByRole('option', { name: /Wedding/i }).click();
 
       // Wait for filter to apply
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should still see our wedding template
       await expect(page.locator(`text=${testTitle}`)).toBeVisible();

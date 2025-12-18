@@ -95,7 +95,7 @@ test.describe('Event Picker Edit Mode', () => {
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
 
     // Wait for dialog to close
-    await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
+    await expect(eventDialog).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify the event is selected - check the selected value displays
     const selectedValue = page.getByTestId('wedding-ceremony-selected-value');
@@ -133,7 +133,7 @@ test.describe('Event Picker Edit Mode', () => {
     await selectTimeInPicker(eventDialog, 'start_time', '10:30');
 
     await eventDialog.getByRole('button', { name: /Save Event/i }).click();
-    await expect(eventDialog).not.toBeVisible({ timeout: 5000 });
+    await expect(eventDialog).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // **THE KEY CHECK**: The selected value should display the event NAME, not just date/time
     const selectedValue = page.getByTestId('wedding-ceremony-selected-value');

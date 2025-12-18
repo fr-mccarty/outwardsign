@@ -39,7 +39,7 @@ export async function getCalendarEvents(masterEventId: string): Promise<Calendar
     .order('created_at', { ascending: true })
 
   if (error) {
-    logError('Error fetching calendar events:', error)
+    logError('Error fetching calendar events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch calendar events')
   }
 
@@ -67,7 +67,7 @@ export async function getCalendarEventById(id: string): Promise<CalendarEvent | 
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching calendar event:', error)
+    logError('Error fetching calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch calendar event')
   }
 
@@ -118,14 +118,15 @@ export async function createCalendarEvent(
         input_field_definition_id: data.input_field_definition_id,
         location_id: data.location_id || null,
         is_primary: data.is_primary || false,
-        is_cancelled: data.is_cancelled || false
+        is_cancelled: data.is_cancelled || false,
+        is_all_day: data.is_all_day || false
       }
     ])
     .select('*, location:locations(*)')
     .single()
 
   if (error) {
-    logError('Error creating calendar event:', error)
+    logError('Error creating calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create calendar event')
   }
 
@@ -196,7 +197,7 @@ export async function updateCalendarEvent(
     .single()
 
   if (error) {
-    logError('Error updating calendar event:', error)
+    logError('Error updating calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update calendar event')
   }
 
@@ -248,7 +249,7 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     .is('deleted_at', null)
 
   if (countError) {
-    logError('Error counting calendar events:', countError)
+    logError('Error counting calendar events: ' + (countError instanceof Error ? countError.message : JSON.stringify(countError)))
     throw new Error('Failed to check remaining calendar events')
   }
 
@@ -264,7 +265,7 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Error deleting calendar event:', error)
+    logError('Error deleting calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete calendar event')
   }
 

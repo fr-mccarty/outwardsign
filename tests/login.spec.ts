@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { getTestCredentials } from './helpers/auth';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Login Flow', () => {
   test('should login with valid credentials and redirect to dashboard', async ({ page }) => {
@@ -23,10 +24,10 @@ test.describe('Login Flow', () => {
     await page.getByRole('button', { name: /sign in/i }).click();
 
     // 5. Wait for redirect to dashboard (use networkidle - load event doesn't fire due to client hydration)
-    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: 20000 });
+    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: TEST_TIMEOUTS.AUTH });
 
     // 6. Wait for dashboard to be fully loaded
-    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
 
     // 7. Verify we're on the dashboard page
     await expect(page).toHaveURL('/dashboard');
@@ -43,7 +44,7 @@ test.describe('Login Flow', () => {
     await page.getByRole('button', { name: /sign in/i }).click();
 
     // Should show error message (Supabase returns "Invalid login credentials")
-    await expect(page.locator('text=/invalid/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/invalid/i')).toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Should still be on login page
     await expect(page).toHaveURL('/login');
@@ -83,12 +84,12 @@ test.describe('Login Flow', () => {
 
     // Open the mobile menu by clicking the hamburger button (contains Menu icon)
     const menuButton = page.locator('nav button').first();
-    await expect(menuButton).toBeVisible({ timeout: 10000 });
+    await expect(menuButton).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await menuButton.click();
 
     // Wait for the Sheet to open and find the login link inside
     const loginLink = page.locator('[data-testid="home-login-button"]');
-    await expect(loginLink).toBeVisible({ timeout: 10000 });
+    await expect(loginLink).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await loginLink.click();
 
     // Should be on login page
@@ -104,7 +105,7 @@ test.describe('Login Flow', () => {
 
     // Find and click the signup link (use data-testid for reliability)
     const signupLink = page.locator('[data-testid="login-signup-link"]');
-    await expect(signupLink).toBeVisible({ timeout: 10000 });
+    await expect(signupLink).toBeVisible({ timeout: TEST_TIMEOUTS.NAVIGATION });
     await expect(signupLink).toHaveText(/sign up/i);
 
     await signupLink.click();
@@ -129,15 +130,15 @@ test.describe('Login Flow', () => {
     const loadingButton = page.getByRole('button', { name: /signing in/i });
     // We use waitForSelector with a short timeout since loading state is brief
     try {
-      await loadingButton.waitFor({ state: 'visible', timeout: 1000 });
+      await loadingButton.waitFor({ state: 'visible', timeout: TEST_TIMEOUTS.QUICK });
     } catch {
       // Loading state might be too fast to catch - that's okay
     }
 
     // Eventually should redirect to dashboard (use networkidle - load event doesn't fire)
-    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: 20000 });
+    await page.waitForURL('/dashboard', { waitUntil: 'networkidle', timeout: TEST_TIMEOUTS.AUTH });
 
     // Wait for dashboard to be fully loaded
-    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { state: 'visible', timeout: TEST_TIMEOUTS.EXTENDED });
   });
 });

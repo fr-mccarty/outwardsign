@@ -15,6 +15,7 @@
 
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -48,7 +49,7 @@ test.describe.serial('Server Action Authorization', () => {
     await page.fill('input[type="email"]', email);
     await page.fill('input[type="password"]', password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: TEST_TIMEOUTS.EXTENDED });
   }
 
   test.beforeAll(async () => {
@@ -194,7 +195,7 @@ test.describe.serial('Server Action Authorization', () => {
       await page.click('button[type="submit"]:has-text("Save")');
 
       // Should successfully create and redirect to view page
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
       expect(page.url()).toContain('/weddings/');
       expect(page.url()).not.toContain('/create');
       expect(page.url()).not.toContain('/edit');
@@ -210,7 +211,7 @@ test.describe.serial('Server Action Authorization', () => {
 
       // Attempt to navigate to create wedding page (should be blocked at page level)
       await page.goto('/weddings/create');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should be redirected to dashboard with error
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
@@ -226,7 +227,7 @@ test.describe.serial('Server Action Authorization', () => {
 
       // Attempt to navigate to create wedding page
       await page.goto('/weddings/create');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should be redirected to dashboard with error
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
@@ -262,7 +263,7 @@ test.describe.serial('Server Action Authorization', () => {
       await page.click('button[type="submit"]:has-text("Save")');
 
       // Should successfully update and redirect to view page
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
       await expect(page).toHaveURL(`/weddings/${wedding.id}`);
 
       // Verify the update
@@ -291,7 +292,7 @@ test.describe.serial('Server Action Authorization', () => {
 
       // Attempt to navigate to edit page
       await page.goto(`/weddings/${wedding.id}/edit`);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should be redirected to dashboard with error
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
@@ -324,11 +325,11 @@ test.describe.serial('Server Action Authorization', () => {
       await page.click('button:has-text("Delete")');
 
       // Confirm deletion in dialog
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       await page.click('button:has-text("Delete"):not([data-testid])'); // Click confirm button in dialog
 
       // Should redirect to list page
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
       await expect(page).toHaveURL('/weddings');
 
       // Verify wedding is deleted
@@ -362,7 +363,7 @@ test.describe.serial('Server Action Authorization', () => {
       await page.click('button[type="submit"]:has-text("Save")');
 
       // Should successfully create and redirect to view page
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
       expect(page.url()).toContain('/funerals/');
       expect(page.url()).not.toContain('/create');
       expect(page.url()).not.toContain('/edit');
@@ -378,7 +379,7 @@ test.describe.serial('Server Action Authorization', () => {
 
       // Attempt to navigate to create funeral page
       await page.goto('/funerals/create');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should be redirected to dashboard with error
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
@@ -414,7 +415,7 @@ test.describe.serial('Server Action Authorization', () => {
       await page.click('button[type="submit"]:has-text("Save")');
 
       // Should successfully update and redirect to view page
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
       await expect(page).toHaveURL(`/funerals/${funeral.id}`);
 
       // Verify the update
@@ -443,7 +444,7 @@ test.describe.serial('Server Action Authorization', () => {
 
       // Attempt to navigate to edit page
       await page.goto(`/funerals/${funeral.id}/edit`);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should be redirected to dashboard with error
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
@@ -465,12 +466,12 @@ test.describe.serial('Server Action Authorization', () => {
 
       // Cannot access funerals
       await page.goto('/funerals');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       // Cannot access baptisms
       await page.goto('/baptisms');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
       await expect(page).toHaveURL(/\/dashboard.*error=no_permission/);
 
       await context.close();

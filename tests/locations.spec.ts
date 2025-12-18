@@ -66,7 +66,7 @@ test.describe('Locations Module', () => {
     await editSubmitButton.click();
 
     // Wait briefly for the update to complete (edit stays on same page with router.refresh())
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Navigate back to view page to verify
     await page.goto(`/locations/${locationId}`);
@@ -130,7 +130,7 @@ test.describe('Locations Module', () => {
     if (await searchInput.count() > 0) {
       await searchInput.first().fill('SearchTest');
       // Wait a moment for search to filter
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should still see our test location
       await expect(page.locator('text=SearchTest Chapel').first()).toBeVisible();

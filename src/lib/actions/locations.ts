@@ -3,17 +3,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { logError } from '@/lib/utils/console'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
-import { logError } from '@/lib/utils/console'
 import type { PaginatedParams, PaginatedResult } from './people'
-import { logError } from '@/lib/utils/console'
 import { createLocationSchema, updateLocationSchema, type CreateLocationData, type UpdateLocationData } from '@/lib/schemas/locations'
-import { logError } from '@/lib/utils/console'
 
 export interface Location {
   id: string
@@ -55,7 +49,7 @@ export async function getLocations(filters?: LocationFilterParams): Promise<Loca
   const { data, error } = await query
 
   if (error) {
-    logError('Error fetching locations:', error)
+    logError('Error fetching locations: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch locations')
   }
 
@@ -138,7 +132,7 @@ export async function getLocationsPaginated(params?: PaginatedParams): Promise<P
   const { data, error, count } = await query
 
   if (error) {
-    logError('Error fetching paginated locations:', error)
+    logError('Error fetching paginated locations: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch paginated locations')
   }
 
@@ -170,7 +164,7 @@ export async function getLocation(id: string): Promise<Location | null> {
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching location:', error)
+    logError('Error fetching location: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch location')
   }
 
@@ -210,7 +204,7 @@ export async function createLocation(data: CreateLocationData): Promise<Location
     .single()
 
   if (error) {
-    logError('Error creating location:', error)
+    logError('Error creating location: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create location')
   }
 
@@ -247,7 +241,7 @@ export async function updateLocation(id: string, data: UpdateLocationData): Prom
     .single()
 
   if (error) {
-    logError('Error updating location:', error)
+    logError('Error updating location: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update location')
   }
 
@@ -275,7 +269,7 @@ export async function deleteLocation(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting location:', error)
+    logError('Error deleting location: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete location')
   }
 

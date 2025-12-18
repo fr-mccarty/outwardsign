@@ -92,7 +92,7 @@ IMPORTANT FORMATTING RULES:
 
     return petitions
   } catch (error) {
-    logError('Error generating petitions:', error)
+    logError('Error generating petitions: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to generate petitions. Please try again.')
   }
 }

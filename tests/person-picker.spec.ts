@@ -32,7 +32,7 @@ test.describe('Person Picker Component', () => {
     const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
     if (await cancelButton.isVisible()) {
       await cancelButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     }
 
     // Now search for the person we just created
@@ -40,7 +40,7 @@ test.describe('Person Picker Component', () => {
     await searchInput.fill('Sarah');
 
     // Wait a moment for search to filter
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click on the person from the search results
     const personButton = page.locator('[role="dialog"]').getByRole('button', { name: /Sarah Johnson/i });
@@ -68,7 +68,7 @@ test.describe('Person Picker Component', () => {
 
     // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
     // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Fill in the create form within the dialog
     const dialog = page.locator('[role="dialog"]');
@@ -90,10 +90,10 @@ test.describe('Person Picker Component', () => {
     await createButton.click();
 
     // Wait briefly for creation
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically after creation and auto-selection
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify the newly created person is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -115,7 +115,7 @@ test.describe('Person Picker Component', () => {
     const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
     if (await cancelButton.isVisible()) {
       await cancelButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     }
 
     // Search for something that doesn't exist
@@ -123,7 +123,7 @@ test.describe('Person Picker Component', () => {
     await searchInput.fill('NonExistentPersonXYZ123');
 
     // Wait for search to filter
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Should show "No results found" or similar message
     await expect(page.locator('[role="dialog"]').locator('text=/No.*found/i')).toBeVisible();
@@ -158,11 +158,11 @@ test.describe('Person Picker Component', () => {
     const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
     if (await cancelButton.isVisible()) {
       await cancelButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     }
 
     await page.locator('[role="dialog"]').getByPlaceholder(/Search/i).fill('Alice');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Alice Cooper/i }).click();
 
     // Verify Alice is selected (use testid to avoid strict mode violation)
@@ -173,18 +173,18 @@ test.describe('Person Picker Component', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
     // If form auto-opened, close it to see the search
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     const cancelBtn = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
     if (await cancelBtn.isVisible()) {
       await cancelBtn.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     }
 
     // Clear search and search for Bob
     const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
     await searchInput.clear();
     await searchInput.fill('Bob');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Bob Dylan/i }).click();
 
     // Verify Bob is now selected instead of Alice
@@ -205,7 +205,7 @@ test.describe('Person Picker Component', () => {
 
     // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
     // Wait a moment for form to be ready
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Try to submit without filling required fields (button text is "Save Person")
     const createButton = page.locator('[role="dialog"]').getByRole('button', { name: /Save Person/i });
@@ -223,10 +223,10 @@ test.describe('Person Picker Component', () => {
 
     // Submit should now work (button text is "Save Person")
     await createButton.click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close this time
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
     await expect(page.locator('button:has-text("Valid Person")')).toBeVisible();
   });
 
@@ -247,7 +247,7 @@ test.describe('Person Picker Component', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible' });
 
     // Form should auto-open when no person is selected - wait for it
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     const firstName = `ContextTest${Date.now()}`;
     await page.locator('[role="dialog"]').locator('#first_name').fill(firstName);
@@ -255,7 +255,7 @@ test.describe('Person Picker Component', () => {
     // Submit the create form (button text is "Save Person")
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Person/i }).click();
 
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify we're still on the create page (no navigation occurred)
     await expect(page).toHaveURL('/weddings/create');
@@ -299,11 +299,11 @@ test.describe('Person Picker Component', () => {
     const cancelButton = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
     if (await cancelButton.isVisible()) {
       await cancelButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     }
 
     await page.locator('[role="dialog"]').getByPlaceholder(/Search/i).fill('Emily');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Emily Watson/i }).click();
 
     // Dialog should close and Emily should be selected
@@ -318,17 +318,17 @@ test.describe('Person Picker Component', () => {
     await expect(page.locator('[role="dialog"]').getByRole('heading', { name: /Select Person/i })).toBeVisible();
 
     // If form auto-opened when clicking selected value, close it to see the search
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     const cancelBtn = page.locator('[role="dialog"]').getByRole('button', { name: /Cancel/i });
     if (await cancelBtn.isVisible()) {
       await cancelBtn.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     }
 
     // Search for and select Michael instead
     const searchInput = page.locator('[role="dialog"]').getByPlaceholder(/Search/i);
     await searchInput.fill('Michael');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
     await page.locator('[role="dialog"]').getByRole('button', { name: /Michael Chen/i }).click();
 
     // Dialog should close and Michael should now be selected instead of Emily

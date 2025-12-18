@@ -28,7 +28,7 @@ async function selectOrCreateEventType(page: any, eventTypeName: string = 'Test 
   const pickerDialog = page.getByTestId('event-type-picker-dialog');
 
   // Wait for loading to complete - look for either items or empty message
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
   // Check for the empty message which indicates no event types exist
   const emptyMessage = pickerDialog.locator('text=No event types yet');
@@ -67,7 +67,7 @@ async function selectOrCreateEventType(page: any, eventTypeName: string = 'Test 
   }
 
   // Wait for picker to close
-  await expect(page.getByTestId('event-type-picker-dialog')).toBeHidden({ timeout: 5000 });
+  await expect(page.getByTestId('event-type-picker-dialog')).toBeHidden({ timeout: TEST_TIMEOUTS.TOAST });
 }
 
 test.describe('Events Module - User-Defined Events', () => {

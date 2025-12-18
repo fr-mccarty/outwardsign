@@ -160,7 +160,7 @@ test.describe('Mass Roles Module', () => {
 
       // Should stay on create page due to validation error
       // Wait a moment for validation to kick in
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Should still be on create page (not redirected)
       await expect(page).toHaveURL('/mass-roles/create');
@@ -512,7 +512,7 @@ test.describe('Mass Roles Module', () => {
         await searchInput.fill('Lector');
 
         // Wait for filtering to occur
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
         // Should show Lector but not others
         await expect(page.locator('text=Lector Search Test')).toBeVisible();

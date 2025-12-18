@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 /**
  * Date Picker Component Tests
@@ -140,7 +141,7 @@ test.describe('DatePickerField Component', () => {
     await dateButton.click()
 
     // Calendar should close automatically
-    await expect(calendar).not.toBeVisible({ timeout: 2000 })
+    await expect(calendar).not.toBeVisible({ timeout: TEST_TIMEOUTS.SHORT })
   })
 })
 

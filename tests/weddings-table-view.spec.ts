@@ -162,7 +162,7 @@ test.describe('Weddings Table View', () => {
     await page.evaluate(() => window.scrollTo(0, 500));
 
     // Wait a moment for scroll handler to trigger
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Now check if button appears (only if page is tall enough to scroll)
     const pageHeight = await page.evaluate(() => document.body.scrollHeight);
@@ -170,7 +170,7 @@ test.describe('Weddings Table View', () => {
 
     if (pageHeight > viewportHeight + 300) {
       // Page is tall enough, button should appear
-      await expect(scrollButton).toBeVisible({ timeout: 1000 });
+      await expect(scrollButton).toBeVisible({ timeout: TEST_TIMEOUTS.QUICK });
 
       // Click the button
       await scrollButton.click();

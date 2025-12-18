@@ -79,6 +79,7 @@ Per feature/module:
 
 ```typescript
 import { test, expect } from '@playwright/test';
+import { TEST_TIMEOUTS } from './utils/test-config';
 
 test.describe('Weddings', () => {
   test('create, view, and edit workflow', async ({ page }) => {
@@ -86,24 +87,24 @@ test.describe('Weddings', () => {
     await page.goto('/weddings/create');
     await page.fill('#notes', 'Test wedding');
     await page.locator('button[type="submit"]').click();
-    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/);
+    await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 
     // Extract ID and verify view
     const id = page.url().split('/').at(-2);
     await page.goto(`/weddings/${id}`);
-    await expect(page.locator('text=Test wedding')).toBeVisible();
+    await expect(page.locator('text=Test wedding')).toBeVisible({ timeout: TEST_TIMEOUTS.RENDER });
 
     // Edit
     await page.goto(`/weddings/${id}/edit`);
     await page.fill('#notes', 'Updated notes');
     await page.locator('button[type="submit"]').click();
     await page.goto(`/weddings/${id}`);
-    await expect(page.locator('text=Updated notes')).toBeVisible();
+    await expect(page.locator('text=Updated notes')).toBeVisible({ timeout: TEST_TIMEOUTS.RENDER });
   });
 
   test('shows empty state with create button', async ({ page }) => {
     await page.goto('/weddings');
-    await expect(page.getByRole('link', { name: /New Wedding/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /New Wedding/i })).toBeVisible({ timeout: TEST_TIMEOUTS.RENDER });
   });
 });
 ```
@@ -158,7 +159,7 @@ test('create wedding', async ({ page }) => {
   await page.goto('/weddings/create');
   await page.fill('#notes', 'Test');
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/);
+  await page.waitForURL(/\/weddings\/[a-f0-9-]+\/edit$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
 });
 ```
 
@@ -229,9 +230,13 @@ class WeddingsPage {
 await page.waitForTimeout(2000);
 await page.waitForTimeout(500);
 
-// GOOD - wait for specific conditions
-await page.waitForURL(/\/weddings\/[a-f0-9-]+$/);
-await expect(page.getByRole('dialog')).toBeVisible();
+// BAD - hardcoded timeout values
+await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: 10000 });
+await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
+
+// GOOD - wait for specific conditions with TEST_TIMEOUTS constants
+await page.waitForURL(/\/weddings\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT });
+await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG });
 ```
 
 ---
@@ -245,6 +250,66 @@ Use selectors in this order:
 3. **Test ID** (last resort): `page.getByTestId('wedding-card')`
 
 Avoid: CSS selectors, XPath, complex chaining
+
+---
+
+## Test Configuration Constants
+
+**Location:** `tests/utils/test-config.ts`
+
+All test timeout values and common selectors are centralized in this file.
+
+### Timeout Constants
+
+Use `TEST_TIMEOUTS` for all wait operations:
+
+```typescript
+import { TEST_TIMEOUTS } from '../utils/test-config'
+
+// Quick checks, animations (1 second)
+await expect(page.locator('...')).toBeVisible({ timeout: TEST_TIMEOUTS.QUICK })
+
+// Dialog animations (3 seconds)
+await expect(page.getByRole('dialog')).toBeVisible({ timeout: TEST_TIMEOUTS.DIALOG })
+
+// Toast messages (5 seconds)
+await expect(page.locator(TEST_SELECTORS.TOAST_SUCCESS)).toBeVisible({
+  timeout: TEST_TIMEOUTS.TOAST
+})
+
+// Form submission and redirect (10 seconds)
+await page.waitForURL(/\/events\/[a-f0-9-]+$/, { timeout: TEST_TIMEOUTS.FORM_SUBMIT })
+
+// Heavy SSR pages (30 seconds)
+await page.goto('/dashboard', { timeout: TEST_TIMEOUTS.HEAVY_LOAD })
+```
+
+**Available timeouts:**
+- `QUICK` - 1 second (animations, error detection)
+- `SHORT` - 2 seconds (calendar checks)
+- `DIALOG` - 3 seconds (modal animations)
+- `TOAST` - 5 seconds (toast messages)
+- `DATA_LOAD` - 5 seconds (list/table data)
+- `RENDER` - 5 seconds (element rendering)
+- `NAVIGATION` - 10 seconds (page.goto, waitForURL)
+- `FORM_SUBMIT` - 10 seconds (form submission + redirect)
+- `EXTENDED` - 15 seconds (slow operations)
+- `AUTH` - 20 seconds (authentication flows)
+- `HEAVY_LOAD` - 30 seconds (SSR pages with lots of data)
+
+### Common Selectors
+
+```typescript
+import { TEST_SELECTORS } from '../utils/test-config'
+
+// Success toast
+await expect(page.locator(TEST_SELECTORS.TOAST_SUCCESS)).toBeVisible()
+
+// Error toast
+await expect(page.locator(TEST_SELECTORS.TOAST_ERROR)).toBeVisible()
+```
+
+**Important:** Do NOT define test timeout constants in `src/lib/constants.ts` or other files. All test configuration belongs in `tests/utils/test-config.ts`.
 
 ---
 
@@ -279,5 +344,7 @@ await page.pause();  // Opens inspector at this point
 - [ ] 5 or fewer tests
 - [ ] No `console.log` statements
 - [ ] No `waitForTimeout` (use specific waits)
+- [ ] No hardcoded timeout values (use `TEST_TIMEOUTS` constants)
+- [ ] Import from `./utils/test-config` (not `@/lib/constants`)
 - [ ] Test names are short and scannable
 - [ ] Tests actual behavior, not framework internals

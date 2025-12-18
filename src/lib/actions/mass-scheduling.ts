@@ -83,7 +83,7 @@ export async function scheduleMasses(
       .in('id', params.selectedLiturgicalEventIds)
 
     if (liturgicalError) {
-      logError('Error fetching liturgical events:', liturgicalError)
+      logError('Error fetching liturgical events: ' + (liturgicalError instanceof Error ? liturgicalError.message : JSON.stringify(liturgicalError)))
       throw new Error('Failed to fetch liturgical events')
     }
 
@@ -107,7 +107,7 @@ export async function scheduleMasses(
         .single()
 
       if (error) {
-        logError('Error fetching specified event type:', error)
+        logError('Error fetching specified event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
         throw new Error('Failed to fetch specified event type')
       }
       massEventType = data
@@ -123,7 +123,7 @@ export async function scheduleMasses(
         .single()
 
       if (error) {
-        logError('Error fetching mass event type:', error)
+        logError('Error fetching mass event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
         throw new Error('No mass event type configured for this parish')
       }
       massEventType = data
@@ -148,7 +148,7 @@ export async function scheduleMasses(
       .single()
 
     if (fieldDefError) {
-      logError('Error fetching primary field definition:', fieldDefError)
+      logError('Error fetching primary field definition: ' + (fieldDefError instanceof Error ? fieldDefError.message : JSON.stringify(fieldDefError)))
       throw new Error('No primary calendar event field defined for mass event type')
     }
 
@@ -268,14 +268,14 @@ export async function scheduleMasses(
         .single()
 
       if (masterEventError) {
-        logError('Error creating master event:', {
+        logError('Error creating master event: ' + JSON.stringify({
           error: masterEventError,
           massData: {
             date: massData.date,
             time: massData.time,
             liturgicalEventId: massData.liturgicalEvent?.id
           }
-        })
+        }))
         throw new Error(`Failed to create master event for ${massData.date} ${normalizedTime}: ${masterEventError.message}`)
       }
 
@@ -294,7 +294,7 @@ export async function scheduleMasses(
         .single()
 
       if (calendarEventError) {
-        logError('Error creating calendar event:', calendarEventError)
+        logError('Error creating calendar event: ' + (calendarEventError instanceof Error ? calendarEventError.message : JSON.stringify(calendarEventError)))
         throw new Error(`Failed to create calendar event for ${massData.date} ${normalizedTime}`)
       }
 
@@ -325,7 +325,7 @@ export async function scheduleMasses(
               .single()
 
             if (roleError) {
-              logError('Error creating role assignment:', roleError)
+              logError('Error creating role assignment: ' + (roleError instanceof Error ? roleError.message : JSON.stringify(roleError)))
               roleAssignments.push({
                 roleAssignmentId: '',
                 roleId: assignment.roleId,
@@ -470,7 +470,7 @@ export async function scheduleMasses(
               assignment.status = 'ASSIGNED'
               totalAssigned++
             } else {
-              logError('Error assigning minister:', assignError)
+              logError('Error assigning minister: ' + (assignError instanceof Error ? assignError.message : JSON.stringify(assignError)))
               assignment.status = 'UNASSIGNED'
               assignment.reason = 'Failed to save assignment'
               totalUnassigned++
@@ -498,7 +498,7 @@ export async function scheduleMasses(
       masses: createdMasses,
     }
   } catch (error) {
-    logError('Error in scheduleMasses:', error)
+    logError('Error in scheduleMasses: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw error
   }
 }
@@ -562,11 +562,11 @@ export async function previewMassAssignments(
   const parishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  logInfo('[previewMassAssignments] Starting with:', {
+  logInfo('[previewMassAssignments] Starting with: ' + JSON.stringify({
     massCount: proposedMasses.length,
     balanceWorkload,
     parishId
-  })
+  }))
 
   const result: Array<{
     massId: string
@@ -591,7 +591,7 @@ export async function previewMassAssignments(
     }> = []
 
     for (const role of mass.assignments || []) {
-      logInfo('[previewMassAssignments] Processing role:', { massId: mass.id, role })
+      logInfo('[previewMassAssignments] Processing role: ' + JSON.stringify({ massId: mass.id, role }))
       try {
         const suggested = await getSuggestedMinister(
           role.roleId,
@@ -601,7 +601,7 @@ export async function previewMassAssignments(
           alreadyAssignedThisMass
         )
 
-        logInfo('[previewMassAssignments] Suggested minister:', suggested)
+        logInfo('[previewMassAssignments] Suggested minister: ' + suggested)
 
         if (suggested) {
           massAssignments.push({
@@ -616,7 +616,7 @@ export async function previewMassAssignments(
           const currentCount = assignmentCounts.get(suggested.id) || 0
           assignmentCounts.set(suggested.id, currentCount + 1)
         } else {
-          logInfo('[previewMassAssignments] No suggested minister found for role:', role.roleId)
+          logInfo('[previewMassAssignments] No suggested minister found for role: ' + role.roleId)
           massAssignments.push({
             roleId: role.roleId,
             roleName: role.roleName,
@@ -625,7 +625,7 @@ export async function previewMassAssignments(
           })
         }
       } catch (error) {
-        logError(`[previewMassAssignments] Error getting suggested minister for role ${role.roleId}:`, error)
+        logError(`[previewMassAssignments] Error getting suggested minister for role ${role.roleId}: ` + (error instanceof Error ? error.message : JSON.stringify(error)))
         massAssignments.push({
           roleId: role.roleId,
           roleName: role.roleName,
@@ -668,21 +668,21 @@ export async function getAvailableMinisters(
     .eq('parish_id', parishId)
     .eq('active', true)
 
-  logInfo('[getAvailableMinisters] Query params:', { roleId, date, time, parishId })
-  logInfo('[getAvailableMinisters] Members query result:', { members, membersError })
+  logInfo('[getAvailableMinisters] Query params: ' + JSON.stringify({ roleId, date, time, parishId }))
+  logInfo('[getAvailableMinisters] Members query result: ' + JSON.stringify({ members: members?.length ?? 0, error: membersError }))
 
   if (!members || members.length === 0) {
-    logInfo('[getAvailableMinisters] No members found for role:', roleId)
+    logInfo('[getAvailableMinisters] No members found for role: ' + roleId)
     return []
   }
 
   const ministers: Array<{ id: string; name: string; assignmentCount: number }> = []
 
   for (const member of members) {
-    logInfo('[getAvailableMinisters] Processing member:', member)
+    logInfo('[getAvailableMinisters] Processing member: ' + member)
 
     if (!member.person) {
-      logInfo('[getAvailableMinisters] Skipping member - no person data:', member)
+      logInfo('[getAvailableMinisters] Skipping member - no person data: ' + member)
       continue
     }
 
@@ -690,11 +690,11 @@ export async function getAvailableMinisters(
     const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string }
 
     if (!person || !person.id || !person.first_name || !person.last_name) {
-      logInfo('[getAvailableMinisters] Skipping member - incomplete person data:', person)
+      logInfo('[getAvailableMinisters] Skipping member - incomplete person data: ' + person)
       continue
     }
 
-    logInfo('[getAvailableMinisters] Person extracted:', person)
+    logInfo('[getAvailableMinisters] Person extracted: ' + person)
 
     // 2. Check for blackout dates (person-centric, not role-specific)
     const { data: blackouts } = await supabase
@@ -726,7 +726,7 @@ export async function getAvailableMinisters(
     })
   }
 
-  logInfo('[getAvailableMinisters] Final ministers list:', ministers)
+  logInfo('[getAvailableMinisters] Final ministers list: ' + ministers)
   return ministers
 }
 
@@ -751,7 +751,7 @@ export async function assignMinisterToRole(
     })
 
   if (error) {
-    logError('Error assigning minister:', error)
+    logError('Error assigning minister: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to assign minister to role')
   }
 

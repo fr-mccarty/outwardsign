@@ -304,7 +304,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     if (error.code === 'PGRST116') {
       return null // Not found
     }
-    logError('Error fetching mass:', error)
+    logError('Error fetching mass: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch mass')
   }
 
@@ -348,13 +348,13 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
   ])
 
   if (eventTypeData.error) {
-    logError('Error fetching event type:', eventTypeData.error)
+    logError('Error fetching event type: ' + (eventTypeData.error instanceof Error ? eventTypeData.error.message : JSON.stringify(eventTypeData.error)))
     // Event exists but is not a mass type
     return null
   }
 
   if (calendarEventsData.error) {
-    logError('Error fetching calendar events:', calendarEventsData.error)
+    logError('Error fetching calendar events: ' + (calendarEventsData.error instanceof Error ? calendarEventsData.error.message : JSON.stringify(calendarEventsData.error)))
     throw new Error('Failed to fetch calendar events')
   }
 
@@ -453,7 +453,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
             break
         }
       } catch (err) {
-        logError(`Error resolving field ${fieldDef.name}:`, err)
+        logError(`Error resolving field ${fieldDef.name}: ` + err)
       }
     }
 
@@ -500,7 +500,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
     .single()
 
   if (eventTypeError || !massEventType) {
-    logError('Error finding mass event type:', eventTypeError)
+    logError('Error finding mass event type: ' + (eventTypeError instanceof Error ? eventTypeError.message : JSON.stringify(eventTypeError)))
     throw new Error('No mass event type configured for this parish')
   }
 
@@ -521,7 +521,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
     .single()
 
   if (error) {
-    logError('Error creating mass:', error)
+    logError('Error creating mass: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create mass')
   }
 
@@ -611,7 +611,7 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mast
     .single()
 
   if (error) {
-    logError('Error updating mass:', error)
+    logError('Error updating mass: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update mass')
   }
 
@@ -634,7 +634,7 @@ export async function deleteMass(id: string): Promise<void> {
     .eq('parish_id', selectedParishId)
 
   if (error) {
-    logError('Error deleting mass:', error)
+    logError('Error deleting mass: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete mass')
   }
 
@@ -658,7 +658,7 @@ export async function linkMassIntention(massId: string, massIntentionId: string)
     .eq('id', massIntentionId)
 
   if (error) {
-    logError('Error linking mass intention:', error)
+    logError('Error linking mass intention: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to link mass intention')
   }
 
@@ -689,7 +689,7 @@ export async function unlinkMassIntention(massIntentionId: string): Promise<void
     .eq('id', massIntentionId)
 
   if (error) {
-    logError('Error unlinking mass intention:', error)
+    logError('Error unlinking mass intention: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to unlink mass intention')
   }
 
@@ -720,7 +720,7 @@ export async function getMassRoles(massId: string): Promise<MasterEventRoleWithR
     .order('created_at', { ascending: true })
 
   if (error) {
-    logError('Error fetching mass roles:', error)
+    logError('Error fetching mass roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch mass roles')
   }
 
@@ -745,7 +745,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MasterEv
     .single()
 
   if (error) {
-    logError('Error creating mass role:', error)
+    logError('Error creating mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create mass role assignment')
   }
 
@@ -776,7 +776,7 @@ export async function deleteMassRole(roleId: string): Promise<void> {
     .eq('id', roleId)
 
   if (error) {
-    logError('Error deleting mass role:', error)
+    logError('Error deleting mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete mass role assignment')
   }
 
@@ -801,7 +801,7 @@ export async function deleteAllMassRoles(massId: string): Promise<void> {
     .is('deleted_at', null)
 
   if (error) {
-    logError('Error deleting mass roles:', error)
+    logError('Error deleting mass roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete mass role assignments')
   }
 

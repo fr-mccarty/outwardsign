@@ -18,7 +18,7 @@ test.describe('Mass Intention Card - Debug Test', () => {
     // Reload the page
     await page.reload();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Debug: Check page content
     const pageContent = await page.content();

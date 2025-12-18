@@ -189,7 +189,7 @@ test.describe('Masses Module', () => {
     await page.locator('[role="dialog"]').getByRole('button', { name: /Save Event/i }).click();
 
     // Wait for dialog to close - longer timeout for API call
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: 10000 });
+    await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Event should be auto-selected - verify the button shows the date
     await expect(page.getByRole('button', { name: /Dec 8, 2025/i })).toBeVisible();

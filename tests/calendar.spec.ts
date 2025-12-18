@@ -30,20 +30,20 @@ test.describe('Calendar Module', () => {
 
     // Try to switch to week view
     const weekButton = page.getByRole('button', { name: /Week/i });
-    if (await weekButton.isVisible({ timeout: 2000 })) {
+    if (await weekButton.isVisible({ timeout: TEST_TIMEOUTS.SHORT })) {
       await weekButton.click();
       await expect(page).toHaveURL(/view=week/);
 
       // Switch to day view
       const dayButton = page.getByRole('button', { name: /Day/i });
-      if (await dayButton.isVisible({ timeout: 2000 })) {
+      if (await dayButton.isVisible({ timeout: TEST_TIMEOUTS.SHORT })) {
         await dayButton.click();
         await expect(page).toHaveURL(/view=day/);
       }
 
       // Switch back to month view
       const monthButton = page.getByRole('button', { name: /Month/i });
-      if (await monthButton.isVisible({ timeout: 2000 })) {
+      if (await monthButton.isVisible({ timeout: TEST_TIMEOUTS.SHORT })) {
         await monthButton.click();
         await expect(page).toHaveURL(/view=month/);
       }
@@ -179,7 +179,7 @@ test.describe('Calendar Module', () => {
     // Events may appear as links or buttons depending on the view
     const eventOnCalendar = page.locator(`text="${eventName}"`).first();
 
-    if (await eventOnCalendar.isVisible({ timeout: 2000 })) {
+    if (await eventOnCalendar.isVisible({ timeout: TEST_TIMEOUTS.SHORT })) {
       await eventOnCalendar.click();
 
       // Should navigate to the event detail page
@@ -207,7 +207,7 @@ test.describe('Calendar Module', () => {
     let foundDayHeader = false;
     for (const day of daysOfWeek) {
       const dayHeader = page.locator(`text="${day}"`).first();
-      if (await dayHeader.isVisible({ timeout: 1000 })) {
+      if (await dayHeader.isVisible({ timeout: TEST_TIMEOUTS.QUICK })) {
         foundDayHeader = true;
         break;
       }

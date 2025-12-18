@@ -56,7 +56,7 @@ export async function getParishInvitations(): Promise<ParishInvitation[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    logError('Error fetching parish invitations:', error)
+    logError('Error fetching parish invitations: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch parish invitations')
   }
 
@@ -80,7 +80,7 @@ export async function getInvitationByToken(token: string): Promise<ParishInvitat
     .single()
 
   if (error) {
-    logError('Error fetching invitation by token:', error)
+    logError('Error fetching invitation by token: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     return null
   }
 
@@ -155,7 +155,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
     .single()
 
   if (error) {
-    logError('Error creating parish invitation:', error)
+    logError('Error creating parish invitation: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to create parish invitation')
   }
 
@@ -163,12 +163,12 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   const inviterName = user.email || 'A parish member'
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/accept-invitation?token=${token}`
 
-  logInfo('[Invitation Email] Attempting to send invitation email:', {
+  logInfo('[Invitation Email] Attempting to send invitation email: ' + JSON.stringify({
     to: data.email,
     parish: parish.name,
     inviter: inviterName,
     link: invitationLink,
-  })
+  }))
 
   const emailResult = await sendParishInvitationEmail(
     data.email,
@@ -178,12 +178,12 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   )
 
   if (emailResult.success) {
-    logInfo('[Invitation Email] Successfully sent:', {
+    logInfo('[Invitation Email] Successfully sent: ' + JSON.stringify({
       to: data.email,
       messageId: emailResult.messageId,
-    })
+    }))
   } else {
-    logError('[Invitation Email] Failed to send:', emailResult.error)
+    logError('[Invitation Email] Failed to send: ' + JSON.stringify(emailResult.error))
     // Don't throw - invitation was created successfully, email is secondary
   }
 
@@ -217,7 +217,7 @@ export async function resendParishInvitation(invitationId: string): Promise<Pari
     .single()
 
   if (error) {
-    logError('Error resending parish invitation:', error)
+    logError('Error resending parish invitation: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to resend parish invitation')
   }
 
@@ -241,7 +241,7 @@ export async function revokeParishInvitation(invitationId: string): Promise<void
     .is('accepted_at', null) // Only delete pending invitations
 
   if (error) {
-    logError('Error revoking parish invitation:', error)
+    logError('Error revoking parish invitation: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to revoke parish invitation')
   }
 
@@ -263,7 +263,7 @@ export async function acceptParishInvitation(token: string, userId: string): Pro
     .single()
 
   if (fetchError || !invitation) {
-    logError('Error fetching invitation:', fetchError)
+    logError('Error fetching invitation: ' + (fetchError instanceof Error ? fetchError.message : JSON.stringify(fetchError)))
     throw new Error('Invalid or expired invitation')
   }
 
@@ -283,7 +283,7 @@ export async function acceptParishInvitation(token: string, userId: string): Pro
     })
 
   if (insertError) {
-    logError('Error creating parish_users record:', insertError)
+    logError('Error creating parish_users record: ' + (insertError instanceof Error ? insertError.message : JSON.stringify(insertError)))
     throw new Error('Failed to join parish')
   }
 
@@ -296,7 +296,7 @@ export async function acceptParishInvitation(token: string, userId: string): Pro
     .eq('id', invitation.id)
 
   if (updateError) {
-    logError('Error marking invitation as accepted:', updateError)
+    logError('Error marking invitation as accepted: ' + (updateError instanceof Error ? updateError.message : JSON.stringify(updateError)))
     // Don't throw here - the user was successfully added to the parish
   }
 }

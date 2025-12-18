@@ -14,6 +14,9 @@ export const SCROLL_TO_TOP_THRESHOLD = 300 // Pixels to scroll before showing sc
 // Search debounce delay
 export const SEARCH_DEBOUNCE_MS = 500 // Milliseconds to wait before triggering search
 
+// NOTE: Test timeout constants have been moved to tests/utils/test-config.ts
+// All test-related constants should be defined there, not in this file.
+
 // Standard sort options for module list views
 export const STANDARD_SORT_OPTIONS = [
   { value: 'date_asc', label: 'Date (Earliest First)' },

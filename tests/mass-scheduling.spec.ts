@@ -7,7 +7,7 @@ test.describe('Mass Scheduling Module', () => {
 
     // Step 1: Create a template first (required for scheduling)
     console.log('Creating Mass Role Template...');
-    await page.goto('/mass-role-templates', { timeout: 30000 });
+    await page.goto('/mass-role-templates', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(page).toHaveURL('/mass-role-templates', { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     const newTemplateLink = page.getByRole('link', { name: /New Template/i }).first();
@@ -104,7 +104,7 @@ test.describe('Mass Scheduling Module', () => {
     await templateSelector.click();
 
     // Verify template is selected (card should have selected styling or checkmark)
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Click Next to go to Step 4
     await page.getByRole('button', { name: /Next/i }).click();
@@ -187,7 +187,7 @@ test.describe('Mass Scheduling Module', () => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
     // Our test user is Staff role, so the button should be visible
 
-    await page.goto('/masses', { timeout: 30000 });
+    await page.goto('/masses', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(page).toHaveURL('/masses', { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Verify the Schedule Masses button is visible for Staff users
@@ -200,7 +200,7 @@ test.describe('Mass Scheduling Module', () => {
   test('should validate date range before allowing next step', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
-    await page.goto('/masses/schedule', { timeout: 30000 });
+    await page.goto('/masses/schedule', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(page).toHaveURL('/masses/schedule', { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Verify Step 1 is active
@@ -237,7 +237,7 @@ test.describe('Mass Scheduling Module', () => {
   test('should validate schedule pattern before allowing next step', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
-    await page.goto('/masses/schedule', { timeout: 30000 });
+    await page.goto('/masses/schedule', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(page).toHaveURL('/masses/schedule', { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Complete Step 1
@@ -265,7 +265,7 @@ test.describe('Mass Scheduling Module', () => {
   test('should validate template selection before allowing completion', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
-    await page.goto('/masses/schedule', { timeout: 30000 });
+    await page.goto('/masses/schedule', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(page).toHaveURL('/masses/schedule', { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Complete Step 1
@@ -294,7 +294,7 @@ test.describe('Mass Scheduling Module', () => {
   test('should calculate correct mass count based on schedule', async ({ page }) => {
     // Test is pre-authenticated via playwright/.auth/staff.json (see playwright.config.ts)
 
-    await page.goto('/masses/schedule', { timeout: 30000 });
+    await page.goto('/masses/schedule', { timeout: TEST_TIMEOUTS.HEAVY_LOAD });
     await expect(page).toHaveURL('/masses/schedule', { timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Complete Step 1 - Select a 7-day week (Dec 1-7, 2025)

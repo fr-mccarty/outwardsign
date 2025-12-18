@@ -24,14 +24,14 @@ test.describe('Mass Picker Component', () => {
 
     // Wait for Mass Picker dialog to appear
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000); // Wait for dialog to fully load
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT); // Wait for dialog to fully load
 
     // Verify the dialog is open (use .first() since there may be multiple dialogs)
     await expect(page.locator('[role="dialog"]').first()).toBeVisible();
 
     // Close the picker by pressing Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Verify dialog is closed
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -79,7 +79,7 @@ test.describe('Mass Picker Component', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Wait for masses to load
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Try to find the mass by clicking on a card
     // Masses are displayed with testId="mass-card-{id}"
@@ -97,7 +97,7 @@ test.describe('Mass Picker Component', () => {
       }
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Picker should close after selection
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -144,7 +144,7 @@ test.describe('Mass Picker Component', () => {
     // Open the MassPicker
     await page.getByTestId('assigned-mass-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Verify the dialog is showing masses (use .first() since there may be multiple dialogs)
     const massPickerDialog = page.locator('[role="dialog"]').first();
@@ -160,7 +160,7 @@ test.describe('Mass Picker Component', () => {
 
     // Close the picker
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     console.log('Successfully verified mass picker displays masses');
   });
@@ -190,7 +190,7 @@ test.describe('Mass Picker Component', () => {
     // Open picker and select the mass
     await page.getByTestId('assigned-mass-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     const massCard = page.locator(`[data-testid="mass-card-${massId}"]`).first();
     if (await massCard.count() > 0) {
@@ -199,7 +199,7 @@ test.describe('Mass Picker Component', () => {
       // Fallback to first mass
       await page.locator('[role="dialog"]').locator('[data-testid^="mass-card-"]').first().click({ force: true });
     }
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Verify mass is selected
     await expect(page.getByTestId('assigned-mass-selected-value')).toBeVisible();
@@ -210,7 +210,7 @@ test.describe('Mass Picker Component', () => {
     // Try clicking the clear button if visible
     if (await clearButton.isVisible()) {
       await clearButton.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
       // Verify mass is no longer selected
       await expect(page.getByTestId('assigned-mass-selected-value')).not.toBeVisible();
@@ -252,7 +252,7 @@ test.describe('Mass Picker Component', () => {
     // Now open mass picker and select the mass
     await page.getByTestId('assigned-mass-trigger').first().click();
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Select the mass
     const massCard = page.locator(`[data-testid="mass-card-${massId}"]`).first();
@@ -261,7 +261,7 @@ test.describe('Mass Picker Component', () => {
     } else {
       await page.locator('[role="dialog"]').locator('[data-testid^="mass-card-"]').first().click({ force: true });
     }
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Verify we're still on the create page
     await expect(page).toHaveURL('/mass-intentions/create');

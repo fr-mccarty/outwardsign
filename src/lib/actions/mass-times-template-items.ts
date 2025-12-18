@@ -3,11 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { logError } from '@/lib/utils/console'
 import { requireSelectedParish } from '@/lib/auth/parish'
-import { logError } from '@/lib/utils/console'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { logError } from '@/lib/utils/console'
 
 // Day type enum
 export type DayType = 'IS_DAY' | 'DAY_BEFORE'
@@ -63,7 +60,7 @@ export async function getTemplateItems(templateId: string): Promise<MassTimesTem
     .order('time', { ascending: true }) // Earliest times first within each group
 
   if (error) {
-    logError('Error fetching template items:', error)
+    logError('Error fetching template items: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to fetch template items')
   }
 
@@ -93,7 +90,7 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
     .single()
 
   if (error) {
-    logError('Error creating template item:', error)
+    logError('Error creating template item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error(`Failed to create template item: ${error.message}`)
   }
 
@@ -129,7 +126,7 @@ export async function updateTemplateItem(
     .single()
 
   if (error) {
-    logError('Error updating template item:', error)
+    logError('Error updating template item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to update template item')
   }
 
@@ -151,7 +148,7 @@ export async function deleteTemplateItem(id: string, templateId: string): Promis
     .eq('id', id)
 
   if (error) {
-    logError('Error deleting template item:', error)
+    logError('Error deleting template item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
     throw new Error('Failed to delete template item')
   }
 

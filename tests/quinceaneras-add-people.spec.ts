@@ -16,7 +16,7 @@ test.describe('Quinceañeras Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected (openToNewPerson=true in create mode)
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new quinceañera
     const dialog = page.locator('[role="dialog"]');
@@ -37,10 +37,10 @@ test.describe('Quinceañeras Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify quinceañera is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
@@ -84,7 +84,7 @@ test.describe('Quinceañeras Module - Add People', () => {
     await page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: TEST_TIMEOUTS.NAVIGATION });
 
     // Form should auto-open when no person is selected
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(TEST_TIMEOUTS.QUICK);
 
     // Create a new family contact
     const dialog = page.locator('[role="dialog"]');
@@ -105,10 +105,10 @@ test.describe('Quinceañeras Module - Add People', () => {
     await createButton.click();
 
     // Wait for creation and auto-selection
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(TEST_TIMEOUTS.SHORT);
 
     // Dialog should close automatically
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: TEST_TIMEOUTS.TOAST });
 
     // Verify family contact is selected in the form
     await expect(page.locator(`button:has-text("${firstName} ${lastName}")`)).toBeVisible();
