@@ -3,14 +3,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, User, Church } from 'lucide-react'
-import { getMassesPaginated, createMass, updateMass, type MassWithNames } from '@/lib/actions/masses'
-import type { Event, Person } from '@/lib/types'
+import { getMassesPaginated, createMass, updateMass } from '@/lib/actions/masses'
+import type { MassWithNames } from '@/lib/schemas/masses'
+import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
 import { MASS_STATUS_VALUES } from '@/lib/constants'
 import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
-import { EventPicker } from '@/components/event-picker'
 import { PeoplePicker } from '@/components/people-picker'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
@@ -50,13 +50,10 @@ export function MassPicker({
   const PAGE_SIZE = 10
 
   // State for nested pickers
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [showEventPicker, setShowEventPicker] = useState(false)
   const [selectedPresider, setSelectedPresider] = useState<Person | null>(null)
   const [showPresiderPicker, setShowPresiderPicker] = useState(false)
 
   // Store onChange callbacks from CorePicker's custom fields
-  const [eventOnChange, setEventOnChange] = useState<((value: any) => void) | null>(null)
   const [presiderOnChange, setPresiderOnChange] = useState<((value: any) => void) | null>(null)
 
   // Load masses when dialog opens or when page/search changes
@@ -89,8 +86,8 @@ export function MassPicker({
     const presider = mass.presider
       ? `${mass.presider.first_name} ${mass.presider.last_name}`
       : 'No Presider'
-    const date = mass.event?.start_date
-      ? new Date(mass.event.start_date).toLocaleDateString()
+    const date = mass.primary_calendar_event?.start_datetime
+      ? new Date(mass.primary_calendar_event.start_datetime).toLocaleDateString()
       : 'No Date'
     return `${presider} - ${date}`
   }
@@ -116,58 +113,6 @@ export function MassPicker({
 
   // Build create fields configuration - memoized to prevent infinite re-renders
   const createFields: PickerFieldConfig[] = useMemo(() => [
-    {
-      key: 'event_id',
-      label: 'Event (Date/Time)',
-      type: 'custom',
-      required: false,
-      render: ({ onChange, error }) => {
-        // Store the onChange callback
-        if (onChange !== eventOnChange) {
-          setEventOnChange(() => onChange)
-        }
-
-        return (
-          <div>
-            {selectedEvent ? (
-              <div className="flex items-center justify-between p-2 border rounded-md bg-muted/50">
-                <span className="text-sm">
-                  {selectedEvent.start_date && new Date(selectedEvent.start_date).toLocaleDateString()}
-                  {selectedEvent.start_time && ` at ${selectedEvent.start_time}`}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setSelectedEvent(null)
-                    onChange(null)
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowEventPicker(true)
-                }}
-                className={cn('w-full justify-start', error && 'border-destructive')}
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Select Event
-              </Button>
-            )}
-          </div>
-        )
-      },
-    },
     {
       key: 'presider_id',
       label: 'Presider',
@@ -236,25 +181,24 @@ export function MassPicker({
       required: false,
       placeholder: 'Add any notes about this mass...',
     },
-  ], [selectedEvent, selectedPresider, eventOnChange, presiderOnChange])
+  ], [selectedPresider, presiderOnChange])
 
   // Handle creating a new mass
   const handleCreateMass = async (data: any): Promise<MassWithNames> => {
     const newMass = await createMass({
-      event_id: selectedEvent?.id || undefined,
       presider_id: selectedPresider?.id || undefined,
       status: data.status || 'PLANNING',
-      note: data.note || undefined,
+      field_values: {
+        note: data.note || undefined,
+      },
     })
 
     // Reset nested selections
-    setSelectedEvent(null)
     setSelectedPresider(null)
 
     // Fetch the mass with relations for display
     const massWithRelations: MassWithNames = {
       ...newMass,
-      event: selectedEvent || null,
       presider: selectedPresider || null,
       homilist: null,
     }
@@ -268,20 +212,19 @@ export function MassPicker({
   // Handle updating an existing mass
   const handleUpdateMass = async (id: string, data: any): Promise<MassWithNames> => {
     const updatedMass = await updateMass(id, {
-      event_id: selectedEvent?.id || null,
       presider_id: selectedPresider?.id || null,
       status: data.status || null,
-      note: data.note || null,
+      field_values: {
+        note: data.note || null,
+      },
     })
 
     // Reset nested selections
-    setSelectedEvent(null)
     setSelectedPresider(null)
 
     // Fetch the mass with relations for display
     const massWithRelations: MassWithNames = {
       ...updatedMass,
-      event: selectedEvent || null,
       presider: selectedPresider || null,
       homilist: null,
     }
@@ -331,8 +274,8 @@ export function MassPicker({
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               <span>
-                {mass.event?.start_date
-                  ? new Date(mass.event.start_date).toLocaleDateString()
+                {mass.primary_calendar_event?.start_datetime
+                  ? new Date(mass.primary_calendar_event.start_datetime).toLocaleDateString()
                   : 'No Date'}
               </span>
             </div>
@@ -394,23 +337,6 @@ export function MassPicker({
         onPageChange={handlePageChange}
         onSearch={handleSearchChange}
         testId="mass-picker-dialog"
-      />
-
-      {/* Nested Event Picker Modal */}
-      <EventPicker
-        open={showEventPicker}
-        onOpenChange={setShowEventPicker}
-        onSelect={(event) => {
-          setSelectedEvent(event)
-          // Call the stored onChange callback to update CorePicker's form state
-          if (eventOnChange) {
-            eventOnChange(event.id)
-          }
-          setShowEventPicker(false)
-        }}
-        selectedEventId={selectedEvent?.id}
-        defaultRelatedEventType="MASS"
-        visibleFields={['location', 'note']}
       />
 
       {/* Nested Presider Picker Modal */}

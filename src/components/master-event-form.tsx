@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 import { toLocalDateString } from '@/lib/utils/formatters'
 import { createEvent, updateEvent } from '@/lib/actions/master-events'
 import type {
-  DynamicEventTypeWithRelations,
+  EventTypeWithRelations,
   MasterEventWithRelations,
   InputFieldDefinition,
   Person,
@@ -38,10 +38,10 @@ import type {
   MasterEventStatus
 } from '@/lib/types'
 
-const MASTER_EVENT_STATUS_VALUES: MasterEventStatus[] = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED']
+const MASTER_EVENT_STATUS_VALUES: MasterEventStatus[] = ['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']
 
 const masterEventSchema = z.object({
-  status: z.enum(['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED']),
+  status: z.enum(['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']),
   presider_id: z.string().optional(),
   homilist_id: z.string().optional(),
 })
@@ -49,7 +49,7 @@ const masterEventSchema = z.object({
 type MasterEventFormData = z.infer<typeof masterEventSchema>
 
 interface MasterEventFormProps {
-  eventType: DynamicEventTypeWithRelations
+  eventType: EventTypeWithRelations
   initialData?: MasterEventWithRelations
   isEditing?: boolean
   onSubmit?: (data: any) => Promise<void>
@@ -126,7 +126,7 @@ export function MasterEventForm({
     end_datetime: ce.end_datetime,
     location_id: ce.location_id,
     is_primary: ce.is_primary,
-    is_cancelled: ce.is_cancelled || false,
+    is_cancelled: ce.is_cancelled,
   })) || []
 
   // Sync presider to form
@@ -448,6 +448,7 @@ export function MasterEventForm({
     const labels: Record<MasterEventStatus, string> = {
       PLANNING: 'Planning',
       ACTIVE: 'Active',
+      SCHEDULED: 'Scheduled',
       COMPLETED: 'Completed',
       CANCELLED: 'Cancelled'
     }

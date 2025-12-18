@@ -37,6 +37,7 @@ This document provides a complete reference of all test files and individual tes
   - [Mass Picker](#mass-picker)
   - [Date Picker](#date-picker)
 - [Application Features](#application-features)
+  - [Sidebar Navigation](#sidebar-navigation)
   - [Dashboard](#dashboard)
   - [Calendar](#calendar)
   - [Parish Settings](#parish-settings)
@@ -502,6 +503,19 @@ This document provides a complete reference of all test files and individual tes
 
 ## Application Features
 
+### Sidebar Navigation
+
+#### `tests/sidebar-navigation.spec.ts` (4 tests)
+
+**Module:** Main Sidebar Navigation
+
+| Test | Description |
+|------|-------------|
+| all sidebar links load without errors | Dynamically gathers all navigation links from sidebar and verifies each loads without error toasts and displays a heading |
+| sidebar navigation persists across page changes | Validates sidebar remains visible when navigating between different pages |
+| collapsible sections expand and collapse | Verifies collapsible navigation sections toggle between expanded and collapsed states correctly |
+| sidebar logo link returns to dashboard | Confirms clicking the logo in sidebar header navigates back to dashboard |
+
 ### Dashboard
 
 #### `tests/dashboard.spec.ts` (19 tests)
@@ -744,7 +758,7 @@ This document provides a complete reference of all test files and individual tes
 
 ## Test Statistics
 
-**Total Test Files:** 31 (excluding templates and backups)
+**Total Test Files:** 32 (excluding templates and backups)
 
 **Total Tests by Category:**
 - **Authentication:** 10 tests (Signup: 3, Login: 7)
@@ -753,11 +767,11 @@ This document provides a complete reference of all test files and individual tes
 - **Supporting Modules:** 28 tests (People: 5, Locations: 5, Events: 8, Readings: 5, Groups: 18)
 - **Unified Event Data Model:** 20 tests (Master Events: 5, Calendar Events: 5, Roles: 5, System Types: 5)
 - **Picker Components:** 12 tests (Person: 7, Event: 5)
-- **Application Features:** 45 tests (Dashboard: 19, Calendar: 10, Parish Settings: 16)
+- **Application Features:** 49 tests (Sidebar: 4, Dashboard: 19, Calendar: 10, Parish Settings: 16)
 - **Parishioner Portal:** 88 tests (Auth: 11, Calendar: 11, Notifications: 9, Chat: 13, Security: 44)
 - **Security:** 44 tests (CSRF: 8, Rate Limiting: 21, Cron Cleanup: 15)
 
-**Total Active Tests:** ~255 tests (some skipped in groups-membership)
+**Total Active Tests:** ~259 tests (some skipped in groups-membership)
 
 **Skipped Tests:** 11 tests (all in groups-membership.spec.ts)
 

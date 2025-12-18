@@ -167,3 +167,41 @@ export async function requireManageParishSettings(userId: string, parishId: stri
 
   throw new Error('You do not have permission to manage parish settings')
 }
+
+/**
+ * Check settings access and redirect if unauthorized
+ * This should be called at the top of every settings page.
+ * Combines auth, parish, and admin permission checks in one call.
+ *
+ * @returns parishId if authorized, redirects if unauthorized
+ */
+export async function checkSettingsAccess(): Promise<string> {
+  const { redirect } = await import('next/navigation')
+  const { requireSelectedParish } = await import('@/lib/auth/parish')
+
+  const supabase = await createClient()
+
+  // Check authentication (will redirect to /login if not authenticated)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Check selected parish (will redirect to /select-parish if none selected)
+  const parishId = await requireSelectedParish()
+
+  // Get user's parish role
+  const userParish = await getUserParishRole(user!.id, parishId)
+  if (!userParish) {
+    redirect('/dashboard?error=not_parish_member')
+  }
+
+  // Check admin permission
+  if (!userParish!.roles.includes('admin')) {
+    redirect('/dashboard?error=no_permission&reason=admin_required')
+  }
+
+  return parishId
+}

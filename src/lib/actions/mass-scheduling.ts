@@ -8,12 +8,21 @@ import { MassScheduleEntry } from '@/app/(main)/masses/schedule/steps/step-2-sch
 import { getLiturgicalContextFromGrade, type LiturgicalContext } from '@/lib/constants'
 import { toLocalDateString } from '@/lib/utils/formatters'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import type { EventType } from '@/lib/types'
+
+// Role definition from event_types.role_definitions
+interface RoleDefinition {
+  id: string
+  name: string
+  required: boolean
+  count?: number  // Number of people needed for this role
+}
 
 export interface ScheduleMassesParams {
   startDate: string
   endDate: string
   schedule: MassScheduleEntry[]
-  templateIds: string[]  // Multiple role templates
+  eventTypeId?: string  // Optional specific mass event type
   selectedLiturgicalEventIds: string[]  // Selected liturgical events
   algorithmOptions: {
     balanceWorkload: boolean
@@ -24,7 +33,7 @@ export interface ScheduleMassesParams {
     id: string
     date: string
     time: string
-    templateId: string
+    eventTypeId?: string
     liturgicalEventId?: string
     assignments?: Array<{
       roleId: string
@@ -45,9 +54,9 @@ export interface ScheduleMassesResult {
     date: string
     time: string
     language: string
-    eventId: string
+    calendarEventId: string
     assignments: Array<{
-      roleInstanceId: string
+      roleAssignmentId: string
       roleId: string
       roleName: string
       personId: string | null
@@ -83,39 +92,81 @@ export async function scheduleMasses(
       liturgicalEventsByDate.set(event.date, event as GlobalLiturgicalEvent)
     }
 
-    // Phase 2: Fetch templates with their liturgical_contexts
-    const { data: templates, error: templatesError } = await supabase
-      .from('mass_roles_templates')
-      .select('*')
-      .in('id', params.templateIds)
+    // Phase 2: Fetch mass event type with role definitions
+    let massEventType: EventType | null = null
 
-    if (templatesError) {
-      console.error('Error fetching templates:', templatesError)
-      throw new Error('Failed to fetch templates')
+    if (params.eventTypeId) {
+      const { data, error } = await supabase
+        .from('event_types')
+        .select('*')
+        .eq('id', params.eventTypeId)
+        .eq('parish_id', selectedParishId)
+        .eq('system_type', 'mass')
+        .is('deleted_at', null)
+        .single()
+
+      if (error) {
+        console.error('Error fetching specified event type:', error)
+        throw new Error('Failed to fetch specified event type')
+      }
+      massEventType = data
+    } else {
+      // Find any mass event type for this parish
+      const { data, error } = await supabase
+        .from('event_types')
+        .select('*')
+        .eq('parish_id', selectedParishId)
+        .eq('system_type', 'mass')
+        .is('deleted_at', null)
+        .limit(1)
+        .single()
+
+      if (error) {
+        console.error('Error fetching mass event type:', error)
+        throw new Error('No mass event type configured for this parish')
+      }
+      massEventType = data
     }
 
-    if (!templates || templates.length === 0) {
-      throw new Error('No templates selected')
+    if (!massEventType) {
+      throw new Error('No mass event type found')
     }
 
-    // Helper: Find matching template for a liturgical context
-    const findTemplateForContext = (context: LiturgicalContext): typeof templates[0] | null => {
-      // Find template that includes this context
-      const match = templates.find(t =>
-        t.liturgical_contexts && t.liturgical_contexts.includes(context)
-      )
-      // Fallback to first template if no match
-      return match || templates[0]
+    // Get role definitions from event type
+    const roleDefinitions: RoleDefinition[] = (massEventType.role_definitions as { roles?: RoleDefinition[] })?.roles || []
+
+    // Phase 3: Get the primary calendar event input field definition
+    const { data: primaryFieldDef, error: fieldDefError } = await supabase
+      .from('input_field_definitions')
+      .select('id')
+      .eq('event_type_id', massEventType.id)
+      .eq('type', 'calendar_event')
+      .eq('is_primary', true)
+      .is('deleted_at', null)
+      .limit(1)
+      .single()
+
+    if (fieldDefError) {
+      console.error('Error fetching primary field definition:', fieldDefError)
+      throw new Error('No primary calendar event field defined for mass event type')
     }
 
-    // Phase 3: Generate dates and create Masses with Events
+    // Helper: Find matching liturgical context (for potential future template selection)
+    const getLiturgicalContext = (liturgicalEvent: GlobalLiturgicalEvent | null, dayOfWeek: number): LiturgicalContext => {
+      if (!liturgicalEvent) return 'ordinary' as LiturgicalContext
+      const isSunday = dayOfWeek === 0
+      const grade = liturgicalEvent.event_data?.grade || 7
+      return getLiturgicalContextFromGrade(grade, isSunday)
+    }
+
+    // Phase 4: Generate dates and create Masses
     const massesToCreate: Array<{
       date: string
       time: string
       language: string
       scheduleEntry: MassScheduleEntry
       liturgicalEvent: GlobalLiturgicalEvent | null
-      templateId: string
+      liturgicalContext: LiturgicalContext
       assignments?: Array<{
         roleId: string
         roleName: string
@@ -128,24 +179,26 @@ export async function scheduleMasses(
     if (params.proposedMasses && params.proposedMasses.length > 0) {
       for (const proposedMass of params.proposedMasses) {
         const liturgicalEvent = liturgicalEventsByDate.get(proposedMass.date) || null
+        const dayOfWeek = new Date(proposedMass.date).getDay()
+        const liturgicalContext = getLiturgicalContext(liturgicalEvent, dayOfWeek)
 
         massesToCreate.push({
           date: proposedMass.date,
           time: proposedMass.time,
-          language: 'ENGLISH', // Default language, TODO: get from mass times template
+          language: 'ENGLISH', // Default language
           scheduleEntry: {
             id: proposedMass.id,
-            dayOfWeek: new Date(proposedMass.date).getDay(),
+            dayOfWeek,
             time: proposedMass.time,
             language: 'ENGLISH'
           },
           liturgicalEvent,
-          templateId: proposedMass.templateId,
+          liturgicalContext,
           assignments: proposedMass.assignments
         })
       }
     } else {
-      // Fallback to old logic if no proposed masses
+      // Generate from schedule pattern
       const start = new Date(params.startDate)
       const end = new Date(params.endDate)
       const currentDate = new Date(start)
@@ -161,18 +214,7 @@ export async function scheduleMasses(
 
         // Get liturgical event for this date
         const liturgicalEvent = liturgicalEventsByDate.get(dateStr) || null
-
-        // Determine liturgical context and matching template
-        let templateId = templates[0].id
-        if (liturgicalEvent) {
-          const isSunday = dayOfWeek === 0
-          const grade = liturgicalEvent.event_data?.grade || 7
-          const context = getLiturgicalContextFromGrade(grade, isSunday)
-          const matchingTemplate = findTemplateForContext(context)
-          if (matchingTemplate) {
-            templateId = matchingTemplate.id
-          }
-        }
+        const liturgicalContext = getLiturgicalContext(liturgicalEvent, dayOfWeek)
 
         for (const entry of matchingEntries) {
           massesToCreate.push({
@@ -181,7 +223,7 @@ export async function scheduleMasses(
             language: entry.language,
             scheduleEntry: entry,
             liturgicalEvent,
-            templateId,
+            liturgicalContext
           })
         }
 
@@ -189,169 +231,162 @@ export async function scheduleMasses(
       }
     }
 
-    // Phase 4: Create Events and Masses in batch
+    // Phase 5: Create master_events and calendar_events in batch
     const createdMasses: ScheduleMassesResult['masses'] = []
 
-    // Pre-fetch template items for all templates
-    const templateItemsMap = new Map<string, any[]>()
-    for (const template of templates) {
-      const { data: items } = await supabase
-        .from('mass_roles_template_items')
-        .select(`*, mass_role:mass_roles(*)`)
-        .eq('mass_roles_template_id', template.id)
-        .order('position')
-      templateItemsMap.set(template.id, items || [])
-    }
-
     for (const massData of massesToCreate) {
-      // Get template items for this mass's template
-      const templateItems = templateItemsMap.get(massData.templateId) || []
-
       // Normalize time format to ensure HH:MM:SS
-      // PostgreSQL TIME fields can sometimes return shortened formats like "9:0:0"
-      // We need to ensure proper zero-padding: "09:00:00"
       const normalizeTime = (time: string): string => {
         const parts = time.split(':')
         if (parts.length === 3) {
           return parts.map(p => p.padStart(2, '0')).join(':')
         }
+        if (parts.length === 2) {
+          return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`
+        }
         return time
       }
       const normalizedTime = normalizeTime(massData.time)
 
-      // Create Event first - use liturgical event name if available
-      const eventName = massData.liturgicalEvent
-        ? `${massData.liturgicalEvent.event_data.name} - ${normalizedTime}`
-        : `Mass - ${massData.date} ${normalizedTime}`
+      // Create datetime string
+      const startDatetime = `${massData.date}T${normalizedTime}`
 
-      const { data: event, error: eventError } = await supabase
-        .from('events')
+      // Create master_event
+      const { data: masterEvent, error: masterEventError } = await supabase
+        .from('master_events')
         .insert({
           parish_id: selectedParishId,
-          name: eventName,
-          related_event_type: 'MASS',
-          start_date: massData.date,
-          start_time: normalizedTime,
-          end_date: massData.date,
-          language: massData.language,
+          event_type_id: massEventType.id,
+          field_values: {
+            liturgical_event_id: massData.liturgicalEvent?.id || null,
+            liturgical_context: massData.liturgicalContext
+          },
+          status: 'SCHEDULED'
         })
         .select()
         .single()
 
-      if (eventError) {
-        console.error('Error creating event:', {
-          error: eventError,
+      if (masterEventError) {
+        console.error('Error creating master event:', {
+          error: masterEventError,
           massData: {
             date: massData.date,
             time: massData.time,
-            normalizedTime,
-            templateId: massData.templateId,
             liturgicalEventId: massData.liturgicalEvent?.id
-          },
-          insertData: {
-            parish_id: selectedParishId,
-            name: eventName,
-            related_event_type: 'MASS',
-            start_date: massData.date,
-            start_time: normalizedTime,
-            end_date: massData.date,
-            language: massData.language,
           }
         })
-        throw new Error(`Failed to create event for ${massData.date} ${normalizedTime}: ${eventError.message || JSON.stringify(eventError)}`)
+        throw new Error(`Failed to create master event for ${massData.date} ${normalizedTime}: ${masterEventError.message}`)
       }
 
-      // Create Mass linked to Event
-      const { data: mass, error: massError } = await supabase
-        .from('masses')
+      // Create calendar_event linked to master_event
+      const { data: calendarEvent, error: calendarEventError } = await supabase
+        .from('calendar_events')
         .insert({
+          master_event_id: masterEvent.id,
           parish_id: selectedParishId,
-          event_id: event.id,
-          mass_roles_template_id: massData.templateId,
-          liturgical_event_id: massData.liturgicalEvent?.id || null,
-          status: 'SCHEDULED',
+          input_field_definition_id: primaryFieldDef.id,
+          start_datetime: startDatetime,
+          is_primary: true,
+          is_cancelled: false
         })
         .select()
         .single()
 
-      if (massError) {
-        console.error('Error creating mass:', massError)
-        throw new Error(`Failed to create mass for ${massData.date} ${massData.time}`)
+      if (calendarEventError) {
+        console.error('Error creating calendar event:', calendarEventError)
+        throw new Error(`Failed to create calendar event for ${massData.date} ${normalizedTime}`)
       }
 
-      // Phase 5: Create role instances for this Mass
-      const roleInstances: Array<{
-        mass_id: string
-        person_id: string | null
-        mass_roles_template_item_id: string
+      // Phase 6: Create role assignments for this Mass
+      const roleAssignments: Array<{
+        roleAssignmentId: string
+        roleId: string
+        roleName: string
+        personId: string | null
+        personName: string | null
+        status: 'ASSIGNED' | 'UNASSIGNED' | 'CONFLICT'
+        reason?: string
       }> = []
 
       // If we have assignments from proposedMasses, use those
       if (massData.assignments && massData.assignments.length > 0) {
-        // Create role instances with assignments from proposed masses
         for (const assignment of massData.assignments) {
-          // Find the matching template item for this role
-          const templateItem = templateItems.find(item => item.mass_role?.id === assignment.roleId)
-          if (templateItem) {
-            roleInstances.push({
-              mass_id: mass.id,
-              person_id: assignment.personId || null,
-              mass_roles_template_item_id: templateItem.id,
+          if (assignment.personId) {
+            // Create role assignment with person
+            const { data: roleAssignment, error: roleError } = await supabase
+              .from('master_event_roles')
+              .insert({
+                master_event_id: masterEvent.id,
+                role_id: assignment.roleId,
+                person_id: assignment.personId
+              })
+              .select()
+              .single()
+
+            if (roleError) {
+              console.error('Error creating role assignment:', roleError)
+              roleAssignments.push({
+                roleAssignmentId: '',
+                roleId: assignment.roleId,
+                roleName: assignment.roleName,
+                personId: null,
+                personName: null,
+                status: 'UNASSIGNED',
+                reason: 'Failed to save assignment'
+              })
+            } else {
+              roleAssignments.push({
+                roleAssignmentId: roleAssignment.id,
+                roleId: assignment.roleId,
+                roleName: assignment.roleName,
+                personId: assignment.personId,
+                personName: assignment.personName || null,
+                status: 'ASSIGNED'
+              })
+            }
+          } else {
+            // No person assigned - track as unassigned
+            roleAssignments.push({
+              roleAssignmentId: '',
+              roleId: assignment.roleId,
+              roleName: assignment.roleName,
+              personId: null,
+              personName: null,
+              status: 'UNASSIGNED',
+              reason: 'Not yet assigned'
             })
           }
         }
       } else {
-        // Fallback to creating empty instances from template
-        for (const templateItem of templateItems) {
-          // Create N instances based on count
-          for (let i = 0; i < templateItem.count; i++) {
-            roleInstances.push({
-              mass_id: mass.id,
-              person_id: null,
-              mass_roles_template_item_id: templateItem.id,
+        // Create empty assignments based on role definitions
+        for (const roleDef of roleDefinitions) {
+          const count = roleDef.count || 1
+          for (let i = 0; i < count; i++) {
+            roleAssignments.push({
+              roleAssignmentId: '',
+              roleId: roleDef.id,
+              roleName: roleDef.name,
+              personId: null,
+              personName: null,
+              status: 'UNASSIGNED',
+              reason: 'Not yet assigned'
             })
           }
         }
       }
 
-      const { data: createdInstances, error: instanceError } = await supabase
-        .from('mass_assignment')
-        .insert(roleInstances)
-        .select()
-
-      if (instanceError) {
-        console.error('Error creating role instances:', instanceError)
-        throw new Error(`Failed to create role instances for mass ${mass.id}`)
-      }
-
       // Add to result set
       createdMasses.push({
-        id: mass.id,
+        id: masterEvent.id,
         date: massData.date,
         time: normalizedTime,
         language: massData.language,
-        eventId: event.id,
-        assignments: createdInstances.map((instance) => {
-          const templateItem = templateItems.find(
-            (item) => item.id === instance.mass_roles_template_item_id
-          )
-          // Find matching assignment from proposed masses if available
-          const proposedAssignment = massData.assignments?.find(a => a.roleId === templateItem?.mass_role.id)
-
-          return {
-            roleInstanceId: instance.id,
-            roleId: templateItem?.mass_role.id || '',
-            roleName: templateItem?.mass_role.name || 'Unknown Role',
-            personId: instance.person_id,
-            personName: proposedAssignment?.personName || null,
-            status: instance.person_id ? 'ASSIGNED' as const : 'UNASSIGNED' as const,
-            reason: instance.person_id ? undefined : 'Not yet assigned',
-          }
-        }),
+        calendarEventId: calendarEvent.id,
+        assignments: roleAssignments
       })
     }
 
-    // Phase 5: Calculate assignment statistics
+    // Phase 7: Run auto-assignment algorithm if enabled and not using proposed masses
     let totalAssigned = 0
     let totalUnassigned = 0
     const totalRoles = createdMasses.reduce(
@@ -360,7 +395,6 @@ export async function scheduleMasses(
     )
 
     // If proposedMasses were provided with assignments, we already have the assignments
-    // Skip auto-assignment algorithm
     if (params.proposedMasses && params.proposedMasses.length > 0) {
       // Just count assigned/unassigned from what was created
       for (const mass of createdMasses) {
@@ -375,14 +409,14 @@ export async function scheduleMasses(
     } else if (params.algorithmOptions.respectBlackoutDates ||
         params.algorithmOptions.balanceWorkload) {
 
-      // Run simplified auto-assignment algorithm for old flow
+      // Run simplified auto-assignment algorithm
       for (const mass of createdMasses) {
         for (const assignment of mass.assignments) {
           const roleId = assignment.roleId
 
           if (!roleId) continue
 
-          // Get eligible ministers (already filters by active membership and blackout dates)
+          // Get eligible ministers
           let eligibleMinisters = await getAvailableMinisters(
             roleId,
             mass.date,
@@ -416,14 +450,20 @@ export async function scheduleMasses(
           if (eligibleMinisters.length > 0) {
             const selectedMinister = eligibleMinisters[0]
 
-            // Update the role instance with person_id
-            const { error: assignError } = await supabase
-              .from('mass_assignment')
-              .update({ person_id: selectedMinister.id })
-              .eq('id', assignment.roleInstanceId)
+            // Create the role assignment
+            const { data: roleAssignment, error: assignError } = await supabase
+              .from('master_event_roles')
+              .insert({
+                master_event_id: mass.id,
+                role_id: roleId,
+                person_id: selectedMinister.id
+              })
+              .select()
+              .single()
 
-            if (!assignError) {
+            if (!assignError && roleAssignment) {
               // Update assignment in result
+              assignment.roleAssignmentId = roleAssignment.id
               assignment.personId = selectedMinister.id
               assignment.personName = selectedMinister.name
               assignment.status = 'ASSIGNED'
@@ -471,13 +511,12 @@ export async function getSuggestedMinister(
   date: string,
   time: string,
   balanceWorkload: boolean,
-  alreadyAssignedPersonIds: string[] = [],
-  massTimesTemplateItemId?: string
+  alreadyAssignedPersonIds: string[] = []
 ): Promise<{ id: string; name: string } | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  const ministers = await getAvailableMinisters(roleId, date, time, selectedParishId, massTimesTemplateItemId)
+  const ministers = await getAvailableMinisters(roleId, date, time, selectedParishId)
 
   // Filter out people already assigned to this Mass
   const available = ministers.filter(m => !alreadyAssignedPersonIds.includes(m.id))
@@ -502,7 +541,6 @@ export async function previewMassAssignments(
     id: string
     date: string
     time: string
-    massTimesTemplateItemId?: string
     assignments: Array<{
       roleId: string
       roleName: string
@@ -559,8 +597,7 @@ export async function previewMassAssignments(
           mass.date,
           mass.time,
           balanceWorkload,
-          alreadyAssignedThisMass,
-          mass.massTimesTemplateItemId
+          alreadyAssignedThisMass
         )
 
         console.log('[previewMassAssignments] Suggested minister:', suggested)
@@ -614,23 +651,23 @@ export async function getAvailableMinisters(
   roleId: string,
   date: string,
   time: string,
-  parishId: string,
-  massTimesTemplateItemId?: string
+  parishId: string
 ): Promise<Array<{ id: string; name: string; assignmentCount: number }>> {
   const supabase = await createClient()
 
-  // 1. Get all active members for this role
+  // 1. Get all active members for this role from mass_role_members
+  // Note: roleId here is the role_id from event_type.role_definitions
+  // We need to find the corresponding mass_role that matches this role
   const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
     .select(`
       person_id,
-      person:people(id, first_name, last_name, mass_times_template_item_ids)
+      person:people(id, first_name, last_name)
     `)
     .eq('parish_id', parishId)
-    .eq('mass_role_id', roleId)
     .eq('active', true)
 
-  console.log('[getAvailableMinisters] Query params:', { roleId, date, time, parishId, massTimesTemplateItemId })
+  console.log('[getAvailableMinisters] Query params:', { roleId, date, time, parishId })
   console.log('[getAvailableMinisters] Members query result:', { members, membersError })
 
   if (!members || members.length === 0) {
@@ -649,7 +686,7 @@ export async function getAvailableMinisters(
     }
 
     // Handle both array and object formats from Supabase
-    const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string; mass_times_template_item_ids?: string[] }
+    const person = (Array.isArray(member.person) ? member.person[0] : member.person) as { id: string; first_name: string; last_name: string }
 
     if (!person || !person.id || !person.first_name || !person.last_name) {
       console.log('[getAvailableMinisters] Skipping member - incomplete person data:', person)
@@ -658,20 +695,7 @@ export async function getAvailableMinisters(
 
     console.log('[getAvailableMinisters] Person extracted:', person)
 
-    // 2. Filter by preferred mass times (if specified)
-    if (massTimesTemplateItemId && person.mass_times_template_item_ids && person.mass_times_template_item_ids.length > 0) {
-      if (!person.mass_times_template_item_ids.includes(massTimesTemplateItemId)) {
-        console.log('[getAvailableMinisters] Skipping person - not in preferred mass times:', {
-          personId: person.id,
-          personName: `${person.first_name} ${person.last_name}`,
-          preferredMassTimes: person.mass_times_template_item_ids,
-          requestedMassTime: massTimesTemplateItemId
-        })
-        continue
-      }
-    }
-
-    // 3. Check for blackout dates (person-centric, not role-specific)
+    // 2. Check for blackout dates (person-centric, not role-specific)
     const { data: blackouts } = await supabase
       .from('person_blackout_dates')
       .select('*')
@@ -684,11 +708,13 @@ export async function getAvailableMinisters(
       continue
     }
 
-    // 4. Get assignment count for this person (for workload balancing)
+    // 3. Get assignment count for this person (for workload balancing)
+    // Now uses master_event_roles instead of mass_assignment
     const { count } = await supabase
-      .from('mass_assignment')
+      .from('master_event_roles')
       .select('*', { count: 'exact', head: true })
       .eq('person_id', person.id)
+      .is('deleted_at', null)
 
     const displayName = `${person.first_name} ${person.last_name}`
 
@@ -704,10 +730,11 @@ export async function getAvailableMinisters(
 }
 
 /**
- * Manually assign a minister to a role instance
+ * Manually assign a minister to a role
  */
 export async function assignMinisterToRole(
-  massRoleInstanceId: string,
+  masterEventId: string,
+  roleId: string,
   personId: string
 ): Promise<void> {
   await requireSelectedParish()
@@ -715,9 +742,12 @@ export async function assignMinisterToRole(
   const supabase = await createClient()
 
   const { error } = await supabase
-    .from('mass_assignment')
-    .update({ person_id: personId })
-    .eq('id', massRoleInstanceId)
+    .from('master_event_roles')
+    .insert({
+      master_event_id: masterEventId,
+      role_id: roleId,
+      person_id: personId
+    })
 
   if (error) {
     console.error('Error assigning minister:', error)
@@ -725,6 +755,7 @@ export async function assignMinisterToRole(
   }
 
   revalidatePath('/masses')
+  revalidatePath(`/masses/${masterEventId}`)
 }
 
 /**
@@ -779,59 +810,50 @@ async function hasConflict(
   time: string
 ): Promise<{ hasConflict: boolean; reason?: string }> {
   // Check if person is already assigned to a different role at same time
+  // Now uses master_event_roles -> calendar_events instead of mass_assignment -> masses -> events
   const { data: existingAssignments } = await supabase
-    .from('mass_assignment')
+    .from('master_event_roles')
     .select(`
       id,
-      mass:masses(
+      master_event:master_events(
         id,
-        event:events(
-          start_date,
-          start_time
+        calendar_events(
+          start_datetime
         )
       )
     `)
     .eq('person_id', personId)
+    .is('deleted_at', null)
 
   if (existingAssignments) {
     for (const assignment of existingAssignments) {
-      if (!assignment.mass || !Array.isArray(assignment.mass) || assignment.mass.length === 0) continue
-      const mass = assignment.mass[0] as any
-      if (!mass?.event || !Array.isArray(mass.event) || mass.event.length === 0) continue
-      const event = mass.event[0] as { start_date: string; start_time: string }
-      if (event?.start_date === date && event?.start_time === time) {
-        return { hasConflict: true, reason: 'Already assigned to another role at this Mass' }
+      if (!assignment.master_event) continue
+
+      // Handle both array and single object from Supabase
+      const masterEvent = Array.isArray(assignment.master_event)
+        ? assignment.master_event[0]
+        : assignment.master_event
+
+      if (!masterEvent?.calendar_events) continue
+
+      const calendarEvents = Array.isArray(masterEvent.calendar_events)
+        ? masterEvent.calendar_events
+        : [masterEvent.calendar_events]
+
+      for (const calendarEvent of calendarEvents) {
+        if (!calendarEvent?.start_datetime) continue
+
+        // Parse datetime to compare
+        const eventDatetime = new Date(calendarEvent.start_datetime)
+        const checkDatetime = new Date(`${date}T${time}`)
+
+        // Check if same date and time (within a reasonable tolerance)
+        if (Math.abs(eventDatetime.getTime() - checkDatetime.getTime()) < 60000) { // Within 1 minute
+          return { hasConflict: true, reason: 'Already assigned to another role at this Mass' }
+        }
       }
     }
   }
 
   return { hasConflict: false }
-}
-
-/**
- * Get assignment count for a person in a given month
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function getMonthlyAssignmentCount(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  personId: string,
-  date: string
-): Promise<number> {
-  const massDate = new Date(date)
-  const startOfMonth = toLocalDateString(new Date(massDate.getFullYear(), massDate.getMonth(), 1))
-  const endOfMonth = toLocalDateString(new Date(massDate.getFullYear(), massDate.getMonth() + 1, 0))
-
-  const { count } = await supabase
-    .from('mass_assignment')
-    .select(`
-      id,
-      mass:masses!inner(
-        event:events!inner(start_date)
-      )
-    `, { count: 'exact', head: true })
-    .eq('person_id', personId)
-    .gte('mass.event.start_date', startOfMonth)
-    .lte('mass.event.start_date', endOfMonth)
-
-  return count || 0
 }

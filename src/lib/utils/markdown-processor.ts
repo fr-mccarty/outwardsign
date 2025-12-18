@@ -6,7 +6,7 @@
  */
 
 import { marked } from 'marked'
-import type { EventWithRelations, ResolvedFieldValue } from '@/lib/types/event-types'
+import type { MasterEventWithRelations, ResolvedFieldValue } from '@/lib/types'
 import { formatDatePretty } from '@/lib/utils/formatters'
 
 /**
@@ -36,7 +36,7 @@ export const PARISH_PLACEHOLDERS = [
  */
 export function replaceFieldPlaceholders(
   content: string,
-  event: EventWithRelations
+  event: MasterEventWithRelations
 ): string {
   // Regex to find all {{...}} patterns
   const placeholderRegex = /\{\{([^}]+)\}\}/g
@@ -79,7 +79,7 @@ export function replaceFieldPlaceholders(
  */
 function resolveParishPlaceholder(
   placeholder: string,
-  event: EventWithRelations
+  event: MasterEventWithRelations
 ): string {
   const parish = event.parish
 
@@ -111,50 +111,65 @@ function resolveFieldValue(resolvedField: ResolvedFieldValue): string {
   const { field_type, raw_value, resolved_value } = resolvedField
 
   // Handle different field types
+  // Using type assertions since TypeScript can't narrow union types based on sibling properties
   switch (field_type) {
-    case 'person':
+    case 'person': {
       // Use full_name from resolved person
-      return resolved_value?.full_name || 'empty'
+      const person = resolved_value as { full_name?: string } | null | undefined
+      return person?.full_name || 'empty'
+    }
 
     case 'date':
       // Format date using helper
       return raw_value ? formatDatePretty(raw_value) : 'empty'
 
-    case 'location':
+    case 'location': {
       // Use location name
-      return resolved_value?.name || 'empty'
+      const location = resolved_value as { name?: string } | null | undefined
+      return location?.name || 'empty'
+    }
 
-    case 'group':
+    case 'group': {
       // Use group name
-      return resolved_value?.name || 'empty'
+      const group = resolved_value as { name?: string } | null | undefined
+      return group?.name || 'empty'
+    }
 
     case 'event_link':
       // For linked events, we might want to show a title or reference
       // For now, just show 'empty' if no resolved value
       return resolved_value ? String(resolved_value) : 'empty'
 
-    case 'list_item':
+    case 'list_item': {
       // Use the value from the custom list item
-      return resolved_value?.value || 'empty'
+      const listItem = resolved_value as { value?: string } | null | undefined
+      return listItem?.value || 'empty'
+    }
 
-    case 'document':
+    case 'document': {
       // Use the filename
-      return resolved_value?.file_name || 'empty'
+      const document = resolved_value as { file_name?: string } | null | undefined
+      return document?.file_name || 'empty'
+    }
 
-    case 'content':
+    case 'content': {
       // Use body from resolved content, or raw_value for legacy text
-      if (resolved_value && resolved_value.body) {
-        return resolved_value.body
+      const content = resolved_value as { body?: string } | null | undefined
+      if (content && content.body) {
+        return content.body
       }
       // Legacy text value or missing content
       return raw_value ? String(raw_value) : 'empty'
+    }
 
-    case 'petition':
+    case 'petition': {
       // Use text from resolved petition
-      if (resolved_value && resolved_value.text) {
-        return resolved_value.text
+      const petition = resolved_value as { text?: string } | null | undefined
+      if (petition && petition.text) {
+        return petition.text
       }
       return 'empty'
+    }
 
     case 'text':
     case 'rich_text':
@@ -188,7 +203,7 @@ function resolveGenderedText(
   fieldRef: string,
   maleText: string,
   femaleText: string,
-  event: EventWithRelations
+  event: MasterEventWithRelations
 ): string {
   // Extract the base field name (before any dot notation)
   const fieldName = fieldRef.split('.')[0]
@@ -208,7 +223,8 @@ function resolveGenderedText(
   }
 
   // Get the person's gender from resolved_value
-  const person = resolvedField.resolved_value
+  // Type assertion since we've verified this is a person field
+  const person = resolvedField.resolved_value as { gender?: string } | null | undefined
   const gender = person?.gender
 
   if (!gender) {
@@ -264,7 +280,7 @@ export function parseMarkdownToHTML(content: string): string {
  */
 export function processScriptSection(
   sectionContent: string,
-  event: EventWithRelations
+  event: MasterEventWithRelations
 ): string {
   // Step 1: Replace field placeholders
   const replacedContent = replaceFieldPlaceholders(sectionContent, event)
@@ -303,7 +319,7 @@ interface ScriptSection {
 /**
  * Get petition content from event's resolved fields
  */
-function getPetitionContent(event: EventWithRelations): string {
+function getPetitionContent(event: MasterEventWithRelations): string {
   // Find the petition field in resolved_fields
   if (!event.resolved_fields) {
     return '<p><em>No petitions configured for this event.</em></p>'
@@ -313,7 +329,9 @@ function getPetitionContent(event: EventWithRelations): string {
   for (const fieldName in event.resolved_fields) {
     const field = event.resolved_fields[fieldName]
     if (field.field_type === 'petition' && field.resolved_value) {
-      const petitionText = field.resolved_value.text
+      // Type assertion since we've verified this is a petition field
+      const petition = field.resolved_value as { text?: string }
+      const petitionText = petition.text
       if (petitionText) {
         // Parse the petition text as markdown to HTML
         return parseMarkdownToHTML(petitionText)
@@ -326,7 +344,7 @@ function getPetitionContent(event: EventWithRelations): string {
 
 export function processScriptForRendering(
   script: { sections: ScriptSection[] },
-  event: EventWithRelations
+  event: MasterEventWithRelations
 ): ProcessedSection[] {
   return script.sections.map(section => {
     const sectionType = section.section_type || 'text'

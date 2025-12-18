@@ -3,7 +3,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
-import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { getScripts } from '@/lib/actions/scripts'
 import { DynamicEventViewClient } from '@/app/(main)/events/[event_type_id]/[id]/master-event-view-client'
 
@@ -32,8 +32,8 @@ export default async function ViewSacramentPage({ params }: PageProps) {
     notFound()
   }
 
-  // Fetch event type by slug
-  const eventType = await getEventTypeBySlug(event_type_slug)
+  // Fetch event type by slug with relations (includes input_field_definitions and scripts)
+  const eventType = await getEventTypeWithRelationsBySlug(event_type_slug)
 
   if (!eventType) {
     notFound()

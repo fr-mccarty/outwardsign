@@ -1,26 +1,36 @@
 "use client"
 
-import type { DynamicEventWithRelations, DynamicEventType, Script } from '@/lib/types'
+import type { MasterEventWithRelations, EventTypeWithRelations, Script } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { ScriptCard } from '@/components/script-card'
 import { Edit } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { formatDatePretty } from '@/lib/utils/formatters'
+import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 import { deleteEvent } from '@/lib/actions/master-events'
 
-interface DynamicEventViewClientProps {
-  event: DynamicEventWithRelations
-  eventType: DynamicEventType
+interface MasterEventViewClientProps {
+  event: MasterEventWithRelations
+  eventType: EventTypeWithRelations
   scripts: Script[]
   eventTypeSlug: string
 }
 
-export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlug }: DynamicEventViewClientProps) {
+export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlug }: MasterEventViewClientProps) {
   const router = useRouter()
+
+  // Create lookup map for input field definitions by ID (for calendar event labels)
+  const fieldDefinitionMap = new Map(
+    (eventType.input_field_definitions || []).map(field => [field.id, field])
+  )
+
+  // Helper to get field label from input_field_definition_id
+  const getFieldLabel = (inputFieldDefinitionId: string): string => {
+    const field = fieldDefinitionMap.get(inputFieldDefinitionId)
+    return field?.name || 'Calendar Event'
+  }
 
   // Generate action buttons (Edit only - Delete handled via onDelete prop)
   const actionButtons = (
@@ -48,23 +58,9 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
     </>
   )
 
-  // Format time to 12-hour format with AM/PM
-  const formatTime = (time: string | null) => {
-    if (!time) return null
-    try {
-      // Parse HH:mm:ss format
-      const [hours, minutes] = time.split(':').map(Number)
-      const period = hours >= 12 ? 'PM' : 'AM'
-      const displayHours = hours % 12 || 12
-      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
-    } catch {
-      return time
-    }
-  }
-
-  // Sort calendar_events by created_at (no position field anymore)
-  const sortedOccasions = [...(event.calendar_events || [])].sort((a, b) =>
-    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  // Sort calendar_events by start_datetime
+  const sortedCalendarEvents = [...(event.calendar_events || [])].sort((a, b) =>
+    new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
   )
 
   return (
@@ -76,42 +72,31 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
       details={details}
       onDelete={deleteEvent}
     >
-      {/* Occasions Section */}
-      {sortedOccasions.length > 0 && (
+      {/* Calendar Events Section */}
+      {sortedCalendarEvents.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Occasions</h3>
+          <h3 className="text-lg font-semibold mb-3">Calendar Events</h3>
           <div className="space-y-3">
-            {sortedOccasions.map((occasion) => (
-              <Card key={occasion.id}>
+            {sortedCalendarEvents.map((calendarEvent) => (
+              <Card key={calendarEvent.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base">
-                      {occasion.label}
+                      {getFieldLabel(calendarEvent.input_field_definition_id)}
                     </CardTitle>
-                    {occasion.is_primary && (
-                      <Badge variant="secondary" className="text-xs">
-                        Primary
-                      </Badge>
-                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                  {occasion.date && (
+                  {calendarEvent.start_datetime && (
                     <div>
-                      <span className="font-medium">Date:</span>{' '}
-                      {formatDatePretty(occasion.date)}
+                      <span className="font-medium">Date & Time:</span>{' '}
+                      {formatDatePretty(new Date(calendarEvent.start_datetime))} at {formatTime(new Date(calendarEvent.start_datetime).toTimeString().slice(0, 8))}
                     </div>
                   )}
-                  {occasion.time && (
-                    <div>
-                      <span className="font-medium">Time:</span>{' '}
-                      {formatTime(occasion.time)}
-                    </div>
-                  )}
-                  {occasion.location && (
+                  {calendarEvent.location && (
                     <div>
                       <span className="font-medium">Location:</span>{' '}
-                      {occasion.location.name}
+                      {calendarEvent.location.name}
                     </div>
                   )}
                 </CardContent>

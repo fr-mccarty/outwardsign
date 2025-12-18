@@ -10,14 +10,15 @@ CREATE TABLE event_types (
   icon TEXT NOT NULL DEFAULT 'FileText',
   "order" INTEGER NOT NULL DEFAULT 0,
   slug TEXT,
-  category TEXT NOT NULL DEFAULT 'event',
+  system_type TEXT NOT NULL DEFAULT 'event',
+  role_definitions JSONB NOT NULL DEFAULT '{}'::jsonb,
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT unique_event_type_name_per_parish UNIQUE (parish_id, name),
   CONSTRAINT unique_event_type_slug_per_parish UNIQUE (parish_id, slug),
   CONSTRAINT check_event_type_order_non_negative CHECK ("order" >= 0),
-  CONSTRAINT event_types_category_check CHECK (category IN ('sacrament', 'mass', 'special_liturgy', 'event'))
+  CONSTRAINT event_types_system_type_check CHECK (system_type IN ('mass', 'special-liturgy', 'sacrament', 'event'))
 );
 
 -- Enable RLS
@@ -32,11 +33,15 @@ GRANT ALL ON event_types TO service_role;
 CREATE INDEX idx_event_types_parish_id ON event_types(parish_id);
 CREATE INDEX idx_event_types_order ON event_types(parish_id, "order") WHERE deleted_at IS NULL;
 CREATE INDEX idx_event_types_slug ON event_types(parish_id, slug) WHERE deleted_at IS NULL;
-CREATE INDEX idx_event_types_category ON event_types(parish_id, category) WHERE deleted_at IS NULL;
+CREATE INDEX idx_event_types_system_type ON event_types(parish_id, system_type) WHERE deleted_at IS NULL;
+
+-- GIN index for role_definitions JSONB queries
+CREATE INDEX idx_event_types_role_definitions_gin ON event_types USING GIN (role_definitions);
 
 -- Column comments
 COMMENT ON COLUMN event_types.slug IS 'URL-safe identifier for event type (e.g., "weddings", "funerals"). Auto-generated from name but can be edited by admins. Must be unique per parish.';
-COMMENT ON COLUMN event_types.category IS 'Category of event type for UI organization (sacrament, mass, special_liturgy, event)';
+COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass, special-liturgy, sacrament, event)';
+COMMENT ON COLUMN event_types.role_definitions IS 'JSONB array of role definitions for this event type. Example: {"roles": [{"id": "presider", "name": "Presider", "required": true}]}';
 
 -- RLS Policies
 -- Parish members can read event types for their parish

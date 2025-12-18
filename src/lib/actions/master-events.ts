@@ -9,7 +9,7 @@ import type {
   MasterEventWithRelations,
   CreateMasterEventData,
   UpdateMasterEventData,
-  DynamicEventType,
+  EventType,
   InputFieldDefinition,
   CalendarEvent,
   Person,
@@ -39,14 +39,14 @@ export interface MasterEventFilterParams {
 }
 
 export interface MasterEventWithTypeAndCalendarEvent extends MasterEvent {
-  event_type?: DynamicEventType
+  event_type?: EventType
   primary_calendar_event?: CalendarEvent
 }
 
 /**
  * Get all master events for the parish (used by dashboard)
  */
-export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: DynamicEventType })[]> {
+export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: EventType })[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -148,26 +148,26 @@ export async function getAllMasterEvents(
   let filteredEvents = eventsWithCalendarEvents
   if (filters?.startDate) {
     filteredEvents = filteredEvents.filter(e =>
-      e.primary_calendar_event?.date && e.primary_calendar_event.date >= filters.startDate!
+      e.primary_calendar_event?.start_datetime && e.primary_calendar_event.start_datetime >= filters.startDate!
     )
   }
   if (filters?.endDate) {
     filteredEvents = filteredEvents.filter(e =>
-      e.primary_calendar_event?.date && e.primary_calendar_event.date <= filters.endDate!
+      e.primary_calendar_event?.start_datetime && e.primary_calendar_event.start_datetime <= filters.endDate!
     )
   }
 
   // Apply date sorting if requested
   if (filters?.sort === 'date_asc') {
     filteredEvents.sort((a, b) => {
-      const dateA = a.primary_calendar_event?.date || ''
-      const dateB = b.primary_calendar_event?.date || ''
+      const dateA = a.primary_calendar_event?.start_datetime || ''
+      const dateB = b.primary_calendar_event?.start_datetime || ''
       return dateA.localeCompare(dateB)
     })
   } else if (filters?.sort === 'date_desc') {
     filteredEvents.sort((a, b) => {
-      const dateA = a.primary_calendar_event?.date || ''
-      const dateB = b.primary_calendar_event?.date || ''
+      const dateA = a.primary_calendar_event?.start_datetime || ''
+      const dateB = b.primary_calendar_event?.start_datetime || ''
       return dateB.localeCompare(dateA)
     })
   }
@@ -289,10 +289,10 @@ export async function getEvents(
             .is('deleted_at', null)
 
           if (filters?.startDate) {
-            calendarEventsQuery = calendarEventsQuery.gte('date', filters.startDate)
+            calendarEventsQuery = calendarEventsQuery.gte('start_datetime', filters.startDate)
           }
           if (filters?.endDate) {
-            calendarEventsQuery = calendarEventsQuery.lte('date', filters.endDate)
+            calendarEventsQuery = calendarEventsQuery.lte('start_datetime', filters.endDate)
           }
 
           const { data: matchingCalendarEvents } = await calendarEventsQuery
@@ -312,13 +312,13 @@ export async function getEvents(
     if (eventIds.length > 0) {
       const { data: calendarEvents } = await supabase
         .from('calendar_events')
-        .select('master_event_id, date')
+        .select('master_event_id, start_datetime')
         .in('master_event_id', eventIds)
         .eq('is_primary', true)
         .is('deleted_at', null)
 
-      // Create map of master_event_id to primary calendar event date
-      const dateMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce.date]) || [])
+      // Create map of master_event_id to primary calendar event start_datetime
+      const dateMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce.start_datetime]) || [])
 
       events.sort((a, b) => {
         const dateA = dateMap.get(a.id) || ''
@@ -431,7 +431,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     throw new Error('Failed to fetch calendar events')
   }
 
-  const eventType = eventTypeData.data as DynamicEventType
+  const eventType = eventTypeData.data as EventType
   const calendarEvents = calendarEventsData.data as CalendarEvent[]
   const presider = presiderData.data as Person | null
   const homilist = homilistData.data as Person | null
@@ -634,12 +634,12 @@ export async function createEvent(
   const calendarEventsToInsert = data.calendar_events.map(calendarEvent => ({
     master_event_id: newEvent.id,
     parish_id: selectedParishId, // Required for RLS
-    label: calendarEvent.label,
-    date: calendarEvent.date || null,
-    time: calendarEvent.time || null,
+    input_field_definition_id: calendarEvent.input_field_definition_id,
+    start_datetime: calendarEvent.start_datetime || null,
+    end_datetime: calendarEvent.end_datetime || null,
     location_id: calendarEvent.location_id || null,
     is_primary: calendarEvent.is_primary || false,
-    is_standalone: false // Linked to master event
+    is_cancelled: false
   }))
 
   const { error: calendarEventsError } = await supabase
@@ -862,21 +862,21 @@ export async function assignHomilisToMasterEvent(eventId: string, personId: stri
  */
 export interface CalendarCalendarEventItem {
   id: string  // calendar_event.id
-  master_event_id: string | null
-  date: string
-  time: string | null
-  label: string
+  master_event_id: string
+  start_datetime: string
+  end_datetime: string | null
+  input_field_definition_id: string
   location_id: string | null
   location_name: string | null
   is_primary: boolean
-  is_standalone: boolean
-  // From master_event (if linked)
+  is_cancelled: boolean
+  // From master_event
   event_title: string
   event_field_values: Record<string, unknown>
-  // From event_type (if linked)
-  event_type_id: string | null
-  event_type_slug: string | null
-  event_type_name: string | null
+  // From event_type
+  event_type_id: string
+  event_type_slug: string
+  event_type_name: string
   event_type_icon: string | null
   // Module link (computed)
   module_type: string | null
@@ -893,20 +893,20 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Fetch all calendar events (both linked and standalone) with their parent master events and event types
+  // Fetch all calendar events with their parent master events and event types
   const { data: calendarEvents, error } = await supabase
     .from('calendar_events')
     .select(`
       id,
       master_event_id,
-      label,
-      date,
-      time,
+      input_field_definition_id,
+      start_datetime,
+      end_datetime,
       location_id,
       is_primary,
-      is_standalone,
+      is_cancelled,
       location:locations(name),
-      master_event:master_events(
+      master_event:master_events!inner(
         id,
         field_values,
         parish_id,
@@ -915,8 +915,8 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
     `)
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
-    .not('date', 'is', null)
-    .order('date', { ascending: true })
+    .not('start_datetime', 'is', null)
+    .order('start_datetime', { ascending: true })
 
   if (error) {
     console.error('Error fetching calendar events for calendar:', error)
@@ -927,9 +927,8 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
     return []
   }
 
-  // Collect master_event_ids to check for module links (only for linked events)
-  const linkedCalendarEvents = calendarEvents.filter(ce => !ce.is_standalone && ce.master_event_id)
-  const masterEventIds = [...new Set(linkedCalendarEvents.map(ce => ce.master_event_id).filter(Boolean))] as string[]
+  // Collect master_event_ids to check for module links
+  const masterEventIds = [...new Set(calendarEvents.map(ce => ce.master_event_id).filter(Boolean))] as string[]
 
   // Check for module links (weddings, funerals, baptisms, etc.)
   const moduleLinks = new Map<string, { moduleType: string; moduleId: string }>()
@@ -956,59 +955,34 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
 
   // Transform to calendar items
   const calendarItems: CalendarCalendarEventItem[] = calendarEvents.map(calendarEvent => {
-    // Standalone event - no master event data
-    if (calendarEvent.is_standalone) {
-      const locationData = calendarEvent.location as unknown as { name: string } | null
-      return {
-        id: calendarEvent.id,
-        master_event_id: null,
-        date: calendarEvent.date!,
-        time: calendarEvent.time,
-        label: calendarEvent.label,
-        location_id: calendarEvent.location_id,
-        location_name: locationData?.name || null,
-        is_primary: false, // Standalone events don't have primary status
-        is_standalone: true,
-        event_title: calendarEvent.label,
-        event_field_values: {},
-        event_type_id: null,
-        event_type_slug: null,
-        event_type_name: null,
-        event_type_icon: null,
-        module_type: null,
-        module_id: null,
-      }
-    }
-
-    // Linked event - has master event data
     const masterEventData = calendarEvent.master_event as unknown as {
       id: string
       field_values: Record<string, unknown>
-      event_type: { id: string; slug: string; name: string; icon: string | null } | null
-    } | null
+      event_type: { id: string; slug: string; name: string; icon: string | null }
+    }
 
     const locationData = calendarEvent.location as unknown as { name: string } | null
-    const moduleLink = calendarEvent.master_event_id ? moduleLinks.get(calendarEvent.master_event_id) : undefined
+    const moduleLink = moduleLinks.get(calendarEvent.master_event_id)
 
-    // Generate event title from event type name or use label
-    const eventTypeName = masterEventData?.event_type?.name || 'Event'
+    // Generate event title from event type name
+    const eventTypeName = masterEventData.event_type.name
 
     return {
       id: calendarEvent.id,
       master_event_id: calendarEvent.master_event_id,
-      date: calendarEvent.date!,
-      time: calendarEvent.time,
-      label: calendarEvent.label,
+      start_datetime: calendarEvent.start_datetime!,
+      end_datetime: calendarEvent.end_datetime,
+      input_field_definition_id: calendarEvent.input_field_definition_id,
       location_id: calendarEvent.location_id,
       location_name: locationData?.name || null,
       is_primary: calendarEvent.is_primary,
-      is_standalone: false,
+      is_cancelled: calendarEvent.is_cancelled,
       event_title: eventTypeName,
-      event_field_values: masterEventData?.field_values || {},
-      event_type_id: masterEventData?.event_type?.id || null,
-      event_type_slug: masterEventData?.event_type?.slug || null,
+      event_field_values: masterEventData.field_values,
+      event_type_id: masterEventData.event_type.id,
+      event_type_slug: masterEventData.event_type.slug,
       event_type_name: eventTypeName,
-      event_type_icon: masterEventData?.event_type?.icon || null,
+      event_type_icon: masterEventData.event_type.icon,
       module_type: moduleLink?.moduleType || null,
       module_id: moduleLink?.moduleId || null,
     }

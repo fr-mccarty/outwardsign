@@ -24,7 +24,6 @@ import {
   Calendar,
   Users,
   CalendarClock,
-  BookTemplate,
   AlertTriangle,
   Sparkles,
   ChevronRight,
@@ -33,9 +32,8 @@ import {
   UserPlus
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
-import { ProposedMass } from './step-5-proposed-schedule'
+import { ProposedMass } from './step-4-proposed-schedule'
 import { MassTimesTemplate } from "@/lib/actions/mass-times-templates"
-import { MassRoleTemplate } from "@/lib/actions/mass-role-templates"
 import { formatDate } from "@/lib/utils/formatters"
 import { getDayCount } from "@/lib/utils/formatters"
 import { cn } from '@/lib/utils'
@@ -43,14 +41,21 @@ import { MassAssignmentPeoplePicker } from '@/components/mass-assignment-people-
 import type { Person } from '@/lib/types'
 import { toast } from 'sonner'
 
-interface Step7WorkloadReviewProps {
+// Role definition from event_types.role_definitions
+interface RoleDefinition {
+  id: string
+  name: string
+  required: boolean
+  count?: number
+}
+
+interface Step6WorkloadReviewProps {
   startDate: string
   endDate: string
   proposedMasses: ProposedMass[]
   massTimesTemplates: MassTimesTemplate[]
   selectedMassTimesTemplateIds: string[]
-  roleTemplates: MassRoleTemplate[]
-  selectedRoleTemplateIds: string[]
+  roleDefinitions: RoleDefinition[]
   onProposedMassesChange?: (masses: ProposedMass[]) => void
 }
 
@@ -72,16 +77,15 @@ interface MinisterSummary {
 
 type SortOrder = 'most-assignments' | 'least-assignments' | 'name-asc' | 'name-desc'
 
-export function Step7WorkloadReview({
+export function Step6WorkloadReview({
   startDate,
   endDate,
   proposedMasses,
   massTimesTemplates,
   selectedMassTimesTemplateIds,
-  roleTemplates,
-  selectedRoleTemplateIds,
+  roleDefinitions,
   onProposedMassesChange
-}: Step7WorkloadReviewProps) {
+}: Step6WorkloadReviewProps) {
   const [selectedMinister, setSelectedMinister] = useState<MinisterSummary | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [sortOrder, setSortOrder] = useState<SortOrder>('most-assignments')
@@ -178,9 +182,6 @@ export function Step7WorkloadReview({
 
   const selectedMassTimes = massTimesTemplates.filter(t =>
     selectedMassTimesTemplateIds.includes(t.id)
-  )
-  const selectedRoles = roleTemplates.filter(t =>
-    selectedRoleTemplateIds.includes(t.id)
   )
 
   const hasUnassigned = stats.unassignedCount > 0
@@ -508,19 +509,22 @@ export function Step7WorkloadReview({
           </CardContent>
         </Card>
 
-        {/* Role Templates */}
+        {/* Roles */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <BookTemplate className="h-4 w-4 text-primary" />
-              Role Templates
+              <Users className="h-4 w-4 text-primary" />
+              Roles
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-1">
-              {selectedRoles.map(t => (
-                <Badge key={t.id} variant="secondary" className="text-xs">
-                  {t.name}
+              {roleDefinitions.map(role => (
+                <Badge key={role.id} variant="secondary" className="text-xs">
+                  {role.name}
+                  {role.count && role.count > 1 && (
+                    <span className="ml-1 text-muted-foreground">×{role.count}</span>
+                  )}
                 </Badge>
               ))}
             </div>

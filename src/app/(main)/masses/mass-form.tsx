@@ -7,9 +7,8 @@ import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { createMass, updateMass, type MassWithRelations, getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
-import { getMassRoleTemplates, type MassRoleTemplate } from "@/lib/actions/mass-role-templates"
-import { getTemplateItems, type MassRoleTemplateItemWithRole } from "@/lib/actions/mass-role-template-items"
+import { createMass, updateMass, getMassRoles, createMassRole, deleteMassRole, deleteAllMassRoles, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
+import type { MassWithRelations, MasterEventRoleWithRelations } from "@/lib/schemas/masses"
 import type { Person, Event, Location, ContentWithTags, Petition, Document } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
@@ -59,20 +58,22 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   const isEditing = !!mass
 
   // Initialize React Hook Form
+  // Note: In the new data model, many fields are stored in field_values JSONB column
+  const initialFieldValues = mass?.field_values || {}
   const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<CreateMassData>({
     resolver: zodResolver(createMassSchema),
     defaultValues: {
       status: mass?.status || "ACTIVE",
-      event_id: mass?.event_id || undefined,
+      event_id: undefined, // Calendar events are in calendar_events[], not event_id
       presider_id: mass?.presider_id || undefined,
       homilist_id: mass?.homilist_id || undefined,
-      liturgical_event_id: mass?.liturgical_event_id || initialLiturgicalEvent?.id || undefined,
-      mass_roles_template_id: mass?.mass_roles_template_id || undefined,
-      petitions: mass?.petitions || undefined,
-      announcements: mass?.announcements || undefined,
-      note: mass?.note || undefined,
-      mass_template_id: (mass?.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE,
-      liturgical_color: (mass?.liturgical_color as LiturgicalColor) || undefined,
+      liturgical_event_id: (initialFieldValues.liturgical_event_id as string) || initialLiturgicalEvent?.id || undefined,
+      mass_roles_template_id: undefined, // No longer used - roles are in event_type.role_definitions
+      petitions: (initialFieldValues.petitions as string) || undefined,
+      announcements: (initialFieldValues.announcements as string) || undefined,
+      note: (initialFieldValues.note as string) || undefined,
+      mass_template_id: (initialFieldValues.mass_template_id as MassTemplate) || MASS_DEFAULT_TEMPLATE,
+      liturgical_color: (initialFieldValues.liturgical_color as LiturgicalColor) || undefined,
     }
   })
 
@@ -88,18 +89,13 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 
   // Mass role assignments state
-  const [massRoles, setMassRoles] = useState<MassRoleInstanceWithRelations[]>([])
+  const [massRoles, setMassRoles] = useState<MasterEventRoleWithRelations[]>([])
   const [rolePickerOpen, setRolePickerOpen] = useState(false)
   const [currentRoleId, setCurrentRoleId] = useState<string | null>(null)
 
   // Mass intention state
   const [massIntention, setMassIntention] = useState<MassIntentionWithNames | null>(null)
   const [massIntentionPickerOpen, setMassIntentionPickerOpen] = useState(false)
-
-  // Mass role template state
-  const [massRolesTemplateId, setMassRolesTemplateId] = useState<string>(mass?.mass_roles_template_id || "")
-  const [allTemplates, setAllTemplates] = useState<MassRoleTemplate[]>([])
-  const [templateItems, setTemplateItems] = useState<MassRoleTemplateItemWithRole[]>([])
 
   // Event type templating state
   const [eventTypeId, setEventTypeId] = useState<string | null>(mass?.event_type_id || null)
@@ -131,19 +127,20 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     if (mass && mass.id !== initializedMassIdRef.current) {
       initializedMassIdRef.current = mass.id
 
-      // Set event
-      if (mass.event) event.setValue(mass.event)
+      // Note: In new data model, event info is in calendar_events[], not a direct event relation
+      // The EventPickerField expects the old Event type, so we don't set it from calendar_events
+      // TODO: Update EventPickerField to work with CalendarEvent or create CalendarEventPickerField
 
       // Set people
       if (mass.presider) presider.setValue(mass.presider)
       if (mass.homilist) homilist.setValue(mass.homilist)
 
-      // Set liturgical event
-      if (mass.liturgical_event) liturgicalEvent.setValue(mass.liturgical_event)
+      // Note: liturgical_event is now stored in field_values, not as a direct relation
+      // TODO: Load liturgical event from field_values.liturgical_event_id if needed
 
-      // Set mass roles if available
-      if (mass.mass_roles) {
-        setMassRoles(mass.mass_roles)
+      // Set mass roles if available (from roles property)
+      if (mass.roles) {
+        setMassRoles(mass.roles as MasterEventRoleWithRelations[])
       }
 
       // Set mass intention if available
@@ -178,20 +175,6 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   useEffect(() => {
     setValue('liturgical_event_id', liturgicalEvent.value?.id)
   }, [liturgicalEvent.value, setValue])
-
-  // Load all templates when the form mounts
-  useEffect(() => {
-    loadAllTemplates()
-  }, [])
-
-  // Load template items when template is selected
-  useEffect(() => {
-    if (massRolesTemplateId) {
-      loadTemplateItems(massRolesTemplateId)
-    } else {
-      setTemplateItems([])
-    }
-  }, [massRolesTemplateId])
 
   // Load mass roles when editing an existing mass
   useEffect(() => {
@@ -235,30 +218,6 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     }
   }
 
-  const loadAllTemplates = async () => {
-    try {
-      const templatesData = await getMassRoleTemplates()
-      setAllTemplates(templatesData)
-    } catch (error) {
-      console.error('Error loading templates:', error)
-      toast.error('Failed to load role templates')
-    }
-  }
-
-  const loadTemplateItems = async (templateId: string) => {
-    if (!templateId) {
-      setTemplateItems([])
-      return
-    }
-    try {
-      const items = await getTemplateItems(templateId)
-      setTemplateItems(items)
-    } catch (error) {
-      console.error('Error loading template items:', error)
-      toast.error('Failed to load template items')
-    }
-  }
-
   // Petition templates (simple default for now)
   const petitionTemplates: PetitionTemplate[] = [
     {
@@ -298,23 +257,17 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     return []
   }
 
-  // Handle template change - clear existing role assignments if editing
-  const handleTemplateChange = async (newTemplateId: string) => {
-    setMassRolesTemplateId(newTemplateId)
-    setValue('mass_roles_template_id', newTemplateId || undefined)
+  // Clear all role assignments
+  const handleClearRoleAssignments = async () => {
+    if (!isEditing || !mass?.id || massRoles.length === 0) return
 
-    // If editing an existing mass, clear all existing mass role assignments
-    if (isEditing && mass?.id && massRoles.length > 0) {
-      try {
-        // Delete all existing mass role assignments
-        await Promise.all(massRoles.map(mr => deleteMassRole(mr.id)))
-        // Reload mass roles to show empty list
-        await loadMassRoles()
-        toast.success('Mass role assignments cleared for new template')
-      } catch (error) {
-        console.error('Error clearing mass role assignments:', error)
-        toast.error('Failed to clear existing mass role assignments')
-      }
+    try {
+      await deleteAllMassRoles(mass.id)
+      await loadMassRoles()
+      toast.success('Mass role assignments cleared')
+    } catch (error) {
+      console.error('Error clearing mass role assignments:', error)
+      toast.error('Failed to clear mass role assignments')
     }
   }
 
@@ -331,11 +284,11 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     }
 
     try {
-      // Assign person to mass role
+      // Assign person to mass role using the new structure
       await createMassRole({
-        mass_id: mass.id,
-        person_id: person.id,
-        mass_roles_template_item_id: currentRoleId
+        master_event_id: mass.id,
+        role_id: currentRoleId,
+        person_id: person.id
       })
 
       // Reload mass roles to get the updated list with relations
@@ -842,60 +795,58 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
           title="Mass Role Assignments"
           description="Assign people to liturgical mass roles for this Mass"
         >
-          {allTemplates.length > 0 ? (
-              <FormInput
-                id="mass_roles_template_id"
-                inputType="select"
-                label="Mass Role Template"
-                description="Choose a template to define which mass roles are needed for this Mass"
-                value={massRolesTemplateId || ''}
-                onChange={handleTemplateChange}
-                placeholder="Select a mass role template (optional)"
-                options={allTemplates.map((template) => ({
-                  value: template.id,
-                  label: template.name
-                }))}
-              />
-            ) : (
-              <div className="text-sm text-muted-foreground text-center py-6">
-                No mass role templates available. Please create a template first.
-              </div>
-            )}
+          {/* Get role definitions from event type */}
+          {(() => {
+            const roleDefinitions = eventType?.role_definitions?.roles || []
 
-            {massRolesTemplateId && templateItems.length === 0 && (
-              <div className="text-sm text-muted-foreground text-center py-6">
-                This template has no mass roles defined. Please edit the template to add mass roles.
-              </div>
-            )}
+            if (roleDefinitions.length === 0) {
+              return (
+                <div className="text-sm text-muted-foreground text-center py-6">
+                  {eventTypeId
+                    ? "This event type has no roles defined. Configure roles in the event type settings."
+                    : "Select an event type template above to see available roles."
+                  }
+                </div>
+              )
+            }
 
-            {massRolesTemplateId && templateItems.length > 0 && (
+            return (
               <div className="space-y-6">
-                {templateItems.map(item => {
-                  const assignments = massRoles.filter(mr =>
-                    mr.mass_roles_template_item_id === item.id
-                  )
+                {/* Clear all button */}
+                {massRoles.length > 0 && (
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClearRoleAssignments}
+                    >
+                      Clear All Assignments
+                    </Button>
+                  </div>
+                )}
+
+                {roleDefinitions.map((role: { id: string; name: string; count?: number }) => {
+                  const assignments = massRoles.filter(mr => mr.role_id === role.id)
+                  const countNeeded = role.count || 1
+
                   return (
-                    <div key={item.id} className="space-y-2">
+                    <div key={role.id} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {item.mass_role.name}
+                            {role.name}
                             <RoleFulfillmentBadge
-                              countNeeded={item.count}
+                              countNeeded={countNeeded}
                               countAssigned={assignments.length}
                             />
                           </div>
-                          {item.mass_role.description && (
-                            <div className="text-sm text-muted-foreground">
-                              {item.mass_role.description}
-                            </div>
-                          )}
                         </div>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenRolePicker(item.id)}
+                          onClick={() => handleOpenRolePicker(role.id)}
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Assign Person
@@ -937,13 +888,8 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
                   )
                 })}
               </div>
-            )}
-
-            {!massRolesTemplateId && (
-              <div className="text-sm text-muted-foreground text-center py-6">
-                Please select a role template to assign people to liturgical roles.
-              </div>
-            )}
+            )
+          })()}
         </FormSectionCard>
       )}
 

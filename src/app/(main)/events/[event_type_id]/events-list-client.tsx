@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { DynamicEvent, DynamicEventType } from '@/lib/types'
+import type { DynamicEvent, EventType } from '@/lib/types'
 import { getEvents, type MasterEventFilterParams } from '@/lib/actions/master-events'
 import { LIST_VIEW_PAGE_SIZE, INFINITE_SCROLL_LOAD_MORE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -23,7 +23,7 @@ import { parseSort, formatSort } from '@/lib/utils/sort-utils'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 
 interface EventsListClientProps {
-  eventType: DynamicEventType
+  eventType: EventType
   initialData: DynamicEvent[]
   initialHasMore: boolean
 }

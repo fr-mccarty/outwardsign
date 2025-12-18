@@ -15,17 +15,26 @@ import {
 } from "@/components/ui/sidebar"
 import {
   Home,
-  FileText,
   Calendar,
   Settings,
-  User, Users, Users2, Plus,
-  CalendarDays, Building, LayoutTemplate, UserCog, UsersIcon, Clock, HelpCircle, ScrollText,
+  User,
+  Users,
+  Users2,
+  Plus,
+  CalendarDays,
+  Building,
+  LayoutTemplate,
+  UserCog,
+  UsersIcon,
+  HelpCircle,
+  ScrollText,
+  Wrench,
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
 import { Logo } from "@/components/logo"
-import {APP_NAME, APP_TAGLINE} from "@/lib/constants";
+import { APP_NAME, APP_TAGLINE } from "@/lib/constants"
 import { getLucideIcon } from "@/lib/utils/lucide-icons"
 import { SYSTEM_TYPE_METADATA } from "@/lib/constants/system-types"
 import type { EventType } from "@/lib/types"
@@ -45,7 +54,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
     }
   }
 
-  // Group event types by system_type (using new unified data model)
+  // Group event types by system_type
   const groupedEventTypes = {
     mass: eventTypes.filter(et => et.system_type === 'mass'),
     'special-liturgy': eventTypes.filter(et => et.system_type === 'special-liturgy'),
@@ -53,7 +62,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
     event: eventTypes.filter(et => et.system_type === 'event'),
   }
 
-  // Get system type icons (only for sections that don't use dynamic event type icons)
+  // Get system type icons
   const MassIcon = getLucideIcon(SYSTEM_TYPE_METADATA.mass.icon)
   const EventIcon = getLucideIcon(SYSTEM_TYPE_METADATA.event.icon)
 
@@ -74,13 +83,12 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent className="pb-16">
-        {/* Primary Navigation */}
+        {/* Core Navigation (no label) */}
         <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.application')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-
               <SidebarMenuItem key="Dashboard">
                 <SidebarMenuButton asChild>
                   <Link href="/dashboard" onClick={handleLinkClick}>
@@ -98,59 +106,16 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
-              <CollapsibleNavSection
-                name={t('nav.massScheduling')}
-                icon={Clock}
-                items={[
-                  {
-                    title: t('nav.scheduleMasses'),
-                    url: "/masses/schedule",
-                    icon: CalendarDays,
-                  },
-                  {
-                    title: t('nav.massTimesTemplates'),
-                    url: "/mass-times-templates",
-                    icon: Clock,
-                  },
-                  {
-                    title: t('nav.massRoleTemplates'),
-                    url: "/mass-role-templates",
-                    icon: LayoutTemplate,
-                  },
-                  {
-                    title: t('nav.massRoles'),
-                    url: "/mass-roles",
-                    icon: UserCog,
-                  },
-                  {
-                    title: t('nav.roleMembers'),
-                    url: "/mass-role-members",
-                    icon: UsersIcon,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
-              <SidebarMenuItem key="EventScheduling">
-                <SidebarMenuButton asChild>
-                  <Link href="/event-scheduling" onClick={handleLinkClick}>
-                    <CalendarDays />
-                    <span>Event Scheduling</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Masses */}
+        {/* Masses - Unified Section */}
         <SidebarGroup>
           <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.mass.name_en}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key="Masses">
+              <SidebarMenuItem key="OurMasses">
                 <SidebarMenuButton asChild>
                   <Link href="/masses" onClick={handleLinkClick}>
                     <MassIcon />
@@ -158,11 +123,57 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
+              <SidebarMenuItem key="CreateMass">
+                <SidebarMenuButton asChild>
+                  <Link href="/masses/create" onClick={handleLinkClick}>
+                    <Plus />
+                    <span>{t('nav.createMass')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem key="ScheduleMasses">
+                <SidebarMenuButton asChild>
+                  <Link href="/masses/schedule" onClick={handleLinkClick}>
+                    <CalendarDays />
+                    <span>{t('nav.scheduleMasses')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <CollapsibleNavSection
+                name={t('nav.setupConfiguration')}
+                icon={Wrench}
+                items={[
+                  {
+                    title: t('nav.recurringMassSchedule'),
+                    url: "/mass-times-templates",
+                    icon: CalendarDays,
+                  },
+                  {
+                    title: t('nav.roleAssignmentPatterns'),
+                    url: "/mass-role-templates",
+                    icon: LayoutTemplate,
+                  },
+                  {
+                    title: t('nav.roleDefinitions'),
+                    url: "/mass-roles",
+                    icon: UserCog,
+                  },
+                  {
+                    title: t('nav.ministryVolunteers'),
+                    url: "/mass-role-members",
+                    icon: UsersIcon,
+                  },
+                ]}
+                defaultOpen={false}
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Special Liturgies - Expandable by event type */}
+        {/* Special Liturgies - Dynamic by event type */}
         {groupedEventTypes['special-liturgy'].length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>{SYSTEM_TYPE_METADATA['special-liturgy'].name_en}</SidebarGroupLabel>
@@ -187,7 +198,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           </SidebarGroup>
         )}
 
-        {/* Sacraments - Expandable by event type */}
+        {/* Sacraments - Dynamic by event type */}
         {groupedEventTypes.sacrament.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.sacrament.name_en}</SidebarGroupLabel>
@@ -212,16 +223,25 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           </SidebarGroup>
         )}
 
-        {/* Events */}
+        {/* Parish Events */}
         <SidebarGroup>
-          <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.event.name_en}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.parishEvents')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem key="Events">
+              <SidebarMenuItem key="OurEvents">
                 <SidebarMenuButton asChild>
                   <Link href="/events" onClick={handleLinkClick}>
                     <EventIcon />
-                    <span>Our Events</span>
+                    <span>{t('nav.ourEvents')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem key="CreateEvent">
+                <SidebarMenuButton asChild>
+                  <Link href="/events/create" onClick={handleLinkClick}>
+                    <Plus />
+                    <span>{t('nav.createEvent')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -229,48 +249,46 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Supporting Modules */}
+        {/* Mass Intentions - Own Section */}
         <SidebarGroup>
-          <SidebarGroupLabel>Parish Management</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.massIntentions')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem key="OurMassIntentions">
+                <SidebarMenuButton asChild>
+                  <Link href="/mass-intentions" onClick={handleLinkClick}>
+                    <ScrollText />
+                    <span>{t('nav.ourMassIntentions')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
-              <CollapsibleNavSection
-                name={t('nav.groups')}
-                icon={Users}
-                items={[
-                  {
-                    title: t('nav.ourGroups'),
-                    url: "/groups",
-                    icon: Users,
-                  },
-                  {
-                    title: t('nav.newGroup'),
-                    url: "/groups",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              <SidebarMenuItem key="CreateMassIntention">
+                <SidebarMenuButton asChild>
+                  <Link href="/mass-intentions/create" onClick={handleLinkClick}>
+                    <Plus />
+                    <span>{t('nav.createMassIntention')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
-              <CollapsibleNavSection
-                name={t('nav.locations')}
-                icon={Building}
-                items={[
-                  {
-                    title: t('nav.ourLocations'),
-                    url: "/locations",
-                    icon: Building,
-                  },
-                  {
-                    title: t('nav.newLocation'),
-                    url: "/locations/create",
-                    icon: Plus,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              <SidebarMenuItem key="MassIntentionsReport">
+                <SidebarMenuButton asChild>
+                  <Link href="/mass-intentions/report" onClick={handleLinkClick}>
+                    <ScrollText />
+                    <span>{t('nav.viewReport')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
+        {/* Supporting Resources */}
+        <SidebarGroup>
+          <SidebarGroupLabel>{t('nav.supportingResources')}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <CollapsibleNavSection
                 name={t('nav.people')}
                 icon={User}
@@ -307,16 +325,50 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 defaultOpen={false}
               />
 
+              <CollapsibleNavSection
+                name={t('nav.groups')}
+                icon={Users}
+                items={[
+                  {
+                    title: t('nav.ourGroups'),
+                    url: "/groups",
+                    icon: Users,
+                  },
+                  {
+                    title: t('nav.createGroup'),
+                    url: "/groups/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
+
+              <CollapsibleNavSection
+                name={t('nav.locations')}
+                icon={Building}
+                items={[
+                  {
+                    title: t('nav.ourLocations'),
+                    url: "/locations",
+                    icon: Building,
+                  },
+                  {
+                    title: t('nav.createLocation'),
+                    url: "/locations/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         {/* Reports */}
         <SidebarGroup>
-          <SidebarGroupLabel>Reports</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.reports')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-
               <SidebarMenuItem key="WeekendSummary">
                 <SidebarMenuButton asChild>
                   <Link href="/weekend-summary" onClick={handleLinkClick}>
@@ -325,40 +377,15 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
-              <CollapsibleNavSection
-                name={t('nav.massIntentions')}
-                icon={ScrollText}
-                items={[
-                  {
-                    title: t('nav.ourMassIntentions'),
-                    url: "/mass-intentions",
-                    icon: ScrollText,
-                  },
-                  {
-                    title: t('nav.createMassIntention'),
-                    url: "/mass-intentions/create",
-                    icon: Plus,
-                  },
-                  {
-                    title: t('nav.report'),
-                    url: "/mass-intentions/report",
-                    icon: FileText,
-                  },
-                ]}
-                defaultOpen={false}
-              />
-
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Settings section at the bottom */}
+        {/* Settings */}
         <SidebarGroup>
           <SidebarGroupLabel>{t('nav.settings')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-
               <SidebarMenuItem key="Settings">
                 <SidebarMenuButton asChild>
                   <Link href="/settings" onClick={handleLinkClick}>
@@ -376,11 +403,11 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter className="border-t p-2">
         <ParishUserMenu />
       </SidebarFooter>

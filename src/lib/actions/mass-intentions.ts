@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { MassIntention, Person, Mass } from '@/lib/types'
+import { MassIntention, Person, MasterEvent } from '@/lib/types'
 import type { MassIntentionStatus } from '@/lib/constants'
 import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIntentionData, type UpdateMassIntentionData } from '@/lib/schemas/mass-intentions'
 
@@ -19,7 +19,7 @@ export interface MassIntentionFilterParams {
 }
 
 export interface MassIntentionWithNames extends MassIntention {
-  mass?: Mass | null
+  master_event?: MasterEvent | null
   requested_by?: Person | null
 }
 
@@ -63,7 +63,7 @@ export async function getMassIntentions(filters?: MassIntentionFilterParams): Pr
     .from('mass_intentions')
     .select(`
       *,
-      mass:masses(*),
+      master_event:master_events(*),
       requested_by:people!requested_by_id(*)
     `)
 
@@ -173,7 +173,7 @@ export async function getMassIntentionsPaginated(params?: PaginatedParams): Prom
     .from('mass_intentions')
     .select(`
       *,
-      mass:masses(*),
+      master_event:master_events(*),
       requested_by:people!requested_by_id(*)
     `, { count: 'exact' })
 
@@ -251,7 +251,7 @@ export async function getMassIntention(id: string): Promise<MassIntention | null
 
 // Enhanced mass intention interface with all related data
 export interface MassIntentionWithRelations extends MassIntention {
-  mass?: Mass | null
+  master_event?: MasterEvent | null
   requested_by?: Person | null
 }
 
@@ -277,16 +277,16 @@ export async function getMassIntentionWithRelations(id: string): Promise<MassInt
 
   // Fetch all related data in parallel
   const [
-    massData,
+    masterEventData,
     requestedByData
   ] = await Promise.all([
-    intention.mass_id ? supabase.from('masses').select('*').eq('id', intention.mass_id).single() : Promise.resolve({ data: null }),
+    intention.master_event_id ? supabase.from('master_events').select('*').eq('id', intention.master_event_id).single() : Promise.resolve({ data: null }),
     intention.requested_by_id ? supabase.from('people').select('*').eq('id', intention.requested_by_id).single() : Promise.resolve({ data: null })
   ])
 
   return {
     ...intention,
-    mass: massData.data,
+    master_event: masterEventData.data,
     requested_by: requestedByData.data
   }
 }
@@ -305,7 +305,7 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
     .insert([
       {
         parish_id: selectedParishId,
-        mass_id: data.mass_id || null,
+        master_event_id: data.master_event_id || null,
         mass_offered_for: data.mass_offered_for || null,
         requested_by_id: data.requested_by_id || null,
         date_received: data.date_received || null,
@@ -381,7 +381,7 @@ export async function deleteMassIntention(id: string): Promise<void> {
 }
 
 export interface MassIntentionReportData extends MassIntention {
-  mass?: Mass & { event?: { start_date: string } | null } | null
+  master_event?: MasterEvent & { calendar_events?: { start_datetime: string }[] } | null
   requested_by?: Person | null
 }
 
@@ -406,14 +406,14 @@ export async function getMassIntentionsReport(
   const startDate = params?.startDate
   const endDate = params?.endDate
 
-  // First, get all mass intentions with their related masses and events
+  // First, get all mass intentions with their related master events and calendar events
   const { data: intentions, error } = await supabase
     .from('mass_intentions')
     .select(`
       *,
-      mass:masses(
+      master_event:master_events(
         *,
-        event:events(start_date)
+        calendar_events(start_datetime)
       ),
       requested_by:people!requested_by_id(*)
     `)
@@ -432,14 +432,16 @@ export async function getMassIntentionsReport(
     }
   }
 
-  // Filter by date range on the mass event start_date
+  // Filter by date range on the master event's primary calendar event start_datetime
   const filteredIntentions = intentions.filter(intention => {
-    // If no mass event date, exclude from report
-    if (!intention.mass?.event?.start_date) {
+    // If no master event or calendar events, exclude from report
+    const primaryCalendarEvent = intention.master_event?.calendar_events?.[0]
+    if (!primaryCalendarEvent?.start_datetime) {
       return false
     }
 
-    const massDate = intention.mass.event.start_date
+    // Extract just the date part from the datetime
+    const massDate = primaryCalendarEvent.start_datetime.split('T')[0]
 
     // If both dates provided, check range
     if (startDate && endDate) {

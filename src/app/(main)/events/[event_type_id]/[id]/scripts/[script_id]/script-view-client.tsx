@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
 import Link from 'next/link'
-import type { ScriptWithSections, EventWithRelations } from '@/lib/types/event-types'
+import type { ScriptWithSections } from '@/lib/types/event-types'
+import type { MasterEventWithRelations } from '@/lib/types'
 
 interface ScriptViewClientProps {
-  event: EventWithRelations
+  event: MasterEventWithRelations
   script: ScriptWithSections
   eventTypeSlug: string
 }

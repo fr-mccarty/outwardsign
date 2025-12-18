@@ -14,7 +14,7 @@ import { getLiturgicalGradeLabel, DEFAULT_TIMEZONE } from "@/lib/constants"
 import { MassTimesTemplateWithItems } from "@/lib/actions/mass-times-templates"
 import { getDayOfWeekNumber } from '@/lib/utils/formatters'
 
-interface Step4LiturgicalEventsProps {
+interface Step3LiturgicalEventsProps {
   startDate: string
   endDate: string
   selectedEventIds: string[]
@@ -35,14 +35,14 @@ const COLOR_CLASSES: Record<string, string> = {
   gold: 'bg-yellow-500',
 }
 
-export function Step4LiturgicalEvents({
+export function Step3LiturgicalEvents({
   startDate,
   endDate,
   selectedEventIds,
   onSelectionChange,
   massTimesTemplates = [],
   selectedMassTimesTemplateIds = []
-}: Step4LiturgicalEventsProps) {
+}: Step3LiturgicalEventsProps) {
   const [loading, setLoading] = useState(true)
   const [events, setEvents] = useState<GlobalLiturgicalEvent[]>([])
   const [error, setError] = useState<string | null>(null)

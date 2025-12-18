@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { DynamicScriptViewer } from '@/components/dynamic-script-viewer'
 import Link from 'next/link'
-import type { MassWithRelations } from '@/lib/actions/masses'
-import type { ScriptWithSections, EventWithRelations } from '@/lib/types/event-types'
+import type { MassWithRelations } from '@/lib/schemas/masses'
+import type { ScriptWithSections } from '@/lib/types/event-types'
+import type { MasterEventWithRelations } from '@/lib/types'
 
 interface MassScriptViewClientProps {
   mass: MassWithRelations
@@ -25,19 +26,29 @@ interface MassScriptViewClientProps {
 export function MassScriptViewClient({ mass, script }: MassScriptViewClientProps) {
   const router = useRouter()
 
-  // Convert Mass data to match the EventWithRelations interface expected by DynamicScriptViewer
-  const eventForProcessing: EventWithRelations = {
+  // Convert Mass data to match the MasterEventWithRelations interface expected by DynamicScriptViewer
+  // Note: Only resolved_fields and parish are actually used by the script processor
+  const eventForProcessing: MasterEventWithRelations = {
     id: mass.id,
     parish_id: mass.parish_id,
     event_type_id: mass.event_type_id!,
+    presider_id: mass.presider_id || null,
+    homilist_id: mass.homilist_id || null,
+    status: 'ACTIVE',
     field_values: mass.field_values || {},
     resolved_fields: mass.resolved_fields || {},
-    event_type: mass.event_type!,
+    event_type: {
+      ...mass.event_type!,
+      role_definitions: mass.event_type?.role_definitions ?? null,
+      input_field_definitions: [],  // Not needed for script processing
+      scripts: [script]  // Pass the current script
+    },
     calendar_events: [],
-    parish: mass.event?.location ? {
+    roles: [],
+    parish: mass.calendar_events?.[0]?.location ? {
       name: 'Parish',
-      city: mass.event.location.city || '',
-      state: mass.event.location.state || ''
+      city: mass.calendar_events[0].location.city || '',
+      state: mass.calendar_events[0].location.state || ''
     } : undefined,
     created_at: mass.created_at,
     updated_at: mass.updated_at,

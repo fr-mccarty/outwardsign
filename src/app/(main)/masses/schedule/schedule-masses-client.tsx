@@ -1,25 +1,20 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Wizard } from '@/components/wizard/Wizard'
 import { WizardStepHeader } from '@/components/wizard/WizardStepHeader'
 import { Step1DateRange } from './steps/step-1-date-range'
 import { Step2SchedulePattern, type MassScheduleEntry } from './steps/step-2-schedule-pattern'
-import { Step3TemplateSelection } from './steps/step-3-template-selection'
-import { Step4LiturgicalEvents } from './steps/step-4-liturgical-events'
-import { Step5ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-5-proposed-schedule'
-// Step6AssignmentSummary available for future assignment display
-// import { Step6AssignmentSummary } from './steps/step-6-assignment-summary'
-import { Step6InteractivePreview } from './steps/step-6-interactive-preview'
-import { Step7WorkloadReview } from './steps/step-7-workload-review'
-import { Step8Confirmation } from './steps/step-8-confirmation'
-import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
+import { Step3LiturgicalEvents } from './steps/step-3-liturgical-events'
+import { Step4ProposedSchedule, generateProposedMasses, type ProposedMass } from './steps/step-4-proposed-schedule'
+import { Step5InteractivePreview } from './steps/step-5-interactive-preview'
+import { Step6WorkloadReview } from './steps/step-6-workload-review'
+import { Step7Confirmation } from './steps/step-7-confirmation'
 import { MassTimesTemplateWithItems } from '@/lib/actions/mass-times-templates'
 import { MassRoleWithCount } from '@/lib/actions/mass-roles'
 import { toast } from 'sonner'
 import { scheduleMasses, type ScheduleMassesResult } from '@/lib/actions/mass-scheduling'
-// previewMassAssignments available for future preview functionality
 import { getDayOfWeekNumber } from '@/lib/utils/formatters'
 import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
 import { CheckCircle2, AlertTriangle } from 'lucide-react'
@@ -27,21 +22,30 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import type { EventType } from '@/lib/types'
+
+// Role definition from event_types.role_definitions
+interface RoleDefinition {
+  id: string
+  name: string
+  required: boolean
+  count?: number
+}
 
 interface ScheduleMassesClientProps {
-  templates: MassRoleTemplateWithItems[]
+  massEventTypes: EventType[]
   massTimesTemplates: MassTimesTemplateWithItems[]
   massRolesWithCounts: MassRoleWithCount[]
 }
 
-const STORAGE_KEY = 'mass-scheduler-wizard-state'
+const STORAGE_KEY = 'mass-scheduler-wizard-state-v2'
 
 interface WizardState {
   startDate: string
   endDate: string
   schedule: MassScheduleEntry[]
   selectedMassTimesTemplateIds: string[]
-  selectedRoleTemplateIds: string[]
+  selectedMassEventTypeId: string
   selectedLiturgicalEventIds: string[]
   liturgicalEvents: Array<{ id: string; date: string; name: string }>
   proposedMasses: ProposedMass[]
@@ -54,7 +58,7 @@ interface WizardState {
   timestamp: number
 }
 
-export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesWithCounts }: ScheduleMassesClientProps) {
+export function ScheduleMassesClient({ massEventTypes, massTimesTemplates, massRolesWithCounts }: ScheduleMassesClientProps) {
   const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
 
@@ -66,14 +70,16 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   const [schedule, setSchedule] = useState<MassScheduleEntry[]>([])
   const [selectedMassTimesTemplateIds, setSelectedMassTimesTemplateIds] = useState<string[]>([])
 
-  // Step 3: Template Selection (Role Templates)
-  const [selectedRoleTemplateIds, setSelectedRoleTemplateIds] = useState<string[]>([])
+  // Mass Event Type (auto-selected, used for role definitions)
+  const [selectedMassEventTypeId, setSelectedMassEventTypeId] = useState<string>(
+    massEventTypes[0]?.id || ''
+  )
 
-  // Step 4: Liturgical Events Selection
+  // Step 3: Liturgical Events Selection (was Step 4)
   const [selectedLiturgicalEventIds, setSelectedLiturgicalEventIds] = useState<string[]>([])
   const [liturgicalEvents, setLiturgicalEvents] = useState<Array<{ id: string; date: string; name: string }>>([])
 
-  // Step 5: Proposed Schedule
+  // Step 4: Proposed Schedule (was Step 5)
   const [proposedMasses, setProposedMasses] = useState<ProposedMass[]>([])
 
   // Algorithm Options
@@ -88,6 +94,13 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   const [schedulingResult, setSchedulingResult] = useState<ScheduleMassesResult | null>(null)
   const [schedulingError, setSchedulingError] = useState<string | null>(null)
   const [currentWizardStep, setCurrentWizardStep] = useState(1)
+
+  // Get selected event type and its role definitions
+  const selectedEventType = massEventTypes.find(et => et.id === selectedMassEventTypeId)
+  const roleDefinitions: RoleDefinition[] = useMemo(() =>
+    (selectedEventType?.role_definitions as { roles?: RoleDefinition[] })?.roles || [],
+    [selectedEventType?.role_definitions]
+  )
 
   // Debug logging for proposedMasses changes
   useEffect(() => {
@@ -110,7 +123,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
             setEndDate(state.endDate)
             setSchedule(state.schedule)
             setSelectedMassTimesTemplateIds(state.selectedMassTimesTemplateIds)
-            setSelectedRoleTemplateIds(state.selectedRoleTemplateIds)
+            setSelectedMassEventTypeId(state.selectedMassEventTypeId || massEventTypes[0]?.id || '')
             setSelectedLiturgicalEventIds(state.selectedLiturgicalEventIds)
             setLiturgicalEvents(state.liturgicalEvents || [])
             setProposedMasses(state.proposedMasses)
@@ -128,7 +141,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
                   setEndDate('')
                   setSchedule([])
                   setSelectedMassTimesTemplateIds([])
-                  setSelectedRoleTemplateIds([])
+                  setSelectedMassEventTypeId(massEventTypes[0]?.id || '')
                   setSelectedLiturgicalEventIds([])
                   setLiturgicalEvents([])
                   setProposedMasses([])
@@ -157,7 +170,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
 
     restoreState()
-  }, [])
+  }, [massEventTypes])
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
@@ -168,7 +181,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       endDate,
       schedule,
       selectedMassTimesTemplateIds,
-      selectedRoleTemplateIds,
+      selectedMassEventTypeId,
       selectedLiturgicalEventIds,
       liturgicalEvents,
       proposedMasses,
@@ -188,7 +201,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     endDate,
     schedule,
     selectedMassTimesTemplateIds,
-    selectedRoleTemplateIds,
+    selectedMassEventTypeId,
     selectedLiturgicalEventIds,
     liturgicalEvents,
     proposedMasses,
@@ -205,14 +218,14 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }, [])
 
-  // Reset wizard to initial state - used by Start Over dialog confirmation
+  // Reset wizard to initial state
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _resetWizard = useCallback(() => {
     setStartDate('')
     setEndDate('')
     setSchedule([])
     setSelectedMassTimesTemplateIds([])
-    setSelectedRoleTemplateIds([])
+    setSelectedMassEventTypeId(massEventTypes[0]?.id || '')
     setSelectedLiturgicalEventIds([])
     setLiturgicalEvents([])
     setProposedMasses([])
@@ -225,7 +238,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     setSchedulingResult(null)
     clearSavedState()
     toast.success('Wizard progress cleared')
-  }, [clearSavedState])
+  }, [clearSavedState, massEventTypes])
 
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
     if (field === 'startDate') {
@@ -235,7 +248,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }
 
-  // Algorithm options change handler - available for future settings panel
+  // Algorithm options change handler
   const _handleAlgorithmOptionChange = (
     option: keyof typeof algorithmOptions,
     value: boolean
@@ -273,32 +286,24 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   }
 
   // Use proposedMasses count if available, otherwise calculate from templates
-  // Total mass count available for summary display
   void (proposedMasses.length > 0
     ? proposedMasses.filter(m => m.isIncluded).length
     : calculateTotalMasses())
 
   // Generate proposed masses when dependencies change
   const regenerateProposedMasses = useCallback(async () => {
-    // Get role assignments from selected role templates
-    const roleTemplateAssignments: Array<{ roleId: string; roleName: string }> = []
+    // Get role assignments from event type role definitions
+    const roleAssignments: Array<{ roleId: string; roleName: string }> = []
 
-    selectedRoleTemplateIds.forEach(templateId => {
-      const template = templates.find(t => t.id === templateId)
-      if (template?.items) {
-        template.items.forEach(item => {
-          if (item.mass_role) {
-            // Add each role based on its count
-            for (let i = 0; i < item.count; i++) {
-              roleTemplateAssignments.push({
-                roleId: item.mass_role.id,
-                roleName: item.mass_role.name
-              })
-            }
-          }
+    for (const roleDef of roleDefinitions) {
+      const count = roleDef.count || 1
+      for (let i = 0; i < count; i++) {
+        roleAssignments.push({
+          roleId: roleDef.id,
+          roleName: roleDef.name
         })
       }
-    })
+    }
 
     // Fetch liturgical events if we have selected event IDs
     let liturgicalEventsData: Array<{ id: string; date: string; name: string; color?: string[]; grade?: number; grade_abbr?: string; type?: string }> = []
@@ -328,22 +333,22 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       massTimesTemplates,
       selectedMassTimesTemplateIds,
       liturgicalEventsData,
-      roleTemplateAssignments
+      roleAssignments
     )
     setProposedMasses(masses)
-  }, [startDate, endDate, massTimesTemplates, selectedMassTimesTemplateIds, selectedRoleTemplateIds, selectedLiturgicalEventIds, templates])
+  }, [startDate, endDate, massTimesTemplates, selectedMassTimesTemplateIds, selectedLiturgicalEventIds, roleDefinitions])
 
   // Regenerate when entering proposed schedule step or when key inputs change
-  // BUT NOT when on step 6+ (where assignments have been made)
+  // BUT NOT when on step 5+ (where assignments have been made)
   useEffect(() => {
-    if (currentWizardStep < 6 && startDate && endDate && selectedMassTimesTemplateIds.length > 0 && selectedRoleTemplateIds.length > 0) {
+    if (currentWizardStep < 5 && startDate && endDate && selectedMassTimesTemplateIds.length > 0 && roleDefinitions.length > 0) {
       regenerateProposedMasses()
     }
-  }, [currentWizardStep, startDate, endDate, selectedMassTimesTemplateIds, selectedRoleTemplateIds, regenerateProposedMasses])
+  }, [currentWizardStep, startDate, endDate, selectedMassTimesTemplateIds, roleDefinitions, regenerateProposedMasses])
 
   const handleComplete = useCallback(async () => {
-    if (selectedRoleTemplateIds.length === 0) {
-      toast.error('Please select at least one role template')
+    if (!selectedMassEventTypeId) {
+      toast.error('No mass event type available')
       return
     }
 
@@ -367,7 +372,6 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         id: mass.id,
         date: mass.date,
         time: mass.time,
-        templateId: mass.massRoleTemplateId || selectedRoleTemplateIds[0],
         liturgicalEventId: mass.liturgicalEventId,
         assignments: mass.assignments?.map(a => ({
           roleId: a.roleId,
@@ -381,7 +385,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         startDate,
         endDate,
         schedule,
-        templateIds: selectedRoleTemplateIds,
+        eventTypeId: selectedMassEventTypeId,
         selectedLiturgicalEventIds,
         algorithmOptions,
         proposedMasses: proposedMassesForScheduling
@@ -395,18 +399,18 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       // Clear saved wizard state on successful completion
       clearSavedState()
 
-      // Stay on Step 8 (already navigated by handleStepChange)
+      // Stay on Step 7 (already navigated by handleStepChange)
       setSchedulingError(null)
     } catch (error) {
       console.error('Failed to schedule masses:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to schedule masses. Please try again.'
       setSchedulingError(errorMessage)
       toast.error(errorMessage)
-      // Stay on step 8 to show the error
+      // Stay on step 7 to show the error
     } finally {
       setIsSubmitting(false)
     }
-  }, [selectedRoleTemplateIds, selectedLiturgicalEventIds, proposedMasses, startDate, endDate, schedule, algorithmOptions, clearSavedState])
+  }, [selectedMassEventTypeId, selectedLiturgicalEventIds, proposedMasses, startDate, endDate, schedule, algorithmOptions, clearSavedState])
 
   // Step validation
   const isStep1Valid = () => {
@@ -418,26 +422,22 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
   }
 
   const isStep3Valid = () => {
-    return selectedRoleTemplateIds.length > 0
-  }
-
-  const isStep4Valid = () => {
     return selectedLiturgicalEventIds.length > 0
   }
 
-  const isStep5Valid = () => {
+  const isStep4Valid = () => {
     return proposedMasses.filter(m => m.isIncluded).length > 0
   }
 
-  const isStep6Valid = () => {
+  const isStep5Valid = () => {
     return true // Assignment step is always valid
   }
 
-  const isStep7Valid = () => {
+  const isStep6Valid = () => {
     return true // Workload review step is always valid
   }
 
-  const isStep8Valid = () => {
+  const isStep7Valid = () => {
     return true // Confirmation step is always valid
   }
 
@@ -454,29 +454,26 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
       case 5:
         return !isStep5Valid()
       case 6:
-        return !isStep6Valid()
+        return !isStep6Valid() || isSubmitting
       case 7:
-        return !isStep7Valid() || isSubmitting
-      case 8:
-        return !isStep8Valid()
+        return !isStep7Valid()
       default:
         return false
     }
   }
 
+  // Wizard steps - reduced from 8 to 7 by removing template selection
   const wizardSteps = [
     { id: 1, title: 'Date Range', description: 'Select scheduling period' },
     { id: 2, title: 'Mass Times', description: 'Select Mass times' },
-    { id: 3, title: 'Role Template', description: 'Select assignments' },
-    { id: 4, title: 'Liturgical Events', description: 'Select celebrations' },
-    { id: 5, title: 'Proposed Schedule', description: 'Review and adjust' },
-    { id: 6, title: 'Assign Ministers', description: 'Assign people to roles' },
-    { id: 7, title: 'Workload Review', description: 'Review assignments' },
-    { id: 8, title: 'Confirmation', description: 'Masses created' },
+    { id: 3, title: 'Liturgical Events', description: 'Select celebrations' },
+    { id: 4, title: 'Proposed Schedule', description: 'Review and adjust' },
+    { id: 5, title: 'Assign Ministers', description: 'Assign people to roles' },
+    { id: 6, title: 'Workload Review', description: 'Review assignments' },
+    { id: 7, title: 'Confirmation', description: 'Masses created' },
   ]
 
   const renderStepContent = (currentStep: number, _goToStep: (step: number) => void) => {
-    // goToStep available for future step navigation from within content
     void _goToStep
     switch (currentStep) {
       case 1:
@@ -502,15 +499,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         )
       case 3:
         return (
-          <Step3TemplateSelection
-            templates={templates}
-            selectedTemplateIds={selectedRoleTemplateIds}
-            onChange={setSelectedRoleTemplateIds}
-          />
-        )
-      case 4:
-        return (
-          <Step4LiturgicalEvents
+          <Step3LiturgicalEvents
             startDate={startDate}
             endDate={endDate}
             selectedEventIds={selectedLiturgicalEventIds}
@@ -519,41 +508,40 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
             selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
           />
         )
-      case 5:
+      case 4:
         return (
-          <Step5ProposedSchedule
+          <Step4ProposedSchedule
             startDate={startDate}
             endDate={endDate}
             massTimesTemplates={massTimesTemplates}
             selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
             proposedMasses={proposedMasses}
             onProposedMassesChange={setProposedMasses}
+          />
+        )
+      case 5:
+        return (
+          <Step5InteractivePreview
+            proposedMasses={proposedMasses}
+            onProposedMassesChange={setProposedMasses}
+            roleDefinitions={roleDefinitions}
           />
         )
       case 6:
+        // Step 6: Show workload review BEFORE creating masses (uses proposedMasses)
         return (
-          <Step6InteractivePreview
-            proposedMasses={proposedMasses}
-            onProposedMassesChange={setProposedMasses}
-            roleTemplates={templates}
-          />
-        )
-      case 7:
-        // Step 7: Show workload review BEFORE creating masses (uses proposedMasses)
-        return (
-          <Step7WorkloadReview
+          <Step6WorkloadReview
             startDate={startDate}
             endDate={endDate}
             proposedMasses={proposedMasses}
             massTimesTemplates={massTimesTemplates}
             selectedMassTimesTemplateIds={selectedMassTimesTemplateIds}
-            roleTemplates={templates}
-            selectedRoleTemplateIds={selectedRoleTemplateIds}
+            roleDefinitions={roleDefinitions}
             onProposedMassesChange={setProposedMasses}
           />
         )
-      case 8:
-        // Step 8: Show loading, then confirmation AFTER creating masses
+      case 7:
+        // Step 7: Show loading, then confirmation AFTER creating masses
         if (isSubmitting) {
           // Show loading state while creating masses
           return (
@@ -607,7 +595,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
                     <div className="flex gap-3 justify-center pt-4">
                       <Button
                         variant="outline"
-                        onClick={() => setCurrentWizardStep(7)}
+                        onClick={() => setCurrentWizardStep(6)}
                       >
                         Go Back to Review
                       </Button>
@@ -630,7 +618,7 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
 
         // Show success state with confirmation component
         if (schedulingResult) {
-          return <Step8Confirmation result={schedulingResult} />
+          return <Step7Confirmation result={schedulingResult} />
         }
 
         // Fallback (should not happen)
@@ -640,20 +628,40 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
     }
   }
 
-  // Custom step change handler to intercept step 7 -> 8 transition
+  // Custom step change handler to intercept step 6 -> 7 transition
   const handleStepChange = useCallback(async (newStep: number) => {
-    // If transitioning from step 7 to 8, create the masses
-    if (currentWizardStep === 7 && newStep === 8) {
-      // Navigate to step 8 first to show loading state
-      setCurrentWizardStep(8)
-      // Then create the masses (handleComplete will keep us on step 8)
+    // If transitioning from step 6 to 7, create the masses
+    if (currentWizardStep === 6 && newStep === 7) {
+      // Navigate to step 7 first to show loading state
+      setCurrentWizardStep(7)
+      // Then create the masses (handleComplete will keep us on step 7)
       await handleComplete()
     } else {
       setCurrentWizardStep(newStep)
     }
   }, [currentWizardStep, handleComplete])
 
-  // Override initial step if showing results
+  // Check if no mass event types are available
+  if (massEventTypes.length === 0) {
+    return (
+      <Card className="max-w-xl mx-auto">
+        <CardContent className="pt-6">
+          <div className="text-center space-y-4">
+            <AlertTriangle className="h-12 w-12 mx-auto text-amber-500" />
+            <h3 className="text-lg font-semibold">No Mass Event Types</h3>
+            <p className="text-sm text-muted-foreground">
+              No mass event types have been configured for this parish.
+              Please contact an administrator to set up mass event types before scheduling.
+            </p>
+            <Button variant="outline" onClick={() => router.push('/masses')}>
+              Return to Masses
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <>
       <Wizard
@@ -664,15 +672,15 @@ export function ScheduleMassesClient({ templates, massTimesTemplates, massRolesW
         loadingMessage="Creating Masses and assigning ministers..."
         renderStepContent={renderStepContent}
         onComplete={() => {
-          // On step 8, redirect to masses list
-          if (currentWizardStep === 8) {
+          // On step 7, redirect to masses list
+          if (currentWizardStep === 7) {
             router.push('/masses')
           }
         }}
         onStepChange={handleStepChange}
         disableNext={getDisableNext}
-        nextButtonText={(step) => step === 7 ? "Create" : undefined}
-        completeButtonText={currentWizardStep === 8 ? "Go to Masses" : "Schedule Masses"}
+        nextButtonText={(step) => step === 6 ? "Create" : undefined}
+        completeButtonText={currentWizardStep === 7 ? "Go to Masses" : "Schedule Masses"}
         initialStep={currentWizardStep}
       />
 

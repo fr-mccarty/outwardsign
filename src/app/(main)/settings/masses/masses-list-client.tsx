@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Trash2, GripVertical, Info, type LucideIcon } from 'lucide-react'
 import * as Icons from 'lucide-react'
-import type { DynamicEventType } from '@/lib/types'
+import type { EventType } from '@/lib/types'
 import { deleteEventType, reorderEventTypes } from '@/lib/actions/event-types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -32,7 +32,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
 interface MassesListClientProps {
-  initialData: DynamicEventType[]
+  initialData: EventType[]
 }
 
 // Sortable event type item component
@@ -40,8 +40,8 @@ function SortableEventTypeItem({
   eventType,
   onDelete,
 }: {
-  eventType: DynamicEventType
-  onDelete: (eventType: DynamicEventType) => void
+  eventType: EventType
+  onDelete: (eventType: EventType) => void
 }) {
   const {
     attributes,
@@ -104,9 +104,9 @@ function SortableEventTypeItem({
 export function MassesListClient({ initialData }: MassesListClientProps) {
   const router = useRouter()
   const t = useTranslations('masses')
-  const [items, setItems] = useState<DynamicEventType[]>(initialData)
+  const [items, setItems] = useState<EventType[]>(initialData)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventTypeToDelete, setEventTypeToDelete] = useState<DynamicEventType | null>(null)
+  const [eventTypeToDelete, setEventTypeToDelete] = useState<EventType | null>(null)
 
   // Set up drag and drop sensors
   const sensors = useSensors(
@@ -163,7 +163,7 @@ export function MassesListClient({ initialData }: MassesListClientProps) {
     }
   }
 
-  const confirmDelete = (eventType: DynamicEventType) => {
+  const confirmDelete = (eventType: EventType) => {
     setEventTypeToDelete(eventType)
     setDeleteDialogOpen(true)
   }

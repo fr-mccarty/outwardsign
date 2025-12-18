@@ -1,7 +1,7 @@
 -- Create master_event_roles table for role assignments
--- This is part of the Unified Event Data Model feature
+-- Purpose: Role assignments for master events
+-- Related: master_events, event_types.role_definitions, people
 
--- Create master_event_roles table for role assignments
 CREATE TABLE master_event_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   master_event_id UUID NOT NULL REFERENCES master_events(id) ON DELETE CASCADE,

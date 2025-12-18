@@ -5,7 +5,7 @@ import { BreadcrumbProvider } from "@/components/breadcrumb-context";
 import { TestingBanner } from "@/components/testing-banner";
 import { AppLanguageProvider } from "@/components/app-language-provider";
 import { getActiveEventTypes } from "@/lib/actions/event-types";
-import type { DynamicEventType } from "@/lib/types";
+import type { EventType } from "@/lib/types";
 import { DEFAULT_APP_LANGUAGE } from "@/i18n/config";
 
 export default async function MainLayout({
@@ -14,7 +14,7 @@ export default async function MainLayout({
   children: React.ReactNode;
 }) {
   // Fetch event types for sidebar navigation
-  let eventTypes: DynamicEventType[] = []
+  let eventTypes: EventType[] = []
 
   try {
     eventTypes = await getActiveEventTypes()

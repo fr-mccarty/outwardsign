@@ -31,13 +31,18 @@ function formatStipend(cents: number | null | undefined): string {
 export const buildMassIntentionReport: ReportBuilder<MassIntentionReportParams> = (params) => {
   const { intentions, totalStipends, startDate, endDate } = params
 
-  const tableRows = intentions.map((intention) => `
+  const tableRows = intentions.map((intention) => {
+    // Extract date from master_event's first calendar event
+    const startDatetime = intention.master_event?.calendar_events?.[0]?.start_datetime
+    const massDate = startDatetime ? startDatetime.split('T')[0] : null
+
+    return `
     <tr>
       <td>
         <div class="cell-stacked">
           <span class="cell-label">
-            ${intention.mass?.event?.start_date
-              ? formatDatePretty(intention.mass.event.start_date)
+            ${massDate
+              ? formatDatePretty(massDate)
               : 'N/A'}
           </span>
           <span class="cell-sublabel">
@@ -63,7 +68,7 @@ export const buildMassIntentionReport: ReportBuilder<MassIntentionReportParams> 
       <td class="cell-label">${formatStipend(intention.stipend_in_cents)}</td>
       <td>${intention.note || '-'}</td>
     </tr>
-  `).join('')
+  `}).join('')
 
   // Generate subtitle based on date selection
   let subtitle = 'All Mass Intentions'

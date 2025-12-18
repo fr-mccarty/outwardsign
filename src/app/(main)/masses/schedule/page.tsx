@@ -2,9 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ScheduleMassesClient } from './schedule-masses-client'
-import { getMassRoleTemplatesWithItems } from '@/lib/actions/mass-role-templates'
 import { getMassTimesWithItems } from '@/lib/actions/mass-times-templates'
 import { getMassRolesWithCounts } from '@/lib/actions/mass-roles'
+import { getEventTypesBySystemType } from '@/lib/actions/event-types'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,9 +17,12 @@ export default async function ScheduleMassesPage() {
     redirect('/login')
   }
 
-  // Fetch templates server-side
-  const [roleTemplates, massTimesTemplates, massRolesWithCounts] = await Promise.all([
-    getMassRoleTemplatesWithItems(),
+  // Fetch data server-side
+  // - Mass event types with role_definitions (replaces old role templates)
+  // - Mass times templates for scheduling
+  // - Mass roles with counts for minister pool display
+  const [massEventTypes, massTimesTemplates, massRolesWithCounts] = await Promise.all([
+    getEventTypesBySystemType('mass'),
     getMassTimesWithItems({ is_active: true }),
     getMassRolesWithCounts()
   ])
@@ -34,7 +37,7 @@ export default async function ScheduleMassesPage() {
     <>
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <ScheduleMassesClient
-        templates={roleTemplates}
+        massEventTypes={massEventTypes}
         massTimesTemplates={massTimesTemplates}
         massRolesWithCounts={massRolesWithCounts}
       />

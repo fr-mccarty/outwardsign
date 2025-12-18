@@ -3,7 +3,7 @@
 import { MassPicker } from '@/components/mass-picker'
 import { PickerField } from '@/components/picker-field'
 import { Calendar, ExternalLink } from 'lucide-react'
-import type { MassWithNames } from '@/lib/actions/masses'
+import type { MassWithNames } from '@/lib/schemas/masses'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -35,8 +35,8 @@ export function MassPickerField({
 
   const formatMassDisplay = (mass: MassWithNames) => {
     const presiderName = mass.presider ? `${mass.presider.first_name} ${mass.presider.last_name}` : 'No Presider'
-    const eventDate = mass.event?.start_date
-      ? new Date(mass.event.start_date).toLocaleDateString()
+    const eventDate = mass.primary_calendar_event?.start_datetime
+      ? new Date(mass.primary_calendar_event.start_datetime).toLocaleDateString()
       : 'No Date'
     return `${presiderName} - ${eventDate}`
   }

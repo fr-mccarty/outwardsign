@@ -12,11 +12,11 @@ import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
 import type { ScheduleMassesResult } from '@/lib/actions/mass-scheduling'
 import { formatDate } from "@/lib/utils/formatters"
 
-interface Step8ConfirmationProps {
+interface Step7ConfirmationProps {
   result: ScheduleMassesResult
 }
 
-export function Step8Confirmation({ result }: Step8ConfirmationProps) {
+export function Step7Confirmation({ result }: Step7ConfirmationProps) {
   // Calculate statistics
   const assignmentRate = result.totalRoles > 0
     ? Math.round((result.rolesAssigned / result.totalRoles) * 100)
@@ -158,18 +158,18 @@ export function Step8Confirmation({ result }: Step8ConfirmationProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-4 rounded-lg bg-primary/5 border border-primary/20">
               <div className="text-2xl font-bold text-primary">{result.massesCreated}</div>
-              <div className="text-xs text-muted-foreground mt-1">Mass Records</div>
-              <div className="text-xs text-muted-foreground">(masses table)</div>
+              <div className="text-xs text-muted-foreground mt-1">Master Events</div>
+              <div className="text-xs text-muted-foreground">(master_events table)</div>
             </div>
             <div className="text-center p-4 rounded-lg bg-primary/5 border border-primary/20">
               <div className="text-2xl font-bold text-primary">{result.massesCreated}</div>
-              <div className="text-xs text-muted-foreground mt-1">Event Records</div>
-              <div className="text-xs text-muted-foreground">(events table)</div>
+              <div className="text-xs text-muted-foreground mt-1">Calendar Events</div>
+              <div className="text-xs text-muted-foreground">(calendar_events table)</div>
             </div>
             <div className="text-center p-4 rounded-lg bg-primary/5 border border-primary/20">
               <div className="text-2xl font-bold text-primary">{result.totalRoles}</div>
-              <div className="text-xs text-muted-foreground mt-1">Assignment Slots</div>
-              <div className="text-xs text-muted-foreground">(mass_role_assignments table)</div>
+              <div className="text-xs text-muted-foreground mt-1">Role Assignments</div>
+              <div className="text-xs text-muted-foreground">(master_event_roles table)</div>
             </div>
           </div>
         </CardContent>

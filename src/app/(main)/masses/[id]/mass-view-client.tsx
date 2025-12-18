@@ -4,15 +4,12 @@ import type { MasterEventWithRelations } from '@/lib/types'
 import { deleteEvent } from '@/lib/actions/master-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
-import { buildMassLiturgy, MASS_TEMPLATES } from '@/lib/content-builders/mass'
-import { Edit, Printer, FileText, FileDown, File } from 'lucide-react'
+import { Edit } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
-import { TemplateSelectorDialog } from '@/components/template-selector-dialog'
 import { ScriptCard } from '@/components/script-card'
 import { RoleAssignmentSection } from '@/components/role-assignment-section'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { getMassFilename } from '@/lib/utils/formatters'
 import type { Script } from '@/lib/types'
 import { assignRole, removeRoleAssignment } from '@/lib/actions/master-events'
 import { toast } from 'sonner'
@@ -28,27 +25,6 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
 
   // Get primary calendar event for main event display
   const primaryCalendarEvent = mass.calendar_events?.find(ce => ce.is_primary) || mass.calendar_events?.[0]
-
-  // Generate filename for downloads
-  const generateFilename = (extension: string) => {
-    return getMassFilename(mass as any, extension) // TODO: Update getMassFilename to work with MasterEventWithRelations
-  }
-
-  // Extract template ID from mass record
-  const getTemplateId = () => {
-    // For now, default to mass-english template
-    // TODO: Store template preference in master_event
-    return 'mass-english'
-  }
-
-  // Handle template update
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleUpdateTemplate = async (templateId: string) => {
-    // TODO: Store template preference in master_event
-    // await updateEvent(mass.id, {
-    //   field_values: { ...mass.field_values, template_id: templateId }
-    // })
-  }
 
   // Handle script card click
   const handleScriptClick = (scriptId: string) => {
@@ -83,55 +59,12 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
 
   // Generate action buttons
   const actionButtons = (
-    <>
-      <Button asChild className="w-full">
-        <Link href={`/masses/${mass.id}/edit`}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Mass
-        </Link>
-      </Button>
-      <Button asChild variant="outline" className="w-full">
-        <Link href={`/print/masses/${mass.id}`} target="_blank">
-          <Printer className="h-4 w-4 mr-2" />
-          Print View
-        </Link>
-      </Button>
-    </>
-  )
-
-  // Generate export buttons
-  const exportButtons = (
-    <>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/masses/${mass.id}/pdf?filename=${generateFilename('pdf')}`} target="_blank">
-          <FileText className="h-4 w-4 mr-2" />
-          Download PDF
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/masses/${mass.id}/word?filename=${generateFilename('docx')}`}>
-          <FileDown className="h-4 w-4 mr-2" />
-          Download Word
-        </Link>
-      </Button>
-      <Button asChild variant="default" className="w-full">
-        <Link href={`/api/masses/${mass.id}/txt?filename=${generateFilename('txt')}`}>
-          <File className="h-4 w-4 mr-2" />
-          Download Text
-        </Link>
-      </Button>
-    </>
-  )
-
-  // Generate template selector
-  const templateSelector = (
-    <TemplateSelectorDialog
-      currentTemplateId={mass.mass_template_id}
-      templates={MASS_TEMPLATES}
-      moduleName="Mass"
-      onSave={handleUpdateTemplate}
-      defaultTemplateId="mass-english"
-    />
+    <Button asChild className="w-full">
+      <Link href={`/masses/${mass.id}/edit`}>
+        <Edit className="h-4 w-4 mr-2" />
+        Edit Mass
+      </Link>
+    </Button>
   )
 
   // Generate details section content
@@ -184,17 +117,11 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
 
   return (
     <ModuleViewContainer
-      entity={mass as any} // TODO: Update ModuleViewContainer to work with MasterEventWithRelations
+      entity={mass}
       entityType={mass.event_type?.name || "Mass"}
       modulePath="masses"
-      mainEvent={primaryCalendarEvent as any} // TODO: Update to use CalendarEvent type
-      generateFilename={generateFilename}
-      buildLiturgy={buildMassLiturgy as any} // TODO: Update buildMassLiturgy to work with MasterEventWithRelations
-      getTemplateId={getTemplateId}
       statusType="mass"
       actionButtons={actionButtons}
-      exportButtons={exportButtons}
-      templateSelector={templateSelector}
       details={details}
       onDelete={deleteEvent}
     >
@@ -209,10 +136,10 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
         </div>
       )}
 
-      {/* Show custom scripts if Mass has an event type */}
+      {/* Show scripts from event type */}
       {mass.event_type_id && scripts.length > 0 && (
         <div className="space-y-4 mt-6">
-          <h3 className="text-lg font-medium">Custom Scripts</h3>
+          <h3 className="text-lg font-medium">Scripts</h3>
           {scripts.map((script) => (
             <ScriptCard
               key={script.id}

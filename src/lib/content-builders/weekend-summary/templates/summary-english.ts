@@ -28,9 +28,11 @@ export function buildSummaryEnglish(
   // Collect Masses
   if (params.includeMasses && data.masses.length > 0) {
     data.masses.forEach(mass => {
-      const date = mass.event?.start_date || ''
-      const time = mass.event?.start_time || ''
-      const name = mass.event?.location?.name || 'Location not set'
+      // Extract date and time from primary_calendar_event's start_datetime
+      const startDatetime = mass.primary_calendar_event?.start_datetime
+      const date = startDatetime ? startDatetime.split('T')[0] : ''
+      const time = startDatetime ? startDatetime.split('T')[1]?.substring(0, 5) || '' : ''
+      const name = mass.primary_calendar_event?.location?.name || 'Location not set'
       const presider = mass.presider?.full_name || 'Presider not assigned'
 
       allEvents.push({

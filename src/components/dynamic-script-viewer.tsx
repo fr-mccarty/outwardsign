@@ -1,12 +1,13 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import type { ScriptWithSections, EventWithRelations } from '@/lib/types/event-types'
+import type { ScriptWithSections } from '@/lib/types/event-types'
+import type { MasterEventWithRelations } from '@/lib/types'
 import { processScriptForRendering } from '@/lib/utils/markdown-processor'
 
 interface DynamicScriptViewerProps {
   script: ScriptWithSections
-  event: EventWithRelations
+  event: MasterEventWithRelations
 }
 
 /**

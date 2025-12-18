@@ -1,23 +1,32 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { requireSelectedParish } from '@/lib/auth/parish'
+import { PageContainer } from '@/components/page-container'
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { getCategoryTagsWithUsageCount } from '@/lib/actions/category-tags'
 import { CategoryTagsList } from './category-tags-list'
+import { checkSettingsAccess } from '@/lib/auth/permissions'
+import { getTranslations } from 'next-intl/server'
 
 export default async function CategoryTagsPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Check admin permissions (redirects if not authorized)
+  await checkSettingsAccess()
 
-  if (!user) {
-    redirect('/login')
-  }
-
-  await requireSelectedParish()
+  const t = await getTranslations()
 
   // Fetch tags with usage count
   const tags = await getCategoryTagsWithUsageCount()
 
-  return <CategoryTagsList initialTags={tags} />
+  const breadcrumbs = [
+    { label: t('nav.dashboard'), href: '/dashboard' },
+    { label: t('nav.settings'), href: '/settings' },
+    { label: t('settings.categoryTags') },
+  ]
+
+  return (
+    <PageContainer
+      title={t('settings.categoryTags')}
+      description={t('settings.categoryTagsDescription')}
+    >
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+      <CategoryTagsList initialTags={tags} />
+    </PageContainer>
+  )
 }

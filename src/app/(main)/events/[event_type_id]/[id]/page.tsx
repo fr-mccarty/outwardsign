@@ -3,7 +3,7 @@ import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations } from '@/lib/actions/master-events'
-import { getEventTypeBySlug } from '@/lib/actions/event-types'
+import { getEventTypeWithRelationsBySlug } from '@/lib/actions/event-types'
 import { getScripts } from '@/lib/actions/scripts'
 import { DynamicEventViewClient } from './master-event-view-client'
 
@@ -32,8 +32,8 @@ export default async function ViewDynamicEventPage({ params }: PageProps) {
     notFound()
   }
 
-  // Fetch event type by slug
-  const eventType = await getEventTypeBySlug(typeSlug)
+  // Fetch event type with relations by slug (includes input_field_definitions)
+  const eventType = await getEventTypeWithRelationsBySlug(typeSlug)
 
   if (!eventType) {
     notFound()

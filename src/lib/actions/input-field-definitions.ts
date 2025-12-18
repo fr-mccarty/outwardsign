@@ -11,7 +11,7 @@ import type {
   CreateInputFieldDefinitionData,
   UpdateInputFieldDefinitionData,
   CustomList,
-  DynamicEventType
+  EventType
 } from '@/lib/types'
 
 /**
@@ -90,7 +90,7 @@ export async function getInputFieldDefinitionWithRelations(id: string): Promise<
       .single()
 
     if (eventType) {
-      result.event_type_filter = eventType as DynamicEventType
+      result.event_type_filter = eventType as EventType
     }
   }
 

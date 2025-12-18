@@ -4,198 +4,219 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { Mass, Person, MassRolesTemplate, MassRole, MassRoleInstance, MassIntention } from '@/lib/types'
-import { EventWithRelations } from '@/lib/actions/events'
-import { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import type {
+  MasterEvent,
+  Person,
+  CalendarEvent,
+  EventType,
+  InputFieldDefinition,
+  ResolvedFieldValue,
+  Group,
+  Location,
+  CustomListItem,
+  Document,
+  Content,
+  Petition
+} from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
-import type { MassStatus } from '@/lib/constants'
-import { createMassSchema, updateMassSchema, type CreateMassData, type UpdateMassData } from '@/lib/schemas/masses'
+import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
-// Note: Import CreateMassData and UpdateMassData from '@/lib/schemas/masses' instead
+// Note: Types must be imported from @/lib/schemas/masses directly (not re-exported from "use server" files)
+import {
+  createMassSchema,
+  updateMassSchema,
+  type CreateMassData,
+  type UpdateMassData,
+  type MassFilterParams,
+  type MassStats,
+  type MassWithNames,
+  type MassWithRelations,
+  type MasterEventRoleWithRelations,
+  type CreateMassRoleData,
+} from '@/lib/schemas/masses'
 
-export interface MassFilterParams {
-  search?: string
-  status?: MassStatus | 'all'
-  start_date?: string
-  end_date?: string
-  sort?: 'date_asc' | 'date_desc' | 'created_asc' | 'created_desc'
-  offset?: number
-  limit?: number
-}
-
-export interface MassStats {
-  total: number
-  upcoming: number
-  past: number
-  filtered: number
-}
-
-export interface MassWithNames extends Mass {
-  event?: EventWithRelations | null
-  presider?: Person | null
-  homilist?: Person | null
-}
-
+/**
+ * Get all masses for the parish
+ * Masses are master_events where event_type.system_type = 'mass'
+ */
 export async function getMasses(filters?: MassFilterParams): Promise<MassWithNames[]> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const offset = filters?.offset || 0
-  const limit = filters?.limit || 50
+  const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
 
+  // Build query - filter by system_type = 'mass'
   let query = supabase
-    .from('masses')
-    .select(`
-      *,
-      event:events!event_id(*,location:locations(*)),
-      presider:people!presider_id(*),
-      homilist:people!homilist_id(*)
-    `)
+    .from('master_events')
+    .select('*, event_type:event_types!inner(*)')
+    .eq('parish_id', selectedParishId)
+    .eq('event_type.system_type', 'mass')
+    .is('deleted_at', null)
 
   // Apply status filter at database level
   if (filters?.status && filters.status !== 'all') {
     query = query.eq('status', filters.status)
   }
 
-  // Handle sorting
-  if (filters?.sort) {
-    const sortParts = filters.sort.split('_')
-    const direction = sortParts[sortParts.length - 1]
-    const ascending = direction === 'asc'
-
-    if (filters.sort.startsWith('created_')) {
-      // Database-level sorting by created_at
-      query = query.order('created_at', { ascending })
-    }
+  // Handle sorting by created_at at database level
+  if (filters?.sort === 'created_asc') {
+    query = query.order('created_at', { ascending: true })
+  } else if (filters?.sort === 'created_desc') {
+    query = query.order('created_at', { ascending: false })
   } else {
-    // Default sort: most recent first (by date, descending)
+    // Default sort: most recent first
     query = query.order('created_at', { ascending: false })
   }
 
   // Apply pagination
   query = query.range(offset, offset + limit - 1)
 
-  const { data, error } = await query
+  const { data: events, error } = await query
 
   if (error) {
     console.error('Error fetching masses:', error)
     throw new Error('Failed to fetch masses')
   }
 
-  let masses = data || []
-
-  // Apply date range filters in application layer (filtering on related table)
-  if (filters?.start_date || filters?.end_date) {
-    masses = masses.filter(mass => {
-      if (!mass.event?.start_date) return false
-
-      const massDate = new Date(mass.event.start_date)
-
-      if (filters.start_date) {
-        const startDate = new Date(filters.start_date)
-        if (massDate < startDate) return false
-      }
-
-      if (filters.end_date) {
-        const endDate = new Date(filters.end_date)
-        if (massDate > endDate) return false
-      }
-
-      return true
-    })
+  if (!events || events.length === 0) {
+    return []
   }
 
-  // Apply search filter in application layer (searching related table fields)
+  // Fetch primary calendar events and presiders/homilist for all events
+  const eventIds = events.map(e => e.id)
+  const presiderIds = events.map(e => e.presider_id).filter(Boolean) as string[]
+  const homilistIds = events.map(e => e.homilist_id).filter(Boolean) as string[]
+
+  const [calendarEventsData, presidersData, homilistsData] = await Promise.all([
+    supabase
+      .from('calendar_events')
+      .select('*, location:locations(*)')
+      .in('master_event_id', eventIds)
+      .eq('is_primary', true)
+      .is('deleted_at', null),
+    presiderIds.length > 0
+      ? supabase.from('people').select('*').in('id', presiderIds)
+      : Promise.resolve({ data: [] }),
+    homilistIds.length > 0
+      ? supabase.from('people').select('*').in('id', homilistIds)
+      : Promise.resolve({ data: [] })
+  ])
+
+  // Create lookup maps
+  const calendarEventMap = new Map(calendarEventsData.data?.map(ce => [ce.master_event_id, ce]) || [])
+  const presiderMap = new Map(presidersData.data?.map(p => [p.id, p]) || [])
+  const homilistMap = new Map(homilistsData.data?.map(p => [p.id, p]) || [])
+
+  // Combine events with related data
+  let masses: MassWithNames[] = events.map(event => ({
+    ...event,
+    primary_calendar_event: calendarEventMap.get(event.id) || undefined,
+    presider: event.presider_id ? presiderMap.get(event.presider_id) || null : null,
+    homilist: event.homilist_id ? homilistMap.get(event.homilist_id) || null : null
+  }))
+
+  // Apply date range filters (post-fetch since calendar events are separate)
+  if (filters?.start_date) {
+    masses = masses.filter(mass =>
+      mass.primary_calendar_event?.start_datetime &&
+      mass.primary_calendar_event.start_datetime >= filters.start_date!
+    )
+  }
+  if (filters?.end_date) {
+    masses = masses.filter(mass =>
+      mass.primary_calendar_event?.start_datetime &&
+      mass.primary_calendar_event.start_datetime <= filters.end_date!
+    )
+  }
+
+  // Apply search filter
   if (filters?.search) {
     const searchTerm = filters.search.toLowerCase()
     masses = masses.filter(mass => {
-      const presiderFirstName = mass.presider?.first_name?.toLowerCase() || ''
-      const presiderLastName = mass.presider?.last_name?.toLowerCase() || ''
-      const homilistFirstName = mass.homilist?.first_name?.toLowerCase() || ''
-      const homilistLastName = mass.homilist?.last_name?.toLowerCase() || ''
-      const eventName = mass.event?.name?.toLowerCase() || ''
+      const presiderName = mass.presider?.full_name?.toLowerCase() || ''
+      const homilistName = mass.homilist?.full_name?.toLowerCase() || ''
+      const eventTypeName = mass.event_type?.name?.toLowerCase() || ''
 
       return (
-        presiderFirstName.includes(searchTerm) ||
-        presiderLastName.includes(searchTerm) ||
-        homilistFirstName.includes(searchTerm) ||
-        homilistLastName.includes(searchTerm) ||
-        eventName.includes(searchTerm)
+        presiderName.includes(searchTerm) ||
+        homilistName.includes(searchTerm) ||
+        eventTypeName.includes(searchTerm)
       )
     })
   }
 
-  // Apply application-level sorting for related fields
-  if (filters?.sort) {
-    const sortParts = filters.sort.split('_')
-    const direction = sortParts[sortParts.length - 1]
-    const ascending = direction === 'asc'
-
-    if (filters.sort.startsWith('name_')) {
-      // Application-level sorting by mass name
-      masses.sort((a, b) => {
-        const nameA = (a.name || '').toLowerCase()
-        const nameB = (b.name || '').toLowerCase()
-        return ascending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
-      })
-    } else if (filters.sort.startsWith('date_')) {
-      // Application-level sorting by event date
-      masses.sort((a, b) => {
-        const dateA = a.event?.start_date ? new Date(a.event.start_date).getTime() : 0
-        const dateB = b.event?.start_date ? new Date(b.event.start_date).getTime() : 0
-
-        // Nulls last for both ascending and descending
-        if (!a.event?.start_date && !b.event?.start_date) return 0
-        if (!a.event?.start_date) return 1
-        if (!b.event?.start_date) return 1
-
-        return ascending ? dateA - dateB : dateB - dateA
-      })
-    }
+  // Apply date sorting if requested
+  if (filters?.sort === 'date_asc') {
+    masses.sort((a, b) => {
+      const dateA = a.primary_calendar_event?.start_datetime || ''
+      const dateB = b.primary_calendar_event?.start_datetime || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.localeCompare(dateB)
+    })
+  } else if (filters?.sort === 'date_desc') {
+    masses.sort((a, b) => {
+      const dateA = a.primary_calendar_event?.start_datetime || ''
+      const dateB = b.primary_calendar_event?.start_datetime || ''
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.localeCompare(dateA)
+    })
   }
 
   return masses
 }
 
 export async function getMassStats(filters?: MassFilterParams): Promise<MassStats> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Get all masses for stats calculation (no pagination)
-  const query = supabase
-    .from('masses')
-    .select(`
-      *,
-      event:events!event_id(*,location:locations(*)),
-      presider:people!presider_id(*),
-      homilist:people!homilist_id(*)
-    `)
-
-  const { data, error } = await query
+  // Get all masses for stats calculation
+  const { data: allMasses, error } = await supabase
+    .from('master_events')
+    .select('*, event_type:event_types!inner(*)')
+    .eq('parish_id', selectedParishId)
+    .eq('event_type.system_type', 'mass')
+    .is('deleted_at', null)
 
   if (error) {
     console.error('Error fetching masses for stats:', error)
     throw new Error('Failed to fetch masses for stats')
   }
 
-  const allMasses = data || []
+  const total = allMasses?.length || 0
 
-  // Calculate total count
-  const total = allMasses.length
+  // Fetch primary calendar events to calculate upcoming/past
+  const eventIds = allMasses?.map(e => e.id) || []
+  let upcoming = 0
+  let past = 0
 
-  // Calculate upcoming and past based on event dates
-  const now = new Date()
-  const upcoming = allMasses.filter(mass => {
-    if (!mass.event?.start_date) return false
-    return new Date(mass.event.start_date) >= now
-  }).length
+  if (eventIds.length > 0) {
+    const { data: calendarEvents } = await supabase
+      .from('calendar_events')
+      .select('master_event_id, start_datetime')
+      .in('master_event_id', eventIds)
+      .eq('is_primary', true)
+      .is('deleted_at', null)
 
-  const past = allMasses.filter(mass => {
-    if (!mass.event?.start_date) return false
-    return new Date(mass.event.start_date) < now
-  }).length
+    const now = new Date()
+    const calendarEventMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce.start_datetime]) || [])
+
+    upcoming = eventIds.filter(id => {
+      const datetime = calendarEventMap.get(id)
+      return datetime && new Date(datetime) >= now
+    }).length
+
+    past = eventIds.filter(id => {
+      const datetime = calendarEventMap.get(id)
+      return datetime && new Date(datetime) < now
+    }).length
+  }
 
   // Get filtered masses using the same getMasses function
   const filteredMasses = await getMasses(filters)
@@ -212,57 +233,21 @@ export async function getMassStats(filters?: MassFilterParams): Promise<MassStat
 export async function getMassesPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassWithNames>> {
   await requireSelectedParish()
   await ensureJWTClaims()
-  const supabase = await createClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 10
-  const search = params?.search || ''
 
-  // Build base query with relations
-  let query = supabase
-    .from('masses')
-    .select(`
-      *,
-      event:events!event_id(*,location:locations(*)),
-      presider:people!presider_id(*),
-      homilist:people!homilist_id(*)
-    `, { count: 'exact' })
+  // Use getMasses with pagination
+  const masses = await getMasses({
+    offset,
+    limit,
+    search: params?.search
+  })
 
-  // Apply ordering, pagination
-  query = query
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+  // For total count, get all masses without pagination
+  const allMasses = await getMasses({ limit: 1000 }) // Use high limit for count
 
-  const { data, error, count } = await query
-
-  if (error) {
-    console.error('Error fetching paginated masses:', error)
-    throw new Error('Failed to fetch paginated masses')
-  }
-
-  let masses = data || []
-
-  // Apply search filter in application layer (searching related table fields)
-  if (search) {
-    const searchTerm = search.toLowerCase()
-    masses = masses.filter(mass => {
-      const presiderFirstName = mass.presider?.first_name?.toLowerCase() || ''
-      const presiderLastName = mass.presider?.last_name?.toLowerCase() || ''
-      const homilistFirstName = mass.homilist?.first_name?.toLowerCase() || ''
-      const homilistLastName = mass.homilist?.last_name?.toLowerCase() || ''
-      const eventName = mass.event?.name?.toLowerCase() || ''
-
-      return (
-        presiderFirstName.includes(searchTerm) ||
-        presiderLastName.includes(searchTerm) ||
-        homilistFirstName.includes(searchTerm) ||
-        homilistLastName.includes(searchTerm) ||
-        eventName.includes(searchTerm)
-      )
-    })
-  }
-
-  const totalCount = count || 0
+  const totalCount = allMasses.length
   const totalPages = Math.ceil(totalCount / limit)
   const page = Math.floor(offset / limit) + 1
 
@@ -275,15 +260,18 @@ export async function getMassesPaginated(params?: PaginatedParams): Promise<Pagi
   }
 }
 
-export async function getMass(id: string): Promise<Mass | null> {
-  await requireSelectedParish()
+export async function getMass(id: string): Promise<MasterEvent | null> {
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('masses')
-    .select('*')
+    .from('master_events')
+    .select('*, event_type:event_types!inner(*)')
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .eq('event_type.system_type', 'mass')
+    .is('deleted_at', null)
     .single()
 
   if (error) {
@@ -297,37 +285,18 @@ export async function getMass(id: string): Promise<Mass | null> {
   return data
 }
 
-// Enhanced mass interface with all related data
-export interface MassWithRelations extends Mass {
-  event?: EventWithRelations | null
-  presider?: Person | null
-  homilist?: Person | null
-  liturgical_event?: GlobalLiturgicalEvent | null
-  mass_roles_template?: MassRolesTemplate | null
-  event_type?: import('@/lib/types/event-types').EventType | null
-  resolved_fields?: Record<string, import('@/lib/types/event-types').ResolvedFieldValue>
-  mass_intention?: (MassIntention & {
-    requested_by?: Person | null
-  }) | null
-  mass_roles?: Array<MassRoleInstance & {
-    person?: Person
-    mass_roles_template_item?: {
-      id: string
-      mass_role: MassRole
-    }
-  }> | null
-}
-
 export async function getMassWithRelations(id: string): Promise<MassWithRelations | null> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Get the mass
-  const { data: mass, error } = await supabase
-    .from('masses')
+  // Get the master event with event type check
+  const { data: event, error } = await supabase
+    .from('master_events')
     .select('*')
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
     .single()
 
   if (error) {
@@ -338,168 +307,213 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     throw new Error('Failed to fetch mass')
   }
 
-  // Fetch all related data in parallel
-  const [
-    eventData,
-    presiderData,
-    homilistData,
-    liturgicalEventData,
-    massRolesTemplateData,
-    eventTypeData,
-    massIntentionData,
-    massRolesData
-  ] = await Promise.all([
-    mass.event_id ? supabase.from('events').select('*, location:locations(*)').eq('id', mass.event_id).single() : Promise.resolve({ data: null }),
-    mass.presider_id ? supabase.from('people').select('*').eq('id', mass.presider_id).single() : Promise.resolve({ data: null }),
-    mass.homilist_id ? supabase.from('people').select('*').eq('id', mass.homilist_id).single() : Promise.resolve({ data: null }),
-    mass.liturgical_event_id ? supabase.from('global_liturgical_events').select('*').eq('id', mass.liturgical_event_id).single() : Promise.resolve({ data: null }),
-    mass.mass_roles_template_id ? supabase.from('mass_roles_templates').select('*').eq('id', mass.mass_roles_template_id).single() : Promise.resolve({ data: null }),
-    mass.event_type_id ? supabase.from('event_types').select('*, input_field_definitions(*)').eq('id', mass.event_type_id).single() : Promise.resolve({ data: null }),
-    supabase.from('mass_intentions').select('*, requested_by:people!requested_by_id(*)').eq('mass_id', id).maybeSingle(),
-    supabase.from('mass_assignment').select('*, person:people(*), mass_roles_template_item:mass_roles_template_items(*, mass_role:mass_roles(*))').eq('mass_id', id)
+  // Fetch event type, calendar events, presider, homilist, mass intention, roles, and parish in parallel
+  const [eventTypeData, calendarEventsData, presiderData, homilistData, massIntentionData, rolesData, parishData] = await Promise.all([
+    supabase
+      .from('event_types')
+      .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
+      .eq('id', event.event_type_id)
+      .eq('parish_id', selectedParishId)
+      .eq('system_type', 'mass')
+      .is('deleted_at', null)
+      .single(),
+    supabase
+      .from('calendar_events')
+      .select('*, location:locations(*)')
+      .eq('master_event_id', id)
+      .is('deleted_at', null)
+      .order('start_datetime', { ascending: true }),
+    event.presider_id
+      ? supabase.from('people').select('*').eq('id', event.presider_id).single()
+      : Promise.resolve({ data: null, error: null }),
+    event.homilist_id
+      ? supabase.from('people').select('*').eq('id', event.homilist_id).single()
+      : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from('mass_intentions')
+      .select('*, requested_by:people!requested_by_id(*)')
+      .eq('master_event_id', id)
+      .maybeSingle(),
+    supabase
+      .from('master_event_roles')
+      .select('*')
+      .eq('master_event_id', id)
+      .is('deleted_at', null),
+    supabase
+      .from('parishes')
+      .select('name, city, state')
+      .eq('id', selectedParishId)
+      .single()
   ])
 
-  // Resolve field values if event type exists
-  const resolvedFields: Record<string, import('@/lib/types/event-types').ResolvedFieldValue> = {}
-  if (eventTypeData.data && mass.field_values) {
-    const inputFieldDefinitions = eventTypeData.data.input_field_definitions as import('@/lib/types/event-types').InputFieldDefinition[]
+  if (eventTypeData.error) {
+    console.error('Error fetching event type:', eventTypeData.error)
+    // Event exists but is not a mass type
+    return null
+  }
 
-    for (const fieldDef of inputFieldDefinitions) {
-      const rawValue = mass.field_values[fieldDef.name]
+  if (calendarEventsData.error) {
+    console.error('Error fetching calendar events:', calendarEventsData.error)
+    throw new Error('Failed to fetch calendar events')
+  }
 
-      const resolvedField: import('@/lib/types/event-types').ResolvedFieldValue = {
-        field_name: fieldDef.name,
-        field_type: fieldDef.type,
-        raw_value: rawValue
-      }
+  const eventType = eventTypeData.data as EventType
+  const calendarEvents = calendarEventsData.data as CalendarEvent[]
+  const presider = presiderData.data as Person | null
+  const homilist = homilistData.data as Person | null
+  const inputFieldDefinitions = eventTypeData.data.input_field_definitions as InputFieldDefinition[]
 
-      // Resolve references based on field type
-      if (rawValue) {
-        try {
-          switch (fieldDef.type) {
-            case 'person': {
-              const { data: person } = await supabase
-                .from('people')
-                .select('*')
-                .eq('id', rawValue)
-                .single()
-              resolvedField.resolved_value = person
-              break
-            }
-            case 'group': {
-              const { data: group } = await supabase
-                .from('groups')
-                .select('*')
-                .eq('id', rawValue)
-                .single()
-              resolvedField.resolved_value = group
-              break
-            }
-            case 'location': {
-              const { data: location } = await supabase
-                .from('locations')
-                .select('*')
-                .eq('id', rawValue)
-                .single()
-              resolvedField.resolved_value = location
-              break
-            }
-            case 'list_item': {
-              const { data: listItem } = await supabase
-                .from('custom_list_items')
-                .select('*')
-                .eq('id', rawValue)
-                .is('deleted_at', null)
-                .single()
-              resolvedField.resolved_value = listItem
-              break
-            }
-            case 'document': {
-              const { data: document } = await supabase
-                .from('documents')
-                .select('*')
-                .eq('id', rawValue)
-                .is('deleted_at', null)
-                .single()
-              resolvedField.resolved_value = document
-              break
-            }
-            case 'content': {
-              const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-              const isUUID = typeof rawValue === 'string' && UUID_REGEX.test(rawValue)
-              if (isUUID) {
-                const { data: content } = await supabase
-                  .from('contents')
-                  .select('*')
-                  .eq('id', rawValue)
-                  .single()
-                resolvedField.resolved_value = content
-              }
-              break
-            }
-            case 'petition': {
-              const { data: petition } = await supabase
-                .from('petitions')
-                .select('*')
-                .eq('id', rawValue)
-                .single()
-              resolvedField.resolved_value = petition
-              break
-            }
-            // For non-reference types (text, rich_text, mass-intention, date, time, number, yes_no, spacer), raw_value is sufficient
-            default:
-              break
-          }
-        } catch (err) {
-          console.error(`Error resolving field ${fieldDef.name}:`, err)
-        }
-      }
+  // Resolve field values
+  const resolvedFields: Record<string, ResolvedFieldValue> = {}
 
-      resolvedFields[fieldDef.name] = resolvedField
+  for (const fieldDef of inputFieldDefinitions) {
+    const rawValue = event.field_values?.[fieldDef.name]
+
+    const resolvedField: ResolvedFieldValue = {
+      field_name: fieldDef.name,
+      field_type: fieldDef.type,
+      raw_value: rawValue
     }
+
+    // Resolve references based on field type
+    if (rawValue) {
+      try {
+        switch (fieldDef.type) {
+          case 'person': {
+            const { data: person } = await supabase
+              .from('people')
+              .select('*')
+              .eq('id', rawValue)
+              .single()
+            resolvedField.resolved_value = person as Person | null
+            break
+          }
+          case 'group': {
+            const { data: group } = await supabase
+              .from('groups')
+              .select('*')
+              .eq('id', rawValue)
+              .single()
+            resolvedField.resolved_value = group as Group | null
+            break
+          }
+          case 'location': {
+            const { data: location } = await supabase
+              .from('locations')
+              .select('*')
+              .eq('id', rawValue)
+              .single()
+            resolvedField.resolved_value = location as Location | null
+            break
+          }
+          case 'list_item': {
+            const { data: listItem } = await supabase
+              .from('custom_list_items')
+              .select('*')
+              .eq('id', rawValue)
+              .is('deleted_at', null)
+              .single()
+            resolvedField.resolved_value = listItem as CustomListItem | null
+            break
+          }
+          case 'document': {
+            const { data: document } = await supabase
+              .from('documents')
+              .select('*')
+              .eq('id', rawValue)
+              .is('deleted_at', null)
+              .single()
+            resolvedField.resolved_value = document as Document | null
+            break
+          }
+          case 'content': {
+            const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            const isUUID = typeof rawValue === 'string' && UUID_REGEX.test(rawValue)
+            if (isUUID) {
+              const { data: content } = await supabase
+                .from('contents')
+                .select('*')
+                .eq('id', rawValue)
+                .single()
+              resolvedField.resolved_value = content as Content | null
+            }
+            break
+          }
+          case 'petition': {
+            const { data: petition } = await supabase
+              .from('petitions')
+              .select('*')
+              .eq('id', rawValue)
+              .single()
+            resolvedField.resolved_value = petition as Petition | null
+            break
+          }
+          default:
+            break
+        }
+      } catch (err) {
+        console.error(`Error resolving field ${fieldDef.name}:`, err)
+      }
+    }
+
+    resolvedFields[fieldDef.name] = resolvedField
   }
 
   return {
-    ...mass,
-    event: eventData.data,
-    presider: presiderData.data,
-    homilist: homilistData.data,
-    liturgical_event: liturgicalEventData.data,
-    mass_roles_template: massRolesTemplateData.data,
-    event_type: eventTypeData.data,
+    ...event,
+    event_type: {
+      ...eventType,
+      input_field_definitions: inputFieldDefinitions,
+      scripts: [] // Scripts loaded separately if needed
+    },
+    calendar_events: calendarEvents,
+    presider: presider || undefined,
+    homilist: homilist || undefined,
+    roles: rolesData.data || [],
     resolved_fields: resolvedFields,
-    mass_intention: massIntentionData.data,
-    mass_roles: massRolesData.data || []
+    mass_intention: massIntentionData.data || null,
+    parish: parishData.data ? {
+      name: parishData.data.name,
+      city: parishData.data.city,
+      state: parishData.data.state
+    } : undefined
   }
 }
 
-export async function createMass(data: CreateMassData): Promise<Mass> {
+export async function createMass(data: CreateMassData): Promise<MasterEvent> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-
   // Validate data with Zod schema
   const validatedData = createMassSchema.parse(data)
 
+  // Find a mass event type for this parish
+  const { data: massEventType, error: eventTypeError } = await supabase
+    .from('event_types')
+    .select('id')
+    .eq('parish_id', selectedParishId)
+    .eq('system_type', 'mass')
+    .is('deleted_at', null)
+    .limit(1)
+    .single()
+
+  if (eventTypeError || !massEventType) {
+    console.error('Error finding mass event type:', eventTypeError)
+    throw new Error('No mass event type configured for this parish')
+  }
+
+  // Create master event
   const { data: mass, error } = await supabase
-    .from('masses')
+    .from('master_events')
     .insert([
       {
         parish_id: selectedParishId,
-        event_id: validatedData.event_id || null,
+        event_type_id: massEventType.id,
         presider_id: validatedData.presider_id || null,
         homilist_id: validatedData.homilist_id || null,
-        liturgical_event_id: validatedData.liturgical_event_id || null,
-        mass_roles_template_id: validatedData.mass_roles_template_id || null,
-        event_type_id: validatedData.event_type_id || null,
         field_values: validatedData.field_values || {},
-        status: validatedData.status || 'PLANNING',
-        mass_template_id: validatedData.mass_template_id || null,
-        announcements: validatedData.announcements || null,
-        note: validatedData.note || null,
-        petitions: validatedData.petitions || null,
-        liturgical_color: validatedData.liturgical_color || null,
+        status: validatedData.status || 'PLANNING'
       }
     ])
     .select()
@@ -510,28 +524,88 @@ export async function createMass(data: CreateMassData): Promise<Mass> {
     throw new Error('Failed to create mass')
   }
 
+  // Create primary calendar event if date info provided
+  if (validatedData.event_id) {
+    // Get the event to extract date info
+    const { data: eventData } = await supabase
+      .from('events')
+      .select('start_date, start_time, end_date, end_time, location_id')
+      .eq('id', validatedData.event_id)
+      .single()
+
+    if (eventData && eventData.start_date) {
+      // Find or create an input field definition for the primary calendar event
+      const { data: primaryFieldDef } = await supabase
+        .from('input_field_definitions')
+        .select('id')
+        .eq('event_type_id', massEventType.id)
+        .eq('type', 'calendar_event')
+        .eq('is_primary', true)
+        .is('deleted_at', null)
+        .limit(1)
+        .single()
+
+      if (primaryFieldDef) {
+        const startDatetime = eventData.start_time
+          ? `${eventData.start_date}T${eventData.start_time}`
+          : `${eventData.start_date}T00:00:00`
+
+        const endDatetime = eventData.end_date && eventData.end_time
+          ? `${eventData.end_date}T${eventData.end_time}`
+          : null
+
+        await supabase
+          .from('calendar_events')
+          .insert([
+            {
+              master_event_id: mass.id,
+              parish_id: selectedParishId,
+              input_field_definition_id: primaryFieldDef.id,
+              start_datetime: startDatetime,
+              end_datetime: endDatetime,
+              location_id: eventData.location_id || null,
+              is_primary: true,
+              is_cancelled: false
+            }
+          ])
+      }
+    }
+  }
+
   revalidatePath('/masses')
   return mass
 }
 
-export async function updateMass(id: string, data: UpdateMassData): Promise<Mass> {
-  await requireSelectedParish()
+export async function updateMass(id: string, data: UpdateMassData): Promise<MasterEvent> {
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
-
 
   // Validate data with Zod schema
   const validatedData = updateMassSchema.parse(data)
 
   // Build update object from only defined values
-  const updateData = Object.fromEntries(
-    Object.entries(validatedData).filter(([, value]) => value !== undefined)
-  )
+  const updateData: Partial<MasterEvent> = {}
+
+  if (validatedData.presider_id !== undefined) {
+    updateData.presider_id = validatedData.presider_id
+  }
+  if (validatedData.homilist_id !== undefined) {
+    updateData.homilist_id = validatedData.homilist_id
+  }
+  if (validatedData.field_values !== undefined) {
+    updateData.field_values = validatedData.field_values ?? {}
+  }
+  if (validatedData.status !== undefined && validatedData.status !== null) {
+    updateData.status = validatedData.status
+  }
 
   const { data: mass, error } = await supabase
-    .from('masses')
+    .from('master_events')
     .update(updateData)
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
+    .is('deleted_at', null)
     .select()
     .single()
 
@@ -547,15 +621,16 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mass
 }
 
 export async function deleteMass(id: string): Promise<void> {
-  await requireSelectedParish()
+  const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-
+  // Hard delete (will cascade to calendar events)
   const { error } = await supabase
-    .from('masses')
+    .from('master_events')
     .delete()
     .eq('id', id)
+    .eq('parish_id', selectedParishId)
 
   if (error) {
     console.error('Error deleting mass:', error)
@@ -566,258 +641,19 @@ export async function deleteMass(id: string): Promise<void> {
 }
 
 // ============================================================================
-// MASS ROLE ASSIGNMENTS
+// MASS INTENTION LINKING
 // ============================================================================
 
-export interface CreateMassRoleData {
-  mass_id: string
-  person_id: string
-  mass_roles_template_item_id: string
-}
-
-export interface UpdateMassRoleData {
-  person_id?: string
-  mass_roles_template_item_id?: string
-}
-
-export interface MassRoleInstanceWithRelations extends MassRoleInstance {
-  person?: Person
-  mass_roles_template_item?: {
-    id: string
-    mass_role: MassRole
-  }
-}
-
-export async function getMassRoles(massId: string): Promise<MassRoleInstanceWithRelations[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('mass_assignment')
-    .select(`
-      *,
-      person:people(*),
-      mass_roles_template_item:mass_roles_template_items(
-        *,
-        mass_role:mass_roles(*)
-      )
-    `)
-    .eq('mass_id', massId)
-    .order('created_at', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching mass roles:', error)
-    throw new Error('Failed to fetch mass roles')
-  }
-
-  return data || []
-}
-
-export async function createMassRole(data: CreateMassRoleData): Promise<MassRoleInstance> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-
-  const { data: massRoleInstance, error } = await supabase
-    .from('mass_assignment')
-    .insert([
-      {
-        mass_id: data.mass_id,
-        person_id: data.person_id,
-        mass_roles_template_item_id: data.mass_roles_template_item_id,
-      }
-    ])
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error creating mass role instance:', error)
-    throw new Error('Failed to create mass role instance')
-  }
-
-  revalidatePath('/masses')
-  revalidatePath(`/masses/${data.mass_id}`)
-  revalidatePath(`/masses/${data.mass_id}/edit`)
-  return massRoleInstance
-}
-
-export async function updateMassRole(id: string, data: UpdateMassRoleData): Promise<MassRoleInstance> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-
-  // Build update object from only defined values
-  const updateData = Object.fromEntries(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Object.entries(data).filter(([_key, value]) => value !== undefined)
-  )
-
-  const { data: massRoleInstance, error } = await supabase
-    .from('mass_assignment')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error updating mass role instance:', error)
-    throw new Error('Failed to update mass role instance')
-  }
-
-  // Get the mass_id for revalidation
-  const { data: instanceData } = await supabase
-    .from('mass_assignment')
-    .select('mass_id')
-    .eq('id', id)
-    .single()
-
-  if (instanceData) {
-    revalidatePath('/masses')
-    revalidatePath(`/masses/${instanceData.mass_id}`)
-    revalidatePath(`/masses/${instanceData.mass_id}/edit`)
-  }
-
-  return massRoleInstance
-}
-
-export async function deleteMassRole(id: string): Promise<void> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-
-  // Get the mass_id before deleting for revalidation
-  const { data: instanceData } = await supabase
-    .from('mass_assignment')
-    .select('mass_id')
-    .eq('id', id)
-    .single()
-
-  const { error } = await supabase
-    .from('mass_assignment')
-    .delete()
-    .eq('id', id)
-
-  if (error) {
-    console.error('Error deleting mass role instance:', error)
-    throw new Error('Failed to delete mass role instance')
-  }
-
-  if (instanceData) {
-    revalidatePath('/masses')
-    revalidatePath(`/masses/${instanceData.mass_id}`)
-    revalidatePath(`/masses/${instanceData.mass_id}/edit`)
-  }
-}
-
-export async function bulkCreateMassRoles(massId: string, assignments: CreateMassRoleData[]): Promise<MassRoleInstance[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-
-  const instancesToInsert = assignments.map(assignment => ({
-    mass_id: massId,
-    person_id: assignment.person_id,
-    mass_roles_template_item_id: assignment.mass_roles_template_item_id,
-  }))
-
-  const { data: massRoleInstances, error } = await supabase
-    .from('mass_assignment')
-    .insert(instancesToInsert)
-    .select()
-
-  if (error) {
-    console.error('Error creating mass role instances in bulk:', error)
-    throw new Error('Failed to create mass role instances in bulk')
-  }
-
-  revalidatePath('/masses')
-  revalidatePath(`/masses/${massId}`)
-  revalidatePath(`/masses/${massId}/edit`)
-  return massRoleInstances || []
-}
-
-export interface ApplyTemplateData {
-  mass_id: string
-  template_id: string
-  overwrite_existing: boolean
-}
-
-/**
- * Apply a mass roles template to a mass
- * This clears existing assignments (if requested) and returns the template configuration
- * Template parameters structure:
- * {
- *   roles: [
- *     { role_id: 'uuid', count: 1, required: true },
- *     { role_id: 'uuid', count: 4, required: false },
- *     ...
- *   ]
- * }
- *
- * NOTE: Template application only clears existing roles if overwrite_existing is true.
- * The UI should display the template requirements and allow users to assign people manually.
- * We don't create placeholder records because person_id is NOT NULL in the schema.
- */
-export async function applyMassTemplate(data: ApplyTemplateData): Promise<MassRoleInstanceWithRelations[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // 1. Fetch template with mass role requirements
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: _template, error: templateError } = await supabase
-    .from('mass_roles_templates')
-    .select('*')
-    .eq('id', data.template_id)
-    .single()
-
-  if (templateError) {
-    console.error('Error fetching mass roles template:', templateError)
-    throw new Error('Failed to fetch mass roles template')
-  }
-
-  // 2. If overwrite_existing, delete current assignments
-  if (data.overwrite_existing) {
-    const { error: deleteError } = await supabase
-      .from('mass_roles')
-      .delete()
-      .eq('mass_id', data.mass_id)
-
-    if (deleteError) {
-      console.error('Error deleting existing mass roles:', deleteError)
-      throw new Error('Failed to delete existing mass roles')
-    }
-  }
-
-  // 3. Update the mass to reference this template
-  await supabase
-    .from('masses')
-    .update({ mass_roles_template_id: data.template_id })
-    .eq('id', data.mass_id)
-
-  revalidatePath('/masses')
-  revalidatePath(`/masses/${data.mass_id}`)
-  revalidatePath(`/masses/${data.mass_id}/edit`)
-
-  // Return empty array - the UI will use the template parameters to show which roles need to be filled
-  return []
-}
-
-// Link a mass intention to a mass
+// Link a mass intention to a mass (master_event)
 export async function linkMassIntention(massId: string, massIntentionId: string): Promise<void> {
   await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Update the mass intention to link it to this mass
+  // Update the mass intention to link it to this master_event
   const { error } = await supabase
     .from('mass_intentions')
-    .update({ mass_id: massId })
+    .update({ master_event_id: massId })
     .eq('id', massIntentionId)
 
   if (error) {
@@ -838,17 +674,17 @@ export async function unlinkMassIntention(massIntentionId: string): Promise<void
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Get the mass_id before unlinking for revalidation
+  // Get the master_event_id before unlinking for revalidation
   const { data: intentionData } = await supabase
     .from('mass_intentions')
-    .select('mass_id')
+    .select('master_event_id')
     .eq('id', massIntentionId)
     .single()
 
   // Update the mass intention to unlink it
   const { error } = await supabase
     .from('mass_intentions')
-    .update({ mass_id: null })
+    .update({ master_event_id: null })
     .eq('id', massIntentionId)
 
   if (error) {
@@ -856,11 +692,119 @@ export async function unlinkMassIntention(massIntentionId: string): Promise<void
     throw new Error('Failed to unlink mass intention')
   }
 
-  if (intentionData?.mass_id) {
+  if (intentionData?.master_event_id) {
     revalidatePath('/masses')
-    revalidatePath(`/masses/${intentionData.mass_id}`)
-    revalidatePath(`/masses/${intentionData.mass_id}/edit`)
+    revalidatePath(`/masses/${intentionData.master_event_id}`)
+    revalidatePath(`/masses/${intentionData.master_event_id}/edit`)
   }
   revalidatePath('/mass-intentions')
   revalidatePath(`/mass-intentions/${massIntentionId}`)
+}
+
+// ============================================================================
+// MASS ROLE MANAGEMENT (uses master_event_roles table)
+// ============================================================================
+
+// Get all role assignments for a mass
+export async function getMassRoles(massId: string): Promise<MasterEventRoleWithRelations[]> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data: roles, error } = await supabase
+    .from('master_event_roles')
+    .select('*, person:people(*)')
+    .eq('master_event_id', massId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching mass roles:', error)
+    throw new Error('Failed to fetch mass roles')
+  }
+
+  return roles as MasterEventRoleWithRelations[]
+}
+
+// Create a role assignment for a mass
+export async function createMassRole(data: CreateMassRoleData): Promise<MasterEventRoleWithRelations> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  const { data: role, error } = await supabase
+    .from('master_event_roles')
+    .insert([{
+      master_event_id: data.master_event_id,
+      role_id: data.role_id,
+      person_id: data.person_id,
+      notes: data.notes || null
+    }])
+    .select('*, person:people(*)')
+    .single()
+
+  if (error) {
+    console.error('Error creating mass role:', error)
+    throw new Error('Failed to create mass role assignment')
+  }
+
+  revalidatePath('/masses')
+  revalidatePath(`/masses/${data.master_event_id}`)
+  revalidatePath(`/masses/${data.master_event_id}/edit`)
+
+  return role as MasterEventRoleWithRelations
+}
+
+// Delete a role assignment (soft delete)
+export async function deleteMassRole(roleId: string): Promise<void> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Get the master_event_id for revalidation before deleting
+  const { data: roleData } = await supabase
+    .from('master_event_roles')
+    .select('master_event_id')
+    .eq('id', roleId)
+    .single()
+
+  // Soft delete by setting deleted_at
+  const { error } = await supabase
+    .from('master_event_roles')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', roleId)
+
+  if (error) {
+    console.error('Error deleting mass role:', error)
+    throw new Error('Failed to delete mass role assignment')
+  }
+
+  if (roleData?.master_event_id) {
+    revalidatePath('/masses')
+    revalidatePath(`/masses/${roleData.master_event_id}`)
+    revalidatePath(`/masses/${roleData.master_event_id}/edit`)
+  }
+}
+
+// Bulk delete all role assignments for a mass
+export async function deleteAllMassRoles(massId: string): Promise<void> {
+  await requireSelectedParish()
+  await ensureJWTClaims()
+  const supabase = await createClient()
+
+  // Soft delete all roles for this mass
+  const { error } = await supabase
+    .from('master_event_roles')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('master_event_id', massId)
+    .is('deleted_at', null)
+
+  if (error) {
+    console.error('Error deleting mass roles:', error)
+    throw new Error('Failed to delete mass role assignments')
+  }
+
+  revalidatePath('/masses')
+  revalidatePath(`/masses/${massId}`)
+  revalidatePath(`/masses/${massId}/edit`)
 }

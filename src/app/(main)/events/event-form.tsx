@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
-import { createEvent, updateEvent, type MasterEventWithRelations } from "@/lib/actions/master-events"
+import { createEvent, updateEvent } from "@/lib/actions/master-events"
+import type { MasterEventWithRelations } from "@/lib/types"
 import type { Person, Location, ContentWithTags, Petition, Document, Group } from "@/lib/types"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
 import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/event-types"
@@ -56,14 +57,15 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   const isEditing = !!event
 
   // Initialize React Hook Form
+  // Note: status, liturgical_event_id, and note are form-only fields not yet in MasterEvent type
   const { handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      status: event?.status || "ACTIVE",
-      liturgical_event_id: event?.liturgical_event_id || initialLiturgicalEvent?.id || undefined,
+      status: "ACTIVE",
+      liturgical_event_id: initialLiturgicalEvent?.id || undefined,
       event_type_id: event?.event_type_id || undefined,
       field_values: event?.field_values || {},
-      note: event?.note || undefined,
+      note: undefined,
     }
   })
 
@@ -94,6 +96,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
     return initial
   })
 
+  // Track which picker is currently open (by field name)
+  const [openPicker, setOpenPicker] = useState<string | null>(null)
+
   // Track if we've initialized to prevent infinite loops
   const initializedEventIdRef = useRef<string | null>(null)
 
@@ -102,15 +107,12 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
     if (event && event.id !== initializedEventIdRef.current) {
       initializedEventIdRef.current = event.id
 
-      // Set liturgical event
-      if (event.liturgical_event) liturgicalEvent.setValue(event.liturgical_event)
-
       // Set event type and field values
       if (event.event_type_id) {
         setEventTypeId(event.event_type_id)
       }
     }
-  }, [event, liturgicalEvent])
+  }, [event])
 
   // Initialize with liturgical event from URL param
   useEffect(() => {
@@ -131,6 +133,12 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
     const loadEventType = async () => {
       try {
         const et = await getEventTypeWithRelations(eventTypeId)
+        if (!et) {
+          toast.error('Event type not found')
+          setEventType(null)
+          setInputFieldDefinitions([])
+          return
+        }
         setEventType(et)
         setInputFieldDefinitions(et.input_field_definitions || [])
       } catch (error) {
@@ -175,7 +183,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
       // Include event_type_id and field_values in submission data
       const submitData = {
         ...data,
-        field_values: eventTypeId ? fieldValues : undefined
+        field_values: fieldValues
       }
 
       if (isEditing) {
@@ -205,8 +213,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             label={field.name}
             value={pickerValues[field.name] as Person | null}
             onValueChange={(person) => updatePickerValue(field.name, person)}
+            showPicker={openPicker === field.name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'location':
@@ -216,8 +225,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             label={field.name}
             value={pickerValues[field.name] as Location | null}
             onValueChange={(location) => updatePickerValue(field.name, location)}
+            showPicker={openPicker === field.name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'content':
@@ -227,8 +237,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             label={field.name}
             value={pickerValues[field.name] as ContentWithTags | null}
             onValueChange={(content) => updatePickerValue(field.name, content)}
+            showPicker={openPicker === field.name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'petition':
@@ -238,8 +249,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             label={field.name}
             value={pickerValues[field.name] as Petition | null}
             onValueChange={(petition) => updatePickerValue(field.name, petition)}
+            showPicker={openPicker === field.name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'group':
@@ -249,19 +261,20 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             label={field.name}
             value={pickerValues[field.name] as Group | null}
             onValueChange={(group) => updatePickerValue(field.name, group)}
+            showPicker={openPicker === field.name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'document':
+        const documentValue = pickerValues[field.name] as Document | null
         return (
           <DocumentPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Document | null}
-            onValueChange={(document) => updatePickerValue(field.name, document)}
+            value={documentValue?.id || null}
+            onValueChange={(documentId, document) => updatePickerValue(field.name, document)}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'list_item':
@@ -273,7 +286,6 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             value={value}
             onValueChange={(itemId) => setFieldValues(prev => ({ ...prev, [field.name]: itemId }))}
             required={field.required}
-            description={field.description || undefined}
           />
         )
       case 'text':
@@ -282,20 +294,18 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             key={field.id}
             id={field.name}
             label={field.name}
-            description={field.description || undefined}
             value={value || ''}
             onChange={(val) => setFieldValues(prev => ({ ...prev, [field.name]: val }))}
             required={field.required}
           />
         )
-      case 'textarea':
+      case 'rich_text':
         return (
           <FormInput
             key={field.id}
             id={field.name}
             inputType="textarea"
             label={field.name}
-            description={field.description || undefined}
             value={value || ''}
             onChange={(val) => setFieldValues(prev => ({ ...prev, [field.name]: val }))}
             required={field.required}
@@ -306,7 +316,6 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <DatePickerField
             key={field.id}
             label={field.name}
-            description={field.description || undefined}
             value={value ? new Date(value) : undefined}
             onValueChange={(date) => setFieldValues(prev => ({ ...prev, [field.name]: date ? toLocalDateString(date) : null }))}
             required={field.required}
@@ -317,9 +326,8 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <TimePickerField
             key={field.id}
             label={field.name}
-            description={field.description || undefined}
             value={value || ''}
-            onValueChange={(time) => setFieldValues(prev => ({ ...prev, [field.name]: time }))}
+            onChange={(time) => setFieldValues(prev => ({ ...prev, [field.name]: time }))}
             required={field.required}
           />
         )
@@ -336,15 +344,11 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
         description="Core details for this event"
       >
         <EventTypeSelectField
-          label="Event Type"
-          description="Select the type of event you are creating"
-          systemType="event"
           value={eventTypeId}
-          onValueChange={(value) => {
+          onChange={(value) => {
             setEventTypeId(value)
             setValue('event_type_id', value || undefined)
           }}
-          required
         />
 
         <FormInput
@@ -395,8 +399,13 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
         </FormSectionCard>
       )}
 
-      <FormSpacer />
-      <FormBottomActions />
+      <FormSpacer label="Actions" />
+      <FormBottomActions
+        isEditing={isEditing}
+        isLoading={isSubmitting}
+        cancelHref={event ? `/events/${event.id}` : '/events'}
+        moduleName="event"
+      />
     </form>
   )
 }

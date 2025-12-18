@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     }
 
     const rows = intentions.map(intention => [
-      escapeCSV(intention.mass?.event?.start_date ? formatDatePretty(intention.mass.event.start_date) : 'N/A'),
+      escapeCSV(intention.master_event?.calendar_events?.[0]?.start_datetime ? formatDatePretty(intention.master_event.calendar_events[0].start_datetime) : 'N/A'),
       escapeCSV(intention.mass_offered_for || 'N/A'),
       escapeCSV(
         intention.requested_by

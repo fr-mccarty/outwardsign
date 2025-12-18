@@ -21,7 +21,7 @@ export function MassScheduleAssignmentGrid({
 }: MassScheduleAssignmentGridProps) {
   const [selectedCell, setSelectedCell] = useState<{
     massId: string
-    roleInstanceId: string
+    roleId: string
     roleName: string
   } | null>(null)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
@@ -36,8 +36,8 @@ export function MassScheduleAssignmentGrid({
     )
   ).sort()
 
-  const handleCellClick = (massId: string, roleInstanceId: string, roleName: string) => {
-    setSelectedCell({ massId, roleInstanceId, roleName })
+  const handleCellClick = (massId: string, roleId: string, roleName: string) => {
+    setSelectedCell({ massId, roleId, roleName })
     setIsPickerOpen(true)
   }
 
@@ -45,8 +45,8 @@ export function MassScheduleAssignmentGrid({
     if (!selectedCell) return
 
     try {
-      // Call server action to assign minister
-      await assignMinisterToRole(selectedCell.roleInstanceId, person.id)
+      // Call server action to assign minister (creates new master_event_role record)
+      await assignMinisterToRole(selectedCell.massId, selectedCell.roleId, person.id)
 
       // Update local state
       setLocalMasses(prevMasses =>
@@ -55,7 +55,7 @@ export function MassScheduleAssignmentGrid({
             ? {
                 ...mass,
                 assignments: mass.assignments.map(assignment =>
-                  assignment.roleInstanceId === selectedCell.roleInstanceId
+                  assignment.roleId === selectedCell.roleId && !assignment.personId
                     ? {
                         ...assignment,
                         personId: person.id,
@@ -188,14 +188,14 @@ export function MassScheduleAssignmentGrid({
                                   —
                                 </div>
                               ) : (
-                                roleAssignments.map(assignment => (
+                                roleAssignments.map((assignment, index) => (
                                   <Card
-                                    key={assignment.roleInstanceId}
+                                    key={assignment.roleAssignmentId || `${assignment.roleId}-${index}`}
                                     className={`p-2 cursor-pointer transition-all hover:shadow-md ${getCellColor(
                                       assignment.status
                                     )}`}
                                     onClick={() =>
-                                      handleCellClick(mass.id, assignment.roleInstanceId, role)
+                                      handleCellClick(mass.id, assignment.roleId, role)
                                     }
                                   >
                                     <div className="flex items-center gap-2">

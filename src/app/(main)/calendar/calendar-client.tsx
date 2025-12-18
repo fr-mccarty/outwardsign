@@ -37,20 +37,21 @@ interface LiturgicalCalendarItem extends CalendarItem {
 function occasionToCalendarItem(occasion: CalendarCalendarEventItem): LiturgicalCalendarItem {
   // Use event type name as the title
   // For primary occasions, just show the event type name
-  // For non-primary calendar events, show event type with label for context (e.g., "Wedding - Rehearsal")
+  // For non-primary calendar events, show event type (label lookup would require input_field_definition)
   const eventTypeName = occasion.event_type_name || 'Event'
-  const title = occasion.is_primary
-    ? eventTypeName
-    : `${eventTypeName} - ${occasion.label}`
+  const title = eventTypeName
+
+  // Extract time from start_datetime
+  const startTime = occasion.start_datetime ? new Date(occasion.start_datetime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null
 
   return {
     id: occasion.id,
-    date: occasion.date,
+    date: occasion.start_datetime.split('T')[0], // Extract date portion from ISO datetime
     title,
     event_type: eventTypeName,
     isLiturgical: false,
     moduleType: occasion.module_type,
-    start_time: occasion.time,
+    start_time: startTime,
     eventTypeIcon: occasion.event_type_icon,
     // Additional fields for navigation
     event_id: occasion.master_event_id ?? undefined,

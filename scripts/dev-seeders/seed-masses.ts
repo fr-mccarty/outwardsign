@@ -1,7 +1,8 @@
 /**
  * Dev Seeder: Sample Masses
  *
- * Creates 20 sample Masses (8 Sunday, 12 Daily) linked to Mass event types.
+ * Creates 20 sample Masses (8 Sunday, 12 Daily) using the unified event model.
+ * Uses master_events + calendar_events tables (NOT the legacy masses table).
  * Mass event types are created by the onboarding seeder.
  */
 
@@ -14,12 +15,13 @@ export async function seedMasses(
 ) {
   const { supabase, parishId } = ctx
 
-  // Fetch Mass event types (created by onboarding seeder)
+  // Fetch Mass event types with their input field definitions
   const { data: massEventTypes } = await supabase
     .from('event_types')
-    .select('id, name, slug')
+    .select('id, name, slug, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
     .eq('parish_id', parishId)
     .in('slug', ['sunday-mass', 'daily-mass'])
+    .is('deleted_at', null)
 
   const sundayMassEventType = massEventTypes?.find(et => et.slug === 'sunday-mass') || null
   const dailyMassEventType = massEventTypes?.find(et => et.slug === 'daily-mass') || null
@@ -58,10 +60,19 @@ export async function seedMasses(
     return date.toISOString().split('T')[0]
   }
 
+  // Helper to find the primary calendar_event field for an event type
+  const getPrimaryCalendarEventField = (eventType: typeof sundayMassEventType) => {
+    if (!eventType?.input_field_definitions) return null
+    return eventType.input_field_definitions.find(
+      (field: { type: string; is_primary: boolean; deleted_at: string | null }) =>
+        field.type === 'calendar_event' && field.is_primary && !field.deleted_at
+    )
+  }
+
   const massesToCreate: Array<{
     date: string
     time: string
-    eventTypeId: string | null
+    eventType: typeof sundayMassEventType
     fieldValues: Record<string, string>
   }> = []
 
@@ -72,7 +83,7 @@ export async function seedMasses(
       massesToCreate.push({
         date: massDate,
         time: '10:00:00',
-        eventTypeId: sundayMassEventType.id,
+        eventType: sundayMassEventType,
         fieldValues: {
           'Announcements': week % 2 === 0
             ? `Parish Picnic next Sunday after all Masses. Bring a side dish to share! Sign up in the parish hall.`
@@ -103,7 +114,7 @@ export async function seedMasses(
       massesToCreate.push({
         date: massDate,
         time: '08:00:00',
-        eventTypeId: dailyMassEventType.id,
+        eventType: dailyMassEventType,
         fieldValues: {
           'Mass Intentions': people[dayCount % 10] ? `For ${people[dayCount % 10].first_name} ${people[dayCount % 10].last_name} - Birthday blessings` : 'For vocations to the priesthood',
           'Special Instructions': ''
@@ -122,52 +133,68 @@ export async function seedMasses(
     .order('date')
     .limit(20)
 
-  // Insert Masses
+  // Insert Masses using unified event model
   let massesCreatedCount = 0
   for (const massData of massesToCreate) {
+    if (!massData.eventType) continue
+
+    const primaryCalendarEventField = getPrimaryCalendarEventField(massData.eventType)
+    if (!primaryCalendarEventField) {
+      console.error(`   ❌ No primary calendar_event field found for ${massData.eventType.name}`)
+      continue
+    }
+
     const matchingLiturgicalEvent = liturgicalEvents?.find(le => le.date === massData.date)
 
-    const { data: newMass, error: massError } = await supabase
-      .from('masses')
+    // Create master_event
+    const { data: newMasterEvent, error: masterEventError } = await supabase
+      .from('master_events')
       .insert({
         parish_id: parishId,
-        event_type_id: massData.eventTypeId,
+        event_type_id: massData.eventType.id,
         field_values: massData.fieldValues,
-        presider_id: people[0].id,
-        liturgical_event_id: matchingLiturgicalEvent?.id || null,
-        status: 'CONFIRMED',
-        name: matchingLiturgicalEvent?.name || `Mass - ${massData.date}`,
-        description: `${massData.time.substring(0, 5)} Mass`
+        presider_id: people[0].id
       })
       .select()
       .single()
 
-    if (massError) {
-      console.error(`   ❌ Error creating Mass for ${massData.date}:`, massError.message)
+    if (masterEventError) {
+      console.error(`   ❌ Error creating master_event for ${massData.date}:`, masterEventError.message)
       continue
     }
 
-    // Create an occasion for this Mass
-    if (newMass) {
-      const { error: occasionError } = await supabase
-        .from('occasions')
-        .insert({
-          mass_id: newMass.id,
-          label: 'Mass',
-          date: massData.date,
-          time: massData.time,
-          location_id: churchLocation.id,
-          is_primary: true
-        })
+    // Create calendar_event linked to the master_event
+    const startDatetime = new Date(`${massData.date}T${massData.time}`).toISOString()
+    const { error: calendarEventError } = await supabase
+      .from('calendar_events')
+      .insert({
+        parish_id: parishId,
+        master_event_id: newMasterEvent.id,
+        input_field_definition_id: primaryCalendarEventField.id,
+        start_datetime: startDatetime,
+        location_id: churchLocation.id,
+        is_primary: true,
+        is_cancelled: false
+      })
 
-      if (!occasionError) {
-        massesCreatedCount++
-      }
+    if (calendarEventError) {
+      console.error(`   ❌ Error creating calendar_event for ${massData.date}:`, calendarEventError.message)
+      // Clean up the orphaned master_event
+      await supabase.from('master_events').delete().eq('id', newMasterEvent.id)
+      continue
+    }
+
+    massesCreatedCount++
+
+    // Log liturgical event connection if applicable
+    if (matchingLiturgicalEvent) {
+      // Note: Liturgical event linking could be added to field_values or a separate table
+      // For now, just counting successful creations
     }
   }
 
-  const sundayCount = massesToCreate.filter(m => m.eventTypeId === sundayMassEventType?.id).length
-  const dailyCount = massesToCreate.filter(m => m.eventTypeId === dailyMassEventType?.id).length
+  const sundayCount = massesToCreate.filter(m => m.eventType?.slug === 'sunday-mass').length
+  const dailyCount = massesToCreate.filter(m => m.eventType?.slug === 'daily-mass').length
   console.log(`   ✅ Created ${massesCreatedCount} sample Masses (${sundayCount} Sunday, ${dailyCount} Daily)`)
 
   return { success: true }

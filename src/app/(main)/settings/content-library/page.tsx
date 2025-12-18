@@ -1,8 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { requireSelectedParish } from '@/lib/auth/parish'
+import { PageContainer } from '@/components/page-container'
+import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ContentLibraryList } from './content-library-list'
 import { getContents } from '@/lib/actions/contents'
+import { checkSettingsAccess } from '@/lib/auth/permissions'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   searchParams: Promise<{
@@ -13,16 +14,10 @@ interface PageProps {
 }
 
 export default async function ContentLibraryPage({ searchParams }: PageProps) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Check admin permissions (redirects if not authorized)
+  await checkSettingsAccess()
 
-  if (!user) {
-    redirect('/login')
-  }
-
-  await requireSelectedParish()
+  const t = await getTranslations()
   const params = await searchParams
 
   // Parse search params
@@ -40,11 +35,23 @@ export default async function ContentLibraryPage({ searchParams }: PageProps) {
     offset,
   })
 
+  const breadcrumbs = [
+    { label: t('nav.dashboard'), href: '/dashboard' },
+    { label: t('nav.settings'), href: '/settings' },
+    { label: t('settings.contentLibrary') },
+  ]
+
   return (
-    <ContentLibraryList
-      initialContents={result.items}
-      initialTotalCount={result.totalCount}
-      initialPage={page}
-    />
+    <PageContainer
+      title={t('settings.contentLibrary')}
+      description={t('settings.contentLibraryDescription')}
+    >
+      <BreadcrumbSetter breadcrumbs={breadcrumbs} />
+      <ContentLibraryList
+        initialContents={result.items}
+        initialTotalCount={result.totalCount}
+        initialPage={page}
+      />
+    </PageContainer>
   )
 }

@@ -34,6 +34,7 @@ interface CalendarEventFieldViewProps {
   isPrimary?: boolean
   calendarEventId?: string  // If provided, will update; otherwise will create
   masterEventId?: string     // Required for creating new calendar events
+  inputFieldDefinitionId?: string  // Required for creating new calendar events
   isEditing?: boolean  // If true, show display view with modal (even without calendarEventId)
 }
 
@@ -45,6 +46,7 @@ export function CalendarEventFieldView({
   isPrimary = false,
   calendarEventId,
   masterEventId,
+  inputFieldDefinitionId,
   isEditing = false
 }: CalendarEventFieldViewProps) {
   const router = useRouter()
@@ -94,29 +96,45 @@ export function CalendarEventFieldView({
     setIsDialogOpen(true)
   }
 
+  // Helper to convert date + time to ISO datetime string
+  const toStartDatetime = (date: string, time: string): string => {
+    if (date && time) {
+      return new Date(`${date}T${time}`).toISOString()
+    } else if (date) {
+      // Default to noon if no time provided
+      return new Date(`${date}T12:00:00`).toISOString()
+    }
+    // If no date, use current date with time
+    const now = new Date()
+    const dateStr = now.toISOString().split('T')[0]
+    return new Date(`${dateStr}T${time || '12:00:00'}`).toISOString()
+  }
+
   const handleSave = async () => {
     setIsSaving(true)
     try {
+      // Convert date + time to start_datetime
+      const start_datetime = toStartDatetime(editValue.date, editValue.time)
+
       if (calendarEventId) {
         // Update existing calendar event
         await updateCalendarEvent(calendarEventId, {
-          date: editValue.date || null,
-          time: editValue.time || null,
+          start_datetime,
           location_id: editValue.location_id || null
         })
         toast.success("Calendar event updated")
-      } else if (masterEventId) {
+      } else if (masterEventId && inputFieldDefinitionId) {
         // Create new calendar event
         await createCalendarEvent(masterEventId, {
-          label: label,
-          date: editValue.date || null,
-          time: editValue.time || null,
+          master_event_id: masterEventId,
+          input_field_definition_id: inputFieldDefinitionId,
+          start_datetime,
           location_id: editValue.location_id || null,
           is_primary: isPrimary
         })
         toast.success("Calendar event created")
       } else {
-        throw new Error("Cannot save: missing master event ID")
+        throw new Error("Cannot save: missing master event ID or input field definition ID")
       }
       onValueChange(editValue) // Update parent state
       setIsDialogOpen(false)

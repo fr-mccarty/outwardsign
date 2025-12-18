@@ -284,8 +284,8 @@ export interface LiturgicalEvent {
   updated_at: string
 }
 
-// EventType is now unified with DynamicEventType - they represent the same thing
-// The old hardcoded modules (Wedding, Funeral, etc.) have been replaced with dynamic event types
+// EventType represents user-defined event categories (Wedding, Funeral, Baptism, etc.)
+// The old hardcoded modules have been replaced with dynamic event types
 export interface EventType {
   id: string
   parish_id: string
@@ -550,7 +550,7 @@ export interface PersonRoleStats {
 export interface MassIntention {
   id: string
   parish_id: string
-  mass_id?: string
+  master_event_id?: string  // References master_events table (was mass_id)
   mass_offered_for?: string
   requested_by_id?: string
   date_received?: string
@@ -586,16 +586,12 @@ export type InputFieldType =
   | 'mass-intention'
   | 'spacer'
 
-// DynamicEventType is an alias for EventType for backward compatibility
-// Both represent the same database table (event_types)
-export type DynamicEventType = EventType
-
-export interface DynamicEventTypeWithRelations extends EventType {
+export interface EventTypeWithRelations extends EventType {
   input_field_definitions: InputFieldDefinition[]
   scripts: Script[]
 }
 
-export interface CreateDynamicEventTypeData {
+export interface CreateEventTypeData {
   name: string
   description?: string | null
   icon: string
@@ -603,7 +599,7 @@ export interface CreateDynamicEventTypeData {
   system_type: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
 }
 
-export interface UpdateDynamicEventTypeData {
+export interface UpdateEventTypeData {
   name?: string
   description?: string | null
   icon?: string
@@ -631,7 +627,7 @@ export interface InputFieldDefinition {
 
 export interface InputFieldDefinitionWithRelations extends InputFieldDefinition {
   custom_list?: CustomList | null
-  event_type_filter?: DynamicEventType | null
+  event_type_filter?: EventType | null
 }
 
 export interface CreateInputFieldDefinitionData {
@@ -762,7 +758,7 @@ export interface UpdateSectionData {
 // Master events are containers for sacraments (Weddings, Funerals, etc.)
 // They store dynamic field values and have manual minister assignment
 
-export type MasterEventStatus = 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+export type MasterEventStatus = 'PLANNING' | 'ACTIVE' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
 
 export interface MasterEventRole {
   id: string
@@ -810,7 +806,7 @@ export interface ParishInfo {
 }
 
 export interface MasterEventWithRelations extends MasterEvent {
-  event_type: DynamicEventType
+  event_type: EventTypeWithRelations  // Includes input_field_definitions and scripts
   calendar_events: CalendarEvent[]  // RENAMED from occasions
   presider?: Person | null  // Resolved presider
   homilist?: Person | null  // Resolved homilist
@@ -821,8 +817,8 @@ export interface MasterEventWithRelations extends MasterEvent {
 
 export interface CreateMasterEventData {
   field_values: Record<string, any>
-  presider_id?: string | null  // NEW
-  homilist_id?: string | null  // NEW
+  presider_id?: string | null
+  homilist_id?: string | null
   calendar_events?: CreateCalendarEventData[]
 }
 
@@ -837,33 +833,34 @@ export interface UpdateMasterEventData {
 // CALENDAR EVENTS (formerly Occasion)
 // ========================================
 // Calendar events are scheduled items that appear on the calendar
-// Always linked to master events through calendar_event input fields
+// Every calendar_event must belong to a master_event (no standalone events)
+// Titles are computed from master_event + input_field_definition.name
 
 export interface CalendarEvent {
   id: string
-  master_event_id: string  // Required - always linked to a master event
   parish_id: string  // For RLS
-  start_datetime: string  // ISO 8601 datetime
-  end_datetime: string | null  // ISO 8601 datetime (optional)
+  master_event_id: string  // NOT NULL - every calendar event must have a parent
+  input_field_definition_id: string  // Links to the field definition (e.g., Rehearsal, Ceremony)
+  start_datetime: string  // ISO 8601 datetime with timezone
+  end_datetime: string | null  // Optional end datetime
   location_id: string | null
-  is_primary: boolean
-  input_field_definition_id: string  // Links to the calendar_event field definition
-  is_cancelled: boolean  // Whether this calendar event has been cancelled
+  is_primary: boolean  // Primary calendar event for a master event
+  is_cancelled: boolean  // True if this specific calendar event is cancelled
   deleted_at: string | null
   created_at: string
   location?: Location | null
 }
 
 export interface CalendarEventWithRelations extends CalendarEvent {
-  master_event?: MasterEvent | null  // For linked events, include parent
-  input_field_definition: InputFieldDefinition  // The field definition this calendar event belongs to
+  master_event?: MasterEvent | null  // Parent master event
+  input_field_definition?: InputFieldDefinition | null  // The field definition for label
 }
 
 export interface CreateCalendarEventData {
-  master_event_id: string  // Required
-  input_field_definition_id: string  // Required
+  master_event_id?: string  // Optional - set by server when creating as part of event
+  input_field_definition_id: string  // Required - links to field definition
   start_datetime: string  // Required - ISO 8601 datetime
-  end_datetime?: string | null  // Optional - ISO 8601 datetime
+  end_datetime?: string | null  // Optional
   location_id?: string | null
   is_primary?: boolean
   is_cancelled?: boolean

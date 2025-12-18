@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { CorePicker } from '@/components/core-picker'
 import { getActiveEventTypes, createEventType } from '@/lib/actions/event-types'
 import { getLucideIcon, LUCIDE_ICON_MAP } from '@/lib/utils/lucide-icons'
-import type { DynamicEventType } from '@/lib/types'
+import type { EventType } from '@/lib/types'
 import type { PickerFieldConfig } from '@/types/core-picker'
 
 // Generate icon options from the LUCIDE_ICON_MAP
@@ -16,7 +16,7 @@ const EVENT_TYPE_ICONS = Object.keys(LUCIDE_ICON_MAP).map((iconName) => ({
 interface EventTypePickerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (eventType: DynamicEventType) => void
+  onSelect: (eventType: EventType) => void
   selectedId?: string
   openToNew?: boolean
 }
@@ -28,7 +28,7 @@ export function EventTypePicker({
   selectedId,
   openToNew = false,
 }: EventTypePickerProps) {
-  const [items, setItems] = useState<DynamicEventType[]>([])
+  const [items, setItems] = useState<EventType[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export function EventTypePicker({
     []
   )
 
-  const handleCreate = async (formData: any): Promise<DynamicEventType> => {
+  const handleCreate = async (formData: any): Promise<EventType> => {
     const newEventType = await createEventType({
       name: formData.name as string,
       icon: formData.icon as string,
@@ -94,7 +94,7 @@ export function EventTypePicker({
   const selectedEventType = items.find(item => item.id === selectedId) || null
 
   return (
-    <CorePicker<DynamicEventType>
+    <CorePicker<EventType>
       open={open}
       onOpenChange={onOpenChange}
       items={items}

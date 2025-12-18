@@ -1,20 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { getCurrentParish } from '@/lib/auth/parish'
 import { getParishSettings } from '@/lib/actions/setup'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ParishMassIntentionsSettingsClient } from './parish-mass-intentions-settings-client'
+import { checkSettingsAccess } from '@/lib/auth/permissions'
+import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ParishMassIntentionsSettingsPage() {
-  const supabase = await createClient()
+  // Check admin permissions (redirects if not authorized)
+  await checkSettingsAccess()
 
-  // Check authentication server-side
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
+  const t = await getTranslations()
 
   // Get current parish
   const parish = await getCurrentParish()
@@ -26,10 +24,10 @@ export default async function ParishMassIntentionsSettingsPage() {
   const settingsResult = await getParishSettings(parish.id)
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Settings", href: "/settings" },
-    { label: "Parish Settings", href: "/settings/parish/general" },
-    { label: "Mass Intentions" }
+    { label: t('nav.dashboard'), href: '/dashboard' },
+    { label: t('nav.settings'), href: '/settings' },
+    { label: t('settings.parishSettings'), href: '/settings/parish/general' },
+    { label: t('settings.parish.massIntentions') }
   ]
 
   return (

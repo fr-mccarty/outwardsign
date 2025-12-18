@@ -61,7 +61,7 @@ interface ProposedMassCalendarItem extends CalendarItem {
   mass: ProposedMass
 }
 
-interface Step6ProposedScheduleProps {
+interface Step4ProposedScheduleProps {
   startDate: string
   endDate: string
   massTimesTemplates: MassTimesTemplate[]
@@ -76,14 +76,14 @@ function getDayLabel(day: string): string {
   return labels?.en ?? day
 }
 
-export function Step5ProposedSchedule({
+export function Step4ProposedSchedule({
   startDate,
   endDate: _endDate,
   massTimesTemplates: _massTimesTemplates,
   selectedMassTimesTemplateIds: _selectedMassTimesTemplateIds,
   proposedMasses,
   onProposedMassesChange,
-}: Step6ProposedScheduleProps) {
+}: Step4ProposedScheduleProps) {
   // These props are available for future template-based filtering
   void _endDate
   void _massTimesTemplates

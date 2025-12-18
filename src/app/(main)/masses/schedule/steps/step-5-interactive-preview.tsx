@@ -13,55 +13,42 @@ import {
   GripVertical
 } from "lucide-react"
 import { WizardStepHeader } from "@/components/wizard/WizardStepHeader"
-import { ProposedMass, RoleAssignment } from './step-5-proposed-schedule'
+import { ProposedMass, RoleAssignment } from './step-4-proposed-schedule'
 import { formatDate } from '@/lib/utils/formatters'
 import { MassAssignmentPeoplePicker } from '@/components/mass-assignment-people-picker'
 import type { Person } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { MassRoleTemplateWithItems } from '@/lib/actions/mass-role-templates'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Settings, RefreshCw } from 'lucide-react'
-import { getLiturgicalContextFromGrade } from '@/lib/constants'
 import { LiturgicalEventPreview } from '@/components/liturgical-event-preview'
 import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { previewMassAssignments } from '@/lib/actions/mass-scheduling'
-// formatTime available for time display formatting
+import { RefreshCw } from 'lucide-react'
 
-interface Step6InteractivePreviewProps {
-  proposedMasses: ProposedMass[]
-  onProposedMassesChange: (masses: ProposedMass[]) => void
-  roleTemplates: MassRoleTemplateWithItems[]
+// Role definition from event_types.role_definitions
+interface RoleDefinition {
+  id: string
+  name: string
+  required: boolean
+  count?: number
 }
 
-export function Step6InteractivePreview({
+interface Step5InteractivePreviewProps {
+  proposedMasses: ProposedMass[]
+  onProposedMassesChange: (masses: ProposedMass[]) => void
+  roleDefinitions: RoleDefinition[]
+}
+
+export function Step5InteractivePreview({
   proposedMasses,
   onProposedMassesChange,
-  roleTemplates
-}: Step6InteractivePreviewProps) {
+  roleDefinitions
+}: Step5InteractivePreviewProps) {
   const [editingAssignment, setEditingAssignment] = useState<{
     massId: string
     roleId: string
   } | null>(null)
   const [peoplePickerOpen, setPeoplePickerOpen] = useState(false)
-  const [templateChangeDialogOpen, setTemplateChangeDialogOpen] = useState(false)
-  const [editingMassId, setEditingMassId] = useState<string | null>(null)
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('NOT_SELECTED')
-  const [recommendedTemplateId, setRecommendedTemplateId] = useState<string | null>(null)
   const [liturgicalEventPreviewOpen, setLiturgicalEventPreviewOpen] = useState(false)
   const [selectedLiturgicalEvent, setSelectedLiturgicalEvent] = useState<GlobalLiturgicalEvent | null>(null)
   const [refreshConfirmOpen, setRefreshConfirmOpen] = useState(false)
@@ -122,8 +109,8 @@ export function Step6InteractivePreview({
       return mass
     })
 
-    console.log('[Step6] Assigning person:', person.first_name, person.last_name, 'to role:', editingAssignment.roleId)
-    console.log('[Step6] Total assigned after this:', updated.reduce((sum, m) => sum + (m.assignments?.filter(a => a.personId).length || 0), 0))
+    console.log('[Step5] Assigning person:', person.first_name, person.last_name, 'to role:', editingAssignment.roleId)
+    console.log('[Step5] Total assigned after this:', updated.reduce((sum, m) => sum + (m.assignments?.filter(a => a.personId).length || 0), 0))
     onProposedMassesChange(updated)
     setPeoplePickerOpen(false)
     setEditingAssignment(null)
@@ -146,126 +133,12 @@ export function Step6InteractivePreview({
     onProposedMassesChange(updated)
   }
 
-  const getRecommendedTemplate = (date: string): string | null => {
-    // Find the day of week for this date
-    const massOnDate = proposedMasses.find(m => m.date === date)
-    if (!massOnDate) return null
-
-    const dayOfWeek = massOnDate.dayOfWeek
-    const isSunday = dayOfWeek === 'SUNDAY'
-
-    // Get all masses for this day of week
-    const massesForDay = proposedMasses.filter(
-      m => m.dayOfWeek === dayOfWeek && m.isIncluded
-    )
-
-    // Collect unique liturgical contexts from these masses using the grade number
-    const contexts = new Set<string>()
-    massesForDay.forEach(mass => {
-      if (mass.liturgicalEventGradeNumber !== undefined && mass.liturgicalEventGradeNumber !== null) {
-        // Use the mapping function to convert grade number to context
-        const context = getLiturgicalContextFromGrade(mass.liturgicalEventGradeNumber, isSunday)
-        contexts.add(context)
-      } else {
-        // If no liturgical event, it's a regular weekday
-        contexts.add('WEEKDAY')
-      }
-    })
-
-    // Find templates that match these contexts
-    const matchingTemplates = roleTemplates.filter(template => {
-      if (!template.liturgical_contexts || template.liturgical_contexts.length === 0) {
-        return false
-      }
-      // Check if the template's contexts overlap with the mass contexts
-      return template.liturgical_contexts.some(ctx => contexts.has(ctx))
-    })
-
-    // If multiple matches, prefer the one with the most specific match
-    // Priority: Most contexts matched
-    if (matchingTemplates.length > 0) {
-      const sorted = matchingTemplates.sort((a, b) => {
-        const aMatches = a.liturgical_contexts.filter(ctx => contexts.has(ctx)).length
-        const bMatches = b.liturgical_contexts.filter(ctx => contexts.has(ctx)).length
-        return bMatches - aMatches
-      })
-      return sorted[0].id
-    }
-
-    return null
-  }
-
   const handleLiturgicalEventClick = async (eventId: string) => {
     const event = await getGlobalLiturgicalEvent(eventId)
     if (event) {
       setSelectedLiturgicalEvent(event)
       setLiturgicalEventPreviewOpen(true)
     }
-  }
-
-  const handleOpenTemplateChange = (massId: string) => {
-    const mass = proposedMasses.find(m => m.id === massId)
-    if (!mass) return
-
-    setEditingMassId(massId)
-    // Get recommended template based on this mass's date
-    const recommended = getRecommendedTemplate(mass.date)
-    setRecommendedTemplateId(recommended)
-    // Default to recommended template if available, otherwise first template
-    const defaultSelection = recommended || (roleTemplates.length > 0 ? roleTemplates[0].id : 'NOT_SELECTED')
-    setSelectedTemplateId(defaultSelection)
-    setTemplateChangeDialogOpen(true)
-  }
-
-  const handleTemplateChange = () => {
-    // If nothing selected, just close the dialog without making changes
-    if (!editingMassId || selectedTemplateId === 'NOT_SELECTED') {
-      setTemplateChangeDialogOpen(false)
-      setEditingMassId(null)
-      setSelectedTemplateId('NOT_SELECTED')
-      return
-    }
-
-    let newAssignments: RoleAssignment[] = []
-
-    // If a template is selected (not REMOVE), build assignments from it
-    if (selectedTemplateId !== 'REMOVE') {
-      const template = roleTemplates.find(t => t.id === selectedTemplateId)
-      if (!template) return
-
-      template.items?.forEach(item => {
-        if (item.mass_role) {
-          for (let i = 0; i < item.count; i++) {
-            newAssignments.push({
-              roleId: item.mass_role.id,
-              roleName: item.mass_role.name,
-              personId: undefined,
-              personName: undefined
-            })
-          }
-        }
-      })
-    } else {
-      // If selectedTemplateId === 'REMOVE', newAssignments stays as empty array
-      newAssignments = []
-    }
-
-    // Update ONLY this specific mass
-    const updated = proposedMasses.map(mass => {
-      if (mass.id === editingMassId) {
-        return {
-          ...mass,
-          massRoleTemplateId: selectedTemplateId === 'REMOVE' ? undefined : selectedTemplateId,
-          assignments: newAssignments
-        }
-      }
-      return mass
-    })
-
-    onProposedMassesChange(updated)
-    setTemplateChangeDialogOpen(false)
-    setEditingMassId(null)
-    setSelectedTemplateId('NOT_SELECTED')
   }
 
   const getLiturgicalColorDot = (color?: string[]) => {
@@ -280,51 +153,29 @@ export function Step6InteractivePreview({
   }
 
   const handleRefreshRecommendations = async () => {
-    // For each unique day of week, apply the recommended template
-    const uniqueDaysOfWeek = [...new Set(includedMasses.map(m => m.dayOfWeek))]
+    // Build assignments from role definitions for each mass
+    const newAssignments: RoleAssignment[] = []
+    for (const roleDef of roleDefinitions) {
+      const count = roleDef.count || 1
+      for (let i = 0; i < count; i++) {
+        newAssignments.push({
+          roleId: roleDef.id,
+          roleName: roleDef.name,
+          personId: undefined,
+          personName: undefined
+        })
+      }
+    }
 
-    let updated = [...proposedMasses]
-
-    uniqueDaysOfWeek.forEach(dayOfWeek => {
-      // Find a mass on this day to get a date for the recommendation
-      const sampleMass = includedMasses.find(m => m.dayOfWeek === dayOfWeek)
-      if (!sampleMass) return
-
-      const recommendedId = getRecommendedTemplate(sampleMass.date)
-
-      // If no recommended template, use the first available template as fallback
-      const templateIdToUse = recommendedId || (roleTemplates.length > 0 ? roleTemplates[0].id : null)
-      if (!templateIdToUse) return
-
-      const template = roleTemplates.find(t => t.id === templateIdToUse)
-      if (!template) return
-
-      // Build assignments from the template
-      const newAssignments: RoleAssignment[] = []
-      template.items?.forEach(item => {
-        if (item.mass_role) {
-          for (let i = 0; i < item.count; i++) {
-            newAssignments.push({
-              roleId: item.mass_role.id,
-              roleName: item.mass_role.name,
-              personId: undefined,
-              personName: undefined
-            })
-          }
+    // Update all masses with fresh assignments from role definitions
+    let updated = proposedMasses.map(mass => {
+      if (mass.isIncluded) {
+        return {
+          ...mass,
+          assignments: [...newAssignments]
         }
-      })
-
-      // Update all masses with this day of week
-      updated = updated.map(mass => {
-        if (mass.dayOfWeek === dayOfWeek && mass.isIncluded) {
-          return {
-            ...mass,
-            massRoleTemplateId: templateIdToUse,
-            assignments: newAssignments
-          }
-        }
-        return mass
-      })
+      }
+      return mass
     })
 
     // Now auto-assign people to the roles using the preview assignment algorithm
@@ -359,20 +210,20 @@ export function Step6InteractivePreview({
       })
     } catch (error) {
       console.error('Failed to preview mass assignments:', error)
-      // Continue with role templates even if auto-assignment fails
+      // Continue with role definitions even if auto-assignment fails
     }
 
     onProposedMassesChange(updated)
   }
 
-  // Auto-apply recommendations on mount if masses don't have assignments
+  // Auto-apply role definitions on mount if masses don't have assignments
   useEffect(() => {
     if (hasInitializedRef.current) return
 
     const needsInitialization = includedMasses.length > 0 &&
       includedMasses.every(m => !m.assignments || m.assignments.length === 0)
 
-    if (needsInitialization && roleTemplates.length > 0) {
+    if (needsInitialization && roleDefinitions.length > 0) {
       const initialize = async () => {
         await handleRefreshRecommendations()
         hasInitializedRef.current = true
@@ -381,7 +232,7 @@ export function Step6InteractivePreview({
     }
     // Only run once on mount when dependencies are first available
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [includedMasses.length, roleTemplates.length])
+  }, [includedMasses.length, roleDefinitions.length])
 
   return (
     <div className="space-y-6">
@@ -398,7 +249,7 @@ export function Step6InteractivePreview({
           className="shrink-0"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-          Refresh Recommendations
+          Refresh Assignments
         </Button>
       </div>
 
@@ -479,15 +330,6 @@ export function Step6InteractivePreview({
                             </Badge>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenTemplateChange(mass.id)}
-                          className="h-8 shrink-0"
-                        >
-                          <Settings className="h-3.5 w-3.5 mr-1.5" />
-                          Change Template
-                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="pt-4">
@@ -585,87 +427,8 @@ export function Step6InteractivePreview({
             ? proposedMasses.find(m => m.id === editingAssignment.massId)?.date
             : undefined
         }
-        allMassRoles={
-          Array.from(
-            new Map(
-              roleTemplates
-                .flatMap(template =>
-                  template.items?.map(item => item.mass_role).filter(Boolean) || []
-                )
-                .map(role => [role.id, { id: role.id, name: role.name }])
-            ).values()
-          )
-        }
+        allMassRoles={roleDefinitions.map(rd => ({ id: rd.id, name: rd.name }))}
       />
-
-      {/* Template Change Dialog */}
-      <Dialog open={templateChangeDialogOpen} onOpenChange={setTemplateChangeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Role Template</DialogTitle>
-            <DialogDescription>
-              Select a role template to apply to this mass.
-              This will replace all current role assignments.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Role Template</label>
-              <Select
-                value={selectedTemplateId}
-                onValueChange={setSelectedTemplateId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a template or remove" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="REMOVE" className="text-orange-600 dark:text-orange-400">
-                    Remove template (clear all assignments)
-                  </SelectItem>
-                  {roleTemplates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                      {template.id === recommendedTemplateId && (
-                        <span className="ml-2 text-xs text-primary">✓ Recommended</span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {selectedTemplateId === 'NOT_SELECTED' && recommendedTemplateId && (
-              <div className="text-sm text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
-                <strong>Recommended:</strong> Based on the liturgical events for this day, we recommend using{' '}
-                <strong>{roleTemplates.find(t => t.id === recommendedTemplateId)?.name}</strong>.
-              </div>
-            )}
-            {selectedTemplateId === 'NOT_SELECTED' && !recommendedTemplateId && (
-              <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg border">
-                <strong>Note:</strong> Please select a template to apply or choose to remove the template.
-              </div>
-            )}
-            {selectedTemplateId === 'REMOVE' && (
-              <div className="text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg border border-orange-200 dark:border-orange-900">
-                <strong>Warning:</strong> This will remove all role assignments for this mass.
-              </div>
-            )}
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setTemplateChangeDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleTemplateChange}
-                variant={selectedTemplateId === 'REMOVE' ? 'destructive' : 'default'}
-              >
-                {selectedTemplateId === 'REMOVE' ? 'Remove Template' : 'Apply Template'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Liturgical Event Preview Modal */}
       <LiturgicalEventPreview
@@ -674,13 +437,13 @@ export function Step6InteractivePreview({
         event={selectedLiturgicalEvent}
       />
 
-      {/* Refresh Recommendations Confirmation Dialog */}
+      {/* Refresh Assignments Confirmation Dialog */}
       <ConfirmationDialog
         open={refreshConfirmOpen}
         onOpenChange={setRefreshConfirmOpen}
         onConfirm={handleRefreshRecommendations}
         title="Refresh Role Assignments?"
-        description="This will replace all current role assignments with recommended templates based on liturgical context. Any manual assignments or person selections will be lost. Do you want to continue?"
+        description="This will replace all current role assignments with auto-selected ministers based on availability. Any manual selections will be lost. Do you want to continue?"
         confirmLabel="Refresh"
         cancelLabel="Cancel"
         variant="destructive"

@@ -10,7 +10,7 @@ DECLARE
   person_data JSONB;
   family_ids UUID[];
   family_members_data JSONB;
-  mass_assignments_data JSONB;
+  event_roles_data JSONB;
   blackout_dates_data JSONB;
 BEGIN
   -- Get the person's own data
@@ -53,29 +53,33 @@ BEGIN
   WHERE fm.family_id = ANY(family_ids)
     AND fm.person_id != p_person_id;  -- Exclude the person themselves
 
-  -- Get all mass assignments for person + family members
+  -- Get all event role assignments for person + family members
   SELECT jsonb_agg(
     jsonb_build_object(
-      'id', ma.id,
-      'person_id', ma.person_id,
+      'id', mer.id,
+      'person_id', mer.person_id,
       'person_name', p.full_name,
-      'mass_id', ma.mass_id,
-      'role', ma.role,
-      'date', m.date,
-      'time', m.time,
-      'name', m.name
+      'master_event_id', mer.master_event_id,
+      'role_id', mer.role_id,
+      'notes', mer.notes,
+      'event_type', et.name,
+      'start_datetime', ce.start_datetime
     )
   )
-  INTO mass_assignments_data
-  FROM public.mass_assignments ma
-  JOIN public.people p ON p.id = ma.person_id
-  LEFT JOIN public.masses m ON m.id = ma.mass_id
-  WHERE ma.person_id = p_person_id
-     OR ma.person_id IN (
+  INTO event_roles_data
+  FROM public.master_event_roles mer
+  JOIN public.people p ON p.id = mer.person_id
+  JOIN public.master_events me ON me.id = mer.master_event_id
+  LEFT JOIN public.event_types et ON et.id = me.event_type_id
+  LEFT JOIN public.calendar_events ce ON ce.master_event_id = me.id
+  WHERE (mer.person_id = p_person_id
+     OR mer.person_id IN (
        SELECT fm.person_id
        FROM public.family_members fm
        WHERE fm.family_id = ANY(family_ids)
-     );
+     ))
+    AND mer.deleted_at IS NULL
+    AND me.deleted_at IS NULL;
 
   -- Get all blackout dates for person + family members
   SELECT jsonb_agg(
@@ -102,7 +106,7 @@ BEGIN
   result := jsonb_build_object(
     'person', person_data,
     'family_members', COALESCE(family_members_data, '[]'::jsonb),
-    'mass_assignments', COALESCE(mass_assignments_data, '[]'::jsonb),
+    'event_roles', COALESCE(event_roles_data, '[]'::jsonb),
     'blackout_dates', COALESCE(blackout_dates_data, '[]'::jsonb)
   );
 
@@ -138,5 +142,5 @@ $$;
 GRANT EXECUTE ON FUNCTION public.cleanup_expired_auth_sessions() TO service_role;
 
 -- Add comments documenting the functions
-COMMENT ON FUNCTION public.get_person_family_data(UUID) IS 'Retrieve all family members and their related data (mass assignments, blackout dates) for AI chat context';
+COMMENT ON FUNCTION public.get_person_family_data(UUID) IS 'Retrieve all family members and their related data (event roles, blackout dates) for AI chat context';
 COMMENT ON FUNCTION public.cleanup_expired_auth_sessions() IS 'Remove expired or revoked parishioner auth sessions. Should be run daily via cron job.';

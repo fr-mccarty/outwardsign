@@ -45,29 +45,6 @@ export async function getCalendarEvents(masterEventId: string): Promise<Calendar
   return data || []
 }
 
-/**
- * Get all standalone calendar events
- */
-export async function getStandaloneCalendarEvents(): Promise<CalendarEvent[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('calendar_events')
-    .select('*, location:locations(*)')
-    .eq('parish_id', selectedParishId)
-    .eq('is_standalone', true)
-    .is('deleted_at', null)
-    .order('date', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching standalone calendar events:', error)
-    throw new Error('Failed to fetch standalone calendar events')
-  }
-
-  return data || []
-}
 
 /**
  * Get a single calendar event by ID
@@ -135,12 +112,12 @@ export async function createCalendarEvent(
       {
         master_event_id: masterEventId,
         parish_id: selectedParishId,
-        label: data.label,
-        date: data.date || null,
-        time: data.time || null,
+        start_datetime: data.start_datetime,
+        end_datetime: data.end_datetime || null,
+        input_field_definition_id: data.input_field_definition_id,
         location_id: data.location_id || null,
         is_primary: data.is_primary || false,
-        is_standalone: false
+        is_cancelled: data.is_cancelled || false
       }
     ])
     .select('*, location:locations(*)')
@@ -155,47 +132,6 @@ export async function createCalendarEvent(
   return newCalendarEvent
 }
 
-/**
- * Create a new standalone calendar event (not linked to master event)
- */
-export async function createStandaloneCalendarEvent(
-  data: CreateCalendarEventData
-): Promise<CalendarEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Validate required fields for standalone events
-  if (!data.label) {
-    throw new Error('Event name is required')
-  }
-
-  // Insert standalone calendar event
-  const { data: newCalendarEvent, error } = await supabase
-    .from('calendar_events')
-    .insert([
-      {
-        master_event_id: null,
-        parish_id: selectedParishId,
-        label: data.label,
-        date: data.date || null,
-        time: data.time || null,
-        location_id: data.location_id || null,
-        is_primary: false, // Standalone events don't have primary status
-        is_standalone: true
-      }
-    ])
-    .select('*, location:locations(*)')
-    .single()
-
-  if (error) {
-    console.error('Error creating standalone calendar event:', error)
-    throw new Error('Failed to create standalone calendar event')
-  }
-
-  revalidatePath('/calendar-events')
-  return newCalendarEvent
-}
 
 /**
  * Update an existing calendar event
@@ -211,7 +147,7 @@ export async function updateCalendarEvent(
   // Get calendar event to verify access and get master_event_id
   const { data: calendarEvent } = await supabase
     .from('calendar_events')
-    .select('master_event_id, is_standalone')
+    .select('master_event_id')
     .eq('id', id)
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
@@ -221,24 +157,20 @@ export async function updateCalendarEvent(
     throw new Error('Calendar event not found')
   }
 
-  // For linked events, verify master event belongs to user's parish
-  let eventTypeId: string | undefined
-  if (!calendarEvent.is_standalone && calendarEvent.master_event_id) {
-    const { data: masterEvent } = await supabase
-      .from('master_events')
-      .select('parish_id, event_type_id')
-      .eq('id', calendarEvent.master_event_id)
-      .is('deleted_at', null)
-      .single()
+  // Verify master event belongs to user's parish
+  const { data: masterEvent } = await supabase
+    .from('master_events')
+    .select('parish_id, event_type_id')
+    .eq('id', calendarEvent.master_event_id)
+    .is('deleted_at', null)
+    .single()
 
-    if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
-      throw new Error('Event not found or access denied')
-    }
-    eventTypeId = masterEvent.event_type_id
+  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+    throw new Error('Event not found or access denied')
   }
 
-  // If marking as primary, unset other primary calendar events first (only for linked events)
-  if (data.is_primary && !calendarEvent.is_standalone && calendarEvent.master_event_id) {
+  // If marking as primary, unset other primary calendar events first
+  if (data.is_primary) {
     await supabase
       .from('calendar_events')
       .update({ is_primary: false })
@@ -267,30 +199,25 @@ export async function updateCalendarEvent(
     throw new Error('Failed to update calendar event')
   }
 
-  // Revalidate appropriate paths
-  if (calendarEvent.is_standalone) {
-    revalidatePath('/calendar-events')
-    revalidatePath(`/calendar-events/${id}`)
-  } else if (calendarEvent.master_event_id && eventTypeId) {
-    revalidatePath(`/events/${eventTypeId}/${calendarEvent.master_event_id}`)
-  }
+  // Revalidate appropriate path
+  revalidatePath(`/events/${masterEvent.event_type_id}/${calendarEvent.master_event_id}`)
 
   return updatedCalendarEvent
 }
 
 /**
  * Delete a calendar event
- * Prevents deleting the last or only primary calendar event for linked events
+ * Prevents deleting the last calendar event for an event
  */
 export async function deleteCalendarEvent(id: string): Promise<void> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
-  // Get calendar event to check if it's primary and get master_event_id
+  // Get calendar event to verify access and get master_event_id
   const { data: calendarEvent } = await supabase
     .from('calendar_events')
-    .select('master_event_id, is_primary, is_standalone')
+    .select('master_event_id')
     .eq('id', id)
     .eq('parish_id', selectedParishId)
     .is('deleted_at', null)
@@ -300,36 +227,32 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     throw new Error('Calendar event not found')
   }
 
-  // For linked events, verify master event access and check for last calendar event
-  let eventTypeId: string | undefined
-  if (!calendarEvent.is_standalone && calendarEvent.master_event_id) {
-    const { data: masterEvent } = await supabase
-      .from('master_events')
-      .select('parish_id, event_type_id')
-      .eq('id', calendarEvent.master_event_id)
-      .is('deleted_at', null)
-      .single()
+  // Verify master event access
+  const { data: masterEvent } = await supabase
+    .from('master_events')
+    .select('parish_id, event_type_id')
+    .eq('id', calendarEvent.master_event_id)
+    .is('deleted_at', null)
+    .single()
 
-    if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
-      throw new Error('Event not found or access denied')
-    }
-    eventTypeId = masterEvent.event_type_id
+  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+    throw new Error('Event not found or access denied')
+  }
 
-    // Check if this is the last calendar event (prevent deleting the last one)
-    const { data: remainingCalendarEvents, error: countError } = await supabase
-      .from('calendar_events')
-      .select('id')
-      .eq('master_event_id', calendarEvent.master_event_id)
-      .is('deleted_at', null)
+  // Check if this is the last calendar event (prevent deleting the last one)
+  const { data: remainingCalendarEvents, error: countError } = await supabase
+    .from('calendar_events')
+    .select('id')
+    .eq('master_event_id', calendarEvent.master_event_id)
+    .is('deleted_at', null)
 
-    if (countError) {
-      console.error('Error counting calendar events:', countError)
-      throw new Error('Failed to check remaining calendar events')
-    }
+  if (countError) {
+    console.error('Error counting calendar events:', countError)
+    throw new Error('Failed to check remaining calendar events')
+  }
 
-    if (remainingCalendarEvents && remainingCalendarEvents.length <= 1) {
-      throw new Error('Cannot delete the last calendar event for an event')
-    }
+  if (remainingCalendarEvents && remainingCalendarEvents.length <= 1) {
+    throw new Error('Cannot delete the last calendar event for an event')
   }
 
   // Hard delete
@@ -344,10 +267,6 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     throw new Error('Failed to delete calendar event')
   }
 
-  // Revalidate appropriate paths
-  if (calendarEvent.is_standalone) {
-    revalidatePath('/calendar-events')
-  } else if (calendarEvent.master_event_id && eventTypeId) {
-    revalidatePath(`/events/${eventTypeId}/${calendarEvent.master_event_id}`)
-  }
+  // Revalidate appropriate path
+  revalidatePath(`/events/${masterEvent.event_type_id}/${calendarEvent.master_event_id}`)
 }

@@ -15,7 +15,7 @@ import { ListItemPickerField } from "@/components/list-item-picker-field"
 import { DocumentPickerField } from "@/components/document-picker-field"
 import { CalendarEventFieldView, type CalendarEventFieldData } from "@/components/calendar-event-field-view"
 import { createEvent, updateEvent } from "@/lib/actions/master-events"
-import type { MasterEventWithRelations, DynamicEventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document } from "@/lib/types"
+import type { MasterEventWithRelations, EventTypeWithRelations, InputFieldDefinition, Person, Location, ContentWithTags, Petition, Document } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label"
 
 interface MasterEventFormProps {
   event?: MasterEventWithRelations
-  eventType: DynamicEventTypeWithRelations
+  eventType: EventTypeWithRelations
   formId?: string
   onLoadingChange?: (loading: boolean) => void
 }
@@ -59,11 +59,19 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
     const initial: Record<string, CalendarEventFieldData> = {}
     // Initialize calendar event fields from existing calendar events
     calendarEventFields.forEach((field) => {
-      // Match calendar event to field by label (field name = calendar event label)
-      const existingCalendarEvent = event?.calendar_events?.find(ce => ce.label === field.name)
+      // Match calendar event to field by input_field_definition_id
+      const existingCalendarEvent = event?.calendar_events?.find(ce => ce.input_field_definition_id === field.id)
+      // Parse start_datetime into date and time components
+      let date = ''
+      let time = ''
+      if (existingCalendarEvent?.start_datetime) {
+        const dt = new Date(existingCalendarEvent.start_datetime)
+        date = toLocalDateString(dt)
+        time = dt.toTimeString().slice(0, 8) // HH:MM:SS
+      }
       initial[field.name] = {
-        date: existingCalendarEvent?.date || '',
-        time: existingCalendarEvent?.time || '',
+        date,
+        time,
         location_id: existingCalendarEvent?.location_id || null,
         location: existingCalendarEvent?.location || null
       }
@@ -118,8 +126,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
     setFieldValues(prev => ({ ...prev, [fieldName]: itemId }))
   }
 
-  // Update occasion field value
-  const updateOccasionValue = (fieldName: string, value: CalendarEventFieldData) => {
+  // Update calendar event field value
+  const updateCalendarEventValue = (fieldName: string, value: CalendarEventFieldData) => {
     setCalendarEventValues(prev => ({
       ...prev,
       [fieldName]: value
@@ -136,7 +144,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
       }
     })
 
-    // Validate required occasion fields (must have at least a date)
+    // Validate required calendar event fields (must have at least a date)
     calendarEventFields.forEach((field) => {
       if (field.required && !calendarEventValues[field.name]?.date) {
         missingRequired.push(`${field.name} (Date)`)
@@ -148,28 +156,52 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
       return
     }
 
-    // Build occasions array from occasion field values
+    // Build calendar events array from calendar event field values
+    // Convert date + time to start_datetime (ISO 8601)
+    const toStartDatetime = (date: string, time: string | null): string => {
+      if (date && time) {
+        return new Date(`${date}T${time}`).toISOString()
+      } else if (date) {
+        // Default to noon if no time provided
+        return new Date(`${date}T12:00:00`).toISOString()
+      }
+      // Fallback to now
+      return new Date().toISOString()
+    }
+
     const calendar_events = calendarEventFields.map((field) => ({
-      label: field.name,
-      date: calendarEventValues[field.name]?.date || new Date().toISOString().split('T')[0],
-      time: calendarEventValues[field.name]?.time || null,
+      input_field_definition_id: field.id,
+      start_datetime: toStartDatetime(
+        calendarEventValues[field.name]?.date || new Date().toISOString().split('T')[0],
+        calendarEventValues[field.name]?.time || null
+      ),
       location_id: calendarEventValues[field.name]?.location_id || null,
       is_primary: field.is_primary
     }))
 
-    // Ensure at least one calendar event exists (use event type name as default if no occasion fields)
+    // Ensure at least one calendar event exists
+    // If no calendar event fields defined, find the primary calendar event field or create a default
     if (calendar_events.length === 0) {
-      calendar_events.push({
-        label: eventType.name,
-        date: new Date().toISOString().split('T')[0],
-        time: null,
-        location_id: null,
-        is_primary: true
-      })
+      // Find any calendar_event input field definition to use as the primary
+      const primaryCalendarField = eventType.input_field_definitions?.find(
+        f => f.type === 'calendar_event' && f.is_primary
+      ) || eventType.input_field_definitions?.find(f => f.type === 'calendar_event')
+
+      if (primaryCalendarField) {
+        calendar_events.push({
+          input_field_definition_id: primaryCalendarField.id,
+          start_datetime: new Date().toISOString(),
+          location_id: null,
+          is_primary: true
+        })
+      } else {
+        // This shouldn't happen in practice - event types should have calendar event fields
+        throw new Error('No calendar event field defined for this event type')
+      }
     }
 
     if (!isEditing) {
-      // Create event with occasions from occasion fields
+      // Create event with calendar events from calendar event fields
       try {
         const newEvent = await createEvent(eventType.id, {
           field_values: fieldValues,
@@ -182,7 +214,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
         toast.error(`Failed to create ${eventType.name.toLowerCase()}`)
       }
     } else {
-      // Update event with field values and occasions
+      // Update event with field values and calendar events
       try {
         await updateEvent(event.id, {
           field_values: fieldValues,
@@ -317,16 +349,16 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange }: M
       case 'calendar_event':
         // Calendar event inputs render date, time, and location together
         // In edit mode, show display view with modal for separate save
-        const existingOccasion = event?.calendar_events?.find(occ => occ.label === field.name)
+        const existingCalendarEvent = event?.calendar_events?.find(ce => ce.input_field_definition_id === field.id)
         return (
           <CalendarEventFieldView
             key={field.id}
             label={field.name}
             value={calendarEventValues[field.name] || { date: '', time: '', location_id: null, location: null }}
-            onValueChange={(value) => updateOccasionValue(field.name, value)}
+            onValueChange={(value) => updateCalendarEventValue(field.name, value)}
             required={field.required}
             isPrimary={field.is_primary}
-            calendarEventId={existingOccasion?.id}
+            calendarEventId={existingCalendarEvent?.id}
             masterEventId={event?.id}
             isEditing={isEditing}
           />

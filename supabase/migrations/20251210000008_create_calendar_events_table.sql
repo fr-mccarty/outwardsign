@@ -1,11 +1,8 @@
--- Recreate calendar_events table with new structure
--- This is part of the Unified Event Data Model feature
--- GREENFIELD: No data preservation needed
+-- Create calendar_events table
+-- Purpose: Calendar events - scheduled items that appear on parish calendar.
+--          Every calendar_event must belong to a master_event (no standalone events).
+-- Related: master_events, locations, input_field_definitions
 
--- Drop existing calendar_events table (GREENFIELD: no data preservation needed)
-DROP TABLE IF EXISTS calendar_events CASCADE;
-
--- Create new calendar_events table with updated structure
 CREATE TABLE calendar_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
@@ -14,6 +11,7 @@ CREATE TABLE calendar_events (
   start_datetime TIMESTAMPTZ NOT NULL,
   end_datetime TIMESTAMPTZ,
   location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
+  is_primary BOOLEAN NOT NULL DEFAULT false,
   is_cancelled BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ,
@@ -90,4 +88,5 @@ COMMENT ON COLUMN calendar_events.master_event_id IS 'Foreign key to master_even
 COMMENT ON COLUMN calendar_events.input_field_definition_id IS 'References which field definition this calendar event corresponds to (e.g., Rehearsal field, Ceremony field)';
 COMMENT ON COLUMN calendar_events.start_datetime IS 'Start date and time with timezone (TIMESTAMPTZ)';
 COMMENT ON COLUMN calendar_events.end_datetime IS 'Optional end date and time (NULL for events without specific end time)';
+COMMENT ON COLUMN calendar_events.is_primary IS 'True if this is the primary calendar event for the master event';
 COMMENT ON COLUMN calendar_events.is_cancelled IS 'True if this specific calendar event is cancelled (master event may still be active)';

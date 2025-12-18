@@ -6,10 +6,10 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireManageParishSettings } from '@/lib/auth/permissions'
 import type {
-  DynamicEventType,
-  DynamicEventTypeWithRelations,
-  CreateDynamicEventTypeData,
-  UpdateDynamicEventTypeData,
+  EventType,
+  EventTypeWithRelations,
+  CreateEventTypeData,
+  UpdateEventTypeData,
   InputFieldDefinition,
   Script
 } from '@/lib/types'
@@ -25,14 +25,14 @@ export interface EventTypeFilterParams {
  * Get active (non-deleted) event types for the selected parish
  * Used by picker components
  */
-export async function getActiveEventTypes(): Promise<DynamicEventType[]> {
+export async function getActiveEventTypes(): Promise<EventType[]> {
   return getEventTypes({ sort: 'order_asc' })
 }
 
 /**
  * Get all event types for the selected parish
  */
-export async function getEventTypes(filters?: EventTypeFilterParams): Promise<DynamicEventType[]> {
+export async function getEventTypes(filters?: EventTypeFilterParams): Promise<EventType[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -87,7 +87,7 @@ export async function getEventTypes(filters?: EventTypeFilterParams): Promise<Dy
 /**
  * Get a single event type by ID
  */
-export async function getEventType(id: string): Promise<DynamicEventType | null> {
+export async function getEventType(id: string): Promise<EventType | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -114,7 +114,7 @@ export async function getEventType(id: string): Promise<DynamicEventType | null>
 /**
  * Get a single event type by slug
  */
-export async function getEventTypeBySlug(slug: string): Promise<DynamicEventType | null> {
+export async function getEventTypeBySlug(slug: string): Promise<EventType | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -141,7 +141,7 @@ export async function getEventTypeBySlug(slug: string): Promise<DynamicEventType
 /**
  * Get event type with all related data (input field definitions and scripts)
  */
-export async function getEventTypeWithRelations(id: string): Promise<DynamicEventTypeWithRelations | null> {
+export async function getEventTypeWithRelations(id: string): Promise<EventTypeWithRelations | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -199,7 +199,7 @@ export async function getEventTypeWithRelations(id: string): Promise<DynamicEven
 /**
  * Get event type with all related data by slug
  */
-export async function getEventTypeWithRelationsBySlug(slug: string): Promise<DynamicEventTypeWithRelations | null> {
+export async function getEventTypeWithRelationsBySlug(slug: string): Promise<EventTypeWithRelations | null> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -257,7 +257,7 @@ export async function getEventTypeWithRelationsBySlug(slug: string): Promise<Dyn
 /**
  * Create a new event type
  */
-export async function createEventType(data: CreateDynamicEventTypeData): Promise<DynamicEventType> {
+export async function createEventType(data: CreateEventTypeData): Promise<EventType> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -336,7 +336,7 @@ export async function createEventType(data: CreateDynamicEventTypeData): Promise
 /**
  * Update an existing event type
  */
-export async function updateEventType(id: string, data: UpdateDynamicEventTypeData): Promise<DynamicEventType> {
+export async function updateEventType(id: string, data: UpdateEventTypeData): Promise<EventType> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -469,7 +469,7 @@ export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
  */
 export async function getEventTypesBySystemType(
   systemType: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
-): Promise<DynamicEventType[]> {
+): Promise<EventType[]> {
   return getEventTypes({ system_type: systemType })
 }
 

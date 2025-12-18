@@ -4,10 +4,10 @@ import React, { useState } from 'react'
 import { MasterEventForm } from '../master-event-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
-import type { DynamicEventTypeWithRelations } from '@/lib/types'
+import type { EventTypeWithRelations } from '@/lib/types'
 
 interface DynamicEventCreateClientProps {
-  eventType: DynamicEventTypeWithRelations
+  eventType: EventTypeWithRelations
   title: string
   description: string
 }

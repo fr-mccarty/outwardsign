@@ -47,6 +47,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   // Create input field definitions for Sunday Mass
   const sundayMassFields = [
+    { name: 'Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Announcements', type: 'rich_text', required: false, order: 1 },
     { name: 'Entrance Hymn', type: 'text', required: false, order: 2 },
     { name: 'Offertory Hymn', type: 'text', required: false, order: 3 },
@@ -64,6 +65,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
         name: field.name,
         type: field.type,
         required: field.required,
+        is_primary: 'is_primary' in field ? field.is_primary : false,
         order: field.order
       }))
     )
@@ -167,6 +169,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   // Create input field definitions for Daily Mass (minimal)
   const dailyMassFields = [
+    { name: 'Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Mass Intentions', type: 'mass-intention', required: false, order: 1 },
     { name: 'Special Instructions', type: 'rich_text', required: false, order: 2 }
   ]
@@ -179,6 +182,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
         name: field.name,
         type: field.type,
         required: field.required,
+        is_primary: 'is_primary' in field ? field.is_primary : false,
         order: field.order
       }))
     )

@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { Heart, DollarSign, Calendar, User, X } from 'lucide-react'
 import { getMassIntentionsPaginated, createMassIntention, updateMassIntention, type MassIntentionWithNames } from '@/lib/actions/mass-intentions'
-import type { Person } from '@/lib/types'
+import type { Person, MasterEvent } from '@/lib/types'
 import { toast } from 'sonner'
 import { CorePicker } from '@/components/core-picker'
 import { PickerFieldConfig } from '@/types/core-picker'
@@ -55,7 +55,7 @@ export function MassIntentionPicker({
   const PAGE_SIZE = 10
 
   // State for nested pickers
-  const [selectedMass, setSelectedMass] = useState<Person | null>(null)
+  const [selectedMass, setSelectedMass] = useState<MasterEvent | null>(null)
   const [selectedRequestedBy, setSelectedRequestedBy] = useState<Person | null>(null)
   const [showRequestedByPicker, setShowRequestedByPicker] = useState(false)
 
@@ -245,7 +245,7 @@ export function MassIntentionPicker({
     // Fetch the mass intention with relations for display
     const massIntentionWithRelations: MassIntentionWithNames = {
       ...newMassIntention,
-      mass: selectedMass || null,
+      master_event: selectedMass || null,
       requested_by: selectedRequestedBy || null,
     }
 
@@ -279,7 +279,7 @@ export function MassIntentionPicker({
     // Fetch the mass intention with relations for display
     const massIntentionWithRelations: MassIntentionWithNames = {
       ...updatedMassIntention,
-      mass: selectedMass || null,
+      master_event: selectedMass || null,
       requested_by: selectedRequestedBy || null,
     }
 

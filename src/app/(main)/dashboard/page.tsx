@@ -53,11 +53,8 @@ export default async function DashboardPage() {
 
   // Calculate statistics
   const now = new Date()
-  const todayString = format(now, 'yyyy-MM-dd')
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  const startOfMonthString = format(startOfMonth, 'yyyy-MM-dd')
-  const endOfMonthString = format(endOfMonth, 'yyyy-MM-dd')
 
   // Scheduled this month (events with start_date in current month - old system)
   const scheduledThisMonthOld = events.filter(e => {
@@ -68,9 +65,10 @@ export default async function DashboardPage() {
 
   // Dynamic events scheduled this month (based on primary calendar event date)
   const scheduledThisMonthDynamic = masterEvents.filter(e => {
-    const date = e.primary_calendar_event?.date
-    if (!date) return false
-    return date >= startOfMonthString && date <= endOfMonthString
+    const eventDatetime = e.primary_calendar_event?.start_datetime
+    if (!eventDatetime) return false
+    const eventDate = new Date(eventDatetime)
+    return eventDate >= startOfMonth && eventDate <= endOfMonth
   }).length
 
   const scheduledThisMonth = scheduledThisMonthOld + scheduledThisMonthDynamic
@@ -78,7 +76,6 @@ export default async function DashboardPage() {
   // Upcoming events (next 7 days) - old system
   const sevenDaysFromNow = new Date()
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
-  const sevenDaysString = format(sevenDaysFromNow, 'yyyy-MM-dd')
 
   const upcomingEventsOld = events.filter(e => {
     if (!e.start_date) return false
@@ -88,9 +85,10 @@ export default async function DashboardPage() {
 
   // Dynamic events upcoming (next 7 days)
   const upcomingDynamicEvents = masterEvents.filter(e => {
-    const date = e.primary_calendar_event?.date
-    if (!date) return false
-    return date >= todayString && date <= sevenDaysString
+    const eventDatetime = e.primary_calendar_event?.start_datetime
+    if (!eventDatetime) return false
+    const eventDate = new Date(eventDatetime)
+    return eventDate >= now && eventDate <= sevenDaysFromNow
   })
 
   const upcomingEventsCount = upcomingEventsOld.length + upcomingDynamicEvents.length
@@ -98,17 +96,17 @@ export default async function DashboardPage() {
   // Upcoming dynamic events (next 30 days) with primary occasion
   const thirtyDaysFromNow = new Date()
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
-  const thirtyDaysString = format(thirtyDaysFromNow, 'yyyy-MM-dd')
 
   const upcomingDynamicEvents30Days = masterEvents
     .filter(e => {
-      const date = e.primary_calendar_event?.date
-      if (!date) return false
-      return date >= todayString && date <= thirtyDaysString
+      const eventDatetime = e.primary_calendar_event?.start_datetime
+      if (!eventDatetime) return false
+      const eventDate = new Date(eventDatetime)
+      return eventDate >= now && eventDate <= thirtyDaysFromNow
     })
     .sort((a, b) => {
-      const dateA = a.primary_calendar_event?.date || ''
-      const dateB = b.primary_calendar_event?.date || ''
+      const dateA = a.primary_calendar_event?.start_datetime || ''
+      const dateB = b.primary_calendar_event?.start_datetime || ''
       return dateA.localeCompare(dateB)
     })
     .slice(0, 5)
@@ -222,12 +220,13 @@ export default async function DashboardPage() {
                         {event.event_type?.name || 'Event'}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {event.primary_calendar_event?.date && new Date(event.primary_calendar_event.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        {event.primary_calendar_event?.start_datetime && new Date(event.primary_calendar_event.start_datetime).toLocaleDateString('en-US', {
                           weekday: 'short',
                           month: 'short',
-                          day: 'numeric'
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
                         })}
-                        {event.primary_calendar_event?.time && ` at ${event.primary_calendar_event.time.slice(0, 5)}`}
                       </p>
                     </div>
                   </Link>
@@ -267,8 +266,8 @@ export default async function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <h4 className="font-medium text-sm">{dynEvent.event_type?.name || 'Event'}</h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {dynEvent.primary_calendar_event?.date
-                          ? new Date(dynEvent.primary_calendar_event.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        {dynEvent.primary_calendar_event?.start_datetime
+                          ? new Date(dynEvent.primary_calendar_event.start_datetime).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric'
                             })

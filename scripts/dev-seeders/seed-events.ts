@@ -2,6 +2,7 @@
  * Dev Seeder: Sample Dynamic Events
  *
  * Creates 2 sample events for each event type (Weddings, Funerals, Baptisms, etc.)
+ * Uses the unified event model: master_events + calendar_events
  */
 
 import type { DevSeederContext } from './types'
@@ -10,6 +11,14 @@ interface LocationRefs {
   churchLocation: { id: string } | null
   hallLocation: { id: string } | null
   funeralHomeLocation: { id: string } | null
+}
+
+interface InputFieldDefinition {
+  id: string
+  name: string
+  type: string
+  is_primary: boolean
+  deleted_at: string | null
 }
 
 export async function seedEvents(
@@ -23,7 +32,7 @@ export async function seedEvents(
   console.log('')
   console.log('📅 Creating sample events for each event type...')
 
-  // Fetch all event types
+  // Fetch all event types with their input field definitions
   const { data: eventTypes } = await supabase
     .from('event_types')
     .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -53,22 +62,37 @@ export async function seedEvents(
     return date.toISOString().split('T')[0]
   }
 
+  // Helper to find the primary calendar_event field for an event type
+  const getPrimaryCalendarEventField = (eventType: { input_field_definitions?: InputFieldDefinition[] }) => {
+    if (!eventType?.input_field_definitions) return null
+    return eventType.input_field_definitions.find(
+      (field: InputFieldDefinition) =>
+        field.type === 'calendar_event' && field.is_primary && !field.deleted_at
+    )
+  }
+
   let totalEventsCreated = 0
 
   for (const eventType of eventTypes) {
-    // Skip generic types and Mass types
+    // Skip generic types and Mass types (handled by seed-masses)
     if (eventType.slug === 'other' || eventType.slug === 'sunday-mass' || eventType.slug === 'daily-mass') {
+      continue
+    }
+
+    // Get the primary calendar_event field for this event type
+    const primaryCalendarEventField = getPrimaryCalendarEventField(eventType)
+    if (!primaryCalendarEventField) {
+      console.log(`   ⚠️  No primary calendar_event field for ${eventType.name}, skipping`)
       continue
     }
 
     const eventsData: Array<{
       field_values: Record<string, string | boolean>
-      occasion: { label: string; date: string; time: string; location_id: string | null }
+      occasion: { date: string; time: string; location_id: string | null }
     }> = []
 
     switch (eventType.slug) {
       case 'weddings':
-        // Note: Occasion label must match the input field name 'Wedding Ceremony'
         eventsData.push({
           field_values: {
             'Bride': people[1].id,
@@ -80,7 +104,7 @@ export async function seedEvents(
             'Unity Candle': true,
             'Special Instructions': 'Traditional ceremony with bilingual readings'
           },
-          occasion: { label: 'Wedding Ceremony', date: getFutureDate(45), time: '14:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(45), time: '14:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -92,12 +116,11 @@ export async function seedEvents(
             'Gospel Reading': 'Matthew 19:3-6',
             'Unity Candle': false
           },
-          occasion: { label: 'Wedding Ceremony', date: getFutureDate(90), time: '11:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(90), time: '11:00:00', location_id: churchLocation?.id || null }
         })
         break
 
       case 'funerals':
-        // Note: Occasion label must match the input field name 'Funeral Mass'
         eventsData.push({
           field_values: {
             'Deceased': people[10].id,
@@ -109,7 +132,7 @@ export async function seedEvents(
             'Gospel Reading': 'John 14:1-6',
             'Eulogy Speaker': people[11].id
           },
-          occasion: { label: 'Funeral Mass', date: getFutureDate(2), time: '10:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(2), time: '10:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -120,12 +143,11 @@ export async function seedEvents(
             'Psalm': 'Psalm 116',
             'Gospel Reading': 'John 11:17-27'
           },
-          occasion: { label: 'Funeral Mass', date: getFutureDate(5), time: '11:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(5), time: '11:00:00', location_id: churchLocation?.id || null }
         })
         break
 
       case 'baptisms':
-        // Note: Occasion label must match the input field name 'Baptism'
         eventsData.push({
           field_values: {
             'Child': people[4].id,
@@ -135,7 +157,7 @@ export async function seedEvents(
             'Godfather': people[8].id,
             'Presider': people[0].id
           },
-          occasion: { label: 'Baptism', date: getFutureDate(14), time: '13:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(14), time: '13:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -146,12 +168,11 @@ export async function seedEvents(
             'Godfather': people[16].id,
             'Presider': people[0].id
           },
-          occasion: { label: 'Baptism', date: getFutureDate(21), time: '14:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(21), time: '14:00:00', location_id: churchLocation?.id || null }
         })
         break
 
       case 'quinceaneras':
-        // Note: Occasion label must match the input field name 'Quinceañera Mass'
         eventsData.push({
           field_values: {
             'Quinceañera': people[5].id,
@@ -160,7 +181,7 @@ export async function seedEvents(
             'Presider': people[0].id,
             'Reception Location': hallLocation?.id || ''
           },
-          occasion: { label: 'Quinceañera Mass', date: getFutureDate(60), time: '15:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(60), time: '15:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -170,12 +191,11 @@ export async function seedEvents(
             'Presider': people[8].id,
             'Reception Location': hallLocation?.id || ''
           },
-          occasion: { label: 'Quinceañera Mass', date: getFutureDate(75), time: '16:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(75), time: '16:00:00', location_id: churchLocation?.id || null }
         })
         break
 
       case 'presentations':
-        // Note: Occasion label must match the input field name 'Presentation'
         eventsData.push({
           field_values: {
             'Child': people[4].id,
@@ -185,7 +205,7 @@ export async function seedEvents(
             'Godfather': people[2].id,
             'Presider': people[8].id
           },
-          occasion: { label: 'Presentation', date: getFutureDate(30), time: '12:00:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(30), time: '12:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
@@ -196,7 +216,7 @@ export async function seedEvents(
             'Godfather': people[18].id,
             'Presider': people[0].id
           },
-          occasion: { label: 'Presentation', date: getFutureDate(35), time: '11:30:00', location_id: churchLocation?.id || null }
+          occasion: { date: getFutureDate(35), time: '11:30:00', location_id: churchLocation?.id || null }
         })
         break
 
@@ -204,8 +224,9 @@ export async function seedEvents(
         continue
     }
 
-    // Insert events and calendar events
+    // Insert events and calendar events using unified model
     for (const eventData of eventsData) {
+      // Create master_event
       const { data: newEvent, error: eventError } = await supabase
         .from('master_events')
         .insert({
@@ -221,20 +242,23 @@ export async function seedEvents(
         continue
       }
 
+      // Create calendar_event with correct schema
+      const startDatetime = new Date(`${eventData.occasion.date}T${eventData.occasion.time}`).toISOString()
       const { error: calendarEventError } = await supabase
         .from('calendar_events')
         .insert({
-          master_event_id: newEvent.id,
           parish_id: parishId,
-          label: eventData.occasion.label,
-          date: eventData.occasion.date,
-          time: eventData.occasion.time,
+          master_event_id: newEvent.id,
+          input_field_definition_id: primaryCalendarEventField.id,
+          start_datetime: startDatetime,
           location_id: eventData.occasion.location_id,
           is_primary: true,
-          is_standalone: false
+          is_cancelled: false
         })
 
       if (calendarEventError) {
+        console.error(`   ❌ Error creating calendar_event for ${eventType.name}:`, calendarEventError.message)
+        // Clean up the orphaned master_event
         await supabase.from('master_events').delete().eq('id', newEvent.id)
         continue
       }

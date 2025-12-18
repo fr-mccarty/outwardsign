@@ -47,6 +47,7 @@ export interface EventType {
   slug: string | null             // URL-safe identifier (e.g., "weddings", "funerals")
   order: number                   // Display order in sidebar
   system_type: SystemType         // System type for UI organization (sacrament, mass, special_liturgy, event)
+  role_definitions?: { roles: Array<{ id: string; name: string; required: boolean }> } | null  // JSON-B role definitions
   deleted_at: string | null
   created_at: string
   updated_at: string

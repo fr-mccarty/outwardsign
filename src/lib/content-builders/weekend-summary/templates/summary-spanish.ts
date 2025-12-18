@@ -28,9 +28,11 @@ export function buildSummarySpanish(
   // Recopilar Misas
   if (params.includeMasses && data.masses.length > 0) {
     data.masses.forEach(mass => {
-      const date = mass.event?.start_date || ''
-      const time = mass.event?.start_time || ''
-      const name = mass.event?.location?.name || 'Ubicación no asignada'
+      // Extract date and time from primary_calendar_event's start_datetime
+      const startDatetime = mass.primary_calendar_event?.start_datetime
+      const date = startDatetime ? startDatetime.split('T')[0] : ''
+      const time = startDatetime ? startDatetime.split('T')[1]?.substring(0, 5) || '' : ''
+      const name = mass.primary_calendar_event?.location?.name || 'Ubicación no asignada'
       const presider = mass.presider?.full_name || 'Celebrante no asignado'
 
       allEvents.push({

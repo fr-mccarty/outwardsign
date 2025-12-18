@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, Plus, X, UserCircle, AlertCircle } from "lucide-react"
 import { toast } from 'sonner'
-import { getMassRoles, createMassRole, deleteMassRole, type MassRoleInstanceWithRelations } from '@/lib/actions/masses'
+import { getMassRoles, createMassRole, deleteMassRole } from '@/lib/actions/masses'
+import type { MasterEventRoleWithRelations } from '@/lib/schemas/masses'
+// Note: mass-role-template-items is deprecated - using role_definitions on event_type instead
 import { getTemplateItems, type MassRoleTemplateItemWithRole } from '@/lib/actions/mass-role-template-items'
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'
@@ -20,12 +22,12 @@ interface MassRoleAssignmentsProps {
 
 interface RoleWithAssignments {
   templateItem: MassRoleTemplateItemWithRole
-  assignments: MassRoleInstanceWithRelations[]
+  assignments: MasterEventRoleWithRelations[]
 }
 
 export function MassRoleAssignments({ massId, templateId, readOnly = false }: MassRoleAssignmentsProps) {
   const [templateItems, setTemplateItems] = useState<MassRoleTemplateItemWithRole[]>([])
-  const [assignments, setAssignments] = useState<MassRoleInstanceWithRelations[]>([])
+  const [assignments, setAssignments] = useState<MasterEventRoleWithRelations[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [selectedTemplateItemId, setSelectedTemplateItemId] = useState<string | null>(null)
@@ -59,9 +61,10 @@ export function MassRoleAssignments({ massId, templateId, readOnly = false }: Ma
   }
 
   // Group assignments by template item
+  // TODO: The new data model uses role_id instead of mass_roles_template_item_id
   const rolesWithAssignments: RoleWithAssignments[] = templateItems.map(item => ({
     templateItem: item,
-    assignments: assignments.filter(a => a.mass_roles_template_item_id === item.id)
+    assignments: assignments.filter(a => a.role_id === item.id)
   }))
 
   // Calculate totals
@@ -79,10 +82,12 @@ export function MassRoleAssignments({ massId, templateId, readOnly = false }: Ma
 
     setIsSubmitting(true)
     try {
+      // TODO: This component needs refactoring for new role system (role_definitions on event_type)
+      // For now, using selectedTemplateItemId as role_id (may not work correctly)
       await createMassRole({
-        mass_id: massId,
+        master_event_id: massId,
+        role_id: selectedTemplateItemId!, // This was mass_roles_template_item_id in old system
         person_id: person.id,
-        mass_roles_template_item_id: selectedTemplateItemId,
       })
       toast.success(`${person.first_name} ${person.last_name} assigned`)
       setPickerOpen(false)

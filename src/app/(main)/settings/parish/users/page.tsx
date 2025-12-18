@@ -1,21 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { getCurrentParish } from '@/lib/auth/parish'
 import { getParishMembers } from '@/lib/actions/setup'
 import { getParishInvitations } from '@/lib/actions/invitations'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { ParishUsersSettingsClient } from './parish-users-settings-client'
+import { checkSettingsAccess } from '@/lib/auth/permissions'
+import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ParishUsersSettingsPage() {
+  // Check admin permissions (redirects if not authorized)
+  await checkSettingsAccess()
+
+  const t = await getTranslations()
   const supabase = await createClient()
 
-  // Check authentication server-side
+  // Get current user (already verified by checkSettingsAccess)
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
 
   // Get current parish
   const parish = await getCurrentParish()
@@ -28,10 +31,10 @@ export default async function ParishUsersSettingsPage() {
   const invitations = await getParishInvitations()
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Settings", href: "/settings" },
-    { label: "Parish Settings", href: "/settings/parish/general" },
-    { label: "Users" }
+    { label: t('nav.dashboard'), href: '/dashboard' },
+    { label: t('nav.settings'), href: '/settings' },
+    { label: t('settings.parishSettings'), href: '/settings/parish/general' },
+    { label: t('settings.parish.users') }
   ]
 
   return (
@@ -41,7 +44,7 @@ export default async function ParishUsersSettingsPage() {
         parish={parish}
         initialUsers={usersResult.members || []}
         initialInvitations={invitations}
-        currentUserId={user.id}
+        currentUserId={user!.id}
       />
     </>
   )

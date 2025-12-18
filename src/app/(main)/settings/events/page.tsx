@@ -1,21 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { PageContainer } from '@/components/page-container'
 import { BreadcrumbSetter } from '@/components/breadcrumb-setter'
 import { EventsListClient } from './events-list-client'
 import { getEventTypes } from '@/lib/actions/event-types'
+import { checkSettingsAccess } from '@/lib/auth/permissions'
 import { getTranslations } from 'next-intl/server'
 
 export default async function EventsPage() {
-  const t = await getTranslations()
-  const supabase = await createClient()
+  // Check admin permissions (redirects if not authorized)
+  await checkSettingsAccess()
 
-  // Check authentication server-side
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
+  const t = await getTranslations()
 
   // Fetch event event types
   const eventTypes = await getEventTypes({ system_type: 'event' })
@@ -23,13 +17,16 @@ export default async function EventsPage() {
   const breadcrumbs = [
     { label: t('nav.dashboard'), href: '/dashboard' },
     { label: t('nav.settings'), href: '/settings' },
-    { label: t('nav.events'), href: '/settings/events' },
+    { label: t('nav.events') },
   ]
 
   return (
-    <>
+    <PageContainer
+      title={t('settings.events.title')}
+      description={t('settings.events.description')}
+    >
       <BreadcrumbSetter breadcrumbs={breadcrumbs} />
       <EventsListClient initialData={eventTypes} />
-    </>
+    </PageContainer>
   )
 }

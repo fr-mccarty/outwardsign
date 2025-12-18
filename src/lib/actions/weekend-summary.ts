@@ -9,8 +9,8 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 // import { getFunerals, FuneralWithRelations } from './funerals'
 // import { getPresentations, PresentationWithRelations } from './presentations'
 // import { getQuinceaneras, QuinceaneraWithRelations } from './quinceaneras'
-import { getMasses, MassWithNames } from './masses'
-import { getMassRoleInstances, MassRoleInstanceWithRelations } from './mass-roles'
+import { getMasses, getMassRoles } from './masses'
+import type { MassWithNames, MasterEventRoleWithRelations } from '@/lib/schemas/masses'
 import { toLocalDateString } from '@/lib/utils/formatters'
 
 export interface WeekendSummaryParams {
@@ -38,7 +38,7 @@ export interface WeekendSummaryData {
   massRoles: {
     massId: string
     massTitle: string
-    roles: MassRoleInstanceWithRelations[]
+    roles: MasterEventRoleWithRelations[]
   }[]
 }
 
@@ -99,19 +99,27 @@ export async function getWeekendSummaryData(
     })
 
     result.masses = masses.filter(m => {
-      const eventDate = m.event?.start_date
-      return eventDate && (eventDate === saturdayDate || eventDate === sundayDate)
+      // Extract date portion from primary_calendar_event's start_datetime
+      const startDatetime = m.primary_calendar_event?.start_datetime
+      if (!startDatetime) return false
+      const eventDate = startDatetime.split('T')[0] // Get YYYY-MM-DD from ISO datetime
+      return eventDate === saturdayDate || eventDate === sundayDate
     })
   }
 
   // Fetch mass roles if requested
   if (params.includeMassRoles && result.masses.length > 0) {
-    // Get mass role instances for each mass
+    // Get role assignments for each mass
     const massRolePromises = result.masses.map(async (mass) => {
-      const roles = await getMassRoleInstances(mass.id)
+      const roles = await getMassRoles(mass.id)
+      // Build mass title from primary calendar event datetime
+      const startDatetime = mass.primary_calendar_event?.start_datetime
+      const massTitle = startDatetime
+        ? new Date(startDatetime).toLocaleString()
+        : 'Unknown date'
       return {
         massId: mass.id,
-        massTitle: `${mass.event?.start_date} ${mass.event?.start_time || ''}`.trim(),
+        massTitle,
         roles
       }
     })
