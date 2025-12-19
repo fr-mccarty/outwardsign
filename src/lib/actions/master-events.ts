@@ -244,7 +244,7 @@ export async function getEvents(
         const personIds = new Set<string>()
         for (const event of events) {
           for (const field of keyPersonFields) {
-            const personId = event.field_values?.[field.name]
+            const personId = event.field_values?.[field.property_name]
             if (personId && typeof personId === 'string') {
               personIds.add(personId)
             }
@@ -264,7 +264,7 @@ export async function getEvents(
           // Filter events
           events = events.filter(event => {
             for (const field of keyPersonFields) {
-              const personId = event.field_values?.[field.name]
+              const personId = event.field_values?.[field.property_name]
               if (personId) {
                 const person = peopleMap.get(personId)
                 if (person && person.full_name.toLowerCase().includes(searchTerm)) {
@@ -450,10 +450,11 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
   const resolvedFields: Record<string, ResolvedFieldValue> = {}
 
   for (const fieldDef of inputFieldDefinitions) {
-    const rawValue = event.field_values?.[fieldDef.name]
+    // Use property_name to access field_values (the normalized key)
+    const rawValue = event.field_values?.[fieldDef.property_name]
 
     const resolvedField: ResolvedFieldValue = {
-      field_name: fieldDef.name,
+      field_name: fieldDef.name, // Keep display name for UI
       field_type: fieldDef.type,
       raw_value: rawValue
     }
@@ -558,7 +559,8 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
       }
     }
 
-    resolvedFields[fieldDef.name] = resolvedField
+    // Key resolved_fields by property_name for consistency with field_values
+    resolvedFields[fieldDef.property_name] = resolvedField
   }
 
   return {
@@ -604,7 +606,8 @@ export async function createEvent(
 
   const inputFieldDefinitions = eventType.input_field_definitions as InputFieldDefinition[]
   for (const fieldDef of inputFieldDefinitions) {
-    if (fieldDef.required && !data.field_values[fieldDef.name]) {
+    // Use property_name to access field_values, but show name in error message
+    if (fieldDef.required && !data.field_values[fieldDef.property_name]) {
       throw new Error(`Required field "${fieldDef.name}" is missing`)
     }
   }
@@ -628,7 +631,8 @@ export async function createEvent(
         event_type_id: eventTypeId,
         field_values: data.field_values,
         presider_id: data.presider_id || null,
-        homilist_id: data.homilist_id || null
+        homilist_id: data.homilist_id || null,
+        status: data.status || 'PLANNING'
       }
     ])
     .select()
@@ -1146,7 +1150,8 @@ export async function computeMasterEventTitle(masterEvent: MasterEventWithRelati
   const keyPersonNames: string[] = []
 
   for (const field of keyPersonFields) {
-    const personValue = masterEvent.resolved_fields[field.name]
+    // Use property_name to access resolved_fields
+    const personValue = masterEvent.resolved_fields[field.property_name]
     if (personValue?.resolved_value && 'full_name' in personValue.resolved_value) {
       const person = personValue.resolved_value as Person
       keyPersonNames.push(person.full_name)

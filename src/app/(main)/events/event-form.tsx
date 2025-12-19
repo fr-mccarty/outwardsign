@@ -36,7 +36,7 @@ type EventStatus = typeof MASTER_EVENT_STATUS_VALUES[number]
 
 // Simple schema for event creation/update
 const eventSchema = z.object({
-  status: z.enum(MASTER_EVENT_STATUS_VALUES).optional().nullable(),
+  status: z.enum(MASTER_EVENT_STATUS_VALUES),
   liturgical_event_id: z.string().uuid().optional().nullable(),
   event_type_id: z.string().uuid().optional().nullable(),
   field_values: z.record(z.string(), z.any()).optional().nullable(),

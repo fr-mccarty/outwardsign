@@ -27,6 +27,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu'
 import {
   Dialog,
@@ -60,7 +64,8 @@ export function MarkdownEditor({
 
   // Gendered text dialog state
   const [genderedDialogOpen, setGenderedDialogOpen] = useState(false)
-  const [selectedPersonField, setSelectedPersonField] = useState<string | null>(null)
+  const [selectedPersonField, setSelectedPersonField] = useState<string | null>(null)  // property_name for template
+  const [selectedPersonFieldDisplay, setSelectedPersonFieldDisplay] = useState<string | null>(null)  // display name for dialog
   const [maleText, setMaleText] = useState('')
   const [femaleText, setFemaleText] = useState('')
 
@@ -163,8 +168,9 @@ export function MarkdownEditor({
   }
 
   // Open gendered text dialog for a person field
-  const openGenderedDialog = (fieldName: string) => {
-    setSelectedPersonField(fieldName)
+  const openGenderedDialog = (propertyName: string, displayName: string) => {
+    setSelectedPersonField(propertyName)
+    setSelectedPersonFieldDisplay(displayName)
     setMaleText('')
     setFemaleText('')
     setGenderedDialogOpen(true)
@@ -174,9 +180,10 @@ export function MarkdownEditor({
   const insertGenderedText = () => {
     if (!selectedPersonField || !maleText.trim() || !femaleText.trim()) return
 
-    insertText(`{{${selectedPersonField} | ${maleText.trim()} | ${femaleText.trim()}}}`)
+    insertText(`{{${selectedPersonField}.sex | ${maleText.trim()} | ${femaleText.trim()}}}`)
     setGenderedDialogOpen(false)
     setSelectedPersonField(null)
+    setSelectedPersonFieldDisplay(null)
     setMaleText('')
     setFemaleText('')
   }
@@ -351,15 +358,50 @@ export function MarkdownEditor({
               <DropdownMenuItem disabled>No fields available</DropdownMenuItem>
             ) : (
               availableFields.map((field) => (
-                <DropdownMenuItem
-                  key={field.id}
-                  onClick={() => insertField(field.name)}
-                >
-                  {field.name}
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    ({field.type})
-                  </span>
-                </DropdownMenuItem>
+                field.type === 'person' ? (
+                  // Person fields get a submenu with property options
+                  <DropdownMenuSub key={field.id}>
+                    <DropdownMenuSubTrigger>
+                      {field.name}
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        (person)
+                      </span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => insertField(`${field.property_name}.full_name`)}>
+                          Full Name
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {`{{${field.property_name}.full_name}}`}
+                          </span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => insertField(`${field.property_name}.first_name`)}>
+                          First Name
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {`{{${field.property_name}.first_name}}`}
+                          </span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => insertField(`${field.property_name}.last_name`)}>
+                          Last Name
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {`{{${field.property_name}.last_name}}`}
+                          </span>
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                ) : (
+                  // Non-person fields insert directly using property_name
+                  <DropdownMenuItem
+                    key={field.id}
+                    onClick={() => insertField(field.property_name)}
+                  >
+                    {field.name}
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({field.type})
+                    </span>
+                  </DropdownMenuItem>
+                )
               ))
             )}
           </DropdownMenuContent>
@@ -385,7 +427,7 @@ export function MarkdownEditor({
               {personFields.map((field) => (
                 <DropdownMenuItem
                   key={field.id}
-                  onClick={() => openGenderedDialog(field.name)}
+                  onClick={() => openGenderedDialog(field.property_name, field.name)}
                 >
                   {field.name}
                 </DropdownMenuItem>
@@ -444,14 +486,16 @@ export function MarkdownEditor({
           syntax
         </p>
         <p>
-          <strong>Field Placeholders:</strong> Use {"{{Field Name}}"} or click
-          &quot;Insert Field&quot;
+          <strong>Person Fields:</strong> {"{{person_field.full_name}}"}, {"{{person_field.first_name}}"}, {"{{person_field.last_name}}"}
         </p>
         <p>
-          <strong>Parish Info:</strong> Use {"{{parish.name}}"}, {"{{parish.city}}"}, {"{{parish.state}}"}, or {"{{parish.city_state}}"} for parish details
+          <strong>Other Fields:</strong> {"{{field_name}}"} - Use &quot;Insert Field&quot; dropdown
         </p>
         <p>
-          <strong>Gendered Text:</strong> Use {"{{Person Field | male text | female text}}"} for gender-specific text
+          <strong>Parish Info:</strong> {"{{parish.name}}"}, {"{{parish.city}}"}, {"{{parish.state}}"}, {"{{parish.city_state}}"}
+        </p>
+        <p>
+          <strong>Gendered Text:</strong> {"{{person_field.sex | male text | female text}}"}
         </p>
         <p>
           <strong>Red Text:</strong> {"{red}"}text{"{/red}"} for liturgical
@@ -465,7 +509,7 @@ export function MarkdownEditor({
           <DialogHeader>
             <DialogTitle>Insert Gendered Text</DialogTitle>
             <DialogDescription>
-              Enter text variants based on the gender of &quot;{selectedPersonField}&quot;.
+              Enter text variants based on the gender of &quot;{selectedPersonFieldDisplay}&quot;.
               If gender is unknown, both options will be shown as &quot;male/female&quot;.
             </DialogDescription>
           </DialogHeader>
@@ -491,7 +535,7 @@ export function MarkdownEditor({
             <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
               <strong>Preview:</strong>{' '}
               {selectedPersonField && maleText && femaleText
-                ? `{{${selectedPersonField} | ${maleText} | ${femaleText}}}`
+                ? `{{${selectedPersonField}.sex | ${maleText} | ${femaleText}}}`
                 : '...'}
             </div>
           </div>

@@ -158,6 +158,7 @@ export async function createInputFieldDefinition(data: CreateInputFieldDefinitio
       {
         event_type_id: data.event_type_id,
         name: data.name,
+        property_name: data.property_name,
         type: data.type,
         required: data.required,
         list_id: data.list_id ?? null,
@@ -275,7 +276,7 @@ export async function deleteInputFieldDefinition(id: string): Promise<void> {
   // Get field definition to find event_type_id
   const { data: fieldDef } = await supabase
     .from('input_field_definitions')
-    .select('event_type_id, name')
+    .select('event_type_id, name, property_name')
     .eq('id', id)
     .is('deleted_at', null)
     .single()

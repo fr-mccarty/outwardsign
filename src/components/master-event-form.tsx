@@ -167,8 +167,8 @@ export function MasterEventForm({
       // Validate required fields
       const missingRequired: string[] = []
       eventType.input_field_definitions?.forEach((field) => {
-        if (field.required && !fieldValues[field.name]) {
-          missingRequired.push(field.name)
+        if (field.required && !fieldValues[field.property_name]) {
+          missingRequired.push(field.name) // Use name for display
         }
       })
 
@@ -204,6 +204,7 @@ export function MasterEventForm({
             field_values: fieldValues,
             presider_id: data.presider_id || null,
             homilist_id: data.homilist_id || null,
+            status: data.status,
             calendar_events: calendarEvents
           })
           toast.success('Event updated successfully')
@@ -213,6 +214,7 @@ export function MasterEventForm({
             field_values: fieldValues,
             presider_id: data.presider_id || null,
             homilist_id: data.homilist_id || null,
+            status: data.status,
             calendar_events: calendarEvents
           })
           toast.success('Event created successfully')
@@ -226,8 +228,9 @@ export function MasterEventForm({
   }
 
   // Render dynamic field based on type
+  // Use property_name for data storage keys, field.name for UI labels
   const renderField = (field: InputFieldDefinition) => {
-    const value = fieldValues[field.name]
+    const value = fieldValues[field.property_name]
 
     switch (field.type) {
       case 'person':
@@ -235,10 +238,10 @@ export function MasterEventForm({
           <PersonPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Person | null}
-            onValueChange={(person) => updatePickerValue(field.name, person)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Person | null}
+            onValueChange={(person) => updatePickerValue(field.property_name, person)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             placeholder={`Select ${field.name}`}
             required={field.required}
           />
@@ -249,10 +252,10 @@ export function MasterEventForm({
           <LocationPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Location | null}
-            onValueChange={(location) => updatePickerValue(field.name, location)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Location | null}
+            onValueChange={(location) => updatePickerValue(field.property_name, location)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             placeholder={`Select ${field.name}`}
             required={field.required}
           />
@@ -263,10 +266,10 @@ export function MasterEventForm({
           <GroupPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Group | null}
-            onValueChange={(group) => updatePickerValue(field.name, group)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Group | null}
+            onValueChange={(group) => updatePickerValue(field.property_name, group)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             placeholder={`Select ${field.name}`}
             required={field.required}
           />
@@ -288,10 +291,10 @@ export function MasterEventForm({
           <ContentPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as ContentWithTags | null}
-            onValueChange={(content) => updatePickerValue(field.name, content)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as ContentWithTags | null}
+            onValueChange={(content) => updatePickerValue(field.property_name, content)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             placeholder={`Select ${field.name}`}
             required={field.required}
             defaultFilterTags={field.filter_tags || []}
@@ -303,10 +306,10 @@ export function MasterEventForm({
           <PetitionPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Petition | null}
-            onValueChange={(petition) => updatePickerValue(field.name, petition)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Petition | null}
+            onValueChange={(petition) => updatePickerValue(field.property_name, petition)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             placeholder={`Select or create ${field.name}`}
             required={field.required}
             eventContext={{
@@ -331,7 +334,7 @@ export function MasterEventForm({
             label={field.name}
             listId={field.list_id}
             value={typeof value === 'string' ? value : null}
-            onValueChange={(itemId) => updateListItemValue(field.name, itemId)}
+            onValueChange={(itemId) => updateListItemValue(field.property_name, itemId)}
             placeholder={`Select ${field.name}`}
             required={field.required}
           />
@@ -344,8 +347,8 @@ export function MasterEventForm({
             label={field.name}
             value={typeof value === 'string' ? value : null}
             onValueChange={(documentId, doc) => {
-              setPickerValues(prev => ({ ...prev, [field.name]: doc }))
-              setFieldValues(prev => ({ ...prev, [field.name]: documentId }))
+              setPickerValues(prev => ({ ...prev, [field.property_name]: doc }))
+              setFieldValues(prev => ({ ...prev, [field.property_name]: documentId }))
             }}
             placeholder={`Upload ${field.name}`}
             required={field.required}
@@ -356,10 +359,10 @@ export function MasterEventForm({
         return (
           <DatePickerField
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={value ? new Date(value + 'T12:00:00') : undefined}
-            onValueChange={(date) => updateFieldValue(field.name, date ? toLocalDateString(date) : '')}
+            onValueChange={(date) => updateFieldValue(field.property_name, date ? toLocalDateString(date) : '')}
             closeOnSelect
             required={field.required}
           />
@@ -369,10 +372,10 @@ export function MasterEventForm({
         return (
           <TimePickerField
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={typeof value === 'string' ? value : ''}
-            onChange={(time) => updateFieldValue(field.name, time)}
+            onChange={(time) => updateFieldValue(field.property_name, time)}
             required={field.required}
           />
         )
@@ -381,11 +384,11 @@ export function MasterEventForm({
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             inputType="text"
             value={typeof value === 'string' ? value : ''}
-            onChange={(val) => updateFieldValue(field.name, val)}
+            onChange={(val) => updateFieldValue(field.property_name, val)}
             placeholder={`Enter ${field.name.toLowerCase()}`}
             required={field.required}
           />
@@ -394,14 +397,14 @@ export function MasterEventForm({
       case 'yes_no':
         return (
           <div key={field.id} className="flex items-center justify-between py-2">
-            <Label htmlFor={field.name} className="text-sm font-medium">
+            <Label htmlFor={field.property_name} className="text-sm font-medium">
               {field.name}
               {field.required && <span className="text-destructive ml-1">*</span>}
             </Label>
             <Switch
-              id={field.name}
+              id={field.property_name}
               checked={!!value}
-              onCheckedChange={(checked) => updateFieldValue(field.name, checked)}
+              onCheckedChange={(checked) => updateFieldValue(field.property_name, checked)}
             />
           </div>
         )
@@ -413,11 +416,11 @@ export function MasterEventForm({
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             inputType="textarea"
             value={typeof value === 'string' ? value : ''}
-            onChange={(val) => updateFieldValue(field.name, val)}
+            onChange={(val) => updateFieldValue(field.property_name, val)}
             rows={4}
             placeholder={`Enter ${field.name.toLowerCase()}...`}
             required={field.required}
@@ -429,10 +432,10 @@ export function MasterEventForm({
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={typeof value === 'string' ? value : ''}
-            onChange={(val) => updateFieldValue(field.name, val)}
+            onChange={(val) => updateFieldValue(field.property_name, val)}
             placeholder={`Enter ${field.name.toLowerCase()}`}
             required={field.required}
           />

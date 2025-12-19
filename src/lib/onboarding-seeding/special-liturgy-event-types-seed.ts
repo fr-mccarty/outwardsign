@@ -47,21 +47,21 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
 
   // Create input field definitions for Easter Vigil
   const easterVigilFields = [
-    { name: 'Easter Vigil Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Presider', type: 'person', required: false, order: 1 },
-    { name: 'Deacon', type: 'person', required: false, order: 2 },
-    { name: '---', type: 'spacer', required: false, order: 3 },
-    { name: 'Number of Catechumens', type: 'number', required: false, order: 4 },
-    { name: 'Number of Candidates', type: 'number', required: false, order: 5 },
-    { name: '---', type: 'spacer', required: false, order: 6 },
-    { name: 'Opening Hymn', type: 'text', required: false, order: 7 },
-    { name: 'Responsorial Psalm', type: 'text', required: false, order: 8 },
-    { name: 'Gospel Acclamation', type: 'text', required: false, order: 9 },
-    { name: 'Offertory Hymn', type: 'text', required: false, order: 10 },
-    { name: 'Communion Hymn', type: 'text', required: false, order: 11 },
-    { name: 'Recessional Hymn', type: 'text', required: false, order: 12 },
-    { name: '---', type: 'spacer', required: false, order: 13 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 14 }
+    { name: 'Easter Vigil Mass', property_name: 'easter_vigil_mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
+    { name: 'Deacon', property_name: 'deacon', type: 'person', required: false, order: 2 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 3 },
+    { name: 'Number of Catechumens', property_name: 'number_of_catechumens', type: 'number', required: false, order: 4 },
+    { name: 'Number of Candidates', property_name: 'number_of_candidates', type: 'number', required: false, order: 5 },
+    { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 6 },
+    { name: 'Opening Hymn', property_name: 'opening_hymn', type: 'text', required: false, order: 7 },
+    { name: 'Responsorial Psalm', property_name: 'responsorial_psalm', type: 'text', required: false, order: 8 },
+    { name: 'Gospel Acclamation', property_name: 'gospel_acclamation', type: 'text', required: false, order: 9 },
+    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 10 },
+    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 11 },
+    { name: 'Recessional Hymn', property_name: 'recessional_hymn', type: 'text', required: false, order: 12 },
+    { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 13 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 14 }
   ]
 
   const { error: easterVigilFieldsError } = await supabase
@@ -69,11 +69,8 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
     .insert(
       easterVigilFields.map(field => ({
         event_type_id: easterVigilType.id,
-        name: field.name,
-        type: field.type,
-        required: field.required,
-        is_primary: field.is_primary ?? false,
-        order: field.order
+        ...field,
+        is_primary: field.is_primary ?? false
       }))
     )
 
@@ -169,21 +166,21 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
 
   // Create input field definitions for Holy Thursday
   const holyThursdayFields = [
-    { name: 'Holy Thursday Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Presider', type: 'person', required: false, order: 1 },
-    { name: 'Deacon', type: 'person', required: false, order: 2 },
-    { name: '---', type: 'spacer', required: false, order: 3 },
-    { name: 'Foot Washing Participants', type: 'number', required: false, order: 4 },
-    { name: '---', type: 'spacer', required: false, order: 5 },
-    { name: 'Opening Hymn', type: 'text', required: false, order: 6 },
-    { name: 'Responsorial Psalm', type: 'text', required: false, order: 7 },
-    { name: 'Gospel Acclamation', type: 'text', required: false, order: 8 },
-    { name: 'Washing of Feet Hymn', type: 'text', required: false, order: 9 },
-    { name: 'Offertory Hymn', type: 'text', required: false, order: 10 },
-    { name: 'Communion Hymn', type: 'text', required: false, order: 11 },
-    { name: 'Transfer of Eucharist Hymn', type: 'text', required: false, order: 12 },
-    { name: '---', type: 'spacer', required: false, order: 13 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 14 }
+    { name: 'Holy Thursday Mass', property_name: 'holy_thursday_mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
+    { name: 'Deacon', property_name: 'deacon', type: 'person', required: false, order: 2 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 3 },
+    { name: 'Foot Washing Participants', property_name: 'foot_washing_participants', type: 'number', required: false, order: 4 },
+    { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 5 },
+    { name: 'Opening Hymn', property_name: 'opening_hymn', type: 'text', required: false, order: 6 },
+    { name: 'Responsorial Psalm', property_name: 'responsorial_psalm', type: 'text', required: false, order: 7 },
+    { name: 'Gospel Acclamation', property_name: 'gospel_acclamation', type: 'text', required: false, order: 8 },
+    { name: 'Washing of Feet Hymn', property_name: 'washing_of_feet_hymn', type: 'text', required: false, order: 9 },
+    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 10 },
+    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 11 },
+    { name: 'Transfer of Eucharist Hymn', property_name: 'transfer_of_eucharist_hymn', type: 'text', required: false, order: 12 },
+    { name: '---', property_name: 'spacer_3', type: 'spacer', required: false, order: 13 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 14 }
   ]
 
   const { error: holyThursdayFieldsError } = await supabase
@@ -191,11 +188,8 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
     .insert(
       holyThursdayFields.map(field => ({
         event_type_id: holyThursdayType.id,
-        name: field.name,
-        type: field.type,
-        required: field.required,
-        is_primary: field.is_primary ?? false,
-        order: field.order
+        ...field,
+        is_primary: field.is_primary ?? false
       }))
     )
 
@@ -291,18 +285,18 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
 
   // Create input field definitions for Good Friday
   const goodFridayFields = [
-    { name: 'Good Friday Service', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Presider', type: 'person', required: false, order: 1 },
-    { name: 'Deacon', type: 'person', required: false, order: 2 },
-    { name: '---', type: 'spacer', required: false, order: 3 },
-    { name: 'Opening Hymn', type: 'text', required: false, order: 4 },
-    { name: 'Responsorial Psalm', type: 'text', required: false, order: 5 },
-    { name: 'Gospel Acclamation', type: 'text', required: false, order: 6 },
-    { name: 'Veneration of Cross Hymn', type: 'text', required: false, order: 7 },
-    { name: 'Communion Hymn', type: 'text', required: false, order: 8 },
-    { name: 'Closing Hymn', type: 'text', required: false, order: 9 },
-    { name: '---', type: 'spacer', required: false, order: 10 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 11 }
+    { name: 'Good Friday Service', property_name: 'good_friday_service', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
+    { name: 'Deacon', property_name: 'deacon', type: 'person', required: false, order: 2 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 3 },
+    { name: 'Opening Hymn', property_name: 'opening_hymn', type: 'text', required: false, order: 4 },
+    { name: 'Responsorial Psalm', property_name: 'responsorial_psalm', type: 'text', required: false, order: 5 },
+    { name: 'Gospel Acclamation', property_name: 'gospel_acclamation', type: 'text', required: false, order: 6 },
+    { name: 'Veneration of Cross Hymn', property_name: 'veneration_of_cross_hymn', type: 'text', required: false, order: 7 },
+    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 8 },
+    { name: 'Closing Hymn', property_name: 'closing_hymn', type: 'text', required: false, order: 9 },
+    { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 10 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 11 }
   ]
 
   const { error: goodFridayFieldsError } = await supabase
@@ -310,11 +304,8 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
     .insert(
       goodFridayFields.map(field => ({
         event_type_id: goodFridayType.id,
-        name: field.name,
-        type: field.type,
-        required: field.required,
-        is_primary: field.is_primary ?? false,
-        order: field.order
+        ...field,
+        is_primary: field.is_primary ?? false
       }))
     )
 

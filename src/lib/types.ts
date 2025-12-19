@@ -611,7 +611,8 @@ export interface UpdateEventTypeData {
 export interface InputFieldDefinition {
   id: string
   event_type_id: string
-  name: string
+  name: string                    // User-defined label (e.g., "First Reader", "Deceased")
+  property_name: string           // Template variable name (e.g., "first_reader", "deceased") - lowercase, underscores only
   type: InputFieldType
   required: boolean
   list_id: string | null
@@ -633,6 +634,7 @@ export interface InputFieldDefinitionWithRelations extends InputFieldDefinition 
 export interface CreateInputFieldDefinitionData {
   event_type_id: string
   name: string
+  property_name: string           // Template variable name (lowercase, underscores only)
   type: InputFieldType
   required: boolean
   list_id?: string | null
@@ -644,6 +646,7 @@ export interface CreateInputFieldDefinitionData {
 
 export interface UpdateInputFieldDefinitionData {
   name?: string
+  property_name?: string          // Template variable name (lowercase, underscores only)
   type?: InputFieldType
   required?: boolean
   list_id?: string | null
@@ -819,13 +822,15 @@ export interface CreateMasterEventData {
   field_values: Record<string, any>
   presider_id?: string | null
   homilist_id?: string | null
+  status: string
   calendar_events?: CreateCalendarEventData[]
 }
 
 export interface UpdateMasterEventData {
   field_values?: Record<string, any>
-  presider_id?: string | null  // NEW
-  homilist_id?: string | null  // NEW
+  presider_id?: string | null
+  homilist_id?: string | null
+  status?: string | null
   calendar_events?: (CreateCalendarEventData | UpdateCalendarEventData)[]
 }
 

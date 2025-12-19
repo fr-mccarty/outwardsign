@@ -20,6 +20,7 @@ import {
   seedMassRoleMemberships,
   seedLocations,
   seedMasses,
+  seedMassIntentions,
   seedEvents,
   seedFamilies
 } from './dev-seeders'
@@ -302,6 +303,13 @@ async function seedDevData() {
   // =====================================================
   if (people && churchLocation) {
     await seedMasses(ctx, people as Array<{ id: string; first_name: string; last_name: string }>, churchLocation)
+  }
+
+  // =====================================================
+  // Seed Sample Mass Intentions
+  // =====================================================
+  if (people) {
+    await seedMassIntentions(ctx, people as Array<{ id: string; first_name: string; last_name: string }>)
   }
 
   // =====================================================

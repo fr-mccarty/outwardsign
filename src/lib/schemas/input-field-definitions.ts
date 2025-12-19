@@ -22,11 +22,21 @@ export const inputFieldTypeSchema = z.enum([
   'spacer',
 ])
 
+// Property name validation pattern: lowercase letters, numbers, and underscores, starting with a letter
+const propertyNamePattern = /^[a-z][a-z0-9_]*$/
+
 // Create input field definition schema
 export const createInputFieldDefinitionSchema = z
   .object({
     event_type_id: z.string().uuid('Invalid event type ID'),
     name: z.string().min(1, 'Field name is required'),
+    property_name: z
+      .string()
+      .min(1, 'Property name is required')
+      .regex(
+        propertyNamePattern,
+        'Property name must start with a lowercase letter and contain only lowercase letters, numbers, and underscores'
+      ),
     type: inputFieldTypeSchema,
     required: z.boolean(),
     list_id: z.string().uuid().nullable().optional(),
@@ -65,6 +75,14 @@ export const createInputFieldDefinitionSchema = z
 // Update input field definition schema (all fields optional)
 export const updateInputFieldDefinitionSchema = z.object({
   name: z.string().min(1, 'Field name is required').optional(),
+  property_name: z
+    .string()
+    .min(1, 'Property name is required')
+    .regex(
+      propertyNamePattern,
+      'Property name must start with a lowercase letter and contain only lowercase letters, numbers, and underscores'
+    )
+    .optional(),
   type: inputFieldTypeSchema.optional(),
   required: z.boolean().optional(),
   list_id: z.string().uuid().nullable().optional(),

@@ -1,30 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, FileText, Trash2, Edit } from 'lucide-react'
-import { PageContainer } from '@/components/page-container'
+import { Plus, FileText, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-react'
 import { ContentCard } from '@/components/content-card'
 import { EmptyState } from '@/components/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { deleteContent } from '@/lib/actions/contents'
-import type { ContentWithTags } from '@/lib/types'
+import type { ContentWithTags, ContentTag } from '@/lib/types'
 import { toast } from 'sonner'
 
 interface ContentLibraryListProps {
   initialContents: ContentWithTags[]
   initialTotalCount: number
   initialPage: number
+  allTags: ContentTag[]
 }
+
+const INITIAL_TAG_LIMIT = 10
 
 export function ContentLibraryList({
   initialContents,
   initialTotalCount,
   initialPage,
+  allTags,
 }: ContentLibraryListProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -32,6 +35,21 @@ export function ContentLibraryList({
   const [language, setLanguage] = useState(searchParams.get('language') || 'all')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [contentToDelete, setContentToDelete] = useState<ContentWithTags | null>(null)
+  const [showMoreTags, setShowMoreTags] = useState(false)
+
+  // Parse active tags from URL
+  const activeTags = useMemo(() => {
+    const tagsParam = searchParams.get('tags')
+    return tagsParam ? tagsParam.split(',') : []
+  }, [searchParams])
+
+  // Progressive disclosure for tags
+  const visibleTags = useMemo(() => {
+    if (showMoreTags) return allTags
+    return allTags.slice(0, INITIAL_TAG_LIMIT)
+  }, [allTags, showMoreTags])
+
+  const hasMoreTags = allTags.length > INITIAL_TAG_LIMIT
 
   const updateSearchParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -52,6 +70,25 @@ export function ContentLibraryList({
   const handleLanguageChange = (value: string) => {
     setLanguage(value)
     updateSearchParams('language', value)
+  }
+
+  const handleToggleTag = (tagSlug: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    let newTags: string[]
+
+    if (activeTags.includes(tagSlug)) {
+      newTags = activeTags.filter(slug => slug !== tagSlug)
+    } else {
+      newTags = [...activeTags, tagSlug]
+    }
+
+    if (newTags.length > 0) {
+      params.set('tags', newTags.join(','))
+    } else {
+      params.delete('tags')
+    }
+    params.delete('page') // Reset to page 1 when filters change
+    router.push(`/settings/content-library?${params.toString()}`)
   }
 
   const handleCreateClick = () => {
@@ -95,38 +132,72 @@ export function ContentLibraryList({
   }
 
   return (
-    <PageContainer
-      title="Content Library"
-      description="Manage reusable liturgical content (readings, prayers, ceremony text)"
-      actions={
-        <Button onClick={handleCreateClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Content
-        </Button>
-      }
-    >
+    <>
       {/* Search and Filter */}
       <ContentCard className="mb-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <Input
-              placeholder="Search by title or body text..."
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Input
+                placeholder="Search by title or body text..."
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
+            <div>
+              <Select value={language} onValueChange={handleLanguageChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Languages</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="es">Spanish</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div>
-            <Select value={language} onValueChange={handleLanguageChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Languages</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
+          {/* Category tag filters */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {visibleTags.map((tag) => (
+                <Button
+                  key={tag.id}
+                  type="button"
+                  variant={activeTags.includes(tag.slug) ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleToggleTag(tag.slug)}
+                  className="h-7 text-xs"
+                >
+                  {tag.name}
+                </Button>
+              ))}
+
+              {/* Show more/less toggle */}
+              {hasMoreTags && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMoreTags(!showMoreTags)}
+                  className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {showMoreTags ? (
+                    <>
+                      <ChevronUp className="h-3 w-3 mr-1" />
+                      Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3 mr-1" />
+                      +{allTags.length - INITIAL_TAG_LIMIT} more
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </ContentCard>
 
@@ -251,6 +322,6 @@ export function ContentLibraryList({
         cancelLabel="Cancel"
         variant="destructive"
       />
-    </PageContainer>
+    </>
   )
 }

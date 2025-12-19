@@ -91,22 +91,22 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
 
   // Create input field definitions for Wedding
   const weddingFields = [
-    { name: 'Bride', type: 'person', required: true, is_key_person: true, order: 0 },
-    { name: 'Groom', type: 'person', required: true, is_key_person: true, order: 1 },
-    { name: '---', type: 'spacer', required: false, order: 2 },
-    { name: 'Wedding Ceremony', type: 'calendar_event', required: true, is_primary: true, order: 3 },
-    { name: 'Wedding Rehearsal', type: 'calendar_event', required: false, is_primary: false, order: 4 },
-    { name: 'Presider', type: 'person', required: false, order: 5 },
-    { name: 'Reception Location', type: 'location', required: false, order: 6 },
-    { name: '---', type: 'spacer', required: false, order: 7 },
-    { name: 'Opening Song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 9 },
-    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
-    { name: 'First Reading', type: 'text', required: false, order: 11 },
-    { name: 'Second Reading', type: 'text', required: false, order: 12 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 13 },
-    { name: 'Unity Candle', type: 'yes_no', required: false, order: 14 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 15 }
+    { name: 'Bride', property_name: 'bride', type: 'person', required: true, is_key_person: true, order: 0 },
+    { name: 'Groom', property_name: 'groom', type: 'person', required: true, is_key_person: true, order: 1 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 2 },
+    { name: 'Wedding Ceremony', property_name: 'wedding_ceremony', type: 'calendar_event', required: true, is_primary: true, order: 3 },
+    { name: 'Wedding Rehearsal', property_name: 'wedding_rehearsal', type: 'calendar_event', required: false, is_primary: false, order: 4 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 5 },
+    { name: 'Reception Location', property_name: 'reception_location', type: 'location', required: false, order: 6 },
+    { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 7 },
+    { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 9 },
+    { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'text', required: false, order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'text', required: false, order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'text', required: false, order: 13 },
+    { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 14 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
 
   const { error: weddingFieldsError } = await supabase
@@ -149,10 +149,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
 
 Please join us in celebrating the marriage of
 
-**{{Bride}}** and **{{Groom}}**
+**{{bride.full_name}}** and **{{groom.full_name}}**
 
-{{Wedding Date}}
-{{Ceremony Location}}`,
+{{wedding_ceremony}}`,
       page_break_after: false,
       order: 0
     },
@@ -177,13 +176,13 @@ Please join us in celebrating the marriage of
       content: `## Readings
 
 ### First Reading
-{{First Reading}}
+{{first_reading}}
 
 ### Second Reading
-{{Second Reading}}
+{{second_reading}}
 
 ### Gospel
-{{Gospel Reading}}`,
+{{gospel_reading}}`,
       page_break_after: false,
       order: 2
     },
@@ -193,7 +192,7 @@ Please join us in celebrating the marriage of
 
 Please join us for a reception following the ceremony at:
 
-{{Reception Location}}`,
+{{reception_location}}`,
       page_break_after: false,
       order: 3
     }
@@ -236,10 +235,9 @@ Please join us for a reception following the ceremony at:
 
 Por favor, acompáñenos a celebrar el matrimonio de
 
-**{{Bride}}** y **{{Groom}}**
+**{{bride.full_name}}** y **{{groom.full_name}}**
 
-{{Wedding Date}}
-{{Ceremony Location}}`,
+{{wedding_ceremony}}`,
       page_break_after: false,
       order: 0
     },
@@ -264,13 +262,13 @@ Por favor, acompáñenos a celebrar el matrimonio de
       content: `## Lecturas
 
 ### Primera Lectura
-{{First Reading}}
+{{first_reading}}
 
 ### Segunda Lectura
-{{Second Reading}}
+{{second_reading}}
 
 ### Evangelio
-{{Gospel Reading}}`,
+{{gospel_reading}}`,
       page_break_after: false,
       order: 2
     },
@@ -280,7 +278,7 @@ Por favor, acompáñenos a celebrar el matrimonio de
 
 Por favor, acompáñenos para una recepción después de la ceremonia en:
 
-{{Reception Location}}`,
+{{reception_location}}`,
       page_break_after: false,
       order: 3
     }
@@ -322,13 +320,11 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       name: 'Cover',
       content: `# The Celebration of Marriage
 
-**{{Bride}}**
+**{{bride.full_name}}**
 &
-**{{Groom}}**
+**{{groom.full_name}}**
 
-{{Wedding Date}}
-
-{{Ceremony Location}}
+{{wedding_ceremony}}
 
 {{parish.name}}`,
       page_break_after: true,
@@ -339,7 +335,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       content: `## Order of Celebration
 
 **Entrance Procession**
-{{Opening Song}}
+{{opening_song}}
 
 **Greeting**
 
@@ -371,7 +367,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
 
 ### Universal Prayer (Prayer of the Faithful)
 
-{{Prayers of the Faithful}}
+{{prayers_of_the_faithful}}
 
 ---
 
@@ -392,17 +388,17 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       content: `## Readings
 
 ### First Reading
-{{First Reading}}
+{{first_reading}}
 
 ---
 
 ### Second Reading
-{{Second Reading}}
+{{second_reading}}
 
 ---
 
 ### Gospel
-{{Gospel Reading}}`,
+{{gospel_reading}}`,
       page_break_after: true,
       order: 2
     },
@@ -410,7 +406,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       name: 'Music',
       content: `## Music for the Celebration
 
-**Entrance Procession:** {{Opening Song}}
+**Entrance Procession:** {{opening_song}}
 
 ---
 
@@ -504,22 +500,22 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
 
   // Create input field definitions for Funeral
   const funeralFields = [
-    { name: 'Deceased', type: 'person', required: true, is_key_person: true, order: 0 },
-    { name: 'Date of Death', type: 'date', required: false, order: 1 },
-    { name: 'Funeral Mass', type: 'calendar_event', required: true, is_primary: true, order: 2 },
-    { name: 'Presider', type: 'person', required: false, order: 3 },
-    { name: 'Burial Location', type: 'location', required: false, order: 4 },
-    { name: 'Visitation Location', type: 'location', required: false, order: 5 },
-    { name: '---', type: 'spacer', required: false, order: 6 },
-    { name: 'Opening Song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
-    { name: 'Prayers of the Faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
-    { name: 'First Reading', type: 'text', required: false, order: 10 },
-    { name: 'Psalm', type: 'text', required: false, order: 11 },
-    { name: 'Second Reading', type: 'text', required: false, order: 12 },
-    { name: 'Gospel Reading', type: 'text', required: false, order: 13 },
-    { name: 'Eulogy Speaker', type: 'person', required: false, order: 14 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 15 }
+    { name: 'Deceased', property_name: 'deceased', type: 'person', required: true, is_key_person: true, order: 0 },
+    { name: 'Date of Death', property_name: 'date_of_death', type: 'date', required: false, order: 1 },
+    { name: 'Funeral Mass', property_name: 'funeral_mass', type: 'calendar_event', required: true, is_primary: true, order: 2 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 3 },
+    { name: 'Burial Location', property_name: 'burial_location', type: 'location', required: false, order: 4 },
+    { name: 'Visitation Location', property_name: 'visitation_location', type: 'location', required: false, order: 5 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 6 },
+    { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
+    { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'text', required: false, order: 10 },
+    { name: 'Psalm', property_name: 'psalm', type: 'text', required: false, order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'text', required: false, order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'text', required: false, order: 13 },
+    { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 14 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
 
   const { error: funeralFieldsError } = await supabase
@@ -560,9 +556,9 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       name: 'In Loving Memory',
       content: `# In Loving Memory
 
-**{{Deceased}}**
+**{{deceased.full_name}}**
 
-{{Date of Death}}`,
+{{date_of_death}}`,
       page_break_after: false,
       order: 0
     },
@@ -570,11 +566,9 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       name: 'Service Details',
       content: `## Funeral Mass
 
-{{Funeral Date}}
+{{funeral_mass}}
 
-{{Funeral Location}}
-
-Presider: {{Presider}}`,
+Presider: {{presider.full_name}}`,
       page_break_after: false,
       order: 1
     },
@@ -598,16 +592,16 @@ Presider: {{Presider}}`,
       content: `## Readings
 
 ### First Reading
-{{First Reading}}
+{{first_reading}}
 
 ### Responsorial Psalm
-{{Psalm}}
+{{psalm}}
 
 ### Second Reading
-{{Second Reading}}
+{{second_reading}}
 
 ### Gospel
-{{Gospel Reading}}`,
+{{gospel_reading}}`,
       page_break_after: false,
       order: 3
     },
@@ -617,7 +611,7 @@ Presider: {{Presider}}`,
 
 Burial will take place at:
 
-{{Burial Location}}`,
+{{burial_location}}`,
       page_break_after: false,
       order: 4
     }
@@ -656,11 +650,11 @@ Burial will take place at:
   const funeralBulletinSections = [
     {
       name: 'Notice',
-      content: `Please pray for the repose of the soul of **{{Deceased}}**, who passed away on {{Date of Death}}.
+      content: `Please pray for the repose of the soul of **{{deceased.full_name}}**, who passed away on {{date_of_death}}.
 
-Funeral Mass will be celebrated on {{Funeral Date}} at {{Funeral Location}}.
+Funeral Mass will be celebrated at {{funeral_mass}}.
 
-May eternal rest grant unto them, O Lord, and let perpetual light shine upon them. May they rest in peace. Amen.`,
+May eternal rest grant unto {{deceased.sex | him | her}}, O Lord, and let perpetual light shine upon {{deceased.sex | him | her}}. May {{deceased.sex | he | she}} rest in peace. Amen.`,
       page_break_after: false,
       order: 0
     }
@@ -702,11 +696,9 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
       name: 'Cover',
       content: `# Funeral Mass
 
-**{{Deceased}}**
+**{{deceased.full_name}}**
 
-{{Funeral Date}}
-
-{{Funeral Location}}
+{{funeral_mass}}
 
 {{parish.name}}`,
       page_break_after: true,
@@ -721,7 +713,7 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
 **Greeting of the Body**
 
 **Entrance Procession**
-{{Opening Song}}
+{{opening_song}}
 
 **Sprinkling with Holy Water**
 
@@ -747,7 +739,7 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
 
 ### Universal Prayer (Prayer of the Faithful)
 
-{{Prayers of the Faithful}}
+{{prayers_of_the_faithful}}
 
 ---
 
@@ -786,22 +778,22 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
       content: `## Readings
 
 ### First Reading
-{{First Reading}}
+{{first_reading}}
 
 ---
 
 ### Responsorial Psalm
-{{Psalm}}
+{{psalm}}
 
 ---
 
 ### Second Reading
-{{Second Reading}}
+{{second_reading}}
 
 ---
 
 ### Gospel
-{{Gospel Reading}}`,
+{{gospel_reading}}`,
       page_break_after: true,
       order: 2
     },
@@ -851,7 +843,7 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
       name: 'Music',
       content: `## Music for the Liturgy
 
-**Entrance Hymn:** {{Opening Song}}
+**Entrance Hymn:** {{opening_song}}
 
 ---
 
@@ -863,7 +855,7 @@ May eternal rest grant unto them, O Lord, and let perpetual light shine upon the
 
 Burial will take place at:
 
-{{Burial Location}}`,
+{{burial_location}}`,
       page_break_after: false,
       order: 4
     }
@@ -907,16 +899,16 @@ Burial will take place at:
 
   // Create input field definitions for Baptism
   const baptismFields = [
-    { name: 'Child', type: 'person', required: true, is_key_person: true, order: 0 },
-    { name: 'Mother', type: 'person', required: false, order: 1 },
-    { name: 'Father', type: 'person', required: false, order: 2 },
-    { name: 'Godmother', type: 'person', required: false, order: 3 },
-    { name: 'Godfather', type: 'person', required: false, order: 4 },
-    { name: '---', type: 'spacer', required: false, order: 5 },
-    { name: 'Baptism', type: 'calendar_event', required: true, is_primary: true, order: 6 },
-    { name: 'Presider', type: 'person', required: false, order: 7 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['baptism', 'opening-prayer'], order: 8 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
+    { name: 'Child', property_name: 'child', type: 'person', required: true, is_key_person: true, order: 0 },
+    { name: 'Mother', property_name: 'mother', type: 'person', required: false, order: 1 },
+    { name: 'Father', property_name: 'father', type: 'person', required: false, order: 2 },
+    { name: 'Godmother', property_name: 'godmother', type: 'person', required: false, order: 3 },
+    { name: 'Godfather', property_name: 'godfather', type: 'person', required: false, order: 4 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 5 },
+    { name: 'Baptism', property_name: 'baptism', type: 'calendar_event', required: true, is_primary: true, order: 6 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 7 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['baptism', 'opening-prayer'], order: 8 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
   const { error: baptismFieldsError } = await supabase
@@ -959,10 +951,9 @@ Burial will take place at:
 
 Please join us in celebrating the Baptism of
 
-**{{Child}}**
+**{{child.full_name}}**
 
-{{Baptism Date}}
-{{Baptism Location}}`,
+{{baptism}}`,
       page_break_after: false,
       order: 0
     },
@@ -970,9 +961,9 @@ Please join us in celebrating the Baptism of
       name: 'Family',
       content: `## Family
 
-**Parents:** {{Mother}} and {{Father}}
+**Parents:** {{mother.full_name}} and {{father.full_name}}
 
-**Godparents:** {{Godmother}} and {{Godfather}}`,
+**Godparents:** {{godmother.full_name}} and {{godfather.full_name}}`,
       page_break_after: false,
       order: 1
     },
@@ -1035,16 +1026,16 @@ Please join us in celebrating the Baptism of
 
   // Create input field definitions for Quinceañera
   const quinceaneraFields = [
-    { name: 'Quinceañera', type: 'person', required: true, is_key_person: true, order: 0 },
-    { name: 'Mother', type: 'person', required: false, order: 1 },
-    { name: 'Father', type: 'person', required: false, order: 2 },
-    { name: '---', type: 'spacer', required: false, order: 3 },
-    { name: 'Quinceañera Mass', type: 'calendar_event', required: true, is_primary: true, order: 4 },
-    { name: 'Presider', type: 'person', required: false, order: 5 },
-    { name: 'Reception Location', type: 'location', required: false, order: 6 },
-    { name: 'Court of Honor', type: 'group', required: false, order: 7 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['quinceanera', 'opening-prayer'], order: 8 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
+    { name: 'Quinceañera', property_name: 'quinceanera', type: 'person', required: true, is_key_person: true, order: 0 },
+    { name: 'Mother', property_name: 'mother', type: 'person', required: false, order: 1 },
+    { name: 'Father', property_name: 'father', type: 'person', required: false, order: 2 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 3 },
+    { name: 'Quinceañera Mass', property_name: 'quinceanera_mass', type: 'calendar_event', required: true, is_primary: true, order: 4 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 5 },
+    { name: 'Reception Location', property_name: 'reception_location', type: 'location', required: false, order: 6 },
+    { name: 'Court of Honor', property_name: 'court_of_honor', type: 'group', required: false, order: 7 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['quinceanera', 'opening-prayer'], order: 8 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
   const { error: quinceaneraFieldsError } = await supabase
@@ -1087,10 +1078,9 @@ Please join us in celebrating the Baptism of
 
 Please join us in celebrating the Quinceañera of
 
-**{{Quinceañera}}**
+**{{quinceanera.full_name}}**
 
-{{Ceremony Date}}
-{{Ceremony Location}}`,
+{{quinceanera_mass}}`,
       page_break_after: false,
       order: 0
     },
@@ -1113,7 +1103,7 @@ Please join us in celebrating the Quinceañera of
       name: 'Prayer',
       content: `## Prayer for Quinceañera
 
-Lord God, you who are our Father and Creator, we thank you for the gift of life and for the blessing of family. Today we celebrate {{Quinceañera}} as she marks her fifteenth birthday. We ask your blessing upon her as she continues her journey of faith. Guide her steps, strengthen her resolve, and fill her heart with your love. May she always know that she is your beloved daughter. We ask this through Christ our Lord. Amen.`,
+Lord God, you who are our Father and Creator, we thank you for the gift of life and for the blessing of family. Today we celebrate {{quinceanera.first_name}} as she marks her fifteenth birthday. We ask your blessing upon her as she continues her journey of faith. Guide her steps, strengthen her resolve, and fill her heart with your love. May she always know that she is your beloved daughter. We ask this through Christ our Lord. Amen.`,
       page_break_after: false,
       order: 2
     },
@@ -1123,7 +1113,7 @@ Lord God, you who are our Father and Creator, we thank you for the gift of life 
 
 Please join us for a reception following the ceremony at:
 
-{{Reception Location}}`,
+{{reception_location}}`,
       page_break_after: false,
       order: 3
     }
@@ -1167,16 +1157,16 @@ Please join us for a reception following the ceremony at:
 
   // Create input field definitions for Presentation
   const presentationFields = [
-    { name: 'Child', type: 'person', required: true, is_key_person: true, order: 0 },
-    { name: 'Mother', type: 'person', required: false, order: 1 },
-    { name: 'Father', type: 'person', required: false, order: 2 },
-    { name: 'Godmother', type: 'person', required: false, order: 3 },
-    { name: 'Godfather', type: 'person', required: false, order: 4 },
-    { name: '---', type: 'spacer', required: false, order: 5 },
-    { name: 'Presentation', type: 'calendar_event', required: true, is_primary: true, order: 6 },
-    { name: 'Presider', type: 'person', required: false, order: 7 },
-    { name: 'Opening Prayer', type: 'content', required: false, filter_tags: ['presentation', 'opening-prayer'], order: 8 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 9 }
+    { name: 'Child', property_name: 'child', type: 'person', required: true, is_key_person: true, order: 0 },
+    { name: 'Mother', property_name: 'mother', type: 'person', required: false, order: 1 },
+    { name: 'Father', property_name: 'father', type: 'person', required: false, order: 2 },
+    { name: 'Godmother', property_name: 'godmother', type: 'person', required: false, order: 3 },
+    { name: 'Godfather', property_name: 'godfather', type: 'person', required: false, order: 4 },
+    { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 5 },
+    { name: 'Presentation', property_name: 'presentation', type: 'calendar_event', required: true, is_primary: true, order: 6 },
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 7 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['presentation', 'opening-prayer'], order: 8 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
   const { error: presentationFieldsError } = await supabase
@@ -1219,10 +1209,9 @@ Please join us for a reception following the ceremony at:
 
 Please join us in celebrating the Presentation of
 
-**{{Child}}**
+**{{child.full_name}}**
 
-{{Presentation Date}}
-{{Presentation Location}}`,
+{{presentation}}`,
       page_break_after: false,
       order: 0
     },
@@ -1230,9 +1219,9 @@ Please join us in celebrating the Presentation of
       name: 'Family',
       content: `## Family
 
-**Parents:** {{Mother}} and {{Father}}
+**Parents:** {{mother.full_name}} and {{father.full_name}}
 
-**Godparents:** {{Godmother}} and {{Godfather}}`,
+**Godparents:** {{godmother.full_name}} and {{godfather.full_name}}`,
       page_break_after: false,
       order: 1
     },
@@ -1255,7 +1244,7 @@ Please join us in celebrating the Presentation of
       name: 'Prayer',
       content: `## Prayer for the Child
 
-Lord God, we present this child to you in thanksgiving for the gift of life. Bless {{Child}} and watch over them. Guide the parents {{Mother}} and {{Father}} as they raise their child in faith. May the godparents {{Godmother}} and {{Godfather}} support them on this journey. We ask this through Christ our Lord. Amen.`,
+Lord God, we present this child to you in thanksgiving for the gift of life. Bless {{child.first_name}} and watch over {{child.sex | him | her}}. Guide the parents {{mother.first_name}} and {{father.first_name}} as they raise their child in faith. May the godparents {{godmother.first_name}} and {{godfather.first_name}} support them on this journey. We ask this through Christ our Lord. Amen.`,
       page_break_after: false,
       order: 3
     }
@@ -1299,14 +1288,14 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
   // Create input field definitions for Bible Study
   const bibleStudyFields = [
-    { name: 'Session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Discussion Leader', type: 'person', required: false, is_key_person: true, order: 1 },
-    { name: 'Topic', type: 'text', required: false, order: 2 },
-    { name: 'Scripture Passage', type: 'text', required: false, order: 3 },
-    { name: 'Discussion Questions', type: 'rich_text', required: false, order: 4 },
-    { name: 'Resources', type: 'document', required: false, order: 5 },
-    { name: 'Expected Attendance', type: 'number', required: false, order: 6 },
-    { name: 'Notes', type: 'rich_text', required: false, order: 7 }
+    { name: 'Session', property_name: 'session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Discussion Leader', property_name: 'discussion_leader', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Topic', property_name: 'topic', type: 'text', required: false, order: 2 },
+    { name: 'Scripture Passage', property_name: 'scripture_passage', type: 'text', required: false, order: 3 },
+    { name: 'Discussion Questions', property_name: 'discussion_questions', type: 'rich_text', required: false, order: 4 },
+    { name: 'Resources', property_name: 'resources', type: 'document', required: false, order: 5 },
+    { name: 'Expected Attendance', property_name: 'expected_attendance', type: 'number', required: false, order: 6 },
+    { name: 'Notes', property_name: 'notes', type: 'rich_text', required: false, order: 7 }
   ]
 
   const { error: bibleStudyFieldsError } = await supabase
@@ -1349,11 +1338,11 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
 {{parish.name}}
 
-**Date:** {{Session}}
+**Date:** {{session}}
 
-**Leader:** {{Discussion Leader}}
+**Leader:** {{discussion_leader.full_name}}
 
-**Topic:** {{Topic}}`,
+**Topic:** {{topic}}`,
       page_break_after: false,
       order: 0
     },
@@ -1361,7 +1350,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Scripture',
       content: `## Scripture Passage
 
-{{Scripture Passage}}`,
+{{scripture_passage}}`,
       page_break_after: false,
       order: 1
     },
@@ -1369,7 +1358,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Discussion Questions',
       content: `## Discussion Questions
 
-{{Discussion Questions}}`,
+{{discussion_questions}}`,
       page_break_after: false,
       order: 2
     },
@@ -1377,11 +1366,11 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Notes',
       content: `## Session Notes
 
-{{Notes}}
+{{notes}}
 
 ---
 
-**Expected Attendance:** {{Expected Attendance}}`,
+**Expected Attendance:** {{expected_attendance}}`,
       page_break_after: false,
       order: 3
     }
@@ -1425,13 +1414,13 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
   // Create input field definitions for Fundraiser
   const fundraiserFields = [
-    { name: 'Event Date', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Event Coordinator', type: 'person', required: false, is_key_person: true, order: 1 },
-    { name: 'Fundraising Goal', type: 'number', required: false, order: 2 },
-    { name: 'Event Description', type: 'rich_text', required: false, order: 3 },
-    { name: 'Volunteer Needs', type: 'rich_text', required: false, order: 4 },
-    { name: 'Setup Notes', type: 'rich_text', required: false, order: 5 },
-    { name: 'Cleanup Notes', type: 'rich_text', required: false, order: 6 }
+    { name: 'Event Date', property_name: 'event_date', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Event Coordinator', property_name: 'event_coordinator', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Fundraising Goal', property_name: 'fundraising_goal', type: 'number', required: false, order: 2 },
+    { name: 'Event Description', property_name: 'event_description', type: 'rich_text', required: false, order: 3 },
+    { name: 'Volunteer Needs', property_name: 'volunteer_needs', type: 'rich_text', required: false, order: 4 },
+    { name: 'Setup Notes', property_name: 'setup_notes', type: 'rich_text', required: false, order: 5 },
+    { name: 'Cleanup Notes', property_name: 'cleanup_notes', type: 'rich_text', required: false, order: 6 }
   ]
 
   const { error: fundraiserFieldsError } = await supabase
@@ -1470,7 +1459,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   const fundraiserScriptSections = [
     {
       name: 'Event Information',
-      content: '# Fundraiser Event\n\n{{parish.name}}\n\n**Date:** {{Event Date}}\n\n**Coordinator:** {{Event Coordinator}}\n\n**Fundraising Goal:** ${{Fundraising Goal}}',
+      content: '# Fundraiser Event\n\n{{parish.name}}\n\n**Date:** {{event_date}}\n\n**Coordinator:** {{event_coordinator.full_name}}\n\n**Fundraising Goal:** ${{fundraising_goal}}',
       page_break_after: false,
       order: 0
     },
@@ -1478,7 +1467,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Event Description',
       content: `## Event Description
 
-{{Event Description}}`,
+{{event_description}}`,
       page_break_after: false,
       order: 1
     },
@@ -1486,7 +1475,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Volunteer Needs',
       content: `## Volunteer Needs
 
-{{Volunteer Needs}}`,
+{{volunteer_needs}}`,
       page_break_after: false,
       order: 2
     },
@@ -1494,7 +1483,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Setup',
       content: `## Setup Notes
 
-{{Setup Notes}}`,
+{{setup_notes}}`,
       page_break_after: false,
       order: 3
     },
@@ -1502,7 +1491,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Cleanup',
       content: `## Cleanup Notes
 
-{{Cleanup Notes}}`,
+{{cleanup_notes}}`,
       page_break_after: false,
       order: 4
     }
@@ -1546,13 +1535,13 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
   // Create input field definitions for Religious Education
   const religiousEdFields = [
-    { name: 'Class Session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Catechist', type: 'person', required: false, is_key_person: true, order: 1 },
-    { name: 'Grade Level', type: 'text', required: false, order: 2 },
-    { name: 'Lesson Topic', type: 'text', required: false, order: 3 },
-    { name: 'Lesson Plan', type: 'rich_text', required: false, order: 4 },
-    { name: 'Materials Needed', type: 'rich_text', required: false, order: 5 },
-    { name: 'Homework Assignment', type: 'rich_text', required: false, order: 6 }
+    { name: 'Class Session', property_name: 'class_session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Catechist', property_name: 'catechist', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Grade Level', property_name: 'grade_level', type: 'text', required: false, order: 2 },
+    { name: 'Lesson Topic', property_name: 'lesson_topic', type: 'text', required: false, order: 3 },
+    { name: 'Lesson Plan', property_name: 'lesson_plan', type: 'rich_text', required: false, order: 4 },
+    { name: 'Materials Needed', property_name: 'materials_needed', type: 'rich_text', required: false, order: 5 },
+    { name: 'Homework Assignment', property_name: 'homework_assignment', type: 'rich_text', required: false, order: 6 }
   ]
 
   const { error: religiousEdFieldsError } = await supabase
@@ -1595,13 +1584,13 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
 {{parish.name}}
 
-**Date:** {{Class Session}}
+**Date:** {{class_session}}
 
-**Catechist:** {{Catechist}}
+**Catechist:** {{catechist.full_name}}
 
-**Grade Level:** {{Grade Level}}
+**Grade Level:** {{grade_level}}
 
-**Topic:** {{Lesson Topic}}`,
+**Topic:** {{lesson_topic}}`,
       page_break_after: false,
       order: 0
     },
@@ -1609,7 +1598,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Lesson Plan',
       content: `## Lesson Plan
 
-{{Lesson Plan}}`,
+{{lesson_plan}}`,
       page_break_after: false,
       order: 1
     },
@@ -1617,7 +1606,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Materials',
       content: `## Materials Needed
 
-{{Materials Needed}}`,
+{{materials_needed}}`,
       page_break_after: false,
       order: 2
     },
@@ -1625,7 +1614,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Homework',
       content: `## Homework Assignment
 
-{{Homework Assignment}}`,
+{{homework_assignment}}`,
       page_break_after: false,
       order: 3
     }
@@ -1669,12 +1658,12 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
   // Create input field definitions for Staff Meeting
   const staffMeetingFields = [
-    { name: 'Meeting Date', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Meeting Leader', type: 'person', required: false, is_key_person: true, order: 1 },
-    { name: 'Agenda', type: 'rich_text', required: false, order: 2 },
-    { name: 'Meeting Minutes', type: 'rich_text', required: false, order: 3 },
-    { name: 'Action Items', type: 'rich_text', required: false, order: 4 },
-    { name: 'Attachments', type: 'document', required: false, order: 5 }
+    { name: 'Meeting Date', property_name: 'meeting_date', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Meeting Leader', property_name: 'meeting_leader', type: 'person', required: false, is_key_person: true, order: 1 },
+    { name: 'Agenda', property_name: 'agenda', type: 'rich_text', required: false, order: 2 },
+    { name: 'Meeting Minutes', property_name: 'meeting_minutes', type: 'rich_text', required: false, order: 3 },
+    { name: 'Action Items', property_name: 'action_items', type: 'rich_text', required: false, order: 4 },
+    { name: 'Attachments', property_name: 'attachments', type: 'document', required: false, order: 5 }
   ]
 
   const { error: staffMeetingFieldsError } = await supabase
@@ -1717,9 +1706,9 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
 
 {{parish.name}}
 
-**Date:** {{Meeting Date}}
+**Date:** {{meeting_date}}
 
-**Leader:** {{Meeting Leader}}`,
+**Leader:** {{meeting_leader.full_name}}`,
       page_break_after: false,
       order: 0
     },
@@ -1727,7 +1716,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Agenda',
       content: `## Agenda
 
-{{Agenda}}`,
+{{agenda}}`,
       page_break_after: false,
       order: 1
     },
@@ -1735,7 +1724,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Minutes',
       content: `## Meeting Minutes
 
-{{Meeting Minutes}}`,
+{{meeting_minutes}}`,
       page_break_after: false,
       order: 2
     },
@@ -1743,7 +1732,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       name: 'Action Items',
       content: `## Action Items
 
-{{Action Items}}`,
+{{action_items}}`,
       page_break_after: false,
       order: 3
     }

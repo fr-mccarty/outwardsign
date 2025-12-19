@@ -6,6 +6,7 @@ CREATE TABLE input_field_definitions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_type_id UUID NOT NULL REFERENCES event_types(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+  property_name TEXT NOT NULL,
   type TEXT NOT NULL,
   required BOOLEAN NOT NULL DEFAULT false,
   list_id UUID REFERENCES custom_lists(id) ON DELETE SET NULL,
@@ -20,7 +21,8 @@ CREATE TABLE input_field_definitions (
   CONSTRAINT check_input_field_type CHECK (type IN ('person', 'group', 'location', 'event_link', 'list_item', 'document', 'text', 'rich_text', 'content', 'petition', 'calendar_event', 'date', 'time', 'datetime', 'number', 'yes_no', 'mass-intention', 'spacer')),
   CONSTRAINT check_input_field_order_non_negative CHECK ("order" >= 0),
   CONSTRAINT check_is_key_person_only_for_person CHECK (is_key_person = false OR type = 'person'),
-  CONSTRAINT check_is_primary_only_for_calendar_event CHECK (is_primary = false OR type = 'calendar_event')
+  CONSTRAINT check_is_primary_only_for_calendar_event CHECK (is_primary = false OR type = 'calendar_event'),
+  CONSTRAINT check_property_name_format CHECK (property_name ~ '^[a-z][a-z0-9_]*$')
 );
 
 -- Enable RLS
@@ -39,6 +41,10 @@ CREATE INDEX idx_input_field_definitions_order ON input_field_definitions(event_
 -- Unique index to ensure only one primary calendar_event per event type
 CREATE UNIQUE INDEX idx_input_field_definitions_primary_calendar_event ON input_field_definitions(event_type_id)
   WHERE is_primary = true AND type = 'calendar_event' AND deleted_at IS NULL;
+
+-- Unique index to ensure property_name is unique within an event type
+CREATE UNIQUE INDEX idx_input_field_definitions_property_name ON input_field_definitions(event_type_id, property_name)
+  WHERE deleted_at IS NULL;
 
 -- RLS Policies
 -- Parish members can read field definitions for their parish's event types

@@ -48,14 +48,14 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   // Create input field definitions for Sunday Mass
   const sundayMassFields = [
-    { name: 'Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Announcements', type: 'rich_text', required: false, order: 1 },
-    { name: 'Entrance Hymn', type: 'text', required: false, order: 2 },
-    { name: 'Offertory Hymn', type: 'text', required: false, order: 3 },
-    { name: 'Communion Hymn', type: 'text', required: false, order: 4 },
-    { name: 'Recessional Hymn', type: 'text', required: false, order: 5 },
-    { name: 'Mass Intentions', type: 'mass-intention', required: false, order: 6 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 7 }
+    { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Announcements', property_name: 'announcements', type: 'rich_text', required: false, order: 1 },
+    { name: 'Entrance Hymn', property_name: 'entrance_hymn', type: 'text', required: false, order: 2 },
+    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 3 },
+    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 4 },
+    { name: 'Recessional Hymn', property_name: 'recessional_hymn', type: 'text', required: false, order: 5 },
+    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 6 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 7 }
   ]
 
   const { error: sundayFieldsError } = await supabase
@@ -63,11 +63,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
     .insert(
       sundayMassFields.map(field => ({
         event_type_id: sundayMassType.id,
-        name: field.name,
-        type: field.type,
-        required: field.required,
-        is_primary: 'is_primary' in field ? field.is_primary : false,
-        order: field.order
+        ...field,
+        is_primary: field.is_primary ?? false
       }))
     )
 
@@ -171,9 +168,9 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   // Create input field definitions for Daily Mass (minimal)
   const dailyMassFields = [
-    { name: 'Mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Mass Intentions', type: 'mass-intention', required: false, order: 1 },
-    { name: 'Special Instructions', type: 'rich_text', required: false, order: 2 }
+    { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
+    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 1 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 2 }
   ]
 
   const { error: dailyFieldsError } = await supabase
@@ -181,11 +178,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
     .insert(
       dailyMassFields.map(field => ({
         event_type_id: dailyMassType.id,
-        name: field.name,
-        type: field.type,
-        required: field.required,
-        is_primary: 'is_primary' in field ? field.is_primary : false,
-        order: field.order
+        ...field,
+        is_primary: field.is_primary ?? false
       }))
     )
 

@@ -4,15 +4,36 @@
  * Parses markdown content with custom syntax and replaces field placeholders
  * with actual values from event data.
  *
+ * FIELD MATCHING:
+ * - Placeholders use `property_name` (lowercase, underscores) for reliable matching
+ * - property_name is stored on input_field_definitions and used in templates
+ * - Example: Display name "First Reader" → property_name "first_reader" → Template: {{first_reader.full_name}}
+ *
  * Custom Syntax:
- * - {{Field Name}} - Placeholder for dynamic field values
- * - {{Field Name | male_text | female_text}} - Gendered text based on person's gender
- * - {{Field.property | male_text | female_text}} - Gendered text with property access
+ *
+ * PERSON FIELD VARIABLES (dot notation):
+ * - {{field}} - Returns person's full_name (default)
+ * - {{field.full_name}} - Returns person's full name explicitly
+ * - {{field.first_name}} - Returns person's first name only
+ * - {{field.last_name}} - Returns person's last name only
+ * - If person is unassigned → returns "Unassigned" (English) or "Sin asignar" (Spanish)
+ * - Examples: {{bride.first_name}}, {{first_reader.full_name}}, {{petition_reader.last_name}}
+ *
+ * GENDERED TEXT (pipe syntax):
+ * - {{field.sex | male_text | female_text}} - Gendered text based on person's sex
  *   - If person is male → outputs male_text
  *   - If person is female → outputs female_text
  *   - If gender unknown → outputs "male_text/female_text"
  *   - Only works for person-type fields
- *   - Examples: {{Bride | él | ella}}, {{Deceased.first_name | his | her}}
+ *   - Examples: {{bride.sex | él | ella}}, {{first_reader.sex | He | She}}
+ *
+ * PARISH PLACEHOLDERS:
+ * - {{parish.name}} - Parish name
+ * - {{parish.city}} - Parish city
+ * - {{parish.state}} - Parish state
+ * - {{parish.city_state}} - City, State formatted
+ *
+ * OTHER:
  * - {red}text{/red} - Red text (liturgical color #c41e3a)
  *
  * This uses marked.js for markdown parsing.
@@ -61,6 +82,21 @@ export interface RenderMarkdownOptions {
   parish?: ParishInfo
   /** Output format - affects how custom syntax is converted */
   format?: 'html' | 'pdf' | 'word' | 'text'
+  /** Language for internationalized text (e.g., "Unassigned") */
+  language?: 'en' | 'es'
+}
+
+/**
+ * Valid person property names for dot notation access
+ */
+type PersonProperty = 'full_name' | 'first_name' | 'last_name' | 'sex'
+
+/**
+ * Internationalized text for unassigned fields
+ */
+const UNASSIGNED_TEXT: Record<'en' | 'es', string> = {
+  en: 'Unassigned',
+  es: 'Sin asignar'
 }
 
 /**
@@ -131,13 +167,52 @@ function resolveParishPlaceholder(
 }
 
 /**
- * Replaces {{Field Name}}, {{Field Name | male | female}}, and {{parish.*}} placeholders with actual values
+ * Parses a field reference that may include dot notation
+ *
+ * Splits on the FIRST dot only to separate property_name from the person property.
+ * property_name uses lowercase and underscores (no spaces).
+ *
+ * Examples:
+ *   "bride" -> { propertyName: "bride", property: undefined }
+ *   "bride.first_name" -> { propertyName: "bride", property: "first_name" }
+ *   "first_reader.full_name" -> { propertyName: "first_reader", property: "full_name" }
+ *   "petition_reader" -> { propertyName: "petition_reader", property: undefined }
+ */
+function parseFieldReference(fieldRef: string): { fieldName: string; property?: PersonProperty } {
+  const dotIndex = fieldRef.indexOf('.')
+  if (dotIndex === -1) {
+    return { fieldName: fieldRef }
+  }
+
+  const fieldName = fieldRef.substring(0, dotIndex)
+  const property = fieldRef.substring(dotIndex + 1) as PersonProperty
+
+  // Validate property name
+  const validProperties: PersonProperty[] = ['full_name', 'first_name', 'last_name', 'sex']
+  if (validProperties.includes(property)) {
+    return { fieldName, property }
+  }
+
+  // Invalid property - return just the field name
+  return { fieldName }
+}
+
+/**
+ * Replaces {{Field Name}}, {{Field.property}}, {{Field Name | male | female}}, and {{parish.*}} placeholders with actual values
+ *
+ * Supported syntax:
+ * - {{Field}} - Returns full_name for person fields, or raw value for others
+ * - {{Field.full_name}} - Returns person's full name
+ * - {{Field.first_name}} - Returns person's first name
+ * - {{Field.last_name}} - Returns person's last name
+ * - {{Field.sex | male_text | female_text}} - Gendered text based on person's sex
+ * - {{parish.name}}, {{parish.city}}, etc. - Parish information
  */
 export function replacePlaceholders(
   content: string,
   options: RenderMarkdownOptions
 ): string {
-  const { fieldValues, inputFieldDefinitions, resolvedEntities, parish } = options
+  const { fieldValues, inputFieldDefinitions, resolvedEntities, parish, language = 'en' } = options
 
   // Find all {{...}} placeholders (supports both simple and gendered syntax)
   const placeholderRegex = /\{\{([^}]+)\}\}/g
@@ -147,22 +222,25 @@ export function replacePlaceholders(
     const parts = innerContent.split('|').map((p: string) => p.trim())
 
     if (parts.length === 3) {
-      // Gendered syntax: {{Field Name | male_text | female_text}}
-      const [fieldName, maleText, femaleText] = parts
-      return resolveGenderedText(fieldName, maleText, femaleText, fieldValues, inputFieldDefinitions, resolvedEntities)
+      // Gendered syntax: {{Field Name | male_text | female_text}} or {{Field.sex | male_text | female_text}}
+      const [fieldRef, maleText, femaleText] = parts
+      return resolveGenderedText(fieldRef, maleText, femaleText, fieldValues, inputFieldDefinitions, resolvedEntities)
     }
 
-    // Simple syntax: {{Field Name}} or {{parish.*}}
-    const cleanFieldName = parts[0]
+    // Simple syntax: {{Field Name}}, {{Field.property}}, or {{parish.*}}
+    const fieldRef = parts[0]
 
     // Check for parish placeholders
-    if (cleanFieldName.startsWith('parish.')) {
-      return resolveParishPlaceholder(cleanFieldName, parish)
+    if (fieldRef.startsWith('parish.')) {
+      return resolveParishPlaceholder(fieldRef, parish)
     }
 
-    // Find the field definition
+    // Parse field reference for dot notation (fieldName here is actually property_name)
+    const { fieldName: propertyName, property } = parseFieldReference(fieldRef)
+
+    // Find the field definition by property_name
     const fieldDef = inputFieldDefinitions.find(
-      def => def.name === cleanFieldName
+      def => def.property_name === propertyName
     )
 
     if (!fieldDef) {
@@ -170,16 +248,20 @@ export function replacePlaceholders(
       return match
     }
 
-    // Get the raw value from fieldValues
-    const rawValue = fieldValues[cleanFieldName]
+    // Get the raw value from fieldValues (keyed by property_name)
+    const rawValue = fieldValues[propertyName]
 
     if (rawValue === null || rawValue === undefined || rawValue === '') {
-      // No value provided - return "empty" per requirements
+      // No value provided - return internationalized "Unassigned" for person fields
+      if (fieldDef.type === 'person') {
+        return UNASSIGNED_TEXT[language]
+      }
+      // For other field types, return "empty" per existing requirements
       return 'empty'
     }
 
     // Convert value to display string based on field type
-    return getDisplayValue(rawValue, fieldDef, resolvedEntities)
+    return getDisplayValue(rawValue, fieldDef, resolvedEntities, property, language)
   })
 }
 
@@ -187,10 +269,10 @@ export function replacePlaceholders(
  * Resolves gendered text based on a person field's gender
  *
  * Supports two formats:
- * - {{FieldName | male | female}} - Uses the field's person for gender lookup
- * - {{FieldName.property | male | female}} - Uses the field's person for gender, ignores property
+ * - {{property_name | male | female}} - Uses the field's person for gender lookup
+ * - {{property_name.sex | male | female}} - Uses the field's person for gender
  *
- * @param fieldRef - The field reference (e.g., "Bride" or "Bride.first_name")
+ * @param fieldRef - The field reference (e.g., "bride" or "bride.sex")
  * @param maleText - Text to use if person is male
  * @param femaleText - Text to use if person is female
  * @returns The appropriate text based on gender, or "maleText/femaleText" if unknown
@@ -203,11 +285,11 @@ function resolveGenderedText(
   inputFieldDefinitions: InputFieldDefinition[],
   resolvedEntities?: RenderMarkdownOptions['resolvedEntities']
 ): string {
-  // Extract the base field name (before any dot notation)
-  const fieldName = fieldRef.split('.')[0]
+  // Extract the base property_name (before any dot notation)
+  const propertyName = fieldRef.split('.')[0]
 
-  // Find the field definition
-  const fieldDef = inputFieldDefinitions.find(def => def.name === fieldName)
+  // Find the field definition by property_name
+  const fieldDef = inputFieldDefinitions.find(def => def.property_name === propertyName)
 
   if (!fieldDef) {
     // Field not found - return both options
@@ -220,8 +302,8 @@ function resolveGenderedText(
     return `${maleText}/${femaleText}`
   }
 
-  // Get the person ID from field values
-  const personId = fieldValues[fieldName]
+  // Get the person ID from field values (keyed by property_name)
+  const personId = fieldValues[propertyName]
 
   if (!personId) {
     // No person selected - return both options
@@ -249,17 +331,43 @@ function resolveGenderedText(
 
 /**
  * Converts a field value to display string based on its type
+ *
+ * @param rawValue - The raw value from fieldValues
+ * @param fieldDef - The field definition
+ * @param resolvedEntities - Resolved entity references
+ * @param property - For person fields, the specific property to access (full_name, first_name, last_name)
+ * @param language - Language for internationalized fallback text
  */
 function getDisplayValue(
   rawValue: any,
   fieldDef: InputFieldDefinition,
-  resolvedEntities?: RenderMarkdownOptions['resolvedEntities']
+  resolvedEntities?: RenderMarkdownOptions['resolvedEntities'],
+  property?: PersonProperty,
+  language: 'en' | 'es' = 'en'
 ): string {
   switch (fieldDef.type) {
     case 'person': {
       // rawValue is person_id (UUID)
       const person = resolvedEntities?.people?.[rawValue]
-      return person?.full_name || ''
+
+      if (!person) {
+        return UNASSIGNED_TEXT[language]
+      }
+
+      // Return the requested property, defaulting to full_name
+      switch (property) {
+        case 'first_name':
+          return person.first_name || ''
+        case 'last_name':
+          return person.last_name || ''
+        case 'sex':
+          // sex property alone doesn't make sense - return empty
+          // (sex is meant to be used with gendered pipe syntax)
+          return ''
+        case 'full_name':
+        default:
+          return person.full_name || ''
+      }
     }
 
     case 'group': {

@@ -44,7 +44,7 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
   // Use list filters hook for URL state management
   const filters = useListFilters({
     baseUrl: '/mass-intentions',
-    defaultFilters: { status: 'ACTIVE', sort: 'date_desc' }
+    defaultFilters: { status: 'all', sort: 'date_desc' }
   })
 
   // Local state for search value (immediate visual feedback)

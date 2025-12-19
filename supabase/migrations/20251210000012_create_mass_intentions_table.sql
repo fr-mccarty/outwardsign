@@ -9,7 +9,7 @@ CREATE TABLE mass_intentions (
   date_received DATE,
   date_requested DATE,
   stipend_in_cents INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'REQUESTED',
+  status TEXT,
   mass_intention_template_id TEXT,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

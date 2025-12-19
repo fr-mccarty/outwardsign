@@ -10,7 +10,7 @@ CREATE TABLE master_events (
   field_values JSONB NOT NULL DEFAULT '{}'::jsonb,
   presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
   homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  status TEXT NOT NULL DEFAULT 'PLANNING',
+  status TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at TIMESTAMPTZ
@@ -91,4 +91,4 @@ CREATE TRIGGER master_events_updated_at
 COMMENT ON TABLE master_events IS 'Master events (sacrament containers) with JSONB field_values and manual minister assignment. ON DELETE RESTRICT for event_type_id prevents deletion of event types with existing events.';
 COMMENT ON COLUMN master_events.presider_id IS 'Presider assigned manually for this sacrament event';
 COMMENT ON COLUMN master_events.homilist_id IS 'Homilist assigned manually for this sacrament event';
-COMMENT ON COLUMN master_events.status IS 'Event status: PLANNING, ACTIVE, COMPLETED, CANCELLED';
+COMMENT ON COLUMN master_events.status IS 'Event status (values defined in application constants)';

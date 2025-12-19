@@ -535,6 +535,7 @@
     "contentLibrary": "Biblioteca de Contenido",
     "contentLibraryDescription": "Administra contenido litúrgico reutilizable como lecturas, oraciones y texto de ceremonias.",
     "manageContentLibrary": "Administrar Biblioteca de Contenido",
+    "createContent": "Crear Contenido",
     "categoryTags": "Etiquetas de Categoría",
     "categoryTagsDescription": "Administra etiquetas para organizar y categorizar contenido y peticiones (solo Administrador).",
     "manageCategoryTags": "Administrar Etiquetas de Categoría",

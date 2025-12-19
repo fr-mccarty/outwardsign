@@ -68,7 +68,8 @@ export interface EventTypeWithRelations extends EventType {
 export interface InputFieldDefinition {
   id: string
   event_type_id: string
-  name: string                    // User-defined label (e.g., "Bride", "Deceased")
+  name: string                    // User-defined label (e.g., "First Reader", "Deceased")
+  property_name: string           // Template variable name (e.g., "first_reader", "deceased") - lowercase, underscores only
   type: InputFieldType
   required: boolean
   list_id: string | null          // For list_item type
@@ -269,6 +270,7 @@ export interface UpdateEventTypeData {
 export interface CreateInputFieldDefinitionData {
   event_type_id: string
   name: string
+  property_name: string           // Template variable name (lowercase, underscores only)
   type: InputFieldType
   required: boolean
   list_id?: string | null
@@ -279,6 +281,7 @@ export interface CreateInputFieldDefinitionData {
 
 export interface UpdateInputFieldDefinitionData {
   name?: string
+  property_name?: string          // Template variable name (lowercase, underscores only)
   type?: InputFieldType
   required?: boolean
   list_id?: string | null

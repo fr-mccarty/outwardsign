@@ -44,32 +44,33 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
   const calendarEventFields = (eventType.input_field_definitions || []).filter(f => f.type === 'calendar_event')
 
   // State for field values (non-calendar-event fields)
+  // Use property_name as the key for all field values
   const [fieldValues, setFieldValues] = useState<FieldValues>(() => {
     const initial: FieldValues = {}
     // Initialize from template, existing event, or empty (skip calendar event fields)
     eventType.input_field_definitions?.forEach((field) => {
       if (field.type !== 'calendar_event') {
         // Priority: existing event > template > default
-        if (event?.field_values?.[field.name] !== undefined) {
-          initial[field.name] = event.field_values[field.name]
-        } else if (templateData?.field_values?.[field.name] !== undefined) {
-          initial[field.name] = templateData.field_values[field.name]
+        if (event?.field_values?.[field.property_name] !== undefined) {
+          initial[field.property_name] = event.field_values[field.property_name]
+        } else if (templateData?.field_values?.[field.property_name] !== undefined) {
+          initial[field.property_name] = templateData.field_values[field.property_name]
         } else {
-          initial[field.name] = field.type === 'yes_no' ? false : ''
+          initial[field.property_name] = field.type === 'yes_no' ? false : ''
         }
       }
     })
     return initial
   })
 
-  // State for calendar event field values (keyed by field name)
+  // State for calendar event field values (keyed by property_name)
   const [calendarEventValues, setCalendarEventValues] = useState<Record<string, CalendarEventFieldData>>(() => {
     const initial: Record<string, CalendarEventFieldData> = {}
     // Initialize calendar event fields from existing calendar events or template
     calendarEventFields.forEach((field) => {
       // Match calendar event to field by input_field_definition_id
       const existingCalendarEvent = event?.calendar_events?.find(ce => ce.input_field_definition_id === field.id)
-      const templateCalendarEvent = templateData?.calendar_events?.[field.name]
+      const templateCalendarEvent = templateData?.calendar_events?.[field.property_name]
 
       // Parse start_datetime into date and time components
       let date = ''
@@ -95,7 +96,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         // Note: location will be resolved when the form loads
       }
 
-      initial[field.name] = {
+      initial[field.property_name] = {
         date,
         time,
         is_all_day,
@@ -107,15 +108,16 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
   })
 
   // State for picker values (person, location, content, petition, group, document references)
+  // Keyed by property_name
   const [pickerValues, setPickerValues] = useState<Record<string, Person | Location | ContentWithTags | Petition | Group | Document | null>>(() => {
     const initial: Record<string, Person | Location | ContentWithTags | Petition | Group | Document | null> = {}
     // Initialize from resolved fields if editing
     if (event?.resolved_fields) {
       eventType.input_field_definitions?.forEach((field) => {
         if (field.type === 'person' || field.type === 'location' || field.type === 'content' || field.type === 'petition' || field.type === 'group' || field.type === 'document') {
-          const resolved = event.resolved_fields?.[field.name]
+          const resolved = event.resolved_fields?.[field.property_name]
           if (resolved?.resolved_value) {
-            initial[field.name] = resolved.resolved_value as Person | Location | ContentWithTags | Petition | Group | Document
+            initial[field.property_name] = resolved.resolved_value as Person | Location | ContentWithTags | Petition | Group | Document
           }
         }
       })
@@ -166,15 +168,15 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
     // Validate required fields (non-calendar_event fields)
     const missingRequired: string[] = []
     eventType.input_field_definitions?.forEach((field) => {
-      if (field.type !== 'calendar_event' && field.required && !fieldValues[field.name]) {
-        missingRequired.push(field.name)
+      if (field.type !== 'calendar_event' && field.required && !fieldValues[field.property_name]) {
+        missingRequired.push(field.name) // Use name for display
       }
     })
 
     // Validate required calendar event fields (must have at least a date)
     calendarEventFields.forEach((field) => {
-      if (field.required && !calendarEventValues[field.name]?.date) {
-        missingRequired.push(`${field.name} (Date)`)
+      if (field.required && !calendarEventValues[field.property_name]?.date) {
+        missingRequired.push(`${field.name} (Date)`) // Use name for display
       }
     })
 
@@ -199,10 +201,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
     const calendar_events = calendarEventFields.map((field) => ({
       input_field_definition_id: field.id,
       start_datetime: toStartDatetime(
-        calendarEventValues[field.name]?.date || new Date().toISOString().split('T')[0],
-        calendarEventValues[field.name]?.time || null
+        calendarEventValues[field.property_name]?.date || new Date().toISOString().split('T')[0],
+        calendarEventValues[field.property_name]?.time || null
       ),
-      location_id: calendarEventValues[field.name]?.location_id || null,
+      location_id: calendarEventValues[field.property_name]?.location_id || null,
       is_primary: field.is_primary
     }))
 
@@ -232,7 +234,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
       try {
         const newEvent = await createEvent(eventType.id, {
           field_values: fieldValues,
-          calendar_events
+          calendar_events,
+          status: 'PLANNING'
         })
         toast.success(`${eventType.name} created successfully`)
         router.push(`/events/${eventType.slug}/${newEvent.id}`)
@@ -257,8 +260,9 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
   }
 
   // Render field based on type
+  // Use property_name for data storage keys, field.name for UI labels
   const renderField = (field: InputFieldDefinition) => {
-    const value = fieldValues[field.name]
+    const value = fieldValues[field.property_name]
 
     switch (field.type) {
       case 'person':
@@ -266,10 +270,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           <PersonPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Person | null}
-            onValueChange={(person) => updatePickerValue(field.name, person)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Person | null}
+            onValueChange={(person) => updatePickerValue(field.property_name, person)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
           />
@@ -280,10 +284,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           <LocationPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Location | null}
-            onValueChange={(location) => updatePickerValue(field.name, location)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Location | null}
+            onValueChange={(location) => updatePickerValue(field.property_name, location)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
           />
@@ -294,10 +298,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           <ContentPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as ContentWithTags | null}
-            onValueChange={(content) => updatePickerValue(field.name, content)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as ContentWithTags | null}
+            onValueChange={(content) => updatePickerValue(field.property_name, content)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
             defaultFilterTags={field.filter_tags || []}
@@ -309,10 +313,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           <PetitionPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Petition | null}
-            onValueChange={(petition) => updatePickerValue(field.name, petition)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Petition | null}
+            onValueChange={(petition) => updatePickerValue(field.property_name, petition)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select or create ${field.name}`}
             eventContext={{
@@ -328,10 +332,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           <GroupPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Group | null}
-            onValueChange={(group) => updatePickerValue(field.name, group)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
+            value={pickerValues[field.property_name] as Group | null}
+            onValueChange={(group) => updatePickerValue(field.property_name, group)}
+            showPicker={pickerOpen[field.property_name] || false}
+            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
           />
@@ -352,7 +356,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             label={field.name}
             listId={field.list_id}
             value={typeof value === 'string' ? value : null}
-            onValueChange={(itemId) => updateListItemValue(field.name, itemId)}
+            onValueChange={(itemId) => updateListItemValue(field.property_name, itemId)}
             required={field.required}
             placeholder={`Select ${field.name}`}
           />
@@ -365,8 +369,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             label={field.name}
             value={typeof value === 'string' ? value : null}
             onValueChange={(documentId, doc) => {
-              setPickerValues(prev => ({ ...prev, [field.name]: doc }))
-              setFieldValues(prev => ({ ...prev, [field.name]: documentId }))
+              setPickerValues(prev => ({ ...prev, [field.property_name]: doc }))
+              setFieldValues(prev => ({ ...prev, [field.property_name]: documentId }))
             }}
             required={field.required}
             placeholder={`Upload ${field.name}`}
@@ -381,8 +385,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           <CalendarEventFieldView
             key={field.id}
             label={field.name}
-            value={calendarEventValues[field.name] || { date: '', time: '', location_id: null, location: null }}
-            onValueChange={(value) => updateCalendarEventValue(field.name, value)}
+            value={calendarEventValues[field.property_name] || { date: '', time: '', location_id: null, location: null }}
+            onValueChange={(value) => updateCalendarEventValue(field.property_name, value)}
             required={field.required}
             isPrimary={field.is_primary}
             calendarEventId={existingCalendarEvent?.id}
@@ -395,10 +399,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         return (
           <DatePickerField
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={value ? new Date(value + 'T12:00:00') : undefined}
-            onValueChange={(date) => updateFieldValue(field.name, date ? toLocalDateString(date) : '')}
+            onValueChange={(date) => updateFieldValue(field.property_name, date ? toLocalDateString(date) : '')}
             required={field.required}
             closeOnSelect
           />
@@ -408,10 +412,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         return (
           <TimePickerField
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={typeof value === 'string' ? value : ''}
-            onChange={(time) => updateFieldValue(field.name, time)}
+            onChange={(time) => updateFieldValue(field.property_name, time)}
             required={field.required}
           />
         )
@@ -419,14 +423,14 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
       case 'yes_no':
         return (
           <div key={field.id} className="flex items-center justify-between py-2">
-            <Label htmlFor={field.name} className="text-sm font-medium">
+            <Label htmlFor={field.property_name} className="text-sm font-medium">
               {field.name}
               {field.required && <span className="text-destructive ml-1">*</span>}
             </Label>
             <Switch
-              id={field.name}
+              id={field.property_name}
               checked={!!value}
-              onCheckedChange={(checked) => updateFieldValue(field.name, checked)}
+              onCheckedChange={(checked) => updateFieldValue(field.property_name, checked)}
             />
           </div>
         )
@@ -435,11 +439,11 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             inputType="textarea"
             value={typeof value === 'string' ? value : ''}
-            onChange={(val) => updateFieldValue(field.name, val)}
+            onChange={(val) => updateFieldValue(field.property_name, val)}
             required={field.required}
             rows={4}
             placeholder={`Enter ${field.name.toLowerCase()}...`}
@@ -450,11 +454,11 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             inputType="text"
             value={typeof value === 'string' ? value : ''}
-            onChange={(val) => updateFieldValue(field.name, val)}
+            onChange={(val) => updateFieldValue(field.property_name, val)}
             required={field.required}
             placeholder={`Enter ${field.name.toLowerCase()}`}
           />
@@ -471,10 +475,10 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={typeof value === 'string' ? value : ''}
-            onChange={(val) => updateFieldValue(field.name, val)}
+            onChange={(val) => updateFieldValue(field.property_name, val)}
             required={field.required}
             placeholder={`Enter ${field.name.toLowerCase()}`}
           />

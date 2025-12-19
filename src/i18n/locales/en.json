@@ -535,6 +535,7 @@
     "contentLibrary": "Content Library",
     "contentLibraryDescription": "Manage reusable liturgical content like readings, prayers, and ceremony text.",
     "manageContentLibrary": "Manage Content Library",
+    "createContent": "Create Content",
     "categoryTags": "Category Tags",
     "categoryTagsDescription": "Manage tags for organizing and categorizing content and petitions (Admin only).",
     "manageCategoryTags": "Manage Category Tags",
