@@ -221,19 +221,100 @@ export async function seedEvents(
         })
         break
 
+      // =====================================================
+      // Parish Events (system_type: 'event')
+      // =====================================================
+
+      case 'bible-studies':
+        eventsData.push({
+          field_values: {
+            'Discussion Leader': people[0].id,
+            'Topic': 'The Gospel of John',
+            'Scripture Passage': 'John 1:1-18',
+            'Expected Attendance': '15'
+          },
+          occasion: { date: getFutureDate(7), time: '19:00:00', location_id: hallLocation?.id || null }
+        })
+        eventsData.push({
+          field_values: {
+            'Discussion Leader': people[8].id,
+            'Topic': 'The Beatitudes',
+            'Scripture Passage': 'Matthew 5:1-12',
+            'Expected Attendance': '20'
+          },
+          occasion: { date: getFutureDate(14), time: '19:00:00', location_id: hallLocation?.id || null }
+        })
+        break
+
+      case 'fundraisers':
+        eventsData.push({
+          field_values: {
+            'Event Coordinator': people[5].id,
+            'Event Description': 'Annual parish picnic and silent auction to support youth ministry programs.',
+            'Fundraising Goal': '5000'
+          },
+          occasion: { date: getFutureDate(60), time: '11:00:00', location_id: hallLocation?.id || null }
+        })
+        eventsData.push({
+          field_values: {
+            'Event Coordinator': people[11].id,
+            'Event Description': 'Pancake breakfast fundraiser for the building fund.',
+            'Fundraising Goal': '2000'
+          },
+          occasion: { date: getFutureDate(21), time: '08:00:00', location_id: hallLocation?.id || null }
+        })
+        break
+
+      case 'religious-education':
+        eventsData.push({
+          field_values: {
+            'Catechist': people[3].id,
+            'Grade Level': 'First Communion',
+            'Lesson Topic': 'Sacraments of Initiation - Lesson 5'
+          },
+          occasion: { date: getFutureDate(5), time: '10:00:00', location_id: hallLocation?.id || null }
+        })
+        eventsData.push({
+          field_values: {
+            'Catechist': people[7].id,
+            'Grade Level': 'Confirmation',
+            'Lesson Topic': 'The Gifts of the Holy Spirit'
+          },
+          occasion: { date: getFutureDate(12), time: '18:30:00', location_id: hallLocation?.id || null }
+        })
+        break
+
+      case 'staff-meetings':
+        eventsData.push({
+          field_values: {
+            'Meeting Leader': people[0].id,
+            'Agenda': 'Monthly staff meeting to review parish activities and upcoming events. Please bring your department reports.'
+          },
+          occasion: { date: getFutureDate(3), time: '09:00:00', location_id: hallLocation?.id || null }
+        })
+        eventsData.push({
+          field_values: {
+            'Meeting Leader': people[8].id,
+            'Agenda': 'Liturgy planning meeting for Advent season. Music ministry and lectors should attend.'
+          },
+          occasion: { date: getFutureDate(10), time: '14:00:00', location_id: hallLocation?.id || null }
+        })
+        break
+
       default:
         continue
     }
 
     // Insert events and calendar events using unified model
     for (const eventData of eventsData) {
-      // Create master_event
+      // Create master_event with ACTIVE status (so they show in list views)
       const { data: newEvent, error: eventError } = await supabase
         .from('master_events')
         .insert({
           parish_id: parishId,
           event_type_id: eventType.id,
-          field_values: eventData.field_values
+          field_values: eventData.field_values,
+          status: 'ACTIVE'
         })
         .select()
         .single()

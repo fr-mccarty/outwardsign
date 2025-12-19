@@ -14,7 +14,7 @@ interface SystemTypeFilterProps {
  * SystemTypeFilter - Filter component for system types
  *
  * Features:
- * - Checkbox for each system type (Mass, Special Liturgy, Sacrament, Event)
+ * - Checkbox for each system type (Mass, Special Liturgy, Event)
  * - Uses SYSTEM_TYPE_METADATA for labels and icons
  * - Bilingual support (currently using .en per CLAUDE.md)
  * - Toggle individual or multiple system types

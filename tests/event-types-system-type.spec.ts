@@ -22,7 +22,7 @@ test.describe('Event Types System Type Filtering', () => {
     await expect(page.locator('body')).toBeVisible();
   });
 
-  test('should filter event_types by system_type (sacrament)', async ({ page }) => {
+  test('should filter event_types by system_type (special-liturgy)', async ({ page }) => {
     await page.goto('/events');
     await expect(page).toHaveURL('/events');
 
@@ -30,8 +30,8 @@ test.describe('Event Types System Type Filtering', () => {
     const systemTypeFilter = page.locator('#system_type');
     if (await systemTypeFilter.count() > 0) {
       await systemTypeFilter.click();
-      await page.getByRole('option', { name: /Sacrament/i }).first().click();
-      await expect(page).toHaveURL(/system_type=sacrament/);
+      await page.getByRole('option', { name: /Special Liturgies/i }).first().click();
+      await expect(page).toHaveURL(/system_type=special-liturgy/);
     }
 
     // Verify page loaded

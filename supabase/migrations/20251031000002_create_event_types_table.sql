@@ -18,7 +18,7 @@ CREATE TABLE event_types (
   CONSTRAINT unique_event_type_name_per_parish UNIQUE (parish_id, name),
   CONSTRAINT unique_event_type_slug_per_parish UNIQUE (parish_id, slug),
   CONSTRAINT check_event_type_order_non_negative CHECK ("order" >= 0),
-  CONSTRAINT event_types_system_type_check CHECK (system_type IN ('mass', 'special-liturgy', 'sacrament', 'event'))
+  CONSTRAINT event_types_system_type_check CHECK (system_type IN ('mass', 'special-liturgy', 'event'))
 );
 
 -- Enable RLS
@@ -40,7 +40,7 @@ CREATE INDEX idx_event_types_role_definitions_gin ON event_types USING GIN (role
 
 -- Column comments
 COMMENT ON COLUMN event_types.slug IS 'URL-safe identifier for event type (e.g., "weddings", "funerals"). Auto-generated from name but can be edited by admins. Must be unique per parish.';
-COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass, special-liturgy, sacrament, event)';
+COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass, special-liturgy, event)';
 COMMENT ON COLUMN event_types.role_definitions IS 'JSONB array of role definitions for this event type. Example: {"roles": [{"id": "presider", "name": "Presider", "required": true}]}';
 
 -- RLS Policies

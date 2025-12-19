@@ -154,7 +154,8 @@ export async function seedMasses(
         parish_id: parishId,
         event_type_id: massData.eventType.id,
         field_values: massData.fieldValues,
-        presider_id: people[0].id
+        presider_id: people[0].id,
+        status: 'ACTIVE'
       })
       .select()
       .single()

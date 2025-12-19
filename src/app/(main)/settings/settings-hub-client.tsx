@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, FileText, ChevronRight, Church, Calendar, Tag, FileStack } from 'lucide-react'
+import { User, FileText, ChevronRight, Church, Calendar, Tag, FileStack, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -125,6 +125,26 @@ export function SettingsHubClient() {
           <Button asChild variant="outline" className="w-full justify-between">
             <Link href="/settings/parish">
               {t('settings.manageParish')}
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <BookOpen className="h-5 w-5 text-primary" />
+            {t('settings.massConfiguration')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            {t('settings.massConfigurationDescription')}
+          </p>
+          <Button asChild variant="outline" className="w-full justify-between">
+            <Link href="/settings/mass-configuration">
+              {t('settings.manageMassConfiguration')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>

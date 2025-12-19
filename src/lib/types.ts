@@ -294,7 +294,7 @@ export interface EventType {
   icon: string // Lucide icon name
   slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
   order: number
-  system_type: 'mass' | 'special-liturgy' | 'sacrament' | 'event' // System type for categorization
+  system_type: 'mass' | 'special-liturgy' | 'event' // System type for categorization
   role_definitions: RoleDefinitions | null // JSON-B role definitions for this event type
   deleted_at: string | null
   created_at: string
@@ -596,7 +596,7 @@ export interface CreateEventTypeData {
   description?: string | null
   icon: string
   slug?: string | null
-  system_type: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
+  system_type: 'mass' | 'special-liturgy' | 'event'
 }
 
 export interface UpdateEventTypeData {
@@ -604,7 +604,7 @@ export interface UpdateEventTypeData {
   description?: string | null
   icon?: string
   slug?: string | null
-  system_type?: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
+  system_type?: 'mass' | 'special-liturgy' | 'event'
 }
 
 // Input Field Definitions (fields for event types)

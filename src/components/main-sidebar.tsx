@@ -23,12 +23,8 @@ import {
   Plus,
   CalendarDays,
   Building,
-  LayoutTemplate,
-  UserCog,
-  UsersIcon,
   HelpCircle,
   ScrollText,
-  Wrench,
 } from "lucide-react"
 import Link from "next/link"
 import { ParishUserMenu } from "@/components/parish-user-menu"
@@ -58,7 +54,6 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
   const groupedEventTypes = {
     mass: eventTypes.filter(et => et.system_type === 'mass'),
     'special-liturgy': eventTypes.filter(et => et.system_type === 'special-liturgy'),
-    sacrament: eventTypes.filter(et => et.system_type === 'sacrament'),
     event: eventTypes.filter(et => et.system_type === 'event'),
   }
 
@@ -133,47 +128,20 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              <SidebarMenuItem key="ScheduleMasses">
+              {/* Schedule Masses temporarily hidden - feature in development */}
+              {/* <SidebarMenuItem key="ScheduleMasses">
                 <SidebarMenuButton asChild>
                   <Link href="/masses/schedule" onClick={handleLinkClick}>
                     <CalendarDays />
                     <span>{t('nav.scheduleMasses')}</span>
                   </Link>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <CollapsibleNavSection
-                name={t('nav.setupConfiguration')}
-                icon={Wrench}
-                items={[
-                  {
-                    title: t('nav.recurringMassSchedule'),
-                    url: "/mass-times-templates",
-                    icon: CalendarDays,
-                  },
-                  {
-                    title: t('nav.roleAssignmentPatterns'),
-                    url: "/mass-role-templates",
-                    icon: LayoutTemplate,
-                  },
-                  {
-                    title: t('nav.roleDefinitions'),
-                    url: "/mass-roles",
-                    icon: UserCog,
-                  },
-                  {
-                    title: t('nav.ministryVolunteers'),
-                    url: "/mass-role-members",
-                    icon: UsersIcon,
-                  },
-                ]}
-                defaultOpen={false}
-              />
+              </SidebarMenuItem> */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Special Liturgies - Dynamic by event type */}
+        {/* Special Liturgies - Dynamic by event type with sub-navigation */}
         {groupedEventTypes['special-liturgy'].length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>{SYSTEM_TYPE_METADATA['special-liturgy'].name_en}</SidebarGroupLabel>
@@ -183,39 +151,24 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                   const Icon = getLucideIcon(eventType.icon)
                   const slug = eventType.slug || eventType.id
                   return (
-                    <SidebarMenuItem key={eventType.id}>
-                      <SidebarMenuButton asChild>
-                        <Link href={`/special-liturgies/${slug}`} onClick={handleLinkClick}>
-                          <Icon />
-                          <span>{eventType.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {/* Sacraments - Dynamic by event type */}
-        {groupedEventTypes.sacrament.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.sacrament.name_en}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {groupedEventTypes.sacrament.map((eventType) => {
-                  const Icon = getLucideIcon(eventType.icon)
-                  const slug = eventType.slug || eventType.id
-                  return (
-                    <SidebarMenuItem key={eventType.id}>
-                      <SidebarMenuButton asChild>
-                        <Link href={`/sacraments/${slug}`} onClick={handleLinkClick}>
-                          <Icon />
-                          <span>{eventType.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <CollapsibleNavSection
+                      key={eventType.id}
+                      name={eventType.name}
+                      icon={Icon}
+                      items={[
+                        {
+                          title: `Our ${eventType.name}s`,
+                          url: `/special-liturgies/${slug}`,
+                          icon: Icon,
+                        },
+                        {
+                          title: `New ${eventType.name}`,
+                          url: `/special-liturgies/${slug}/create`,
+                          icon: Plus,
+                        },
+                      ]}
+                      defaultOpen={false}
+                    />
                   )
                 })}
               </SidebarMenu>

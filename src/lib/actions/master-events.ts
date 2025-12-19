@@ -178,11 +178,12 @@ export async function getAllMasterEvents(
 
 /**
  * Get all events for a specific event type
+ * Returns events with event_type and primary_calendar_event for list display
  */
 export async function getEvents(
   eventTypeId: string,
   filters?: MasterEventFilterParams
-): Promise<MasterEvent[]> {
+): Promise<MasterEventWithTypeAndCalendarEvent[]> {
   const selectedParishId = await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
@@ -193,7 +194,7 @@ export async function getEvents(
 
   let query = supabase
     .from('master_events')
-    .select('*')
+    .select('*, event_type:event_types(*)')
     .eq('parish_id', selectedParishId)
     .eq('event_type_id', eventTypeId)
     .is('deleted_at', null)
@@ -307,23 +308,26 @@ export async function getEvents(
     }
   }
 
-  // Apply date sorting if requested (requires fetching calendar events)
-  if (filters?.sort === 'date_asc' || filters?.sort === 'date_desc') {
-    const eventIds = events.map(e => e.id)
-    if (eventIds.length > 0) {
-      const { data: calendarEvents } = await supabase
-        .from('calendar_events')
-        .select('master_event_id, start_datetime')
-        .in('master_event_id', eventIds)
-        .eq('is_primary', true)
-        .is('deleted_at', null)
+  // Fetch primary calendar events for all events (needed for display and sorting)
+  const eventIds = events.map(e => e.id)
+  let calendarEventsMap = new Map<string, CalendarEvent>()
 
-      // Create map of master_event_id to primary calendar event start_datetime
-      const dateMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce.start_datetime]) || [])
+  if (eventIds.length > 0) {
+    const { data: calendarEvents } = await supabase
+      .from('calendar_events')
+      .select('*, location:locations(*)')
+      .in('master_event_id', eventIds)
+      .eq('is_primary', true)
+      .is('deleted_at', null)
 
+    // Create map of master_event_id to primary calendar event
+    calendarEventsMap = new Map(calendarEvents?.map(ce => [ce.master_event_id, ce as CalendarEvent]) || [])
+
+    // Apply date sorting if requested
+    if (filters?.sort === 'date_asc' || filters?.sort === 'date_desc') {
       events.sort((a, b) => {
-        const dateA = dateMap.get(a.id) || ''
-        const dateB = dateMap.get(b.id) || ''
+        const dateA = calendarEventsMap.get(a.id)?.start_datetime || ''
+        const dateB = calendarEventsMap.get(b.id)?.start_datetime || ''
         if (filters?.sort === 'date_asc') {
           return dateA.localeCompare(dateB)
         } else {
@@ -333,7 +337,11 @@ export async function getEvents(
     }
   }
 
-  return events
+  // Return events with primary_calendar_event attached
+  return events.map(event => ({
+    ...event,
+    primary_calendar_event: calendarEventsMap.get(event.id)
+  })) as MasterEventWithTypeAndCalendarEvent[]
 }
 
 /**

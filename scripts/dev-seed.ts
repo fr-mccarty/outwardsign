@@ -212,10 +212,9 @@ async function seedDevData() {
       logSuccess(`Petition templates: ${result.petitionTemplates.length}`)
       logSuccess(`Group roles: ${result.groupRoles.length}`)
       logSuccess(`Mass roles: ${result.massRoles.length}`)
-      logSuccess(`Sacrament event types: ${result.sacramentEventTypesCount}`)
+      logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
       logSuccess(`General event types: ${result.generalEventTypesCount}`)
       logSuccess(`Mass event types: ${result.massEventTypesCount}`)
-      logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
     } catch (error) {
       logError(`Error seeding parish data: ${error}`)
       process.exit(1)

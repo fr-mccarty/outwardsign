@@ -404,9 +404,8 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
     groupRoles: groupRoles || [],
     massRoles: massRoles || [],
     eventTypes: [...userDefinedEventTypesResult.eventTypes, ...massEventTypesResult.eventTypes, ...specialLiturgyEventTypesResult.eventTypes],
-    sacramentEventTypesCount: userDefinedEventTypesResult.sacramentCount || 0,
+    specialLiturgyEventTypesCount: (userDefinedEventTypesResult.specialLiturgyCount || 0) + specialLiturgyEventTypesResult.eventTypes.length,
     generalEventTypesCount: userDefinedEventTypesResult.generalEventCount || 0,
-    massEventTypesCount: massEventTypesResult.eventTypes.length,
-    specialLiturgyEventTypesCount: specialLiturgyEventTypesResult.eventTypes.length
+    massEventTypesCount: massEventTypesResult.eventTypes.length
   }
 }

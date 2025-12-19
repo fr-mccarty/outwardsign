@@ -11,26 +11,26 @@ import type { DevSeederContext, SamplePerson } from './types'
 import { logSuccess, logError, logInfo, logWarning } from '../../src/lib/utils/console'
 
 export const SAMPLE_PEOPLE: SamplePerson[] = [
-  { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '(555) 123-4567', sex: 'MALE', avatarFile: 'fr-josh.webp' },
-  { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '(555) 987-6543', sex: 'FEMALE' },
-  { firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@example.com', phone: '(555) 246-8101', sex: 'MALE' },
-  { firstName: 'Maria', lastName: 'Garcia', email: 'maria.garcia@example.com', phone: '(555) 369-1214', sex: 'FEMALE' },
-  { firstName: 'Michael', lastName: 'Chen', email: 'michael.chen@example.com', phone: '(555) 482-1357', sex: 'MALE' },
-  { firstName: 'Sarah', lastName: 'Williams', email: 'sarah.williams@example.com', phone: '(555) 159-2634', sex: 'FEMALE' },
-  { firstName: 'David', lastName: 'Martinez', email: 'david.martinez@example.com', phone: '(555) 753-9514', sex: 'MALE' },
-  { firstName: 'Emily', lastName: 'Taylor', email: 'emily.taylor@example.com', phone: '(555) 951-7532', sex: 'FEMALE' },
-  { firstName: 'James', lastName: 'Anderson', email: 'james.anderson@example.com', phone: '(555) 357-1593', sex: 'MALE', avatarFile: 'joe.webp' },
-  { firstName: 'Lisa', lastName: 'Brown', email: 'lisa.brown@example.com', phone: '(555) 753-8642', sex: 'FEMALE' },
-  { firstName: 'Robert', lastName: 'Wilson', email: 'robert.wilson@example.com', phone: '(555) 951-3578', sex: 'MALE' },
-  { firstName: 'Patricia', lastName: 'Moore', email: 'patricia.moore@example.com', phone: '(555) 159-7534', sex: 'FEMALE' },
-  { firstName: 'Thomas', lastName: 'Lee', email: 'thomas.lee@example.com', phone: '(555) 357-9512', sex: 'MALE' },
-  { firstName: 'Jennifer', lastName: 'White', email: 'jennifer.white@example.com', phone: '(555) 753-1596', sex: 'FEMALE' },
-  { firstName: 'Christopher', lastName: 'Harris', email: 'christopher.harris@example.com', phone: '(555) 951-7538', sex: 'MALE' },
-  { firstName: 'Linda', lastName: 'Clark', email: 'linda.clark@example.com', phone: '(555) 159-3574', sex: 'FEMALE' },
-  { firstName: 'Daniel', lastName: 'Rodriguez', email: 'daniel.rodriguez@example.com', phone: '(555) 357-7539', sex: 'MALE' },
-  { firstName: 'Barbara', lastName: 'Lewis', email: 'barbara.lewis@example.com', phone: '(555) 753-9516', sex: 'FEMALE' },
-  { firstName: 'Matthew', lastName: 'Walker', email: 'matthew.walker@example.com', phone: '(555) 951-1597', sex: 'MALE' },
-  { firstName: 'Nancy', lastName: 'Hall', email: 'nancy.hall@example.com', phone: '(555) 159-7535', sex: 'FEMALE' },
+  { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '(555) 123-4567', sex: 'MALE', city: 'Austin', state: 'TX', avatarFile: 'fr-josh.webp' },
+  { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '(555) 987-6543', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@example.com', phone: '(555) 246-8101', sex: 'MALE', city: 'Round Rock', state: 'TX' },
+  { firstName: 'Maria', lastName: 'Garcia', email: 'maria.garcia@example.com', phone: '(555) 369-1214', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Michael', lastName: 'Chen', email: 'michael.chen@example.com', phone: '(555) 482-1357', sex: 'MALE', city: 'Cedar Park', state: 'TX' },
+  { firstName: 'Sarah', lastName: 'Williams', email: 'sarah.williams@example.com', phone: '(555) 159-2634', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'David', lastName: 'Martinez', email: 'david.martinez@example.com', phone: '(555) 753-9514', sex: 'MALE', city: 'Pflugerville', state: 'TX' },
+  { firstName: 'Emily', lastName: 'Taylor', email: 'emily.taylor@example.com', phone: '(555) 951-7532', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'James', lastName: 'Anderson', email: 'james.anderson@example.com', phone: '(555) 357-1593', sex: 'MALE', city: 'Georgetown', state: 'TX', avatarFile: 'joe.webp' },
+  { firstName: 'Lisa', lastName: 'Brown', email: 'lisa.brown@example.com', phone: '(555) 753-8642', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Robert', lastName: 'Wilson', email: 'robert.wilson@example.com', phone: '(555) 951-3578', sex: 'MALE', city: 'Leander', state: 'TX' },
+  { firstName: 'Patricia', lastName: 'Moore', email: 'patricia.moore@example.com', phone: '(555) 159-7534', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Thomas', lastName: 'Lee', email: 'thomas.lee@example.com', phone: '(555) 357-9512', sex: 'MALE', city: 'Round Rock', state: 'TX' },
+  { firstName: 'Jennifer', lastName: 'White', email: 'jennifer.white@example.com', phone: '(555) 753-1596', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Christopher', lastName: 'Harris', email: 'christopher.harris@example.com', phone: '(555) 951-7538', sex: 'MALE', city: 'Cedar Park', state: 'TX' },
+  { firstName: 'Linda', lastName: 'Clark', email: 'linda.clark@example.com', phone: '(555) 159-3574', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Daniel', lastName: 'Rodriguez', email: 'daniel.rodriguez@example.com', phone: '(555) 357-7539', sex: 'MALE', city: 'Pflugerville', state: 'TX' },
+  { firstName: 'Barbara', lastName: 'Lewis', email: 'barbara.lewis@example.com', phone: '(555) 753-9516', sex: 'FEMALE', city: 'Austin', state: 'TX' },
+  { firstName: 'Matthew', lastName: 'Walker', email: 'matthew.walker@example.com', phone: '(555) 951-1597', sex: 'MALE', city: 'Georgetown', state: 'TX' },
+  { firstName: 'Nancy', lastName: 'Hall', email: 'nancy.hall@example.com', phone: '(555) 159-7535', sex: 'FEMALE', city: 'Austin', state: 'TX' },
 ]
 
 export async function seedPeople(ctx: DevSeederContext) {
@@ -70,6 +70,8 @@ export async function seedPeople(ctx: DevSeederContext) {
         email: person.email,
         phone_number: person.phone,
         sex: person.sex,
+        city: person.city,
+        state: person.state,
         mass_times_template_item_ids: weekendMassTimeItems.length > 0 ? [weekendMassTimeItems[index % weekendMassTimeItems.length].id] : []
       }))
     )

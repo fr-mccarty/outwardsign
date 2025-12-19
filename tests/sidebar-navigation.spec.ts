@@ -100,9 +100,9 @@ test.describe('Sidebar Navigation', () => {
         }
 
         // Verify page has loaded by checking for any heading
-        // Use configured timeout for pages with heavy server-side data fetching
+        // Use HEAVY_LOAD timeout for pages with significant server-side data fetching
         const heading = page.locator('h1, h2').first();
-        const hasHeading = await heading.isVisible({ timeout: TEST_TIMEOUTS.EXTENDED }).catch(() => false);
+        const hasHeading = await heading.isVisible({ timeout: TEST_TIMEOUTS.HEAVY_LOAD }).catch(() => false);
 
         if (!hasHeading) {
           failures.push({ name: link.name, url: link.url, error: 'No heading found - page may not have loaded' });

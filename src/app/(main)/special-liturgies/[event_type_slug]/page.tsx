@@ -78,6 +78,7 @@ export default async function SpecialLiturgiesPage({ params, searchParams }: Pag
         eventType={eventType}
         initialData={events}
         initialHasMore={initialHasMore}
+        baseUrl={`/special-liturgies/${event_type_slug}`}
       />
     </PageContainer>
   )

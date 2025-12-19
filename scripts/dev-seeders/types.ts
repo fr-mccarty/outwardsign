@@ -10,6 +10,8 @@ export interface SamplePerson {
   email: string
   phone: string
   sex: 'MALE' | 'FEMALE'
+  city?: string
+  state?: string
   avatarFile?: string
 }
 

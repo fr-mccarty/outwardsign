@@ -9,7 +9,7 @@
  * System Type
  * Used to organize event types in the UI (sidebar navigation)
  */
-export type SystemType = 'sacrament' | 'mass' | 'special-liturgy' | 'event'
+export type SystemType = 'mass' | 'special-liturgy' | 'event'
 
 /**
  * Field types available for input field definitions
@@ -46,7 +46,7 @@ export interface EventType {
   icon: string                    // Lucide icon name
   slug: string | null             // URL-safe identifier (e.g., "weddings", "funerals")
   order: number                   // Display order in sidebar
-  system_type: SystemType         // System type for UI organization (sacrament, mass, special_liturgy, event)
+  system_type: SystemType         // System type for UI organization (mass, special-liturgy, event)
   role_definitions?: { roles: Array<{ id: string; name: string; required: boolean }> } | null  // JSON-B role definitions
   deleted_at: string | null
   created_at: string

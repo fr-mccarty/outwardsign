@@ -33,11 +33,10 @@ Outward Sign uses a **unified 3-level event data model** that consolidates all p
 2. **master_events** - Specific instances (John & Jane's Wedding, Easter Vigil 2025, Zumba Jan 15)
 3. **calendar_events** - Date/time/location entries that appear on the calendar
 
-**System Types (4 Categories):**
-All event_types belong to one of four **system types** (stored as enum field with CHECK constraint):
+**System Types (3 Categories):**
+All event_types belong to one of three **system types** (stored as enum field with CHECK constraint):
 - **mass** - Masses (system_type = 'mass')
-- **special-liturgy** - Special Liturgies (system_type = 'special-liturgy')
-- **sacrament** - Sacraments (system_type = 'sacrament')
+- **special-liturgy** - Special Liturgies including sacramental celebrations (system_type = 'special-liturgy')
 - **event** - Events (system_type = 'event')
 
 System type metadata (icons, bilingual labels) is stored in application constants at `src/lib/constants/system-types.ts`, not in the database.
@@ -53,11 +52,10 @@ System type metadata (icons, bilingual labels) is stored in application constant
 | System Type | Module Route | Event Types Examples |
 |-------------|-------------|----------------------|
 | **mass** | `/masses` | Sunday Mass, Daily Mass, Funeral Mass |
-| **special-liturgy** | `/special-liturgies/[event_type_slug]` | Easter Vigil, Christmas Midnight Mass, Stations of the Cross |
-| **sacrament** | `/sacraments/[event_type_slug]` | Wedding, Baptism, Confirmation, First Communion |
+| **special-liturgy** | `/special-liturgies/[event_type_slug]` | Wedding, Baptism, Funeral, Easter Vigil, Stations of the Cross |
 | **event** | `/events/[event_type_id]` | Bible Study, Zumba, Parish Picnic, Finance Committee Meeting |
 
-**Event Types are user-configured** - Parish administrators create event types through Settings pages (Settings → Masses, Settings → Sacraments, etc.) with custom fields, role definitions, and script templates.
+**Event Types are user-configured** - Parish administrators create event types through Settings pages (Settings → Masses, Settings → Special Liturgies, etc.) with custom fields, role definitions, and script templates.
 
 **When to create a new Event Type (NOT a code module):**
 - Any sacrament or parish activity
@@ -155,7 +153,7 @@ All core modules use the **unified event data model** with master_events → cal
 
 ### Special Liturgies Module
 
-**Purpose:** Non-Mass liturgical celebrations (Easter Vigil, Stations of the Cross, etc.)
+**Purpose:** Non-Mass liturgical celebrations including sacraments (Weddings, Baptisms, Funerals, Easter Vigil, Stations of the Cross, etc.)
 
 **Route:** `/special-liturgies/[event_type_slug]`
 
@@ -163,44 +161,20 @@ All core modules use the **unified event data model** with master_events → cal
 
 **Database Tables:**
 - `master_events` (with event_type_id → event_types where system_type = 'special-liturgy')
-- `calendar_events` (scheduled occurrences)
+- `calendar_events` (scheduled occurrences, often multiple per master_event)
 - `master_event_roles` (role assignments)
 
 **Architecture:**
 - Dynamic routes based on event_type slug
-- Single module handles all special liturgy types
+- Single module handles all special liturgy types including sacraments
 - Event types configured in Settings → Special Liturgies
+- Supports multiple calendar_events per master_event (e.g., Wedding Rehearsal + Ceremony)
 
 **Key Files:**
 - `src/app/(main)/special-liturgies/[event_type_slug]/page.tsx` - List page
 - `src/app/(main)/special-liturgies/[event_type_slug]/[id]/page.tsx` - View page
 - `src/app/(main)/special-liturgies/[event_type_slug]/[id]/edit/page.tsx` - Edit page
 - `src/app/(main)/special-liturgies/[event_type_slug]/create/page.tsx` - Create page
-
-### Sacraments Module
-
-**Purpose:** Sacramental celebrations (Weddings, Baptisms, Confirmations, etc.)
-
-**Route:** `/sacraments/[event_type_slug]`
-
-**System Type:** `sacrament`
-
-**Database Tables:**
-- `master_events` (with event_type_id → event_types where system_type = 'sacrament')
-- `calendar_events` (scheduled occurrences, often multiple per master_event)
-- `master_event_roles` (role assignments)
-
-**Architecture:**
-- Dynamic routes based on event_type slug
-- Single module handles all sacrament types
-- Event types configured in Settings → Sacraments
-- Supports multiple calendar_events per master_event (e.g., Wedding Rehearsal + Ceremony)
-
-**Key Files:**
-- `src/app/(main)/sacraments/[event_type_slug]/page.tsx` - List page
-- `src/app/(main)/sacraments/[event_type_slug]/[id]/page.tsx` - View page
-- `src/app/(main)/sacraments/[event_type_slug]/[id]/edit/page.tsx` - Edit page
-- `src/app/(main)/sacraments/[event_type_slug]/create/page.tsx` - Create page
 
 ### Events Module
 
@@ -460,7 +434,6 @@ All module labels are provided in **English** and **Spanish**.
 |--------|---------|---------|------|
 | **Masses** | Masses | Misas | BookOpen |
 | **Special Liturgies** | Special Liturgies | Liturgias Especiales | Star |
-| **Sacraments** | Sacraments | Sacramentos | Church |
 | **Events** | Events | Eventos | CalendarDays |
 
 **Other Core Modules:**
@@ -568,7 +541,7 @@ Icons are from **Lucide React**.
 | **master_event_roles** | Role assignments for master_events | `master_event_role` |
 
 **Key Relationships:**
-- `event_types.system_type` → enum ('mass', 'special-liturgy', 'sacrament', 'event')
+- `event_types.system_type` → enum ('mass', 'special-liturgy', 'event')
 - `master_events.event_type_id` → `event_types.id` (NOT NULL)
 - `calendar_events.master_event_id` → `master_events.id` (NOT NULL)
 - `calendar_events.input_field_definition_id` → `input_field_definitions.id` (NOT NULL)

@@ -118,6 +118,9 @@ export default async function DashboardPage() {
     eventCountsByType.set(typeId, (eventCountsByType.get(typeId) || 0) + 1)
   }
 
+  // Filter to only show special liturgy event types on the dashboard
+  const specialLiturgyEventTypes = eventTypes.filter(et => et.system_type === 'special-liturgy')
+
   return (
     <>
       <DashboardErrorHandler />
@@ -174,17 +177,17 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* Event Types Summary - Only show if event types exist */}
-      {eventTypes.length > 0 && (
+      {/* Special Liturgy Event Types Summary - Only show if special liturgy types exist */}
+      {specialLiturgyEventTypes.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-          {eventTypes.map((eventType) => {
+          {specialLiturgyEventTypes.map((eventType) => {
             const Icon = getLucideIcon(eventType.icon)
             const count = eventCountsByType.get(eventType.id) || 0
             const slug = eventType.slug || eventType.id
             return (
               <Link
                 key={eventType.id}
-                href={`/events?type=${slug}`}
+                href={`/special-liturgies/${slug}`}
                 className="block hover:opacity-80 transition-opacity"
               >
                 <MetricCard
@@ -316,14 +319,14 @@ export default async function DashboardPage() {
       {/* Quick Access Links */}
       <FormSectionCard title={t('dashboard.quickAccess')}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {/* Dynamic Event Type Quick Links */}
-          {eventTypes.map((eventType) => {
+          {/* Special Liturgy Event Type Quick Links */}
+          {specialLiturgyEventTypes.map((eventType) => {
             const Icon = getLucideIcon(eventType.icon)
             const slug = eventType.slug || eventType.id
             return (
               <Link
                 key={eventType.id}
-                href={`/events/create?type=${slug}`}
+                href={`/special-liturgies/${slug}/create`}
                 className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
               >
                 <Icon className="h-6 w-6" />

@@ -32,7 +32,7 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
       description: 'Celebrating the union of two people in marriage.',
       icon: 'VenusAndMars',
       slug: 'weddings',
-      system_type: 'sacrament',
+      system_type: 'special-liturgy',
       order: 1
     })
     .select()
@@ -445,7 +445,7 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
       description: 'Honoring the life of the deceased and commending them to God.',
       icon: 'Cross',
       slug: 'funerals',
-      system_type: 'sacrament',
+      system_type: 'special-liturgy',
       order: 2
     })
     .select()
@@ -894,7 +894,7 @@ Burial will take place at:
       description: 'Welcoming new members into the faith through the waters of baptism.',
       icon: 'Droplet',
       slug: 'baptisms',
-      system_type: 'sacrament',
+      system_type: 'special-liturgy',
       order: 3
     })
     .select()
@@ -1022,7 +1022,7 @@ Please join us in celebrating the Baptism of
       description: 'Celebrating a young woman\'s fifteenth birthday and her transition to adulthood.',
       icon: 'BookHeart',
       slug: 'quinceaneras',
-      system_type: 'sacrament',
+      system_type: 'special-liturgy',
       order: 4
     })
     .select()
@@ -1154,7 +1154,7 @@ Please join us for a reception following the ceremony at:
       description: 'Presenting a child to God and asking for His blessing.',
       icon: 'HandHeartIcon',
       slug: 'presentations',
-      system_type: 'sacrament',
+      system_type: 'special-liturgy',
       order: 5
     })
     .select()
@@ -1788,7 +1788,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
   // "Other" has no input field definitions - it uses only the base event fields
 
   // Collect event types by category for reporting
-  const sacramentTypes = [
+  const specialLiturgyTypes = [
     weddingType,
     funeralType,
     baptismType,
@@ -1818,7 +1818,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
       staffMeetingType,
       otherType
     ],
-    sacramentCount: sacramentTypes.length,
+    specialLiturgyCount: specialLiturgyTypes.length,
     generalEventCount: generalEventTypes.length
   }
 }

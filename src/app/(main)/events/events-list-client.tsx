@@ -18,15 +18,15 @@ import { StatusFilter } from "@/components/status-filter"
 import { EndOfListMessage } from '@/components/end-of-list-message'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Plus, CalendarDays, Filter } from "lucide-react"
+import { Plus, CalendarDays, Filter, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
 import { toLocalDateString, formatDatePretty } from "@/lib/utils/formatters"
+import type { EventType } from "@/lib/types"
+import { FormInput } from "@/components/form-input"
+import { SelectItem } from "@/components/ui/select"
 import { useListFilters } from "@/hooks/use-list-filters"
 import { parseSort, formatSort } from '@/lib/utils/sort-utils'
-import {
-  buildWhereColumn,
-  buildActionsColumn
-} from '@/lib/utils/table-columns'
+import { buildWhereColumn } from '@/lib/utils/table-columns'
 import { DataTableColumn } from '@/components/data-table/data-table'
 import { MODULE_STATUS_COLORS } from '@/lib/constants'
 import { getStatusLabel } from '@/lib/content-builders/shared/helpers'
@@ -36,6 +36,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useTranslations } from 'next-intl'
 
 const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const
@@ -43,9 +50,10 @@ const MASTER_EVENT_STATUS_VALUES = ['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLE
 interface EventsListClientProps {
   initialData: MasterEventWithTypeAndCalendarEvent[]
   stats: MasterEventStats
+  eventTypes: EventType[]
 }
 
-export function EventsListClient({ initialData, stats }: EventsListClientProps) {
+export function EventsListClient({ initialData, stats, eventTypes }: EventsListClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('events')
@@ -119,10 +127,17 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
 
     setIsLoadingMore(true)
     try {
+      // Look up event type ID from slug
+      const eventTypeSlug = filters.getFilterValue('event_type')
+      const eventTypeId = eventTypeSlug
+        ? eventTypes.find(et => et.slug === eventTypeSlug)?.id
+        : undefined
+
       const nextEvents = await getAllMasterEvents({
         search: filters.getFilterValue('search'),
         systemType: 'event',
         status: filters.getFilterValue('status') as MasterEventFilterParams['status'],
+        eventTypeId,
         sort: filters.getFilterValue('sort') as MasterEventFilterParams['sort'],
         offset: offset,
         limit: INFINITE_SCROLL_LOAD_MORE_SIZE,
@@ -223,6 +238,9 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
             <span className="text-sm">
               {formatDatePretty(date)}
             </span>
+            <span className="text-xs text-muted-foreground">
+              {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            </span>
           </div>
         )
       },
@@ -230,19 +248,56 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
       sortable: true,
       accessorFn: (event) => event.primary_calendar_event?.start_datetime || ''
     },
+    // Event Type column - hidden on smaller screens
+    {
+      key: 'event_type',
+      header: t('eventType'),
+      cell: (event) => (
+        <span className="text-sm">{event.event_type?.name || '—'}</span>
+      ),
+      className: 'hidden md:table-cell max-w-[150px]',
+      sortable: true,
+      accessorFn: (event) => event.event_type?.name || ''
+    },
     buildWhereColumn<MasterEventWithTypeAndCalendarEvent>({
       getLocation: (event) => event.primary_calendar_event?.location || null,
       hiddenOn: 'lg'
     }),
-    buildActionsColumn<MasterEventWithTypeAndCalendarEvent>({
-      baseUrl: '/events',
-      onDelete: (event) => {
-        setEventToDelete(event)
-        setDeleteDialogOpen(true)
-      },
-      getDeleteMessage: (event) =>
-        `Are you sure you want to delete this ${event.event_type?.name || 'event'}?`
-    })
+    // Custom actions column to handle event_type slug in URLs
+    {
+      key: 'actions',
+      header: '',
+      cell: (event) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/events/${event.event_type?.slug}/${event.id}`}>View</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/events/${event.event_type?.slug}/${event.id}/edit`}>Edit</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onSelect={(e) => {
+                e.preventDefault()
+                setEventToDelete(event)
+                setDeleteDialogOpen(true)
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+      className: 'w-[50px]'
+    }
   ]
 
   return (
@@ -262,7 +317,26 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
               />
             </div>
 
-            {/* Status Filter - Now Inline */}
+            {/* Event Type Filter */}
+            <div className="w-full sm:w-[200px]">
+              <FormInput
+                id="event-type-filter"
+                label={t('eventType')}
+                hideLabel
+                inputType="select"
+                value={filters.getFilterValue('event_type') || 'all'}
+                onChange={(value) => filters.updateFilter('event_type', value === 'all' ? '' : value)}
+              >
+                <SelectItem value="all">{t('allEventTypes')}</SelectItem>
+                {eventTypes.filter(et => et.slug).map((et) => (
+                  <SelectItem key={et.id} value={et.slug!}>
+                    {et.name}
+                  </SelectItem>
+                ))}
+              </FormInput>
+            </div>
+
+            {/* Status Filter */}
             <div className="w-full sm:w-[200px]">
               <StatusFilter
                 value={filters.getFilterValue('status')}
@@ -298,7 +372,7 @@ export function EventsListClient({ initialData, stats }: EventsListClientProps) 
             data={events}
             columns={columns}
             keyExtractor={(event) => event.id}
-            onRowClick={(event) => router.push(`/events/${event.id}`)}
+            onRowClick={(event) => router.push(`/events/${event.event_type?.slug}/${event.id}`)}
             currentSort={currentSort || undefined}
             onSortChange={handleSortChange}
             onLoadMore={handleLoadMore}

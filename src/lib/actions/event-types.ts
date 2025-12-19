@@ -19,7 +19,7 @@ import { generateSlug } from '@/lib/utils/formatters'
 export interface EventTypeFilterParams {
   search?: string
   sort?: 'order_asc' | 'order_desc' | 'name_asc' | 'name_desc' | 'created_asc' | 'created_desc'
-  system_type?: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
+  system_type?: 'mass' | 'special-liturgy' | 'event'
 }
 
 /**
@@ -469,7 +469,7 @@ export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
  * Get event types filtered by system type
  */
 export async function getEventTypesBySystemType(
-  systemType: 'mass' | 'special-liturgy' | 'sacrament' | 'event'
+  systemType: 'mass' | 'special-liturgy' | 'event'
 ): Promise<EventType[]> {
   return getEventTypes({ system_type: systemType })
 }

@@ -33,6 +33,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       description: 'Sunday celebration with full music and announcements',
       icon: 'Church',
       slug: 'sunday-mass',
+      system_type: 'mass',
       order: 100 // After other event types
     })
     .select()
@@ -155,6 +156,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       description: 'Weekday celebration with minimal music',
       icon: 'CalendarDays',
       slug: 'daily-mass',
+      system_type: 'mass',
       order: 101
     })
     .select()

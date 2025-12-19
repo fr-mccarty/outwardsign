@@ -61,7 +61,8 @@
     "viewReport": "Ver Informe",
     "createGroup": "Crear Grupo",
     "createLocation": "Crear Ubicación",
-    "reports": "Informes"
+    "reports": "Informes",
+    "massConfiguration": "Configuración de Misas"
   },
   "common": {
     "create": "Crear",
@@ -111,7 +112,8 @@
     "createNew": "Crear Nuevo",
     "new": "Nuevo",
     "our": "Nuestros",
-    "filteredResults": "Resultados Filtrados"
+    "filteredResults": "Resultados Filtrados",
+    "clearFilters": "Limpiar Filtros"
   },
   "status": {
     "planning": "Planificación",
@@ -564,7 +566,20 @@
     "templateDeletedSuccess": "Plantilla eliminada exitosamente",
     "templateDeletedError": "No se pudo eliminar la plantilla",
     "unableToLoadSettings": "No se Pueden Cargar las Configuraciones",
-    "errorLoadingSettings": "Hubo un error al cargar tus configuraciones. Por favor, intenta nuevamente más tarde."
+    "errorLoadingSettings": "Hubo un error al cargar tus configuraciones. Por favor, intenta nuevamente más tarde.",
+    "massConfiguration": "Configuración de Misas",
+    "massConfigurationDescription": "Configura horarios recurrentes de Misas, asignaciones de roles y voluntarios del ministerio.",
+    "manageMassConfiguration": "Administrar Configuración de Misas",
+    "massConfigurationHub": {
+      "recurringScheduleDescription": "Configura horarios de Misas recurrentes para diferentes días de la semana.",
+      "manageSchedule": "Administrar Horarios",
+      "rolePatternsDescription": "Define plantillas para asignaciones de roles en diferentes tipos de Misas.",
+      "managePatterns": "Administrar Patrones",
+      "roleDefinitionsDescription": "Configura los roles litúrgicos disponibles para las celebraciones de Misa.",
+      "manageRoles": "Administrar Roles",
+      "volunteersDescription": "Ve y administra a las personas que sirven en roles litúrgicos.",
+      "manageVolunteers": "Administrar Voluntarios"
+    }
   },
   "eventTypes": {
     "title": "Tipos de Eventos",
@@ -586,7 +601,6 @@
   },
   "event_type": {
     "category": {
-      "sacrament": "Sacramentos",
       "mass": "Misas",
       "special_liturgy": "Liturgias Especiales",
       "event": "Eventos"
@@ -594,34 +608,18 @@
   },
   "specialLiturgies": {
     "title": "Liturgias Especiales",
-    "description": "Administra celebraciones litúrgicas especiales",
-    "explanation": "Las Liturgias Especiales son celebraciones litúrgicas no sacramentales como la Bendición del Santísimo, el Vía Crucis o las Horas Santas. Crea tipos para cada liturgia especial que tu parroquia celebre.",
-    "examples": "Ejemplos: Bendición del Santísimo, Vía Crucis, Hora Santa, Adoración, Liturgia de las Horas",
+    "description": "Administra celebraciones litúrgicas especiales y sacramentos",
+    "explanation": "Las Liturgias Especiales incluyen celebraciones sacramentales (Bodas, Bautismos, Funerales, Quinceañeras) y otras celebraciones litúrgicas como Bendición o Vía Crucis. Crea tipos para cada liturgia que tu parroquia celebre.",
+    "examples": "Ejemplos: Boda, Bautismo, Funeral, Quinceañera, Bendición del Santísimo, Vía Crucis, Hora Santa",
     "noSpecialLiturgies": "No hay liturgias especiales todavía",
-    "noSpecialLiturgiesMessage": "Crea un tipo de liturgia especial para comenzar a programar estas celebraciones. Las liturgias especiales son celebraciones litúrgicas no sacramentales.",
+    "noSpecialLiturgiesMessage": "Crea un tipo de liturgia especial para comenzar a programar estas celebraciones. Las liturgias especiales incluyen celebraciones sacramentales y otros eventos litúrgicos.",
     "createTitle": "Crear Liturgia Especial",
     "createDescription": "Crea un nuevo tipo de liturgia especial",
     "createExplanation": "Estás creando un nuevo tipo de liturgia especial. Después de la creación, puedes agregar campos personalizados y configurar guiones para imprimir.",
     "nameLabel": "Nombre de la Liturgia Especial",
-    "namePlaceholder": "ej., Bendición del Santísimo, Vía Crucis, Hora Santa",
+    "namePlaceholder": "ej., Boda, Bautismo, Funeral, Bendición",
     "nameHelp": "Elige un nombre claro y descriptivo para este tipo de liturgia especial.",
     "iconLabel": "Icono",
     "iconHelp": "Elige un icono para ayudar a identificar visualmente este tipo de liturgia especial."
-  },
-  "sacraments": {
-    "title": "Sacramentos",
-    "description": "Administra celebraciones sacramentales",
-    "explanation": "Los Sacramentos son signos sagrados y misterios instituidos por Cristo. Crea tipos para cada sacramento que tu parroquia celebre.",
-    "examples": "Ejemplos: Bautismo, Confirmación, Boda, Reconciliación, Unción de Enfermos, Primera Comunión, Quinceañera",
-    "noSacraments": "No hay sacramentos todavía",
-    "noSacramentsMessage": "Crea un tipo de sacramento para comenzar a programar estas celebraciones. Los sacramentos son signos sagrados instituidos por Cristo.",
-    "createTitle": "Crear Sacramento",
-    "createDescription": "Crea un nuevo tipo de sacramento",
-    "createExplanation": "Estás creando un nuevo tipo de sacramento. Después de la creación, puedes agregar campos personalizados y configurar guiones para imprimir.",
-    "nameLabel": "Nombre del Sacramento",
-    "namePlaceholder": "ej., Bautismo, Boda, Primera Comunión",
-    "nameHelp": "Elige un nombre claro y descriptivo para este tipo de sacramento.",
-    "iconLabel": "Icono",
-    "iconHelp": "Elige un icono para ayudar a identificar visualmente este tipo de sacramento."
   }
 }
