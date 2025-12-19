@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PeopleListClient } from './people-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   searchParams: Promise<{
@@ -49,9 +50,11 @@ export default async function PeoplePage({ searchParams }: PageProps) {
     filtered: people.length
   }
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Our People" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.ourPeople') }
   ]
 
   return (

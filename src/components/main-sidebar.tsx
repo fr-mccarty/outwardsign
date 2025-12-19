@@ -27,6 +27,7 @@ import {
   ScrollText,
 } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { ParishUserMenu } from "@/components/parish-user-menu"
 import { CollapsibleNavSection } from "@/components/collapsible-nav-section"
 import { Logo } from "@/components/logo"
@@ -43,11 +44,21 @@ interface MainSidebarProps {
 export function MainSidebar({ eventTypes }: MainSidebarProps) {
   const { isMobile, setOpenMobile } = useSidebar()
   const t = useTranslations()
+  const pathname = usePathname()
 
   const handleLinkClick = () => {
     if (isMobile) {
       setOpenMobile(false)
     }
+  }
+
+  // Helper to check if a route is active
+  const isRouteActive = (href: string) => {
+    if (href === '/dashboard') {
+      return pathname === '/dashboard'
+    }
+    // For other routes, check if pathname starts with the href
+    return pathname === href || pathname.startsWith(`${href}/`)
   }
 
   // Group event types by system_type
@@ -85,7 +96,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Dashboard">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isRouteActive('/dashboard')} tooltip={t('nav.dashboard')}>
                   <Link href="/dashboard" onClick={handleLinkClick}>
                     <Home />
                     <span>{t('nav.dashboard')}</span>
@@ -94,7 +105,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <SidebarMenuItem key="Calendar">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isRouteActive('/calendar')} tooltip={t('nav.calendar')}>
                   <Link href="/calendar?view=month" onClick={handleLinkClick}>
                     <Calendar />
                     <span>{t('nav.calendar')}</span>
@@ -111,7 +122,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="OurMasses">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname === '/masses'} tooltip={t('nav.ourMasses')}>
                   <Link href="/masses" onClick={handleLinkClick}>
                     <MassIcon />
                     <span>{t('nav.ourMasses')}</span>
@@ -120,7 +131,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <SidebarMenuItem key="CreateMass">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname === '/masses/create'} tooltip={t('nav.createMass')}>
                   <Link href="/masses/create" onClick={handleLinkClick}>
                     <Plus />
                     <span>{t('nav.createMass')}</span>
@@ -130,13 +141,48 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
 
               {/* Schedule Masses temporarily hidden - feature in development */}
               {/* <SidebarMenuItem key="ScheduleMasses">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild tooltip={t('nav.scheduleMasses')}>
                   <Link href="/masses/schedule" onClick={handleLinkClick}>
                     <CalendarDays />
                     <span>{t('nav.scheduleMasses')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem> */}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Mass Intentions - Moved to be adjacent to Masses */}
+        <SidebarGroup>
+          <SidebarGroupLabel>{t('nav.massIntentions')}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem key="OurMassIntentions">
+                <SidebarMenuButton asChild isActive={pathname === '/mass-intentions'} tooltip={t('nav.ourMassIntentions')}>
+                  <Link href="/mass-intentions" onClick={handleLinkClick}>
+                    <ScrollText />
+                    <span>{t('nav.ourMassIntentions')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem key="CreateMassIntention">
+                <SidebarMenuButton asChild isActive={pathname === '/mass-intentions/create'} tooltip={t('nav.createMassIntention')}>
+                  <Link href="/mass-intentions/create" onClick={handleLinkClick}>
+                    <Plus />
+                    <span>{t('nav.createMassIntention')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem key="MassIntentionsReport">
+                <SidebarMenuButton asChild isActive={pathname === '/mass-intentions/report'} tooltip={t('nav.viewReport')}>
+                  <Link href="/mass-intentions/report" onClick={handleLinkClick}>
+                    <ScrollText />
+                    <span>{t('nav.viewReport')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -157,12 +203,12 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                       icon={Icon}
                       items={[
                         {
-                          title: `Our ${eventType.name}s`,
+                          title: `${t('common.our')} ${eventType.name}s`,
                           url: `/special-liturgies/${slug}`,
                           icon: Icon,
                         },
                         {
-                          title: `New ${eventType.name}`,
+                          title: `${t('common.create')} ${eventType.name}`,
                           url: `/special-liturgies/${slug}/create`,
                           icon: Plus,
                         },
@@ -182,7 +228,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="OurEvents">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname === '/events'} tooltip={t('nav.ourEvents')}>
                   <Link href="/events" onClick={handleLinkClick}>
                     <EventIcon />
                     <span>{t('nav.ourEvents')}</span>
@@ -191,7 +237,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <SidebarMenuItem key="CreateEvent">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname === '/events/create'} tooltip={t('nav.createEvent')}>
                   <Link href="/events/create" onClick={handleLinkClick}>
                     <Plus />
                     <span>{t('nav.createEvent')}</span>
@@ -202,44 +248,9 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Mass Intentions - Own Section */}
+        {/* Directory (formerly Supporting Resources) */}
         <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.massIntentions')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="OurMassIntentions">
-                <SidebarMenuButton asChild>
-                  <Link href="/mass-intentions" onClick={handleLinkClick}>
-                    <ScrollText />
-                    <span>{t('nav.ourMassIntentions')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem key="CreateMassIntention">
-                <SidebarMenuButton asChild>
-                  <Link href="/mass-intentions/create" onClick={handleLinkClick}>
-                    <Plus />
-                    <span>{t('nav.createMassIntention')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem key="MassIntentionsReport">
-                <SidebarMenuButton asChild>
-                  <Link href="/mass-intentions/report" onClick={handleLinkClick}>
-                    <ScrollText />
-                    <span>{t('nav.viewReport')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Supporting Resources */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.supportingResources')}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.directory')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <CollapsibleNavSection
@@ -323,7 +334,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="WeekendSummary">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isRouteActive('/weekend-summary')} tooltip={t('nav.weekendSummary')}>
                   <Link href="/weekend-summary" onClick={handleLinkClick}>
                     <CalendarDays />
                     <span>{t('nav.weekendSummary')}</span>
@@ -340,7 +351,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem key="Settings">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isRouteActive('/settings')} tooltip={t('nav.settings')}>
                   <Link href="/settings" onClick={handleLinkClick}>
                     <Settings />
                     <span>{t('nav.settings')}</span>
@@ -349,7 +360,7 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
               </SidebarMenuItem>
 
               <SidebarMenuItem key="Support">
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isRouteActive('/support')} tooltip={t('nav.support')}>
                   <Link href="/support" onClick={handleLinkClick}>
                     <HelpCircle />
                     <span>{t('nav.support')}</span>

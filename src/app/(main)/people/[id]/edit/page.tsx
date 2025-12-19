@@ -3,6 +3,7 @@ import { getPerson } from "@/lib/actions/people"
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PersonFormWrapper } from '../../person-form-wrapper'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,11 +27,13 @@ export default async function EditPersonPage({ params }: PageProps) {
     notFound()
   }
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Our People", href: "/people" },
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.ourPeople'), href: "/people" },
     { label: `${person.first_name} ${person.last_name}`, href: `/people/${id}` },
-    { label: "Edit" }
+    { label: t('breadcrumbs.edit') }
   ]
 
   return (

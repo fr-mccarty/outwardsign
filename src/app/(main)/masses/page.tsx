@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassesListClient } from './masses-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,9 +48,11 @@ export default async function MassesPage({ searchParams }: PageProps) {
   const masses = await getAllMasterEvents(filters)
   const stats = await getMasterEventStats(filters)
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Our Masses" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.ourMasses') }
   ]
 
   return (

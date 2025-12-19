@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { FamiliesListClient } from './families-list-client'
 import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,9 +44,11 @@ export default async function FamiliesPage({ searchParams }: PageProps) {
     getFamilyStats(filters)
   ])
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Families" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.families') }
   ]
 
   // Calculate if there are more items to load

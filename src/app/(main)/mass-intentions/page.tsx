@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassIntentionsListClient } from './mass-intentions-list-client'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,9 +46,11 @@ export default async function MassIntentionsPage({ searchParams }: PageProps) {
   const allIntentions = await getMassIntentions()
   const stats = await getMassIntentionStats(allIntentions)
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Mass Intentions" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.massIntentions') }
   ]
 
   return (

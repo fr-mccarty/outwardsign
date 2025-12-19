@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MassFormWrapper } from '../mass-form-wrapper'
 import { getGlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   searchParams: Promise<{ liturgical_event_id?: string }>
@@ -27,10 +28,12 @@ export default async function CreateMassPage({ searchParams }: PageProps) {
     initialLiturgicalEvent = await getGlobalLiturgicalEvent(liturgicalEventId)
   }
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Masses", href: "/masses" },
-    { label: "Create" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.masses'), href: "/masses" },
+    { label: t('breadcrumbs.create') }
   ]
 
   return (

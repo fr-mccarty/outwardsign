@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
 import { MassFormWrapper } from '../../mass-form-wrapper'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -27,10 +28,12 @@ export default async function EditMassPage({ params }: PageProps) {
   // Build dynamic title from computeMasterEventTitle
   const title = await computeMasterEventTitle(mass)
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Masses", href: "/masses" },
-    { label: "Edit" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.masses'), href: "/masses" },
+    { label: t('breadcrumbs.edit') }
   ]
 
   return (

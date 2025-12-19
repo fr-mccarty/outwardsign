@@ -341,7 +341,7 @@ export default async function DashboardPage() {
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <CirclePlus className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">{t('dashboard.newMass')}</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.createMass')}</span>
           </Link>
           <Link
             href="/masses/schedule"
@@ -355,14 +355,14 @@ export default async function DashboardPage() {
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <Heart className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">{t('dashboard.newMassIntention')}</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.createMassIntention')}</span>
           </Link>
           <Link
             href="/people/create"
             className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent transition-colors"
           >
             <Plus className="h-6 w-6" />
-            <span className="text-sm font-medium text-center">{t('dashboard.newPerson')}</span>
+            <span className="text-sm font-medium text-center">{t('dashboard.createPerson')}</span>
           </Link>
         </div>
       </FormSectionCard>

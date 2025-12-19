@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { GroupsListClient } from './groups-list-client'
 import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,9 +45,11 @@ export default async function GroupsPage({ searchParams }: PageProps) {
     getGroupStats(filters)
   ])
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Groups" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.groups') }
   ]
 
   // Calculate if there are more items to load

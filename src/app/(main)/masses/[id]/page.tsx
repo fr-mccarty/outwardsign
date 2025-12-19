@@ -5,6 +5,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getEventWithRelations, computeMasterEventTitle } from '@/lib/actions/master-events'
 import { getScripts } from '@/lib/actions/scripts'
 import { MassViewClient } from './mass-view-client'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -32,10 +33,12 @@ export default async function ViewMassPage({ params }: PageProps) {
   // Build dynamic title from computeMasterEventTitle
   const title = await computeMasterEventTitle(mass)
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Masses", href: "/masses" },
-    { label: "View" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.masses'), href: "/masses" },
+    { label: title }
   ]
 
   return (

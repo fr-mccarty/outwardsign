@@ -5,6 +5,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getPerson } from '@/lib/actions/people'
 import { PersonViewClient } from './person-view-client'
 import { getPersonPageTitle } from '@/lib/utils/formatters'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -29,10 +30,12 @@ export default async function PersonDetailPage({ params }: PageProps) {
   // Build dynamic title from person name
   const title = getPersonPageTitle(person)
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Our People", href: "/people" },
-    { label: "View" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.ourPeople'), href: "/people" },
+    { label: title }
   ]
 
   return (

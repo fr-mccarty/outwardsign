@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react";
+import React, { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -14,6 +15,14 @@ export function MainHeader({
   showSidebarTrigger = true
 }: MainHeaderProps) {
   const { breadcrumbs } = useBreadcrumbs();
+  const pathname = usePathname();
+
+  // Warn in development when breadcrumbs are not set
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && breadcrumbs.length === 0 && pathname !== '/dashboard') {
+      console.warn(`[Breadcrumbs] No breadcrumbs set for route: ${pathname}. Add a BreadcrumbSetter component to the page.`);
+    }
+  }, [breadcrumbs, pathname]);
 
   // If no breadcrumbs provided, show default Dashboard breadcrumb
   const displayBreadcrumbs = breadcrumbs.length > 0 ? breadcrumbs : [

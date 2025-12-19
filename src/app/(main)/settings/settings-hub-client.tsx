@@ -54,7 +54,7 @@ export function SettingsHubClient() {
       <Card className="hover:shadow-lg transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-primary" />
+            <Tag className="h-5 w-5 text-primary" />
             {t('settings.eventTypes')}
           </CardTitle>
         </CardHeader>

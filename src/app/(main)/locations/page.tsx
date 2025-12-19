@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LocationsListClient } from './locations-list-client'
 import { INFINITE_SCROLL_LOAD_MORE_SIZE } from '@/lib/constants'
+import { getTranslations } from 'next-intl/server'
 
 interface PageProps {
   searchParams: Promise<{ search?: string; sort?: string }>
@@ -34,9 +35,11 @@ export default async function LocationsPage({ searchParams }: PageProps) {
   // Fetch stats server-side
   const stats = await getLocationStats(filters)
 
+  const t = await getTranslations()
+
   const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Our Locations" }
+    { label: t('nav.dashboard'), href: "/dashboard" },
+    { label: t('nav.ourLocations') }
   ]
 
   // Calculate if there are more items to load
