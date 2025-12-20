@@ -24,8 +24,8 @@
  *
  * HOW TO FIND CONTENT:
  * --------------------
- * Content pickers use `filter_tags` from input_field_definitions to query content.
- * The query finds content that has ALL specified tags assigned.
+ * Content pickers use `input_filter_tags` from input_field_definitions to set default filters.
+ * The query finds content that has ALL active tags assigned.
  *
  * To find content programmatically:
  * 1. Get tag IDs by slug from `category_tags` table
@@ -35,7 +35,7 @@
  * SEE ALSO:
  * ---------
  * - category-tags-seed.ts: Defines all available tag slugs
- * - event-types-seed.ts: Defines filter_tags on input fields
+ * - event-types-seed.ts: Defines input_filter_tags on input fields
  * - scripts/dev-seeders/seed-readings.ts: Seeds scripture readings (dev only)
  */
 

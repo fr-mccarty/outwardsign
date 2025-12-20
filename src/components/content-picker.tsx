@@ -17,7 +17,7 @@ interface ContentPickerProps {
   onOpenChange: (open: boolean) => void
   onSelect: (content: ContentWithTags) => void
   selectedContentId?: string
-  defaultFilterTags?: string[] // Pre-selected tag slugs from field definition
+  defaultInputFilterTags?: string[] // Pre-selected tag slugs from field definition
   language?: 'en' | 'es' // Filter by language
   emptyMessage?: string
 }
@@ -29,7 +29,7 @@ export function ContentPicker({
   onOpenChange,
   onSelect,
   selectedContentId,
-  defaultFilterTags = [],
+  defaultInputFilterTags = [],
   language,
   emptyMessage = 'No content found. Try adjusting filters or add new content.',
 }: ContentPickerProps) {
@@ -38,7 +38,7 @@ export function ContentPicker({
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
-  const [activeTags, setActiveTags] = useState<string[]>(defaultFilterTags)
+  const [activeTags, setActiveTags] = useState<string[]>(defaultInputFilterTags)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedContent, setSelectedContent] = useState<ContentWithTags | null>(null)
   const [showMoreFilters, setShowMoreFilters] = useState(false)
@@ -74,14 +74,14 @@ export function ContentPicker({
   useEffect(() => {
     if (open) {
       // Reset state
-      setActiveTags(defaultFilterTags)
+      setActiveTags(defaultInputFilterTags)
       setSearchTerm('')
       setSelectedContent(null)
       setCurrentPage(1)
       // Load immediately with reset values (don't wait for state update)
-      loadContents(1, defaultFilterTags, '', language)
+      loadContents(1, defaultInputFilterTags, '', language)
     }
-  }, [open, defaultFilterTags, language, loadContents])
+  }, [open, defaultInputFilterTags, language, loadContents])
 
   // Load tags when dialog opens
   useEffect(() => {

@@ -30,20 +30,20 @@ For dynamic event form input types used when configuring event types.
 
 - **`is_key_person`** - Person fields only. Marks person as a key participant (searchable in list view).
 - **`is_primary`** - calendar_event fields only. Marks as the main event occurrence.
-- **`filter_tags`** - Content/petition fields only. Array of tag slugs to filter picker results. Content must have ALL specified tags. See [TAG_SYSTEM.md](./TAG_SYSTEM.md).
+- **`input_filter_tags`** - Content/petition fields only. Array of tag slugs for default picker filters. Users can toggle these on/off. Content must have ALL active tags. See [TAG_SYSTEM.md](./TAG_SYSTEM.md).
 - **`list_id`** - Required for `list_item` type. Specifies which custom list to use.
 
-### filter_tags Examples
+### input_filter_tags Examples
 
 ```typescript
-// Show only wedding first readings
-filter_tags: ['wedding', 'first-reading']
+// Default to wedding first readings
+input_filter_tags: ['wedding', 'first-reading']
 
-// Show only funeral opening prayers
-filter_tags: ['funeral', 'opening-prayer']
+// Default to funeral opening prayers
+input_filter_tags: ['funeral', 'opening-prayer']
 
-// Show any generic reading (for Bible Study)
-filter_tags: ['reading']
+// Default to any generic reading (for Bible Study)
+input_filter_tags: ['reading']
 ```
 
 **Available slugs:** See [TAG_SYSTEM.md](./TAG_SYSTEM.md) for complete list.
@@ -51,10 +51,10 @@ filter_tags: ['reading']
 ## Type Categories
 
 ### Reference Types (select existing records)
-`person`, `group`, `location`, `list_item`, `document`, `content`, `petition`
+`person`, `group`, `location`, `list_item`, `document`, `content`, `petition`, `mass-intention`
 
 ### Data Entry Types (user enters value)
-`text`, `rich_text`, `date`, `time`, `datetime`, `number`, `yes_no`, `mass-intention`
+`text`, `rich_text`, `date`, `time`, `datetime`, `number`, `yes_no`
 
 ### Special Types
 - `calendar_event` - Creates calendar entries with date/time/location

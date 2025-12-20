@@ -508,7 +508,7 @@ npm run validate -- --parish=<parish_id>  # Validate single parish
 ### What It Validates
 
 1. **Script Placeholders**: Verifies `{{placeholder}}` patterns reference valid `property_name` values
-2. **Filter Tags**: Validates `filter_tags` in content fields exist in `category_tags`
+2. **Input Filter Tags**: Validates `input_filter_tags` in content fields exist in `category_tags`
 3. **List References**: Validates `list_id` references valid `custom_lists`
 4. **Unused Fields**: Warns about input fields never used in scripts
 5. **Required Fields**: Warns about required fields not used in scripts

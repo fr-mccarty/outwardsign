@@ -34,14 +34,14 @@
  * HOW TAGS ARE USED:
  * ------------------
  * - Content items are tagged via `tag_assignments` table (polymorphic)
- * - Input field definitions use `filter_tags` array to specify which tags to filter by
- * - Content pickers query content matching ALL specified filter_tags
+ * - Input field definitions use `input_filter_tags` array to specify default picker filters
+ * - Content pickers query content matching ALL active tags
  *
  * EXAMPLE USAGE:
  * --------------
- * - Wedding first readings: filter_tags = ['wedding', 'first-reading']
- * - Funeral opening prayers: filter_tags = ['funeral', 'opening-prayer']
- * - Bible study readings: filter_tags = ['reading']
+ * - Wedding first readings: input_filter_tags = ['wedding', 'first-reading']
+ * - Funeral opening prayers: input_filter_tags = ['funeral', 'opening-prayer']
+ * - Bible study readings: input_filter_tags = ['reading']
  *
  * ADDING NEW TAGS:
  * ----------------
@@ -49,7 +49,7 @@
  * 2. Use a unique slug (lowercase, hyphenated)
  * 3. Assign sort_order within the category range
  * 4. Update content-seed.ts to use the new slug if seeding content
- * 5. Update event-types-seed.ts filter_tags if using in input fields
+ * 5. Update event-types-seed.ts input_filter_tags if using in input fields
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'

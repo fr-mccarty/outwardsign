@@ -13,7 +13,7 @@ CREATE TABLE input_field_definitions (
   is_key_person BOOLEAN NOT NULL DEFAULT false,
   is_primary BOOLEAN NOT NULL DEFAULT false,
   "order" INTEGER NOT NULL,
-  filter_tags TEXT[] DEFAULT ARRAY[]::TEXT[],
+  input_filter_tags TEXT[] DEFAULT ARRAY[]::TEXT[],
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),

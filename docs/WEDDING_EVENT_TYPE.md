@@ -24,11 +24,11 @@ Input fields define what data is collected for each wedding. These are configure
 | Presider | `presider` | `person` | No | | Priest/deacon celebrating |
 | Reception Location | `reception_location` | `location` | No | | Venue for reception |
 | Opening Song | `opening_song` | `list_item` | No | `list: Wedding Songs` | Selection from custom list |
-| Opening Prayer | `opening_prayer` | `content` | No | `filter_tags: [wedding, opening-prayer]` | From content library |
-| Prayers of the Faithful | `prayers_of_the_faithful` | `petition` | No | `filter_tags: [wedding, prayers-of-the-faithful]` | Petition selection |
-| First Reading | `first_reading` | `content` | No | `filter_tags: [wedding, first-reading]` | Scripture reading |
-| Second Reading | `second_reading` | `content` | No | `filter_tags: [wedding, second-reading]` | Scripture reading |
-| Gospel Reading | `gospel_reading` | `content` | No | `filter_tags: [wedding, gospel]` | Gospel reading |
+| Opening Prayer | `opening_prayer` | `content` | No | `input_filter_tags: [wedding, opening-prayer]` | From content library |
+| Prayers of the Faithful | `prayers_of_the_faithful` | `petition` | No | `input_filter_tags: [wedding, prayers-of-the-faithful]` | Petition selection |
+| First Reading | `first_reading` | `content` | No | `input_filter_tags: [wedding, first-reading]` | Scripture reading |
+| Second Reading | `second_reading` | `content` | No | `input_filter_tags: [wedding, second-reading]` | Scripture reading |
+| Gospel Reading | `gospel_reading` | `content` | No | `input_filter_tags: [wedding, gospel]` | Gospel reading |
 | Unity Candle | `unity_candle` | `yes_no` | No | | Boolean toggle |
 | Special Instructions | `special_instructions` | `rich_text` | No | | Free-form notes |
 
@@ -215,16 +215,16 @@ When displaying event data, the system resolves UUIDs to full objects:
 
 ---
 
-## Filter Tags
+## Input Filter Tags
 
-Content fields use `filter_tags` to show relevant content in pickers:
+Content fields use `input_filter_tags` to set default filters in pickers. Users can toggle these on/off.
 
-| Field | Filter Tags |
-|-------|-------------|
+| Field | input_filter_tags |
+|-------|-------------------|
 | Opening Prayer | `['wedding', 'opening-prayer']` |
 | Prayers of the Faithful | `['wedding', 'prayers-of-the-faithful']` |
 | First Reading | `['wedding', 'first-reading']` |
 | Second Reading | `['wedding', 'second-reading']` |
 | Gospel Reading | `['wedding', 'gospel']` |
 
-Content must be tagged with **both** the sacrament tag (`wedding`) AND the section tag (`first-reading`) to appear in the picker.
+The picker defaults to content tagged with **both** the sacrament tag (`wedding`) AND the section tag (`first-reading`). Users can toggle filters to see other content.

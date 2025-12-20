@@ -81,7 +81,7 @@ async function fetchEventTypes(parishId?: string): Promise<EventTypeForValidatio
     // Fetch input field definitions
     const { data: fieldsData, error: fieldsError } = await supabase
       .from('input_field_definitions')
-      .select('property_name, name, type, required, is_primary, filter_tags, list_id')
+      .select('property_name, name, type, required, is_primary, input_filter_tags, list_id')
       .eq('event_type_id', eventType.id)
       .is('deleted_at', null)
       .order('order', { ascending: true })
@@ -115,7 +115,7 @@ async function fetchEventTypes(parishId?: string): Promise<EventTypeForValidatio
         type: field.type,
         required: field.required,
         is_primary_calendar_event: field.is_primary,
-        filter_tags: field.filter_tags,
+        input_filter_tags: field.input_filter_tags,
         list_id: field.list_id,
       })),
       contents: (scriptsData || []).map((script) => ({
@@ -166,23 +166,6 @@ async function fetchCustomListIds(parishId?: string): Promise<Set<string>> {
   return new Set((data || []).map((l: { id: string }) => l.id))
 }
 
-async function fetchEventTypeIds(parishId?: string): Promise<Set<string>> {
-  let query = supabase.from('event_types').select('id').is('deleted_at', null)
-
-  if (parishId) {
-    query = query.eq('parish_id', parishId)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
-    logError(`Failed to fetch event type IDs: ${error.message}`)
-    process.exit(1)
-  }
-
-  return new Set((data || []).map((et: { id: string }) => et.id))
-}
-
 async function main() {
   const args = parseArgs()
 
@@ -210,10 +193,6 @@ async function main() {
   const customListIds = await fetchCustomListIds(args.parishId)
   logInfo(`Found ${customListIds.size} custom list(s)`)
 
-  logInfo('Fetching event type IDs...')
-  const eventTypeIds = await fetchEventTypeIds(args.parishId)
-  logInfo(`Found ${eventTypeIds.size} event type(s)`)
-
   logInfo('')
   logInfo('Running validation...')
   logInfo('')
@@ -222,8 +201,7 @@ async function main() {
   const report = validateAllEventTypes(
     eventTypes,
     categoryTagSlugs,
-    customListIds,
-    eventTypeIds
+    customListIds
   )
 
   // Output report

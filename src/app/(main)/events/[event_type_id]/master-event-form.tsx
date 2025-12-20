@@ -304,7 +304,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
-            defaultFilterTags={field.filter_tags || []}
+            defaultInputFilterTags={field.input_filter_tags || []}
           />
         )
 

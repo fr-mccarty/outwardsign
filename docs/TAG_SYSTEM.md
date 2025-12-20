@@ -115,20 +115,20 @@ Funeral Gospel about Hope → ['funeral', 'gospel', 'hope']
 Generic Bible Study Reading → ['reading']
 ```
 
-### Filtering with `filter_tags`
+### Filtering with `input_filter_tags`
 
-Input field definitions on event types use `filter_tags` to specify which content should appear in the picker.
+Input field definitions on event types use `input_filter_tags` to set default filters for the content picker. Users can toggle these filters on/off to broaden or narrow results.
 
 **Example from event-types-seed.ts:**
 ```typescript
 {
   name: 'First Reading',
   type: 'content',
-  filter_tags: ['wedding', 'first-reading']
+  input_filter_tags: ['wedding', 'first-reading']
 }
 ```
 
-This shows only content tagged with BOTH 'wedding' AND 'first-reading'.
+The picker defaults to showing content tagged with BOTH 'wedding' AND 'first-reading'. Users can toggle filters to see other content.
 
 ---
 
@@ -163,7 +163,7 @@ WHERE ta.entity_id = :content_id AND ta.entity_type = 'content';
 |---------|------|
 | Tag definitions (seeding) | `src/lib/onboarding-seeding/category-tags-seed.ts` |
 | Content seeding with tags | `src/lib/onboarding-seeding/content-seed.ts` |
-| Event types with filter_tags | `src/lib/onboarding-seeding/event-types-seed.ts` |
+| Event types with tags | `src/lib/onboarding-seeding/event-types-seed.ts` |
 | Dev readings seeder | `scripts/dev-seeders/seed-readings.ts` |
 | Content picker (uses tags) | `src/components/content-picker.tsx` |
 | Server action (queries tags) | `src/lib/actions/contents.ts` |
@@ -188,12 +188,12 @@ WHERE ta.entity_id = :content_id AND ta.entity_type = 'content';
    }
    ```
 
-3. **Use in event-types-seed.ts (if filtering in picker):**
+3. **Use in event-types-seed.ts (if setting default picker filters):**
    ```typescript
    {
      name: 'New Section',
      type: 'content',
-     filter_tags: ['wedding', 'new-section']
+     input_filter_tags: ['wedding', 'new-section']
    }
    ```
 
@@ -207,7 +207,7 @@ WHERE ta.entity_id = :content_id AND ta.entity_type = 'content';
 ## Best Practices
 
 1. **Always use slugs, not names** - The `slug` field is the identifier used in code
-2. **Combine sacrament + section** - Most filter_tags should include both for specificity
+2. **Combine sacrament + section** - Most tags should include both for specificity
 3. **Use 'reading' for generic** - The generic 'reading' tag is for non-sacrament-specific content
 4. **Theme tags are optional** - Only add for discoverability, not required for filtering
 5. **Check existing slugs** - Always reference category-tags-seed.ts before adding new ones
@@ -216,6 +216,6 @@ WHERE ta.entity_id = :content_id AND ta.entity_type = 'content';
 
 ## See Also
 
-- [INPUT_FIELD_TYPES.md](./INPUT_FIELD_TYPES.md) - How filter_tags work on input fields
+- [INPUT_FIELD_TYPES_QUICK_REFERENCE.md](./INPUT_FIELD_TYPES_QUICK_REFERENCE.md) - How input_filter_tags work on input fields
 - [SEEDERS_REFERENCE.md](./SEEDERS_REFERENCE.md) - Complete seeders documentation
 - [DATABASE.md](./DATABASE.md) - Database operations and seeding

@@ -440,7 +440,7 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
             showPicker={pickerOpen[field.name] || false}
             onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
             placeholder={`Select ${field.name}`}
-            defaultFilterTags={field.filter_tags || []}
+            defaultInputFilterTags={field.input_filter_tags || []}
           />
         )
 

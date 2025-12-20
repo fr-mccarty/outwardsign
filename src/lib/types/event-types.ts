@@ -74,7 +74,7 @@ export interface InputFieldDefinition {
   list_id: string | null          // For list_item type
   is_key_person: boolean          // Only for person type, marks as searchable
   is_primary: boolean             // Only for calendar_event type, marks as primary calendar event
-  filter_tags?: string[] | null   // For content type - array of tag slugs for default filtering
+  input_filter_tags?: string[] | null  // For content type - array of tag slugs for default filtering
   order: number                   // Display order in form
   deleted_at: string | null
   created_at: string

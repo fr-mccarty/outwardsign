@@ -138,7 +138,7 @@ describe('validateEventType', () => {
       ],
     })
 
-    const result = validateEventType(eventType, new Set(), new Set(), new Set())
+    const result = validateEventType(eventType, new Set(), new Set())
 
     expect(result.isValid).toBe(true)
     expect(result.errors).toHaveLength(0)
@@ -159,7 +159,7 @@ describe('validateEventType', () => {
       ],
     })
 
-    const result = validateEventType(eventType, new Set(), new Set(), new Set())
+    const result = validateEventType(eventType, new Set(), new Set())
 
     expect(result.isValid).toBe(false)
     expect(result.errors).toHaveLength(1)
@@ -170,25 +170,25 @@ describe('validateEventType', () => {
     })
   })
 
-  it('detects invalid filter_tag', () => {
+  it('detects invalid input_filter_tag', () => {
     const eventType = createEventType({
       input_field_definitions: [
         {
           property_name: 'first_reading',
           name: 'First Reading',
           type: 'content',
-          filter_tags: ['invalid-tag'],
+          input_filter_tags: ['invalid-tag'],
         },
       ],
     })
 
     const validTags = new Set(['valid-tag'])
-    const result = validateEventType(eventType, validTags, new Set(), new Set())
+    const result = validateEventType(eventType, validTags, new Set())
 
     expect(result.isValid).toBe(false)
     expect(result.errors).toHaveLength(1)
     expect(result.errors[0]).toMatchObject({
-      type: 'invalid_filter_tag',
+      type: 'invalid_tag',
       invalidValue: 'invalid-tag',
     })
   })
@@ -206,7 +206,7 @@ describe('validateEventType', () => {
     })
 
     const validLists = new Set(['valid-list'])
-    const result = validateEventType(eventType, new Set(), validLists, new Set())
+    const result = validateEventType(eventType, new Set(), validLists)
 
     expect(result.isValid).toBe(false)
     expect(result.errors).toHaveLength(1)
@@ -231,7 +231,7 @@ describe('validateEventType', () => {
       ],
     })
 
-    const result = validateEventType(eventType, new Set(), new Set(), new Set())
+    const result = validateEventType(eventType, new Set(), new Set())
 
     expect(result.isValid).toBe(true) // warnings don't fail validation
     expect(result.warnings).toHaveLength(1)
@@ -249,7 +249,7 @@ describe('validateEventType', () => {
       contents: [],
     })
 
-    const result = validateEventType(eventType, new Set(), new Set(), new Set())
+    const result = validateEventType(eventType, new Set(), new Set())
 
     expect(result.warnings).toHaveLength(0)
   })
@@ -274,7 +274,7 @@ describe('validateAllEventTypes', () => {
       },
     ]
 
-    const report = validateAllEventTypes(eventTypes, new Set(), new Set(), new Set())
+    const report = validateAllEventTypes(eventTypes, new Set(), new Set())
 
     expect(report.totalEventTypes).toBe(2)
     expect(report.eventTypesWithErrors).toBe(1)

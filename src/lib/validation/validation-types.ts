@@ -24,7 +24,7 @@ export interface PlaceholderError {
  */
 export interface ReferenceError {
   /** Type of reference that failed */
-  type: 'invalid_filter_tag' | 'invalid_list' | 'invalid_event_type'
+  type: 'invalid_tag' | 'invalid_list' | 'invalid_event_type'
   /** Name of the field with the invalid reference */
   fieldName: string
   /** The property_name of the field */
@@ -99,7 +99,7 @@ export interface InputFieldDefinitionForValidation {
   type: string
   required?: boolean
   is_primary_calendar_event?: boolean
-  filter_tags?: string[] | null
+  input_filter_tags?: string[] | null
   list_id?: string | null
 }
 

@@ -14,7 +14,7 @@ interface ContentPickerFieldProps {
   description?: string
   placeholder?: string
   required?: boolean
-  defaultFilterTags?: string[] // From input field definition
+  defaultInputFilterTags?: string[] // From input field definition
   language?: 'en' | 'es'
 }
 
@@ -27,7 +27,7 @@ export function ContentPickerField({
   description,
   placeholder = 'Select Content',
   required = false,
-  defaultFilterTags,
+  defaultInputFilterTags,
   language,
 }: ContentPickerFieldProps) {
   const renderContentValue = (content: ContentWithTags) => {
@@ -57,7 +57,7 @@ export function ContentPickerField({
         onOpenChange={onShowPickerChange}
         onSelect={onValueChange}
         selectedContentId={value?.id}
-        defaultFilterTags={defaultFilterTags}
+        defaultInputFilterTags={defaultInputFilterTags}
         language={language}
       />
     </PickerField>

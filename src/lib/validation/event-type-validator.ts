@@ -6,7 +6,7 @@
  *
  * Validates:
  * - Script placeholders reference valid field property_names
- * - filter_tags reference valid category_tags
+ * - input_filter_tags reference valid category_tags
  * - list_id references valid custom_lists
  * - Required fields are used in scripts (warning if not)
  * - Unused fields are detected (warning)
@@ -31,8 +31,7 @@ const PROPERTY_NAME_REGEX = /^[a-z][a-z0-9_]*$/
 export function validateEventType(
   eventType: EventTypeForValidation,
   validCategoryTagSlugs: Set<string>,
-  validCustomListIds: Set<string>,
-  validEventTypeIds: Set<string>
+  validCustomListIds: Set<string>
 ): EventTypeValidationResult {
   const errors: (PlaceholderError | ReferenceError)[] = []
   const warnings: FieldWarning[] = []
@@ -82,14 +81,14 @@ export function validateEventType(
     }
   }
 
-  // 3. Validate filter_tags, list_id
+  // 3. Validate input_filter_tags, list_id
   for (const field of fields) {
-    // Validate filter_tags for content type fields
-    if (field.type === 'content' && field.filter_tags && field.filter_tags.length > 0) {
-      for (const tag of field.filter_tags) {
+    // Validate input_filter_tags for content type fields
+    if (field.type === 'content' && field.input_filter_tags && field.input_filter_tags.length > 0) {
+      for (const tag of field.input_filter_tags) {
         if (!validCategoryTagSlugs.has(tag)) {
           errors.push({
-            type: 'invalid_filter_tag',
+            type: 'invalid_tag',
             fieldName: field.name,
             propertyName: field.property_name,
             invalidValue: tag,
@@ -170,8 +169,7 @@ export function validateEventType(
 export function validateAllEventTypes(
   eventTypes: EventTypeForValidation[],
   validCategoryTagSlugs: Set<string>,
-  validCustomListIds: Set<string>,
-  validEventTypeIds: Set<string>
+  validCustomListIds: Set<string>
 ): ValidationReport {
   const results: EventTypeValidationResult[] = []
 
@@ -179,8 +177,7 @@ export function validateAllEventTypes(
     const result = validateEventType(
       eventType,
       validCategoryTagSlugs,
-      validCustomListIds,
-      validEventTypeIds
+      validCustomListIds
     )
     results.push(result)
   }

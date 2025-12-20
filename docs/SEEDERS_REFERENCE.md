@@ -84,7 +84,7 @@ Seeds configurable event types with input field definitions.
 - Bible Studies, Fundraisers, Religious Education, Staff Meetings (parish events)
 
 **Key Fields:**
-- `filter_tags` on content fields specify which tagged content to show
+- `input_filter_tags` on content fields set default picker filters (users can toggle)
 - `is_key_person` marks searchable person fields
 - `is_primary` marks the primary calendar event
 
@@ -160,8 +160,8 @@ Seeds sample events for non-wedding/funeral event types.
 
 ## Event Type Input Fields
 
-| Event Type | Required Fields | Content Fields (with filter_tags) |
-|------------|-----------------|-----------------------------------|
+| Event Type | Required Fields | Content Fields (with input_filter_tags) |
+|------------|-----------------|----------------------------------------|
 | **Wedding** | Bride, Groom | Opening Prayer [`wedding`, `opening-prayer`], First Reading [`wedding`, `first-reading`], Second Reading [`wedding`, `second-reading`], Gospel [`wedding`, `gospel`] |
 | **Funeral** | Deceased | Opening Prayer [`funeral`, `opening-prayer`], First Reading [`funeral`, `first-reading`], Psalm [`funeral`, `psalm`], Second Reading [`funeral`, `second-reading`], Gospel [`funeral`, `gospel`] |
 | **Baptism** | Child | Opening Prayer [`baptism`, `opening-prayer`] |
@@ -177,7 +177,7 @@ Seeds sample events for non-wedding/funeral event types.
 |------|-------------|--------------|
 | `person` | Person picker | UUID |
 | `location` | Location picker | UUID |
-| `content` | Content picker (uses filter_tags) | UUID |
+| `content` | Content picker (uses tags) | UUID |
 | `petition` | Petition picker | UUID |
 | `calendar_event` | Date/time/location | calendar_events row |
 | `text` | Single line text | string |
@@ -207,6 +207,6 @@ Seeds sample events for non-wedding/funeral event types.
 ## See Also
 
 - [TAG_SYSTEM.md](./TAG_SYSTEM.md) - Complete tag system documentation
-- [INPUT_FIELD_TYPES.md](./INPUT_FIELD_TYPES.md) - Input field type reference
+- [INPUT_FIELD_TYPES_QUICK_REFERENCE.md](./INPUT_FIELD_TYPES_QUICK_REFERENCE.md) - Input field type reference
 - [DATABASE.md](./DATABASE.md) - Database operations and migrations
 - [SEEDS.md](./SEEDS.md) - Console helpers for seeder output

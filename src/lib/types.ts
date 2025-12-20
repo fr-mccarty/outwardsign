@@ -615,7 +615,7 @@ export interface InputFieldDefinition {
   type: InputFieldType
   required: boolean
   list_id: string | null
-  filter_tags: string[] | null
+  input_filter_tags: string[] | null
   is_key_person: boolean
   is_primary: boolean
   order: number
@@ -635,7 +635,7 @@ export interface CreateInputFieldDefinitionData {
   type: InputFieldType
   required: boolean
   list_id?: string | null
-  filter_tags?: string[] | null
+  input_filter_tags?: string[] | null
   is_key_person?: boolean
   is_primary?: boolean
 }
@@ -646,7 +646,7 @@ export interface UpdateInputFieldDefinitionData {
   type?: InputFieldType
   required?: boolean
   list_id?: string | null
-  filter_tags?: string[] | null
+  input_filter_tags?: string[] | null
   is_key_person?: boolean
   is_primary?: boolean
 }

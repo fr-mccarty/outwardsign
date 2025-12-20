@@ -9,21 +9,22 @@
  *
  * See /requirements/user-defined-event-types.md Phase 9 for specifications.
  *
- * FILTER_TAGS ON INPUT FIELDS:
- * ============================
- * Content-type input fields use `filter_tags` to specify which content to show
- * in the content picker. Tags are matched by `slug` from category_tags table.
+ * INPUT_FILTER_TAGS ON INPUT FIELDS:
+ * ===================================
+ * Content-type input fields use `input_filter_tags` to specify default picker filters.
+ * Tags are matched by `slug` from category_tags table. Users can toggle
+ * these filters on/off in the picker UI.
  *
  * PATTERN:
  * --------
- * filter_tags typically combines:
+ * input_filter_tags typically combines:
  * 1. A SACRAMENT slug: 'wedding', 'funeral', 'baptism', 'quinceanera', 'presentation'
  * 2. A SECTION slug: 'first-reading', 'opening-prayer', 'psalm', etc.
  *
  * EXAMPLE:
  * --------
- * { name: 'First Reading', type: 'content', filter_tags: ['wedding', 'first-reading'] }
- * - This shows content tagged with BOTH 'wedding' AND 'first-reading'
+ * { name: 'First Reading', type: 'content', input_filter_tags: ['wedding', 'first-reading'] }
+ * - Picker defaults to content tagged with BOTH 'wedding' AND 'first-reading'
  *
  * AVAILABLE TAG SLUGS:
  * --------------------
@@ -36,7 +37,7 @@
  * ADDING NEW CONTENT FIELDS:
  * --------------------------
  * 1. Define the input field with type: 'content'
- * 2. Set filter_tags using slugs from category-tags-seed.ts
+ * 2. Set input_filter_tags using slugs from category-tags-seed.ts
  * 3. Ensure content-seed.ts has sample content with matching tags
  */
 
@@ -130,11 +131,11 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: 'Reception Location', property_name: 'reception_location', type: 'location', required: false, order: 6 },
     { name: '---', property_name: 'spacer_2', type: 'spacer', required: false, order: 7 },
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
-    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 9 },
-    { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['wedding', 'first-reading'], order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['wedding', 'second-reading'], order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['wedding', 'gospel'], order: 13 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['wedding', 'opening-prayer'], order: 9 },
+    { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, input_filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'first-reading'], order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'second-reading'], order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['wedding', 'gospel'], order: 13 },
     { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 14 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
@@ -538,12 +539,12 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     { name: 'Visitation Location', property_name: 'visitation_location', type: 'location', required: false, order: 5 },
     { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 6 },
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
-    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
-    { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['funeral', 'first-reading'], order: 10 },
-    { name: 'Psalm', property_name: 'psalm', type: 'content', required: false, filter_tags: ['funeral', 'psalm'], order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['funeral', 'second-reading'], order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['funeral', 'gospel'], order: 13 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['funeral', 'opening-prayer'], order: 8 },
+    { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, input_filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'first-reading'], order: 10 },
+    { name: 'Psalm', property_name: 'psalm', type: 'content', required: false, input_filter_tags: ['funeral', 'psalm'], order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'second-reading'], order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, input_filter_tags: ['funeral', 'gospel'], order: 13 },
     { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 14 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
@@ -937,7 +938,7 @@ Burial will take place at:
     { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 5 },
     { name: 'Baptism', property_name: 'baptism', type: 'calendar_event', required: true, is_primary: true, order: 6 },
     { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 7 },
-    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['baptism', 'opening-prayer'], order: 8 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['baptism', 'opening-prayer'], order: 8 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
@@ -1064,7 +1065,7 @@ Please join us in celebrating the Baptism of
     { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 5 },
     { name: 'Reception Location', property_name: 'reception_location', type: 'location', required: false, order: 6 },
     { name: 'Court of Honor', property_name: 'court_of_honor', type: 'group', required: false, order: 7 },
-    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['quinceanera', 'opening-prayer'], order: 8 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['quinceanera', 'opening-prayer'], order: 8 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
@@ -1195,7 +1196,7 @@ Please join us for a reception following the ceremony at:
     { name: '---', property_name: 'spacer_1', type: 'spacer', required: false, order: 5 },
     { name: 'Presentation', property_name: 'presentation', type: 'calendar_event', required: true, is_primary: true, order: 6 },
     { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 7 },
-    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['presentation', 'opening-prayer'], order: 8 },
+    { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, input_filter_tags: ['presentation', 'opening-prayer'], order: 8 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 9 }
   ]
 
@@ -1321,7 +1322,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
     { name: 'Session', property_name: 'session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Discussion Leader', property_name: 'discussion_leader', type: 'person', required: false, is_key_person: true, order: 1 },
     { name: 'Topic', property_name: 'topic', type: 'text', required: false, order: 2 },
-    { name: 'Scripture Passage', property_name: 'scripture_passage', type: 'content', required: false, filter_tags: ['reading'], order: 3 },
+    { name: 'Scripture Passage', property_name: 'scripture_passage', type: 'content', required: false, input_filter_tags: ['reading'], order: 3 },
     { name: 'Discussion Questions', property_name: 'discussion_questions', type: 'rich_text', required: false, order: 4 },
     { name: 'Resources', property_name: 'resources', type: 'document', required: false, order: 5 },
     { name: 'Expected Attendance', property_name: 'expected_attendance', type: 'number', required: false, order: 6 },

@@ -194,7 +194,7 @@ When you need detailed information on forms, styling, components, modules, testi
 - **[FORMATTERS.md](./docs/FORMATTERS.md)** - Navigation hub for formatters (split into formatters/ subdirectory with DATE_FUNCTIONS, ENTITY_FUNCTIONS, GENERATORS, CREATING_HELPERS)
 - **[LINTING.md](./docs/LINTING.md)** - ESLint configuration, usage, common issues, and best practices
 - **[CONSOLE_HELPERS.md](./docs/CONSOLE_HELPERS.md)** - Standardized console logging utilities (logSuccess, logWarning, logError, logInfo)
-- **[TAG_SYSTEM.md](./docs/TAG_SYSTEM.md)** - Polymorphic tag system for content categorization and filtering (category_tags, tag_assignments, filter_tags)
+- **[TAG_SYSTEM.md](./docs/TAG_SYSTEM.md)** - Polymorphic tag system for content categorization and filtering (category_tags, tag_assignments)
 - **[SEEDERS_REFERENCE.md](./docs/SEEDERS_REFERENCE.md)** - Complete reference for TypeScript seeders (onboarding + dev seeders, execution order, data created)
 - **[LITURGICAL_CALENDAR.md](./docs/LITURGICAL_CALENDAR.md)** - Liturgical calendar API integration, import scripts, and database structure
 - **[LITURGICAL_SCRIPT_SYSTEM.md](./docs/LITURGICAL_SCRIPT_SYSTEM.md)** - Navigation hub for liturgical script system (split into liturgical-script-system/ subdirectory with OVERVIEW, WITHRELATIONS, TEMPLATES, PRINT_EXPORT, VIEW_INTEGRATION)
