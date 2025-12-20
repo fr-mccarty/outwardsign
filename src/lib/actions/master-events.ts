@@ -26,6 +26,7 @@ import type {
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 import type { SystemType } from '@/lib/constants/system-types'
 import { logError } from '@/lib/utils/console'
+import { sanitizeFieldValues } from '@/lib/utils/sanitize'
 
 export interface MasterEventFilterParams {
   search?: string
@@ -612,6 +613,12 @@ export async function createEvent(
     }
   }
 
+  // Sanitize field values (strip HTML tags, preserve markdown and custom syntax)
+  const sanitizedFieldValues = sanitizeFieldValues(
+    data.field_values,
+    inputFieldDefinitions
+  )
+
   // Validate calendar events (at least one, exactly one primary)
   if (!data.calendar_events || data.calendar_events.length === 0) {
     throw new Error('At least one calendar event is required')
@@ -629,7 +636,7 @@ export async function createEvent(
       {
         parish_id: selectedParishId,
         event_type_id: eventTypeId,
-        field_values: data.field_values,
+        field_values: sanitizedFieldValues,
         presider_id: data.presider_id || null,
         homilist_id: data.homilist_id || null,
         status: data.status || 'PLANNING'
@@ -699,7 +706,20 @@ export async function updateEvent(
   const updateData: Partial<MasterEvent> = {}
 
   if (data.field_values !== undefined) {
-    updateData.field_values = data.field_values
+    // Fetch input field definitions for sanitization
+    const { data: eventType } = await supabase
+      .from('event_types')
+      .select('input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
+      .eq('id', existingEvent.event_type_id)
+      .single()
+
+    const inputFieldDefinitions = (eventType?.input_field_definitions || []) as InputFieldDefinition[]
+
+    // Sanitize field values (strip HTML tags, preserve markdown and custom syntax)
+    updateData.field_values = sanitizeFieldValues(
+      data.field_values,
+      inputFieldDefinitions
+    )
   }
   if (data.presider_id !== undefined) {
     updateData.presider_id = data.presider_id

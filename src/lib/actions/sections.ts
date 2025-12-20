@@ -11,6 +11,7 @@ import type {
   UpdateSectionData
 } from '@/lib/types'
 import { logError } from '@/lib/utils/console'
+import { sanitizeSectionContent } from '@/lib/utils/sanitize'
 
 /**
  * Get all sections for a script
@@ -88,6 +89,9 @@ export async function createSection(scriptId: string, data: CreateSectionData): 
   const maxOrder = existingSections?.[0]?.order ?? -1
   const newOrder = maxOrder + 1
 
+  // Sanitize content (strip HTML tags, preserve markdown and custom syntax)
+  const sanitizedContent = sanitizeSectionContent(data.content)
+
   // Insert section
   const { data: section, error } = await supabase
     .from('sections')
@@ -96,7 +100,7 @@ export async function createSection(scriptId: string, data: CreateSectionData): 
         script_id: scriptId,
         name: data.name,
         section_type: data.section_type ?? 'text',
-        content: data.content ?? '',
+        content: sanitizedContent,
         page_break_after: data.page_break_after ?? false,
         order: newOrder
       }
@@ -144,6 +148,11 @@ export async function updateSection(id: string, data: UpdateSectionData): Promis
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(data).filter(([_key, value]) => value !== undefined)
   )
+
+  // Sanitize content if provided (strip HTML tags, preserve markdown and custom syntax)
+  if (updateData.content !== undefined) {
+    updateData.content = sanitizeSectionContent(updateData.content)
+  }
 
   const { data: section, error } = await supabase
     .from('sections')

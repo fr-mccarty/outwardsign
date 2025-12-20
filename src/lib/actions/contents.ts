@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
+import { sanitizeContentBody } from '@/lib/utils/sanitize'
 import type {
   ContentWithTags,
   CreateContentData,
@@ -242,11 +243,15 @@ export async function createContent(input: CreateContentData): Promise<ContentWi
 
   const { tag_ids, ...contentData } = input
 
+  // Sanitize body content (strip HTML tags, preserve markdown and custom syntax)
+  const sanitizedBody = sanitizeContentBody(contentData.body)
+
   // Insert content
   const { data: content, error: contentError } = await supabase
     .from('contents')
     .insert({
       ...contentData,
+      body: sanitizedBody,
       parish_id: parishId,
       created_by: userId
     })
@@ -312,11 +317,16 @@ export async function updateContent(
 
   const { tag_ids, ...contentData } = input
 
+  // Sanitize body if provided (strip HTML tags, preserve markdown and custom syntax)
+  const sanitizedContentData = contentData.body
+    ? { ...contentData, body: sanitizeContentBody(contentData.body) }
+    : contentData
+
   // Update content fields (only provided fields)
-  if (Object.keys(contentData).length > 0) {
+  if (Object.keys(sanitizedContentData).length > 0) {
     const { error: updateError } = await supabase
       .from('contents')
-      .update(contentData)
+      .update(sanitizedContentData)
       .eq('id', contentId)
       .eq('parish_id', parishId)
 

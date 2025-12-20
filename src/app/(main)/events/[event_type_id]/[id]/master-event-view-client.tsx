@@ -4,7 +4,6 @@ import { useState } from 'react'
 import type { MasterEventWithRelations, EventTypeWithRelations, Script } from '@/lib/types'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -17,11 +16,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScriptCard } from '@/components/script-card'
-import { Edit, BookmarkPlus } from 'lucide-react'
+import { Edit, BookmarkPlus, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
+import { formatDatePretty } from '@/lib/utils/formatters'
 import { deleteEvent } from '@/lib/actions/master-events'
 import { createTemplateFromEvent } from '@/lib/actions/master-event-templates'
 
@@ -38,17 +37,6 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
   const [templateName, setTemplateName] = useState('')
   const [templateDescription, setTemplateDescription] = useState('')
   const [isSavingTemplate, setIsSavingTemplate] = useState(false)
-
-  // Create lookup map for input field definitions by ID (for calendar event labels)
-  const fieldDefinitionMap = new Map(
-    (eventType.input_field_definitions || []).map(field => [field.id, field])
-  )
-
-  // Helper to get field label from input_field_definition_id
-  const getFieldLabel = (inputFieldDefinitionId: string): string => {
-    const field = fieldDefinitionMap.get(inputFieldDefinitionId)
-    return field?.name || 'Calendar Event'
-  }
 
   // Handle save as template
   const handleSaveAsTemplate = async () => {
@@ -77,7 +65,7 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
     }
   }
 
-  // Generate action buttons (Edit + Save as Template - Delete handled via onDelete prop)
+  // Generate action buttons (Edit + Save as Template + Settings - Delete handled via onDelete prop)
   const actionButtons = (
     <div className="space-y-2 w-full">
       <Button asChild className="w-full">
@@ -93,6 +81,12 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
       >
         <BookmarkPlus className="h-4 w-4 mr-2" />
         Save as Template
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href={`/settings/events/${eventType.id}`}>
+          <Settings className="h-4 w-4 mr-2" />
+          Configure Scripts
+        </Link>
       </Button>
     </div>
   )
@@ -113,11 +107,6 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
     </>
   )
 
-  // Sort calendar_events by start_datetime
-  const sortedCalendarEvents = [...(event.calendar_events || [])].sort((a, b) =>
-    new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
-  )
-
   return (
     <ModuleViewContainer
       entity={event}
@@ -127,40 +116,6 @@ export function DynamicEventViewClient({ event, eventType, scripts, eventTypeSlu
       details={details}
       onDelete={deleteEvent}
     >
-      {/* Calendar Events Section */}
-      {sortedCalendarEvents.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Calendar Events</h3>
-          <div className="space-y-3">
-            {sortedCalendarEvents.map((calendarEvent) => (
-              <Card key={calendarEvent.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-base">
-                      {getFieldLabel(calendarEvent.input_field_definition_id)}
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {calendarEvent.start_datetime && (
-                    <div>
-                      <span className="font-medium">Date & Time:</span>{' '}
-                      {formatDatePretty(new Date(calendarEvent.start_datetime))} at {formatTime(new Date(calendarEvent.start_datetime).toTimeString().slice(0, 8))}
-                    </div>
-                  )}
-                  {calendarEvent.location && (
-                    <div>
-                      <span className="font-medium">Location:</span>{' '}
-                      {calendarEvent.location.name}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Script cards stacked vertically */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Scripts</h3>

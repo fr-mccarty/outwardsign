@@ -4,14 +4,26 @@
 
 ## Quick Reference
 
+### End-to-End Tests (Playwright)
+
 ```bash
-npm run test                              # Run all tests (headless)
+npm run test                              # Run all E2E tests (headless)
 npm run test -- tests/events.spec.ts      # Run specific file
 npm run test -- --grep "creates wedding"  # Run by name
 npm run test:ui                           # Interactive debugger
+npm run test:headed                       # Run with browser visible
 ```
 
-Tests are **pre-authenticated** - no login code needed.
+E2E tests are **pre-authenticated** - no login code needed.
+
+### Unit Tests (Vitest)
+
+```bash
+npm run test:unit                         # Run all unit tests
+npm run test:unit:watch                   # Watch mode (re-run on changes)
+```
+
+Unit tests are for testing utility functions, helpers, and pure logic in isolation.
 
 ---
 
@@ -348,3 +360,133 @@ await page.pause();  // Opens inspector at this point
 - [ ] Import from `./utils/test-config` (not `@/lib/constants`)
 - [ ] Test names are short and scannable
 - [ ] Tests actual behavior, not framework internals
+
+---
+
+## Unit Testing with Vitest
+
+### Overview
+
+Vitest is used for testing utility functions, helpers, and pure logic in isolation. Unlike Playwright E2E tests which run in a browser, unit tests run in Node.js and are much faster.
+
+**Location:** `tests/unit/`
+
+### When to Use Unit Tests
+
+| Use Unit Tests For | Use E2E Tests For |
+|-------------------|-------------------|
+| Pure utility functions | User workflows |
+| Data transformations | Form submissions |
+| Validation logic | Navigation flows |
+| Formatters/helpers | Component interactions |
+| Sanitization functions | Permission boundaries |
+
+### Running Unit Tests
+
+```bash
+npm run test:unit           # Run once
+npm run test:unit:watch     # Watch mode (re-run on file changes)
+```
+
+### Writing Unit Tests
+
+**Location:** `tests/unit/{feature}.test.ts`
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { myFunction } from '@/lib/utils/my-utility'
+
+describe('myFunction', () => {
+  it('handles basic input', () => {
+    expect(myFunction('input')).toBe('expected output')
+  })
+
+  it('handles edge cases', () => {
+    expect(myFunction(null)).toBe('')
+    expect(myFunction(undefined)).toBe('')
+  })
+})
+```
+
+### Path Aliases
+
+Unit tests support the same `@/` path alias as the main application:
+
+```typescript
+import { sanitizeRichText } from '@/lib/utils/sanitize'
+```
+
+### Configuration
+
+Vitest configuration is in `vitest.config.ts`:
+- Environment: Node.js
+- Test location: `tests/unit/**/*.test.ts`
+- Path alias: `@/` maps to `./src/`
+
+---
+
+## Existing Test Files
+
+### Unit Tests (`tests/unit/`)
+
+| File | Purpose |
+|------|---------|
+| `sanitize.test.ts` | Tests sanitization utility (HTML stripping, markdown preservation, placeholder syntax) |
+
+### E2E Tests (`tests/`)
+
+| File | Purpose |
+|------|---------|
+| `weddings.spec.ts` | Wedding module CRUD workflow |
+| `funerals.spec.ts` | Funeral module CRUD workflow |
+| `events.spec.ts` | Dynamic events module |
+| `events-view-edit.spec.ts` | Event view page (scripts only) and edit page (settings menu) |
+| `masses.spec.ts` | Mass scheduling module |
+| `mass-intentions.spec.ts` | Mass intentions CRUD |
+| `people.spec.ts` | People directory module |
+| `families.spec.ts` | Family management module |
+| `groups.spec.ts` | Ministry groups module |
+| `locations.spec.ts` | Locations module |
+| `settings.spec.ts` | Settings pages |
+| `navigation.spec.ts` | Sidebar and breadcrumb navigation |
+
+---
+
+## Sanitization Tests Reference
+
+The sanitization utility (`src/lib/utils/sanitize.ts`) has comprehensive unit tests covering:
+
+### Test Categories
+
+1. **HTML Stripping**: Removes `<script>`, `<div>`, `<span>`, and other HTML tags
+2. **Markdown Preservation**: Keeps `**bold**`, `*italic*`, `# headings`
+3. **Custom Syntax**: Preserves `{red}text{/red}` liturgical highlighting
+4. **Placeholders**: Preserves `{{field}}`, `{{field.property}}`, `{{field | a | b}}`
+5. **Edge Cases**: Handles null, undefined, empty strings
+
+### Running Sanitization Tests
+
+```bash
+npm run test:unit -- tests/unit/sanitize.test.ts
+```
+
+### Example Test Output
+
+```
+✓ tests/unit/sanitize.test.ts (15 tests) 5ms
+  ✓ sanitizeTextInput > strips all HTML tags
+  ✓ sanitizeTextInput > handles null/undefined/empty inputs
+  ✓ sanitizeTextInput > trims whitespace
+  ✓ sanitizeRichText > strips HTML tags while preserving markdown
+  ✓ sanitizeRichText > preserves {red}{/red} custom syntax
+  ✓ sanitizeRichText > preserves {{placeholder}} syntax
+  ✓ sanitizeRichText > handles complex mixed content
+  ✓ sanitizeRichText > handles null/undefined/empty inputs
+  ✓ sanitizeFieldValues > sanitizes text fields with plain sanitization
+  ✓ sanitizeFieldValues > sanitizes rich_text fields preserving markdown
+  ✓ sanitizeFieldValues > sanitizes mass-intention fields as rich text
+  ✓ sanitizeFieldValues > ignores non-text field types
+  ✓ sanitizeFieldValues > handles empty/null field values
+  ✓ wrapper functions > sanitizeContentBody works like sanitizeRichText
+  ✓ wrapper functions > sanitizeSectionContent works like sanitizeRichText
+```

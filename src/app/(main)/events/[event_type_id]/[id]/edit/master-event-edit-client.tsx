@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { MasterEventForm } from '../../master-event-form'
 import { PageContainer } from '@/components/page-container'
 import { ModuleSaveButton } from '@/components/module-save-button'
+import { Eye, Settings } from 'lucide-react'
 import type { EventTypeWithRelations, DynamicEventWithRelations } from '@/lib/types'
 
 interface DynamicEventEditClientProps {
@@ -31,7 +32,14 @@ export function DynamicEventEditClient({
         {
           type: 'action',
           label: `View ${eventType.name}`,
-          href: `/events/${eventType.id}/${event.id}`
+          icon: <Eye className="h-4 w-4" />,
+          href: `/events/${eventType.slug}/${event.id}`
+        },
+        {
+          type: 'action',
+          label: 'Configure Input Fields',
+          icon: <Settings className="h-4 w-4" />,
+          href: `/settings/events/${eventType.id}`
         }
       ]}
     >
