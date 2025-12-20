@@ -12,7 +12,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { seedEventTypesForParish } from './event-types-seed'
 import { seedMassEventTypesForParish } from './mass-event-types-seed'
 import { seedSpecialLiturgyEventTypesForParish } from './special-liturgy-event-types-seed'
-import { seedContentTagsForParish } from './content-tags-seed'
+import { seedCategoryTagsForParish } from './category-tags-seed'
 import { seedEventsForParish } from './events-seed'
 import { logError } from '@/lib/utils/console'
 
@@ -338,9 +338,9 @@ export async function seedParishData(supabase: SupabaseClient, parishId: string)
   }
 
   // =====================================================
-  // 9. Seed Content Tags
+  // 9. Seed Category Tags
   // =====================================================
-  await seedContentTagsForParish(supabase, parishId)
+  await seedCategoryTagsForParish(supabase, parishId)
 
   // =====================================================
   // 9b. Seed Sample Events

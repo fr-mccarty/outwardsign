@@ -1,14 +1,27 @@
 /**
- * Dev Seeder: Special Liturgies (Weddings, Funerals, etc.)
+ * Dev Seeder: Weddings and Funerals
  *
- * Creates sample weddings, funerals, and other special liturgy events
- * with readings assigned from the content library.
+ * Creates sample Wedding and Funeral events with readings assigned
+ * from the content library.
  *
- * Each special liturgy includes:
+ * Each event includes:
  * - first_reading (content ID)
  * - psalm (content ID)
  * - second_reading (content ID)
  * - gospel_reading (content ID)
+ *
+ * HOW READINGS ARE SELECTED:
+ * ==========================
+ * Readings are fetched from the content library by querying tag_assignments:
+ * 1. Find content tagged with the sacrament (e.g., 'wedding' or 'funeral')
+ * 2. Filter by section tag (e.g., 'first-reading', 'psalm', 'gospel')
+ * 3. Content must have BOTH tags to be selected
+ *
+ * TAG SLUGS USED:
+ * ---------------
+ * - Sacrament: 'wedding', 'funeral'
+ * - Section: 'first-reading', 'second-reading', 'psalm', 'gospel'
+ * (See category-tags-seed.ts for all available slugs)
  *
  * HOW TO FIND READINGS FOR AN EVENT:
  * ==================================
@@ -16,6 +29,11 @@
  * 2. Look up first_reading, psalm, second_reading, gospel_reading fields
  * 3. Each field contains a content ID (UUID)
  * 4. Query the contents table by ID to get the reading text
+ *
+ * EXAMPLE QUERY:
+ * --------------
+ * SELECT c.* FROM contents c
+ * WHERE c.id = master_event.field_values->>'first_reading'
  */
 
 import type { DevSeederContext } from './types'
@@ -116,22 +134,22 @@ function buildReadingSet(readings: ReadingsByType, index: number): ReadingSet {
   }
 }
 
-export interface SpecialLiturgiesResult {
+export interface WeddingsFuneralsResult {
   success: boolean
   weddingsCreated: number
   funeralsCreated: number
 }
 
-export async function seedSpecialLiturgies(
+export async function seedWeddingsAndFunerals(
   ctx: DevSeederContext,
   people: Array<{ id: string }> | null,
   locations: LocationRefs
-): Promise<SpecialLiturgiesResult> {
+): Promise<WeddingsFuneralsResult> {
   const { supabase, parishId } = ctx
   const { churchLocation, hallLocation, funeralHomeLocation } = locations
 
   logInfo('')
-  logInfo('Creating special liturgies with readings...')
+  logInfo('Creating sample weddings and funerals with readings...')
 
   if (!people || people.length < 15) {
     logWarning('Not enough people to create special liturgies, need at least 15')

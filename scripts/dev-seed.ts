@@ -23,7 +23,7 @@ import {
   seedEvents,
   seedFamilies,
   seedReadings,
-  seedSpecialLiturgies,
+  seedWeddingsAndFunerals,
   seedMassRoleAssignments
 } from './dev-seeders'
 import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
@@ -332,17 +332,17 @@ async function seedDevData() {
 
   // =====================================================
   // Seed Sample Events (Baptisms, Quinceaneras, Parish Events, etc.)
-  // Note: Weddings/Funerals are handled by seedSpecialLiturgies with readings
+  // Note: Weddings/Funerals are handled by seedWeddingsAndFunerals with readings
   // =====================================================
   if (people) {
     await seedEvents(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
   }
 
   // =====================================================
-  // Seed Special Liturgies (Weddings, Funerals) with Readings
+  // Seed Weddings and Funerals with Readings
   // =====================================================
   if (people) {
-    await seedSpecialLiturgies(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
+    await seedWeddingsAndFunerals(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
   }
 
   // =====================================================

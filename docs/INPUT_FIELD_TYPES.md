@@ -29,9 +29,24 @@ Quick reference for dynamic event form input types used when configuring event t
 
 - **`is_key_person`** - Person fields only. Marks person as a key participant (searchable in list view).
 - **`is_primary`** - Occasion fields only. Marks as the main event occasion.
-- **`filter_tags`** - Filter picker results by tags.
+- **`filter_tags`** - Content/petition fields only. Array of tag slugs to filter picker results. Content must have ALL specified tags. See [TAG_SYSTEM.md](./TAG_SYSTEM.md).
 - **`list_id`** - Required for `list_item` type. Specifies which custom list to use.
 - **`event_type_filter_id`** - Optional for `event_link` type. Filters linked events by type.
+
+### filter_tags Examples
+
+```typescript
+// Show only wedding first readings
+filter_tags: ['wedding', 'first-reading']
+
+// Show only funeral opening prayers
+filter_tags: ['funeral', 'opening-prayer']
+
+// Show any generic reading (for Bible Study)
+filter_tags: ['reading']
+```
+
+**Available slugs:** See [TAG_SYSTEM.md](./TAG_SYSTEM.md) for complete list.
 
 ## Type Categories
 

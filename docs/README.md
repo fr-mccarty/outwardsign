@@ -55,6 +55,8 @@ All documentation in this directory must follow these standards:
 - [CODE_CONVENTIONS.md](./CODE_CONVENTIONS.md) - Coding standards and conventions
 - [DATABASE.md](./DATABASE.md) - Database management procedures
 - [CONSOLE_HELPERS.md](./CONSOLE_HELPERS.md) - Standardized console logging utilities
+- [TAG_SYSTEM.md](./TAG_SYSTEM.md) - Polymorphic tag system for content filtering
+- [SEEDERS_REFERENCE.md](./SEEDERS_REFERENCE.md) - Complete seeders documentation
 
 **Component References:**
 - [COMPONENT_REGISTRY.md](./COMPONENT_REGISTRY.md) - Complete component library reference

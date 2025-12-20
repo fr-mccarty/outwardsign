@@ -8,6 +8,36 @@
  * - Default scripts with sections (public domain content only)
  *
  * See /requirements/user-defined-event-types.md Phase 9 for specifications.
+ *
+ * FILTER_TAGS ON INPUT FIELDS:
+ * ============================
+ * Content-type input fields use `filter_tags` to specify which content to show
+ * in the content picker. Tags are matched by `slug` from category_tags table.
+ *
+ * PATTERN:
+ * --------
+ * filter_tags typically combines:
+ * 1. A SACRAMENT slug: 'wedding', 'funeral', 'baptism', 'quinceanera', 'presentation'
+ * 2. A SECTION slug: 'first-reading', 'opening-prayer', 'psalm', etc.
+ *
+ * EXAMPLE:
+ * --------
+ * { name: 'First Reading', type: 'content', filter_tags: ['wedding', 'first-reading'] }
+ * - This shows content tagged with BOTH 'wedding' AND 'first-reading'
+ *
+ * AVAILABLE TAG SLUGS:
+ * --------------------
+ * See category-tags-seed.ts for the complete list of available slugs.
+ * Common slugs used here:
+ * - Sacraments: 'wedding', 'funeral', 'baptism', 'quinceanera', 'presentation'
+ * - Sections: 'reading', 'first-reading', 'second-reading', 'psalm', 'gospel',
+ *             'opening-prayer', 'closing-prayer', 'prayers-of-the-faithful'
+ *
+ * ADDING NEW CONTENT FIELDS:
+ * --------------------------
+ * 1. Define the input field with type: 'content'
+ * 2. Set filter_tags using slugs from category-tags-seed.ts
+ * 3. Ensure content-seed.ts has sample content with matching tags
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'

@@ -4,7 +4,36 @@
  * Creates sample events for each event type (Baptisms, Quinceaneras, Parish Events, etc.)
  * Uses the unified event model: master_events + calendar_events
  *
- * NOTE: Weddings and Funerals are handled by seed-special-liturgies.ts with readings.
+ * NOTE: Weddings and Funerals are handled by seed-weddings-funerals.ts with readings.
+ *
+ * HOW EVENTS ARE CREATED:
+ * =======================
+ * 1. Fetches all event_types with their input_field_definitions
+ * 2. For each event type, creates master_events with field_values
+ * 3. Creates calendar_events linked to the primary calendar_event field
+ *
+ * FIELD_VALUES STRUCTURE:
+ * -----------------------
+ * The field_values JSONB column stores values keyed by property_name:
+ * - Person fields: Store person ID (UUID)
+ * - Text fields: Store string value
+ * - Location fields: Store location ID (UUID)
+ * - Content fields: Store content ID (UUID)
+ *
+ * EXAMPLE:
+ * --------
+ * {
+ *   "child": "uuid-of-child",
+ *   "mother": "uuid-of-mother",
+ *   "father": "uuid-of-father",
+ *   "presider": "uuid-of-presider"
+ * }
+ *
+ * HOW TO FIND EVENTS:
+ * -------------------
+ * 1. Query master_events by event_type_id
+ * 2. Join with calendar_events for date/time/location
+ * 3. Look up field_values keys in input_field_definitions to understand the data
  */
 
 import type { DevSeederContext } from './types'
@@ -78,7 +107,7 @@ export async function seedEvents(
 
   for (const eventType of eventTypes) {
     // Skip generic types and Mass types (handled by seed-masses)
-    // Skip weddings and funerals (handled by seed-special-liturgies with readings)
+    // Skip weddings and funerals (handled by seed-weddings-funerals with readings)
     if (
       eventType.slug === 'other' ||
       eventType.slug === 'sunday-mass' ||
@@ -102,7 +131,7 @@ export async function seedEvents(
     }> = []
 
     // Use property_name values as keys (not display names)
-    // Note: weddings and funerals are handled by seed-special-liturgies.ts
+    // Note: weddings and funerals are handled by seed-weddings-funerals.ts
     switch (eventType.slug) {
       case 'baptisms':
         eventsData.push({

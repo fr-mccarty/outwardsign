@@ -4,6 +4,39 @@
  * Seeds sample content items for development and new parishes.
  * Only includes public domain content (prayers, ceremony instructions, announcements).
  * Scripture readings are NOT included due to copyright considerations.
+ *
+ * HOW CONTENT IS TAGGED:
+ * ======================
+ * Each content item is assigned multiple tags via the `tag_assignments` table.
+ * Tags are identified by their `slug` (defined in category-tags-seed.ts).
+ *
+ * TAGGING PATTERN:
+ * ----------------
+ * Content is typically tagged with:
+ * 1. A SACRAMENT tag (which event type): 'wedding', 'funeral', 'baptism', etc.
+ * 2. A SECTION tag (what role it plays): 'opening-prayer', 'first-reading', etc.
+ * 3. Optional THEME tags: 'hope', 'love', 'comfort', etc.
+ *
+ * EXAMPLE:
+ * --------
+ * A wedding opening prayer is tagged: ['wedding', 'opening-prayer']
+ * A funeral closing prayer about hope is tagged: ['funeral', 'closing-prayer', 'hope']
+ *
+ * HOW TO FIND CONTENT:
+ * --------------------
+ * Content pickers use `filter_tags` from input_field_definitions to query content.
+ * The query finds content that has ALL specified tags assigned.
+ *
+ * To find content programmatically:
+ * 1. Get tag IDs by slug from `category_tags` table
+ * 2. Query `tag_assignments` for entity_type='content' with matching tag_ids
+ * 3. Join with `contents` table to get the actual content
+ *
+ * SEE ALSO:
+ * ---------
+ * - category-tags-seed.ts: Defines all available tag slugs
+ * - event-types-seed.ts: Defines filter_tags on input fields
+ * - scripts/dev-seeders/seed-readings.ts: Seeds scripture readings (dev only)
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -18,7 +51,7 @@ interface SeedContent {
   body: string
   language: 'en' | 'es'
   description?: string
-  tags: string[] // Tag slugs to assign
+  tags: string[] // Tag slugs to assign (see category-tags-seed.ts)
 }
 
 // Opening Prayers
