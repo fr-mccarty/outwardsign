@@ -102,9 +102,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
     { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 9 },
     { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'text', required: false, order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'text', required: false, order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'text', required: false, order: 13 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['reading', 'first-reading'], order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['reading', 'second-reading'], order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['reading', 'gospel'], order: 13 },
     { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 14 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
@@ -510,10 +510,10 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
     { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
     { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'text', required: false, order: 10 },
-    { name: 'Psalm', property_name: 'psalm', type: 'text', required: false, order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'text', required: false, order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'text', required: false, order: 13 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['reading', 'first-reading'], order: 10 },
+    { name: 'Psalm', property_name: 'psalm', type: 'content', required: false, filter_tags: ['reading', 'psalm'], order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['reading', 'second-reading'], order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['reading', 'gospel'], order: 13 },
     { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 14 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
@@ -1291,7 +1291,7 @@ Lord God, we present this child to you in thanksgiving for the gift of life. Ble
     { name: 'Session', property_name: 'session', type: 'calendar_event', required: true, is_primary: true, order: 0 },
     { name: 'Discussion Leader', property_name: 'discussion_leader', type: 'person', required: false, is_key_person: true, order: 1 },
     { name: 'Topic', property_name: 'topic', type: 'text', required: false, order: 2 },
-    { name: 'Scripture Passage', property_name: 'scripture_passage', type: 'text', required: false, order: 3 },
+    { name: 'Scripture Passage', property_name: 'scripture_passage', type: 'content', required: false, filter_tags: ['reading'], order: 3 },
     { name: 'Discussion Questions', property_name: 'discussion_questions', type: 'rich_text', required: false, order: 4 },
     { name: 'Resources', property_name: 'resources', type: 'document', required: false, order: 5 },
     { name: 'Expected Attendance', property_name: 'expected_attendance', type: 'number', required: false, order: 6 },

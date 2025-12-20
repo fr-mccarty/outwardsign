@@ -4,10 +4,23 @@
  * Creates 20 sample Masses (8 Sunday, 12 Daily) using the unified event model.
  * Uses master_events + calendar_events tables (NOT the legacy masses table).
  * Mass event types are created by the onboarding seeder.
+ *
+ * Also assigns people to liturgical roles for each mass via master_event_roles.
+ * Role definitions come from event_types.role_definitions JSONB field.
  */
 
 import type { DevSeederContext } from './types'
 import { logSuccess, logWarning, logInfo, logError } from '../../src/lib/utils/console'
+
+interface RoleDefinition {
+  id: string
+  name: string
+  required?: boolean
+}
+
+interface RoleDefinitions {
+  roles: RoleDefinition[]
+}
 
 export async function seedMasses(
   ctx: DevSeederContext,
@@ -16,10 +29,10 @@ export async function seedMasses(
 ) {
   const { supabase, parishId } = ctx
 
-  // Fetch Mass event types with their input field definitions
+  // Fetch Mass event types with their input field definitions and role_definitions
   const { data: massEventTypes } = await supabase
     .from('event_types')
-    .select('id, name, slug, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
+    .select('id, name, slug, role_definitions, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
     .eq('parish_id', parishId)
     .in('slug', ['sunday-mass', 'daily-mass'])
     .is('deleted_at', null)
@@ -43,7 +56,18 @@ export async function seedMasses(
   }
 
   logInfo('')
-  logInfo('Creating 20 sample Masses...')
+  logInfo('Creating 20 sample Masses with role assignments...')
+
+  // Helper to get a person for a role (cycles through people list)
+  const roleAssignmentCounters = new Map<string, number>()
+  const getPersonForRole = (roleId: string): string => {
+    const counter = roleAssignmentCounters.get(roleId) || 0
+    // Skip first person (presider) for other roles, start at index 1
+    const personIndex = roleId === 'presider' ? 0 : (counter % (people!.length - 1)) + 1
+    const personId = people![personIndex].id
+    roleAssignmentCounters.set(roleId, counter + 1)
+    return personId
+  }
 
   // Helper to get future date
   const getMassDate = (daysFromNow: number) => {
@@ -78,6 +102,7 @@ export async function seedMasses(
   }> = []
 
   // Create 8 Sunday Masses (next 8 weeks)
+  // Use property_name values as keys (not display names)
   if (sundayMassEventType) {
     for (let week = 0; week < 8; week++) {
       const massDate = getSundayDate(week)
@@ -86,21 +111,22 @@ export async function seedMasses(
         time: '10:00:00',
         eventType: sundayMassEventType,
         fieldValues: {
-          'Announcements': week % 2 === 0
+          announcements: week % 2 === 0
             ? `Parish Picnic next Sunday after all Masses. Bring a side dish to share! Sign up in the parish hall.`
             : `Faith Formation registration is now open. Please visit the parish office or register online.`,
-          'Entrance Hymn': ['Holy God We Praise Thy Name', 'All Are Welcome', 'Here I Am Lord', 'Amazing Grace'][week % 4],
-          'Offertory Hymn': ['We Bring the Sacrifice of Praise', 'Take and Eat', 'Gift of Finest Wheat', 'Come to the Feast'][week % 4],
-          'Communion Hymn': ['I Am the Bread of Life', 'One Bread One Body', 'Eat This Bread', 'Here Is My Body'][week % 4],
-          'Recessional Hymn': ['Go Make a Difference', 'City of God', 'We Are Called', 'Go Forth'][week % 4],
-          'Mass Intentions': people[week % 10] ? `For the repose of the soul of ${people[week % 10].first_name} ${people[week % 10].last_name}` : 'For the intentions of the parish',
-          'Special Instructions': week === 0 ? 'First Sunday of the month - Children\'s Mass' : ''
+          entrance_hymn: ['Holy God We Praise Thy Name', 'All Are Welcome', 'Here I Am Lord', 'Amazing Grace'][week % 4],
+          offertory_hymn: ['We Bring the Sacrifice of Praise', 'Take and Eat', 'Gift of Finest Wheat', 'Come to the Feast'][week % 4],
+          communion_hymn: ['I Am the Bread of Life', 'One Bread One Body', 'Eat This Bread', 'Here Is My Body'][week % 4],
+          recessional_hymn: ['Go Make a Difference', 'City of God', 'We Are Called', 'Go Forth'][week % 4],
+          mass_intentions: people[week % 10] ? `For the repose of the soul of ${people[week % 10].first_name} ${people[week % 10].last_name}` : 'For the intentions of the parish',
+          special_instructions: week === 0 ? 'First Sunday of the month - Children\'s Mass' : ''
         }
       })
     }
   }
 
   // Create 12 Daily Masses (next 12 weekdays)
+  // Use property_name values as keys (not display names)
   if (dailyMassEventType) {
     let dayCount = 0
     for (let day = 1; day <= 20 && dayCount < 12; day++) {
@@ -117,8 +143,8 @@ export async function seedMasses(
         time: '08:00:00',
         eventType: dailyMassEventType,
         fieldValues: {
-          'Mass Intentions': people[dayCount % 10] ? `For ${people[dayCount % 10].first_name} ${people[dayCount % 10].last_name} - Birthday blessings` : 'For vocations to the priesthood',
-          'Special Instructions': ''
+          mass_intentions: people[dayCount % 10] ? `For ${people[dayCount % 10].first_name} ${people[dayCount % 10].last_name} - Birthday blessings` : 'For vocations to the priesthood',
+          special_instructions: ''
         }
       })
       dayCount++
@@ -136,6 +162,7 @@ export async function seedMasses(
 
   // Insert Masses using unified event model
   let massesCreatedCount = 0
+  let roleAssignmentsCount = 0
   for (const massData of massesToCreate) {
     if (!massData.eventType) continue
 
@@ -188,16 +215,33 @@ export async function seedMasses(
 
     massesCreatedCount++
 
-    // Log liturgical event connection if applicable
-    if (matchingLiturgicalEvent) {
-      // Note: Liturgical event linking could be added to field_values or a separate table
-      // For now, just counting successful creations
+    // Assign ministers to this mass using role_definitions from event type
+    const roleDefinitions = (massData.eventType?.role_definitions as RoleDefinitions)?.roles || []
+
+    // Skip 'presider' role since it's already set via presider_id on master_event
+    const rolesToAssign = roleDefinitions.filter(r => r.id !== 'presider')
+
+    for (const role of rolesToAssign) {
+      const personId = getPersonForRole(role.id)
+
+      const { error: roleError } = await supabase
+        .from('master_event_roles')
+        .insert({
+          master_event_id: newMasterEvent.id,
+          role_id: role.id,
+          person_id: personId
+        })
+
+      if (!roleError) {
+        roleAssignmentsCount++
+      }
     }
   }
 
   const sundayCount = massesToCreate.filter(m => m.eventType?.slug === 'sunday-mass').length
   const dailyCount = massesToCreate.filter(m => m.eventType?.slug === 'daily-mass').length
   logSuccess(`Created ${massesCreatedCount} sample Masses (${sundayCount} Sunday, ${dailyCount} Daily)`)
+  logSuccess(`Created ${roleAssignmentsCount} minister assignments`)
 
   return { success: true }
 }

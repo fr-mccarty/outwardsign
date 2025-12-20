@@ -83,6 +83,7 @@
     "noItemsFound": "No items found",
     "noResultsFound": "No results found",
     "noData": "No data",
+    "emptyField": "(not provided)",
     "areYouSure": "Are you sure?",
     "deleteItem": "Delete Item",
     "thisItem": "this item",

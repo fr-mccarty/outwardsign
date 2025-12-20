@@ -17,12 +17,14 @@ import {
   uploadAvatars,
   seedGroups,
   seedGroupMemberships,
-  seedMassRoleMemberships,
   seedLocations,
   seedMasses,
   seedMassIntentions,
   seedEvents,
-  seedFamilies
+  seedFamilies,
+  seedReadings,
+  seedSpecialLiturgies,
+  seedMassRoleAssignments
 } from './dev-seeders'
 import { logSuccess, logError, logInfo, logWarning } from '../src/lib/utils/console'
 
@@ -255,6 +257,12 @@ async function seedDevData() {
   const ctx = { supabase, parishId, devUserEmail: devUserEmail! }
 
   // =====================================================
+  // Seed Readings (Liturgical Readings for Weddings/Funerals)
+  // =====================================================
+  logInfo('')
+  await seedReadings(ctx)
+
+  // =====================================================
   // Seed Sample Groups
   // =====================================================
   logInfo('')
@@ -277,7 +285,7 @@ async function seedDevData() {
   // Seed Mass Role Memberships
   // =====================================================
   if (people) {
-    await seedMassRoleMemberships(ctx, people)
+    await seedMassRoleAssignments(ctx, people)
   }
 
   // =====================================================
@@ -313,10 +321,18 @@ async function seedDevData() {
   }
 
   // =====================================================
-  // Seed Sample Events (Weddings, Funerals, etc.)
+  // Seed Sample Events (Baptisms, Quinceaneras, Parish Events, etc.)
+  // Note: Weddings/Funerals are handled by seedSpecialLiturgies with readings
   // =====================================================
   if (people) {
     await seedEvents(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
+  }
+
+  // =====================================================
+  // Seed Special Liturgies (Weddings, Funerals) with Readings
+  // =====================================================
+  if (people) {
+    await seedSpecialLiturgies(ctx, people, { churchLocation, hallLocation, funeralHomeLocation })
   }
 
   // =====================================================

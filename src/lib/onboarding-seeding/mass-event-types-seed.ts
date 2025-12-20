@@ -25,6 +25,23 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // =====================================================
   // 1. Create Sunday Mass Event Type
   // =====================================================
+  // Define role definitions for Sunday Mass (full ministry team)
+  const sundayMassRoleDefinitions = {
+    roles: [
+      { id: 'presider', name: 'Presider', required: true },
+      { id: 'lector-1', name: 'Lector 1', required: false },
+      { id: 'lector-2', name: 'Lector 2', required: false },
+      { id: 'server-1', name: 'Server 1', required: false },
+      { id: 'server-2', name: 'Server 2', required: false },
+      { id: 'em-1', name: 'Eucharistic Minister 1', required: false },
+      { id: 'em-2', name: 'Eucharistic Minister 2', required: false },
+      { id: 'cantor', name: 'Cantor', required: false },
+      { id: 'usher-1', name: 'Usher 1', required: false },
+      { id: 'usher-2', name: 'Usher 2', required: false },
+      { id: 'greeter', name: 'Greeter', required: false }
+    ]
+  }
+
   const { data: sundayMassType, error: sundayMassTypeError } = await supabase
     .from('event_types')
     .insert({
@@ -34,6 +51,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       icon: 'Church',
       slug: 'sunday-mass',
       system_type: 'mass',
+      role_definitions: sundayMassRoleDefinitions,
       order: 100 // After other event types
     })
     .select()
@@ -91,38 +109,27 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   }
 
   // Create sections for Sunday Mass Presider Script
+  // Note: Placeholders use property_name format (snake_case) to match resolved_fields keys
   const sundayScriptSections = [
     {
       name: 'Mass Information',
       order: 1,
-      content: {
-        en: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{Mass Intentions}}',
-        es: '# Información de la Misa\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n\n## Intenciones de la Misa\n{{Mass Intentions}}'
-      }
+      content: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{mass_intentions}}'
     },
     {
       name: 'Music',
       order: 2,
-      content: {
-        en: '# Music\n\n**Entrance:** {{Entrance Hymn}}\n**Offertory:** {{Offertory Hymn}}\n**Communion:** {{Communion Hymn}}\n**Recessional:** {{Recessional Hymn}}',
-        es: '# Música\n\n**Entrada:** {{Entrance Hymn}}\n**Ofertorio:** {{Offertory Hymn}}\n**Comunión:** {{Communion Hymn}}\n**Salida:** {{Recessional Hymn}}'
-      }
+      content: '# Music\n\n**Entrance:** {{entrance_hymn}}\n**Offertory:** {{offertory_hymn}}\n**Communion:** {{communion_hymn}}\n**Recessional:** {{recessional_hymn}}'
     },
     {
       name: 'Announcements',
       order: 3,
-      content: {
-        en: '# Announcements\n\n{{Announcements}}',
-        es: '# Anuncios\n\n{{Announcements}}'
-      }
+      content: '# Announcements\n\n{{announcements}}'
     },
     {
       name: 'Special Instructions',
       order: 4,
-      content: {
-        en: '# Special Instructions\n\n{{Special Instructions}}',
-        es: '# Instrucciones Especiales\n\n{{Special Instructions}}'
-      }
+      content: '# Special Instructions\n\n{{special_instructions}}'
     }
   ]
 
@@ -145,6 +152,15 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // =====================================================
   // 2. Create Daily Mass Event Type
   // =====================================================
+  // Define role definitions for Daily Mass (minimal team)
+  const dailyMassRoleDefinitions = {
+    roles: [
+      { id: 'presider', name: 'Presider', required: true },
+      { id: 'lector', name: 'Lector', required: false },
+      { id: 'server', name: 'Server', required: false }
+    ]
+  }
+
   const { data: dailyMassType, error: dailyMassTypeError } = await supabase
     .from('event_types')
     .insert({
@@ -154,6 +170,7 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       icon: 'CalendarDays',
       slug: 'daily-mass',
       system_type: 'mass',
+      role_definitions: dailyMassRoleDefinitions,
       order: 101
     })
     .select()
@@ -206,14 +223,12 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   }
 
   // Create sections for Daily Mass Presider Script
+  // Note: Placeholders use property_name format (snake_case) to match resolved_fields keys
   const dailyScriptSections = [
     {
       name: 'Mass Information',
       order: 1,
-      content: {
-        en: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{Mass Intentions}}\n\n## Special Instructions\n{{Special Instructions}}',
-        es: '# Información de la Misa\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n\n## Intenciones de la Misa\n{{Mass Intentions}}\n\n## Instrucciones Especiales\n{{Special Instructions}}'
-      }
+      content: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{mass_intentions}}\n\n## Special Instructions\n{{special_instructions}}'
     }
   ]
 

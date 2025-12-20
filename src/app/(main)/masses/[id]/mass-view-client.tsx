@@ -4,6 +4,7 @@ import type { MasterEventWithRelations } from '@/lib/types'
 import { deleteEvent } from '@/lib/actions/master-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Edit } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { ScriptCard } from '@/components/script-card'
@@ -14,6 +15,7 @@ import type { Script } from '@/lib/types'
 import { assignRole, removeRoleAssignment } from '@/lib/actions/master-events'
 import { toast } from 'sonner'
 import type { Person } from '@/lib/types'
+import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 
 interface MassViewClientProps {
   mass: MasterEventWithRelations
@@ -125,9 +127,49 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
       details={details}
       onDelete={deleteEvent}
     >
+      {/* Mass Details Section */}
+      {primaryCalendarEvent && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Mass Details</h3>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">
+                {mass.event_type?.name || 'Mass'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {primaryCalendarEvent.start_datetime && (
+                <div>
+                  <span className="font-medium">Date & Time:</span>{' '}
+                  {formatDatePretty(new Date(primaryCalendarEvent.start_datetime))} at {formatTime(new Date(primaryCalendarEvent.start_datetime).toTimeString().slice(0, 8))}
+                </div>
+              )}
+              {primaryCalendarEvent.location && (
+                <div>
+                  <span className="font-medium">Location:</span>{' '}
+                  {primaryCalendarEvent.location.name}
+                </div>
+              )}
+              {mass.presider && (
+                <div>
+                  <span className="font-medium">Presider:</span>{' '}
+                  {mass.presider.full_name}
+                </div>
+              )}
+              {mass.homilist && mass.homilist.id !== mass.presider?.id && (
+                <div>
+                  <span className="font-medium">Homilist:</span>{' '}
+                  {mass.homilist.full_name}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Role Assignments */}
       {mass.event_type?.role_definitions && (
-        <div className="mt-6">
+        <div className="mb-6">
           <RoleAssignmentSection
             masterEvent={mass}
             onRoleAssigned={handleRoleAssigned}
@@ -138,8 +180,8 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
 
       {/* Show scripts from event type */}
       {mass.event_type_id && scripts.length > 0 && (
-        <div className="space-y-4 mt-6">
-          <h3 className="text-lg font-medium">Scripts</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Scripts</h3>
           {scripts.map((script) => (
             <ScriptCard
               key={script.id}

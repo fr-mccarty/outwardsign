@@ -365,10 +365,13 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
   const inputFieldDefinitions = eventTypeData.data.input_field_definitions as InputFieldDefinition[]
 
   // Resolve field values
+  // Note: field_values uses property_name as keys (e.g., "entrance_hymn")
+  // while resolved_fields uses name as keys (e.g., "Entrance Hymn") to match script placeholders
   const resolvedFields: Record<string, ResolvedFieldValue> = {}
 
   for (const fieldDef of inputFieldDefinitions) {
-    const rawValue = event.field_values?.[fieldDef.name]
+    // Look up by property_name (snake_case) since that's what forms and seeders use
+    const rawValue = event.field_values?.[fieldDef.property_name]
 
     const resolvedField: ResolvedFieldValue = {
       field_name: fieldDef.name,
@@ -457,7 +460,33 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
       }
     }
 
-    resolvedFields[fieldDef.name] = resolvedField
+    // Key by property_name for consistency with master-events.ts and script placeholders
+    resolvedFields[fieldDef.property_name] = resolvedField
+  }
+
+  // Add special built-in fields used in script templates
+  // These are not input field definitions but are expected by templates
+  const primaryCalendarEvent = calendarEvents.find(ce => ce.is_primary) || calendarEvents[0]
+  if (primaryCalendarEvent?.start_datetime) {
+    const startDate = new Date(primaryCalendarEvent.start_datetime)
+    resolvedFields['date'] = {
+      field_name: 'date',
+      field_type: 'date',
+      raw_value: startDate.toISOString().split('T')[0]
+    }
+    resolvedFields['time'] = {
+      field_name: 'time',
+      field_type: 'time',
+      raw_value: startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    }
+  }
+  if (presider) {
+    resolvedFields['presider'] = {
+      field_name: 'presider',
+      field_type: 'person',
+      raw_value: presider.id,
+      resolved_value: presider
+    }
   }
 
   return {

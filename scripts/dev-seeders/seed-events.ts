@@ -1,8 +1,10 @@
 /**
  * Dev Seeder: Sample Dynamic Events
  *
- * Creates 2 sample events for each event type (Weddings, Funerals, Baptisms, etc.)
+ * Creates sample events for each event type (Baptisms, Quinceaneras, Parish Events, etc.)
  * Uses the unified event model: master_events + calendar_events
+ *
+ * NOTE: Weddings and Funerals are handled by seed-special-liturgies.ts with readings.
  */
 
 import type { DevSeederContext } from './types'
@@ -76,7 +78,14 @@ export async function seedEvents(
 
   for (const eventType of eventTypes) {
     // Skip generic types and Mass types (handled by seed-masses)
-    if (eventType.slug === 'other' || eventType.slug === 'sunday-mass' || eventType.slug === 'daily-mass') {
+    // Skip weddings and funerals (handled by seed-special-liturgies with readings)
+    if (
+      eventType.slug === 'other' ||
+      eventType.slug === 'sunday-mass' ||
+      eventType.slug === 'daily-mass' ||
+      eventType.slug === 'weddings' ||
+      eventType.slug === 'funerals'
+    ) {
       continue
     }
 
@@ -92,82 +101,29 @@ export async function seedEvents(
       occasion: { date: string; time: string; location_id: string | null }
     }> = []
 
+    // Use property_name values as keys (not display names)
+    // Note: weddings and funerals are handled by seed-special-liturgies.ts
     switch (eventType.slug) {
-      case 'weddings':
-        eventsData.push({
-          field_values: {
-            'Bride': people[1].id,
-            'Groom': people[0].id,
-            'Presider': people[8].id,
-            'Reception Location': hallLocation?.id || '',
-            'First Reading': 'Genesis 2:18-24',
-            'Gospel Reading': 'John 2:1-11',
-            'Unity Candle': true,
-            'Special Instructions': 'Traditional ceremony with bilingual readings'
-          },
-          occasion: { date: getFutureDate(45), time: '14:00:00', location_id: churchLocation?.id || null }
-        })
-        eventsData.push({
-          field_values: {
-            'Bride': people[3].id,
-            'Groom': people[2].id,
-            'Presider': people[8].id,
-            'Reception Location': hallLocation?.id || '',
-            'First Reading': '1 Corinthians 13:1-13',
-            'Gospel Reading': 'Matthew 19:3-6',
-            'Unity Candle': false
-          },
-          occasion: { date: getFutureDate(90), time: '11:00:00', location_id: churchLocation?.id || null }
-        })
-        break
-
-      case 'funerals':
-        eventsData.push({
-          field_values: {
-            'Deceased': people[10].id,
-            'Date of Death': getPastDate(3),
-            'Presider': people[8].id,
-            'Burial Location': funeralHomeLocation?.id || '',
-            'First Reading': 'Wisdom 3:1-9',
-            'Psalm': 'Psalm 23',
-            'Gospel Reading': 'John 14:1-6',
-            'Eulogy Speaker': people[11].id
-          },
-          occasion: { date: getFutureDate(2), time: '10:00:00', location_id: churchLocation?.id || null }
-        })
-        eventsData.push({
-          field_values: {
-            'Deceased': people[12].id,
-            'Date of Death': getPastDate(1),
-            'Presider': people[8].id,
-            'First Reading': 'Romans 8:31-39',
-            'Psalm': 'Psalm 116',
-            'Gospel Reading': 'John 11:17-27'
-          },
-          occasion: { date: getFutureDate(5), time: '11:00:00', location_id: churchLocation?.id || null }
-        })
-        break
-
       case 'baptisms':
         eventsData.push({
           field_values: {
-            'Child': people[4].id,
-            'Mother': people[5].id,
-            'Father': people[6].id,
-            'Godmother': people[7].id,
-            'Godfather': people[8].id,
-            'Presider': people[0].id
+            child: people[4].id,
+            mother: people[5].id,
+            father: people[6].id,
+            godmother: people[7].id,
+            godfather: people[8].id,
+            presider: people[0].id
           },
           occasion: { date: getFutureDate(14), time: '13:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Child': people[9].id,
-            'Mother': people[13].id,
-            'Father': people[14].id,
-            'Godmother': people[15].id,
-            'Godfather': people[16].id,
-            'Presider': people[0].id
+            child: people[9].id,
+            mother: people[13].id,
+            father: people[14].id,
+            godmother: people[15].id,
+            godfather: people[16].id,
+            presider: people[0].id
           },
           occasion: { date: getFutureDate(21), time: '14:00:00', location_id: churchLocation?.id || null }
         })
@@ -176,21 +132,21 @@ export async function seedEvents(
       case 'quinceaneras':
         eventsData.push({
           field_values: {
-            'Quinceañera': people[5].id,
-            'Mother': people[3].id,
-            'Father': people[6].id,
-            'Presider': people[0].id,
-            'Reception Location': hallLocation?.id || ''
+            quinceanera: people[5].id,
+            mother: people[3].id,
+            father: people[6].id,
+            presider: people[0].id,
+            reception_location: hallLocation?.id || ''
           },
           occasion: { date: getFutureDate(60), time: '15:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Quinceañera': people[7].id,
-            'Mother': people[11].id,
-            'Father': people[10].id,
-            'Presider': people[8].id,
-            'Reception Location': hallLocation?.id || ''
+            quinceanera: people[7].id,
+            mother: people[11].id,
+            father: people[10].id,
+            presider: people[8].id,
+            reception_location: hallLocation?.id || ''
           },
           occasion: { date: getFutureDate(75), time: '16:00:00', location_id: churchLocation?.id || null }
         })
@@ -199,23 +155,23 @@ export async function seedEvents(
       case 'presentations':
         eventsData.push({
           field_values: {
-            'Child': people[4].id,
-            'Mother': people[1].id,
-            'Father': people[0].id,
-            'Godmother': people[3].id,
-            'Godfather': people[2].id,
-            'Presider': people[8].id
+            child: people[4].id,
+            mother: people[1].id,
+            father: people[0].id,
+            godmother: people[3].id,
+            godfather: people[2].id,
+            presider: people[8].id
           },
           occasion: { date: getFutureDate(30), time: '12:00:00', location_id: churchLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Child': people[9].id,
-            'Mother': people[15].id,
-            'Father': people[16].id,
-            'Godmother': people[17].id,
-            'Godfather': people[18].id,
-            'Presider': people[0].id
+            child: people[9].id,
+            mother: people[15].id,
+            father: people[16].id,
+            godmother: people[17].id,
+            godfather: people[18].id,
+            presider: people[0].id
           },
           occasion: { date: getFutureDate(35), time: '11:30:00', location_id: churchLocation?.id || null }
         })
@@ -228,19 +184,19 @@ export async function seedEvents(
       case 'bible-studies':
         eventsData.push({
           field_values: {
-            'Discussion Leader': people[0].id,
-            'Topic': 'The Gospel of John',
-            'Scripture Passage': 'John 1:1-18',
-            'Expected Attendance': '15'
+            discussion_leader: people[0].id,
+            topic: 'The Gospel of John',
+            scripture_passage: 'John 1:1-18',
+            expected_attendance: '15'
           },
           occasion: { date: getFutureDate(7), time: '19:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Discussion Leader': people[8].id,
-            'Topic': 'The Beatitudes',
-            'Scripture Passage': 'Matthew 5:1-12',
-            'Expected Attendance': '20'
+            discussion_leader: people[8].id,
+            topic: 'The Beatitudes',
+            scripture_passage: 'Matthew 5:1-12',
+            expected_attendance: '20'
           },
           occasion: { date: getFutureDate(14), time: '19:00:00', location_id: hallLocation?.id || null }
         })
@@ -249,17 +205,17 @@ export async function seedEvents(
       case 'fundraisers':
         eventsData.push({
           field_values: {
-            'Event Coordinator': people[5].id,
-            'Event Description': 'Annual parish picnic and silent auction to support youth ministry programs.',
-            'Fundraising Goal': '5000'
+            event_coordinator: people[5].id,
+            event_description: 'Annual parish picnic and silent auction to support youth ministry programs.',
+            fundraising_goal: '5000'
           },
           occasion: { date: getFutureDate(60), time: '11:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Event Coordinator': people[11].id,
-            'Event Description': 'Pancake breakfast fundraiser for the building fund.',
-            'Fundraising Goal': '2000'
+            event_coordinator: people[11].id,
+            event_description: 'Pancake breakfast fundraiser for the building fund.',
+            fundraising_goal: '2000'
           },
           occasion: { date: getFutureDate(21), time: '08:00:00', location_id: hallLocation?.id || null }
         })
@@ -268,17 +224,17 @@ export async function seedEvents(
       case 'religious-education':
         eventsData.push({
           field_values: {
-            'Catechist': people[3].id,
-            'Grade Level': 'First Communion',
-            'Lesson Topic': 'Sacraments of Initiation - Lesson 5'
+            catechist: people[3].id,
+            grade_level: 'First Communion',
+            lesson_topic: 'Sacraments of Initiation - Lesson 5'
           },
           occasion: { date: getFutureDate(5), time: '10:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Catechist': people[7].id,
-            'Grade Level': 'Confirmation',
-            'Lesson Topic': 'The Gifts of the Holy Spirit'
+            catechist: people[7].id,
+            grade_level: 'Confirmation',
+            lesson_topic: 'The Gifts of the Holy Spirit'
           },
           occasion: { date: getFutureDate(12), time: '18:30:00', location_id: hallLocation?.id || null }
         })
@@ -287,15 +243,15 @@ export async function seedEvents(
       case 'staff-meetings':
         eventsData.push({
           field_values: {
-            'Meeting Leader': people[0].id,
-            'Agenda': 'Monthly staff meeting to review parish activities and upcoming events. Please bring your department reports.'
+            meeting_leader: people[0].id,
+            agenda: 'Monthly staff meeting to review parish activities and upcoming events. Please bring your department reports.'
           },
           occasion: { date: getFutureDate(3), time: '09:00:00', location_id: hallLocation?.id || null }
         })
         eventsData.push({
           field_values: {
-            'Meeting Leader': people[8].id,
-            'Agenda': 'Liturgy planning meeting for Advent season. Music ministry and lectors should attend.'
+            meeting_leader: people[8].id,
+            agenda: 'Liturgy planning meeting for Advent season. Music ministry and lectors should attend.'
           },
           occasion: { date: getFutureDate(10), time: '14:00:00', location_id: hallLocation?.id || null }
         })

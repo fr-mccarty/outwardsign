@@ -420,7 +420,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
       : Promise.resolve({ data: null, error: null }),
     supabase
       .from('master_event_roles')
-      .select('*')
+      .select('*, person:people(*)')
       .eq('master_event_id', id)
       .is('deleted_at', null),
     supabase
