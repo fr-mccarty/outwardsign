@@ -432,6 +432,7 @@ Vitest configuration is in `vitest.config.ts`:
 | File | Purpose |
 |------|---------|
 | `sanitize.test.ts` | Tests sanitization utility (HTML stripping, markdown preservation, placeholder syntax) |
+| `validation.test.ts` | Tests event type validation system (placeholder extraction, field reference validation) |
 
 ### E2E Tests (`tests/`)
 
@@ -490,3 +491,69 @@ npm run test:unit -- tests/unit/sanitize.test.ts
   ✓ wrapper functions > sanitizeContentBody works like sanitizeRichText
   ✓ wrapper functions > sanitizeSectionContent works like sanitizeRichText
 ```
+
+---
+
+## Event Type Validation CLI
+
+The validation tool (`npm run validate`) checks that inputs, forms, and scripts work together correctly across all event types.
+
+### Running Validation
+
+```bash
+npm run validate                          # Validate all event types
+npm run validate -- --parish=<parish_id>  # Validate single parish
+```
+
+### What It Validates
+
+1. **Script Placeholders**: Verifies `{{placeholder}}` patterns reference valid `property_name` values
+2. **Filter Tags**: Validates `filter_tags` in content fields exist in `category_tags`
+3. **List References**: Validates `list_id` references valid `custom_lists`
+4. **Unused Fields**: Warns about input fields never used in scripts
+5. **Required Fields**: Warns about required fields not used in scripts
+6. **Property Name Format**: Validates property_names follow `^[a-z][a-z0-9_]*$` pattern
+
+### Exit Codes
+
+- `0` - All event types passed validation
+- `1` - One or more event types have errors
+
+### Example Output
+
+```
+Event Type Validation Report
+============================
+
+✓ Wedding (16 fields, 3 scripts)
+  ✓ All placeholders resolve to valid fields
+  ✓ All references are valid
+
+✗ Daily Mass (3 fields, 1 scripts)
+  ✗ ERRORS:
+    - Script "Presider Script" section "Mass Information" has invalid placeholder: {{date}}
+  ⚠ WARNINGS:
+    - Field is never used in any script (field: "Mass")
+
+Summary
+-------
+Total event types: 15
+  With errors: 1
+  With warnings only: 7
+  Clean: 7
+
+✗ 1 event type(s) have errors that must be fixed
+```
+
+### Validation Unit Tests
+
+```bash
+npm run test:unit -- tests/unit/validation.test.ts
+```
+
+Tests cover:
+- Placeholder extraction (simple, dot notation, gendered, parish)
+- Invalid placeholder detection
+- Filter tag, list, and event type reference validation
+- Unused field detection
+- Spacer field skipping

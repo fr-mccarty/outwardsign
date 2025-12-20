@@ -2,6 +2,10 @@
 
 This document describes all people pickers in the Wedding module and their default open behavior when first created.
 
+> **Note:** In field definitions, "Required" means "Required before Saving" - the field must have a value before the event can be saved.
+>
+> **See also:** [INPUT_FIELD_TYPES_QUICK_REFERENCE.md](../INPUT_FIELD_TYPES_QUICK_REFERENCE.md) for all available input field types.
+
 ## People Picker Behavior
 
 When a people picker is first opened (when no person has been selected yet), it can open in one of two modes:

@@ -18,7 +18,6 @@ export type InputFieldType =
   | 'person'          // References people table
   | 'group'           // References groups table
   | 'location'        // References locations table
-  | 'event_link'      // References events table (filtered by event type)
   | 'list_item'       // References custom_list_items table
   | 'document'        // References documents table
   | 'text'            // JSON string
@@ -73,7 +72,6 @@ export interface InputFieldDefinition {
   type: InputFieldType
   required: boolean
   list_id: string | null          // For list_item type
-  event_type_filter_id: string | null  // For event_link type
   is_key_person: boolean          // Only for person type, marks as searchable
   is_primary: boolean             // Only for calendar_event type, marks as primary calendar event
   filter_tags?: string[] | null   // For content type - array of tag slugs for default filtering
@@ -88,7 +86,6 @@ export interface InputFieldDefinition {
  */
 export interface InputFieldDefinitionWithRelations extends InputFieldDefinition {
   custom_list?: CustomList | null
-  event_type_filter?: EventType | null
 }
 
 /**
@@ -274,7 +271,6 @@ export interface CreateInputFieldDefinitionData {
   type: InputFieldType
   required: boolean
   list_id?: string | null
-  event_type_filter_id?: string | null
   is_key_person?: boolean
   is_primary?: boolean
 }
@@ -285,7 +281,6 @@ export interface UpdateInputFieldDefinitionData {
   type?: InputFieldType
   required?: boolean
   list_id?: string | null
-  event_type_filter_id?: string | null
   is_key_person?: boolean
   is_primary?: boolean
 }

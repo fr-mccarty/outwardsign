@@ -97,30 +97,22 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
   }
 
   // Create sections for Easter Vigil Presider Script
+  // Note: Placeholders use property_name format (snake_case) with dot notation for nested fields
   const easterVigilScriptSections = [
     {
       name: 'Liturgy Information',
       order: 1,
-      content: {
-        en: '# Easter Vigil\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n**Deacon:** {{deacon}}\n\n## Initiation\n- Catechumens: {{Number of Catechumens}}\n- Candidates: {{Number of Candidates}}',
-        es: '# Vigilia Pascual\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n**Diácono:** {{deacon}}\n\n## Iniciación\n- Catecúmenos: {{Number of Catechumens}}\n- Candidatos: {{Number of Candidates}}'
-      }
+      content: '# Easter Vigil\n\n**Date:** {{easter_vigil_mass.date}}\n**Time:** {{easter_vigil_mass.time}}\n**Presider:** {{presider.full_name}}\n**Deacon:** {{deacon.full_name}}\n\n## Initiation\n- Catechumens: {{number_of_catechumens}}\n- Candidates: {{number_of_candidates}}'
     },
     {
       name: 'Music',
       order: 2,
-      content: {
-        en: '# Music\n\n**Opening Hymn:** {{Opening Hymn}}\n**Responsorial Psalm:** {{Responsorial Psalm}}\n**Gospel Acclamation:** {{Gospel Acclamation}}\n**Offertory:** {{Offertory Hymn}}\n**Communion:** {{Communion Hymn}}\n**Recessional:** {{Recessional Hymn}}',
-        es: '# Música\n\n**Himno de Apertura:** {{Opening Hymn}}\n**Salmo Responsorial:** {{Responsorial Psalm}}\n**Aclamación del Evangelio:** {{Gospel Acclamation}}\n**Ofertorio:** {{Offertory Hymn}}\n**Comunión:** {{Communion Hymn}}\n**Salida:** {{Recessional Hymn}}'
-      }
+      content: '# Music\n\n**Opening Hymn:** {{opening_hymn}}\n**Responsorial Psalm:** {{responsorial_psalm}}\n**Gospel Acclamation:** {{gospel_acclamation}}\n**Offertory:** {{offertory_hymn}}\n**Communion:** {{communion_hymn}}\n**Recessional:** {{recessional_hymn}}'
     },
     {
       name: 'Special Instructions',
       order: 3,
-      content: {
-        en: '# Special Instructions\n\n{{Special Instructions}}',
-        es: '# Instrucciones Especiales\n\n{{Special Instructions}}'
-      }
+      content: '# Special Instructions\n\n{{special_instructions}}'
     }
   ]
 
@@ -216,30 +208,22 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
   }
 
   // Create sections for Holy Thursday Presider Script
+  // Note: Placeholders use property_name format (snake_case) with dot notation for nested fields
   const holyThursdayScriptSections = [
     {
       name: 'Liturgy Information',
       order: 1,
-      content: {
-        en: '# Mass of the Lord\'s Supper\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n**Deacon:** {{deacon}}\n\n## Foot Washing\n- Participants: {{Foot Washing Participants}}',
-        es: '# Misa de la Cena del Señor\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n**Diácono:** {{deacon}}\n\n## Lavatorio de los Pies\n- Participantes: {{Foot Washing Participants}}'
-      }
+      content: '# Mass of the Lord\'s Supper\n\n**Date:** {{holy_thursday_mass.date}}\n**Time:** {{holy_thursday_mass.time}}\n**Presider:** {{presider.full_name}}\n**Deacon:** {{deacon.full_name}}\n\n## Foot Washing\n- Participants: {{foot_washing_participants}}'
     },
     {
       name: 'Music',
       order: 2,
-      content: {
-        en: '# Music\n\n**Opening Hymn:** {{Opening Hymn}}\n**Responsorial Psalm:** {{Responsorial Psalm}}\n**Gospel Acclamation:** {{Gospel Acclamation}}\n**Washing of Feet:** {{Washing of Feet Hymn}}\n**Offertory:** {{Offertory Hymn}}\n**Communion:** {{Communion Hymn}}\n**Transfer of Eucharist:** {{Transfer of Eucharist Hymn}}',
-        es: '# Música\n\n**Himno de Apertura:** {{Opening Hymn}}\n**Salmo Responsorial:** {{Responsorial Psalm}}\n**Aclamación del Evangelio:** {{Gospel Acclamation}}\n**Lavatorio de los Pies:** {{Washing of Feet Hymn}}\n**Ofertorio:** {{Offertory Hymn}}\n**Comunión:** {{Communion Hymn}}\n**Traslado de la Eucaristía:** {{Transfer of Eucharist Hymn}}'
-      }
+      content: '# Music\n\n**Opening Hymn:** {{opening_hymn}}\n**Responsorial Psalm:** {{responsorial_psalm}}\n**Gospel Acclamation:** {{gospel_acclamation}}\n**Washing of Feet:** {{washing_of_feet_hymn}}\n**Offertory:** {{offertory_hymn}}\n**Communion:** {{communion_hymn}}\n**Transfer of Eucharist:** {{transfer_of_eucharist_hymn}}'
     },
     {
       name: 'Special Instructions',
       order: 3,
-      content: {
-        en: '# Special Instructions\n\n{{Special Instructions}}',
-        es: '# Instrucciones Especiales\n\n{{Special Instructions}}'
-      }
+      content: '# Special Instructions\n\n{{special_instructions}}'
     }
   ]
 
@@ -332,30 +316,22 @@ export async function seedSpecialLiturgyEventTypesForParish(supabase: SupabaseCl
   }
 
   // Create sections for Good Friday Presider Script
+  // Note: Placeholders use property_name format (snake_case) with dot notation for nested fields
   const goodFridayScriptSections = [
     {
       name: 'Liturgy Information',
       order: 1,
-      content: {
-        en: '# Celebration of the Lord\'s Passion\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n**Deacon:** {{deacon}}',
-        es: '# Celebración de la Pasión del Señor\n\n**Fecha:** {{date}}\n**Hora:** {{time}}\n**Presidente:** {{presider}}\n**Diácono:** {{deacon}}'
-      }
+      content: '# Celebration of the Lord\'s Passion\n\n**Date:** {{good_friday_service.date}}\n**Time:** {{good_friday_service.time}}\n**Presider:** {{presider.full_name}}\n**Deacon:** {{deacon.full_name}}'
     },
     {
       name: 'Music',
       order: 2,
-      content: {
-        en: '# Music\n\n**Opening Hymn:** {{Opening Hymn}}\n**Responsorial Psalm:** {{Responsorial Psalm}}\n**Gospel Acclamation:** {{Gospel Acclamation}}\n**Veneration of Cross:** {{Veneration of Cross Hymn}}\n**Communion:** {{Communion Hymn}}\n**Closing:** {{Closing Hymn}}',
-        es: '# Música\n\n**Himno de Apertura:** {{Opening Hymn}}\n**Salmo Responsorial:** {{Responsorial Psalm}}\n**Aclamación del Evangelio:** {{Gospel Acclamation}}\n**Adoración de la Cruz:** {{Veneration of Cross Hymn}}\n**Comunión:** {{Communion Hymn}}\n**Cierre:** {{Closing Hymn}}'
-      }
+      content: '# Music\n\n**Opening Hymn:** {{opening_hymn}}\n**Responsorial Psalm:** {{responsorial_psalm}}\n**Gospel Acclamation:** {{gospel_acclamation}}\n**Veneration of Cross:** {{veneration_of_cross_hymn}}\n**Communion:** {{communion_hymn}}\n**Closing:** {{closing_hymn}}'
     },
     {
       name: 'Special Instructions',
       order: 3,
-      content: {
-        en: '# Special Instructions\n\n{{Special Instructions}}',
-        es: '# Instrucciones Especiales\n\n{{Special Instructions}}'
-      }
+      content: '# Special Instructions\n\n{{special_instructions}}'
     }
   ]
 

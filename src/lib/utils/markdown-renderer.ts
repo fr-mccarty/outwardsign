@@ -382,13 +382,6 @@ function getDisplayValue(
       return location?.name || ''
     }
 
-    case 'event_link': {
-      // rawValue is event_id (UUID)
-      // For now, just return the ID or empty string
-      // In a full implementation, this would fetch the linked event's display name
-      return rawValue || ''
-    }
-
     case 'list_item': {
       // rawValue is custom_list_item_id (UUID)
       const listItem = resolvedEntities?.listItems?.[rawValue]

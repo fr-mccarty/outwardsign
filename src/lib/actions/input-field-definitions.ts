@@ -11,7 +11,6 @@ import type {
   CreateInputFieldDefinitionData,
   UpdateInputFieldDefinitionData,
   CustomList,
-  EventType
 } from '@/lib/types'
 import { logError } from '@/lib/utils/console'
 
@@ -77,21 +76,6 @@ export async function getInputFieldDefinitionWithRelations(id: string): Promise<
 
     if (customList) {
       result.custom_list = customList as CustomList
-    }
-  }
-
-  // Fetch event type filter if type is 'event_link' and event_type_filter_id is set
-  if (fieldDef.type === 'event_link' && fieldDef.event_type_filter_id) {
-    const { data: eventType } = await supabase
-      .from('event_types')
-      .select('*')
-      .eq('id', fieldDef.event_type_filter_id)
-      .eq('parish_id', selectedParishId)
-      .is('deleted_at', null)
-      .single()
-
-    if (eventType) {
-      result.event_type_filter = eventType as EventType
     }
   }
 
@@ -162,7 +146,6 @@ export async function createInputFieldDefinition(data: CreateInputFieldDefinitio
         type: data.type,
         required: data.required,
         list_id: data.list_id ?? null,
-        event_type_filter_id: data.event_type_filter_id ?? null,
         is_key_person: data.is_key_person ?? false,
         is_primary: data.is_primary ?? false,
         order: newOrder

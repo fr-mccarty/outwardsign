@@ -51,7 +51,7 @@ export function replaceFieldPlaceholders(
       return resolveGenderedText(fieldName, maleText, femaleText, event)
     }
 
-    // Simple syntax: {{Field Name}} or {{parish.*}}
+    // Simple syntax: {{field_name}} or {{field_name.property}} or {{parish.*}}
     const trimmedFieldName = parts[0]
 
     // Check for parish placeholders
@@ -59,14 +59,19 @@ export function replaceFieldPlaceholders(
       return resolveParishPlaceholder(trimmedFieldName, event)
     }
 
+    // Parse dot notation: {{field_name.property}}
+    const dotIndex = trimmedFieldName.indexOf('.')
+    const fieldName = dotIndex > 0 ? trimmedFieldName.slice(0, dotIndex) : trimmedFieldName
+    const propertyPath = dotIndex > 0 ? trimmedFieldName.slice(dotIndex + 1) : null
+
     // Look up field in resolved_fields
-    const resolvedField: ResolvedFieldValue | undefined = event.resolved_fields?.[trimmedFieldName]
+    const resolvedField: ResolvedFieldValue | undefined = event.resolved_fields?.[fieldName]
 
     if (!resolvedField) {
       return 'empty'
     }
 
-    return resolveFieldValue(resolvedField)
+    return resolveFieldValue(resolvedField, propertyPath)
   })
 }
 
@@ -106,17 +111,61 @@ function resolveParishPlaceholder(
 
 /**
  * Resolve a single field value to display string
+ *
+ * @param resolvedField - The resolved field with type info and values
+ * @param propertyPath - Optional property path for dot notation (e.g., "full_name", "first_name")
  */
-function resolveFieldValue(resolvedField: ResolvedFieldValue): string {
+function resolveFieldValue(resolvedField: ResolvedFieldValue, propertyPath: string | null = null): string {
   const { field_type, raw_value, resolved_value } = resolvedField
 
   // Handle different field types
   // Using type assertions since TypeScript can't narrow union types based on sibling properties
   switch (field_type) {
     case 'person': {
-      // Use full_name from resolved person
-      const person = resolved_value as { full_name?: string } | null | undefined
-      return person?.full_name || 'empty'
+      const person = resolved_value as Record<string, unknown> | null | undefined
+      if (!person) return 'empty'
+
+      // If property path specified, use it
+      if (propertyPath) {
+        const value = person[propertyPath]
+        return value ? String(value) : 'empty'
+      }
+      // Default to full_name for backwards compatibility
+      return (person.full_name as string) || 'empty'
+    }
+
+    case 'calendar_event': {
+      // Calendar event fields have date, time, location resolved
+      const calendarEvent = resolved_value as Record<string, unknown> | null | undefined
+      if (!calendarEvent) return 'empty'
+
+      if (propertyPath === 'date') {
+        const dateValue = calendarEvent.date || calendarEvent.start_datetime
+        return dateValue ? formatDatePretty(String(dateValue)) : 'empty'
+      }
+      if (propertyPath === 'time') {
+        // Format time from start_datetime or time field
+        const timeValue = calendarEvent.time || calendarEvent.start_datetime
+        if (!timeValue) return 'empty'
+        // Extract time portion if it's a datetime
+        const timeStr = String(timeValue)
+        if (timeStr.includes('T')) {
+          const timePart = timeStr.split('T')[1]?.slice(0, 5)
+          return timePart || 'empty'
+        }
+        return timeStr.slice(0, 5) // HH:MM
+      }
+      if (propertyPath === 'location') {
+        const location = calendarEvent.location as Record<string, unknown> | undefined
+        return (location?.name as string) || 'empty'
+      }
+      if (propertyPath) {
+        const value = calendarEvent[propertyPath]
+        return value ? String(value) : 'empty'
+      }
+      // Default: return formatted date/time
+      const dateValue = calendarEvent.date || calendarEvent.start_datetime
+      return dateValue ? formatDatePretty(String(dateValue)) : 'empty'
     }
 
     case 'date':
@@ -134,11 +183,6 @@ function resolveFieldValue(resolvedField: ResolvedFieldValue): string {
       const group = resolved_value as { name?: string } | null | undefined
       return group?.name || 'empty'
     }
-
-    case 'event_link':
-      // For linked events, we might want to show a title or reference
-      // For now, just show 'empty' if no resolved value
-      return resolved_value ? String(resolved_value) : 'empty'
 
     case 'list_item': {
       // Use the value from the custom list item

@@ -570,7 +570,6 @@ export type InputFieldType =
   | 'person'
   | 'group'
   | 'location'
-  | 'event_link'
   | 'list_item'
   | 'document'
   | 'content'
@@ -616,7 +615,6 @@ export interface InputFieldDefinition {
   type: InputFieldType
   required: boolean
   list_id: string | null
-  event_type_filter_id: string | null
   filter_tags: string[] | null
   is_key_person: boolean
   is_primary: boolean
@@ -628,7 +626,6 @@ export interface InputFieldDefinition {
 
 export interface InputFieldDefinitionWithRelations extends InputFieldDefinition {
   custom_list?: CustomList | null
-  event_type_filter?: EventType | null
 }
 
 export interface CreateInputFieldDefinitionData {
@@ -638,7 +635,6 @@ export interface CreateInputFieldDefinitionData {
   type: InputFieldType
   required: boolean
   list_id?: string | null
-  event_type_filter_id?: string | null
   filter_tags?: string[] | null
   is_key_person?: boolean
   is_primary?: boolean
@@ -650,7 +646,6 @@ export interface UpdateInputFieldDefinitionData {
   type?: InputFieldType
   required?: boolean
   list_id?: string | null
-  event_type_filter_id?: string | null
   filter_tags?: string[] | null
   is_key_person?: boolean
   is_primary?: boolean
@@ -796,7 +791,7 @@ export interface ResolvedFieldValue {
   field_type: InputFieldType
   raw_value: any
   // Content is defined later in file - TypeScript handles forward references within the same file
-  resolved_value?: Person | Group | Location | MasterEvent | CustomListItem | Document | Content | Petition | null
+  resolved_value?: Person | Group | Location | MasterEvent | CustomListItem | Document | Content | Petition | CalendarEvent | null
 }
 
 /**

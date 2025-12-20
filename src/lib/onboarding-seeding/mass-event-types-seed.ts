@@ -67,13 +67,14 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // Create input field definitions for Sunday Mass
   const sundayMassFields = [
     { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Announcements', property_name: 'announcements', type: 'rich_text', required: false, order: 1 },
-    { name: 'Entrance Hymn', property_name: 'entrance_hymn', type: 'text', required: false, order: 2 },
-    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 3 },
-    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 4 },
-    { name: 'Recessional Hymn', property_name: 'recessional_hymn', type: 'text', required: false, order: 5 },
-    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 6 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 7 }
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
+    { name: 'Announcements', property_name: 'announcements', type: 'rich_text', required: false, order: 2 },
+    { name: 'Entrance Hymn', property_name: 'entrance_hymn', type: 'text', required: false, order: 3 },
+    { name: 'Offertory Hymn', property_name: 'offertory_hymn', type: 'text', required: false, order: 4 },
+    { name: 'Communion Hymn', property_name: 'communion_hymn', type: 'text', required: false, order: 5 },
+    { name: 'Recessional Hymn', property_name: 'recessional_hymn', type: 'text', required: false, order: 6 },
+    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 7 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 8 }
   ]
 
   const { error: sundayFieldsError } = await supabase
@@ -110,11 +111,13 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   // Create sections for Sunday Mass Presider Script
   // Note: Placeholders use property_name format (snake_case) to match resolved_fields keys
+  // - calendar_event fields use dot notation: {{mass.date}}, {{mass.time}}
+  // - person fields use dot notation for specific properties: {{presider.full_name}}
   const sundayScriptSections = [
     {
       name: 'Mass Information',
       order: 1,
-      content: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{mass_intentions}}'
+      content: '# Mass Information\n\n**Date:** {{mass.date}}\n**Time:** {{mass.time}}\n**Presider:** {{presider.full_name}}\n\n## Mass Intentions\n{{mass_intentions}}'
     },
     {
       name: 'Music',
@@ -186,8 +189,9 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // Create input field definitions for Daily Mass (minimal)
   const dailyMassFields = [
     { name: 'Mass', property_name: 'mass', type: 'calendar_event', required: true, is_primary: true, order: 0 },
-    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 1 },
-    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 2 }
+    { name: 'Presider', property_name: 'presider', type: 'person', required: false, order: 1 },
+    { name: 'Mass Intentions', property_name: 'mass_intentions', type: 'mass-intention', required: false, order: 2 },
+    { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 3 }
   ]
 
   const { error: dailyFieldsError } = await supabase
@@ -224,11 +228,13 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
 
   // Create sections for Daily Mass Presider Script
   // Note: Placeholders use property_name format (snake_case) to match resolved_fields keys
+  // - calendar_event fields use dot notation: {{mass.date}}, {{mass.time}}
+  // - person fields use dot notation for specific properties: {{presider.full_name}}
   const dailyScriptSections = [
     {
       name: 'Mass Information',
       order: 1,
-      content: '# Mass Information\n\n**Date:** {{date}}\n**Time:** {{time}}\n**Presider:** {{presider}}\n\n## Mass Intentions\n{{mass_intentions}}\n\n## Special Instructions\n{{special_instructions}}'
+      content: '# Mass Information\n\n**Date:** {{mass.date}}\n**Time:** {{mass.time}}\n**Presider:** {{presider.full_name}}\n\n## Mass Intentions\n{{mass_intentions}}\n\n## Special Instructions\n{{special_instructions}}'
     }
   ]
 

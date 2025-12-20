@@ -491,16 +491,6 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
             resolvedField.resolved_value = location as Location | null
             break
           }
-          case 'event_link': {
-            const { data: linkedEvent } = await supabase
-              .from('master_events')
-              .select('*')
-              .eq('id', rawValue)
-              .is('deleted_at', null)
-              .single()
-            resolvedField.resolved_value = linkedEvent as MasterEvent | null
-            break
-          }
           case 'list_item': {
             const { data: listItem } = await supabase
               .from('custom_list_items')
@@ -548,6 +538,15 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
               .eq('id', rawValue)
               .single()
             resolvedField.resolved_value = petition as Petition | null
+            break
+          }
+          case 'calendar_event': {
+            // Calendar events are linked via input_field_definition_id, not via field_values
+            // Find the calendar event that matches this field definition
+            const matchingCalendarEvent = calendarEvents.find(
+              ce => ce.input_field_definition_id === fieldDef.id
+            )
+            resolvedField.resolved_value = matchingCalendarEvent || null
             break
           }
           // For non-reference types, raw_value is sufficient
