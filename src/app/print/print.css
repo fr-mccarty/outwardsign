@@ -129,7 +129,7 @@ html {
 
 @media screen {
   body {
-    background-color: #f5f5f5 !important;
+    background-color: white !important;
     padding: 2rem;
     font-family: inherit;
     color: black !important;
@@ -141,8 +141,6 @@ html {
     background: white !important;
     color: black !important;
     padding: 2.5cm 2cm;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    border-radius: 8px;
     font-family: inherit;
   }
 
@@ -152,8 +150,6 @@ html {
     background: white !important;
     color: black !important;
     padding: 2.5cm 2cm;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    border-radius: 8px;
     font-family: inherit;
   }
 

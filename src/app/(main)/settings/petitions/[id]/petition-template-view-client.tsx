@@ -1,7 +1,7 @@
 "use client"
 
 import { PetitionContextTemplate, deletePetitionTemplate } from '@/lib/actions/petition-templates'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'

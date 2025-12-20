@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/content-card"
 import { Button } from "@/components/ui/button"
 import { AlertCircle } from "lucide-react"
 import { PAGE_MAX_WIDTH_CLASS } from "@/lib/constants"

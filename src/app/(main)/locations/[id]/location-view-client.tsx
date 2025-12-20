@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/content-card"
 import { Button } from "@/components/ui/button"
 import { MapPin, Phone, Edit } from "lucide-react"
 import type { Location } from '@/lib/types'

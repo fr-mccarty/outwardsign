@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { ContentCard, Card, CardHeader, CardTitle, CardContent } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PersonPickerField } from '@/components/person-picker-field'
@@ -130,13 +130,11 @@ export function RoleAssignmentSection({
 
   if (roleDefinitions.length === 0) {
     return (
-      <Card className="bg-card text-card-foreground border">
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground text-center">
-            No roles defined for this event type.
-          </p>
-        </CardContent>
-      </Card>
+      <ContentCard>
+        <p className="text-muted-foreground text-center">
+          No roles defined for this event type.
+        </p>
+      </ContentCard>
     )
   }
 
@@ -149,72 +147,70 @@ export function RoleAssignmentSection({
           const assignment = findAssignment(role.id)
           const assignedPerson = assignment ? (assignment as any).person : null
 
+          const titleContent = (
+            <div className="flex items-center gap-2">
+              <span>{role.name}</span>
+              {role.required && (
+                <Badge variant="destructive" className="text-xs">
+                  Required
+                </Badge>
+              )}
+            </div>
+          )
+
+          const actionButtons = (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleAssignRole(role)}
+                disabled={isSubmitting}
+              >
+                {assignedPerson ? (
+                  <>
+                    <User className="h-4 w-4 mr-1" />
+                    Change
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Assign
+                  </>
+                )}
+              </Button>
+
+              {assignment && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveRole(assignment.id)}
+                  disabled={isSubmitting}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </>
+          )
+
           return (
-            <Card key={role.id} className="bg-card text-card-foreground border">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-medium">{role.name}</h4>
-                      {role.required && (
-                        <Badge variant="destructive" className="text-xs">
-                          Required
-                        </Badge>
-                      )}
-                    </div>
-
-                    {assignedPerson ? (
-                      <div className="flex items-center gap-2 text-sm">
-                        <User className="h-4 w-4 text-primary" />
-                        <span>{assignedPerson.full_name}</span>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Unassigned</p>
-                    )}
-
-                    {assignment?.notes && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {assignment.notes}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAssignRole(role)}
-                      disabled={isSubmitting}
-                    >
-                      {assignedPerson ? (
-                        <>
-                          <User className="h-4 w-4 mr-1" />
-                          Change
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="h-4 w-4 mr-1" />
-                          Assign
-                        </>
-                      )}
-                    </Button>
-
-                    {assignment && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveRole(assignment.id)}
-                        disabled={isSubmitting}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+            <ContentCard key={role.id} title={titleContent} actions={actionButtons}>
+              {assignedPerson ? (
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-primary" />
+                  <span>{assignedPerson.full_name}</span>
                 </div>
-              </CardContent>
-            </Card>
+              ) : (
+                <p className="text-muted-foreground">Unassigned</p>
+              )}
+
+              {assignment?.notes && (
+                <p className="text-muted-foreground mt-2">
+                  {assignment.notes}
+                </p>
+              )}
+            </ContentCard>
           )
         })}
       </div>

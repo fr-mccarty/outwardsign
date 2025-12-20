@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { PageContainer } from '@/components/page-container'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { Plus, Trash2, List, ChevronRight } from 'lucide-react'
 import type { CustomList } from '@/lib/types'
 import { deleteCustomList } from '@/lib/actions/custom-lists'

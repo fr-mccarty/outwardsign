@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { MassRoleTemplate, deleteMassRoleTemplate } from '@/lib/actions/mass-role-templates'
 import { getTemplateItems, type MassRoleTemplateItemWithRole } from '@/lib/actions/mass-role-template-items'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/content-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ModuleViewContainer } from '@/components/module-view-container'

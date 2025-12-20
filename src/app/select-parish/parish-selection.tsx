@@ -7,7 +7,7 @@ import { setSelectedParish } from '@/lib/auth/parish'
 import { createTestParish } from '@/lib/actions/setup'
 import { ParishUser, Parish } from '@/lib/types'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
 import { CreateParishForm } from './create-parish-form'
 import { toast } from 'sonner'
 

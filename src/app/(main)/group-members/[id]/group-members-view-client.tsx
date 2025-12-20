@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { ModuleViewContainer } from '@/components/module-view-container'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Users, Calendar } from 'lucide-react'

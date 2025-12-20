@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/content-card"
 import { CalendarHeader } from "./calendar-header"
 import { CalendarGrid } from "./calendar-grid"
 import { CalendarView, CalendarItem } from "./types"

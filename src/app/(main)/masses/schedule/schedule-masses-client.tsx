@@ -18,7 +18,7 @@ import { scheduleMasses, type ScheduleMassesResult } from '@/lib/actions/mass-sc
 import { getDayOfWeekNumber } from '@/lib/utils/formatters'
 import { getGlobalLiturgicalEvents } from '@/lib/actions/global-liturgical-events'
 import { CheckCircle2, AlertTriangle } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'

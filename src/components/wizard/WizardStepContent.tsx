@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 
 interface WizardStepContentProps {
   children: ReactNode

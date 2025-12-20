@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/content-card'
 import { Badge } from '@/components/ui/badge'
 import { UserPlus, Calendar, Clock } from 'lucide-react'
 import { PeoplePicker } from '@/components/people-picker'

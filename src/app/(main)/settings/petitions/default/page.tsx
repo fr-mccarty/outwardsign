@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { PageContainer } from '@/components/page-container'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form-input'
 import { Badge } from '@/components/ui/badge'

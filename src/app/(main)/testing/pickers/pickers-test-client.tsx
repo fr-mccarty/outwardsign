@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/content-card"
 import { Button } from "@/components/ui/button"
 import { PeoplePicker } from "@/components/people-picker"
 import { EventPicker } from "@/components/event-picker"

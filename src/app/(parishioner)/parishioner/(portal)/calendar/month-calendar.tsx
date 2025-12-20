@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/content-card'
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import type { CalendarEvent } from './actions'
 

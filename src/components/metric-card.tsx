@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/content-card"
 import { LucideIcon } from "lucide-react"
 import { ReactNode } from "react"
 

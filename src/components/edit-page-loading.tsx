@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/content-card"
 import { PAGE_MAX_WIDTH_CLASS } from "@/lib/constants"
 
 export function EditPageLoading() {

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { MassRoleTemplate } from '@/lib/actions/mass-role-templates'
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/content-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, LayoutTemplate, Search, X } from "lucide-react"

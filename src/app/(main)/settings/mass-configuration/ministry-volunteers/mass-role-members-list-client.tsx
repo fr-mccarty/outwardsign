@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/content-card'
 import { SearchCard } from '@/components/search-card'
 import { FormSectionCard } from '@/components/form-section-card'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'

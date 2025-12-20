@@ -4,7 +4,7 @@ import type { MasterEventWithRelations } from '@/lib/types'
 import { deleteEvent } from '@/lib/actions/master-events'
 import { ModuleViewContainer } from '@/components/module-view-container'
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { ContentCard } from '@/components/content-card'
 import { Edit } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { ScriptCard } from '@/components/script-card'
@@ -131,13 +131,8 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
       {primaryCalendarEvent && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">Mass Details</h3>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                {mass.event_type?.name || 'Mass'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+          <ContentCard title={mass.event_type?.name || 'Mass'}>
+            <div className="space-y-2">
               {primaryCalendarEvent.start_datetime && (
                 <div>
                   <span className="font-medium">Date & Time:</span>{' '}
@@ -162,8 +157,8 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
                   {mass.homilist.full_name}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </ContentCard>
         </div>
       )}
 

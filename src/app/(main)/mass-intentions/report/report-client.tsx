@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { DatePickerField } from '@/components/date-picker-field'
 import { toLocalDateString } from '@/lib/utils/formatters'

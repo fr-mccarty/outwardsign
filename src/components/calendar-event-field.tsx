@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { DatePickerField } from '@/components/date-picker-field'
 import { TimePickerField } from '@/components/time-picker-field'
 import { LocationPickerField } from '@/components/location-picker-field'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { Label } from '@/components/ui/label'
 import type { Location } from '@/lib/types'
 

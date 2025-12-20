@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, CalendarDays, LayoutTemplate, UserCog, Users } from 'lucide-react'
 import Link from 'next/link'

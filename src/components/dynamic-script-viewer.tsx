@@ -1,6 +1,6 @@
 'use client'
 
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/content-card'
 import type { ScriptWithSections } from '@/lib/types/event-types'
 import type { MasterEventWithRelations } from '@/lib/types'
 import { processScriptForRendering } from '@/lib/utils/markdown-processor'

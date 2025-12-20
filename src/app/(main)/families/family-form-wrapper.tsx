@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { FamilyForm } from './family-form'
 import type { FamilyWithMembers } from '@/lib/actions/families'
 

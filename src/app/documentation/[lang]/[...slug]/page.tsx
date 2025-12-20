@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import fs from 'fs'
 import path from 'path'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 

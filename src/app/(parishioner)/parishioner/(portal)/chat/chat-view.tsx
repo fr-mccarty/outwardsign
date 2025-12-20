@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/content-card'
 import { Send, Mic, MicOff } from 'lucide-react'
 import { chatWithAI } from './actions'
 import type { ChatMessage } from './actions'

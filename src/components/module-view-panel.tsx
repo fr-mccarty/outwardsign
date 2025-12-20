@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { DeleteButton } from '@/components/delete-button'
 
 interface ModuleViewPanelProps {

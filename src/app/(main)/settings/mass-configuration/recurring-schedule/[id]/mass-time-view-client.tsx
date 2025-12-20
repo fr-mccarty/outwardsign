@@ -9,7 +9,7 @@ import {
   createTemplateItem,
   deleteTemplateItem,
 } from '@/lib/actions/mass-times-template-items'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/content-card'
 import { Badge } from '@/components/ui/badge'
 import { ActiveInactiveBadge } from '@/components/active-inactive-badge'
 import { Button } from '@/components/ui/button'

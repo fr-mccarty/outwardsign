@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/content-card'
 import { ModuleViewPanel } from '@/components/module-view-panel'
 import { renderHTML } from '@/lib/renderers/html-renderer'
 import type { Event } from '@/lib/types'
