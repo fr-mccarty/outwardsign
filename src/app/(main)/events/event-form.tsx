@@ -240,6 +240,7 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             showPicker={openPicker === field.name}
             onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
             required={field.required}
+            defaultFilterTags={field.filter_tags || []}
           />
         )
       case 'petition':

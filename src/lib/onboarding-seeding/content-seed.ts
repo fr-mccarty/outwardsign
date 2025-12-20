@@ -643,6 +643,8 @@ export async function seedContentForParish(
   parishId: string
 ): Promise<void> {
   logInfo('Seeding content library...')
+  logInfo(`Parish ID: ${parishId}`)
+  logInfo(`Content items to seed: ${ALL_SEED_CONTENT.length}`)
 
   // First, fetch all category tags for this parish to get tag IDs
   const { data: tags, error: tagsError } = await supabase
@@ -655,6 +657,8 @@ export async function seedContentForParish(
     throw new Error(`Failed to fetch category tags: ${tagsError.message}`)
   }
 
+  logInfo(`Found ${tags?.length || 0} category tags`)
+
   if (!tags || tags.length === 0) {
     logWarning('No category tags found - skipping content seeding')
     return
@@ -666,6 +670,8 @@ export async function seedContentForParish(
   // Insert content items
   let contentCount = 0
   let assignmentCount = 0
+
+  logInfo(`Starting to insert ${ALL_SEED_CONTENT.length} content items...`)
 
   for (const content of ALL_SEED_CONTENT) {
     // Insert the content item
@@ -682,7 +688,8 @@ export async function seedContentForParish(
       .single()
 
     if (contentError) {
-      logError(`Error creating content ${content.title}: ${contentError.message}`)
+      logError(`Error creating content "${content.title}": ${contentError.message}`)
+      logError(`  Code: ${contentError.code}, Details: ${contentError.details}, Hint: ${contentError.hint}`)
       continue
     }
 

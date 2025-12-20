@@ -196,59 +196,69 @@ async function seedDevData() {
   }
 
   // =====================================================
-  // Seed Onboarding Data (if not already present)
+  // Seed Onboarding Data (always reseed for dev)
   // =====================================================
+  logInfo('')
+  logInfo('Cleaning up existing onboarding data...')
+
+  // Delete in correct order due to FK constraints
+  // 1. Delete script_sections (FK to scripts)
+  await supabase.from('script_sections').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  // 2. Delete scripts (FK to event_types)
+  await supabase.from('scripts').delete().eq('parish_id', parishId)
+  // 3. Delete input_field_definitions (FK to event_types)
+  await supabase.from('input_field_definitions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  // 4. Delete event_types
+  await supabase.from('event_types').delete().eq('parish_id', parishId)
+  // 5. Delete other parish data
+  await supabase.from('petition_templates').delete().eq('parish_id', parishId)
+  await supabase.from('group_roles').delete().eq('parish_id', parishId)
+  await supabase.from('mass_roles').delete().eq('parish_id', parishId)
+  // 6. Delete tag_assignments before category_tags
+  await supabase.from('tag_assignments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  await supabase.from('category_tags').delete().eq('parish_id', parishId)
+
+  logSuccess('Cleaned up existing onboarding data')
+
   logInfo('')
   logInfo('Seeding onboarding data...')
 
-  const { data: existingPetitionTemplates } = await supabase
-    .from('petition_templates')
-    .select('id')
-    .eq('parish_id', parishId)
-    .limit(1)
+  const { seedParishData } = await import('../src/lib/onboarding-seeding/parish-seed-data')
 
-  if (!existingPetitionTemplates || existingPetitionTemplates.length === 0) {
-    const { seedParishData } = await import('../src/lib/onboarding-seeding/parish-seed-data')
-
-    try {
-      const result = await seedParishData(supabase, parishId)
-      logSuccess(`Petition templates: ${result.petitionTemplates.length}`)
-      logSuccess(`Group roles: ${result.groupRoles.length}`)
-      logSuccess(`Mass roles: ${result.massRoles.length}`)
-      logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
-      logSuccess(`General event types: ${result.generalEventTypesCount}`)
-      logSuccess(`Mass event types: ${result.massEventTypesCount}`)
-    } catch (error) {
-      logError(`Error seeding parish data: ${error}`)
-      process.exit(1)
-    }
-  } else {
-    logSuccess('Parish data already exists, skipping')
+  try {
+    const result = await seedParishData(supabase, parishId)
+    logSuccess(`Petition templates: ${result.petitionTemplates.length}`)
+    logSuccess(`Group roles: ${result.groupRoles.length}`)
+    logSuccess(`Mass roles: ${result.massRoles.length}`)
+    logSuccess(`Special liturgy event types: ${result.specialLiturgyEventTypesCount}`)
+    logSuccess(`General event types: ${result.generalEventTypesCount}`)
+    logSuccess(`Mass event types: ${result.massEventTypesCount}`)
+  } catch (error) {
+    logError(`Error seeding parish data: ${error}`)
+    process.exit(1)
   }
 
   // =====================================================
-  // Seed Content Library
+  // Seed Content Library (always reseed for dev)
   // =====================================================
+  logInfo('')
+  logInfo('Cleaning up existing content library...')
+
+  // Delete contents (tag_assignments already deleted above)
+  await supabase.from('contents').delete().eq('parish_id', parishId)
+
+  logSuccess('Cleaned up existing content library')
+
   logInfo('')
   logInfo('Seeding content library...')
 
-  const { data: existingContent } = await supabase
-    .from('contents')
-    .select('id')
-    .eq('parish_id', parishId)
-    .limit(1)
+  const { seedContentForParish } = await import('../src/lib/onboarding-seeding/content-seed')
 
-  if (!existingContent || existingContent.length === 0) {
-    const { seedContentForParish } = await import('../src/lib/onboarding-seeding/content-seed')
-
-    try {
-      await seedContentForParish(supabase, parishId)
-    } catch (error) {
-      logError(`Error seeding content library: ${error}`)
-      // Non-fatal - continue
-    }
-  } else {
-    logSuccess('Content library already exists, skipping')
+  try {
+    await seedContentForParish(supabase, parishId)
+  } catch (error) {
+    logError(`Error seeding content library: ${error}`)
+    // Non-fatal - continue
   }
 
   // =====================================================

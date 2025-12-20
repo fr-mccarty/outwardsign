@@ -102,9 +102,9 @@ export async function seedEventTypesForParish(supabase: SupabaseClient, parishId
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: weddingSongsList.id, order: 8 },
     { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['wedding', 'opening-prayer'], order: 9 },
     { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['wedding', 'prayers-of-the-faithful'], order: 10 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['reading', 'first-reading'], order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['reading', 'second-reading'], order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['reading', 'gospel'], order: 13 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['wedding', 'first-reading'], order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['wedding', 'second-reading'], order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['wedding', 'gospel'], order: 13 },
     { name: 'Unity Candle', property_name: 'unity_candle', type: 'yes_no', required: false, order: 14 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]
@@ -510,10 +510,10 @@ Por favor, acompáñenos para una recepción después de la ceremonia en:
     { name: 'Opening Song', property_name: 'opening_song', type: 'list_item', required: false, list_id: funeralSongsList.id, order: 7 },
     { name: 'Opening Prayer', property_name: 'opening_prayer', type: 'content', required: false, filter_tags: ['funeral', 'opening-prayer'], order: 8 },
     { name: 'Prayers of the Faithful', property_name: 'prayers_of_the_faithful', type: 'petition', required: false, filter_tags: ['funeral', 'prayers-of-the-faithful'], order: 9 },
-    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['reading', 'first-reading'], order: 10 },
-    { name: 'Psalm', property_name: 'psalm', type: 'content', required: false, filter_tags: ['reading', 'psalm'], order: 11 },
-    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['reading', 'second-reading'], order: 12 },
-    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['reading', 'gospel'], order: 13 },
+    { name: 'First Reading', property_name: 'first_reading', type: 'content', required: false, filter_tags: ['funeral', 'first-reading'], order: 10 },
+    { name: 'Psalm', property_name: 'psalm', type: 'content', required: false, filter_tags: ['funeral', 'psalm'], order: 11 },
+    { name: 'Second Reading', property_name: 'second_reading', type: 'content', required: false, filter_tags: ['funeral', 'second-reading'], order: 12 },
+    { name: 'Gospel Reading', property_name: 'gospel_reading', type: 'content', required: false, filter_tags: ['funeral', 'gospel'], order: 13 },
     { name: 'Eulogy Speaker', property_name: 'eulogy_speaker', type: 'person', required: false, order: 14 },
     { name: 'Special Instructions', property_name: 'special_instructions', type: 'rich_text', required: false, order: 15 }
   ]

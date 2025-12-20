@@ -70,6 +70,19 @@ export function ContentPicker({
     }
   }, [])
 
+  // Reset state and load contents when dialog opens
+  useEffect(() => {
+    if (open) {
+      // Reset state
+      setActiveTags(defaultFilterTags)
+      setSearchTerm('')
+      setSelectedContent(null)
+      setCurrentPage(1)
+      // Load immediately with reset values (don't wait for state update)
+      loadContents(1, defaultFilterTags, '', language)
+    }
+  }, [open, defaultFilterTags, language, loadContents])
+
   // Load tags when dialog opens
   useEffect(() => {
     if (open) {
@@ -86,12 +99,14 @@ export function ContentPicker({
     }
   }, [open])
 
-  // Load contents when filters change
+  // Load contents when filters change while dialog is open
+  // Note: `open` is intentionally not in deps - initial load is handled by the effect above
   useEffect(() => {
     if (open) {
       loadContents(currentPage, activeTags, searchTerm, language)
     }
-  }, [open, currentPage, activeTags, searchTerm, language, loadContents])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, activeTags, searchTerm, language, loadContents])
 
   // Toggle tag filter
   const handleToggleTag = (tagSlug: string) => {

@@ -95,18 +95,7 @@ export async function seedReadings(ctx: DevSeederContext): Promise<ReadingsResul
   logInfo('')
   logInfo('Seeding readings into content library...')
 
-  // Check if readings already exist
-  const { data: existingContent } = await supabase
-    .from('contents')
-    .select('id, title')
-    .eq('parish_id', parishId)
-    .ilike('title', '%:%') // Pericopes contain colons (e.g., "John 15:9-12")
-    .limit(5)
-
-  if (existingContent && existingContent.length >= 5) {
-    logWarning('Content library already has readings, skipping')
-    return { success: true, count: 0 }
-  }
+  // Note: Contents are cleaned up by dev-seed.ts before this runs, so no skip check needed
 
   // Get category tags for this parish
   const { data: tags, error: tagsError } = await supabase
