@@ -2,14 +2,14 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import type { Event } from '@/lib/types'
+import type { MasterEventWithTypeAndCalendarEvent } from '@/lib/actions/master-events'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface MiniCalendarProps {
-  events: Event[]
+  events: MasterEventWithTypeAndCalendarEvent[]
 }
 
 export function MiniCalendar({ events }: MiniCalendarProps) {
@@ -18,10 +18,11 @@ export function MiniCalendar({ events }: MiniCalendarProps) {
 
   // Get dates that have events
   const eventDates = React.useMemo(() => {
-    const dateMap = new Map<string, Event[]>()
+    const dateMap = new Map<string, MasterEventWithTypeAndCalendarEvent[]>()
     events.forEach(event => {
-      if (event.start_date) {
-        const dateStr = format(new Date(event.start_date), 'yyyy-MM-dd')
+      const eventDatetime = event.primary_calendar_event?.start_datetime
+      if (eventDatetime) {
+        const dateStr = format(new Date(eventDatetime), 'yyyy-MM-dd')
         if (!dateMap.has(dateStr)) {
           dateMap.set(dateStr, [])
         }

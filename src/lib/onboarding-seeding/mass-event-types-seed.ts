@@ -25,22 +25,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // =====================================================
   // 1. Create Sunday Mass Event Type
   // =====================================================
-  // Define role definitions for Sunday Mass (full ministry team)
-  const sundayMassRoleDefinitions = {
-    roles: [
-      { id: 'presider', name: 'Presider', required: true },
-      { id: 'lector-1', name: 'Lector 1', required: false },
-      { id: 'lector-2', name: 'Lector 2', required: false },
-      { id: 'server-1', name: 'Server 1', required: false },
-      { id: 'server-2', name: 'Server 2', required: false },
-      { id: 'em-1', name: 'Eucharistic Minister 1', required: false },
-      { id: 'em-2', name: 'Eucharistic Minister 2', required: false },
-      { id: 'cantor', name: 'Cantor', required: false },
-      { id: 'usher-1', name: 'Usher 1', required: false },
-      { id: 'usher-2', name: 'Usher 2', required: false },
-      { id: 'greeter', name: 'Greeter', required: false }
-    ]
-  }
+  // Note: Role definitions are now stored as input_field_definitions with type='person'
+  // and is_per_calendar_event=true for occurrence-level assignments (per unified-event-assignments requirements)
 
   const { data: sundayMassType, error: sundayMassTypeError } = await supabase
     .from('event_types')
@@ -51,7 +37,6 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       icon: 'Church',
       slug: 'sunday-mass',
       system_type: 'mass',
-      role_definitions: sundayMassRoleDefinitions,
       order: 100 // After other event types
     })
     .select()
@@ -155,14 +140,8 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
   // =====================================================
   // 2. Create Daily Mass Event Type
   // =====================================================
-  // Define role definitions for Daily Mass (minimal team)
-  const dailyMassRoleDefinitions = {
-    roles: [
-      { id: 'presider', name: 'Presider', required: true },
-      { id: 'lector', name: 'Lector', required: false },
-      { id: 'server', name: 'Server', required: false }
-    ]
-  }
+  // Note: Role definitions are now stored as input_field_definitions with type='person'
+  // and is_per_calendar_event=true for occurrence-level assignments (per unified-event-assignments requirements)
 
   const { data: dailyMassType, error: dailyMassTypeError } = await supabase
     .from('event_types')
@@ -173,7 +152,6 @@ export async function seedMassEventTypesForParish(supabase: SupabaseClient, pari
       icon: 'CalendarDays',
       slug: 'daily-mass',
       system_type: 'mass',
-      role_definitions: dailyMassRoleDefinitions,
       order: 101
     })
     .select()

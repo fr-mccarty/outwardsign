@@ -285,7 +285,7 @@ export async function seedWeddingsAndFunerals(
             input_field_definition_id: primaryField.id,
             start_datetime: startDatetime,
             location_id: churchLocation?.id || null,
-            is_primary: true,
+            show_on_calendar: true,
             is_cancelled: false
           })
 
@@ -372,7 +372,7 @@ export async function seedWeddingsAndFunerals(
             input_field_definition_id: primaryField.id,
             start_datetime: startDatetime,
             location_id: churchLocation?.id || null,
-            is_primary: true,
+            show_on_calendar: true,
             is_cancelled: false
           })
 

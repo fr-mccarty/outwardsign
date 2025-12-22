@@ -319,7 +319,7 @@ export async function seedEvents(
           input_field_definition_id: primaryCalendarEventField.id,
           start_datetime: startDatetime,
           location_id: eventData.occasion.location_id,
-          is_primary: true,
+          show_on_calendar: true,
           is_cancelled: false
         })
 

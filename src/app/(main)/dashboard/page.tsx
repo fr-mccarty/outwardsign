@@ -16,7 +16,6 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { getPeople } from "@/lib/actions/people"
 import { getLocations } from "@/lib/actions/locations"
-import { getEvents } from "@/lib/actions/events"
 import { format } from "date-fns"
 import { MiniCalendar } from "@/components/mini-calendar"
 import { DashboardErrorHandler } from "./dashboard-error-handler"
@@ -40,13 +39,11 @@ export default async function DashboardPage() {
   const [
     people,
     locations,
-    events,
     masterEvents,
     eventTypes
   ] = await Promise.all([
     getPeople(),
     getLocations(),
-    getEvents(),
     getAllMasterEvents({ limit: 50 }),
     getActiveEventTypes()
   ])
@@ -56,42 +53,24 @@ export default async function DashboardPage() {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
 
-  // Scheduled this month (events with start_date in current month - old system)
-  const scheduledThisMonthOld = events.filter(e => {
-    if (!e.start_date) return false
-    const eventDate = new Date(e.start_date)
-    return eventDate >= startOfMonth && eventDate <= endOfMonth
-  }).length
-
-  // Dynamic events scheduled this month (based on primary calendar event date)
-  const scheduledThisMonthDynamic = masterEvents.filter(e => {
+  // Events scheduled this month (based on primary calendar event date)
+  const scheduledThisMonth = masterEvents.filter(e => {
     const eventDatetime = e.primary_calendar_event?.start_datetime
     if (!eventDatetime) return false
     const eventDate = new Date(eventDatetime)
     return eventDate >= startOfMonth && eventDate <= endOfMonth
   }).length
 
-  const scheduledThisMonth = scheduledThisMonthOld + scheduledThisMonthDynamic
-
-  // Upcoming events (next 7 days) - old system
+  // Upcoming events (next 7 days)
   const sevenDaysFromNow = new Date()
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
 
-  const upcomingEventsOld = events.filter(e => {
-    if (!e.start_date) return false
-    const eventDate = new Date(e.start_date)
-    return eventDate >= now && eventDate <= sevenDaysFromNow
-  })
-
-  // Dynamic events upcoming (next 7 days)
-  const upcomingDynamicEvents = masterEvents.filter(e => {
+  const upcomingEventsCount = masterEvents.filter(e => {
     const eventDatetime = e.primary_calendar_event?.start_datetime
     if (!eventDatetime) return false
     const eventDate = new Date(eventDatetime)
     return eventDate >= now && eventDate <= sevenDaysFromNow
-  })
-
-  const upcomingEventsCount = upcomingEventsOld.length + upcomingDynamicEvents.length
+  }).length
 
   // Upcoming dynamic events (next 30 days) with primary occasion
   const thirtyDaysFromNow = new Date()
@@ -312,7 +291,7 @@ export default async function DashboardPage() {
 
         {/* Mini Calendar */}
         <FormSectionCard title={t('dashboard.calendar')} contentClassName="p-3 pt-0">
-          <MiniCalendar events={events} />
+          <MiniCalendar events={masterEvents} />
         </FormSectionCard>
       </div>
 

@@ -288,7 +288,7 @@ export async function scheduleMasses(
           parish_id: selectedParishId,
           input_field_definition_id: primaryFieldDef.id,
           start_datetime: startDatetime,
-          is_primary: true,
+          show_on_calendar: true,
           is_cancelled: false
         })
         .select()

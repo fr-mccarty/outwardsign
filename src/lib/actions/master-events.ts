@@ -144,12 +144,13 @@ export async function getAllMasterEvents(
   }
 
   // Fetch primary calendar events for all events
+  // Note: Using show_on_calendar as proxy for "primary" - the first visible calendar event is considered primary
   const eventIds = events.map(e => e.id)
   const { data: calendarEvents } = await supabase
     .from('calendar_events')
     .select('*, location:locations(*)')
     .in('master_event_id', eventIds)
-    .eq('is_primary', true)
+    .eq('show_on_calendar', true)
     .is('deleted_at', null)
 
   // Create a map of master_event_id to primary calendar event
@@ -303,7 +304,7 @@ export async function getEvents(
             .from('calendar_events')
             .select('master_event_id')
             .in('master_event_id', eventIds)
-            .eq('is_primary', true)
+            .eq('show_on_calendar', true)
             .is('deleted_at', null)
 
           if (filters?.startDate) {
@@ -325,6 +326,7 @@ export async function getEvents(
   }
 
   // Fetch primary calendar events for all events (needed for display and sorting)
+  // Note: Using show_on_calendar as proxy for "primary" calendar event
   const eventIds = events.map(e => e.id)
   let calendarEventsMap = new Map<string, CalendarEvent>()
 
@@ -333,7 +335,7 @@ export async function getEvents(
       .from('calendar_events')
       .select('*, location:locations(*)')
       .in('master_event_id', eventIds)
-      .eq('is_primary', true)
+      .eq('show_on_calendar', true)
       .is('deleted_at', null)
 
     // Create map of master_event_id to primary calendar event
@@ -805,7 +807,7 @@ export interface CalendarCalendarEventItem {
   input_field_definition_id: string
   location_id: string | null
   location_name: string | null
-  is_primary: boolean
+  show_on_calendar: boolean
   is_cancelled: boolean
   // From master_event
   event_title: string
@@ -840,7 +842,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
       start_datetime,
       end_datetime,
       location_id,
-      is_primary,
+      show_on_calendar,
       is_cancelled,
       location:locations(name),
       master_event:master_events!inner(
@@ -912,7 +914,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
       input_field_definition_id: calendarEvent.input_field_definition_id,
       location_id: calendarEvent.location_id,
       location_name: locationData?.name || null,
-      is_primary: calendarEvent.is_primary,
+      show_on_calendar: calendarEvent.show_on_calendar,
       is_cancelled: calendarEvent.is_cancelled,
       event_title: eventTypeName,
       event_field_values: masterEventData.field_values,
@@ -1158,7 +1160,7 @@ export async function getMasterEventStats(filters?: MasterEventFilterParams): Pr
       .from('calendar_events')
       .select('master_event_id, start_datetime')
       .in('master_event_id', eventIds)
-      .eq('is_primary', true)
+      .eq('show_on_calendar', true)
       .is('deleted_at', null)
 
     const now = new Date()

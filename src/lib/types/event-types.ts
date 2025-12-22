@@ -46,7 +46,8 @@ export interface EventType {
   slug: string | null             // URL-safe identifier (e.g., "weddings", "funerals")
   order: number                   // Display order in sidebar
   system_type: SystemType         // System type for UI organization (mass, special-liturgy, event)
-  role_definitions?: { roles: Array<{ id: string; name: string; required: boolean }> } | null  // JSON-B role definitions
+  // Note: role_definitions removed - roles are now stored as input_field_definitions with type='person'
+  // (per unified-event-assignments requirements)
   deleted_at: string | null
   created_at: string
   updated_at: string

@@ -7,8 +7,9 @@ import { FormInput } from "@/components/form-input"
 import { FormSectionCard } from "@/components/form-section-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { createMass, updateMass, getMassRoles, createMassRole, deleteMassRole, deleteAllMassRoles, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
-import type { MassWithRelations, MasterEventRoleWithRelations } from "@/lib/schemas/masses"
+import { createMass, updateMass, linkMassIntention, unlinkMassIntention } from "@/lib/actions/masses"
+import { getMasterEventAssignments, createPeopleEventAssignment, deletePeopleEventAssignment, type PeopleEventAssignmentWithPerson } from "@/lib/actions/people-event-assignments"
+import type { MassWithRelations } from "@/lib/schemas/masses"
 import type { Person, Event, Location, ContentWithTags, Petition, Document } from "@/lib/types"
 import type { Group } from "@/lib/actions/groups"
 import type { GlobalLiturgicalEvent } from "@/lib/actions/global-liturgical-events"
@@ -17,7 +18,7 @@ import type { EventTypeWithRelations, InputFieldDefinition } from "@/lib/types/e
 import { getEventTypeWithRelations } from "@/lib/actions/event-types"
 import { useRouter } from "next/navigation"
 import { toast } from 'sonner'
-import { PersonPickerField } from "@/components/person-picker-field"
+// PersonPickerField removed - person fields now use people_event_assignments pattern
 import { EventPickerField } from "@/components/event-picker-field"
 import { LiturgicalEventPickerField } from "@/components/liturgical-event-picker-field"
 import { LocationPickerField } from "@/components/location-picker-field"
@@ -41,7 +42,7 @@ import { usePickerState } from "@/hooks/use-picker-state"
 import { PeoplePicker } from "@/components/people-picker"
 import { MassIntentionPicker } from "@/components/mass-intention-picker"
 import { RoleFulfillmentBadge } from "@/components/role-fulfillment-badge"
-import { Plus, X, Heart } from "lucide-react"
+import { Heart, Plus, X } from "lucide-react"
 import { createMassSchema, type CreateMassData } from "@/lib/schemas/masses"
 import { useState } from "react"
 import { toLocalDateString } from "@/lib/utils/formatters"
@@ -84,10 +85,10 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   const event = usePickerState<Event>()
   const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 
-  // Mass role assignments state
-  const [massRoles, setMassRoles] = useState<MasterEventRoleWithRelations[]>([])
+  // People event assignments state (unified pattern)
+  const [assignments, setAssignments] = useState<PeopleEventAssignmentWithPerson[]>([])
   const [rolePickerOpen, setRolePickerOpen] = useState(false)
-  const [currentRoleId, setCurrentRoleId] = useState<string | null>(null)
+  const [currentFieldDefinitionId, setCurrentFieldDefinitionId] = useState<string | null>(null)
 
   // Mass intention state
   const [massIntention, setMassIntention] = useState<MassIntentionWithNames | null>(null)
@@ -160,13 +161,24 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     setValue('liturgical_event_id', liturgicalEvent.value?.id)
   }, [liturgicalEvent.value, setValue])
 
-  // Load mass roles when editing an existing mass
+  // Load people event assignments when editing an existing mass
   useEffect(() => {
     if (isEditing && mass?.id) {
-      loadMassRoles()
+      loadAssignments()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing, mass?.id]) // loadMassRoles is stable, only re-run when mass changes
+  }, [isEditing, mass?.id])
+
+  const loadAssignments = async () => {
+    if (!mass?.id) return
+    try {
+      const assignmentsList = await getMasterEventAssignments(mass.id)
+      setAssignments(assignmentsList)
+    } catch (error) {
+      console.error('Error loading assignments:', error)
+      toast.error('Failed to load role assignments')
+    }
+  }
 
   // Load event type when selected
   useEffect(() => {
@@ -191,16 +203,8 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     }
   }
 
-  const loadMassRoles = async () => {
-    if (!mass?.id) return
-    try {
-      const massRoleInstances = await getMassRoles(mass.id)
-      setMassRoles(massRoleInstances)
-    } catch (error) {
-      console.error('Error loading mass roles:', error)
-      toast.error('Failed to load mass role assignments')
-    }
-  }
+  // Note: loadMassRoles function removed - being refactored to use people_event_assignments
+  // See unified-event-assignments requirements for new pattern
 
   // Petition templates (simple default for now)
   const petitionTemplates: PetitionTemplate[] = [
@@ -241,59 +245,49 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     return []
   }
 
-  // Clear all role assignments
-  const handleClearRoleAssignments = async () => {
-    if (!isEditing || !mass?.id || massRoles.length === 0) return
-
-    try {
-      await deleteAllMassRoles(mass.id)
-      await loadMassRoles()
-      toast.success('Mass role assignments cleared')
-    } catch (error) {
-      console.error('Error clearing mass role assignments:', error)
-      toast.error('Failed to clear mass role assignments')
-    }
-  }
-
-  // Mass role assignment handlers
-  const handleOpenRolePicker = (roleId: string) => {
-    setCurrentRoleId(roleId)
+  // Role assignment handlers (using people_event_assignments pattern)
+  const handleOpenRolePicker = (fieldDefinitionId: string) => {
+    setCurrentFieldDefinitionId(fieldDefinitionId)
     setRolePickerOpen(true)
   }
 
   const handleSelectPersonForRole = async (person: Person) => {
-    if (!isEditing || !mass?.id || !currentRoleId) {
-      toast.error('Please save the mass before assigning mass roles')
+    if (!isEditing || !mass?.id || !currentFieldDefinitionId) {
+      toast.error('Please save the mass before assigning roles')
       return
     }
 
     try {
-      // Assign person to mass role using the new structure
-      await createMassRole({
+      await createPeopleEventAssignment({
         master_event_id: mass.id,
-        role_id: currentRoleId,
-        person_id: person.id
+        field_definition_id: currentFieldDefinitionId,
+        person_id: person.id,
+        // calendar_event_id is null for template-level assignments
       })
 
-      // Reload mass roles to get the updated list with relations
-      await loadMassRoles()
-      toast.success('Mass role assignment added')
+      await loadAssignments()
+      setRolePickerOpen(false)
+      toast.success('Role assignment added')
     } catch (error) {
-      console.error('Error assigning mass role:', error)
-      toast.error('Failed to assign mass role')
+      console.error('Error assigning role:', error)
+      if (error instanceof Error && error.message.includes('already assigned')) {
+        toast.error('Person already assigned to this role')
+      } else {
+        toast.error('Failed to assign role')
+      }
     }
   }
 
-  const handleRemoveRoleAssignment = async (massRoleId: string) => {
+  const handleRemoveAssignment = async (assignmentId: string) => {
     if (!isEditing || !mass?.id) return
 
     try {
-      await deleteMassRole(massRoleId)
-      await loadMassRoles()
-      toast.success('Mass role assignment removed')
+      await deletePeopleEventAssignment(assignmentId)
+      await loadAssignments()
+      toast.success('Role assignment removed')
     } catch (error) {
-      console.error('Error removing mass role assignment:', error)
-      toast.error('Failed to remove mass role assignment')
+      console.error('Error removing assignment:', error)
+      toast.error('Failed to remove assignment')
     }
   }
 
@@ -384,22 +378,15 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   }
 
   // Render dynamic field based on type
+  // Note: Person fields are handled by the people_event_assignments section, not here
   const renderField = (field: InputFieldDefinition) => {
     const value = fieldValues[field.name]
 
     switch (field.type) {
       case 'person':
-        return (
-          <PersonPickerField
-            key={field.id}
-            label={field.name}
-            value={pickerValues[field.name] as Person | null}
-            onValueChange={(person) => updatePickerValue(field.name, person)}
-            showPicker={pickerOpen[field.name] || false}
-            onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.name]: open }))}
-            placeholder={`Select ${field.name}`}
-          />
-        )
+        // Person fields handled by people_event_assignments section below
+        // They must be assigned after the event is saved
+        return null
 
       case 'location':
         return (
@@ -749,21 +736,23 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
         </FormSectionCard>
       )}
 
-      {/* Mass Role Assignments */}
+      {/* Mass Role Assignments - using people_event_assignments pattern */}
       {isEditing && mass?.id && (
         <FormSectionCard
           title="Mass Role Assignments"
-          description="Assign people to liturgical mass roles for this Mass"
+          description="Assign people to liturgical roles for this Mass"
         >
-          {/* Get role definitions from event type */}
           {(() => {
-            const roleDefinitions = eventType?.role_definitions?.roles || []
+            // Get person-type fields from input_field_definitions
+            const personFields = inputFieldDefinitions.filter(
+              field => field.type === 'person' && !field.deleted_at
+            )
 
-            if (roleDefinitions.length === 0) {
+            if (personFields.length === 0) {
               return (
                 <div className="text-sm text-muted-foreground text-center py-6">
                   {eventTypeId
-                    ? "This event type has no roles defined. Configure roles in the event type settings."
+                    ? "This event type has no person roles defined."
                     : "Select an event type template above to see available roles."
                   }
                 </div>
@@ -772,33 +761,21 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
 
             return (
               <div className="space-y-6">
-                {/* Clear all button */}
-                {massRoles.length > 0 && (
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleClearRoleAssignments}
-                    >
-                      Clear All Assignments
-                    </Button>
-                  </div>
-                )}
-
-                {roleDefinitions.map((role: { id: string; name: string; count?: number }) => {
-                  const assignments = massRoles.filter(mr => mr.role_id === role.id)
-                  const countNeeded = role.count || 1
+                {personFields.map((field) => {
+                  // Get assignments for this field
+                  const fieldAssignments = assignments.filter(
+                    a => a.field_definition_id === field.id
+                  )
 
                   return (
-                    <div key={role.id} className="space-y-2">
+                    <div key={field.id} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {role.name}
+                            {field.name}
                             <RoleFulfillmentBadge
-                              countNeeded={countNeeded}
-                              countAssigned={assignments.length}
+                              countNeeded={1}
+                              countAssigned={fieldAssignments.length}
                             />
                           </div>
                         </div>
@@ -806,7 +783,7 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenRolePicker(role.id)}
+                          onClick={() => handleOpenRolePicker(field.id)}
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Assign Person
@@ -814,9 +791,9 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
                       </div>
 
                       {/* List of assigned people for this role */}
-                      {assignments.length > 0 && (
+                      {fieldAssignments.length > 0 && (
                         <div className="space-y-2 ml-4 mt-2">
-                          {assignments.map(assignment => (
+                          {fieldAssignments.map(assignment => (
                             <div
                               key={assignment.id}
                               className="flex items-center justify-between p-2 bg-accent/50 rounded-md"
@@ -830,7 +807,7 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleRemoveRoleAssignment(assignment.id)}
+                                onClick={() => handleRemoveAssignment(assignment.id)}
                               >
                                 <X className="h-4 w-4" />
                               </Button>
@@ -839,7 +816,7 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
                         </div>
                       )}
 
-                      {assignments.length === 0 && (
+                      {fieldAssignments.length === 0 && (
                         <div className="text-sm text-muted-foreground ml-4">
                           No one assigned yet
                         </div>
@@ -853,8 +830,8 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
         </FormSectionCard>
       )}
 
-      {/* People Picker Modal for Mass Role Assignment */}
-      {currentRoleId && (
+      {/* People Picker Modal for Role Assignment */}
+      {currentFieldDefinitionId && (
         <PeoplePicker
           open={rolePickerOpen}
           onOpenChange={setRolePickerOpen}

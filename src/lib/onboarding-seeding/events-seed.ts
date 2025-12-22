@@ -110,7 +110,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: bibleStudyType.id,
         field_values: bibleStudy1FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -139,7 +139,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: nextWeek.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -166,7 +166,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: bibleStudyType.id,
         field_values: bibleStudy2FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -195,7 +195,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: twoWeeks.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -242,7 +242,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: fundraiserType.id,
         field_values: fundraiser1FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -271,7 +271,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: threeWeeks.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -298,7 +298,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: fundraiserType.id,
         field_values: fundraiser2FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -327,7 +327,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: fiveWeeks.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -374,7 +374,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: religiousEdType.id,
         field_values: religiousEd1FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -404,7 +404,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: nextSunday.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -431,7 +431,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: religiousEdType.id,
         field_values: religiousEd2FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -461,7 +461,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: nextWednesday.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -506,7 +506,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: staffMeetingType.id,
         field_values: staffMeeting1FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -536,7 +536,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: nextMonday.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 
@@ -561,7 +561,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
         parish_id: parishId,
         event_type_id: staffMeetingType.id,
         field_values: staffMeeting2FieldValues,
-        presider_id: personId,
+        // presider_id removed - use people_event_assignments instead
         status: 'PLANNING'
       })
       .select()
@@ -590,7 +590,7 @@ export async function seedEventsForParish(supabase: SupabaseClient, parishId: st
           start_datetime: sixWeeks.toISOString(),
           end_datetime: endTime.toISOString(),
           location_id: locationId,
-          is_primary: true,
+          show_on_calendar: true,
           is_all_day: false
         })
 

@@ -209,7 +209,7 @@ export async function getMassStats(filters?: MassFilterParams): Promise<MassStat
       .from('calendar_events')
       .select('master_event_id, start_datetime')
       .in('master_event_id', eventIds)
-      .eq('is_primary', true)
+      .eq('show_on_calendar', true)
       .is('deleted_at', null)
 
     const now = new Date()
@@ -603,7 +603,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
               start_datetime: startDatetime,
               end_datetime: endDatetime,
               location_id: eventData.location_id || null,
-              is_primary: true,
+              show_on_calendar: true,
               is_cancelled: false
             }
           ])

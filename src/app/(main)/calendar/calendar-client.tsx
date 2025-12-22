@@ -41,12 +41,23 @@ function occasionToCalendarItem(occasion: CalendarCalendarEventItem): Liturgical
   const eventTypeName = occasion.event_type_name || 'Event'
   const title = eventTypeName
 
-  // Extract time from start_datetime
-  const startTime = occasion.start_datetime ? new Date(occasion.start_datetime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null
+  // Extract time from start_datetime in HH:MM:SS format for formatTime utility
+  let startTime: string | null = null
+  if (occasion.start_datetime) {
+    const date = new Date(occasion.start_datetime)
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    startTime = `${hours}:${minutes}:00`
+  }
+
+  // Extract date from ISO datetime (handle both ISO format with T and other formats)
+  const dateStr = occasion.start_datetime.includes('T')
+    ? occasion.start_datetime.split('T')[0]
+    : new Date(occasion.start_datetime).toISOString().split('T')[0]
 
   return {
     id: occasion.id,
-    date: occasion.start_datetime.split('T')[0], // Extract date portion from ISO datetime
+    date: dateStr,
     title,
     event_type: eventTypeName,
     isLiturgical: false,
