@@ -19,14 +19,29 @@ import type {
   Document,
   Content,
   Petition,
-  ResolvedFieldValue,
-  MasterEventRole,
-  MasterEventRoleWithPerson
+  ResolvedFieldValue
 } from '@/lib/types'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 import type { SystemType } from '@/lib/constants/system-types'
 import { logError } from '@/lib/utils/console'
 import { sanitizeFieldValues } from '@/lib/utils/sanitize'
+
+// Local type definitions for legacy master_event_roles table
+// TODO: Migrate to people_event_assignments pattern
+interface MasterEventRole {
+  id: string
+  master_event_id: string
+  role_id: string
+  person_id: string
+  notes?: string | null
+  created_at: string
+  updated_at: string
+  deleted_at?: string | null
+}
+
+interface MasterEventRoleWithPerson extends MasterEventRole {
+  person?: Person | null
+}
 
 export interface MasterEventFilterParams {
   search?: string
@@ -397,8 +412,8 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     throw new Error('Failed to fetch event')
   }
 
-  // Fetch event type, calendar events, presider, homilist, roles, and parish in parallel
-  const [eventTypeData, calendarEventsData, presiderData, homilistData, rolesData, parishData] = await Promise.all([
+  // Fetch event type, calendar events, people_event_assignments, roles, and parish in parallel
+  const [eventTypeData, calendarEventsData, assignmentsData, rolesData, parishData] = await Promise.all([
     supabase
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -413,12 +428,11 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
       .is('deleted_at', null)
       .order('start_datetime', { ascending: true })
       .order('created_at', { ascending: true }),
-    event.presider_id
-      ? supabase.from('people').select('*').eq('id', event.presider_id).single()
-      : Promise.resolve({ data: null, error: null }),
-    event.homilist_id
-      ? supabase.from('people').select('*').eq('id', event.homilist_id).single()
-      : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from('people_event_assignments')
+      .select('*, person:people(*), field_definition:input_field_definitions(*)')
+      .eq('master_event_id', id)
+      .is('deleted_at', null),
     supabase
       .from('master_event_roles')
       .select('*, person:people(*)')
@@ -443,9 +457,8 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
 
   const eventType = eventTypeData.data as EventType
   const calendarEvents = calendarEventsData.data as CalendarEvent[]
-  const presider = presiderData.data as Person | null
-  const homilist = homilistData.data as Person | null
   const inputFieldDefinitions = eventTypeData.data.input_field_definitions as InputFieldDefinition[]
+  const peopleEventAssignments = assignmentsData.data || []
 
   // Resolve field values
   const resolvedFields: Record<string, ResolvedFieldValue> = {}
@@ -567,8 +580,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     ...event,
     event_type: eventType,
     calendar_events: calendarEvents,
-    presider: presider || undefined,
-    homilist: homilist || undefined,
+    people_event_assignments: peopleEventAssignments,
     roles: rolesData.data || [],
     resolved_fields: resolvedFields,
     parish: parishData.data ? {
@@ -623,7 +635,7 @@ export async function createEvent(
     throw new Error('At least one calendar event is required')
   }
 
-  const primaryCalendarEvents = data.calendar_events.filter(ce => ce.is_primary)
+  const primaryCalendarEvents = data.calendar_events.filter(ce => ce.show_on_calendar)
   if (primaryCalendarEvents.length !== 1) {
     throw new Error('Exactly one calendar event must be marked as primary')
   }
@@ -636,8 +648,6 @@ export async function createEvent(
         parish_id: selectedParishId,
         event_type_id: eventTypeId,
         field_values: sanitizedFieldValues,
-        presider_id: data.presider_id || null,
-        homilist_id: data.homilist_id || null,
         status: data.status || 'PLANNING'
       }
     ])
@@ -657,7 +667,7 @@ export async function createEvent(
     start_datetime: calendarEvent.start_datetime || null,
     end_datetime: calendarEvent.end_datetime || null,
     location_id: calendarEvent.location_id || null,
-    is_primary: calendarEvent.is_primary || false,
+    show_on_calendar: calendarEvent.show_on_calendar || false,
     is_cancelled: false,
     is_all_day: calendarEvent.is_all_day || false
   }))
@@ -719,12 +729,6 @@ export async function updateEvent(
       data.field_values,
       inputFieldDefinitions
     )
-  }
-  if (data.presider_id !== undefined) {
-    updateData.presider_id = data.presider_id
-  }
-  if (data.homilist_id !== undefined) {
-    updateData.homilist_id = data.homilist_id
   }
 
   // Update event if there are changes
@@ -788,106 +792,6 @@ export async function deleteEvent(id: string): Promise<void> {
   }
 
   revalidatePath(`/events/${event.event_type_id}`)
-}
-
-/**
- * Assign presider to master event
- */
-export async function assignPresiderToMasterEvent(eventId: string, personId: string | null): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Validate person exists in same parish if provided
-  if (personId) {
-    const { data: person } = await supabase
-      .from('people')
-      .select('id')
-      .eq('id', personId)
-      .eq('parish_id', selectedParishId)
-      .single()
-
-    if (!person) {
-      throw new Error('Person not found in parish')
-    }
-  }
-
-  // Get event to find event_type_id for revalidation
-  const { data: event } = await supabase
-    .from('master_events')
-    .select('event_type_id')
-    .eq('id', eventId)
-    .eq('parish_id', selectedParishId)
-    .is('deleted_at', null)
-    .single()
-
-  if (!event) {
-    throw new Error('Event not found')
-  }
-
-  // Update presider_id
-  const { error } = await supabase
-    .from('master_events')
-    .update({ presider_id: personId })
-    .eq('id', eventId)
-    .eq('parish_id', selectedParishId)
-
-  if (error) {
-    logError('Error assigning presider: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to assign presider')
-  }
-
-  revalidatePath(`/events/${event.event_type_id}/${eventId}`)
-}
-
-/**
- * Assign homilist to master event
- */
-export async function assignHomilisToMasterEvent(eventId: string, personId: string | null): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Validate person exists in same parish if provided
-  if (personId) {
-    const { data: person } = await supabase
-      .from('people')
-      .select('id')
-      .eq('id', personId)
-      .eq('parish_id', selectedParishId)
-      .single()
-
-    if (!person) {
-      throw new Error('Person not found in parish')
-    }
-  }
-
-  // Get event to find event_type_id for revalidation
-  const { data: event } = await supabase
-    .from('master_events')
-    .select('event_type_id')
-    .eq('id', eventId)
-    .eq('parish_id', selectedParishId)
-    .is('deleted_at', null)
-    .single()
-
-  if (!event) {
-    throw new Error('Event not found')
-  }
-
-  // Update homilist_id
-  const { error } = await supabase
-    .from('master_events')
-    .update({ homilist_id: personId })
-    .eq('id', eventId)
-    .eq('parish_id', selectedParishId)
-
-  if (error) {
-    logError('Error assigning homilist: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to assign homilist')
-  }
-
-  revalidatePath(`/events/${event.event_type_id}/${eventId}`)
 }
 
 /**

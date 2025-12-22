@@ -100,9 +100,9 @@ describe('getStatusLabel', () => {
 describe('addPageBreaksBetweenSections', () => {
   it('adds pageBreakAfter to all sections except last', () => {
     const sections: ContentSection[] = [
-      { type: 'cover-page', heading: 'Cover' },
-      { type: 'reading', heading: 'Reading' },
-      { type: 'petitions', heading: 'Petitions' },
+      { id: '1', title: 'Cover', elements: [] },
+      { id: '2', title: 'Reading', elements: [] },
+      { id: '3', title: 'Petitions', elements: [] },
     ]
 
     const result = addPageBreaksBetweenSections(sections)
@@ -114,7 +114,7 @@ describe('addPageBreaksBetweenSections', () => {
 
   it('handles single section (no page breaks)', () => {
     const sections: ContentSection[] = [
-      { type: 'cover-page', heading: 'Cover' },
+      { id: '1', title: 'Cover', elements: [] },
     ]
 
     const result = addPageBreaksBetweenSections(sections)
@@ -130,8 +130,8 @@ describe('addPageBreaksBetweenSections', () => {
 
   it('handles two sections', () => {
     const sections: ContentSection[] = [
-      { type: 'cover-page', heading: 'Cover' },
-      { type: 'reading', heading: 'Reading' },
+      { id: '1', title: 'Cover', elements: [] },
+      { id: '2', title: 'Reading', elements: [] },
     ]
 
     const result = addPageBreaksBetweenSections(sections)
@@ -142,8 +142,8 @@ describe('addPageBreaksBetweenSections', () => {
 
   it('modifies original array in place', () => {
     const sections: ContentSection[] = [
-      { type: 'cover-page', heading: 'Cover' },
-      { type: 'reading', heading: 'Reading' },
+      { id: '1', title: 'Cover', elements: [] },
+      { id: '2', title: 'Reading', elements: [] },
     ]
 
     addPageBreaksBetweenSections(sections)

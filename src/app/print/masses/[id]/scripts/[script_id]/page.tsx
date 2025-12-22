@@ -57,19 +57,16 @@ export default async function PrintMassScriptPage({ params }: PageProps) {
     id: mass.id,
     parish_id: mass.parish_id,
     event_type_id: mass.event_type_id,
-    presider_id: mass.presider_id || null,
-    homilist_id: mass.homilist_id || null,
     status: 'ACTIVE' as const,
     field_values: mass.field_values || {},
     resolved_fields: mass.resolved_fields || {},
     event_type: {
       ...mass.event_type!,
-      role_definitions: mass.event_type?.role_definitions ?? null,
       input_field_definitions: [],  // Not needed for script processing
       scripts: [script]  // Pass the current script
     },
     calendar_events: [],
-    roles: [],
+    people_event_assignments: mass.people_event_assignments || [],
     parish: mass.calendar_events?.[0]?.location ? {
       name: 'Parish', // TODO: Get actual parish name if needed
       city: mass.calendar_events[0].location.city || '',

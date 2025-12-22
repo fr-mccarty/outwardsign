@@ -98,10 +98,10 @@ export async function createCalendarEvent(
   }
 
   // If marking as primary, unset other primary calendar events first
-  if (data.is_primary) {
+  if (data.show_on_calendar) {
     await supabase
       .from('calendar_events')
-      .update({ is_primary: false })
+      .update({ show_on_calendar: false })
       .eq('master_event_id', masterEventId)
       .is('deleted_at', null)
   }
@@ -117,7 +117,7 @@ export async function createCalendarEvent(
         end_datetime: data.end_datetime || null,
         input_field_definition_id: data.input_field_definition_id,
         location_id: data.location_id || null,
-        is_primary: data.is_primary || false,
+        show_on_calendar: data.show_on_calendar || false,
         is_cancelled: data.is_cancelled || false,
         is_all_day: data.is_all_day || false
       }
@@ -172,10 +172,10 @@ export async function updateCalendarEvent(
   }
 
   // If marking as primary, unset other primary calendar events first
-  if (data.is_primary) {
+  if (data.show_on_calendar) {
     await supabase
       .from('calendar_events')
-      .update({ is_primary: false })
+      .update({ show_on_calendar: false })
       .eq('master_event_id', calendarEvent.master_event_id)
       .neq('id', id)
       .is('deleted_at', null)

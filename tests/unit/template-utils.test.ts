@@ -108,10 +108,9 @@ describe('getTemplateVariables', () => {
   it('creates variables from petition data', () => {
     const data: CreatePetitionData = {
       title: 'Sunday Petitions',
-      language: 'English',
+      language: 'en',
       details: 'For the sick',
-      content: '',
-      parishId: '123'
+      date: '2025-01-01'
     }
     const result = getTemplateVariables(data)
 
@@ -126,8 +125,7 @@ describe('getTemplateVariables', () => {
       title: 'Test',
       language: 'es',
       details: 'Details',
-      content: '',
-      parishId: '123'
+      date: '2025-01-01'
     }
     const result = getTemplateVariables(data, 'Custom template content')
 
@@ -139,8 +137,7 @@ describe('getTemplateVariables', () => {
       title: 'Test',
       language: 'en',
       details: '',
-      content: '',
-      parishId: '123'
+      date: '2025-01-01'
     }
     const result = getTemplateVariables(data)
 
@@ -152,8 +149,7 @@ describe('getTemplateVariables', () => {
       title: 'Test',
       language: 'en',
       details: '',
-      content: '',
-      parishId: '123'
+      date: '2025-01-01'
     }
     const result = getTemplateVariables(data, undefined)
 

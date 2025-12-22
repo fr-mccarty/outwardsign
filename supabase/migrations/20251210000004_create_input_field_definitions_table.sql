@@ -12,6 +12,7 @@ CREATE TABLE input_field_definitions (
   list_id UUID REFERENCES custom_lists(id) ON DELETE SET NULL,
   is_key_person BOOLEAN NOT NULL DEFAULT false,
   is_primary BOOLEAN NOT NULL DEFAULT false,
+  is_per_calendar_event BOOLEAN NOT NULL DEFAULT false,
   "order" INTEGER NOT NULL,
   input_filter_tags TEXT[] DEFAULT ARRAY[]::TEXT[],
   deleted_at TIMESTAMPTZ,
@@ -21,6 +22,7 @@ CREATE TABLE input_field_definitions (
   CONSTRAINT check_input_field_order_non_negative CHECK ("order" >= 0),
   CONSTRAINT check_is_key_person_only_for_person CHECK (is_key_person = false OR type = 'person'),
   CONSTRAINT check_is_primary_only_for_calendar_event CHECK (is_primary = false OR type = 'calendar_event'),
+  CONSTRAINT check_is_per_calendar_event_only_for_person CHECK (is_per_calendar_event = false OR type = 'person'),
   CONSTRAINT check_property_name_format CHECK (property_name ~ '^[a-z][a-z0-9_]*$')
 );
 
@@ -104,3 +106,6 @@ CREATE TRIGGER input_field_definitions_updated_at
   BEFORE UPDATE ON input_field_definitions
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- Column comments
+COMMENT ON COLUMN input_field_definitions.is_per_calendar_event IS 'True if this person field should be assigned per calendar_event (e.g., different musicians for rehearsal vs ceremony). Only valid for type=person fields.';

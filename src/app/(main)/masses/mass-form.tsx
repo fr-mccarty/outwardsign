@@ -65,8 +65,6 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
     defaultValues: {
       status: mass?.status || "ACTIVE",
       event_id: undefined, // Calendar events are in calendar_events[], not event_id
-      presider_id: mass?.presider_id || undefined,
-      homilist_id: mass?.homilist_id || undefined,
       liturgical_event_id: (initialFieldValues.liturgical_event_id as string) || initialLiturgicalEvent?.id || undefined,
       mass_roles_template_id: undefined, // No longer used - roles are in event_type.role_definitions
       petitions: (initialFieldValues.petitions as string) || undefined,
@@ -84,8 +82,6 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
 
   // Picker states using usePickerState hook
   const event = usePickerState<Event>()
-  const presider = usePickerState<Person>()
-  const homilist = usePickerState<Person>()
   const liturgicalEvent = usePickerState<GlobalLiturgicalEvent>()
 
   // Mass role assignments state
@@ -131,17 +127,13 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
       // The EventPickerField expects the old Event type, so we don't set it from calendar_events
       // TODO: Update EventPickerField to work with CalendarEvent or create CalendarEventPickerField
 
-      // Set people
-      if (mass.presider) presider.setValue(mass.presider)
-      if (mass.homilist) homilist.setValue(mass.homilist)
+      // Note: presider/homilist are now handled via people_event_assignments, not direct columns
 
       // Note: liturgical_event is now stored in field_values, not as a direct relation
       // TODO: Load liturgical event from field_values.liturgical_event_id if needed
 
-      // Set mass roles if available (from roles property)
-      if (mass.roles) {
-        setMassRoles(mass.roles as MasterEventRoleWithRelations[])
-      }
+      // TODO: Mass roles now handled via people_event_assignments, not separate roles property
+      // setMassRoles would need to be refactored to use people_event_assignments
 
       // Set mass intention if available
       if (mass.mass_intention) {
@@ -163,14 +155,6 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
   useEffect(() => {
     setValue('event_id', event.value?.id)
   }, [event.value, setValue])
-
-  useEffect(() => {
-    setValue('presider_id', presider.value?.id)
-  }, [presider.value, setValue])
-
-  useEffect(() => {
-    setValue('homilist_id', homilist.value?.id)
-  }, [homilist.value, setValue])
 
   useEffect(() => {
     setValue('liturgical_event_id', liturgicalEvent.value?.id)
@@ -695,33 +679,9 @@ export function MassForm({ mass, formId, onLoadingChange, initialLiturgicalEvent
         </FormSectionCard>
       )}
 
-      {/* Ministers and Mass Roles */}
-      <FormSectionCard
-        title="Ministers"
-        description="People serving in liturgical mass roles for this Mass"
-      >
-        <PersonPickerField
-            label="Presider"
-            description="Priest or deacon presiding at this Mass"
-            value={presider.value}
-            onValueChange={presider.setValue}
-            showPicker={presider.showPicker}
-            onShowPickerChange={presider.setShowPicker}
-            autoSetSex="MALE"
-            additionalVisibleFields={['email', 'phone_number', 'note']}
-          />
-
-          <PersonPickerField
-            label="Homilist"
-            description="Person giving the homily (if different from presider)"
-            value={homilist.value}
-            onValueChange={homilist.setValue}
-            showPicker={homilist.showPicker}
-            onShowPickerChange={homilist.setShowPicker}
-            autoSetSex="MALE"
-            additionalVisibleFields={['email', 'phone_number', 'note']}
-          />
-      </FormSectionCard>
+      {/* Ministers - Now handled via people_event_assignments */}
+      {/* TODO: Add PeopleEventAssignmentSection component here for template-level assignments */}
+      {/* TODO: Add CalendarEventAssignmentSection component for occurrence-level assignments */}
 
       {/* Mass Intention */}
       {isEditing && mass?.id && (

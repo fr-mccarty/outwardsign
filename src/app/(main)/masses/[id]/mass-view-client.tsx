@@ -8,13 +8,9 @@ import { ContentCard } from '@/components/content-card'
 import { Edit } from 'lucide-react'
 import { ModuleStatusLabel } from '@/components/module-status-label'
 import { ScriptCard } from '@/components/script-card'
-import { RoleAssignmentSection } from '@/components/role-assignment-section'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Script } from '@/lib/types'
-import { assignRole, removeRoleAssignment } from '@/lib/actions/master-events'
-import { toast } from 'sonner'
-import type { Person } from '@/lib/types'
 import { formatDatePretty, formatTime } from '@/lib/utils/formatters'
 
 interface MassViewClientProps {
@@ -26,37 +22,19 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
   const router = useRouter()
 
   // Get primary calendar event for main event display
-  const primaryCalendarEvent = mass.calendar_events?.find(ce => ce.is_primary) || mass.calendar_events?.[0]
+  const primaryCalendarEvent = mass.calendar_events?.find(ce => ce.show_on_calendar) || mass.calendar_events?.[0]
+
+  // Extract presider and homilist from people_event_assignments
+  const presider = mass.people_event_assignments?.find(
+    a => a.field_definition?.property_name === 'presider'
+  )?.person || null
+  const homilist = mass.people_event_assignments?.find(
+    a => a.field_definition?.property_name === 'homilist'
+  )?.person || null
 
   // Handle script card click
   const handleScriptClick = (scriptId: string) => {
     router.push(`/masses/${mass.id}/scripts/${scriptId}`)
-  }
-
-  // Handle role assignment
-  const handleRoleAssigned = async (roleId: string, person: Person, notes?: string) => {
-    try {
-      await assignRole(mass.id, roleId, person.id, notes)
-      toast.success('Role assigned successfully')
-      router.refresh()
-    } catch (error) {
-      console.error('Error assigning role:', error)
-      toast.error('Failed to assign role')
-      throw error
-    }
-  }
-
-  // Handle role removal
-  const handleRoleRemoved = async (roleAssignmentId: string) => {
-    try {
-      await removeRoleAssignment(roleAssignmentId)
-      toast.success('Role removed successfully')
-      router.refresh()
-    } catch (error) {
-      console.error('Error removing role:', error)
-      toast.error('Failed to remove role')
-      throw error
-    }
   }
 
   // Generate action buttons
@@ -145,31 +123,20 @@ export function MassViewClient({ mass, scripts }: MassViewClientProps) {
                   {primaryCalendarEvent.location.name}
                 </div>
               )}
-              {mass.presider && (
+              {presider && (
                 <div>
                   <span className="font-medium">Presider:</span>{' '}
-                  {mass.presider.full_name}
+                  {presider.full_name}
                 </div>
               )}
-              {mass.homilist && mass.homilist.id !== mass.presider?.id && (
+              {homilist && homilist.id !== presider?.id && (
                 <div>
                   <span className="font-medium">Homilist:</span>{' '}
-                  {mass.homilist.full_name}
+                  {homilist.full_name}
                 </div>
               )}
             </div>
           </ContentCard>
-        </div>
-      )}
-
-      {/* Role Assignments */}
-      {mass.event_type?.role_definitions && (
-        <div className="mb-6">
-          <RoleAssignmentSection
-            masterEvent={mass}
-            onRoleAssigned={handleRoleAssigned}
-            onRoleRemoved={handleRoleRemoved}
-          />
         </div>
       )}
 

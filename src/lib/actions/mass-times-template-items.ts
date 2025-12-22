@@ -19,6 +19,7 @@ export interface MassTimesTemplateItem {
   location_id?: string
   length_of_time?: number // Duration in minutes
   homilist_id?: string
+  role_quantities: Record<string, number> // Maps role property_names to quantity needed
   created_at: string
   updated_at: string
 }
@@ -32,6 +33,7 @@ export interface CreateTemplateItemData {
   location_id?: string
   length_of_time?: number
   homilist_id?: string
+  role_quantities?: Record<string, number>
 }
 
 // Update data interface
@@ -42,6 +44,7 @@ export interface UpdateTemplateItemData {
   location_id?: string
   length_of_time?: number
   homilist_id?: string
+  role_quantities?: Record<string, number>
 }
 
 /**
@@ -85,6 +88,7 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
       location_id: data.location_id,
       length_of_time: data.length_of_time,
       homilist_id: data.homilist_id,
+      role_quantities: data.role_quantities || {}
     }])
     .select()
     .single()
@@ -117,6 +121,7 @@ export async function updateTemplateItem(
   if (data.location_id !== undefined) updateData.location_id = data.location_id
   if (data.length_of_time !== undefined) updateData.length_of_time = data.length_of_time
   if (data.homilist_id !== undefined) updateData.homilist_id = data.homilist_id
+  if (data.role_quantities !== undefined) updateData.role_quantities = data.role_quantities
 
   const { data: item, error } = await supabase
     .from('mass_times_template_items')

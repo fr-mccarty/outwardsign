@@ -11,7 +11,6 @@ CREATE TABLE event_types (
   "order" INTEGER NOT NULL DEFAULT 0,
   slug TEXT,
   system_type TEXT NOT NULL DEFAULT 'event',
-  role_definitions JSONB NOT NULL DEFAULT '{}'::jsonb,
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -35,13 +34,9 @@ CREATE INDEX idx_event_types_order ON event_types(parish_id, "order") WHERE dele
 CREATE INDEX idx_event_types_slug ON event_types(parish_id, slug) WHERE deleted_at IS NULL;
 CREATE INDEX idx_event_types_system_type ON event_types(parish_id, system_type) WHERE deleted_at IS NULL;
 
--- GIN index for role_definitions JSONB queries
-CREATE INDEX idx_event_types_role_definitions_gin ON event_types USING GIN (role_definitions);
-
 -- Column comments
 COMMENT ON COLUMN event_types.slug IS 'URL-safe identifier for event type (e.g., "weddings", "funerals"). Auto-generated from name but can be edited by admins. Must be unique per parish.';
 COMMENT ON COLUMN event_types.system_type IS 'System type for UI organization (mass, special-liturgy, event)';
-COMMENT ON COLUMN event_types.role_definitions IS 'JSONB array of role definitions for this event type. Example: {"roles": [{"id": "presider", "name": "Presider", "required": true}]}';
 
 -- RLS Policies
 -- Parish members can read event types for their parish

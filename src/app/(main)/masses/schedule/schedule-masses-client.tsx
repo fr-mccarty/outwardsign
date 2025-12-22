@@ -95,12 +95,14 @@ export function ScheduleMassesClient({ massEventTypes, massTimesTemplates, massR
   const [schedulingError, setSchedulingError] = useState<string | null>(null)
   const [currentWizardStep, setCurrentWizardStep] = useState(1)
 
-  // Get selected event type and its role definitions
-  const selectedEventType = massEventTypes.find(et => et.id === selectedMassEventTypeId)
-  const roleDefinitions: RoleDefinition[] = useMemo(() =>
-    (selectedEventType?.role_definitions as { roles?: RoleDefinition[] })?.roles || [],
-    [selectedEventType?.role_definitions]
-  )
+  // TODO: role_definitions no longer exists - needs refactoring to use input_field_definitions
+  // Get selected event type and its role definitions (currently unused - commented for refactoring)
+  // const selectedEventType = massEventTypes.find(et => et.id === selectedMassEventTypeId)
+  const roleDefinitions: RoleDefinition[] = useMemo(() => [], [])
+  // const roleDefinitions: RoleDefinition[] = useMemo(() =>
+  //   (selectedEventType?.role_definitions as { roles?: RoleDefinition[] })?.roles || [],
+  //   [selectedEventType?.role_definitions]
+  // )
 
   // Debug logging for proposedMasses changes
   useEffect(() => {

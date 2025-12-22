@@ -8,8 +8,6 @@ CREATE TABLE master_events (
   parish_id UUID NOT NULL REFERENCES parishes(id) ON DELETE CASCADE,
   event_type_id UUID NOT NULL REFERENCES event_types(id) ON DELETE RESTRICT,
   field_values JSONB NOT NULL DEFAULT '{}'::jsonb,
-  presider_id UUID REFERENCES people(id) ON DELETE SET NULL,
-  homilist_id UUID REFERENCES people(id) ON DELETE SET NULL,
   status TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -28,8 +26,6 @@ GRANT ALL ON master_events TO service_role;
 CREATE INDEX idx_master_events_parish_id ON master_events(parish_id);
 CREATE INDEX idx_master_events_event_type_id ON master_events(event_type_id);
 CREATE INDEX idx_master_events_field_values_gin ON master_events USING GIN (field_values);
-CREATE INDEX idx_master_events_presider_id ON master_events(presider_id);
-CREATE INDEX idx_master_events_homilist_id ON master_events(homilist_id);
 CREATE INDEX idx_master_events_status ON master_events(status);
 
 -- RLS Policies
@@ -88,7 +84,5 @@ CREATE TRIGGER master_events_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- Comments
-COMMENT ON TABLE master_events IS 'Master events (sacrament containers) with JSONB field_values and manual minister assignment. ON DELETE RESTRICT for event_type_id prevents deletion of event types with existing events.';
-COMMENT ON COLUMN master_events.presider_id IS 'Presider assigned manually for this sacrament event';
-COMMENT ON COLUMN master_events.homilist_id IS 'Homilist assigned manually for this sacrament event';
+COMMENT ON TABLE master_events IS 'Master events (sacrament containers) with JSONB field_values. ON DELETE RESTRICT for event_type_id prevents deletion of event types with existing events.';
 COMMENT ON COLUMN master_events.status IS 'Event status (values defined in application constants)';

@@ -7,7 +7,15 @@ import { Badge } from '@/components/ui/badge'
 import { PersonPickerField } from '@/components/person-picker-field'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { User, X, Plus } from 'lucide-react'
-import type { MasterEventWithRelations, Person, RoleDefinition } from '@/lib/types'
+import type { MasterEventWithRelations, Person } from '@/lib/types'
+
+// Local RoleDefinition interface for backward compatibility (temporary)
+// TODO: Refactor to use people_event_assignments pattern
+interface RoleDefinition {
+  id: string
+  name: string
+  required?: boolean
+}
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 
@@ -27,6 +35,13 @@ interface RoleAssignmentState {
 /**
  * RoleAssignmentSection - Displays and manages role assignments for master events
  *
+ * TODO: This component references the old master_event_roles table pattern.
+ * It should be refactored to use the new people_event_assignments table with the two-level pattern:
+ * - Template-level assignments (calendar_event_id = NULL)
+ * - Occurrence-level assignments (calendar_event_id populated)
+ *
+ * See PeopleEventAssignmentSection and CalendarEventAssignmentSection for the new pattern.
+ *
  * Features:
  * - Shows all roles from event_type.role_definitions
  * - Displays assigned person or "Unassigned" state
@@ -38,6 +53,7 @@ interface RoleAssignmentState {
  * Per FORMS.md and STYLES.md: Uses semantic color tokens and supports dark mode.
  */
 export function RoleAssignmentSection({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   masterEvent,
   onRoleAssigned,
   onRoleRemoved,
@@ -46,15 +62,17 @@ export function RoleAssignmentSection({
   const [removingRoleId, setRemovingRoleId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Get role definitions from event type
-  const roleDefinitions: RoleDefinition[] = masterEvent.event_type?.role_definitions?.roles || []
+  // TODO: role_definitions no longer exists - needs refactoring to use input_field_definitions
+  const roleDefinitions: RoleDefinition[] = []
+  // const roleDefinitions: RoleDefinition[] = masterEvent.event_type?.role_definitions?.roles || []
 
-  // Get existing role assignments
-  const roleAssignments = masterEvent.roles || []
+  // TODO: roles no longer exists in MasterEventWithRelations - needs refactoring
+  const roleAssignments: any[] = []
+  // const roleAssignments = masterEvent.roles || []
 
   // Find assignment for a role
   const findAssignment = (roleId: string) => {
-    return roleAssignments.find(assignment => assignment.role_id === roleId)
+    return roleAssignments.find((assignment: any) => assignment.role_id === roleId)
   }
 
   // Handle opening person picker for a role

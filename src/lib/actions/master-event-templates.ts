@@ -119,8 +119,8 @@ export async function createTemplateFromEvent(
     // Build template_data JSONB
     const templateData: TemplateData = {
       field_values: masterEvent.field_values,
-      presider_id: masterEvent.presider_id,
-      homilist_id: masterEvent.homilist_id,
+      presider_id: null,
+      homilist_id: null,
       calendar_events: {}
     }
 

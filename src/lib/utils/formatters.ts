@@ -805,21 +805,35 @@ export function getBaptismPageTitle(baptism: {
 export function getMassPageTitle(mass: {
   presider?: { first_name?: string; last_name?: string } | null
   event?: { start_date?: string } | null
+  people_event_assignments?: Array<{
+    person?: { first_name?: string; last_name?: string } | null
+    field_definition?: { property_name?: string } | null
+  }> | null
+  calendar_events?: Array<{ start_datetime?: string }> | null
 }): string {
-  const presiderName = mass.presider
-    ? `${mass.presider.first_name} ${mass.presider.last_name}`
+  // Try to get presider from people_event_assignments (new pattern)
+  const presiderAssignment = mass.people_event_assignments?.find(
+    a => a.field_definition?.property_name === 'presider'
+  )
+  const presider = presiderAssignment?.person || mass.presider
+
+  const presiderName = presider
+    ? `${presider.first_name} ${presider.last_name}`
     : null
 
-  const eventDate = mass.event?.start_date
-    ? new Date(mass.event.start_date).toLocaleDateString()
+  // Try to get date from calendar_events (new pattern) or event (old pattern)
+  const calendarEventDate = mass.calendar_events?.[0]?.start_datetime
+  const eventDate = mass.event?.start_date || calendarEventDate
+  const formattedDate = eventDate
+    ? new Date(eventDate).toLocaleDateString()
     : null
 
-  if (presiderName && eventDate) {
-    return `${presiderName}-${eventDate}-Mass`
+  if (presiderName && formattedDate) {
+    return `${presiderName}-${formattedDate}-Mass`
   } else if (presiderName) {
     return `${presiderName}-Mass`
-  } else if (eventDate) {
-    return `${eventDate}-Mass`
+  } else if (formattedDate) {
+    return `${formattedDate}-Mass`
   }
 
   return 'Mass'

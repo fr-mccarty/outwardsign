@@ -295,21 +295,9 @@ export interface EventType {
   slug: string | null // URL-safe identifier (e.g., "weddings", "funerals")
   order: number
   system_type: 'mass' | 'special-liturgy' | 'event' // System type for categorization
-  role_definitions: RoleDefinitions | null // JSON-B role definitions for this event type
   deleted_at: string | null
   created_at: string
   updated_at: string
-}
-
-// Role definitions for event types
-export interface RoleDefinitions {
-  roles: RoleDefinition[]
-}
-
-export interface RoleDefinition {
-  id: string
-  name: string
-  required: boolean
 }
 
 export interface Event {
@@ -618,6 +606,7 @@ export interface InputFieldDefinition {
   input_filter_tags: string[] | null
   is_key_person: boolean
   is_primary: boolean
+  is_per_calendar_event: boolean  // If true, expects occurrence-level assignments; if false, template-level
   order: number
   deleted_at: string | null
   created_at: string
@@ -638,6 +627,7 @@ export interface CreateInputFieldDefinitionData {
   input_filter_tags?: string[] | null
   is_key_person?: boolean
   is_primary?: boolean
+  is_per_calendar_event?: boolean
 }
 
 export interface UpdateInputFieldDefinitionData {
@@ -649,6 +639,7 @@ export interface UpdateInputFieldDefinitionData {
   input_filter_tags?: string[] | null
   is_key_person?: boolean
   is_primary?: boolean
+  is_per_calendar_event?: boolean
 }
 
 // Custom Lists (parish-defined option sets)
@@ -758,10 +749,18 @@ export interface UpdateSectionData {
 
 export type MasterEventStatus = 'PLANNING' | 'ACTIVE' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
 
-export interface MasterEventRole {
+// ========================================
+// PEOPLE EVENT ASSIGNMENTS
+// ========================================
+// Unified storage for all person-to-event assignments
+// calendar_event_id NULL = template-level (applies to all occurrences)
+// calendar_event_id populated = occurrence-level (specific to one calendar event)
+
+export interface PeopleEventAssignment {
   id: string
   master_event_id: string
-  role_id: string
+  calendar_event_id: string | null  // NULL for template, populated for occurrence
+  field_definition_id: string
   person_id: string
   notes: string | null
   created_at: string
@@ -769,8 +768,22 @@ export interface MasterEventRole {
   deleted_at: string | null
 }
 
-export interface MasterEventRoleWithPerson extends MasterEventRole {
+export interface PeopleEventAssignmentWithPerson extends PeopleEventAssignment {
   person: Person
+  field_definition: InputFieldDefinition
+}
+
+export interface CreatePeopleEventAssignmentData {
+  master_event_id: string
+  calendar_event_id?: string | null
+  field_definition_id: string
+  person_id: string
+  notes?: string | null
+}
+
+export interface UpdatePeopleEventAssignmentData {
+  person_id?: string
+  notes?: string | null
 }
 
 export interface MasterEvent {
@@ -778,8 +791,6 @@ export interface MasterEvent {
   parish_id: string
   event_type_id: string
   field_values: Record<string, any> // JSON object
-  presider_id: string | null  // Manual minister assignment
-  homilist_id: string | null  // Manual minister assignment
   status: MasterEventStatus  // Event status
   created_at: string
   updated_at: string
@@ -806,25 +817,19 @@ export interface ParishInfo {
 export interface MasterEventWithRelations extends MasterEvent {
   event_type: EventTypeWithRelations  // Includes input_field_definitions and scripts
   calendar_events: CalendarEvent[]  // RENAMED from occasions
-  presider?: Person | null  // Resolved presider
-  homilist?: Person | null  // Resolved homilist
-  roles: MasterEventRole[]  // Role assignments for this event
+  people_event_assignments?: PeopleEventAssignmentWithPerson[]  // Unified person assignments
   resolved_fields: Record<string, ResolvedFieldValue>
   parish?: ParishInfo
 }
 
 export interface CreateMasterEventData {
   field_values: Record<string, any>
-  presider_id?: string | null
-  homilist_id?: string | null
   status: string
   calendar_events?: CreateCalendarEventData[]
 }
 
 export interface UpdateMasterEventData {
   field_values?: Record<string, any>
-  presider_id?: string | null
-  homilist_id?: string | null
   status?: string | null
   calendar_events?: (CreateCalendarEventData | UpdateCalendarEventData)[]
 }
@@ -844,7 +849,7 @@ export interface CalendarEvent {
   start_datetime: string  // ISO 8601 datetime with timezone
   end_datetime: string | null  // Optional end datetime
   location_id: string | null
-  is_primary: boolean  // Primary calendar event for a master event
+  show_on_calendar: boolean  // Whether this event should appear on the parish public calendar
   is_cancelled: boolean  // True if this specific calendar event is cancelled
   is_all_day: boolean  // True if this is an all-day event (no specific time, only date)
   deleted_at: string | null
@@ -863,7 +868,7 @@ export interface CreateCalendarEventData {
   start_datetime: string  // Required - ISO 8601 datetime
   end_datetime?: string | null  // Optional
   location_id?: string | null
-  is_primary?: boolean
+  show_on_calendar?: boolean
   is_cancelled?: boolean
   is_all_day?: boolean  // Optional - defaults to false
 }
@@ -873,7 +878,7 @@ export interface UpdateCalendarEventData {
   start_datetime?: string
   end_datetime?: string | null
   location_id?: string | null
-  is_primary?: boolean
+  show_on_calendar?: boolean
   is_cancelled?: boolean
   is_all_day?: boolean
 }

@@ -69,7 +69,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "^3.3.3",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/bcryptjs": "^2.4.6",

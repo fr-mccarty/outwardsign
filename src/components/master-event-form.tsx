@@ -42,8 +42,6 @@ const MASTER_EVENT_STATUS_VALUES: MasterEventStatus[] = ['PLANNING', 'ACTIVE', '
 
 const masterEventSchema = z.object({
   status: z.enum(['PLANNING', 'ACTIVE', 'SCHEDULED', 'COMPLETED', 'CANCELLED']),
-  presider_id: z.string().optional(),
-  homilist_id: z.string().optional(),
 })
 
 type MasterEventFormData = z.infer<typeof masterEventSchema>
@@ -81,8 +79,6 @@ export function MasterEventForm({
     resolver: zodResolver(masterEventSchema),
     defaultValues: {
       status: initialData?.status || 'PLANNING',
-      presider_id: initialData?.presider_id || undefined,
-      homilist_id: initialData?.homilist_id || undefined,
     }
   })
 
@@ -112,11 +108,7 @@ export function MasterEventForm({
   // Picker open states
   const [pickerOpen, setPickerOpen] = useState<Record<string, boolean>>({})
 
-  // Presider and Homilist pickers
-  const [presider, setPresider] = useState<Person | null>(initialData?.presider || null)
-  const [homilist, setHomilist] = useState<Person | null>(initialData?.homilist || null)
-  const [presiderPickerOpen, setPresiderPickerOpen] = useState(false)
-  const [homilistPickerOpen, setHomilstPickerOpen] = useState(false)
+  // Note: Presider and Homilist are now handled via people_event_assignments, not direct columns
 
   // Calendar events derived from initial data (read-only for now, editing handled elsewhere)
   const calendarEvents: CreateCalendarEventData[] = initialData?.calendar_events?.map(ce => ({
@@ -125,19 +117,9 @@ export function MasterEventForm({
     start_datetime: ce.start_datetime,
     end_datetime: ce.end_datetime,
     location_id: ce.location_id,
-    is_primary: ce.is_primary,
+    show_on_calendar: ce.show_on_calendar, // Changed from is_primary
     is_cancelled: ce.is_cancelled,
   })) || []
-
-  // Sync presider to form
-  useEffect(() => {
-    setValue('presider_id', presider?.id)
-  }, [presider, setValue])
-
-  // Sync homilist to form
-  useEffect(() => {
-    setValue('homilist_id', homilist?.id)
-  }, [homilist, setValue])
 
   // Update field value (for text, rich_text, date, time, number, yes_no fields)
   const updateFieldValue = (fieldName: string, value: string | boolean | null) => {
@@ -183,10 +165,10 @@ export function MasterEventForm({
         return
       }
 
-      // Validate exactly one primary calendar event
-      const primaryEvents = calendarEvents.filter(ce => ce.is_primary)
-      if (primaryEvents.length !== 1) {
-        toast.error('Exactly one calendar event must be marked as primary')
+      // Validate at least one calendar event shows on calendar
+      const showOnCalendarEvents = calendarEvents.filter(ce => ce.show_on_calendar)
+      if (showOnCalendarEvents.length === 0) {
+        toast.error('At least one calendar event must be marked to show on calendar')
         return
       }
 
@@ -202,8 +184,6 @@ export function MasterEventForm({
         if (isEditing && initialData) {
           await updateEvent(initialData.id, {
             field_values: fieldValues,
-            presider_id: data.presider_id || null,
-            homilist_id: data.homilist_id || null,
             status: data.status,
             calendar_events: calendarEvents
           })
@@ -212,8 +192,6 @@ export function MasterEventForm({
         } else {
           const newEvent = await createEvent(eventType.id, {
             field_values: fieldValues,
-            presider_id: data.presider_id || null,
-            homilist_id: data.homilist_id || null,
             status: data.status,
             calendar_events: calendarEvents
           })
@@ -492,33 +470,9 @@ export function MasterEventForm({
         </FormSectionCard>
       )}
 
-      {/* Ministers (Presider and Homilist) */}
-      <FormSectionCard
-        title="Ministers"
-        description="People serving in key liturgical roles"
-      >
-        <PersonPickerField
-          label="Presider"
-          description="Priest or deacon presiding at this event"
-          value={presider}
-          onValueChange={setPresider}
-          showPicker={presiderPickerOpen}
-          onShowPickerChange={setPresiderPickerOpen}
-          autoSetSex="MALE"
-          additionalVisibleFields={['email', 'phone_number', 'note']}
-        />
-
-        <PersonPickerField
-          label="Homilist"
-          description="Person giving the homily (if different from presider)"
-          value={homilist}
-          onValueChange={setHomilist}
-          showPicker={homilistPickerOpen}
-          onShowPickerChange={setHomilstPickerOpen}
-          autoSetSex="MALE"
-          additionalVisibleFields={['email', 'phone_number', 'note']}
-        />
-      </FormSectionCard>
+      {/* Ministers - Now handled via people_event_assignments */}
+      {/* TODO: Add PeopleEventAssignmentSection component here for template-level assignments */}
+      {/* TODO: Add CalendarEventAssignmentSection component for occurrence-level assignments */}
 
       {/* Form Actions */}
       <FormBottomActions

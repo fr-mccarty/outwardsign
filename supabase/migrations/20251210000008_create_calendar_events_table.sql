@@ -11,7 +11,7 @@ CREATE TABLE calendar_events (
   start_datetime TIMESTAMPTZ NOT NULL,
   end_datetime TIMESTAMPTZ,
   location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
-  is_primary BOOLEAN NOT NULL DEFAULT false,
+  show_on_calendar BOOLEAN NOT NULL DEFAULT true,
   is_cancelled BOOLEAN NOT NULL DEFAULT false,
   is_all_day BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -90,6 +90,6 @@ COMMENT ON COLUMN calendar_events.master_event_id IS 'Foreign key to master_even
 COMMENT ON COLUMN calendar_events.input_field_definition_id IS 'References which field definition this calendar event corresponds to (e.g., Rehearsal field, Ceremony field)';
 COMMENT ON COLUMN calendar_events.start_datetime IS 'Start date and time with timezone (TIMESTAMPTZ). For all-day events, should be midnight in parish timezone.';
 COMMENT ON COLUMN calendar_events.end_datetime IS 'Optional end date and time (NULL for events without specific end time). For multi-day all-day events, this is the end date at midnight.';
-COMMENT ON COLUMN calendar_events.is_primary IS 'True if this is the primary calendar event for the master event';
+COMMENT ON COLUMN calendar_events.show_on_calendar IS 'True if this calendar event should appear on the parish calendar. False for internal events that should not be publicly visible.';
 COMMENT ON COLUMN calendar_events.is_cancelled IS 'True if this specific calendar event is cancelled (master event may still be active)';
 COMMENT ON COLUMN calendar_events.is_all_day IS 'True if this is an all-day event (no specific time, only date). For all-day events, start_datetime and end_datetime should be at midnight.';

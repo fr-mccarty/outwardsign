@@ -85,37 +85,44 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
     return []
   }
 
-  // Fetch primary calendar events and presiders/homilist for all events
+  // Fetch primary calendar events and people_event_assignments for all events
   const eventIds = events.map(e => e.id)
-  const presiderIds = events.map(e => e.presider_id).filter(Boolean) as string[]
-  const homilistIds = events.map(e => e.homilist_id).filter(Boolean) as string[]
 
-  const [calendarEventsData, presidersData, homilistsData] = await Promise.all([
+  const [calendarEventsData, assignmentsData] = await Promise.all([
     supabase
       .from('calendar_events')
       .select('*, location:locations(*)')
       .in('master_event_id', eventIds)
-      .eq('is_primary', true)
+      .eq('show_on_calendar', true)
       .is('deleted_at', null),
-    presiderIds.length > 0
-      ? supabase.from('people').select('*').in('id', presiderIds)
-      : Promise.resolve({ data: [] }),
-    homilistIds.length > 0
-      ? supabase.from('people').select('*').in('id', homilistIds)
-      : Promise.resolve({ data: [] })
+    supabase
+      .from('people_event_assignments')
+      .select('*, person:people(*), field_definition:input_field_definitions(*)')
+      .in('master_event_id', eventIds)
+      .is('deleted_at', null)
   ])
 
   // Create lookup maps
   const calendarEventMap = new Map(calendarEventsData.data?.map(ce => [ce.master_event_id, ce]) || [])
-  const presiderMap = new Map(presidersData.data?.map(p => [p.id, p]) || [])
-  const homilistMap = new Map(homilistsData.data?.map(p => [p.id, p]) || [])
+
+  // Create lookup maps for presider and homilist by master_event_id
+  const presiderMap = new Map<string, Person>()
+  const homilistMap = new Map<string, Person>()
+
+  assignmentsData.data?.forEach(assignment => {
+    if (assignment.field_definition?.property_name === 'presider' && assignment.person) {
+      presiderMap.set(assignment.master_event_id, assignment.person as Person)
+    } else if (assignment.field_definition?.property_name === 'homilist' && assignment.person) {
+      homilistMap.set(assignment.master_event_id, assignment.person as Person)
+    }
+  })
 
   // Combine events with related data
   let masses: MassWithNames[] = events.map(event => ({
     ...event,
     primary_calendar_event: calendarEventMap.get(event.id) || undefined,
-    presider: event.presider_id ? presiderMap.get(event.presider_id) || null : null,
-    homilist: event.homilist_id ? homilistMap.get(event.homilist_id) || null : null
+    presider: presiderMap.get(event.id) || null,
+    homilist: homilistMap.get(event.id) || null
   }))
 
   // Apply date range filters (post-fetch since calendar events are separate)
@@ -308,8 +315,8 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     throw new Error('Failed to fetch mass')
   }
 
-  // Fetch event type, calendar events, presider, homilist, mass intention, roles, and parish in parallel
-  const [eventTypeData, calendarEventsData, presiderData, homilistData, massIntentionData, rolesData, parishData] = await Promise.all([
+  // Fetch event type, calendar events, people_event_assignments, mass intention, roles, and parish in parallel
+  const [eventTypeData, calendarEventsData, assignmentsData, massIntentionData, rolesData, parishData] = await Promise.all([
     supabase
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
@@ -324,12 +331,11 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
       .eq('master_event_id', id)
       .is('deleted_at', null)
       .order('start_datetime', { ascending: true }),
-    event.presider_id
-      ? supabase.from('people').select('*').eq('id', event.presider_id).single()
-      : Promise.resolve({ data: null, error: null }),
-    event.homilist_id
-      ? supabase.from('people').select('*').eq('id', event.homilist_id).single()
-      : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from('people_event_assignments')
+      .select('*, person:people(*), field_definition:input_field_definitions(*)')
+      .eq('master_event_id', id)
+      .is('deleted_at', null),
     supabase
       .from('mass_intentions')
       .select('*, requested_by:people!requested_by_id(*)')
@@ -360,9 +366,8 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
 
   const eventType = eventTypeData.data as EventType
   const calendarEvents = calendarEventsData.data as CalendarEvent[]
-  const presider = presiderData.data as Person | null
-  const homilist = homilistData.data as Person | null
   const inputFieldDefinitions = eventTypeData.data.input_field_definitions as InputFieldDefinition[]
+  const peopleEventAssignments = assignmentsData.data || []
 
   // Resolve field values
   // Note: field_values uses property_name as keys (e.g., "entrance_hymn")
@@ -466,7 +471,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
 
   // Add special built-in fields used in script templates
   // These are not input field definitions but are expected by templates
-  const primaryCalendarEvent = calendarEvents.find(ce => ce.is_primary) || calendarEvents[0]
+  const primaryCalendarEvent = calendarEvents.find(ce => ce.show_on_calendar) || calendarEvents[0]
   if (primaryCalendarEvent?.start_datetime) {
     const startDate = new Date(primaryCalendarEvent.start_datetime)
     resolvedFields['date'] = {
@@ -480,7 +485,14 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
       raw_value: startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     }
   }
-  if (presider) {
+
+  // Add presider from people_event_assignments if available
+  const presiderAssignment = peopleEventAssignments.find(
+    (a: { field_definition?: { property_name?: string } }) =>
+      a.field_definition?.property_name === 'presider'
+  )
+  if (presiderAssignment && 'person' in presiderAssignment) {
+    const presider = presiderAssignment.person as Person
     resolvedFields['presider'] = {
       field_name: 'presider',
       field_type: 'person',
@@ -497,8 +509,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
       scripts: [] // Scripts loaded separately if needed
     },
     calendar_events: calendarEvents,
-    presider: presider || undefined,
-    homilist: homilist || undefined,
+    people_event_assignments: peopleEventAssignments,
     roles: rolesData.data || [],
     resolved_fields: resolvedFields,
     mass_intention: massIntentionData.data || null,
@@ -540,8 +551,6 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
       {
         parish_id: selectedParishId,
         event_type_id: massEventType.id,
-        presider_id: validatedData.presider_id || null,
-        homilist_id: validatedData.homilist_id || null,
         field_values: validatedData.field_values || {},
         status: validatedData.status || 'PLANNING'
       }
@@ -617,12 +626,6 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mast
   // Build update object from only defined values
   const updateData: Partial<MasterEvent> = {}
 
-  if (validatedData.presider_id !== undefined) {
-    updateData.presider_id = validatedData.presider_id
-  }
-  if (validatedData.homilist_id !== undefined) {
-    updateData.homilist_id = validatedData.homilist_id
-  }
   if (validatedData.field_values !== undefined) {
     updateData.field_values = validatedData.field_values ?? {}
   }

@@ -20,10 +20,8 @@ import {
   DAYS_OF_WEEK_LABELS,
   LITURGICAL_CONTEXT_VALUES,
   LITURGICAL_CONTEXT_LABELS,
-  LITURGICAL_GRADE_LABELS,
   USER_PARISH_ROLE_VALUES,
   USER_PARISH_ROLE_LABELS,
-  type LiturgicalContext,
 } from '@/lib/constants'
 
 // ============================================================================

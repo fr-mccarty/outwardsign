@@ -133,8 +133,9 @@ export async function scheduleMasses(
       throw new Error('No mass event type found')
     }
 
-    // Get role definitions from event type
-    const roleDefinitions: RoleDefinition[] = (massEventType.role_definitions as { roles?: RoleDefinition[] })?.roles || []
+    // TODO: role_definitions no longer exists - needs refactoring to use input_field_definitions
+    const roleDefinitions: RoleDefinition[] = []
+    // const roleDefinitions: RoleDefinition[] = (massEventType.role_definitions as { roles?: RoleDefinition[] })?.roles || []
 
     // Phase 3: Get the primary calendar event input field definition
     const { data: primaryFieldDef, error: fieldDefError } = await supabase

@@ -154,7 +154,7 @@ export function CalendarEventFieldView({
           start_datetime,
           end_datetime,
           location_id: editValue.location_id || null,
-          is_primary: isPrimary,
+          show_on_calendar: isPrimary,
           is_all_day: editValue.is_all_day || false
         })
         toast.success("Calendar event created")
