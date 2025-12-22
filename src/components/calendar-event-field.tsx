@@ -87,7 +87,7 @@ export function CalendarEventField({
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
 
-      <Card className="bg-card text-card-foreground border">
+      <Card className={`bg-card text-card-foreground border ${error ? 'border-destructive dark:border-destructive' : ''}`}>
         <CardContent className="pt-6 space-y-4">
           {/* Date picker */}
           <DatePickerField

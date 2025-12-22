@@ -20,6 +20,7 @@ interface GroupPickerFieldProps {
   required?: boolean
   openToNewGroup?: boolean
   testId?: string
+  error?: string // Validation error message
 }
 
 export function GroupPickerField({
@@ -33,6 +34,7 @@ export function GroupPickerField({
   required = false,
   openToNewGroup = false,
   testId,
+  error,
 }: GroupPickerFieldProps) {
   const router = useRouter()
   const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
@@ -67,6 +69,7 @@ export function GroupPickerField({
         icon={Users}
         renderValue={getGroupDisplay}
         testId={testId}
+        error={error}
         navigationButton={
           <Button
             type="button"

@@ -620,6 +620,10 @@ export async function createEvent(
 
   const inputFieldDefinitions = eventType.input_field_definitions as InputFieldDefinition[]
   for (const fieldDef of inputFieldDefinitions) {
+    // Skip calendar_event fields - they're validated separately via calendar_events array
+    if (fieldDef.type === 'calendar_event') {
+      continue
+    }
     // Use property_name to access field_values, but show name in error message
     if (fieldDef.required && !data.field_values[fieldDef.property_name]) {
       throw new Error(`Required field "${fieldDef.name}" is missing`)

@@ -16,6 +16,7 @@ interface ContentPickerFieldProps {
   required?: boolean
   defaultInputFilterTags?: string[] // From input field definition
   language?: 'en' | 'es'
+  error?: string // Validation error message
 }
 
 export function ContentPickerField({
@@ -29,6 +30,7 @@ export function ContentPickerField({
   required = false,
   defaultInputFilterTags,
   language,
+  error,
 }: ContentPickerFieldProps) {
   const renderContentValue = (content: ContentWithTags) => {
     return (
@@ -51,6 +53,7 @@ export function ContentPickerField({
       required={required}
       icon={FileText}
       renderValue={renderContentValue}
+      error={error}
     >
       <ContentPicker
         open={showPicker}

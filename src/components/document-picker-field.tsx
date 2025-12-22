@@ -19,6 +19,7 @@ interface DocumentPickerFieldProps {
   required?: boolean
   testId?: string
   accept?: string // file input accept attribute
+  error?: string // Validation error message
 }
 
 // Format file size for display
@@ -48,6 +49,7 @@ export function DocumentPickerField({
   required = false,
   testId,
   accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif',
+  error,
 }: DocumentPickerFieldProps) {
   const [document, setDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(false)
@@ -143,7 +145,7 @@ export function DocumentPickerField({
       />
 
       {loading ? (
-        <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+        <div className={cn("flex items-center gap-2 p-3 border rounded-md bg-muted/50", error && "border-destructive dark:border-destructive")}>
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm text-muted-foreground">Loading document...</span>
         </div>
@@ -151,7 +153,8 @@ export function DocumentPickerField({
         <div className="flex items-center gap-2">
           <div
             className={cn(
-              "flex-1 flex items-center justify-between p-3 border rounded-md bg-muted/50"
+              "flex-1 flex items-center justify-between p-3 border rounded-md bg-muted/50",
+              error && "border-destructive dark:border-destructive"
             )}
           >
             <div className="flex items-center gap-3 min-w-0">
@@ -189,7 +192,7 @@ export function DocumentPickerField({
           variant="outline"
           onClick={handleUploadClick}
           disabled={uploading}
-          className="w-full justify-start"
+          className={cn("w-full justify-start", error && "border-destructive dark:border-destructive")}
           data-testid={`${labelId}-trigger`}
         >
           {uploading ? (
@@ -208,6 +211,10 @@ export function DocumentPickerField({
 
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
       )}
 
       <ConfirmationDialog

@@ -40,6 +40,8 @@ interface CalendarEventFieldViewProps {
   masterEventId?: string     // Required for creating new calendar events
   inputFieldDefinitionId?: string  // Required for creating new calendar events
   isEditing?: boolean  // If true, show display view with modal (even without calendarEventId)
+  hideAllDay?: boolean  // If true, hide the all-day checkbox (for special liturgies)
+  error?: string  // Validation error message
 }
 
 export function CalendarEventFieldView({
@@ -51,7 +53,9 @@ export function CalendarEventFieldView({
   calendarEventId,
   masterEventId,
   inputFieldDefinitionId,
-  isEditing = false
+  isEditing = false,
+  hideAllDay = false,
+  error
 }: CalendarEventFieldViewProps) {
   const router = useRouter()
   const [showLocationPicker, setShowLocationPicker] = useState(false)
@@ -178,7 +182,7 @@ export function CalendarEventFieldView({
 
     return (
       <>
-        <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+        <div className={`space-y-3 p-4 border rounded-lg bg-muted/30 ${error ? 'border-destructive dark:border-destructive' : ''}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium">
@@ -229,16 +233,18 @@ export function CalendarEventFieldView({
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id={`${label}-all-day`}
-                  checked={editValue.is_all_day || false}
-                  onCheckedChange={(checked) => updateLocalValue('is_all_day', checked)}
-                />
-                <Label htmlFor={`${label}-all-day`}>All-day event</Label>
-              </div>
+              {!hideAllDay && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id={`${label}-all-day`}
+                    checked={editValue.is_all_day || false}
+                    onCheckedChange={(checked) => updateLocalValue('is_all_day', checked)}
+                  />
+                  <Label htmlFor={`${label}-all-day`}>All-day event</Label>
+                </div>
+              )}
 
-              {editValue.is_all_day ? (
+              {!hideAllDay && editValue.is_all_day ? (
                 // All-day event: Show date pickers only
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <DatePickerField
@@ -312,7 +318,7 @@ export function CalendarEventFieldView({
 
   // Create mode: show inline inputs
   return (
-    <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+    <div className={`space-y-3 p-4 border rounded-lg bg-muted/30 ${error ? 'border-destructive dark:border-destructive' : ''}`}>
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium">
           {label}
@@ -323,16 +329,18 @@ export function CalendarEventFieldView({
         )}
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Switch
-          id={`${label}-all-day-create`}
-          checked={value.is_all_day || false}
-          onCheckedChange={(checked) => updateValue('is_all_day', checked)}
-        />
-        <Label htmlFor={`${label}-all-day-create`}>All-day event</Label>
-      </div>
+      {!hideAllDay && (
+        <div className="flex items-center space-x-2">
+          <Switch
+            id={`${label}-all-day-create`}
+            checked={value.is_all_day || false}
+            onCheckedChange={(checked) => updateValue('is_all_day', checked)}
+          />
+          <Label htmlFor={`${label}-all-day-create`}>All-day event</Label>
+        </div>
+      )}
 
-      {value.is_all_day ? (
+      {!hideAllDay && value.is_all_day ? (
         // All-day event: Show date pickers only
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <DatePickerField
@@ -379,6 +387,10 @@ export function CalendarEventFieldView({
         onShowPickerChange={setShowLocationPicker}
         placeholder="Select location"
       />
+
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
     </div>
   )
 }

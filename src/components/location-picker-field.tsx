@@ -21,6 +21,7 @@ interface LocationPickerFieldProps {
   openToNewLocation?: boolean
   visibleFields?: string[] // Optional fields to show: 'description', 'street', 'city', 'state', 'country', 'phone_number'
   requiredFields?: string[] // Fields that should be marked as required in the picker form
+  error?: string // Validation error message
 }
 
 export function LocationPickerField({
@@ -35,6 +36,7 @@ export function LocationPickerField({
   openToNewLocation = false,
   visibleFields,
   requiredFields,
+  error,
 }: LocationPickerFieldProps) {
   const router = useRouter()
   const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
@@ -71,6 +73,7 @@ export function LocationPickerField({
         required={required}
         icon={MapPin}
         renderValue={getLocationDisplay}
+        error={error}
         navigationButton={
           <Button
             type="button"

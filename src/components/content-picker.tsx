@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -42,6 +42,8 @@ export function ContentPicker({
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedContent, setSelectedContent] = useState<ContentWithTags | null>(null)
   const [showMoreFilters, setShowMoreFilters] = useState(false)
+  const [hasScrolledToSelected, setHasScrolledToSelected] = useState(false)
+  const selectedItemRef = useRef<HTMLButtonElement>(null)
 
   // Define loadContents with useCallback BEFORE it's used in useEffect
   const loadContents = useCallback(async (
@@ -78,10 +80,26 @@ export function ContentPicker({
       setSearchTerm('')
       setSelectedContent(null)
       setCurrentPage(1)
+      setHasScrolledToSelected(false)
       // Load immediately with reset values (don't wait for state update)
       loadContents(1, defaultInputFilterTags, '', language)
     }
   }, [open, defaultInputFilterTags, language, loadContents])
+
+  // Scroll to selected item when content loads
+  useEffect(() => {
+    if (open && !loading && selectedContentId && !hasScrolledToSelected && contents.length > 0) {
+      // Check if the selected item is in the current page
+      const selectedInPage = contents.find(c => c.id === selectedContentId)
+      if (selectedInPage) {
+        // Use setTimeout to ensure DOM has rendered
+        setTimeout(() => {
+          selectedItemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          setHasScrolledToSelected(true)
+        }, 100)
+      }
+    }
+  }, [open, loading, selectedContentId, hasScrolledToSelected, contents])
 
   // Load tags when dialog opens
   useEffect(() => {
@@ -229,10 +247,12 @@ export function ContentPicker({
             <div className="space-y-2 py-1">
               {contents.map((content) => {
                 const isSelected = selectedContent?.id === content.id || selectedContentId === content.id
+                const isPreSelected = selectedContentId === content.id
 
                 return (
                   <button
                     key={content.id}
+                    ref={isPreSelected ? selectedItemRef : undefined}
                     type="button"
                     onClick={() => handleSelectContent(content)}
                     className={cn(

@@ -51,6 +51,7 @@ This project uses specialized AI agents for different development tasks. Using t
 | Agent | Folder | Purpose | Primary Use Cases |
 |-------|--------|---------|-------------------|
 | **brainstorming-agent** | `/brainstorming/` | Creative vision capture | User requests new feature, explore ideas |
+| **devils-advocate-agent** | `/brainstorming/` | Challenge brainstorming | Find holes, ambiguities, edge cases before requirements |
 | **requirements-agent** | `/requirements/` | Requirements analysis | Expand vision with technical details |
 | **developer-agent** | `/src/` | Feature implementation | Coding based on requirements |
 | **test-writer** | `/tests/` | Test creation | Implementation complete, needs tests |
@@ -67,7 +68,8 @@ This project uses specialized AI agents for different development tasks. Using t
 
 ### Quick Decision Guide
 
-- **New feature?** → brainstorming-agent → requirements-agent → developer-agent → test-writer → test-runner-debugger → project-documentation-writer → code-review-agent → [optional: user-documentation-writer]
+- **New feature?** → brainstorming-agent → devils-advocate-agent → requirements-agent → developer-agent → test-writer → test-runner-debugger → project-documentation-writer → code-review-agent → [optional: user-documentation-writer]
+- **Challenge brainstorming?** → devils-advocate-agent (find holes, ambiguities, edge cases)
 - **Bug fix?** → developer-agent (or explorer-agent if complex) → test-runner-debugger → code-review-agent
 - **Understand code?** → explorer-agent
 - **Tests failing?** → test-runner-debugger
@@ -84,7 +86,7 @@ This project uses specialized AI agents for different development tasks. Using t
 
 Each agent owns a specific folder where it creates and manages files:
 
-- **`/brainstorming/`** - brainstorming-agent creates initial feature visions here (files then move to `/requirements/`)
+- **`/brainstorming/`** - brainstorming-agent creates initial visions; devils-advocate-agent reviews and moves files to `/requirements/`
 - **`/requirements/`** - requirements-agent expands vision documents with technical specifications
 - **`/src/`** - developer-agent implements features and fixes bugs
 - **`/tests/`** - test-writer creates test files

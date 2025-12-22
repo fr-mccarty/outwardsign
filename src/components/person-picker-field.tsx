@@ -26,6 +26,7 @@ interface PersonPickerFieldProps {
   requiredFields?: string[] // Fields that should be marked as required in the picker form
   autoSetSex?: Sex // Auto-set sex to this value and hide the field
   testId?: string // Optional override for data-testid
+  error?: string // Validation error message
 }
 
 export function PersonPickerField({
@@ -42,6 +43,7 @@ export function PersonPickerField({
   requiredFields,
   autoSetSex,
   testId,
+  error,
 }: PersonPickerFieldProps) {
   const router = useRouter()
   const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
@@ -133,6 +135,7 @@ export function PersonPickerField({
         icon={User}
         renderValue={renderPersonValue}
         testId={testId}
+        error={error}
         navigationButton={
           <Button
             type="button"

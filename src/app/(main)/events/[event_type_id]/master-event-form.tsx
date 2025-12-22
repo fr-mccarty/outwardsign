@@ -128,6 +128,9 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
   // State for picker visibility
   const [pickerOpen, setPickerOpen] = useState<Record<string, boolean>>({})
 
+  // State for field validation errors
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
   // Initialize React Hook Form (for form submission handling)
   const {
     handleSubmit,
@@ -139,24 +142,39 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
     onLoadingChange?.(isSubmitting)
   }, [isSubmitting, onLoadingChange])
 
+  // Clear error for a field
+  const clearFieldError = (fieldName: string) => {
+    if (fieldErrors[fieldName]) {
+      setFieldErrors(prev => {
+        const next = { ...prev }
+        delete next[fieldName]
+        return next
+      })
+    }
+  }
+
   // Update field value
   const updateFieldValue = (fieldName: string, value: string | boolean | null) => {
+    clearFieldError(fieldName)
     setFieldValues(prev => ({ ...prev, [fieldName]: value }))
   }
 
   // Update picker value (stores the ID in fieldValues)
   const updatePickerValue = (fieldName: string, value: Person | Location | ContentWithTags | Petition | Group | Document | null) => {
+    clearFieldError(fieldName)
     setPickerValues(prev => ({ ...prev, [fieldName]: value }))
     setFieldValues(prev => ({ ...prev, [fieldName]: value?.id || null }))
   }
 
   // Update list item value (stores the ID in fieldValues, also gets the item for display)
   const updateListItemValue = (fieldName: string, itemId: string | null) => {
+    clearFieldError(fieldName)
     setFieldValues(prev => ({ ...prev, [fieldName]: itemId }))
   }
 
   // Update calendar event field value
   const updateCalendarEventValue = (fieldName: string, value: CalendarEventFieldData) => {
+    clearFieldError(fieldName)
     setCalendarEventValues(prev => ({
       ...prev,
       [fieldName]: value
@@ -165,11 +183,17 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
 
   // Handle form submission
   const onSubmit = async () => {
+    // Clear previous errors
+    setFieldErrors({})
+
     // Validate required fields (non-calendar_event fields)
     const missingRequired: string[] = []
+    const newErrors: Record<string, string> = {}
+
     eventType.input_field_definitions?.forEach((field) => {
       if (field.type !== 'calendar_event' && field.required && !fieldValues[field.property_name]) {
         missingRequired.push(field.name) // Use name for display
+        newErrors[field.property_name] = 'This field is required'
       }
     })
 
@@ -177,10 +201,12 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
     calendarEventFields.forEach((field) => {
       if (field.required && !calendarEventValues[field.property_name]?.date) {
         missingRequired.push(`${field.name} (Date)`) // Use name for display
+        newErrors[field.property_name] = 'This field is required'
       }
     })
 
     if (missingRequired.length > 0) {
+      setFieldErrors(newErrors)
       toast.error(`Please fill in required fields: ${missingRequired.join(', ')}`)
       return
     }
@@ -276,6 +302,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -290,6 +317,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -305,6 +333,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             required={field.required}
             placeholder={`Select ${field.name}`}
             defaultInputFilterTags={field.input_filter_tags || []}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -324,6 +353,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
               occasionDate: Object.values(calendarEventValues)[0]?.date || new Date().toISOString().split('T')[0],
               language: 'en', // TODO: Detect from event or use parish default
             }}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -338,6 +368,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onShowPickerChange={(open) => setPickerOpen(prev => ({ ...prev, [field.property_name]: open }))}
             required={field.required}
             placeholder={`Select ${field.name}`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -359,6 +390,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onValueChange={(itemId) => updateListItemValue(field.property_name, itemId)}
             required={field.required}
             placeholder={`Select ${field.name}`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -369,11 +401,13 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             label={field.name}
             value={typeof value === 'string' ? value : null}
             onValueChange={(documentId, doc) => {
+              clearFieldError(field.property_name)
               setPickerValues(prev => ({ ...prev, [field.property_name]: doc }))
               setFieldValues(prev => ({ ...prev, [field.property_name]: documentId }))
             }}
             required={field.required}
             placeholder={`Upload ${field.name}`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -381,6 +415,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         // Calendar event inputs render date, time, and location together
         // In edit mode, show display view with modal for separate save
         const existingCalendarEvent = event?.calendar_events?.find(ce => ce.input_field_definition_id === field.id)
+        // Hide all-day option for special liturgy events (weddings, funerals, baptisms, etc.)
+        const isSpecialLiturgy = eventType.system_type === 'special-liturgy'
         return (
           <CalendarEventFieldView
             key={field.id}
@@ -392,6 +428,8 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             calendarEventId={existingCalendarEvent?.id}
             masterEventId={event?.id}
             isEditing={isEditing}
+            hideAllDay={isSpecialLiturgy}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -405,6 +443,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onValueChange={(date) => updateFieldValue(field.property_name, date ? toLocalDateString(date) : '')}
             required={field.required}
             closeOnSelect
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -417,6 +456,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             value={typeof value === 'string' ? value : ''}
             onChange={(time) => updateFieldValue(field.property_name, time)}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -447,6 +487,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             required={field.required}
             rows={4}
             placeholder={`Enter ${field.name.toLowerCase()}...`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -461,6 +502,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onChange={(val) => updateFieldValue(field.property_name, val)}
             required={field.required}
             placeholder={`Enter ${field.name.toLowerCase()}`}
+            error={fieldErrors[field.property_name]}
           />
         )
 
@@ -481,6 +523,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
             onChange={(val) => updateFieldValue(field.property_name, val)}
             required={field.required}
             placeholder={`Enter ${field.name.toLowerCase()}`}
+            error={fieldErrors[field.property_name]}
           />
         )
     }

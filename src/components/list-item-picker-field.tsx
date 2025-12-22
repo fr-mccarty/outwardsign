@@ -17,6 +17,7 @@ interface ListItemPickerFieldProps {
   placeholder?: string
   required?: boolean
   testId?: string
+  error?: string // Validation error message
 }
 
 export function ListItemPickerField({
@@ -28,6 +29,7 @@ export function ListItemPickerField({
   placeholder = 'Select an option',
   required = false,
   testId,
+  error,
 }: ListItemPickerFieldProps) {
   const [items, setItems] = useState<CustomListItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -79,7 +81,7 @@ export function ListItemPickerField({
         <SelectTrigger
           id={labelId}
           data-testid={`${labelId}-trigger`}
-          className="w-full"
+          className={`w-full ${error ? 'border-destructive dark:border-destructive' : ''}`}
         >
           {loading ? (
             <div className="flex items-center gap-2">
@@ -113,6 +115,10 @@ export function ListItemPickerField({
 
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
       )}
     </div>
   )

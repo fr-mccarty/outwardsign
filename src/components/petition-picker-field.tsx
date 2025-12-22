@@ -39,6 +39,7 @@ interface PetitionPickerFieldProps {
     keyPersonNames?: string[]
     language: LiturgicalLanguage
   }
+  error?: string // Validation error message
 }
 
 export function PetitionPickerField({
@@ -48,6 +49,7 @@ export function PetitionPickerField({
   description,
   required = false,
   eventContext,
+  error,
 }: PetitionPickerFieldProps) {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const [showEditorDialog, setShowEditorDialog] = useState(false)
@@ -162,7 +164,7 @@ export function PetitionPickerField({
 
       {/* Empty State - Show creation options */}
       {!value && (
-        <div className="border border-dashed border-border rounded-lg p-6 bg-muted/10">
+        <div className={`border border-dashed rounded-lg p-6 bg-muted/10 ${error ? 'border-destructive dark:border-destructive' : 'border-border'}`}>
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground mb-2">Create petitions for this event:</p>
 
@@ -201,7 +203,7 @@ export function PetitionPickerField({
 
       {/* Populated State - Show petition preview */}
       {value && (
-        <div className="border border-border rounded-lg bg-background">
+        <div className={`border rounded-lg bg-background ${error ? 'border-destructive dark:border-destructive' : 'border-border'}`}>
           <div className="p-4 space-y-3">
             {/* Petition Title */}
             <div className="flex items-start justify-between gap-2">
@@ -248,6 +250,10 @@ export function PetitionPickerField({
             </div>
           </div>
         </div>
+      )}
+
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
       )}
 
       {/* Template Picker Dialog */}

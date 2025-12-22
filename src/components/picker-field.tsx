@@ -142,7 +142,7 @@ export function PickerField<T>({
           onClick={() => onShowPickerChange(true)}
           className={cn(
             "w-full justify-start",
-            error && "border-destructive"
+            error && "border-destructive dark:border-destructive"
           )}
           data-testid={`${labelId}-trigger`}
         >

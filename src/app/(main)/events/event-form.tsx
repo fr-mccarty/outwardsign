@@ -24,6 +24,7 @@ import { ListItemPickerField } from "@/components/list-item-picker-field"
 import { DocumentPickerField } from "@/components/document-picker-field"
 import { DatePickerField } from "@/components/date-picker-field"
 import { TimePickerField } from "@/components/time-picker-field"
+import { CalendarEventField } from "@/components/calendar-event-field"
 import { EventTypeSelectField } from "@/components/event-type-select-field"
 import { FormSpacer } from "@/components/form-spacer"
 import { getStatusLabel } from "@/lib/content-builders/shared/helpers"
@@ -99,6 +100,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   // Track which picker is currently open (by field name)
   const [openPicker, setOpenPicker] = useState<string | null>(null)
 
+  // Track field validation errors
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
   // Track if we've initialized to prevent infinite loops
   const initializedEventIdRef = useRef<string | null>(null)
 
@@ -158,16 +162,34 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
 
   // Form submission handler
   const onSubmit = async (data: EventFormData) => {
+    // Clear previous errors
+    setFieldErrors({})
+
     // Validate required custom fields if event type is selected
     if (eventTypeId && inputFieldDefinitions.length > 0) {
       const missingRequired: string[] = []
+      const newErrors: Record<string, string> = {}
+
       inputFieldDefinitions.forEach((field) => {
-        if (field.required && !fieldValues[field.name]) {
+        if (!field.required) return
+
+        const value = fieldValues[field.property_name]
+
+        // Calendar event fields need special validation
+        if (field.type === 'calendar_event') {
+          const calValue = value as { start_date?: string; start_time?: string } | undefined
+          if (!calValue?.start_date || !calValue?.start_time) {
+            missingRequired.push(field.name)
+            newErrors[field.property_name] = 'This field is required'
+          }
+        } else if (!value) {
           missingRequired.push(field.name)
+          newErrors[field.property_name] = 'This field is required'
         }
       })
 
       if (missingRequired.length > 0) {
+        setFieldErrors(newErrors)
         toast.error(`Please fill in required fields: ${missingRequired.join(', ')}`)
         return
       }
@@ -180,10 +202,61 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
     }
 
     try {
-      // Include event_type_id and field_values in submission data
+      // Separate calendar event fields from regular field values
+      const calendarEventFields = inputFieldDefinitions.filter(f => f.type === 'calendar_event')
+      const nonCalendarFieldValues: Record<string, any> = {}
+      const calendarEvents: Array<{
+        input_field_definition_id: string
+        start_datetime: string
+        end_datetime?: string | null
+        location_id?: string | null
+        show_on_calendar: boolean
+        is_cancelled: boolean
+        is_all_day: boolean
+      }> = []
+
+      // Build field_values without calendar event data
+      for (const [key, value] of Object.entries(fieldValues)) {
+        const isCalendarEventField = calendarEventFields.some(f => f.property_name === key)
+        if (!isCalendarEventField) {
+          nonCalendarFieldValues[key] = value
+        }
+      }
+
+      // Build calendar_events array
+      for (const field of calendarEventFields) {
+        const calValue = fieldValues[field.property_name] as {
+          start_date?: string
+          start_time?: string
+          end_time?: string
+          location_id?: string | null
+        } | undefined
+
+        if (calValue?.start_date && calValue?.start_time) {
+          // Build ISO datetime from date and time
+          const startDatetime = new Date(`${calValue.start_date}T${calValue.start_time}`).toISOString()
+          let endDatetime: string | null = null
+          if (calValue.end_time) {
+            endDatetime = new Date(`${calValue.start_date}T${calValue.end_time}`).toISOString()
+          }
+
+          calendarEvents.push({
+            input_field_definition_id: field.id,
+            start_datetime: startDatetime,
+            end_datetime: endDatetime,
+            location_id: calValue.location_id || null,
+            show_on_calendar: field.is_primary, // Primary field shows on calendar
+            is_cancelled: false,
+            is_all_day: false
+          })
+        }
+      }
+
+      // Build submission data
       const submitData = {
         ...data,
-        field_values: fieldValues
+        field_values: nonCalendarFieldValues,
+        calendar_events: calendarEvents
       }
 
       if (isEditing) {
@@ -202,8 +275,9 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
   }
 
   // Render dynamic field based on type
+  // Note: field.name is the display label, field.property_name is the key for field_values
   const renderField = (field: InputFieldDefinition) => {
-    const value = fieldValues[field.name]
+    const value = fieldValues[field.property_name]
 
     switch (field.type) {
       case 'person':
@@ -211,11 +285,21 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <PersonPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Person | null}
-            onValueChange={(person) => updatePickerValue(field.name, person)}
-            showPicker={openPicker === field.name}
-            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
+            value={pickerValues[field.property_name] as Person | null}
+            onValueChange={(person) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              updatePickerValue(field.property_name, person)
+            }}
+            showPicker={openPicker === field.property_name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.property_name : null)}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'location':
@@ -223,11 +307,21 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <LocationPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Location | null}
-            onValueChange={(location) => updatePickerValue(field.name, location)}
-            showPicker={openPicker === field.name}
-            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
+            value={pickerValues[field.property_name] as Location | null}
+            onValueChange={(location) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              updatePickerValue(field.property_name, location)
+            }}
+            showPicker={openPicker === field.property_name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.property_name : null)}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'content':
@@ -235,12 +329,22 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <ContentPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as ContentWithTags | null}
-            onValueChange={(content) => updatePickerValue(field.name, content)}
-            showPicker={openPicker === field.name}
-            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
+            value={pickerValues[field.property_name] as ContentWithTags | null}
+            onValueChange={(content) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              updatePickerValue(field.property_name, content)
+            }}
+            showPicker={openPicker === field.property_name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.property_name : null)}
             required={field.required}
             defaultInputFilterTags={field.input_filter_tags || []}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'petition':
@@ -248,11 +352,21 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <PetitionPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Petition | null}
-            onValueChange={(petition) => updatePickerValue(field.name, petition)}
-            showPicker={openPicker === field.name}
-            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
+            value={pickerValues[field.property_name] as Petition | null}
+            onValueChange={(petition) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              updatePickerValue(field.property_name, petition)
+            }}
+            showPicker={openPicker === field.property_name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.property_name : null)}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'group':
@@ -260,22 +374,42 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
           <GroupPickerField
             key={field.id}
             label={field.name}
-            value={pickerValues[field.name] as Group | null}
-            onValueChange={(group) => updatePickerValue(field.name, group)}
-            showPicker={openPicker === field.name}
-            onShowPickerChange={(show) => setOpenPicker(show ? field.name : null)}
+            value={pickerValues[field.property_name] as Group | null}
+            onValueChange={(group) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              updatePickerValue(field.property_name, group)
+            }}
+            showPicker={openPicker === field.property_name}
+            onShowPickerChange={(show) => setOpenPicker(show ? field.property_name : null)}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'document':
-        const documentValue = pickerValues[field.name] as Document | null
+        const documentValue = pickerValues[field.property_name] as Document | null
         return (
           <DocumentPickerField
             key={field.id}
             label={field.name}
             value={documentValue?.id || null}
-            onValueChange={(documentId, document) => updatePickerValue(field.name, document)}
+            onValueChange={(documentId, document) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              updatePickerValue(field.property_name, document)
+            }}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'list_item':
@@ -285,31 +419,61 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             label={field.name}
             listId={field.list_id!}
             value={value}
-            onValueChange={(itemId) => setFieldValues(prev => ({ ...prev, [field.name]: itemId }))}
+            onValueChange={(itemId) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              setFieldValues(prev => ({ ...prev, [field.property_name]: itemId }))
+            }}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'text':
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             label={field.name}
             value={value || ''}
-            onChange={(val) => setFieldValues(prev => ({ ...prev, [field.name]: val }))}
+            onChange={(val) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              setFieldValues(prev => ({ ...prev, [field.property_name]: val }))
+            }}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'rich_text':
         return (
           <FormInput
             key={field.id}
-            id={field.name}
+            id={field.property_name}
             inputType="textarea"
             label={field.name}
             value={value || ''}
-            onChange={(val) => setFieldValues(prev => ({ ...prev, [field.name]: val }))}
+            onChange={(val) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              setFieldValues(prev => ({ ...prev, [field.property_name]: val }))
+            }}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'date':
@@ -318,8 +482,18 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             key={field.id}
             label={field.name}
             value={value ? new Date(value) : undefined}
-            onValueChange={(date) => setFieldValues(prev => ({ ...prev, [field.name]: date ? toLocalDateString(date) : null }))}
+            onValueChange={(date) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              setFieldValues(prev => ({ ...prev, [field.property_name]: date ? toLocalDateString(date) : null }))
+            }}
             required={field.required}
+            error={fieldErrors[field.property_name]}
           />
         )
       case 'time':
@@ -328,8 +502,59 @@ export function EventForm({ event, formId, onLoadingChange, initialLiturgicalEve
             key={field.id}
             label={field.name}
             value={value || ''}
-            onChange={(time) => setFieldValues(prev => ({ ...prev, [field.name]: time }))}
+            onChange={(time) => {
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              setFieldValues(prev => ({ ...prev, [field.property_name]: time }))
+            }}
             required={field.required}
+            error={fieldErrors[field.property_name]}
+          />
+        )
+      case 'calendar_event':
+        // Calendar event fields store composite values: { start_date, start_time, location_id, location }
+        const calendarEventValue = value || {}
+        return (
+          <CalendarEventField
+            key={field.id}
+            label={field.name}
+            value={{
+              start_date: calendarEventValue.start_date ? new Date(calendarEventValue.start_date) : undefined,
+              start_time: calendarEventValue.start_time || undefined,
+              end_time: calendarEventValue.end_time || undefined,
+              location_id: calendarEventValue.location_id || null,
+              location: pickerValues[`${field.property_name}_location`] as Location | null,
+            }}
+            onValueChange={(newValue) => {
+              // Clear error when user starts filling in the field
+              if (fieldErrors[field.property_name]) {
+                setFieldErrors(prev => {
+                  const next = { ...prev }
+                  delete next[field.property_name]
+                  return next
+                })
+              }
+              // Store the composite value in fieldValues using property_name as key
+              setFieldValues(prev => ({
+                ...prev,
+                [field.property_name]: {
+                  start_date: newValue.start_date ? toLocalDateString(newValue.start_date) : null,
+                  start_time: newValue.start_time || null,
+                  end_time: newValue.end_time || null,
+                  location_id: newValue.location_id || null,
+                }
+              }))
+              // Store location object separately for display (convert undefined to null)
+              setPickerValues(prev => ({ ...prev, [`${field.property_name}_location`]: newValue.location ?? null }))
+            }}
+            required={field.required}
+            showEndTime={false}
+            error={fieldErrors[field.property_name]}
           />
         )
       default:
