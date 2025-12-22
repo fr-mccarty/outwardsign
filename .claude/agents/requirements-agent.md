@@ -110,18 +110,28 @@ For every feature request, you MUST analyze and document:
 - What files need to be created?
 - What existing files need modification?
 
-**Documentation Impact:**
+**Project Documentation Impact:**
 - Will CLAUDE.md need updates?
 - Will any docs/ files need updates?
+
+**User Documentation Impact:**
 - Are there user-facing documentation changes needed?
+- If yes, what pages need to be added/updated in `/src/app/documentation/content/`?
+- Remember: User documentation requires bilingual content (English & Spanish)
 
 **Testing Requirements:**
-- What new tests are needed?
+- What new tests are needed (unit tests and/or E2E tests)?
 - Will existing tests be affected?
 - What test scenarios should be covered?
+- **IMPORTANT:** Discuss with the user whether tests should be created for this feature. Not all features require new tests—consult before assuming.
+
+**Home Page Impact:**
+- Does the home page need updates to reflect this feature?
+- Are there new navigation items, widgets, or dashboard elements needed?
 
 **README Impact:**
-- Does the README need updates?
+- Does the README need updates? (Only for major architectural or feature changes)
+- Major changes include: new modules, significant workflow changes, new integrations, or changes to project setup
 
 **Code Reuse & Abstraction:**
 - Are we following the Rule of Three?
@@ -209,14 +219,27 @@ At the end of your analysis, you MUST:
 ```
 
 ### Testing Requirements
+**User consultation needed:** [Yes/No - discuss with user whether tests are needed]
 - Unit tests for [...]
-- Integration tests for [...]
 - E2E tests for [...]
 
-### Documentation Updates
+### Project Documentation Updates
 - MODULE_REGISTRY.md: [what to add]
 - COMPONENT_REGISTRY.md: [what to add]
-- Other: [...]
+- Other docs/: [...]
+
+### User Documentation Updates
+- Needed: [Yes/No]
+- Pages to add/update in `/src/app/documentation/content/`: [...]
+- Bilingual content required (English & Spanish)
+
+### Home Page Impact
+- Needed: [Yes/No]
+- Changes: [navigation items, widgets, dashboard elements, etc.]
+
+### README Updates
+- Needed: [Yes/No - only for major architectural or feature changes]
+- Changes: [...]
 
 ### Security Considerations
 - Authentication: [...]
