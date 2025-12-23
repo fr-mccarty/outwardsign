@@ -55,16 +55,16 @@ export function SettingsHubClient() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <Tag className="h-5 w-5 text-primary" />
-            {t('settings.eventTypes')}
+            {t('settings.specialLiturgies.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            {t('settings.eventTypesDescription')}
+            {t('settings.specialLiturgies.description')}
           </p>
           <Button asChild variant="outline" className="w-full justify-between">
-            <Link href="/settings/event-types">
-              {t('settings.manageEventTypes')}
+            <Link href="/settings/special-liturgies">
+              {t('settings.manageSpecialLiturgies')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>

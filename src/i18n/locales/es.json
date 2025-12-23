@@ -277,7 +277,8 @@
     "errorDeleting": "No se pudo eliminar el evento. Por favor, intenta nuevamente.",
     "errorLoading": "No se pudieron cargar más eventos",
     "view": "Ver",
-    "openMenu": "Abrir menú"
+    "openMenu": "Abrir menú",
+    "createTitle": "Crear Tipo de Evento"
   },
   "groups": {
     "title": "Grupos",
@@ -523,6 +524,11 @@
       "description": "Configura tipos de eventos para actividades parroquiales como Estudio Bíblico, Recaudación de Fondos y Educación Religiosa."
     },
     "manageEvents": "Administrar Eventos",
+    "specialLiturgies": {
+      "title": "Liturgias Especiales",
+      "description": "Configura celebraciones sacramentales como Bodas, Bautismos, Funerales y Quinceañeras."
+    },
+    "manageSpecialLiturgies": "Administrar Liturgias Especiales",
     "customLists": "Listas Personalizadas",
     "customListsDescription": "Administra listas personalizadas para opciones de campos de eventos como canciones, lecturas o ubicaciones.",
     "manageCustomLists": "Administrar Listas Personalizadas",

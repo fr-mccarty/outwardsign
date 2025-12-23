@@ -278,7 +278,8 @@
     "errorDeleting": "Failed to delete event. Please try again.",
     "errorLoading": "Failed to load more events",
     "view": "View",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "createTitle": "Create Event Type"
   },
   "groups": {
     "title": "Groups",
@@ -521,6 +522,11 @@
       "description": "Configure event types for parish activities like Bible Study, Fundraisers, and Religious Education."
     },
     "manageEvents": "Manage Events",
+    "specialLiturgies": {
+      "title": "Special Liturgies",
+      "description": "Configure sacramental celebrations like Weddings, Baptisms, Funerals, and Quinceañeras."
+    },
+    "manageSpecialLiturgies": "Manage Special Liturgies",
     "eventTypes": "Event Types",
     "eventTypesDescription": "Define custom event categories for parish activities. Each event type becomes a template with its own fields and settings.",
     "manageEventTypes": "Manage Event Types",

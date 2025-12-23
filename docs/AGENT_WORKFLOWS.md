@@ -56,6 +56,7 @@ The Outward Sign project uses specialized agents to handle different aspects of 
 | **qa-specialist** | N/A | Performance/security | As-needed |
 | **ui-agent** | N/A (read-only) | Visual styling audits | As-needed |
 | **ux-agent** | N/A (read-only) | User understanding audits | As-needed |
+| **wisdom-agent** | N/A (read-only) | Perspective and encouragement | As-needed |
 
 ---
 
@@ -81,6 +82,7 @@ Each agent "owns" a specific folder where it creates and manages files:
 - qa-specialist (audits quality)
 - ui-agent (audits visual styling)
 - ux-agent (audits user understanding)
+- wisdom-agent (provides perspective and encouragement)
 
 ---
 
@@ -131,8 +133,11 @@ USER REQUEST
     ├─ "UI looks inconsistent/styling issues"
     │   └─ ui-agent → developer-agent (fix) → code-review-agent
     │
-    └─ "Labels/navigation/descriptions unclear"
-        └─ ux-agent → developer-agent (fix) → code-review-agent
+    ├─ "Labels/navigation/descriptions unclear"
+    │   └─ ux-agent → developer-agent (fix) → code-review-agent
+    │
+    └─ "I'm stuck/overwhelmed/need perspective"
+        └─ wisdom-agent (conversational support, no code changes)
 ```
 
 ---

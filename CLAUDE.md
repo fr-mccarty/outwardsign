@@ -65,6 +65,7 @@ This project uses specialized AI agents for different development tasks. Using t
 | **qa-specialist** | N/A | Non-functional testing | Performance, accessibility, security audits |
 | **ui-agent** | N/A (read-only) | UI visual quality audits | Visual consistency, styling patterns, layout review |
 | **ux-agent** | N/A (read-only) | UX understanding audits | Language clarity, labels, descriptions, navigation, ordering |
+| **wisdom-agent** | N/A (read-only) | Perspective and encouragement | Feeling stuck, overwhelmed, need advice or grounding |
 
 ### Quick Decision Guide
 
@@ -79,6 +80,7 @@ This project uses specialized AI agents for different development tasks. Using t
 - **Create user guides?** → user-documentation-writer
 - **UI review?** → ui-agent (visual styling, spacing, colors, layout patterns)
 - **UX review?** → ux-agent (language clarity, labels, descriptions, navigation, ordering)
+- **Stuck or overwhelmed?** → wisdom-agent (step back, get perspective, find clarity)
 
 **Rule of Thumb:** Use the most specialized agent for each task. See [AGENT_WORKFLOWS.md](./docs/AGENT_WORKFLOWS.md) for detailed workflows and hand-off patterns.
 
@@ -94,7 +96,7 @@ Each agent owns a specific folder where it creates and manages files:
 - **`/src/app/documentation/content/`** - user-documentation-writer creates bilingual end-user guides
 - **`/releases/`** - release-agent creates deployment logs and release notes (audit trail)
 
-**Read-only agents** (no folder ownership): test-runner-debugger, code-review-agent, explorer-agent, refactor-agent, qa-specialist, ui-agent, ux-agent
+**Read-only agents** (no folder ownership): test-runner-debugger, code-review-agent, explorer-agent, refactor-agent, qa-specialist, ui-agent, ux-agent, wisdom-agent
 
 ---
 

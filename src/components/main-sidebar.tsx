@@ -112,77 +112,47 @@ export function MainSidebar({ eventTypes }: MainSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
-        {/* Masses - Unified Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{SYSTEM_TYPE_METADATA.mass.name_en}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="OurMasses">
-                <SidebarMenuButton asChild isActive={pathname === '/masses'} tooltip={t('nav.ourMasses')}>
-                  <Link href="/masses" onClick={handleLinkClick}>
-                    <MassIcon />
-                    <span>{t('nav.ourMasses')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <CollapsibleNavSection
+                name={SYSTEM_TYPE_METADATA.mass.name_en}
+                icon={MassIcon}
+                items={[
+                  {
+                    title: t('nav.ourMasses'),
+                    url: "/masses",
+                    icon: MassIcon,
+                  },
+                  {
+                    title: t('nav.createMass'),
+                    url: "/masses/create",
+                    icon: Plus,
+                  },
+                ]}
+                defaultOpen={false}
+              />
 
-              <SidebarMenuItem key="CreateMass">
-                <SidebarMenuButton asChild isActive={pathname === '/masses/create'} tooltip={t('nav.createMass')}>
-                  <Link href="/masses/create" onClick={handleLinkClick}>
-                    <Plus />
-                    <span>{t('nav.createMass')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* Schedule Masses temporarily hidden - feature in development */}
-              {/* <SidebarMenuItem key="ScheduleMasses">
-                <SidebarMenuButton asChild tooltip={t('nav.scheduleMasses')}>
-                  <Link href="/masses/schedule" onClick={handleLinkClick}>
-                    <CalendarDays />
-                    <span>{t('nav.scheduleMasses')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem> */}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Mass Intentions - Moved to be adjacent to Masses */}
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.massIntentions')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="OurMassIntentions">
-                <SidebarMenuButton asChild isActive={pathname === '/mass-intentions'} tooltip={t('nav.ourMassIntentions')}>
-                  <Link href="/mass-intentions" onClick={handleLinkClick}>
-                    <ScrollText />
-                    <span>{t('nav.ourMassIntentions')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem key="CreateMassIntention">
-                <SidebarMenuButton asChild isActive={pathname === '/mass-intentions/create'} tooltip={t('nav.createMassIntention')}>
-                  <Link href="/mass-intentions/create" onClick={handleLinkClick}>
-                    <Plus />
-                    <span>{t('nav.createMassIntention')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem key="MassIntentionsReport">
-                <SidebarMenuButton asChild isActive={pathname === '/mass-intentions/report'} tooltip={t('nav.viewReport')}>
-                  <Link href="/mass-intentions/report" onClick={handleLinkClick}>
-                    <ScrollText />
-                    <span>{t('nav.viewReport')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <CollapsibleNavSection
+                name={t('nav.massIntentions')}
+                icon={ScrollText}
+                items={[
+                  {
+                    title: t('nav.ourMassIntentions'),
+                    url: "/mass-intentions",
+                    icon: ScrollText,
+                  },
+                  {
+                    title: t('nav.createMassIntention'),
+                    url: "/mass-intentions/create",
+                    icon: Plus,
+                  },
+                  {
+                    title: t('nav.viewReport'),
+                    url: "/mass-intentions/report",
+                    icon: ScrollText,
+                  },
+                ]}
+                defaultOpen={false}
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
