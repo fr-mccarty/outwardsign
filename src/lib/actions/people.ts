@@ -1,13 +1,17 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { requireEditSharedResources } from '@/lib/auth/permissions'
-import { logError } from '@/lib/utils/console'
 import { Person } from '@/lib/types'
 import { createPersonSchema, updatePersonSchema, CreatePersonData, UpdatePersonData } from '@/lib/schemas/people'
+import {
+  createAuthenticatedClient,
+  createAuthenticatedClientWithPermissions,
+  handleSupabaseError,
+  isNotFoundError,
+  revalidateEntity,
+  buildPaginatedResult,
+  buildUpdateData,
+  type PaginatedResult,
+} from '@/lib/actions/server-action-utils'
 
 /**
  * Build robust search conditions for people queries
@@ -86,29 +90,17 @@ export interface PaginatedParams {
   massRoleId?: string // Filter by mass role membership
 }
 
-export interface PaginatedResult<T> {
-  items: T[]
-  totalCount: number
-  page: number
-  limit: number
-  totalPages: number
-}
-
 export async function getPeople(filters?: PersonFilterParams): Promise<Person[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
-  // Calculate pagination
   const offset = filters?.offset || 0
   const limit = filters?.limit || 50
 
   let query = supabase
     .from('people')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
-  // Apply search filter
   if (filters?.search) {
     const searchConditions = buildPeopleSearchConditions(filters.search)
     query = query.or(searchConditions.join(','))
@@ -133,23 +125,17 @@ export async function getPeople(filters?: PersonFilterParams): Promise<Person[]>
       query = query.order('last_name', { ascending: true }).order('first_name', { ascending: true })
   }
 
-  // Apply pagination
   query = query.range(offset, offset + limit - 1)
 
   const { data, error } = await query
 
-  if (error) {
-    logError('Error fetching people: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch people')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'people')
 
   return data || []
 }
 
 export async function getPeoplePaginated(params?: PaginatedParams): Promise<PaginatedResult<Person>> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 10
@@ -165,23 +151,21 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
         *,
         mass_role_members!inner(mass_role_id, active)
       `, { count: 'exact' })
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .eq('mass_role_members.mass_role_id', massRoleId)
       .eq('mass_role_members.active', true)
   } else {
     query = supabase
       .from('people')
       .select('*', { count: 'exact' })
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
   }
 
-  // Apply search filter
   if (search) {
     const searchConditions = buildPeopleSearchConditions(search)
     query = query.or(searchConditions.join(','))
   }
 
-  // Apply ordering, pagination
   query = query
     .order('last_name', { ascending: true })
     .order('first_name', { ascending: true })
@@ -189,67 +173,39 @@ export async function getPeoplePaginated(params?: PaginatedParams): Promise<Pagi
 
   const { data, error, count } = await query
 
-  if (error) {
-    logError('Error fetching paginated people: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch paginated people')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'paginated people')
 
-  const totalCount = count || 0
-  const totalPages = Math.ceil(totalCount / limit)
-  const page = Math.floor(offset / limit) + 1
-
-  return {
-    items: data || [],
-    totalCount,
-    page,
-    limit,
-    totalPages,
-  }
+  return buildPaginatedResult(data, count, offset, limit)
 }
 
 export async function getPerson(id: string): Promise<Person | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('people')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('id', id)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      return null // Not found
-    }
-    logError('Error fetching person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch person')
+    if (isNotFoundError(error)) return null
+    handleSupabaseError(error, 'fetching', 'person')
   }
 
   return data
 }
 
 export async function createPerson(data: CreatePersonData): Promise<Person> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
-
-  // Validate data
   const validatedData = createPersonSchema.parse(data)
 
   const { data: person, error } = await supabase
     .from('people')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         first_name: validatedData.first_name,
         first_name_pronunciation: validatedData.first_name_pronunciation || null,
         last_name: validatedData.last_name,
@@ -268,46 +224,18 @@ export async function createPerson(data: CreatePersonData): Promise<Person> {
     .select()
     .single()
 
-  if (error) {
-    logError('Error creating person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error(`Failed to create person: ${error.message}`)
-  }
+  if (error) handleSupabaseError(error, 'creating', 'person')
 
-  revalidatePath('/people')
-  revalidatePath(`/people/${person.id}`)
+  revalidateEntity('people', person.id)
 
   return person
 }
 
 export async function updatePerson(id: string, data: UpdatePersonData): Promise<Person> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClientWithPermissions()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
-
-  // Validate data
   const validatedData = updatePersonSchema.parse(data)
-
-  const updateData: Record<string, unknown> = {}
-  if (validatedData.first_name !== undefined) updateData.first_name = validatedData.first_name
-  if (validatedData.first_name_pronunciation !== undefined) updateData.first_name_pronunciation = validatedData.first_name_pronunciation || null
-  if (validatedData.last_name !== undefined) updateData.last_name = validatedData.last_name
-  if (validatedData.last_name_pronunciation !== undefined) updateData.last_name_pronunciation = validatedData.last_name_pronunciation || null
-  if (validatedData.phone_number !== undefined) updateData.phone_number = validatedData.phone_number || null
-  if (validatedData.email !== undefined) updateData.email = validatedData.email || null
-  if (validatedData.street !== undefined) updateData.street = validatedData.street || null
-  if (validatedData.city !== undefined) updateData.city = validatedData.city || null
-  if (validatedData.state !== undefined) updateData.state = validatedData.state || null
-  if (validatedData.zipcode !== undefined) updateData.zipcode = validatedData.zipcode || null
-  if (validatedData.sex !== undefined) updateData.sex = validatedData.sex || null
-  if (validatedData.note !== undefined) updateData.note = validatedData.note || null
-  if (validatedData.mass_times_template_item_ids !== undefined) updateData.mass_times_template_item_ids = validatedData.mass_times_template_item_ids || []
+  const updateData = buildUpdateData(validatedData)
 
   const { data: person, error } = await supabase
     .from('people')
@@ -316,39 +244,23 @@ export async function updatePerson(id: string, data: UpdatePersonData): Promise<
     .select()
     .single()
 
-  if (error) {
-    logError('Error updating person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to update person')
-  }
+  if (error) handleSupabaseError(error, 'updating', 'person')
 
-  revalidatePath('/people')
-  revalidatePath(`/people/${id}`)
+  revalidateEntity('people', id)
   return person
 }
 
 export async function deletePerson(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
+  const { supabase } = await createAuthenticatedClientWithPermissions()
 
   const { error } = await supabase
     .from('people')
     .delete()
     .eq('id', id)
 
-  if (error) {
-    logError('Error deleting person: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to delete person')
-  }
+  if (error) handleSupabaseError(error, 'deleting', 'person')
 
-  revalidatePath('/people')
+  revalidateEntity('people')
 }
 
 // ============================================================================
@@ -368,15 +280,12 @@ export interface PersonWithGroupRoles extends Person {
 }
 
 export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<PersonWithGroupRoles>> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 10
   const search = params?.search || ''
 
-  // Build base query with group_members relation
   let query = supabase
     .from('people')
     .select(`
@@ -391,15 +300,13 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
         )
       )
     `, { count: 'exact' })
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
-  // Apply search filter
   if (search) {
     const searchConditions = buildPeopleSearchConditions(search)
     query = query.or(searchConditions.join(','))
   }
 
-  // Apply ordering, pagination
   query = query
     .order('last_name', { ascending: true })
     .order('first_name', { ascending: true })
@@ -407,22 +314,9 @@ export async function getPeopleWithRolesPaginated(params?: PaginatedParams): Pro
 
   const { data, error, count } = await query
 
-  if (error) {
-    logError('Error fetching paginated people with roles: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch paginated people with roles')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'paginated people with roles')
 
-  const totalCount = count || 0
-  const totalPages = Math.ceil(totalCount / limit)
-  const page = Math.floor(offset / limit) + 1
-
-  return {
-    items: data || [],
-    totalCount,
-    page,
-    limit,
-    totalPages,
-  }
+  return buildPaginatedResult(data, count, offset, limit)
 }
 
 // ============================================================================
@@ -443,23 +337,14 @@ export async function uploadPersonAvatar(
   base64Data: string,
   fileExtension: string
 ): Promise<string> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
 
   // Verify the person belongs to the user's parish
   const { data: person, error: personError } = await supabase
     .from('people')
     .select('id, parish_id')
     .eq('id', personId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (personError || !person) {
@@ -469,26 +354,22 @@ export async function uploadPersonAvatar(
   // Delete existing avatar files to prevent orphaned files
   const { data: existingFiles } = await supabase.storage
     .from(AVATAR_BUCKET)
-    .list(selectedParishId, {
-      search: personId,
-    })
+    .list(parishId, { search: personId })
 
   if (existingFiles && existingFiles.length > 0) {
     const filesToDelete = existingFiles
       .filter(f => f.name.startsWith(personId))
-      .map(f => `${selectedParishId}/${f.name}`)
+      .map(f => `${parishId}/${f.name}`)
 
     if (filesToDelete.length > 0) {
       await supabase.storage.from(AVATAR_BUCKET).remove(filesToDelete)
     }
   }
 
-  // Convert base64 to buffer
-  // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
+  // Convert base64 to buffer (remove data URL prefix if present)
   const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, '')
   const buffer = Buffer.from(base64Clean, 'base64')
 
-  // Determine content type
   const contentTypeMap: Record<string, string> = {
     jpg: 'image/jpeg',
     jpeg: 'image/jpeg',
@@ -497,33 +378,21 @@ export async function uploadPersonAvatar(
   }
   const contentType = contentTypeMap[fileExtension.toLowerCase()] || 'image/jpeg'
 
-  // Upload file to storage
-  const storagePath = `${selectedParishId}/${personId}.${fileExtension.toLowerCase()}`
+  const storagePath = `${parishId}/${personId}.${fileExtension.toLowerCase()}`
   const { error: uploadError } = await supabase.storage
     .from(AVATAR_BUCKET)
-    .upload(storagePath, buffer, {
-      contentType,
-      upsert: true,
-    })
+    .upload(storagePath, buffer, { contentType, upsert: true })
 
-  if (uploadError) {
-    logError('Error uploading avatar: ' + (uploadError instanceof Error ? uploadError.message : JSON.stringify(uploadError)))
-    throw new Error('Failed to upload avatar')
-  }
+  if (uploadError) handleSupabaseError(uploadError, 'uploading', 'avatar')
 
-  // Update person record with storage path
   const { error: updateError } = await supabase
     .from('people')
     .update({ avatar_url: storagePath })
     .eq('id', personId)
 
-  if (updateError) {
-    logError('Error updating person avatar_url: ' + (updateError instanceof Error ? updateError.message : JSON.stringify(updateError)))
-    throw new Error('Failed to update person record')
-  }
+  if (updateError) handleSupabaseError(updateError, 'updating', 'person avatar_url')
 
-  revalidatePath('/people')
-  revalidatePath(`/people/${personId}`)
+  revalidateEntity('people', personId)
 
   return storagePath
 }
@@ -533,54 +402,32 @@ export async function uploadPersonAvatar(
  * @param personId - ID of the person
  */
 export async function deletePersonAvatar(personId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
 
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
-
-  // Fetch person to get current avatar_url
   const { data: person, error: fetchError } = await supabase
     .from('people')
     .select('id, avatar_url, parish_id')
     .eq('id', personId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (fetchError || !person) {
     throw new Error('Person not found or access denied')
   }
 
-  // Delete file from storage if it exists
+  // Delete file from storage if it exists (continue even if fails)
   if (person.avatar_url) {
-    const { error: deleteError } = await supabase.storage
-      .from(AVATAR_BUCKET)
-      .remove([person.avatar_url])
-
-    if (deleteError) {
-      logError('Error deleting avatar from storage: ' + (deleteError instanceof Error ? deleteError.message : JSON.stringify(deleteError)))
-      // Continue to update database even if storage delete fails
-    }
+    await supabase.storage.from(AVATAR_BUCKET).remove([person.avatar_url])
   }
 
-  // Update person record to clear avatar_url
   const { error: updateError } = await supabase
     .from('people')
     .update({ avatar_url: null })
     .eq('id', personId)
 
-  if (updateError) {
-    logError('Error clearing person avatar_url: ' + (updateError instanceof Error ? updateError.message : JSON.stringify(updateError)))
-    throw new Error('Failed to update person record')
-  }
+  if (updateError) handleSupabaseError(updateError, 'clearing', 'person avatar_url')
 
-  revalidatePath('/people')
-  revalidatePath(`/people/${personId}`)
+  revalidateEntity('people', personId)
 }
 
 /**
@@ -589,29 +436,21 @@ export async function deletePersonAvatar(personId: string): Promise<void> {
  * @returns Signed URL string with 1-hour expiry
  */
 export async function getPersonAvatarSignedUrl(storagePath: string): Promise<string | null> {
-  if (!storagePath) {
-    return null
-  }
+  if (!storagePath) return null
 
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
-  // Extract parish_id from storage path for security check
+  // Security check: only access avatars from current parish
   const pathParishId = storagePath.split('/')[0]
-  if (pathParishId !== selectedParishId) {
+  if (pathParishId !== parishId) {
     throw new Error('Access denied: Cannot access avatar from another parish')
   }
 
-  // Generate signed URL with 1-hour expiry
   const { data, error } = await supabase.storage
     .from(AVATAR_BUCKET)
-    .createSignedUrl(storagePath, 3600) // 1 hour in seconds
+    .createSignedUrl(storagePath, 3600)
 
-  if (error) {
-    logError('Error generating signed URL: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    return null
-  }
+  if (error) return null
 
   return data.signedUrl
 }
@@ -624,35 +463,21 @@ export async function getPersonAvatarSignedUrl(storagePath: string): Promise<str
 export async function getPersonAvatarSignedUrls(
   storagePaths: string[]
 ): Promise<Record<string, string>> {
-  if (!storagePaths || storagePaths.length === 0) {
-    return {}
-  }
+  if (!storagePaths || storagePaths.length === 0) return {}
 
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Filter paths to only include those from the current parish
-  const validPaths = storagePaths.filter(path => {
-    const pathParishId = path.split('/')[0]
-    return pathParishId === selectedParishId
-  })
+  const validPaths = storagePaths.filter(path => path.split('/')[0] === parishId)
 
-  if (validPaths.length === 0) {
-    return {}
-  }
+  if (validPaths.length === 0) return {}
 
-  // Generate signed URLs in batch
   const { data, error } = await supabase.storage
     .from(AVATAR_BUCKET)
-    .createSignedUrls(validPaths, 3600) // 1 hour in seconds
+    .createSignedUrls(validPaths, 3600)
 
-  if (error) {
-    logError('Error generating signed URLs: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    return {}
-  }
+  if (error) return {}
 
-  // Build result map
   const result: Record<string, string> = {}
   data?.forEach((item) => {
     if (item.signedUrl && item.path) {

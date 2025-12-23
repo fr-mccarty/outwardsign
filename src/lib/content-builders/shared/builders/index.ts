@@ -17,8 +17,5 @@ export { buildPsalmSection } from './psalm'
 // Petitions Builder
 export { buildPetitionsSection } from './petitions'
 
-// Announcements Builder
-export { buildAnnouncementsSection } from './announcements'
-
 // Ceremony Builder
 export { buildCeremonySection } from './ceremony'

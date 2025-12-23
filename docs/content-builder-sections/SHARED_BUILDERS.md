@@ -1,6 +1,6 @@
 # Shared Section Builders Reference
 
-> **Purpose:** Detailed documentation for the shared builder functions used to create strict liturgical sections (readings, psalm, petitions, announcements).
+> **Purpose:** Detailed documentation for the shared builder functions used to create strict liturgical sections (readings, psalm, petitions).
 
 ## Table of Contents
 
@@ -8,7 +8,6 @@
 2. [buildReadingSection()](#buildreadingsection)
 3. [buildPsalmSection()](#buildpsalmsection)
 4. [buildPetitionsSection()](#buildpetitionssection)
-5. [buildAnnouncementsSection()](#buildannouncem entssection)
 
 ---
 
@@ -24,7 +23,6 @@ All shared builders are located in: `src/lib/content-builders/shared/script-sect
 
 **When to Use:**
 - ALWAYS for strict sections: First Reading, Second Reading, Gospel, Psalm, Petitions
-- OPTIONALLY for announcements (can use shared builder or create custom)
 
 ---
 
@@ -283,7 +281,6 @@ function buildPetitionsSection(config: PetitionsSectionConfig): ContentSection |
 
 **Always sets:**
 - `pageBreakBefore: true` - Petitions separate from previous content
-- `pageBreakAfter: true` - Petitions separate from announcements (ignored if last section)
 
 ### Reader Determination Logic
 
@@ -341,53 +338,6 @@ const section = buildPetitionsSection({
 
 if (section) sections.push(section)
 ```
-
----
-
-## buildAnnouncementsSection()
-
-**Purpose:** Build simple announcements section
-
-### Signature
-
-```typescript
-function buildAnnouncementsSection(announcements?: string | null): ContentSection | null
-```
-
-### Parameters
-
-- `announcements` - Announcement text (can be multiline)
-
-### Returns
-
-- `ContentSection` - If announcements exist
-- `null` - If no announcements
-
-### Structure
-
-Creates a simple section with:
-1. Section title ("Announcements")
-2. Text element with full announcement content
-
-### Example
-
-```typescript
-import { buildAnnouncementsSection } from '@/lib/content-builders/shared/script-sections'
-
-const section = buildAnnouncementsSection(wedding.announcements)
-
-if (section) sections.push(section)
-```
-
-### When to Use Custom Implementation
-
-The shared builder is suitable for simple announcements. Create a custom implementation if you need:
-- Multiple subsections
-- Structured announcement content
-- Special formatting
-- Custom paragraph handling
-
-See [CUSTOM_SECTIONS.md](./CUSTOM_SECTIONS.md) for custom announcement patterns.
 
 ---
 

@@ -12,6 +12,4 @@ export { buildPsalmSection } from './builders/psalm'
 
 export { buildPetitionsSection } from './builders/petitions'
 
-export { buildAnnouncementsSection } from './builders/announcements'
-
 export { buildCeremonySection } from './builders/ceremony'

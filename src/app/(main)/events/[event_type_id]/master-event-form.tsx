@@ -231,7 +231,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
         calendarEventValues[field.property_name]?.time || null
       ),
       location_id: calendarEventValues[field.property_name]?.location_id || null,
-      is_primary: field.is_primary
+      show_on_calendar: field.is_primary
     }))
 
     // Ensure at least one calendar event exists
@@ -247,7 +247,7 @@ export function MasterEventForm({ event, eventType, formId, onLoadingChange, tem
           input_field_definition_id: primaryCalendarField.id,
           start_datetime: new Date().toISOString(),
           location_id: null,
-          is_primary: true
+          show_on_calendar: true
         })
       } else {
         // This shouldn't happen in practice - event types should have calendar event fields

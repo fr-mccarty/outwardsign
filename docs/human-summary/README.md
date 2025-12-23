@@ -40,6 +40,7 @@ If you find yourself typing `interface` or `SELECT * FROM`, you're in the wrong 
 | File | Topic |
 |------|-------|
 | [how-event-people-assignments-work.md](./how-event-people-assignments-work.md) | How people get assigned to events (the two-level pattern) |
+| [what-input-types-mean.md](./what-input-types-mean.md) | What each field type does when building event forms |
 
 ## Adding New Summaries
 
