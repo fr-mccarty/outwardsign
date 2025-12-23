@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { FormBottomActions } from '@/components/form-bottom-actions'
 import { PersonPickerField } from '@/components/person-picker-field'
 import { LocationPickerField } from '@/components/location-picker-field'
@@ -567,7 +567,7 @@ export function MassTimeForm({ massTime, items = [], formId, onLoadingChange }: 
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         title="Delete Mass Time"

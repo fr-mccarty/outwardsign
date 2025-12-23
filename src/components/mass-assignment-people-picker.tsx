@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { UserPlus, CheckCircle2, Settings, Users2, AlertTriangle } from 'lucide-react'
-import { getPeoplePaginated, createPerson, updatePerson, type PaginatedResult } from '@/lib/actions/people'
+import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
+import type { PaginatedResult } from '@/lib/actions/server-action-utils'
 import { getFamilyMembershipsForPeople, getFamilyBlackoutDatesForPeople } from '@/lib/actions/families'
 import {
   createMassRoleMember,

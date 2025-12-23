@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { MassRole } from '@/lib/types'
-import type { PaginatedParams, PaginatedResult } from './people'
+import type { PaginatedParams, PaginatedResult } from './server-action-utils'
 import { createMassRoleSchema, updateMassRoleSchema } from '@/lib/schemas/mass-roles'
 import type { CreateMassRoleData, UpdateMassRoleData } from '@/lib/schemas/mass-roles'
 import {

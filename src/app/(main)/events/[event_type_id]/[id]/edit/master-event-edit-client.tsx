@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { MasterEventForm } from '../../master-event-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import { Eye, Settings } from 'lucide-react'
 import type { EventTypeWithRelations, DynamicEventWithRelations } from '@/lib/types'
 
@@ -27,7 +27,7 @@ export function DynamicEventEditClient({
     <PageContainer
       title={title}
       description={description}
-      primaryAction={<ModuleSaveButton moduleName={eventType.name} isLoading={isLoading} isEditing={true} form={formId} />}
+      primaryAction={<SaveButton moduleName={eventType.name} isLoading={isLoading} isEditing={true} form={formId} />}
       additionalActions={[
         {
           type: 'action',

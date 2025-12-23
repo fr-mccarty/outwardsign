@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { MassRoleTemplateForm } from './mass-role-template-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import type { MassRoleTemplate } from '@/lib/actions/mass-role-templates'
 
 interface MassRoleTemplateFormWrapperProps {
@@ -26,7 +26,7 @@ export function MassRoleTemplateFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      primaryAction={<ModuleSaveButton moduleName="Mass Role Template" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      primaryAction={<SaveButton moduleName="Mass Role Template" isLoading={isLoading} isEditing={isEditing} form={formId} />}
       additionalActions={isEditing ? [
         {
           type: 'action',

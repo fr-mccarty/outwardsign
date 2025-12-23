@@ -40,7 +40,7 @@ import {
 } from '@/lib/actions/custom-list-items'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 
@@ -365,7 +365,7 @@ export function CustomListDetailClient({ customList: initialCustomList }: Custom
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteItem}

@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { GroupForm } from './group-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import type { GroupWithMembers } from '@/lib/actions/groups'
 
 interface GroupFormWrapperProps {
@@ -25,7 +25,7 @@ export function GroupFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      primaryAction={<ModuleSaveButton moduleName="Group" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      primaryAction={<SaveButton moduleName="Group" isLoading={isLoading} isEditing={isEditing} form={formId} />}
       additionalActions={isEditing ? [
         {
           type: 'action',

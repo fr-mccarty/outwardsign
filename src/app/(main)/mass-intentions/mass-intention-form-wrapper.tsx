@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { MassIntentionForm } from './mass-intention-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import type { MassIntentionWithRelations } from '@/lib/actions/mass-intentions'
 
 interface MassIntentionFormWrapperProps {
@@ -25,7 +25,7 @@ export function MassIntentionFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      primaryAction={<ModuleSaveButton moduleName="Mass Intention" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      primaryAction={<SaveButton moduleName="Mass Intention" isLoading={isLoading} isEditing={isEditing} form={formId} />}
       additionalActions={isEditing ? [
         {
           type: 'action',

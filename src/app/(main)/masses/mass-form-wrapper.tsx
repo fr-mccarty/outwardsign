@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { MassForm } from './mass-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import type { MassWithRelations } from '@/lib/schemas/masses'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
@@ -28,7 +28,7 @@ export function MassFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      primaryAction={<ModuleSaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      primaryAction={<SaveButton moduleName="Mass" isLoading={isLoading} isEditing={isEditing} form={formId} />}
       additionalActions={isEditing ? [
         {
           type: 'action',

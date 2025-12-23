@@ -29,7 +29,7 @@ import { createParishInvitation, revokeParishInvitation, resendParishInvitation,
 import { Parish } from '@/lib/types'
 import { USER_PARISH_ROLE_LABELS, USER_PARISH_ROLE_VALUES, type UserParishRoleType } from '@/lib/constants'
 import { toast } from 'sonner'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 interface ParishUser {
   user_id: string
@@ -467,12 +467,12 @@ export function ParishUsersSettingsClient({
       </Dialog>
 
       {/* Remove User Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={removeDialogOpen}
         onOpenChange={setRemoveDialogOpen}
         title="Remove Parish User"
         itemName={userToRemove?.email}
-        actionLabel="Remove"
+        confirmLabel="Remove"
         onConfirm={handleConfirmRemove}
       />
     </>

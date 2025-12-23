@@ -1,7 +1,7 @@
 'use client'
 
-import { ModuleSaveButton } from '@/components/module-save-button'
-import { ModuleCancelButton } from '@/components/module-cancel-button'
+import { SaveButton } from '@/components/save-button'
+import { CancelButton } from '@/components/cancel-button'
 
 interface FormBottomActionsProps {
   isEditing: boolean
@@ -36,8 +36,8 @@ export function FormBottomActions({
   // Both create and edit modes: Show Save + Cancel
   return (
     <div className="flex gap-4 justify-end">
-      <ModuleCancelButton href={cancelHref} disabled={isLoading} />
-      <ModuleSaveButton moduleName={moduleName} isLoading={isLoading} isEditing={isEditing} />
+      <CancelButton href={cancelHref} disabled={isLoading} />
+      <SaveButton moduleName={moduleName} isLoading={isLoading} isEditing={isEditing} />
     </div>
   )
 }

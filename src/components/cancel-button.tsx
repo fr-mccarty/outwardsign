@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { useTranslations } from 'next-intl'
 
 interface CancelButtonProps extends Omit<React.ComponentProps<typeof Button>, 'asChild' | 'type'> {
   href?: string
@@ -13,15 +14,35 @@ interface CancelButtonProps extends Omit<React.ComponentProps<typeof Button>, 'a
   showIcon?: boolean
 }
 
+/**
+ * CancelButton Component
+ *
+ * Unified cancel button for all forms and dialogs.
+ *
+ * Usage:
+ * - Navigation: <CancelButton href="/weddings" />
+ * - Dialog: <CancelButton onClick={() => setOpen(false)} />
+ * - Custom: <CancelButton href="/home">Go Back</CancelButton>
+ */
 export function CancelButton({
   href,
   onClick,
-  children = "Cancel",
+  children,
   showIcon = false,
   className,
   variant = "outline",
+  disabled,
   ...props
 }: CancelButtonProps) {
+  const t = useTranslations('components.buttons')
+
+  const buttonContent = (
+    <>
+      {showIcon && <X className="h-4 w-4 mr-2" />}
+      {children || t('cancel')}
+    </>
+  )
+
   // If onClick is provided, use button with onClick handler (for dialogs)
   if (onClick) {
     return (
@@ -29,11 +50,11 @@ export function CancelButton({
         type="button"
         variant={variant}
         onClick={onClick}
+        disabled={disabled}
         className={cn(className)}
         {...props}
       >
-        {showIcon && <X className="h-4 w-4 mr-2" />}
-        {children}
+        {buttonContent}
       </Button>
     )
   }
@@ -48,13 +69,11 @@ export function CancelButton({
       type="button"
       variant={variant}
       asChild
+      disabled={disabled}
       className={cn(className)}
       {...props}
     >
-      <Link href={href}>
-        {showIcon && <X className="h-4 w-4 mr-2" />}
-        {children}
-      </Link>
+      <Link href={href}>{buttonContent}</Link>
     </Button>
   )
 }

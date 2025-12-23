@@ -46,6 +46,13 @@ export interface PaginationParams {
   limit?: number
 }
 
+// Common pagination params with search - used by most paginated endpoints
+export interface PaginatedParams {
+  offset?: number
+  limit?: number
+  search?: string
+}
+
 // ============================================================================
 // AUTHENTICATION HELPERS
 // ============================================================================

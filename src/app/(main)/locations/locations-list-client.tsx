@@ -11,7 +11,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
@@ -286,7 +286,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
@@ -296,7 +296,7 @@ export function LocationsListClient({ initialData, stats, initialHasMore }: Loca
             ? t('confirmDelete', { locationName: locationToDelete.name })
             : t('confirmDeleteGeneric')
         }
-        actionLabel={tCommon('delete')}
+        confirmLabel={tCommon('delete')}
       />
     </div>
   )

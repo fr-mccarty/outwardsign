@@ -1,7 +1,7 @@
 'use server'
 
 import { Event, Location, Person, EventType } from '@/lib/types'
-import type { PaginatedParams, PaginatedResult } from './people'
+import type { PaginatedParams, PaginatedResult } from './server-action-utils'
 import { createEventSchema, updateEventSchema, type CreateEventData, type UpdateEventData } from '@/lib/schemas/events'
 import { RelatedEventType, LiturgicalLanguage } from '@/lib/constants'
 import {

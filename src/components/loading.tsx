@@ -3,6 +3,8 @@
  *
  * **Use Cases:**
  * - Route-level loading states → Use `variant="route"`
+ * - View page loading → Use `variant="view"` (two-column layout with side panel)
+ * - Edit/Create page loading → Use `variant="edit"` (form cards with header actions)
  * - Client component loading states (dialogs, modals) → Use `variant="spinner"`
  * - Inline loading indicators → Use `variant="spinner"` with `centered={false}`
  * - Skeleton states → Use `variant="skeleton-cards"`, `"skeleton-list"`, or `"skeleton-table"`
@@ -10,6 +12,8 @@
  * **Variants:**
  * - `spinner` - Default spinning loader with optional message
  * - `route` - Full page layout skeleton (search bar + card grid) for route-level loading
+ * - `view` - View page skeleton with two-column layout and side panel
+ * - `edit` - Edit/Create page skeleton with form cards and header actions
  * - `skeleton-cards` - Card grid skeleton
  * - `skeleton-list` - List items skeleton
  * - `skeleton-table` - Table with search bar skeleton
@@ -26,7 +30,7 @@ interface LoadingProps {
   className?: string
   size?: 'sm' | 'md' | 'lg'
   centered?: boolean
-  variant?: 'spinner' | 'route' | 'skeleton-cards' | 'skeleton-list' | 'skeleton-table'
+  variant?: 'spinner' | 'route' | 'view' | 'edit' | 'skeleton-cards' | 'skeleton-list' | 'skeleton-table'
 }
 
 export function Loading({
@@ -79,6 +83,190 @@ export function Loading({
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (variant === 'view') {
+    return (
+      <div className="space-y-6 p-6 pb-12">
+        <div className={`${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
+          {/* Page Header */}
+          <div className="mb-6">
+            <Skeleton className="h-9 w-64 mb-2" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+
+          {/* Two-column layout: Main content + Right panel */}
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Right Side Panel - appears first on mobile, second on desktop */}
+            <div className="w-full md:w-80 space-y-4 order-1 md:order-2">
+              <Card>
+                <CardContent className="px-6 pb-1 space-y-4">
+                  {/* Actions Section */}
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-16 mb-2" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+
+                  {/* Export Section */}
+                  <div className="pt-4 border-t space-y-2">
+                    <Skeleton className="h-4 w-16 mb-2" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+
+                  {/* Template Selector Section */}
+                  <div className="pt-4 border-t space-y-2">
+                    <Skeleton className="h-4 w-32 mb-2" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+
+                  {/* Details Section - Hidden on small screens */}
+                  <div className="hidden md:block pt-4 border-t space-y-3">
+                    <Skeleton className="h-4 w-16 mb-2" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                    <div className="pt-2 border-t">
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  </div>
+
+                  {/* Delete Section */}
+                  <div className="pt-4 border-t">
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content Area - appears second on mobile, first on desktop */}
+            <div className="flex-1 order-2 md:order-1 space-y-6">
+              {/* Main liturgy content card */}
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  {/* Cover page section */}
+                  <div className="space-y-4">
+                    <Skeleton className="h-8 w-3/4 mx-auto" />
+                    <Skeleton className="h-6 w-1/2 mx-auto" />
+                    <Skeleton className="h-5 w-2/3 mx-auto" />
+                    <Skeleton className="h-5 w-1/2 mx-auto" />
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <Skeleton className="h-6 w-48" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <Skeleton className="h-6 w-40" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6 space-y-4">
+                    <Skeleton className="h-6 w-36" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (variant === 'edit') {
+    return (
+      <div className="space-y-6 p-6 pb-12">
+        <div className={`${PAGE_MAX_WIDTH_CLASS} mx-auto`}>
+          {/* Page Header with Action Buttons */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="space-y-2">
+              <Skeleton className="h-9 w-64" />
+              <Skeleton className="h-5 w-96" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+
+          {/* Form Cards */}
+          <div className="space-y-6">
+            {/* Main Information Card */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Two-column layout for form fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Additional Details Card */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Full-width form fields */}
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
+                {/* Textarea field */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-32 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Picker/Selector Card */}
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-36" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                {/* Selected items preview */}
+                <div className="flex gap-2">
+                  <Skeleton className="h-20 w-20 rounded" />
+                  <Skeleton className="h-20 w-20 rounded" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -165,4 +353,13 @@ export function Loading({
       <span className="text-muted-foreground">{message}</span>
     </div>
   )
+}
+
+// Legacy exports for backward compatibility - will be removed after migration
+export function ViewPageLoading() {
+  return <Loading variant="view" />
+}
+
+export function EditPageLoading() {
+  return <Loading variant="edit" />
 }

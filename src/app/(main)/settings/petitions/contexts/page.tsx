@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DialogButton } from "@/components/dialog-button"
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Label } from "@/components/ui/label"
 import { FormInput } from '@/components/form-input'
 import { PageContainer } from '@/components/page-container'
@@ -279,7 +279,7 @@ export default function PetitionContextsPage() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title="Delete Context"

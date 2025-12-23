@@ -4,7 +4,7 @@ import { ReactNode, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { ListItemDeleteButton } from '@/components/list-item-delete-button'
 import { Edit, GripVertical } from 'lucide-react'
 
@@ -92,13 +92,14 @@ export function CardListItem({
       </div>
 
       {onDelete && (
-        <DeleteConfirmationDialog
+        <ConfirmationDialog
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
           onConfirm={handleConfirmDelete}
           title={deleteConfirmTitle}
           description={deleteConfirmDescription}
-          actionLabel={deleteActionLabel}
+          confirmLabel={deleteActionLabel}
+          preset="delete"
         />
       )}
     </>

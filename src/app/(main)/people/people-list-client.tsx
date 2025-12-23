@@ -9,7 +9,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
@@ -301,7 +301,7 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
@@ -311,7 +311,7 @@ export function PeopleListClient({ initialData, stats, initialHasMore }: PeopleL
             ? `${t('people.confirmDelete')} ${t('people.confirmDeleteMessage')}`
             : `${t('people.confirmDelete')} ${t('people.confirmDeleteMessage')}`
         }
-        actionLabel={t('common.delete')}
+        confirmLabel={t('common.delete')}
       />
     </div>
   )

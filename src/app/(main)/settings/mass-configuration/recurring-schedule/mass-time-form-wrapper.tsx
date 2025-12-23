@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import { MassTimeForm } from './mass-time-form'
 import type { MassTimeWithRelations } from '@/lib/actions/mass-times-templates'
 import type { MassTimesTemplateItem } from '@/lib/actions/mass-times-template-items'
@@ -27,7 +27,7 @@ export function MassTimeFormWrapper({ massTime, items, title, description }: Mas
     <PageContainer
       title={title || defaultTitle}
       description={description || defaultDescription}
-      primaryAction={<ModuleSaveButton moduleName="Template" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      primaryAction={<SaveButton moduleName="Template" isLoading={isLoading} isEditing={isEditing} form={formId} />}
       additionalActions={isEditing ? [
         {
           type: 'action',

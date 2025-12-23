@@ -15,7 +15,7 @@ import {
   DataTableHeader,
   DataTableRowActions,
 } from '@/components/data-table';
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
+import { ConfirmationDialog } from '@/components/confirmation-dialog';
 import { Badge } from '@/components/ui/badge';
 import { FormInput } from '@/components/form-input';
 
@@ -258,7 +258,7 @@ export default function PetitionTemplateList({ templates }: PetitionTemplateList
         }}
       />
     
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDelete}

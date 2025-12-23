@@ -15,7 +15,7 @@ import {
   DataTableHeader,
   DataTableRowActions,
 } from '@/components/data-table'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 interface ParishPetitionsSettingsClientProps {
   parish: Parish
@@ -164,7 +164,7 @@ export function ParishPetitionsSettingsClient({
             }}
           />
 
-          <DeleteConfirmationDialog
+          <ConfirmationDialog
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
             onConfirm={handleDeleteTemplate}

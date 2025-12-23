@@ -19,7 +19,7 @@ import {
   Content,
   Petition
 } from '@/lib/types'
-import type { PaginatedParams, PaginatedResult } from './people'
+import type { PaginatedParams, PaginatedResult } from './server-action-utils'
 import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 // Note: Types must be imported from @/lib/schemas/masses directly (not re-exported from "use server" files)

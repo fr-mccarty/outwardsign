@@ -5,7 +5,7 @@ import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import type { PaginatedParams, PaginatedResult } from './people'
+import type { PaginatedParams, PaginatedResult } from './server-action-utils'
 import {
   createAuthenticatedClient,
   isNotFoundError,

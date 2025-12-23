@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ModuleViewPanel } from '@/components/module-view-panel'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { PeoplePicker } from '@/components/people-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -444,7 +444,7 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
       </Dialog>
 
       {/* Remove Member Confirmation */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={removeMemberOpen}
         onOpenChange={setRemoveMemberOpen}
         onConfirm={handleRemoveMember}
@@ -454,7 +454,7 @@ export function FamilyViewClient({ family }: FamilyViewClientProps) {
             ? `Are you sure you want to remove ${memberToRemove.person?.full_name || 'this person'} from the ${family.family_name} family? This will not delete the person, only remove them from this family.`
             : 'Are you sure you want to remove this person from the family?'
         }
-        actionLabel="Remove"
+        confirmLabel="Remove"
       />
     </div>
   )

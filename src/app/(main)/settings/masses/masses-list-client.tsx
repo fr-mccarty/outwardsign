@@ -27,7 +27,7 @@ import type { EventType } from '@/lib/types'
 import { deleteEventType, reorderEventTypes } from '@/lib/actions/event-types'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -229,7 +229,7 @@ export function MassesListClient({ initialData }: MassesListClientProps) {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDelete}

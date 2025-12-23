@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { toLocalDateString } from '@/lib/utils/formatters'
-import type { PaginatedParams, PaginatedResult } from './people'
+import type { PaginatedParams, PaginatedResult } from './server-action-utils'
 
 export interface GlobalLiturgicalEvent {
   id: string

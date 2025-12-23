@@ -9,7 +9,7 @@ import type { CustomList } from '@/lib/types'
 import { deleteCustomList } from '@/lib/actions/custom-lists'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import Link from 'next/link'
 import { useBreadcrumbs } from '@/components/breadcrumb-context'
 
@@ -125,7 +125,7 @@ export function CustomListsListClient({ initialData }: CustomListsListClientProp
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDelete}

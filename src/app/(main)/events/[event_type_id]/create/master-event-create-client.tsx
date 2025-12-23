@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { MasterEventForm } from '../master-event-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import { TemplatePickerDialog } from '@/components/template-picker-dialog'
 import { BookmarkCheck } from 'lucide-react'
 import type { EventTypeWithRelations, MasterEventTemplate } from '@/lib/types'
@@ -34,7 +34,7 @@ export function DynamicEventCreateClient({
       <PageContainer
         title={title}
         description={description}
-        primaryAction={<ModuleSaveButton moduleName={eventType.name} isLoading={isLoading} isEditing={false} form={formId} />}
+        primaryAction={<SaveButton moduleName={eventType.name} isLoading={isLoading} isEditing={false} form={formId} />}
         additionalActions={[
           {
             type: 'action',

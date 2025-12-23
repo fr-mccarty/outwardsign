@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { PageContainer } from "@/components/page-container"
-import { ModuleSaveButton } from "@/components/module-save-button"
+import { SaveButton } from "@/components/save-button"
 import { MassRoleForm } from "./mass-role-form"
 import { BreadcrumbSetter } from "@/components/breadcrumb-setter"
 import { MassRoleWithRelations } from "@/lib/actions/mass-roles"
@@ -28,7 +28,7 @@ export function MassRoleFormWrapper({ massRole, breadcrumbs }: MassRoleFormWrapp
       <PageContainer
         title={title}
         description={description}
-        primaryAction={<ModuleSaveButton moduleName="Mass Role" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+        primaryAction={<SaveButton moduleName="Mass Role" isLoading={isLoading} isEditing={isEditing} form={formId} />}
         additionalActions={isEditing ? [
           {
             type: 'action',

@@ -9,7 +9,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
@@ -318,7 +318,7 @@ export function MassIntentionsListClient({ initialData, stats, initialHasMore }:
       {stats.total > 0 && <ListStatsBar stats={statsList} />}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}

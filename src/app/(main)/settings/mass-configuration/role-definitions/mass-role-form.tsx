@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/content-card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, X, Users } from "lucide-react"
-import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { createMassRoleSchema, type CreateMassRoleData } from "@/lib/schemas/mass-roles"
 
 interface MassRoleFormProps {
@@ -464,7 +464,7 @@ export function MassRoleForm({ massRole, formId, onLoadingChange }: MassRoleForm
 
     {/* Delete Member Confirmation Dialog */}
     {isEditing && (
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title="Remove Member"

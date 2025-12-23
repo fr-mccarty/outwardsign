@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -53,7 +53,7 @@ interface DeleteButtonProps {
 /**
  * DeleteButton Component
  *
- * A convenience wrapper around DeleteConfirmationDialog that:
+ * A convenience wrapper around ConfirmationDialog that:
  * - Provides a trigger button with icon
  * - Handles the delete operation
  * - Shows success/error toasts
@@ -86,7 +86,7 @@ export function DeleteButton({
     } catch (error) {
       console.error(`Failed to delete ${entityType.toLowerCase()}:`, error)
       toast.error(`Failed to delete ${entityType.toLowerCase()}. Please try again.`)
-      throw error // Re-throw so DeleteConfirmationDialog knows it failed
+      throw error // Re-throw so ConfirmationDialog knows it failed
     }
   }
 
@@ -101,13 +101,13 @@ export function DeleteButton({
         Delete {entityType}
       </Button>
 
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDelete}
         title={`Delete ${entityType}`}
         description={confirmMessage || `Are you sure you want to delete this ${entityType.toLowerCase()}? This action cannot be undone.`}
-        actionLabel="Delete"
+        preset="delete"
       >
         {cascadeDelete && (
           <div className="px-6 py-4 space-y-2">
@@ -133,7 +133,7 @@ export function DeleteButton({
             </div>
           </div>
         )}
-      </DeleteConfirmationDialog>
+      </ConfirmationDialog>
     </>
   )
 }

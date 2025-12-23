@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { X, Pencil } from 'lucide-react'
+import { X, Pencil, ExternalLink } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
 interface BasePickerFieldProps<T> {
   label: string
@@ -25,8 +26,12 @@ interface BasePickerFieldProps<T> {
   displayLayout?: 'single-line' | 'multi-line'
   testId?: string // Optional override for data-testid
   onValueClick?: () => void // Optional custom click handler for the value display
-  navigationButton?: ReactNode // Optional navigation button to show between value and clear button
+  navigationButton?: ReactNode // Optional navigation button to show between value and clear button (legacy)
   error?: string
+  // New: auto-generate navigation button when entityPath is provided
+  entityPath?: string // URL path like "/people" - will append /{id} for navigation
+  entityName?: string // Display name for confirmation dialog (e.g., "person", "location")
+  getId?: (value: T) => string // Function to get ID from value for navigation
 }
 
 export function PickerField<T>({
@@ -46,12 +51,44 @@ export function PickerField<T>({
   onValueClick,
   navigationButton,
   error,
+  entityPath,
+  entityName,
+  getId,
 }: BasePickerFieldProps<T>) {
   const labelId = testId || label.toLowerCase().replace(/\s+/g, '-')
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const [showNavigateConfirm, setShowNavigateConfirm] = useState(false)
+  const router = useRouter()
   const t = useTranslations('common')
 
   const displayPlaceholder = placeholder || t('select')
+
+  // Auto-generated navigation button when entityPath is provided
+  const handleNavigate = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowNavigateConfirm(true)
+  }
+
+  const confirmNavigate = () => {
+    if (value && entityPath && getId) {
+      router.push(`${entityPath}/${getId(value)}`)
+    }
+    setShowNavigateConfirm(false)
+  }
+
+  // Use provided navigationButton or auto-generate one if entityPath is set
+  const resolvedNavigationButton = navigationButton ?? (entityPath && getId && value ? (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      onClick={handleNavigate}
+      title={`View ${entityName || label.toLowerCase()} details`}
+      data-testid={`${labelId}-view-details`}
+    >
+      <ExternalLink className="h-4 w-4" />
+    </Button>
+  ) : null)
 
   const handleValueClick = () => {
     if (onValueClick) {
@@ -96,7 +133,7 @@ export function PickerField<T>({
               <span className="text-sm">{renderValue(value)}</span>
               <Pencil className="h-4 w-4 text-muted-foreground ml-2" />
             </button>
-            {navigationButton}
+            {resolvedNavigationButton}
             <Button
               type="button"
               variant="ghost"
@@ -123,7 +160,7 @@ export function PickerField<T>({
                 <Pencil className="h-4 w-4 text-muted-foreground ml-2" />
               </div>
             </button>
-            {navigationButton}
+            {resolvedNavigationButton}
             <Button
               type="button"
               variant="ghost"
@@ -172,6 +209,19 @@ export function PickerField<T>({
         confirmLabel="Remove"
         cancelLabel="Cancel"
       />
+
+      {/* Navigation confirmation dialog (auto-generated when entityPath is set) */}
+      {entityPath && (
+        <ConfirmationDialog
+          open={showNavigateConfirm}
+          onOpenChange={setShowNavigateConfirm}
+          onConfirm={confirmNavigate}
+          title={`Navigate to ${entityName || label} Details?`}
+          description={`You will be taken to the ${(entityName || label).toLowerCase()}'s detail page. Any unsaved changes on this form will be lost.`}
+          confirmLabel={`Go to ${entityName || label}`}
+          cancelLabel="Cancel"
+        />
+      )}
     </div>
   )
 }

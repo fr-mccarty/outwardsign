@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { EventForm } from './event-form'
 import { PageContainer } from '@/components/page-container'
-import { ModuleSaveButton } from '@/components/module-save-button'
+import { SaveButton } from '@/components/save-button'
 import type { MasterEventWithRelations } from '@/lib/types'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 
@@ -28,7 +28,7 @@ export function EventFormWrapper({
     <PageContainer
       title={title}
       description={description}
-      primaryAction={<ModuleSaveButton moduleName="Event" isLoading={isLoading} isEditing={isEditing} form={formId} />}
+      primaryAction={<SaveButton moduleName="Event" isLoading={isLoading} isEditing={isEditing} form={formId} />}
       additionalActions={isEditing ? [
         {
           type: 'action',

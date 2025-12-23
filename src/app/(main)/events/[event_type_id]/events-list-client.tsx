@@ -11,7 +11,7 @@ import { EndOfListMessage } from '@/components/end-of-list-message'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
@@ -329,7 +329,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
@@ -339,7 +339,7 @@ export function EventsListClient({ eventType, initialData, initialHasMore, baseU
             ? `Are you sure you want to delete this ${eventType.name.toLowerCase()}? This action cannot be undone.`
             : `Are you sure you want to delete this ${eventType.name.toLowerCase()}?`
         }
-        actionLabel="Delete"
+        confirmLabel="Delete"
       />
     </div>
   )

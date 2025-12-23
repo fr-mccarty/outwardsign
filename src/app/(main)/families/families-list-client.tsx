@@ -10,7 +10,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import type { DataTableColumn } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
 import { ListStatsBar, type ListStat } from "@/components/list-stats-bar"
@@ -314,7 +314,7 @@ export function FamiliesListClient({ initialData, stats, initialHasMore }: Famil
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
@@ -324,7 +324,7 @@ export function FamiliesListClient({ initialData, stats, initialHasMore }: Famil
             ? `Are you sure you want to delete the ${familyToDelete.family_name} family? This will remove all family member links but will not delete the individual people. This action cannot be undone.`
             : 'Are you sure you want to delete this family? This action cannot be undone.'
         }
-        actionLabel="Delete"
+        confirmLabel="Delete"
       />
     </div>
   )

@@ -9,7 +9,7 @@ import { PETITION_MODULE_LABELS, PETITION_LANGUAGE_LABELS } from '@/lib/constant
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 interface PetitionTemplateViewClientProps {
   template: PetitionContextTemplate
@@ -115,7 +115,7 @@ export function PetitionTemplateViewClient({ template }: PetitionTemplateViewCli
         </CardContent>
       </Card>
 
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDelete}

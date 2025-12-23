@@ -9,7 +9,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { DataTable } from '@/components/data-table/data-table'
 import { ClearableSearchInput } from '@/components/clearable-search-input'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { AdvancedSearch } from '@/components/advanced-search'
 import { SearchCard } from "@/components/search-card"
 import { EmptyState } from "@/components/empty-state"
@@ -437,7 +437,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
       )}
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
@@ -447,7 +447,7 @@ export function EventsListClient({ initialData, stats, eventTypes }: EventsListC
             ? `Are you sure you want to delete this ${eventToDelete.event_type?.name || 'event'}? This action cannot be undone.`
             : t('confirmDeleteGeneric')
         }
-        actionLabel={tCommon('delete')}
+        confirmLabel={tCommon('delete')}
       />
     </div>
   )

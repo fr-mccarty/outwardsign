@@ -27,7 +27,7 @@ import { formatDate, formatTime, getDayOfWeekNumber, toLocalDateString } from "@
 import { PeoplePicker } from '@/components/people-picker'
 import type { Person } from '@/lib/types'
 // cn utility available for conditional styling
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 export interface RoleAssignment {
   roleId: string
@@ -434,7 +434,7 @@ export function Step4ProposedSchedule({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={async () => {
@@ -445,7 +445,7 @@ export function Step4ProposedSchedule({
         title="Remove Mass from Schedule?"
         itemName={selectedMass ? `${selectedMass.templateName} on ${formatDate(selectedMass.date)}` : undefined}
         description="Are you sure you want to remove this Mass from the proposed schedule? This will exclude it from being created."
-        actionLabel="Remove Mass"
+        confirmLabel="Remove Mass"
       />
     </div>
   )

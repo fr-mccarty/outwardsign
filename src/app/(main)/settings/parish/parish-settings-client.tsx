@@ -38,7 +38,7 @@ import {
   DataTableHeader,
   DataTableRowActions,
 } from '@/components/data-table'
-import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
 // Alert available for error displays
 
 interface ParishMember {
@@ -616,7 +616,7 @@ export function ParishSettingsClient({
             }}
           />
 
-          <DeleteConfirmationDialog
+          <ConfirmationDialog
             open={deleteDialogOpen}
             onOpenChange={setDeleteDialogOpen}
             onConfirm={handleDeleteTemplate}
@@ -919,12 +919,12 @@ export function ParishSettingsClient({
       </Dialog>
 
       {/* Remove Member Confirmation Dialog */}
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={removeDialogOpen}
         onOpenChange={setRemoveDialogOpen}
         title="Remove Parish Member"
         itemName={memberToRemove?.email}
-        actionLabel="Remove"
+        confirmLabel="Remove"
         onConfirm={handleConfirmRemove}
       />
     </>
