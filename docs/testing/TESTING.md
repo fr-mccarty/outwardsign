@@ -425,31 +425,14 @@ Vitest configuration is in `vitest.config.ts`:
 
 ---
 
-## Existing Test Files
+## Test File Locations
 
-### Unit Tests (`tests/unit/`)
+| Type | Location | Pattern |
+|------|----------|---------|
+| Unit tests | `tests/unit/` | `*.test.ts` |
+| E2E tests | `tests/` | `*.spec.ts` |
 
-| File | Purpose |
-|------|---------|
-| `sanitize.test.ts` | Tests sanitization utility (HTML stripping, markdown preservation, placeholder syntax) |
-| `validation.test.ts` | Tests event type validation system (placeholder extraction, field reference validation) |
-
-### E2E Tests (`tests/`)
-
-| File | Purpose |
-|------|---------|
-| `weddings.spec.ts` | Wedding module CRUD workflow |
-| `funerals.spec.ts` | Funeral module CRUD workflow |
-| `events.spec.ts` | Dynamic events module |
-| `events-view-edit.spec.ts` | Event view page (scripts only) and edit page (settings menu) |
-| `masses.spec.ts` | Mass scheduling module |
-| `mass-intentions.spec.ts` | Mass intentions CRUD |
-| `people.spec.ts` | People directory module |
-| `families.spec.ts` | Family management module |
-| `groups.spec.ts` | Ministry groups module |
-| `locations.spec.ts` | Locations module |
-| `settings.spec.ts` | Settings pages |
-| `navigation.spec.ts` | Sidebar and breadcrumb navigation |
+Run `ls tests/unit/*.test.ts` or `ls tests/*.spec.ts` to see current test files.
 
 ---
 

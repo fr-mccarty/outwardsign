@@ -10,6 +10,8 @@ dotenv.config({ path: path.join(__dirname, '.env.local') });
  */
 export default defineConfig({
   testDir: './tests',
+  /* Ignore unit tests - those are run by Vitest, not Playwright */
+  testIgnore: ['**/unit/**'],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

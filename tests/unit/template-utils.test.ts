@@ -115,7 +115,7 @@ describe('getTemplateVariables', () => {
     const result = getTemplateVariables(data)
 
     expect(result.TITLE).toBe('Sunday Petitions')
-    expect(result.LANGUAGE).toBe('English')
+    expect(result.LANGUAGE).toBe('en')
     expect(result.DETAILS).toBe('For the sick')
     expect(result.TEMPLATE_CONTENT).toBe('')
   })
