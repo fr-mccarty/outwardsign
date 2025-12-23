@@ -5,7 +5,11 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
-import type {
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
+import {
+
   CustomListItem,
   CreateCustomListItemData,
   UpdateCustomListItemData
@@ -63,16 +67,14 @@ export async function getCustomListItems(listId: string): Promise<CustomListItem
  * Create a new custom list item
  */
 export async function createCustomListItem(listId: string, data: CreateCustomListItemData): Promise<CustomListItem> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Get max order for this list
   const { data: existingItems } = await supabase
@@ -113,16 +115,14 @@ export async function createCustomListItem(listId: string, data: CreateCustomLis
  * Update an existing custom list item
  */
 export async function updateCustomListItem(id: string, data: UpdateCustomListItemData): Promise<CustomListItem> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
@@ -152,16 +152,14 @@ export async function updateCustomListItem(id: string, data: UpdateCustomListIte
  * Note: Data in events' field_values JSON will be affected
  */
 export async function deleteCustomListItem(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Get list_id for revalidation
   const { data: listItem } = await supabase
@@ -195,16 +193,14 @@ export async function deleteCustomListItem(id: string): Promise<void> {
  * Updates the order field for all provided items
  */
 export async function reorderCustomListItems(listId: string, orderedIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Update each item's order
   const updates = orderedIds.map((id, index) =>

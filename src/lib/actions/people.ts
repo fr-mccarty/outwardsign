@@ -12,6 +12,8 @@ import {
   buildUpdateData,
   type PaginatedResult,
 } from '@/lib/actions/server-action-utils'
+// Re-export for backwards compatibility with files that import from people.ts
+export type { PaginatedResult } from '@/lib/actions/server-action-utils'
 
 /**
  * Build robust search conditions for people queries

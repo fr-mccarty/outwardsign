@@ -6,7 +6,11 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
 import {
-  createFamilySchema,
+  createAuthenticatedClient,
+  isUniqueConstraintError,
+} from './server-action-utils'
+import {
+createFamilySchema,
   updateFamilySchema,
   addFamilyMemberSchema,
   updateFamilyMemberSchema,
@@ -245,10 +249,7 @@ export async function getFamily(id: string): Promise<FamilyWithMembers | null> {
 }
 
 export async function createFamily(data: CreateFamilyData): Promise<Family> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Server-side validation
   const validatedData = createFamilySchema.parse(data)
@@ -257,7 +258,7 @@ export async function createFamily(data: CreateFamilyData): Promise<Family> {
     .from('families')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         family_name: validatedData.family_name,
         active: validatedData.active ?? true,
       }
@@ -369,7 +370,7 @@ export async function addFamilyMember(familyId: string, data: AddFamilyMemberDat
     .single()
 
   if (error) {
-    if (error.code === '23505') { // Unique constraint violation
+    if (isUniqueConstraintError(error)) { // Unique constraint violation
       throw new Error('Person is already a member of this family')
     }
     logError('Error adding family member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

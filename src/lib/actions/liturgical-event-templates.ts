@@ -6,6 +6,10 @@ import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
 
 export interface LiturgicalEventTemplate {
   id: string
@@ -78,7 +82,7 @@ export async function getTemplate(id: string): Promise<LiturgicalEventTemplate |
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -89,15 +93,13 @@ export async function getTemplate(id: string): Promise<LiturgicalEventTemplate |
 }
 
 export async function createTemplate(data: CreateTemplateData): Promise<LiturgicalEventTemplate> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: template, error } = await supabase
     .from('liturgical_event_templates')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         description: data.description || null,
         template_data: data.template_data,
@@ -182,9 +184,7 @@ export async function getActiveTemplates(): Promise<LiturgicalEventTemplate[]> {
 
 // Initialize default templates for common liturgical events
 export async function initializeDefaultTemplates(): Promise<LiturgicalEventTemplate[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check if parish already has templates
   const { data: existing } = await supabase
@@ -264,7 +264,7 @@ export async function initializeDefaultTemplates(): Promise<LiturgicalEventTempl
     .insert(
       defaultTemplates.map(template => ({
         ...template,
-        parish_id: selectedParishId,
+        parish_id: parishId,
         is_active: true,
       }))
     )

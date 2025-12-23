@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
-import type {
+import {
   MasterEvent,
   Person,
   CalendarEvent,
@@ -24,7 +24,11 @@ import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 
 // Note: Types must be imported from @/lib/schemas/masses directly (not re-exported from "use server" files)
 import {
-  createMassSchema,
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+import {
+createMassSchema,
   updateMassSchema,
   type CreateMassData,
   type UpdateMassData,
@@ -41,9 +45,7 @@ import {
  * Masses are master_events where event_type.system_type = 'mass'
  */
 export async function getMasses(filters?: MassFilterParams): Promise<MassWithNames[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = filters?.offset || 0
   const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
@@ -52,7 +54,7 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
   let query = supabase
     .from('master_events')
     .select('*, event_type:event_types!inner(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('event_type.system_type', 'mass')
     .is('deleted_at', null)
 
@@ -180,15 +182,13 @@ export async function getMasses(filters?: MassFilterParams): Promise<MassWithNam
 }
 
 export async function getMassStats(filters?: MassFilterParams): Promise<MassStats> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get all masses for stats calculation
   const { data: allMasses, error } = await supabase
     .from('master_events')
     .select('*, event_type:event_types!inner(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('event_type.system_type', 'mass')
     .is('deleted_at', null)
 
@@ -269,21 +269,19 @@ export async function getMassesPaginated(params?: PaginatedParams): Promise<Pagi
 }
 
 export async function getMass(id: string): Promise<MasterEvent | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('master_events')
     .select('*, event_type:event_types!inner(*)')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('event_type.system_type', 'mass')
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching mass: ' + error)
@@ -294,21 +292,19 @@ export async function getMass(id: string): Promise<MasterEvent | null> {
 }
 
 export async function getMassWithRelations(id: string): Promise<MassWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the master event with event type check
   const { data: event, error } = await supabase
     .from('master_events')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching mass: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -321,7 +317,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
       .eq('id', event.event_type_id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .eq('system_type', 'mass')
       .is('deleted_at', null)
       .single(),
@@ -349,7 +345,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
     supabase
       .from('parishes')
       .select('name, city, state')
-      .eq('id', selectedParishId)
+      .eq('id', parishId)
       .single()
   ])
 
@@ -522,9 +518,7 @@ export async function getMassWithRelations(id: string): Promise<MassWithRelation
 }
 
 export async function createMass(data: CreateMassData): Promise<MasterEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate data with Zod schema
   const validatedData = createMassSchema.parse(data)
@@ -533,7 +527,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
   const { data: massEventType, error: eventTypeError } = await supabase
     .from('event_types')
     .select('id')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('system_type', 'mass')
     .is('deleted_at', null)
     .limit(1)
@@ -549,7 +543,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
     .from('master_events')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         event_type_id: massEventType.id,
         field_values: validatedData.field_values || {},
         status: validatedData.status || 'PLANNING'
@@ -598,7 +592,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
           .insert([
             {
               master_event_id: mass.id,
-              parish_id: selectedParishId,
+              parish_id: parishId,
               input_field_definition_id: primaryFieldDef.id,
               start_datetime: startDatetime,
               end_datetime: endDatetime,
@@ -616,9 +610,7 @@ export async function createMass(data: CreateMassData): Promise<MasterEvent> {
 }
 
 export async function updateMass(id: string, data: UpdateMassData): Promise<MasterEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate data with Zod schema
   const validatedData = updateMassSchema.parse(data)
@@ -637,7 +629,7 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mast
     .from('master_events')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .select()
     .single()
@@ -654,16 +646,14 @@ export async function updateMass(id: string, data: UpdateMassData): Promise<Mast
 }
 
 export async function deleteMass(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Hard delete (will cascade to calendar events)
   const { error } = await supabase
     .from('master_events')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting mass: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

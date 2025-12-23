@@ -5,6 +5,10 @@ import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import {
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // Types
 export interface PersonBlackoutDate {
@@ -102,7 +106,7 @@ export async function getPersonBlackoutDate(id: string): Promise<PersonBlackoutD
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null
     }
     logError('Error fetching person blackout date: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

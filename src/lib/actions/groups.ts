@@ -1,17 +1,19 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-// redirect import removed - not used
-import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import {
   createGroupSchema,
   updateGroupSchema,
   type CreateGroupData,
   type UpdateGroupData
 } from '@/lib/schemas/groups'
-import { logError } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+  handleSupabaseError,
+  isNotFoundError,
+  isUniqueConstraintError,
+  revalidateEntity,
+  buildUpdateData,
+} from '@/lib/actions/server-action-utils'
 
 export interface Group {
   id: string
@@ -33,7 +35,7 @@ export interface GroupMember {
     id: string
     first_name: string
     last_name: string
-    full_name: string  // Auto-generated: first_name || ' ' || last_name
+    full_name: string
     email?: string
   }
   group_role?: {
@@ -46,8 +48,6 @@ export interface GroupMember {
 export interface GroupWithMembers extends Group {
   members: GroupMember[]
 }
-
-// Note: Import CreateGroupData and UpdateGroupData from '@/lib/schemas/groups' instead
 
 export interface GroupFilters {
   search?: string
@@ -63,40 +63,27 @@ export interface GroupStats {
 }
 
 export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupStats> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
+  const { supabase } = await createAuthenticatedClient()
 
-  const supabase = await createClient()
-
-  // Get total count
   const { count: totalCount, error: totalError } = await supabase
     .from('groups')
     .select('*', { count: 'exact', head: true })
 
-  if (totalError) {
-    logError('Error fetching total count: ' + (totalError instanceof Error ? totalError.message : JSON.stringify(totalError)))
-    throw new Error('Failed to fetch total count')
-  }
+  if (totalError) handleSupabaseError(totalError, 'fetching', 'total count')
 
-  // Get filtered count (all groups, no search applied)
   const { data: allGroups, error: allError } = await supabase
     .from('groups')
     .select('*')
 
-  if (allError) {
-    logError('Error fetching groups for filtering: ' + (allError instanceof Error ? allError.message : JSON.stringify(allError)))
-    throw new Error('Failed to fetch groups for filtering')
-  }
+  if (allError) handleSupabaseError(allError, 'fetching', 'groups for filtering')
 
   let filteredGroups = allGroups || []
 
-  // Apply status filter (application-level)
   if (filters.status && filters.status !== 'all') {
     const isActive = filters.status === 'ACTIVE'
     filteredGroups = filteredGroups.filter(group => group.is_active === isActive)
   }
 
-  // Apply search filter (application-level)
   if (filters.search) {
     const searchLower = filters.search.toLowerCase()
     filteredGroups = filteredGroups.filter(group =>
@@ -112,29 +99,21 @@ export async function getGroupStats(filters: GroupFilters = {}): Promise<GroupSt
 }
 
 export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('groups')
     .select('*')
 
-  if (error) {
-    logError('Error fetching groups: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch groups')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'groups')
 
   let groups = data || []
 
-  // Apply status filter (application-level)
   if (filters.status && filters.status !== 'all') {
     const isActive = filters.status === 'ACTIVE'
     groups = groups.filter(group => group.is_active === isActive)
   }
 
-  // Apply search filter (application-level)
   if (filters.search) {
     const searchLower = filters.search.toLowerCase()
     groups = groups.filter(group =>
@@ -143,7 +122,6 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
     )
   }
 
-  // Apply sorting (application-level)
   const sort = filters.sort || 'name_asc'
   groups.sort((a, b) => {
     switch (sort) {
@@ -159,7 +137,6 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
     }
   })
 
-  // Apply pagination (application-level)
   if (filters.offset !== undefined && filters.limit !== undefined) {
     const start = filters.offset
     const end = start + filters.limit
@@ -170,10 +147,7 @@ export async function getGroups(filters: GroupFilters = {}): Promise<Group[]> {
 }
 
 export async function getGroup(id: string): Promise<GroupWithMembers | null> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { data: group, error: groupError } = await supabase
     .from('groups')
@@ -182,14 +156,10 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     .single()
 
   if (groupError) {
-    if (groupError.code === 'PGRST116') {
-      return null // Not found
-    }
-    logError('Error fetching group: ' + (groupError instanceof Error ? groupError.message : JSON.stringify(groupError)))
-    throw new Error('Failed to fetch group')
+    if (isNotFoundError(groupError)) return null
+    handleSupabaseError(groupError, 'fetching', 'group')
   }
 
-  // Get group members with person details and group role
   const { data: members, error: membersError } = await supabase
     .from('group_members')
     .select(`
@@ -214,10 +184,7 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
     .eq('group_id', id)
     .order('joined_at', { ascending: true })
 
-  if (membersError) {
-    logError('Error fetching group members: ' + (membersError instanceof Error ? membersError.message : JSON.stringify(membersError)))
-    throw new Error('Failed to fetch group members')
-  }
+  if (membersError) handleSupabaseError(membersError, 'fetching', 'group members')
 
   return {
     ...group,
@@ -226,19 +193,15 @@ export async function getGroup(id: string): Promise<GroupWithMembers | null> {
 }
 
 export async function createGroup(data: CreateGroupData): Promise<Group> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
-  const supabase = await createClient()
-
-  // REQUIRED: Server-side validation (security boundary)
   const validatedData = createGroupSchema.parse(data)
 
   const { data: group, error } = await supabase
     .from('groups')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: validatedData.name,
         description: validatedData.description || null,
         is_active: validatedData.is_active ?? true,
@@ -247,28 +210,17 @@ export async function createGroup(data: CreateGroupData): Promise<Group> {
     .select()
     .single()
 
-  if (error) {
-    logError('Error creating group: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to create group')
-  }
+  if (error) handleSupabaseError(error, 'creating', 'group')
 
-  revalidatePath('/groups')
+  revalidateEntity('groups')
   return group
 }
 
 export async function updateGroup(id: string, data: UpdateGroupData): Promise<Group> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
+  const { supabase } = await createAuthenticatedClient()
 
-  const supabase = await createClient()
-
-  // REQUIRED: Server-side validation (security boundary)
   const validatedData = updateGroupSchema.parse(data)
-
-  const updateData: Record<string, unknown> = {}
-  if (validatedData.name !== undefined) updateData.name = validatedData.name
-  if (validatedData.description !== undefined) updateData.description = validatedData.description || null
-  if (validatedData.is_active !== undefined) updateData.is_active = validatedData.is_active
+  const updateData = buildUpdateData(validatedData)
 
   const { data: group, error } = await supabase
     .from('groups')
@@ -277,42 +229,28 @@ export async function updateGroup(id: string, data: UpdateGroupData): Promise<Gr
     .select()
     .single()
 
-  if (error) {
-    logError('Error updating group: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to update group')
-  }
+  if (error) handleSupabaseError(error, 'updating', 'group')
 
-  revalidatePath('/groups')
-  revalidatePath(`/groups/${id}`)
+  revalidateEntity('groups', id)
   return group
 }
 
 export async function deleteGroup(id: string): Promise<void> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('groups')
     .delete()
     .eq('id', id)
 
-  if (error) {
-    logError('Error deleting group: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to delete group')
-  }
+  if (error) handleSupabaseError(error, 'deleting', 'group')
 
-  revalidatePath('/groups')
+  revalidateEntity('groups')
 }
 
 export async function addGroupMember(groupId: string, personId: string, groupRoleId?: string): Promise<GroupMember> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
+  const { supabase } = await createAuthenticatedClient()
 
-  const supabase = await createClient()
-
-  // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
     .from('groups')
     .select('id')
@@ -336,25 +274,19 @@ export async function addGroupMember(groupId: string, personId: string, groupRol
     .single()
 
   if (error) {
-    if (error.code === '23505') { // Unique constraint violation
+    if (isUniqueConstraintError(error)) {
       throw new Error('Person is already a member of this group')
     }
-    logError('Error adding group member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to add group member')
+    handleSupabaseError(error, 'adding', 'group member')
   }
 
-  revalidatePath('/groups')
-  revalidatePath(`/groups/${groupId}`)
+  revalidateEntity('groups', groupId)
   return member
 }
 
 export async function removeGroupMember(groupId: string, personId: string): Promise<void> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
+  const { supabase } = await createAuthenticatedClient()
 
-  const supabase = await createClient()
-
-  // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
     .from('groups')
     .select('id')
@@ -371,22 +303,14 @@ export async function removeGroupMember(groupId: string, personId: string): Prom
     .eq('group_id', groupId)
     .eq('person_id', personId)
 
-  if (error) {
-    logError('Error removing group member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to remove group member')
-  }
+  if (error) handleSupabaseError(error, 'removing', 'group member')
 
-  revalidatePath('/groups')
-  revalidatePath(`/groups/${groupId}`)
+  revalidateEntity('groups', groupId)
 }
 
 export async function updateGroupMemberRole(groupId: string, personId: string, groupRoleId?: string | null): Promise<GroupMember> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
+  const { supabase } = await createAuthenticatedClient()
 
-  const supabase = await createClient()
-
-  // Verify group exists (RLS will handle access control)
   const { data: group, error: groupError } = await supabase
     .from('groups')
     .select('id')
@@ -405,21 +329,14 @@ export async function updateGroupMemberRole(groupId: string, personId: string, g
     .select()
     .single()
 
-  if (error) {
-    logError('Error updating group member role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to update group member role')
-  }
+  if (error) handleSupabaseError(error, 'updating', 'group member role')
 
-  revalidatePath('/groups')
-  revalidatePath(`/groups/${groupId}`)
+  revalidateEntity('groups', groupId)
   return member
 }
 
 export async function getActiveGroups(): Promise<Group[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('groups')
@@ -427,10 +344,7 @@ export async function getActiveGroups(): Promise<Group[]> {
     .eq('is_active', true)
     .order('name', { ascending: true })
 
-  if (error) {
-    logError('Error fetching active groups: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch active groups')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'active groups')
 
   return data || []
 }
@@ -442,7 +356,7 @@ export interface GroupMemberWithDetails extends GroupMember {
     id: string
     first_name: string
     last_name: string
-    full_name: string  // Auto-generated: first_name || ' ' || last_name
+    full_name: string
     email?: string
     phone_number?: string
   }
@@ -518,9 +432,7 @@ export async function getGroupMemberStats(filters: GroupMemberFilters = {}): Pro
 }
 
 export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters = {}): Promise<PersonWithMemberships[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('group_members')
@@ -547,17 +459,12 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
     `)
     .order('joined_at', { ascending: false })
 
-  if (error) {
-    logError('Error fetching people with group memberships: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch people with group memberships')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'people with group memberships')
 
-  // Group by person
   const peopleMap = new Map<string, PersonWithMemberships>()
 
   for (const membership of (data || [])) {
     const personId = membership.person_id
-    // Supabase returns relations as arrays, get first element
     const personData = Array.isArray(membership.person) ? membership.person[0] : membership.person
     const groupRoleData = Array.isArray(membership.group_role) ? membership.group_role[0] : membership.group_role
 
@@ -580,7 +487,6 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
 
   let result = Array.from(peopleMap.values())
 
-  // Apply search filter
   if (filters.search) {
     const searchLower = filters.search.toLowerCase()
     result = result.filter(({ person }) => {
@@ -590,7 +496,6 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
     })
   }
 
-  // Apply sorting
   if (filters.sort) {
     switch (filters.sort) {
       case 'name_asc':
@@ -626,9 +531,7 @@ export async function getPeopleWithGroupMemberships(filters: GroupMemberFilters 
 }
 
 export async function getPersonGroupMemberships(personId: string): Promise<PersonGroupMembership[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('group_members')
@@ -653,20 +556,16 @@ export async function getPersonGroupMemberships(personId: string): Promise<Perso
     .eq('person_id', personId)
     .order('joined_at', { ascending: false })
 
-  if (error) {
-    logError('Error fetching person group memberships: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch person group memberships')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'person group memberships')
 
-  // Transform the data to match the expected type
-  const memberships: PersonGroupMembership[] = (data || []).map((item: any) => ({
-    id: item.id,
-    group_id: item.group_id,
-    person_id: item.person_id,
-    group_role_id: item.group_role_id,
-    joined_at: item.joined_at,
-    group: Array.isArray(item.group) ? item.group[0] : item.group,
-    group_role: item.group_role_id && item.group_role ? (Array.isArray(item.group_role) ? item.group_role[0] : item.group_role) : undefined
+  const memberships: PersonGroupMembership[] = (data || []).map((item: Record<string, unknown>) => ({
+    id: item.id as string,
+    group_id: item.group_id as string,
+    person_id: item.person_id as string,
+    group_role_id: item.group_role_id as string | null | undefined,
+    joined_at: item.joined_at as string,
+    group: (Array.isArray(item.group) ? item.group[0] : item.group) as PersonGroupMembership['group'],
+    group_role: item.group_role_id && item.group_role ? (Array.isArray(item.group_role) ? item.group_role[0] : item.group_role) as PersonGroupMembership['group_role'] : null
   }))
 
   return memberships

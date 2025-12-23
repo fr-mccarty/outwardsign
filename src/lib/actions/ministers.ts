@@ -5,17 +5,19 @@ import { CreateMinisterData, Minister } from '@/lib/types'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logWarning } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
 
 export async function createMinister(data: CreateMinisterData) {
-  const supabase = await createClient()
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
   await ensureJWTClaims()
 
   const { data: minister, error } = await supabase
     .from('ministers')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         email: data.email,
         phone: data.phone,

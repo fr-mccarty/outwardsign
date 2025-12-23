@@ -36,6 +36,10 @@ import {
   type UpdateMassRoleMemberData,
 } from './mass-role-members'
 import { logError } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
+
 
 // Re-export for backward compatibility
 export { getPersonBlackoutDates as getBlackoutDates }
@@ -76,9 +80,7 @@ export interface PersonWithMassRoles extends Person {
  * Returns people with their role names for display in the directory
  */
 export async function getPeopleWithMassRolePreferences(): Promise<PersonWithMassRoles[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get all active role members with role details
   const { data: memberData, error: memberError } = await supabase
@@ -87,7 +89,7 @@ export async function getPeopleWithMassRolePreferences(): Promise<PersonWithMass
       person_id,
       mass_role:mass_roles(name)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('active', true)
 
   if (memberError) {
@@ -119,7 +121,7 @@ export async function getPeopleWithMassRolePreferences(): Promise<PersonWithMass
   const { data: people, error: peopleError } = await supabase
     .from('people')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .in('id', personIds)
     .order('last_name', { ascending: true })
     .order('first_name', { ascending: true })
@@ -143,14 +145,12 @@ export async function getPeopleWithMassRolePreferences(): Promise<PersonWithMass
  * Get all people who are members of a specific mass role
  */
 export async function getPeopleWithRole(roleId: string): Promise<Person[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_role_members')
     .select('person:people(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
 

@@ -8,6 +8,9 @@ import {
   type UpdateUserSettingsData
 } from '@/lib/schemas/user-settings'
 import { logError } from '@/lib/utils/console'
+import {
+  isNotFoundError,
+} from './server-action-utils'
 
 export interface UserSettings {
   id: string
@@ -32,7 +35,7 @@ export async function getUserSettings(): Promise<UserSettings | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       // No settings found, create default settings
       const { data: newSettings, error: createError } = await supabase
         .from('user_settings')

@@ -6,6 +6,10 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
 
 export interface Ministry {
   id: string
@@ -66,7 +70,7 @@ export async function getMinistry(id: string): Promise<Ministry | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching ministry:' + error)
@@ -77,9 +81,7 @@ export async function getMinistry(id: string): Promise<Ministry | null> {
 }
 
 export async function createMinistry(data: CreateMinistryData): Promise<Ministry> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the next sort order
   const { data: lastMinistry } = await supabase
@@ -95,7 +97,7 @@ export async function createMinistry(data: CreateMinistryData): Promise<Ministry
     .from('ministries')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         description: data.description || null,
         requirements: data.requirements || null,
@@ -207,9 +209,7 @@ export async function getActiveMinistries(): Promise<Ministry[]> {
 
 // Initialize default ministries for a new parish
 export async function initializeDefaultMinistries(): Promise<Ministry[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check if parish already has ministries
   const { data: existing } = await supabase
@@ -239,7 +239,7 @@ export async function initializeDefaultMinistries(): Promise<Ministry[]> {
     .insert(
       defaultMinistries.map(ministry => ({
         ...ministry,
-        parish_id: selectedParishId,
+        parish_id: parishId,
         is_active: true,
       }))
     )

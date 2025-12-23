@@ -2,10 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
-import type {
+import {
   CustomList,
   CustomListWithItems,
   CreateCustomListData,
@@ -13,6 +11,10 @@ import type {
   CustomListItem
 } from '@/lib/types'
 import { generateSlug } from '@/lib/utils/formatters'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
 
 export interface CustomListFilterParams {
   search?: string
@@ -49,14 +51,12 @@ async function requireEditSharedResources(userId: string, parishId: string): Pro
  * Get all custom lists for the selected parish
  */
 export async function getCustomLists(filters?: CustomListFilterParams): Promise<CustomList[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('custom_lists')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
 
   // Apply sorting
@@ -95,20 +95,18 @@ export async function getCustomLists(filters?: CustomListFilterParams): Promise<
  * Get a single custom list by ID
  */
 export async function getCustomList(id: string): Promise<CustomList | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('custom_lists')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching custom list: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -122,20 +120,18 @@ export async function getCustomList(id: string): Promise<CustomList | null> {
  * Get a single custom list by slug
  */
 export async function getCustomListBySlug(slug: string): Promise<CustomList | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('custom_lists')
     .select('*')
     .eq('slug', slug)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching custom list by slug: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -149,21 +145,19 @@ export async function getCustomListBySlug(slug: string): Promise<CustomList | nu
  * Get custom list with all items by slug
  */
 export async function getCustomListWithItemsBySlug(slug: string): Promise<CustomListWithItems | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the custom list by slug
   const { data: customList, error } = await supabase
     .from('custom_lists')
     .select('*')
     .eq('slug', slug)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching custom list by slug: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -193,21 +187,19 @@ export async function getCustomListWithItemsBySlug(slug: string): Promise<Custom
  * Get custom list with all items
  */
 export async function getCustomListWithItems(id: string): Promise<CustomListWithItems | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the custom list
   const { data: customList, error } = await supabase
     .from('custom_lists')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching custom list: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -237,16 +229,14 @@ export async function getCustomListWithItems(id: string): Promise<CustomListWith
  * Create a new custom list
  */
 export async function createCustomList(data: CreateCustomListData): Promise<CustomList> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Generate slug from name
   const baseSlug = generateSlug(data.name)
@@ -260,7 +250,7 @@ export async function createCustomList(data: CreateCustomListData): Promise<Cust
     const { data: existingWithSlug } = await supabase
       .from('custom_lists')
       .select('id')
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .eq('slug', finalSlug)
       .is('deleted_at', null)
       .limit(1)
@@ -278,7 +268,7 @@ export async function createCustomList(data: CreateCustomListData): Promise<Cust
     .from('custom_lists')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         slug: finalSlug
       }
@@ -299,16 +289,14 @@ export async function createCustomList(data: CreateCustomListData): Promise<Cust
  * Update an existing custom list
  */
 export async function updateCustomList(id: string, data: UpdateCustomListData): Promise<CustomList> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Build update object from only defined values
   const updateData: Record<string, unknown> = {}
@@ -326,7 +314,7 @@ export async function updateCustomList(id: string, data: UpdateCustomListData): 
       const { data: existingWithSlug } = await supabase
         .from('custom_lists')
         .select('id')
-        .eq('parish_id', selectedParishId)
+        .eq('parish_id', parishId)
         .eq('slug', finalSlug)
         .neq('id', id) // Exclude current record
         .is('deleted_at', null)
@@ -347,7 +335,7 @@ export async function updateCustomList(id: string, data: UpdateCustomListData): 
     .from('custom_lists')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .select()
     .single()
@@ -367,16 +355,14 @@ export async function updateCustomList(id: string, data: UpdateCustomListData): 
  * Checks if there are input field definitions using this list first
  */
 export async function deleteCustomList(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin, staff, ministry-leader)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Check for input field definitions using this list
   const { data: fieldDefs } = await supabase
@@ -395,7 +381,7 @@ export async function deleteCustomList(id: string): Promise<void> {
     .from('custom_lists')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting custom list: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

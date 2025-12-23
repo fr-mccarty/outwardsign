@@ -9,18 +9,21 @@ import { MassRole } from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
 import { createMassRoleSchema, updateMassRoleSchema } from '@/lib/schemas/mass-roles'
 import type { CreateMassRoleData, UpdateMassRoleData } from '@/lib/schemas/mass-roles'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // ========== MASS ROLE DEFINITIONS ==========
 
 export async function getMassRoles(): Promise<MassRole[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_roles')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('display_order', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })
 
@@ -33,9 +36,7 @@ export async function getMassRoles(): Promise<MassRole[]> {
 }
 
 export async function getMassRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<MassRole>> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 10
@@ -45,7 +46,7 @@ export async function getMassRolesPaginated(params?: PaginatedParams): Promise<P
   let query = supabase
     .from('mass_roles')
     .select('*', { count: 'exact' })
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   // Apply search filter
   if (search) {
@@ -90,7 +91,7 @@ export async function getMassRole(id: string): Promise<MassRole | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching mass role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -124,9 +125,7 @@ export interface MassRoleWithRelations extends MassRole {
  * Get mass role with members for view/edit pages
  */
 export async function getMassRoleWithRelations(id: string): Promise<MassRoleWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // First, get the mass role
   const { data: massRoleData, error: massRoleError } = await supabase
@@ -156,7 +155,7 @@ export async function getMassRoleWithRelations(id: string): Promise<MassRoleWith
   }
 
   // Verify this is the correct parish
-  if (massRoleData.parish_id !== selectedParishId) {
+  if (massRoleData.parish_id !== parishId) {
     return null // Not found in this parish
   }
 
@@ -184,7 +183,7 @@ export async function getMassRoleWithRelations(id: string): Promise<MassRoleWith
     const { data: peopleData, error: peopleError } = await supabase
       .from('people')
       .select('id, first_name, last_name, email, phone_number')
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .in('id', personIds)
 
     if (peopleError) {
@@ -217,9 +216,7 @@ export async function getMassRoleWithRelations(id: string): Promise<MassRoleWith
 }
 
 export async function createMassRole(data: CreateMassRoleData): Promise<MassRole> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate data with Zod schema
   const validatedData = createMassRoleSchema.parse(data)
@@ -228,7 +225,7 @@ export async function createMassRole(data: CreateMassRoleData): Promise<MassRole
     .from('mass_roles')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: validatedData.name,
         description: validatedData.description || null,
         note: validatedData.note || null,
@@ -330,9 +327,7 @@ export async function deleteMassRole(id: string): Promise<void> {
 }
 
 export async function reorderMassRoles(orderedIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Update each mass role's display_order
   const updates = orderedIds.map((id, index) =>
@@ -340,7 +335,7 @@ export async function reorderMassRoles(orderedIds: string[]): Promise<void> {
       .from('mass_roles')
       .update({ display_order: index })
       .eq('id', id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
   )
 
   const results = await Promise.all(updates)
@@ -365,9 +360,7 @@ export interface MassRoleWithCount extends MassRole {
  * Get all active mass roles for the selected parish with member counts
  */
 export async function getMassRolesWithCounts(): Promise<MassRoleWithCount[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get mass roles with member counts
   const { data, error } = await supabase
@@ -376,7 +369,7 @@ export async function getMassRolesWithCounts(): Promise<MassRoleWithCount[]> {
       *,
       mass_role_members(count)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('is_active', true)
     .order('display_order', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })

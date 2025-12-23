@@ -1,11 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
-import type {
+import { createClient } from '@/lib/supabase/server'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+  isUniqueConstraintError,
+} from './server-action-utils'
+import {
   CategoryTag,
   CategoryTagWithUsageCount,
   CreateCategoryTagData,
@@ -53,10 +56,7 @@ async function requireAdminRole(supabase: Awaited<ReturnType<typeof createClient
 export async function getCategoryTags(
   sortBy: 'sort_order' | 'name' = 'sort_order'
 ): Promise<CategoryTag[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('category_tags')
@@ -84,10 +84,7 @@ export async function getCategoryTags(
  * Get category tags with usage count
  */
 export async function getCategoryTagsWithUsageCount(): Promise<CategoryTagWithUsageCount[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Fetch tags with COUNT of assignments across all entity types
   const { data, error } = await supabase
@@ -116,10 +113,7 @@ export async function getCategoryTagsWithUsageCount(): Promise<CategoryTagWithUs
  * Get a single category tag by ID
  */
 export async function getCategoryTagById(tagId: string): Promise<CategoryTag | null> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('category_tags')
@@ -129,7 +123,7 @@ export async function getCategoryTagById(tagId: string): Promise<CategoryTag | n
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -144,10 +138,7 @@ export async function getCategoryTagById(tagId: string): Promise<CategoryTag | n
  * Requires Admin role
  */
 export async function createCategoryTag(input: CreateCategoryTagData): Promise<CategoryTag> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   const userId = await requireAdminRole(supabase, parishId)
@@ -190,7 +181,7 @@ export async function createCategoryTag(input: CreateCategoryTagData): Promise<C
 
   if (error) {
     // Check for unique constraint violation
-    if (error.code === '23505') {
+    if (isUniqueConstraintError(error)) {
       throw new Error('A tag with this slug already exists')
     }
     logError('Error creating category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -210,10 +201,7 @@ export async function updateCategoryTag(
   tagId: string,
   input: UpdateCategoryTagData
 ): Promise<CategoryTag> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   await requireAdminRole(supabase, parishId)
@@ -235,7 +223,7 @@ export async function updateCategoryTag(
 
   if (error) {
     // Check for unique constraint violation
-    if (error.code === '23505') {
+    if (isUniqueConstraintError(error)) {
       throw new Error('A tag with this slug already exists')
     }
     logError('Error updating category tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -254,10 +242,7 @@ export async function updateCategoryTag(
  * Cannot delete if tag is assigned to any entities
  */
 export async function deleteCategoryTag(tagId: string): Promise<{ success: boolean }> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   await requireAdminRole(supabase, parishId)
@@ -306,10 +291,7 @@ export async function deleteCategoryTag(tagId: string): Promise<{ success: boole
  * Requires Admin role
  */
 export async function reorderCategoryTags(tagIdsInOrder: string[]): Promise<CategoryTag[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   await requireAdminRole(supabase, parishId)

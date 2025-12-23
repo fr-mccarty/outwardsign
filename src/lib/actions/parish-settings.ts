@@ -1,11 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { requireSelectedParish } from '@/lib/auth/parish'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
 
 export async function getParishSettings() {
-  const supabase = await createClient()
-  const parishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: settings, error } = await supabase
     .from('parish_settings')
@@ -15,7 +16,7 @@ export async function getParishSettings() {
 
   if (error) {
     // If settings don't exist, create default settings
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       const { data: newSettings, error: createError } = await supabase
         .from('parish_settings')
         .insert({
@@ -37,8 +38,7 @@ export async function getParishSettings() {
 }
 
 export async function updateDefaultPetitions(defaultPetitions: string) {
-  const supabase = await createClient()
-  const parishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // First, ensure parish settings exist
   // Unused: const _settings = await getParishSettings()

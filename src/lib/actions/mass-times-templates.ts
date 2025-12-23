@@ -1,11 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import type { PaginatedResult } from './people'
+import {
+  createAuthenticatedClient,
+  type PaginatedResult,
+} from './server-action-utils'
+
 
 // MassTimesTemplate interface (matches mass_times_templates table)
 export interface MassTimesTemplate {
@@ -66,14 +67,12 @@ export interface MassTimePaginatedParams {
  * Get all mass times templates with optional filters
  */
 export async function getMassTimes(filters?: MassTimeFilterParams): Promise<MassTime[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('mass_times_templates')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
 
   // Apply filters
@@ -99,9 +98,7 @@ export async function getMassTimes(filters?: MassTimeFilterParams): Promise<Mass
  * Get all mass times templates with their items
  */
 export async function getMassTimesWithItems(filters?: MassTimeFilterParams): Promise<MassTimesTemplateWithItems[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('mass_times_templates')
@@ -109,7 +106,7 @@ export async function getMassTimesWithItems(filters?: MassTimeFilterParams): Pro
       *,
       items:mass_times_template_items(id, time, day_type)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
 
   // Apply filters
@@ -137,9 +134,7 @@ export async function getMassTimesWithItems(filters?: MassTimeFilterParams): Pro
 export async function getMassTimesPaginated(
   params?: MassTimePaginatedParams
 ): Promise<PaginatedResult<MassTimeWithRelations>> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 50
@@ -148,7 +143,7 @@ export async function getMassTimesPaginated(
   let query = supabase
     .from('mass_times_templates')
     .select('*', { count: 'exact' })
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
@@ -184,15 +179,13 @@ export async function getMassTimesPaginated(
  * Get a single mass times template by ID with relations
  */
 export async function getMassTimeWithRelations(id: string): Promise<MassTimeWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_times_templates')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (error) {
@@ -207,15 +200,13 @@ export async function getMassTimeWithRelations(id: string): Promise<MassTimeWith
  * Get a single mass times template by ID
  */
 export async function getMassTime(id: string): Promise<MassTime | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_times_templates')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (error) {
@@ -230,15 +221,13 @@ export async function getMassTime(id: string): Promise<MassTime | null> {
  * Create a new mass times template
  */
 export async function createMassTime(data: CreateMassTimeData): Promise<MassTime> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: massTimesTemplate, error } = await supabase
     .from('mass_times_templates')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         description: data.description || null,
         day_of_week: data.day_of_week || 'SUNDAY',
@@ -261,9 +250,7 @@ export async function createMassTime(data: CreateMassTimeData): Promise<MassTime
  * Update a mass times template
  */
 export async function updateMassTime(id: string, data: UpdateMassTimeData): Promise<MassTime> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const updateData: Record<string, unknown> = {}
   if (data.name !== undefined) updateData.name = data.name
@@ -275,7 +262,7 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
     .from('mass_times_templates')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -294,15 +281,13 @@ export async function updateMassTime(id: string, data: UpdateMassTimeData): Prom
  * Delete a mass times template
  */
 export async function deleteMassTime(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('mass_times_templates')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting mass times template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

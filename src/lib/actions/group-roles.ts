@@ -6,6 +6,11 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import type { PaginatedParams, PaginatedResult } from './people'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // ========== GROUP ROLE DEFINITIONS ==========
 
@@ -38,14 +43,12 @@ export interface UpdateGroupRoleData {
 }
 
 export async function getGroupRoles(): Promise<GroupRole[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('group_roles')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('display_order', { ascending: true, nullsFirst: false })
     .order('name', { ascending: true })
 
@@ -58,9 +61,7 @@ export async function getGroupRoles(): Promise<GroupRole[]> {
 }
 
 export async function getGroupRolesPaginated(params?: PaginatedParams): Promise<PaginatedResult<GroupRole>> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 10
@@ -70,7 +71,7 @@ export async function getGroupRolesPaginated(params?: PaginatedParams): Promise<
   let query = supabase
     .from('group_roles')
     .select('*', { count: 'exact' })
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   // Apply search filter
   if (search) {
@@ -115,7 +116,7 @@ export async function getGroupRole(id: string): Promise<GroupRole | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching group role: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -126,15 +127,13 @@ export async function getGroupRole(id: string): Promise<GroupRole | null> {
 }
 
 export async function createGroupRole(data: CreateGroupRoleData): Promise<GroupRole> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: role, error } = await supabase
     .from('group_roles')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         description: data.description || null,
         note: data.note || null,

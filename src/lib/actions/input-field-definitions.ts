@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireManageParishSettings } from '@/lib/auth/permissions'
-import type {
+import {
   InputFieldDefinition,
   InputFieldDefinitionWithRelations,
   CreateInputFieldDefinitionData,
@@ -13,6 +13,11 @@ import type {
   CustomList,
 } from '@/lib/types'
 import { logError } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 /**
  * Get all input field definitions for an event type
@@ -41,9 +46,7 @@ export async function getInputFieldDefinitions(eventTypeId: string): Promise<Inp
  * Get a single input field definition by ID with relations
  */
 export async function getInputFieldDefinitionWithRelations(id: string): Promise<InputFieldDefinitionWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: fieldDef, error } = await supabase
     .from('input_field_definitions')
@@ -53,7 +56,7 @@ export async function getInputFieldDefinitionWithRelations(id: string): Promise<
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching input field definition: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -70,7 +73,7 @@ export async function getInputFieldDefinitionWithRelations(id: string): Promise<
       .from('custom_lists')
       .select('*')
       .eq('id', fieldDef.list_id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .is('deleted_at', null)
       .single()
 
@@ -86,16 +89,14 @@ export async function getInputFieldDefinitionWithRelations(id: string): Promise<
  * Create a new input field definition
  */
 export async function createInputFieldDefinition(data: CreateInputFieldDefinitionData): Promise<InputFieldDefinition> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Validate is_key_person only for person type
   if (data.is_key_person && data.type !== 'person') {
@@ -168,16 +169,14 @@ export async function createInputFieldDefinition(data: CreateInputFieldDefinitio
  * Update an existing input field definition
  */
 export async function updateInputFieldDefinition(id: string, data: UpdateInputFieldDefinitionData): Promise<InputFieldDefinition> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Validate is_key_person only for person type
   if (data.is_key_person && data.type && data.type !== 'person') {
@@ -245,16 +244,14 @@ export async function updateInputFieldDefinition(id: string, data: UpdateInputFi
  * Checks if field is used in events and warns user
  */
 export async function deleteInputFieldDefinition(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Get field definition to find event_type_id
   const { data: fieldDef } = await supabase
@@ -292,16 +289,14 @@ export async function deleteInputFieldDefinition(id: string): Promise<void> {
  * Updates the order field for all provided field definitions
  */
 export async function reorderInputFieldDefinitions(eventTypeId: string, orderedIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Update each field definition's order
   const updates = orderedIds.map((id, index) =>

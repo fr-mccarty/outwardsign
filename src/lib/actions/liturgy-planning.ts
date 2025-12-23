@@ -5,17 +5,18 @@ import { CreateLiturgyPlanData, LiturgyPlan } from '@/lib/types'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logWarning } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
 
 export async function createLiturgyPlan(data: CreateLiturgyPlanData) {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: plan, error } = await supabase
     .from('liturgy_plans')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         title: data.title,
         date: data.date,
         liturgy_type: data.liturgy_type,

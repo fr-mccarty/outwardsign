@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireManageParishSettings } from '@/lib/auth/permissions'
-import type {
+import {
   Script,
   ScriptWithSections,
   CreateScriptData,
@@ -13,6 +13,11 @@ import type {
   Section
 } from '@/lib/types'
 import { logError } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 /**
  * Get all scripts for an event type
@@ -53,7 +58,7 @@ export async function getScript(id: string): Promise<Script | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -80,7 +85,7 @@ export async function getScriptWithSections(id: string): Promise<ScriptWithSecti
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching script: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -110,16 +115,14 @@ export async function getScriptWithSections(id: string): Promise<ScriptWithSecti
  * Create a new script
  */
 export async function createScript(data: CreateScriptData): Promise<Script> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Get max order for this event type
   const { data: existingScripts } = await supabase
@@ -161,16 +164,14 @@ export async function createScript(data: CreateScriptData): Promise<Script> {
  * Update an existing script
  */
 export async function updateScript(id: string, data: UpdateScriptData): Promise<Script> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
@@ -202,16 +203,14 @@ export async function updateScript(id: string, data: UpdateScriptData): Promise<
  * This will cascade delete all sections
  */
 export async function deleteScript(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Get event_type_id for revalidation
   const { data: script } = await supabase
@@ -245,16 +244,14 @@ export async function deleteScript(id: string): Promise<void> {
  * Updates the order field for all provided scripts
  */
 export async function reorderScripts(eventTypeId: string, orderedIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Update each script's order
   const updates = orderedIds.map((id, index) =>

@@ -1,12 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
 import { sanitizeContentBody } from '@/lib/utils/sanitize'
-import type {
+import { createClient } from '@/lib/supabase/server'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+import {
   ContentWithTags,
   CreateContentData,
   UpdateContentData,
@@ -119,10 +121,7 @@ async function fetchTagsForContents(
  * Supports search, tag filtering (AND logic), language filtering, and pagination
  */
 export async function getContents(filters: GetContentsFilters = {}): Promise<GetContentsResult> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const {
     search,
@@ -193,10 +192,7 @@ export async function getContents(filters: GetContentsFilters = {}): Promise<Get
  * Get a single content item by ID with tags
  */
 export async function getContentById(contentId: string): Promise<ContentWithTags | null> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('contents')
@@ -206,7 +202,7 @@ export async function getContentById(contentId: string): Promise<ContentWithTags
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching content: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -228,10 +224,7 @@ export async function getContentById(contentId: string): Promise<ContentWithTags
  * Requires Admin or Staff role
  */
 export async function createContent(input: CreateContentData): Promise<ContentWithTags> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin or staff role
   const userId = await requireAdminOrStaffRole(supabase, parishId)
@@ -301,10 +294,7 @@ export async function updateContent(
   contentId: string,
   input: UpdateContentData
 ): Promise<ContentWithTags> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin or staff role
   await requireAdminOrStaffRole(supabase, parishId)
@@ -387,10 +377,7 @@ export async function updateContent(
  * Requires Admin or Staff role
  */
 export async function deleteContent(contentId: string): Promise<{ success: boolean }> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin or staff role
   await requireAdminOrStaffRole(supabase, parishId)
@@ -433,10 +420,7 @@ export async function searchContentByText(
   language?: 'en' | 'es',
   limit: number = 20
 ): Promise<ContentWithTags[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate limit (max 100)
   const safeLimit = Math.min(limit, 100)

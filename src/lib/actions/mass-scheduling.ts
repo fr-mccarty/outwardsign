@@ -10,6 +10,10 @@ import { toLocalDateString } from '@/lib/utils/formatters'
 import { logInfo, logError } from '@/lib/utils/console'
 import type { GlobalLiturgicalEvent } from '@/lib/actions/global-liturgical-events'
 import type { EventType } from '@/lib/types'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
+
 
 // Role definition from event_types.role_definitions
 interface RoleDefinition {
@@ -71,9 +75,7 @@ export interface ScheduleMassesResult {
 export async function scheduleMasses(
   params: ScheduleMassesParams
 ): Promise<ScheduleMassesResult> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   try {
     // Phase 1: Fetch selected liturgical events
@@ -101,7 +103,7 @@ export async function scheduleMasses(
         .from('event_types')
         .select('*')
         .eq('id', params.eventTypeId)
-        .eq('parish_id', selectedParishId)
+        .eq('parish_id', parishId)
         .eq('system_type', 'mass')
         .is('deleted_at', null)
         .single()
@@ -116,7 +118,7 @@ export async function scheduleMasses(
       const { data, error } = await supabase
         .from('event_types')
         .select('*')
-        .eq('parish_id', selectedParishId)
+        .eq('parish_id', parishId)
         .eq('system_type', 'mass')
         .is('deleted_at', null)
         .limit(1)
@@ -257,7 +259,7 @@ export async function scheduleMasses(
       const { data: masterEvent, error: masterEventError } = await supabase
         .from('master_events')
         .insert({
-          parish_id: selectedParishId,
+          parish_id: parishId,
           event_type_id: massEventType.id,
           field_values: {
             liturgical_event_id: massData.liturgicalEvent?.id || null,
@@ -285,7 +287,7 @@ export async function scheduleMasses(
         .from('calendar_events')
         .insert({
           master_event_id: masterEvent.id,
-          parish_id: selectedParishId,
+          parish_id: parishId,
           input_field_definition_id: primaryFieldDef.id,
           start_datetime: startDatetime,
           show_on_calendar: true,
@@ -423,7 +425,7 @@ export async function scheduleMasses(
             roleId,
             mass.date,
             mass.time,
-            selectedParishId
+            parishId
           )
 
           // Check for double-booking conflicts
@@ -515,10 +517,10 @@ export async function getSuggestedMinister(
   balanceWorkload: boolean,
   alreadyAssignedPersonIds: string[] = []
 ): Promise<{ id: string; name: string } | null> {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
 
-  const ministers = await getAvailableMinisters(roleId, date, time, selectedParishId)
+  const ministers = await getAvailableMinisters(roleId, date, time, parishId)
 
   // Filter out people already assigned to this Mass
   const available = ministers.filter(m => !alreadyAssignedPersonIds.includes(m.id))

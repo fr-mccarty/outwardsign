@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import type {
+import {
   MasterEventTemplate,
   MasterEventTemplateWithRelations,
   UpdateMasterEventTemplateData,
@@ -12,14 +12,17 @@ import type {
 } from '@/lib/types'
 import { logError, logInfo } from '@/lib/utils/console'
 import { getEventWithRelations } from './master-events'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 /**
  * Get all templates across all event types with event type information
  */
 export async function getAllTemplates(): Promise<MasterEventTemplateWithRelations[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('master_event_templates')
@@ -27,7 +30,7 @@ export async function getAllTemplates(): Promise<MasterEventTemplateWithRelation
       *,
       event_type:event_types(*)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
@@ -43,14 +46,12 @@ export async function getAllTemplates(): Promise<MasterEventTemplateWithRelation
  * Get all templates for a specific event type
  */
 export async function getTemplatesByEventType(eventTypeId: string): Promise<MasterEventTemplate[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('master_event_templates')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('event_type_id', eventTypeId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -67,9 +68,7 @@ export async function getTemplatesByEventType(eventTypeId: string): Promise<Mast
  * Get a single template by ID with event type information
  */
 export async function getTemplate(id: string): Promise<MasterEventTemplateWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('master_event_templates')
@@ -78,12 +77,12 @@ export async function getTemplate(id: string): Promise<MasterEventTemplateWithRe
       event_type:event_types(*)
     `)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -102,7 +101,7 @@ export async function createTemplateFromEvent(
   templateDescription?: string
 ): Promise<{ success: boolean; template?: MasterEventTemplate; error?: string }> {
   try {
-    const selectedParishId = await requireSelectedParish()
+    const parishId = await requireSelectedParish()
     const supabase = await createClient()
     await ensureJWTClaims()
 
@@ -154,7 +153,7 @@ export async function createTemplateFromEvent(
       .from('master_event_templates')
       .insert([
         {
-          parish_id: selectedParishId,
+          parish_id: parishId,
           event_type_id: masterEvent.event_type_id,
           name: templateName,
           description: templateDescription || null,
@@ -187,9 +186,7 @@ export async function updateTemplate(
   data: UpdateMasterEventTemplateData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const selectedParishId = await requireSelectedParish()
-    await ensureJWTClaims()
-    const supabase = await createClient()
+    const { supabase, parishId } = await createAuthenticatedClient()
 
     // Build update object
     const updateData: { name?: string; description?: string | null } = {}
@@ -208,7 +205,7 @@ export async function updateTemplate(
       .from('master_event_templates')
       .update(updateData)
       .eq('id', id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
 
     if (error) {
       logError('Error updating template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -229,15 +226,13 @@ export async function updateTemplate(
  */
 export async function deleteTemplate(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const selectedParishId = await requireSelectedParish()
-    await ensureJWTClaims()
-    const supabase = await createClient()
+    const { supabase, parishId } = await createAuthenticatedClient()
 
     const { error } = await supabase
       .from('master_event_templates')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
 
     if (error) {
       logError('Error deleting template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

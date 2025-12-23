@@ -7,6 +7,11 @@ import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import type { LiturgicalContext } from '@/lib/constants'
 import { createMassRoleTemplateSchema, updateMassRoleTemplateSchema, type CreateMassRoleTemplateData, type UpdateMassRoleTemplateData } from '@/lib/schemas/mass-role-templates'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // Types
 export interface MassRoleTemplate {
@@ -38,14 +43,12 @@ export interface MassRoleTemplateWithItems extends MassRoleTemplate {
 
 // Get all mass role templates for the current parish
 export async function getMassRoleTemplates(): Promise<MassRoleTemplate[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_roles_templates')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('name', { ascending: true })
 
   if (error) {
@@ -58,9 +61,7 @@ export async function getMassRoleTemplates(): Promise<MassRoleTemplate[]> {
 
 // Get all mass role templates with their items for the current parish
 export async function getMassRoleTemplatesWithItems(): Promise<MassRoleTemplateWithItems[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_roles_templates')
@@ -74,7 +75,7 @@ export async function getMassRoleTemplatesWithItems(): Promise<MassRoleTemplateW
         mass_role:mass_roles(id, name, description)
       )
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('name', { ascending: true })
 
   if (error) {
@@ -87,19 +88,17 @@ export async function getMassRoleTemplatesWithItems(): Promise<MassRoleTemplateW
 
 // Get a single mass role template by ID
 export async function getMassRoleTemplate(id: string): Promise<MassRoleTemplate | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_roles_templates')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null
     }
     logError('Error fetching mass role template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -111,7 +110,7 @@ export async function getMassRoleTemplate(id: string): Promise<MassRoleTemplate 
 
 // Create a new mass role template
 export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): Promise<MassRoleTemplate> {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
 
   // Validate data with schema
@@ -122,7 +121,7 @@ export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): 
   const { data: template, error } = await supabase
     .from('mass_roles_templates')
     .insert({
-      parish_id: selectedParishId,
+      parish_id: parishId,
       name: data.name,
       description: data.description || null,
       note: data.note || null,
@@ -142,7 +141,7 @@ export async function createMassRoleTemplate(data: CreateMassRoleTemplateData): 
 
 // Update an existing mass role template
 export async function updateMassRoleTemplate(id: string, data: UpdateMassRoleTemplateData): Promise<MassRoleTemplate> {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
 
   // Validate data with schema
@@ -160,7 +159,7 @@ export async function updateMassRoleTemplate(id: string, data: UpdateMassRoleTem
     .from('mass_roles_templates')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -177,15 +176,13 @@ export async function updateMassRoleTemplate(id: string, data: UpdateMassRoleTem
 
 // Delete a mass role template
 export async function deleteMassRoleTemplate(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('mass_roles_templates')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting mass role template: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

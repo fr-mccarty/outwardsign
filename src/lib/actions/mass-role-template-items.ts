@@ -5,6 +5,10 @@ import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import {
+  isUniqueConstraintError,
+} from './server-action-utils'
+
 
 // Types
 export interface MassRoleTemplateItem {
@@ -89,7 +93,7 @@ export async function createTemplateItem(data: CreateTemplateItemData): Promise<
 
   if (error) {
     logError('Error creating template item: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    if (error.code === '23505') { // Unique constraint violation
+    if (isUniqueConstraintError(error)) { // Unique constraint violation
       throw new Error('This mass role is already in the template')
     }
     throw new Error('Failed to add mass role to template')

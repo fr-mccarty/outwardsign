@@ -1,15 +1,18 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import { requireEditSharedResources } from '@/lib/auth/permissions'
-import { logError } from '@/lib/utils/console'
 import { Event, Location, Person, EventType } from '@/lib/types'
 import type { PaginatedParams, PaginatedResult } from './people'
 import { createEventSchema, updateEventSchema, type CreateEventData, type UpdateEventData } from '@/lib/schemas/events'
 import { RelatedEventType, LiturgicalLanguage } from '@/lib/constants'
+import {
+  createAuthenticatedClient,
+  createAuthenticatedClientWithPermissions,
+  handleSupabaseError,
+  isNotFoundError,
+  revalidateEntity,
+  buildPaginatedResult,
+  buildUpdateData,
+} from './server-action-utils'
 
 export interface EventWithRelations extends Event {
   location?: Location | null
@@ -51,9 +54,7 @@ export async function getEventStats(events: EventWithRelations[]): Promise<Event
 }
 
 export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   let query = supabase
     .from('events')
@@ -111,18 +112,13 @@ export async function getEvents(filters?: EventFilterParams): Promise<Event[]> {
 
   const { data, error } = await query
 
-  if (error) {
-    logError('Error fetching events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch events')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'events')
 
   return data || []
 }
 
 export async function getEventsPaginated(params?: PaginatedParams): Promise<PaginatedResult<Event>> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const offset = params?.offset || 0
   const limit = params?.limit || 10
@@ -146,28 +142,13 @@ export async function getEventsPaginated(params?: PaginatedParams): Promise<Pagi
 
   const { data, error, count } = await query
 
-  if (error) {
-    logError('Error fetching paginated events: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch paginated events')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'paginated events')
 
-  const totalCount = count || 0
-  const totalPages = Math.ceil(totalCount / limit)
-  const page = Math.floor(offset / limit) + 1
-
-  return {
-    items: data || [],
-    totalCount,
-    page,
-    limit,
-    totalPages,
-  }
+  return buildPaginatedResult(data, count, offset, limit)
 }
 
 export async function getEvent(id: string): Promise<Event | null> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('events')
@@ -176,20 +157,17 @@ export async function getEvent(id: string): Promise<Event | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
-    logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch event')
+    handleSupabaseError(error, 'fetching', 'event')
   }
 
   return data
 }
 
 export async function getEventWithRelations(id: string): Promise<EventWithRelations | null> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   // Fetch base event
   const { data: event, error } = await supabase
@@ -199,11 +177,10 @@ export async function getEventWithRelations(id: string): Promise<EventWithRelati
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
-    logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch event')
+    handleSupabaseError(error, 'fetching', 'event')
   }
 
   // Fetch location if location_id exists
@@ -225,16 +202,7 @@ export async function getEventWithRelations(id: string): Promise<EventWithRelati
 }
 
 export async function createEvent(data: CreateEventData): Promise<Event> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
+  const { supabase, parishId } = await createAuthenticatedClientWithPermissions()
 
   // Validate data
   const validatedData = createEventSchema.parse(data)
@@ -243,7 +211,7 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
     .from('events')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: validatedData.name,
         description: validatedData.description || null,
         responsible_party_id: validatedData.responsible_party_id || null,
@@ -263,45 +231,18 @@ export async function createEvent(data: CreateEventData): Promise<Event> {
     .select()
     .single()
 
-  if (error) {
-    logError('Error creating event: ' + error.message + ' Details: ' + JSON.stringify({ details: error.details, code: error.code }))
-    throw new Error(`Failed to create event: ${error.message}`)
-  }
+  if (error) handleSupabaseError(error, 'creating', 'event')
 
-  revalidatePath('/events')
+  revalidateEntity('events')
   return event
 }
 
 export async function updateEvent(id: string, data: UpdateEventData): Promise<Event> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
+  const { supabase } = await createAuthenticatedClientWithPermissions()
 
   // Validate data
   const validatedData = updateEventSchema.parse(data)
-
-  const updateData: Record<string, unknown> = {}
-  if (validatedData.name !== undefined) updateData.name = validatedData.name
-  if (validatedData.description !== undefined) updateData.description = validatedData.description || null
-  if (validatedData.responsible_party_id !== undefined) updateData.responsible_party_id = validatedData.responsible_party_id
-  if (validatedData.event_type_id !== undefined) updateData.event_type_id = validatedData.event_type_id || null
-  if (validatedData.related_event_type !== undefined) updateData.related_event_type = validatedData.related_event_type || null
-  if (validatedData.start_date !== undefined) updateData.start_date = validatedData.start_date || null
-  if (validatedData.start_time !== undefined) updateData.start_time = validatedData.start_time || null
-  if (validatedData.end_date !== undefined) updateData.end_date = validatedData.end_date || null
-  if (validatedData.end_time !== undefined) updateData.end_time = validatedData.end_time || null
-  if (validatedData.timezone !== undefined) updateData.timezone = validatedData.timezone || null
-  if (validatedData.location_id !== undefined) updateData.location_id = validatedData.location_id || null
-  if (validatedData.language !== undefined) updateData.language = validatedData.language || null
-  if (validatedData.event_template_id !== undefined) updateData.event_template_id = validatedData.event_template_id || null
-  if (validatedData.note !== undefined) updateData.note = validatedData.note || null
+  const updateData = buildUpdateData(validatedData)
 
   const { data: event, error } = await supabase
     .from('events')
@@ -310,39 +251,23 @@ export async function updateEvent(id: string, data: UpdateEventData): Promise<Ev
     .select()
     .single()
 
-  if (error) {
-    logError('Error updating event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to update event')
-  }
+  if (error) handleSupabaseError(error, 'updating', 'event')
 
-  revalidatePath('/events')
-  revalidatePath(`/events/${id}`)
+  revalidateEntity('events', id)
   return event
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
-
-  // Check permissions
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-  await requireEditSharedResources(user.id, selectedParishId)
+  const { supabase } = await createAuthenticatedClientWithPermissions()
 
   const { error } = await supabase
     .from('events')
     .delete()
     .eq('id', id)
 
-  if (error) {
-    logError('Error deleting event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to delete event')
-  }
+  if (error) handleSupabaseError(error, 'deleting', 'event')
 
-  revalidatePath('/events')
+  revalidateEntity('events')
 }
 
 export interface EventModuleLink {
@@ -351,9 +276,7 @@ export interface EventModuleLink {
 }
 
 export async function getEventModuleLink(eventId: string): Promise<EventModuleLink> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   // Check weddings
   const { data: wedding } = await supabase
@@ -429,9 +352,7 @@ export interface EventWithModuleLink extends EventWithRelations {
 }
 
 export async function getEventsWithModuleLinks(filters?: EventFilterParams): Promise<EventWithModuleLink[]> {
-  await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase } = await createAuthenticatedClient()
 
   let query = supabase
     .from('events')
@@ -479,10 +400,7 @@ export async function getEventsWithModuleLinks(filters?: EventFilterParams): Pro
 
   const { data, error } = await query
 
-  if (error) {
-    logError('Error fetching events with relations: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
-    throw new Error('Failed to fetch events')
-  }
+  if (error) handleSupabaseError(error, 'fetching', 'events with relations')
 
   const events = data || []
 

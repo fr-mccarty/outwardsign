@@ -14,6 +14,9 @@ import quinceaneraEnglish from '@/lib/default-petition-templates/quinceanera-eng
 import quinceaneraSpanish from '@/lib/default-petition-templates/quinceanera-spanish'
 import presentationEnglish from '@/lib/default-petition-templates/presentation-english'
 import presentationSpanish from '@/lib/default-petition-templates/presentation-spanish'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
 
 export interface PetitionContextTemplate {
   id: string
@@ -44,7 +47,7 @@ export interface UpdateContextData extends CreateContextData {
 
 // Helper function to check if user is admin
 async function requireAdminRole() {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -55,7 +58,7 @@ async function requireAdminRole() {
   const { data: userParish } = await supabase
     .from('parish_users')
     .select('roles')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('user_id', user.id)
     .single()
 
@@ -65,14 +68,12 @@ async function requireAdminRole() {
 }
 
 export async function getPetitionTemplates(filters?: { module?: string; language?: string }): Promise<PetitionContextTemplate[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('petition_templates')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   // Apply filters if provided
   if (filters?.module) {
@@ -92,7 +93,7 @@ export async function getPetitionTemplates(filters?: { module?: string; language
 }
 
 export async function createPetitionTemplate(contextData: CreateContextData): Promise<PetitionContextTemplate> {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
   await requireAdminRole() // Check admin permissions
   const supabase = await createClient()
@@ -101,7 +102,7 @@ export async function createPetitionTemplate(contextData: CreateContextData): Pr
     .from('petition_templates')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         title: contextData.title,
         description: contextData.description,
         context: contextData.context,
@@ -121,7 +122,7 @@ export async function createPetitionTemplate(contextData: CreateContextData): Pr
 }
 
 export async function updatePetitionTemplate(contextData: UpdateContextData): Promise<PetitionContextTemplate> {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
   await requireAdminRole() // Check admin permissions
   const supabase = await createClient()
@@ -136,7 +137,7 @@ export async function updatePetitionTemplate(contextData: UpdateContextData): Pr
       language: contextData.language
     })
     .eq('id', contextData.id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -148,7 +149,7 @@ export async function updatePetitionTemplate(contextData: UpdateContextData): Pr
 }
 
 export async function deletePetitionTemplate(contextId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
+  const parishId = await requireSelectedParish()
   await ensureJWTClaims()
   await requireAdminRole() // Check admin permissions
   const supabase = await createClient()
@@ -157,7 +158,7 @@ export async function deletePetitionTemplate(contextId: string): Promise<void> {
     .from('petition_templates')
     .delete()
     .eq('id', contextId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     throw new Error('Failed to delete petition context')
@@ -165,15 +166,13 @@ export async function deletePetitionTemplate(contextId: string): Promise<void> {
 }
 
 export async function getPetitionTemplate(contextId: string): Promise<PetitionContextTemplate | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('petition_templates')
     .select('*')
     .eq('id', contextId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (error) {
@@ -190,29 +189,25 @@ export async function getPetitionTemplateById(contextId: string): Promise<Petiti
 
 // Function to clean up invalid contexts
 export async function cleanupInvalidContexts(): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Remove contexts with empty titles or invalid context data
   await supabase
     .from('petition_templates')
     .delete()
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .or('title.is.null,title.eq.,context.is.null,context.eq.')
 }
 
 // Function to ensure parish has default contexts
 export async function ensureDefaultContexts(): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check if parish already has any contexts (simple count check)
   const { data: existingContexts } = await supabase
     .from('petition_templates')
     .select('id')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .limit(1)
 
   if (existingContexts && existingContexts.length > 0) {
@@ -239,7 +234,7 @@ export async function ensureDefaultContexts(): Promise<void> {
       .from('petition_templates')
       .insert([
         {
-          parish_id: selectedParishId,
+          parish_id: parishId,
           title: template.title,
           description: template.description,
           context: template.content,

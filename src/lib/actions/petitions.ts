@@ -1,26 +1,25 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { CreatePetitionData, Petition, PetitionContext } from '@/lib/types'
 // redirect import removed - not used
 import { getPromptTemplate } from '@/lib/actions/definitions'
 import { replaceTemplateVariables, getTemplateVariables } from '@/lib/template-utils'
 import { getPetitionTemplate } from './petition-templates'
-import { requireSelectedParish } from '@/lib/auth/parish'
 import { logInfo, logWarning, logError } from '@/lib/utils/console'
 import type { LiturgicalLanguage } from '@/lib/constants'
 import { CLAUDE_MODEL } from '@/lib/constants/ai'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
 
 export async function createBasicPetition(data: { title: string; date: string }) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: petition, error: petitionError } = await supabase
     .from('petitions')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         title: data.title,
         date: data.date,
         language: 'en', // Default, will be set in wizard
@@ -40,9 +39,7 @@ export async function createBasicPetition(data: { title: string; date: string })
 }
 
 export async function createPetition(data: CreatePetitionData) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // If a template ID is provided, store it for reference
   let templateReference = null
@@ -66,7 +63,7 @@ export async function createPetition(data: CreatePetitionData) {
     .from('petitions')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         title: data.title,
         date: data.date,
         language: data.language,
@@ -86,14 +83,12 @@ export async function createPetition(data: CreatePetitionData) {
 }
 
 export async function getPetitions(): Promise<Petition[]> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('petitions')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -115,9 +110,7 @@ export async function searchPetitions(params: {
   totalPages: number
   currentPage: number
 }> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
   
   const {
     query = '',
@@ -131,7 +124,7 @@ export async function searchPetitions(params: {
   let queryBuilder = supabase
     .from('petitions')
     .select('*', { count: 'exact' })
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   // Add search filter
   if (query) {
@@ -163,15 +156,13 @@ export async function searchPetitions(params: {
 }
 
 export async function getPetition(id: string): Promise<Petition | null> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('petitions')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (error || !data) {
@@ -182,15 +173,13 @@ export async function getPetition(id: string): Promise<Petition | null> {
 }
 
 export async function getSavedContexts(): Promise<Array<{id: string, name: string, details: string}>> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get petitions that have details
   const { data, error } = await supabase
     .from('petitions')
     .select('id, title, date, details')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .not('details', 'is', null)
     .order('created_at', { ascending: false })
 
@@ -212,15 +201,13 @@ export async function getSavedContexts(): Promise<Array<{id: string, name: strin
 }
 
 export async function getPetitionWithContext(id: string): Promise<{ petition: Petition; context: PetitionContext } | null> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: petition, error: petitionError } = await supabase
     .from('petitions')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (petitionError || !petition) {
@@ -256,9 +243,7 @@ export async function getPetitionWithContext(id: string): Promise<{ petition: Pe
 }
 
 export async function updatePetition(id: string, data: CreatePetitionData) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const generatedContent = await generatePetitionContent(data)
 
@@ -268,7 +253,7 @@ export async function updatePetition(id: string, data: CreatePetitionData) {
     .from('petitions')
     .select('details, template')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (fetchError) {
@@ -289,7 +274,7 @@ export async function updatePetition(id: string, data: CreatePetitionData) {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -373,15 +358,13 @@ export async function generatePetitionContent(data: CreatePetitionData): Promise
 }
 
 export async function updatePetitionLanguage(petitionId: string, language: LiturgicalLanguage) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('petitions')
     .update({ language })
     .eq('id', petitionId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     throw new Error('Failed to update petition language')
@@ -389,16 +372,14 @@ export async function updatePetitionLanguage(petitionId: string, language: Litur
 }
 
 export async function updatePetitionContext(petitionId: string, context: string) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Context is now stored in the details field
   const { error } = await supabase
     .from('petitions')
     .update({ details: context })
     .eq('id', petitionId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     throw new Error('Failed to update petition context')
@@ -406,15 +387,13 @@ export async function updatePetitionContext(petitionId: string, context: string)
 }
 
 export async function updatePetitionContent(petitionId: string, content: string) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('petitions')
     .update({ text: content })
     .eq('id', petitionId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     throw new Error('Failed to update petition content')
@@ -422,15 +401,13 @@ export async function updatePetitionContent(petitionId: string, content: string)
 }
 
 export async function updatePetitionTemplate(petitionId: string, template: string) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('petitions')
     .update({ template })
     .eq('id', petitionId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     throw new Error('Failed to update petition template')
@@ -438,15 +415,13 @@ export async function updatePetitionTemplate(petitionId: string, template: strin
 }
 
 export async function updatePetitionDetails(petitionId: string, details: string) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('petitions')
     .update({ details })
     .eq('id', petitionId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     throw new Error('Failed to update petition details')
@@ -454,9 +429,7 @@ export async function updatePetitionDetails(petitionId: string, details: string)
 }
 
 export async function updatePetitionFullDetails(id: string, data: { title: string; date: string; language: LiturgicalLanguage; text: string; details?: string }) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const updateData: any = {
     title: data.title,
@@ -475,7 +448,7 @@ export async function updatePetitionFullDetails(id: string, data: { title: strin
     .from('petitions')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -488,9 +461,7 @@ export async function updatePetitionFullDetails(id: string, data: { title: strin
 }
 
 export async function regeneratePetitionContent(id: string, data: { title: string; date: string; language: LiturgicalLanguage; template?: string; details?: string }) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Generate new content
   const petitionData: CreatePetitionData = {
@@ -521,7 +492,7 @@ export async function regeneratePetitionContent(id: string, data: { title: strin
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -534,16 +505,14 @@ export async function regeneratePetitionContent(id: string, data: { title: strin
 }
 
 export async function duplicatePetition(id: string): Promise<Petition> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // First, get the original petition
   const { data: originalPetition, error: fetchError } = await supabase
     .from('petitions')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (fetchError || !originalPetition) {
@@ -555,7 +524,7 @@ export async function duplicatePetition(id: string): Promise<Petition> {
     .from('petitions')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         title: `${originalPetition.title} - duplicate`,
         date: originalPetition.date,
         language: originalPetition.language,
@@ -576,14 +545,12 @@ export async function duplicatePetition(id: string): Promise<Petition> {
 }
 
 export async function getPetitionsByDateRange(startDate: string, endDate: string): Promise<Petition[]> {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('petitions')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .gte('date', startDate)
     .lte('date', endDate)
     .order('date', { ascending: true })
@@ -596,15 +563,13 @@ export async function getPetitionsByDateRange(startDate: string, endDate: string
 }
 
 export async function deletePetition(id: string) {
-  const supabase = await createClient()
-  
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('petitions')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Petition deletion error: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -623,8 +588,7 @@ export async function createPetitionFromEvent(data: {
   templateId?: string
   details?: string
 }): Promise<Petition> {
-  const supabase = await createClient()
-  const selectedParishId = await requireSelectedParish()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Auto-generate title from event context
   const title = `${data.eventTypeName} - ${data.occasionDate}`
@@ -640,7 +604,7 @@ export async function createPetitionFromEvent(data: {
   const { data: petition, error } = await supabase
     .from('petitions')
     .insert({
-      parish_id: selectedParishId,
+      parish_id: parishId,
       title,
       date: data.occasionDate,
       language: data.language,

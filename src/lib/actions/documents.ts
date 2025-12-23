@@ -6,6 +6,11 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireEditSharedResources } from '@/lib/auth/permissions'
 import { logError } from '@/lib/utils/console'
 import type { Document } from '@/lib/types'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // Allowed file types for documents
 const ALLOWED_FILE_TYPES = [
@@ -33,9 +38,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
  */
 export async function uploadDocument(
   file: File,
-  parishId?: string
+  providedParishId?: string
 ): Promise<Document> {
-  const selectedParishId = parishId || await requireSelectedParish()
+  const parishId = providedParishId || await requireSelectedParish()
   await ensureJWTClaims()
   const supabase = await createClient()
 
@@ -44,7 +49,7 @@ export async function uploadDocument(
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Validate file type
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
@@ -64,7 +69,7 @@ export async function uploadDocument(
   const documentId = crypto.randomUUID()
 
   // Create file path: {parish_id}/{document_id}/{filename}
-  const filePath = `${selectedParishId}/${documentId}/${file.name}`
+  const filePath = `${parishId}/${documentId}/${file.name}`
 
   // Upload to Supabase Storage
   const { error: uploadError } = await supabase.storage
@@ -85,7 +90,7 @@ export async function uploadDocument(
     .insert([
       {
         id: documentId,
-        parish_id: selectedParishId,
+        parish_id: parishId,
         file_path: filePath,
         file_name: file.name,
         file_type: file.type,
@@ -112,21 +117,19 @@ export async function uploadDocument(
  * Signed URLs expire after 60 minutes
  */
 export async function getDocumentSignedUrl(documentId: string): Promise<string> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Fetch document record
   const { data: document, error } = await supabase
     .from('documents')
     .select('*')
     .eq('id', documentId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       throw new Error('Document not found')
     }
     logError('Error fetching document: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -157,23 +160,21 @@ export async function getDocumentSignedUrl(documentId: string): Promise<string> 
  * Field values in events will contain an invalid document ID after deletion.
  */
 export async function deleteDocument(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireEditSharedResources(user.id, selectedParishId)
+  await requireEditSharedResources(user.id, parishId)
 
   // Fetch document to get file_path
   const { data: document, error: fetchError } = await supabase
     .from('documents')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
@@ -200,7 +201,7 @@ export async function deleteDocument(id: string): Promise<void> {
     .from('documents')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (dbError) {
     logError('Error deleting document from database: ' + (dbError instanceof Error ? dbError.message : JSON.stringify(dbError)))
@@ -212,20 +213,18 @@ export async function deleteDocument(id: string): Promise<void> {
  * Get document metadata by ID
  */
 export async function getDocument(id: string): Promise<Document | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('documents')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching document: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

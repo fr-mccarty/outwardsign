@@ -1,11 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
-import type {
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+import {
+
   CalendarEvent,
   CreateCalendarEventData,
   UpdateCalendarEventData
@@ -15,9 +17,7 @@ import type {
  * Get all calendar events for a master event
  */
 export async function getCalendarEvents(masterEventId: string): Promise<CalendarEvent[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Verify master event belongs to user's parish
   const { data: masterEvent } = await supabase
@@ -27,7 +27,7 @@ export async function getCalendarEvents(masterEventId: string): Promise<Calendar
     .is('deleted_at', null)
     .single()
 
-  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+  if (!masterEvent || masterEvent.parish_id !== parishId) {
     throw new Error('Event not found or access denied')
   }
 
@@ -51,20 +51,18 @@ export async function getCalendarEvents(masterEventId: string): Promise<Calendar
  * Get a single calendar event by ID
  */
 export async function getCalendarEventById(id: string): Promise<CalendarEvent | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('calendar_events')
     .select('*, location:locations(*)')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -81,9 +79,7 @@ export async function createCalendarEvent(
   masterEventId: string,
   data: CreateCalendarEventData
 ): Promise<CalendarEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Verify master event belongs to user's parish and get event_type_id
   const { data: masterEvent } = await supabase
@@ -93,7 +89,7 @@ export async function createCalendarEvent(
     .is('deleted_at', null)
     .single()
 
-  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+  if (!masterEvent || masterEvent.parish_id !== parishId) {
     throw new Error('Event not found or access denied')
   }
 
@@ -112,7 +108,7 @@ export async function createCalendarEvent(
     .insert([
       {
         master_event_id: masterEventId,
-        parish_id: selectedParishId,
+        parish_id: parishId,
         start_datetime: data.start_datetime,
         end_datetime: data.end_datetime || null,
         input_field_definition_id: data.input_field_definition_id,
@@ -142,16 +138,14 @@ export async function updateCalendarEvent(
   id: string,
   data: UpdateCalendarEventData
 ): Promise<CalendarEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get calendar event to verify access and get master_event_id
   const { data: calendarEvent } = await supabase
     .from('calendar_events')
     .select('master_event_id')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
@@ -167,7 +161,7 @@ export async function updateCalendarEvent(
     .is('deleted_at', null)
     .single()
 
-  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+  if (!masterEvent || masterEvent.parish_id !== parishId) {
     throw new Error('Event not found or access denied')
   }
 
@@ -191,7 +185,7 @@ export async function updateCalendarEvent(
     .from('calendar_events')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .select('*, location:locations(*)')
     .single()
@@ -212,16 +206,14 @@ export async function updateCalendarEvent(
  * Prevents deleting the last calendar event for an event
  */
 export async function deleteCalendarEvent(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get calendar event to verify access and get master_event_id
   const { data: calendarEvent } = await supabase
     .from('calendar_events')
     .select('master_event_id')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
@@ -237,7 +229,7 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     .is('deleted_at', null)
     .single()
 
-  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+  if (!masterEvent || masterEvent.parish_id !== parishId) {
     throw new Error('Event not found or access denied')
   }
 
@@ -262,7 +254,7 @@ export async function deleteCalendarEvent(id: string): Promise<void> {
     .from('calendar_events')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting calendar event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))

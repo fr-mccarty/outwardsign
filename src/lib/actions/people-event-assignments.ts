@@ -1,11 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
 import type { Person, InputFieldDefinition } from '@/lib/types'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
+
 
 // ============================================================================
 // TYPES
@@ -52,9 +53,7 @@ export interface UpdatePeopleEventAssignmentData {
 export async function createPeopleEventAssignment(
   data: CreatePeopleEventAssignmentData
 ): Promise<PeopleEventAssignment> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Fetch field definition to check is_per_calendar_event
   const { data: fieldDef, error: fieldDefError } = await supabase
@@ -100,7 +99,7 @@ export async function createPeopleEventAssignment(
     throw new Error('Event not found')
   }
 
-  if (masterEvent.parish_id !== selectedParishId) {
+  if (masterEvent.parish_id !== parishId) {
     throw new Error('Event does not belong to selected parish')
   }
 
@@ -114,7 +113,7 @@ export async function createPeopleEventAssignment(
     .from('people')
     .select('id')
     .eq('id', data.person_id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (personError || !person) {
@@ -195,9 +194,7 @@ export async function updatePeopleEventAssignment(
   id: string,
   data: UpdatePeopleEventAssignmentData
 ): Promise<PeopleEventAssignment> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get existing assignment to verify access
   const { data: existingAssignment, error: fetchError } = await supabase
@@ -225,7 +222,7 @@ export async function updatePeopleEventAssignment(
     throw new Error('Event not found')
   }
 
-  if (masterEvent.parish_id !== selectedParishId) {
+  if (masterEvent.parish_id !== parishId) {
     throw new Error('Access denied')
   }
 
@@ -235,7 +232,7 @@ export async function updatePeopleEventAssignment(
       .from('people')
       .select('id')
       .eq('id', data.person_id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .single()
 
     if (personError || !person) {
@@ -278,9 +275,7 @@ export async function updatePeopleEventAssignment(
  * Delete a people-event assignment (soft delete)
  */
 export async function deletePeopleEventAssignment(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get assignment to verify access and get master_event_id for revalidation
   const { data: assignment, error: fetchError } = await supabase
@@ -308,7 +303,7 @@ export async function deletePeopleEventAssignment(id: string): Promise<void> {
     throw new Error('Event not found')
   }
 
-  if (masterEvent.parish_id !== selectedParishId) {
+  if (masterEvent.parish_id !== parishId) {
     throw new Error('Access denied')
   }
 
@@ -338,9 +333,7 @@ export async function getPeopleEventAssignments(filters?: {
   calendar_event_id?: string
   person_id?: string
 }): Promise<PeopleEventAssignmentWithPerson[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('people_event_assignments')
@@ -374,7 +367,7 @@ export async function getPeopleEventAssignments(filters?: {
       .from('master_events')
       .select('id, parish_id')
       .in('id', masterEventIds)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .is('deleted_at', null)
 
     const validEventIds = new Set(masterEvents?.map(e => e.id) || [])

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { UserPlus, CheckCircle2, Settings, Users2, AlertTriangle } from 'lucide-react'
-import { getPeoplePaginated, createPerson, updatePerson } from '@/lib/actions/people'
+import { getPeoplePaginated, createPerson, updatePerson, type PaginatedResult } from '@/lib/actions/people'
 import { getFamilyMembershipsForPeople, getFamilyBlackoutDatesForPeople } from '@/lib/actions/families'
 import {
   createMassRoleMember,
@@ -153,14 +153,14 @@ export function MassAssignmentPeoplePicker({
 
       // Get ALL people
       const offset = (page - 1) * PAGE_SIZE
-      const result = await getPeoplePaginated({
+      const result: PaginatedResult<Person> = await getPeoplePaginated({
         offset,
         limit: PAGE_SIZE,
         search,
       })
 
       // Get people who ARE members of this mass role
-      const membersResult = await getPeoplePaginated({
+      const membersResult: PaginatedResult<Person> = await getPeoplePaginated({
         offset: 0,
         limit: 1000,
         massRoleId: massRoleId,

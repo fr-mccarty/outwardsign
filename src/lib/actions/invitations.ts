@@ -1,12 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { revalidatePath } from 'next/cache'
 import { sendParishInvitationEmail } from '@/lib/email/ses-client'
 import { logInfo, logError } from '@/lib/utils/console'
 import type { UserParishRoleType } from '@/lib/constants'
+import {
+  createAuthenticatedClient,
+} from './server-action-utils'
 
 export interface ParishInvitation {
   id: string
@@ -44,14 +45,12 @@ export interface ParishInvitationWithDetails extends ParishInvitation {
  * Get all pending invitations for the current parish
  */
 export async function getParishInvitations(): Promise<ParishInvitation[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data: invitations, error } = await supabase
     .from('parish_invitations')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('accepted_at', null) // Only pending invitations
     .order('created_at', { ascending: false })
 
@@ -107,9 +106,7 @@ export async function getInvitationByToken(token: string): Promise<ParishInvitat
  * Create a new parish invitation
  */
 export async function createParishInvitation(data: CreateParishInvitationData): Promise<ParishInvitation> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get current user ID
   const { data: { user } } = await supabase.auth.getUser()
@@ -121,7 +118,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   const { data: parish } = await supabase
     .from('parishes')
     .select('name')
-    .eq('id', selectedParishId)
+    .eq('id', parishId)
     .single()
 
   if (!parish) {
@@ -143,7 +140,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
   const { data: invitation, error } = await supabase
     .from('parish_invitations')
     .insert({
-      parish_id: selectedParishId,
+      parish_id: parishId,
       email: data.email.toLowerCase(),
       token,
       roles: data.roles,
@@ -195,9 +192,7 @@ export async function createParishInvitation(data: CreateParishInvitationData): 
  * Resend an invitation (creates a new token with new expiration)
  */
 export async function resendParishInvitation(invitationId: string): Promise<ParishInvitation> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Generate new token and expiration
   const token = crypto.randomUUID()
@@ -211,7 +206,7 @@ export async function resendParishInvitation(invitationId: string): Promise<Pari
       expires_at: expiresAt.toISOString()
     })
     .eq('id', invitationId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('accepted_at', null) // Only update pending invitations
     .select()
     .single()
@@ -229,15 +224,13 @@ export async function resendParishInvitation(invitationId: string): Promise<Pari
  * Revoke (delete) a parish invitation
  */
 export async function revokeParishInvitation(invitationId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { error } = await supabase
     .from('parish_invitations')
     .delete()
     .eq('id', invitationId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('accepted_at', null) // Only delete pending invitations
 
   if (error) {

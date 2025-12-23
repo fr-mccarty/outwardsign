@@ -1,10 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import type {
+import {
   MasterEvent,
   MasterEventWithRelations,
   CreateMasterEventData,
@@ -25,6 +22,11 @@ import { LIST_VIEW_PAGE_SIZE } from '@/lib/constants'
 import type { SystemType } from '@/lib/constants/system-types'
 import { logError } from '@/lib/utils/console'
 import { sanitizeFieldValues } from '@/lib/utils/sanitize'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // Local type definitions for legacy master_event_roles table
 // TODO: Migrate to people_event_assignments pattern
@@ -64,14 +66,12 @@ export interface MasterEventWithTypeAndCalendarEvent extends MasterEvent {
  * Get all master events for the parish (used by dashboard)
  */
 export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: EventType })[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('master_events')
     .select('*, event_type:event_types(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(50) // Limit for dashboard performance
@@ -90,9 +90,7 @@ export async function getMasterEvents(): Promise<(MasterEvent & { event_type?: E
 export async function getAllMasterEvents(
   filters?: MasterEventFilterParams
 ): Promise<MasterEventWithTypeAndCalendarEvent[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const offset = filters?.offset || 0
   const limit = filters?.limit || LIST_VIEW_PAGE_SIZE
@@ -101,7 +99,7 @@ export async function getAllMasterEvents(
   let query = supabase
     .from('master_events')
     .select('*, event_type:event_types!inner(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
 
   // Filter by system type if provided (filter on joined event_types table)
@@ -201,9 +199,7 @@ export async function getEvents(
   eventTypeId: string,
   filters?: MasterEventFilterParams
 ): Promise<MasterEventWithTypeAndCalendarEvent[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Calculate pagination
   const offset = filters?.offset || 0
@@ -212,7 +208,7 @@ export async function getEvents(
   let query = supabase
     .from('master_events')
     .select('*, event_type:event_types(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('event_type_id', eventTypeId)
     .is('deleted_at', null)
 
@@ -366,20 +362,18 @@ export async function getEvents(
  * Get a single event by ID
  */
 export async function getEvent(id: string): Promise<MasterEvent | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('master_events')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -393,21 +387,19 @@ export async function getEvent(id: string): Promise<MasterEvent | null> {
  * Get event with all related data (event type, calendar events, presider, homilist, resolved field values, parish)
  */
 export async function getEventWithRelations(id: string): Promise<MasterEventWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the event
   const { data: event, error } = await supabase
     .from('master_events')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -420,7 +412,7 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
       .from('event_types')
       .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
       .eq('id', event.event_type_id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .is('deleted_at', null)
       .single(),
     supabase
@@ -443,12 +435,12 @@ export async function getEventWithRelations(id: string): Promise<MasterEventWith
     supabase
       .from('parishes')
       .select('name, city, state')
-      .eq('id', selectedParishId)
+      .eq('id', parishId)
       .single()
   ])
 
   if (eventTypeData.error) {
-    logError('Error fetching event type: ' + (eventTypeData.error instanceof Error ? eventTypeData.error.message : JSON.stringify(eventTypeData.error)) + ' Context: ' + JSON.stringify({ eventTypeId: event.event_type_id, selectedParishId }))
+    logError('Error fetching event type: ' + (eventTypeData.error instanceof Error ? eventTypeData.error.message : JSON.stringify(eventTypeData.error)) + ' Context: ' + JSON.stringify({ eventTypeId: event.event_type_id, parishId }))
     throw new Error('Failed to fetch event type')
   }
 
@@ -600,21 +592,19 @@ export async function createEvent(
   eventTypeId: string,
   data: CreateMasterEventData
 ): Promise<MasterEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Validate required fields against input field definitions
   const { data: eventType, error: eventTypeError } = await supabase
     .from('event_types')
     .select('*, input_field_definitions!input_field_definitions_event_type_id_fkey(*)')
     .eq('id', eventTypeId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (eventTypeError || !eventType) {
-    logError('Error fetching event type: ' + (eventTypeError instanceof Error ? eventTypeError.message : JSON.stringify(eventTypeError)) + ' Context: ' + JSON.stringify({ eventTypeId, selectedParishId }))
+    logError('Error fetching event type: ' + (eventTypeError instanceof Error ? eventTypeError.message : JSON.stringify(eventTypeError)) + ' Context: ' + JSON.stringify({ eventTypeId, parishId }))
     throw new Error('Event type not found')
   }
 
@@ -651,7 +641,7 @@ export async function createEvent(
     .from('master_events')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         event_type_id: eventTypeId,
         field_values: sanitizedFieldValues,
         status: data.status || 'PLANNING'
@@ -668,7 +658,7 @@ export async function createEvent(
   // Insert calendar events
   const calendarEventsToInsert = data.calendar_events.map(calendarEvent => ({
     master_event_id: newEvent.id,
-    parish_id: selectedParishId, // Required for RLS
+    parish_id: parishId, // Required for RLS
     input_field_definition_id: calendarEvent.input_field_definition_id,
     start_datetime: calendarEvent.start_datetime || null,
     end_datetime: calendarEvent.end_datetime || null,
@@ -700,16 +690,14 @@ export async function updateEvent(
   id: string,
   data: UpdateMasterEventData
 ): Promise<MasterEvent> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get existing event
   const { data: existingEvent } = await supabase
     .from('master_events')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
@@ -743,7 +731,7 @@ export async function updateEvent(
       .from('master_events')
       .update(updateData)
       .eq('id', id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .select()
       .single()
 
@@ -768,16 +756,14 @@ export async function updateEvent(
  * Delete an event
  */
 export async function deleteEvent(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get event to find event_type_id for revalidation
   const { data: event } = await supabase
     .from('master_events')
     .select('event_type_id')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
@@ -790,7 +776,7 @@ export async function deleteEvent(id: string): Promise<void> {
     .from('master_events')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting event: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -832,9 +818,7 @@ export interface CalendarCalendarEventItem {
  * for rendering on the parish calendar
  */
 export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEventItem[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Fetch all calendar events with their parent master events and event types
   const { data: calendarEvents, error } = await supabase
@@ -856,7 +840,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
         event_type:event_types(id, slug, name, icon)
       )
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .not('start_datetime', 'is', null)
     .order('start_datetime', { ascending: true })
@@ -938,9 +922,7 @@ export async function getCalendarEventsForCalendar(): Promise<CalendarCalendarEv
  * Get role assignments for a master event with person data
  */
 export async function getMasterEventRoles(masterEventId: string): Promise<MasterEventRoleWithPerson[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Verify master event belongs to user's parish
   const { data: masterEvent } = await supabase
@@ -950,7 +932,7 @@ export async function getMasterEventRoles(masterEventId: string): Promise<Master
     .is('deleted_at', null)
     .single()
 
-  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+  if (!masterEvent || masterEvent.parish_id !== parishId) {
     throw new Error('Event not found or access denied')
   }
 
@@ -977,9 +959,7 @@ export async function assignRole(
   personId: string,
   notes?: string
 ): Promise<MasterEventRole> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Verify master event belongs to user's parish
   const { data: masterEvent } = await supabase
@@ -989,7 +969,7 @@ export async function assignRole(
     .is('deleted_at', null)
     .single()
 
-  if (!masterEvent || masterEvent.parish_id !== selectedParishId) {
+  if (!masterEvent || masterEvent.parish_id !== parishId) {
     throw new Error('Event not found or access denied')
   }
 
@@ -998,7 +978,7 @@ export async function assignRole(
     .from('people')
     .select('id')
     .eq('id', personId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (!person) {
@@ -1032,9 +1012,7 @@ export async function assignRole(
  * Remove a role assignment (soft delete)
  */
 export async function removeRoleAssignment(roleAssignmentId: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get role assignment to verify access and get master event details
   const { data: roleAssignment } = await supabase
@@ -1050,7 +1028,7 @@ export async function removeRoleAssignment(roleAssignmentId: string): Promise<vo
 
   const masterEventData = roleAssignment.master_event as unknown as { parish_id: string; event_type_id: string }
   
-  if (masterEventData.parish_id !== selectedParishId) {
+  if (masterEventData.parish_id !== parishId) {
     throw new Error('Access denied')
   }
 
@@ -1128,15 +1106,13 @@ export interface MasterEventStats {
  * Get stats for master events with optional filtering by system type
  */
 export async function getMasterEventStats(filters?: MasterEventFilterParams): Promise<MasterEventStats> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Build query for all events (for total, upcoming, past counts)
   let allEventsQuery = supabase
     .from('master_events')
     .select('*, event_type:event_types!inner(*)')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
 
   // Apply system type filter if provided

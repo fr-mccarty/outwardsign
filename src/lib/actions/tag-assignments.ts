@@ -4,13 +4,18 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
-import type {
+import {
   TagAssignment,
   CategoryTag,
   CreateTagAssignmentData,
   TagEntityType
 } from '@/lib/types'
 import { logError } from '@/lib/utils/console'
+import {
+  createAuthenticatedClient,
+  isUniqueConstraintError,
+} from './server-action-utils'
+
 
 /**
  * Helper to check if user has staff or admin role
@@ -100,10 +105,7 @@ export async function getTagsForEntity(
  * Creates a new tag assignment
  */
 export async function assignTag(data: CreateTagAssignmentData): Promise<TagAssignment> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has staff or admin role
   await requireStaffOrAdminRole(supabase, parishId)
@@ -133,7 +135,7 @@ export async function assignTag(data: CreateTagAssignmentData): Promise<TagAssig
 
   if (error) {
     // Check for unique constraint violation
-    if (error.code === '23505') {
+    if (isUniqueConstraintError(error)) {
       throw new Error('Tag is already assigned to this entity')
     }
     logError('Error assigning tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -155,10 +157,7 @@ export async function unassignTag(
   entityType: TagEntityType,
   entityId: string
 ): Promise<void> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has staff or admin role
   await requireStaffOrAdminRole(supabase, parishId)
@@ -189,10 +188,7 @@ export async function bulkAssignTags(
   entityId: string,
   tagIds: string[]
 ): Promise<void> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has staff or admin role
   await requireStaffOrAdminRole(supabase, parishId)

@@ -1,12 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireManageParishSettings } from '@/lib/auth/permissions'
 import { logError } from '@/lib/utils/console'
-import type {
+import {
   EventType,
   EventTypeWithRelations,
   CreateEventTypeData,
@@ -15,6 +12,10 @@ import type {
   Script
 } from '@/lib/types'
 import { generateSlug } from '@/lib/utils/formatters'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
 
 export interface EventTypeFilterParams {
   search?: string
@@ -34,14 +35,12 @@ export async function getActiveEventTypes(): Promise<EventType[]> {
  * Get all event types for the selected parish
  */
 export async function getEventTypes(filters?: EventTypeFilterParams): Promise<EventType[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('event_types')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
 
   // Apply system_type filter
@@ -89,20 +88,18 @@ export async function getEventTypes(filters?: EventTypeFilterParams): Promise<Ev
  * Get a single event type by ID
  */
 export async function getEventType(id: string): Promise<EventType | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('event_types')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -116,20 +113,18 @@ export async function getEventType(id: string): Promise<EventType | null> {
  * Get a single event type by slug
  */
 export async function getEventTypeBySlug(slug: string): Promise<EventType | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('event_types')
     .select('*')
     .eq('slug', slug)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching event type by slug: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -143,21 +138,19 @@ export async function getEventTypeBySlug(slug: string): Promise<EventType | null
  * Get event type with all related data (input field definitions and scripts)
  */
 export async function getEventTypeWithRelations(id: string): Promise<EventTypeWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the event type
   const { data: eventType, error } = await supabase
     .from('event_types')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -201,21 +194,19 @@ export async function getEventTypeWithRelations(id: string): Promise<EventTypeWi
  * Get event type with all related data by slug
  */
 export async function getEventTypeWithRelationsBySlug(slug: string): Promise<EventTypeWithRelations | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get the event type by slug
   const { data: eventType, error } = await supabase
     .from('event_types')
     .select('*')
     .eq('slug', slug)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching event type by slug: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -259,22 +250,20 @@ export async function getEventTypeWithRelationsBySlug(slug: string): Promise<Eve
  * Create a new event type
  */
 export async function createEventType(data: CreateEventTypeData): Promise<EventType> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Get max order to assign next order
   const { data: existingEventTypes } = await supabase
     .from('event_types')
     .select('order')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .order('order', { ascending: false })
     .limit(1)
@@ -294,7 +283,7 @@ export async function createEventType(data: CreateEventTypeData): Promise<EventT
     const { data: existingWithSlug } = await supabase
       .from('event_types')
       .select('id')
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .eq('slug', finalSlug)
       .is('deleted_at', null)
       .limit(1)
@@ -312,7 +301,7 @@ export async function createEventType(data: CreateEventTypeData): Promise<EventT
     .from('event_types')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         name: data.name,
         description: data.description || null,
         icon: data.icon,
@@ -338,23 +327,21 @@ export async function createEventType(data: CreateEventTypeData): Promise<EventT
  * Update an existing event type
  */
 export async function updateEventType(id: string, data: UpdateEventTypeData): Promise<EventType> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // If slug is being updated, validate uniqueness
   if (data.slug !== undefined && data.slug !== null) {
     const { data: existingWithSlug } = await supabase
       .from('event_types')
       .select('id')
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
       .eq('slug', data.slug)
       .neq('id', id) // Exclude current event type
       .is('deleted_at', null)
@@ -375,7 +362,7 @@ export async function updateEventType(id: string, data: UpdateEventTypeData): Pr
     .from('event_types')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .is('deleted_at', null)
     .select()
     .single()
@@ -395,16 +382,14 @@ export async function updateEventType(id: string, data: UpdateEventTypeData): Pr
  * Checks if there are existing events using this type first
  */
 export async function deleteEventType(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Check for existing events using this event type
   const { data: events } = await supabase
@@ -423,7 +408,7 @@ export async function deleteEventType(id: string): Promise<void> {
     .from('event_types')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting event type: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -439,16 +424,14 @@ export async function deleteEventType(id: string): Promise<void> {
  * Updates the order field for all provided event types
  */
 export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Update each event type's order
   const updates = orderedIds.map((id, index) =>
@@ -456,7 +439,7 @@ export async function reorderEventTypes(orderedIds: string[]): Promise<void> {
       .from('event_types')
       .update({ order: index })
       .eq('id', id)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
   )
 
   await Promise.all(updates)

@@ -8,6 +8,10 @@ import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { MassIntention, Person, MasterEvent } from '@/lib/types'
 import type { MassIntentionStatus } from '@/lib/constants'
 import { createMassIntentionSchema, updateMassIntentionSchema, type CreateMassIntentionData, type UpdateMassIntentionData } from '@/lib/schemas/mass-intentions'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
 
 export interface MassIntentionFilterParams {
   search?: string
@@ -240,7 +244,7 @@ export async function getMassIntention(id: string): Promise<MassIntention | null
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching mass intention: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -269,7 +273,7 @@ export async function getMassIntentionWithRelations(id: string): Promise<MassInt
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching mass intention: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -293,9 +297,7 @@ export async function getMassIntentionWithRelations(id: string): Promise<MassInt
 }
 
 export async function createMassIntention(data: CreateMassIntentionData): Promise<MassIntention> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
 
   // Validate data with schema
@@ -305,7 +307,7 @@ export async function createMassIntention(data: CreateMassIntentionData): Promis
     .from('mass_intentions')
     .insert([
       {
-        parish_id: selectedParishId,
+        parish_id: parishId,
         master_event_id: data.master_event_id || null,
         mass_offered_for: data.mass_offered_for || null,
         requested_by_id: data.requested_by_id || null,

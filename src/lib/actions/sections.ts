@@ -5,13 +5,18 @@ import { revalidatePath } from 'next/cache'
 import { requireSelectedParish } from '@/lib/auth/parish'
 import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { requireManageParishSettings } from '@/lib/auth/permissions'
-import type {
+import {
   Section,
   CreateSectionData,
   UpdateSectionData
 } from '@/lib/types'
 import { logError } from '@/lib/utils/console'
 import { sanitizeSectionContent } from '@/lib/utils/sanitize'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 /**
  * Get all sections for a script
@@ -52,7 +57,7 @@ export async function getSection(id: string): Promise<Section | null> {
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching section: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -66,16 +71,14 @@ export async function getSection(id: string): Promise<Section | null> {
  * Create a new section
  */
 export async function createSection(scriptId: string, data: CreateSectionData): Promise<Section> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Get max order for this script
   const { data: existingSections } = await supabase
@@ -132,16 +135,14 @@ export async function createSection(scriptId: string, data: CreateSectionData): 
  * Update an existing section
  */
 export async function updateSection(id: string, data: UpdateSectionData): Promise<Section> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Build update object from only defined values
   const updateData = Object.fromEntries(
@@ -186,16 +187,14 @@ export async function updateSection(id: string, data: UpdateSectionData): Promis
  * Delete a section
  */
 export async function deleteSection(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Get script_id for revalidation
   const { data: section } = await supabase
@@ -238,16 +237,14 @@ export async function deleteSection(id: string): Promise<void> {
  * Updates the order field for all provided sections
  */
 export async function reorderSections(scriptId: string, orderedIds: string[]): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check permissions (admin only)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
   }
-  await requireManageParishSettings(user.id, selectedParishId)
+  await requireManageParishSettings(user.id, parishId)
 
   // Update each section's order
   const updates = orderedIds.map((id, index) =>

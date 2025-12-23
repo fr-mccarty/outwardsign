@@ -1,10 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { logError } from '@/lib/utils/console'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+} from './server-action-utils'
+
 
 // Types
 export interface MassRoleMember {
@@ -51,14 +53,12 @@ export interface UpdateMassRoleMemberData {
  * Get all mass role members for the current parish
  */
 export async function getMassRoleMembers(): Promise<MassRoleMember[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_role_members')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -73,15 +73,13 @@ export async function getMassRoleMembers(): Promise<MassRoleMember[]> {
  * Get all mass role members with person and role details
  */
 export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWithDetails[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get all mass_role_members
   const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .order('created_at', { ascending: false })
 
   if (membersError) {
@@ -99,7 +97,7 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
     .from('people')
     .select('id, first_name, last_name, email')
     .in('id', personIds)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (peopleError) {
     logError('Error fetching people: ' + (peopleError instanceof Error ? peopleError.message : JSON.stringify(peopleError)))
@@ -111,7 +109,7 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
     .from('mass_roles')
     .select('id, name, description')
     .in('id', roleIds)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (rolesError) {
     logError('Error fetching mass roles: ' + (rolesError instanceof Error ? rolesError.message : JSON.stringify(rolesError)))
@@ -141,15 +139,13 @@ export async function getMassRoleMembersWithDetails(): Promise<MassRoleMemberWit
  * Get all members for a specific role
  */
 export async function getMassRoleMembersByRole(roleId: string): Promise<MassRoleMemberWithDetails[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get all mass_role_members for this role
   const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .order('created_at', { ascending: false })
 
@@ -168,7 +164,7 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
     .from('people')
     .select('id, first_name, last_name, email')
     .in('id', personIds)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (peopleError) {
     logError('Error fetching people: ' + (peopleError instanceof Error ? peopleError.message : JSON.stringify(peopleError)))
@@ -179,7 +175,7 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
     .from('mass_roles')
     .select('id, name, description')
     .eq('id', roleId)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (roleError) {
@@ -209,15 +205,13 @@ export async function getMassRoleMembersByRole(roleId: string): Promise<MassRole
  * Get all role memberships for a specific person
  */
 export async function getMassRoleMembersByPerson(personId: string): Promise<MassRoleMemberWithDetails[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // First, get the mass_role_members records
   const { data: members, error: membersError } = await supabase
     .from('mass_role_members')
     .select('*')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('person_id', personId)
     .order('created_at', { ascending: false })
 
@@ -225,7 +219,7 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
     logError('Error fetching mass role members: ' + (membersError instanceof Error ? membersError.message : JSON.stringify(membersError)))
     logError('Error details: ' + JSON.stringify(membersError, null, 2))
     logError('Person ID: ' + personId)
-    logError('Parish ID: ' + selectedParishId)
+    logError('Parish ID: ' + parishId)
     throw new Error('Failed to fetch mass role members by person')
   }
 
@@ -242,7 +236,7 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
       .from('mass_roles')
       .select('id, name, description')
       .in('id', roleIds)
-      .eq('parish_id', selectedParishId)
+      .eq('parish_id', parishId)
 
     if (rolesError) {
       logError('Error fetching mass roles: ' + (rolesError instanceof Error ? rolesError.message : JSON.stringify(rolesError)))
@@ -276,19 +270,17 @@ export async function getMassRoleMembersByPerson(personId: string): Promise<Mass
  * Get a single mass role member by ID
  */
 export async function getMassRoleMember(id: string): Promise<MassRoleMember | null> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_role_members')
     .select('*')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null
     }
     logError('Error fetching mass role member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -304,15 +296,13 @@ export async function getMassRoleMember(id: string): Promise<MassRoleMember | nu
 export async function createMassRoleMember(
   data: CreateMassRoleMemberData
 ): Promise<MassRoleMember> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
 
   const { data: member, error } = await supabase
     .from('mass_role_members')
     .insert({
-      parish_id: selectedParishId,
+      parish_id: parishId,
       person_id: data.person_id,
       mass_role_id: data.mass_role_id,
       membership_type: data.membership_type || 'MEMBER',
@@ -341,9 +331,7 @@ export async function updateMassRoleMember(
   id: string,
   data: UpdateMassRoleMemberData
 ): Promise<MassRoleMember> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
 
   const updateData: Record<string, unknown> = {}
@@ -356,7 +344,7 @@ export async function updateMassRoleMember(
     .from('mass_role_members')
     .update(updateData)
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .select()
     .single()
 
@@ -376,9 +364,7 @@ export async function updateMassRoleMember(
  * Delete a mass role member
  */
 export async function deleteMassRoleMember(id: string): Promise<void> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
 
   // Get the member first to revalidate paths
@@ -386,14 +372,14 @@ export async function deleteMassRoleMember(id: string): Promise<void> {
     .from('mass_role_members')
     .select('person_id')
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .single()
 
   const { error } = await supabase
     .from('mass_role_members')
     .delete()
     .eq('id', id)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
 
   if (error) {
     logError('Error deleting mass role member: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -411,14 +397,12 @@ export async function deleteMassRoleMember(id: string): Promise<void> {
  * Check if a person is an active member of a specific role
  */
 export async function isActiveMember(personId: string, roleId: string): Promise<boolean> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_role_members')
     .select('id')
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('person_id', personId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
@@ -442,9 +426,7 @@ export async function getActiveMembersForRole(roleId: string): Promise<Array<{
   membership_type: 'MEMBER' | 'LEADER'
   notes: string | null
 }>> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('mass_role_members')
@@ -454,7 +436,7 @@ export async function getActiveMembersForRole(roleId: string): Promise<Array<{
       notes,
       person:people(id, first_name, last_name, email)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
 
@@ -503,9 +485,7 @@ export async function getPeopleAvailableForMassTime(
   roleId: string,
   massTimeTemplateItemId: string
 ): Promise<PersonAvailableForMassTime[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get all active members for this role who have this mass time in their availability
   const { data: members, error: membersError } = await supabase
@@ -516,7 +496,7 @@ export async function getPeopleAvailableForMassTime(
       membership_type,
       person:people(id, first_name, last_name, mass_times_template_item_ids)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
 
@@ -562,9 +542,7 @@ export async function getPeopleAvailableForMassTime(
 export async function getMassRoleAvailabilityByMassTime(
   roleId: string
 ): Promise<MassTimeAvailability[]> {
-  const selectedParishId = await requireSelectedParish()
-  await ensureJWTClaims()
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Get all active members for this role with their available mass times
   const { data: members, error: membersError } = await supabase
@@ -575,7 +553,7 @@ export async function getMassRoleAvailabilityByMassTime(
       active,
       person:people(id, mass_times_template_item_ids)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('mass_role_id', roleId)
     .eq('active', true)
 
@@ -597,7 +575,7 @@ export async function getMassRoleAvailabilityByMassTime(
       day_of_week,
       items:mass_times_template_items(id, time, day_type)
     `)
-    .eq('parish_id', selectedParishId)
+    .eq('parish_id', parishId)
     .eq('is_active', true)
 
   if (templatesError) {

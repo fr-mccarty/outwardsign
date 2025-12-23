@@ -1,11 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireSelectedParish } from '@/lib/auth/parish'
-import { ensureJWTClaims } from '@/lib/auth/jwt-claims'
 import { logError } from '@/lib/utils/console'
-import type {
+import { createClient } from '@/lib/supabase/server'
+import {
+  createAuthenticatedClient,
+  isNotFoundError,
+  isUniqueConstraintError,
+} from './server-action-utils'
+import {
   ContentTag,
   ContentTagWithUsageCount,
   CreateContentTagData,
@@ -54,10 +57,7 @@ async function requireAdminRole(supabase: Awaited<ReturnType<typeof createClient
 export async function getContentTags(
   sortBy: 'sort_order' | 'name' = 'sort_order'
 ): Promise<ContentTag[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   let query = supabase
     .from('category_tags')
@@ -86,10 +86,7 @@ export async function getContentTags(
  * Note: Uses category_tags and tag_assignments tables
  */
 export async function getContentTagsWithUsageCount(): Promise<ContentTagWithUsageCount[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Fetch tags with COUNT of assignments
   const { data, error } = await supabase
@@ -118,10 +115,7 @@ export async function getContentTagsWithUsageCount(): Promise<ContentTagWithUsag
  * Get a single content tag by ID
  */
 export async function getContentTagById(tagId: string): Promise<ContentTag | null> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   const { data, error } = await supabase
     .from('category_tags')
@@ -131,7 +125,7 @@ export async function getContentTagById(tagId: string): Promise<ContentTag | nul
     .single()
 
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (isNotFoundError(error)) {
       return null // Not found
     }
     logError('Error fetching content tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -146,10 +140,7 @@ export async function getContentTagById(tagId: string): Promise<ContentTag | nul
  * Requires Admin role
  */
 export async function createContentTag(input: CreateContentTagData): Promise<ContentTag> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   const userId = await requireAdminRole(supabase, parishId)
@@ -192,7 +183,7 @@ export async function createContentTag(input: CreateContentTagData): Promise<Con
 
   if (error) {
     // Check for unique constraint violation
-    if (error.code === '23505') {
+    if (isUniqueConstraintError(error)) {
       throw new Error('A tag with this slug already exists')
     }
     logError('Error creating content tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -212,10 +203,7 @@ export async function updateContentTag(
   tagId: string,
   input: UpdateContentTagData
 ): Promise<ContentTag> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   await requireAdminRole(supabase, parishId)
@@ -237,7 +225,7 @@ export async function updateContentTag(
 
   if (error) {
     // Check for unique constraint violation
-    if (error.code === '23505') {
+    if (isUniqueConstraintError(error)) {
       throw new Error('A tag with this slug already exists')
     }
     logError('Error updating content tag: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -256,10 +244,7 @@ export async function updateContentTag(
  * Cannot delete if tag is assigned to any content
  */
 export async function deleteContentTag(tagId: string): Promise<{ success: boolean }> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   await requireAdminRole(supabase, parishId)
@@ -308,10 +293,7 @@ export async function deleteContentTag(tagId: string): Promise<{ success: boolea
  * Requires Admin role
  */
 export async function reorderContentTags(tagIdsInOrder: string[]): Promise<ContentTag[]> {
-  const parishId = await requireSelectedParish()
-  await ensureJWTClaims()
-
-  const supabase = await createClient()
+  const { supabase, parishId } = await createAuthenticatedClient()
 
   // Check user has admin role
   await requireAdminRole(supabase, parishId)
